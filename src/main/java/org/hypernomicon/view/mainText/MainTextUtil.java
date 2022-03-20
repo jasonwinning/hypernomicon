@@ -420,10 +420,7 @@ public final class MainTextUtil
       case hdtMiscFile :
         return anchor + "href=\"\" onclick=\"javascript:openFile(" + parms + "); return false;\">" + content + "</a>";
 
-      case hdtWork :
-        return anchor + "oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
-
-      case hdtNote :
+      case hdtWork : case hdtNote :
         return anchor + "oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
 
       default :

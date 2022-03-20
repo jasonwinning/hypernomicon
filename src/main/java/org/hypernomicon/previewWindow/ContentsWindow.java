@@ -181,7 +181,7 @@ public class ContentsWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void update(HDT_WorkFile workFile, int curPage, boolean setFocus)
+  void update(HDT_WorkFile workFile, int curPage)
   {
     clearDisplay();
 
@@ -190,13 +190,13 @@ public class ContentsWindow extends HyperDlg
     curWorkFile = workFile;
     curFilePath = null;
 
-    update(curPage, setFocus);
+    update(curPage, true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void update(FilePath filePath, int curPage, boolean setFocus)
+  void update(FilePath filePath, int curPage)
   {
     clearDisplay();
 
@@ -205,7 +205,7 @@ public class ContentsWindow extends HyperDlg
     curWorkFile = null;
     curFilePath = filePath;
 
-    update(curPage, setFocus);
+    update(curPage, true);
   }
 
 //---------------------------------------------------------------------------

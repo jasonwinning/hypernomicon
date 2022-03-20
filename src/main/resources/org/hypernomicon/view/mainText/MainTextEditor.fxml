@@ -37,108 +37,94 @@
       <HiddenSidesPane fx:id="hsPane">
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0">
-               <children>
-                  <HTMLEditor fx:id="he" cacheShape="false" centerShape="false" depthTest="DISABLE" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" minHeight="0.0" minWidth="0.0" scaleShape="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
+            <HTMLEditor fx:id="he" cacheShape="false" centerShape="false" depthTest="DISABLE"
+                        htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;"
+                        minHeight="0.0" minWidth="0.0" scaleShape="false" AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+          </AnchorPane>
         </content>
         <right>
           <StackPane style="-fx-background-color: -fx-base;">
             <GridPane hgap="4.0" minWidth="0.0" prefWidth="320.0">
               <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="0.0" percentWidth="25.0" />
-                <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="0.0" percentWidth="25.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0"/>
               </columnConstraints>
               <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
-                <RowConstraints vgrow="NEVER" />
-                <RowConstraints vgrow="NEVER" />
-                  <RowConstraints vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
+                <RowConstraints vgrow="NEVER"/>
               </rowConstraints>
-               <children>
-                  <ListView fx:id="lvRecords" GridPane.columnSpan="2147483647" />
-                  <AnchorPane GridPane.rowIndex="1">
-                     <children>
-                        <Button fx:id="btnMoveUp" layoutX="63.0" layoutY="3.0" mnemonicParsing="false" text="Move Up" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
-                     <children>
-                        <Button fx:id="btnMoveDown" layoutX="66.0" layoutY="4.0" mnemonicParsing="false" text="Move Down" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
-                     <children>
-                        <Button fx:id="btnInsert" layoutX="41.0" layoutY="4.0" mnemonicParsing="false" text="Insert" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
-                     <children>
-                        <Button fx:id="btnRemove" layoutX="23.0" layoutY="4.0" mnemonicParsing="false" text="Remove" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                     </children>
-                  </AnchorPane>                  
-                  <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
-                     <children>
-                        <Label layoutX="11.0" layoutY="6.0" text="Type:" />
-                        <ComboBox fx:id="cbType" layoutX="62.0" layoutY="2.0" prefWidth="150.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
-                     <children>
-                        <Label layoutX="10.0" layoutY="6.0" text="Name:" />
-                        <ComboBox fx:id="cbName" layoutX="62.0" layoutY="2.0" prefWidth="150.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-               </children>
+              <ListView fx:id="lvRecords" GridPane.columnSpan="2147483647"/>
+              <AnchorPane GridPane.rowIndex="1">
+                <Button fx:id="btnMoveUp" layoutX="63.0" layoutY="3.0" mnemonicParsing="false" text="Move Up"
+                        AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <Button fx:id="btnMoveDown" layoutX="66.0" layoutY="4.0" mnemonicParsing="false" text="Move Down"
+                        AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <Button fx:id="btnInsert" layoutX="41.0" layoutY="4.0" mnemonicParsing="false" text="Insert"
+                        AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
+                <Button fx:id="btnRemove" layoutX="23.0" layoutY="4.0" mnemonicParsing="false" text="Remove"
+                        AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+                <Label layoutX="11.0" layoutY="6.0" text="Type:"/>
+                <ComboBox fx:id="cbType" layoutX="62.0" layoutY="2.0" prefWidth="150.0" AnchorPane.leftAnchor="62.0"
+                          AnchorPane.rightAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+                <Label layoutX="10.0" layoutY="6.0" text="Name:"/>
+                <ComboBox fx:id="cbName" layoutX="62.0" layoutY="2.0" prefWidth="150.0" AnchorPane.leftAnchor="62.0"
+                          AnchorPane.rightAnchor="0.0"/>
+              </AnchorPane>
             </GridPane>
           </StackPane>
         </right>
       </HiddenSidesPane>
    </center>
    <top>
-      <TitledPane fx:id="tpKeyWorks" focusTraversable="false" text="Key Works" BorderPane.alignment="CENTER">
-         <content>
-            <GridPane style="-fx-padding: 0;">
-               <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="20.0" />
-                  <ColumnConstraints hgrow="ALWAYS" />
-                  <ColumnConstraints hgrow="NEVER" minWidth="40.0" />
-                  <ColumnConstraints hgrow="NEVER" minWidth="40.0" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints minHeight="0.0" vgrow="ALWAYS" />
-                  <RowConstraints minHeight="-Infinity" vgrow="NEVER" />
-               </rowConstraints>
-               <children>
-                  <TextArea fx:id="taKeyWorks" minHeight="0.0" prefHeight="56.0" prefWidth="486.0" wrapText="true" GridPane.columnSpan="2147483647" GridPane.vgrow="ALWAYS" />
-                  <AnchorPane GridPane.rowIndex="1">
-                     <children>
-                        <ComboBox fx:id="cbKeyType" layoutX="8.0" layoutY="3.0" prefWidth="150.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
-                     <children>
-                        <ComboBox fx:id="cbKeyName" layoutX="14.0" layoutY="5.0" prefWidth="150.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
-                     <children>
-                        <Button fx:id="btnAdd" layoutX="23.0" layoutY="3.0" mnemonicParsing="false" text="Add" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
-                     <children>
-                        <Button fx:id="btnNew" layoutX="9.0" layoutY="3.0" mnemonicParsing="false" text="New" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" />
-                     </children>
-                  </AnchorPane>
-               </children>
-               <opaqueInsets>
-                  <Insets />
-               </opaqueInsets>
-            </GridPane>
-         </content>
-      </TitledPane>
+     <TitledPane fx:id="tpKeyWorks" focusTraversable="false" text="Key Works" BorderPane.alignment="CENTER">
+       <GridPane style="-fx-padding: 0;">
+         <columnConstraints>
+           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="20.0"/>
+           <ColumnConstraints hgrow="ALWAYS"/>
+           <ColumnConstraints hgrow="NEVER" minWidth="40.0"/>
+           <ColumnConstraints hgrow="NEVER" minWidth="40.0"/>
+         </columnConstraints>
+         <rowConstraints>
+           <RowConstraints minHeight="0.0" vgrow="ALWAYS"/>
+           <RowConstraints minHeight="-Infinity" vgrow="NEVER"/>
+         </rowConstraints>
+         <opaqueInsets>
+           <Insets/>
+         </opaqueInsets>
+         <TextArea fx:id="taKeyWorks" minHeight="0.0" prefHeight="56.0" prefWidth="486.0" wrapText="true"
+                   GridPane.columnSpan="2147483647" GridPane.vgrow="ALWAYS"/>
+         <AnchorPane GridPane.rowIndex="1">
+           <ComboBox fx:id="cbKeyType" layoutX="8.0" layoutY="3.0" prefWidth="150.0" AnchorPane.leftAnchor="2.0"
+                     AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0"/>
+         </AnchorPane>
+         <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+           <ComboBox fx:id="cbKeyName" layoutX="14.0" layoutY="5.0" prefWidth="150.0"
+                     AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0"/>
+         </AnchorPane>
+         <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
+           <Button fx:id="btnAdd" layoutX="23.0" layoutY="3.0" mnemonicParsing="false" text="Add"
+                   AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0"/>
+         </AnchorPane>
+         <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
+           <Button fx:id="btnNew" layoutX="9.0" layoutY="3.0" mnemonicParsing="false" text="New"
+                   AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0"/>
+         </AnchorPane>
+       </GridPane>
+     </TitledPane>
    </top>
 </BorderPane>

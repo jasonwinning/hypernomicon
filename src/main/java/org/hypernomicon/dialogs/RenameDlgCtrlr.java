@@ -18,6 +18,7 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import org.apache.commons.io.FilenameUtils;
@@ -88,10 +89,14 @@ public class RenameDlgCtrlr extends HyperDlg
     {
       if (tfName.isFocused() && !tfName.getText().isEmpty())
       {
-        if ((nameType != ntRecord) && (FilenameUtils.indexOfExtension(tfName.getText()) >= 0))
-          tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
-        else
-          tfName.selectAll();
+        try
+        {
+          if ((nameType != ntRecord) && (FilenameUtils.indexOfExtension(tfName.getText()) >= 0))
+            tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
+          else
+            tfName.selectAll();
+        }
+        catch (IllegalArgumentException e) { noOp(); }
       }
     }));
 

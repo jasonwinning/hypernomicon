@@ -53,17 +53,8 @@ class InterProcDaemon extends HyperThread
           do { line = in.readLine(); }
           while (line == null);
 
-          switch (line)
-          {
-            case InterProcClient.UPDATE_CMD :
-
-              out.println(InterProcClient.getInstance());
-              break;
-
-            default :
-
-              break;
-          }
+          if (InterProcClient.UPDATE_CMD.equals(line))
+            out.println(InterProcClient.getInstance());
         }
       }
     }

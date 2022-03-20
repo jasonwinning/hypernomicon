@@ -21,19 +21,24 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="500.0" prefWidth="500.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.ObjectOrderDlgCtrlr">
-   <children>
-      <TableView fx:id="tv" layoutX="141.0" layoutY="72.0" prefHeight="470.0" prefWidth="500.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <columns>
-          <TableColumn prefWidth="75.0" text="C1" />
-          <TableColumn prefWidth="75.0" text="C2" />
-        </columns>
-         <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-         </columnResizePolicy>
-      </TableView>
-      <Button fx:id="btnMoveUp" layoutY="475.0" mnemonicParsing="false" text="Move Up" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="6.0" />
-      <Button fx:id="btnMoveDown" layoutX="72.0" layoutY="475.0" mnemonicParsing="false" text="Move Down" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="72.0" />
-      <Button fx:id="btnOK" defaultButton="true" layoutX="451.0" layoutY="475.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="55.0" text="OK" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="6.0" />
-   </children>
+<AnchorPane prefHeight="500.0" prefWidth="500.0" minHeight="300.0" minWidth="300.0"
+            xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.ObjectOrderDlgCtrlr">
+  <TableView fx:id="tv" layoutX="141.0" layoutY="72.0" prefHeight="470.0" prefWidth="500.0"
+             AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+             AnchorPane.topAnchor="0.0">
+    <columns>
+      <TableColumn prefWidth="75.0" text="C1"/>
+      <TableColumn prefWidth="75.0" text="C2"/>
+    </columns>
+    <columnResizePolicy>
+      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+    </columnResizePolicy>
+  </TableView>
+  <Button fx:id="btnMoveUp" layoutY="475.0" mnemonicParsing="false" text="Move Up" AnchorPane.bottomAnchor="3.0"
+          AnchorPane.leftAnchor="6.0"/>
+  <Button fx:id="btnMoveDown" layoutX="72.0" layoutY="475.0" mnemonicParsing="false" text="Move Down"
+          AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="72.0"/>
+  <Button fx:id="btnOK" defaultButton="true" layoutX="451.0" layoutY="475.0" mnemonicParsing="false"
+          onAction="#btnOkClick" prefWidth="55.0" text="OK" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="6.0"/>
 </AnchorPane>

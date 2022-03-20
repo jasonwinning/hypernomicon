@@ -29,111 +29,110 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstTabCtrlr">
-   <children>
-      <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
-         </columnConstraints>
-         <rowConstraints>
-            <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-         </rowConstraints>
-         <children>
-            <AnchorPane>
-               <children>
-                  <Label layoutX="7.0" layoutY="7.0" text="Name:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                  <TextField fx:id="tfName" layoutX="55.0" layoutY="3.0" prefHeight="25.0" prefWidth="408.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-               <children>
-                  <Button fx:id="btnURL" layoutY="3.0" mnemonicParsing="false" prefHeight="25.0" text="URL:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="3.0" />
-                  <TextField fx:id="tfURL" layoutX="44.0" layoutY="3.0" prefHeight="25.0" prefWidth="402.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
-               <children>
-                  <Label layoutX="1.0" layoutY="8.0" text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                  <ComboBox fx:id="cbType" layoutX="44.0" layoutY="3.0" prefHeight="25.0" prefWidth="148.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="3.0" />
-                  <Button fx:id="btnParent" layoutX="204.0" layoutY="3.0" maxWidth="105.0" minWidth="105.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="105.0" text="Parent Institution:" AnchorPane.leftAnchor="204.0" AnchorPane.topAnchor="3.0" />
-                  <ComboBox fx:id="cbParentInst" layoutX="311.0" layoutY="3.0" prefHeight="25.0" prefWidth="585.0" AnchorPane.leftAnchor="311.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
-               <children>
-                  <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="0.0">
-                    <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                    </rowConstraints>
-                     <children>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                           <children>
-                              <Label text="Country:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                              <ComboBox fx:id="cbCountry" layoutX="92.0" prefHeight="25.0" prefWidth="205.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                              <Button fx:id="btnNewCountry" layoutX="36.0" layoutY="2.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="New" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="3.0" />
-                           </children>
-                        </AnchorPane>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-                           <children>
-                              <Label text="State/Region:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                              <Button fx:id="btnNewRegion" layoutX="78.0" layoutY="3.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="New" AnchorPane.leftAnchor="78.0" AnchorPane.topAnchor="3.0" />
-                              <ComboBox fx:id="cbRegion" layoutX="118.0" prefHeight="25.0" prefWidth="155.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                           </children>
-                        </AnchorPane>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-                           <children>
-                              <Label text="City:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                              <TextField fx:id="tfCity" layoutX="30.0" prefHeight="25.0" prefWidth="243.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                           </children>
-                        </AnchorPane>
-                     </children>
-                  </GridPane>
-                  <Hyperlink fx:id="hlMaps" layoutX="823.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="4.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
-               <children>
-                  <SplitPane fx:id="spHoriz" dividerPositions="0.5" minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <items>
-                      <AnchorPane minHeight="0.0" minWidth="0.0">
-                           <children>
-                              <TableView fx:id="tvSubInstitutions" editable="true" layoutX="117.0" layoutY="204.0" minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                <columns>
-                                  <TableColumn prefWidth="174.0" sortable="false" text="Division" />
-                                    <TableColumn prefWidth="75.0" text="Type" />
-                                  <TableColumn maxWidth="47.0" minWidth="47.0" prefWidth="47.0" sortable="false" />
-                                    <TableColumn prefWidth="191.0" sortable="false" text="Website" />
-                                </columns>
-                              </TableView>
-                           </children>
-                        </AnchorPane>
-                      <AnchorPane minHeight="0.0" minWidth="0.0">
-                           <children>
-                              <TableView fx:id="tvPersons" layoutX="109.0" layoutY="204.0" minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                <columns>
-                                  <TableColumn editable="false" prefWidth="93.0" text="Name" />
-                                  <TableColumn editable="false" prefWidth="106.0" text="Rank" />
-                                    <TableColumn editable="false" prefWidth="124.0" text="Field" />
-                                    <TableColumn editable="false" prefWidth="98.0" text="Division" />
-                                    <TableColumn prefWidth="40.0" text="Past" />
-                                </columns>
-                              </TableView>
-                           </children>
-                        </AnchorPane>
-                    </items>
-                  </SplitPane>
-               </children>
-            </AnchorPane>
-         </children>
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstTabCtrlr">
+  <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+            AnchorPane.topAnchor="0.0">
+    <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+    </columnConstraints>
+    <rowConstraints>
+      <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>
+      <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <AnchorPane>
+      <Label layoutX="7.0" layoutY="7.0" text="Name:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0"/>
+      <TextField fx:id="tfName" layoutX="55.0" layoutY="3.0" prefHeight="25.0" prefWidth="408.0"
+                 AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+      <Button fx:id="btnURL" layoutY="3.0" mnemonicParsing="false" prefHeight="25.0" text="URL:"
+              AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="3.0"/>
+      <TextField fx:id="tfURL" layoutX="44.0" layoutY="3.0" prefHeight="25.0" prefWidth="402.0"
+                 AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+      <Label layoutX="1.0" layoutY="8.0" text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0"/>
+      <ComboBox fx:id="cbType" layoutX="44.0" layoutY="3.0" prefHeight="25.0" prefWidth="148.0"
+                AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="3.0"/>
+      <Button fx:id="btnParent" layoutX="204.0" layoutY="3.0" maxWidth="105.0" minWidth="105.0"
+              mnemonicParsing="false" prefHeight="25.0" prefWidth="105.0" text="Parent Institution:"
+              AnchorPane.leftAnchor="204.0" AnchorPane.topAnchor="3.0"/>
+      <ComboBox fx:id="cbParentInst" layoutX="311.0" layoutY="3.0" prefHeight="25.0" prefWidth="585.0"
+                AnchorPane.leftAnchor="311.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+      <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="80.0"
+                AnchorPane.topAnchor="0.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+        </rowConstraints>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+          <Label text="Country:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0"/>
+          <ComboBox fx:id="cbCountry" layoutX="92.0" prefHeight="25.0" prefWidth="205.0"
+                    AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="3.0"/>
+          <Button fx:id="btnNewCountry" layoutX="36.0" layoutY="2.0" mnemonicParsing="false"
+                  prefHeight="25.0" prefWidth="40.0" text="New" AnchorPane.leftAnchor="50.0"
+                  AnchorPane.topAnchor="3.0"/>
+        </AnchorPane>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+          <Label text="State/Region:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0"/>
+          <Button fx:id="btnNewRegion" layoutX="78.0" layoutY="3.0" mnemonicParsing="false"
+                  prefHeight="25.0" prefWidth="40.0" text="New" AnchorPane.leftAnchor="78.0"
+                  AnchorPane.topAnchor="3.0"/>
+          <ComboBox fx:id="cbRegion" layoutX="118.0" prefHeight="25.0" prefWidth="155.0"
+                    AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="3.0"/>
+        </AnchorPane>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+          <Label text="City:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0"/>
+          <TextField fx:id="tfCity" layoutX="30.0" prefHeight="25.0" prefWidth="243.0"
+                     AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="0.0"
+                     AnchorPane.topAnchor="3.0"/>
+        </AnchorPane>
       </GridPane>
-   </children>
+      <Hyperlink fx:id="hlMaps" layoutX="823.0" layoutY="4.0" onAction="#linkClick" text="Google maps"
+                 AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="4.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+      <SplitPane fx:id="spHoriz" dividerPositions="0.5" minHeight="0.0" minWidth="0.0"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                 AnchorPane.topAnchor="0.0">
+        <AnchorPane minHeight="0.0" minWidth="0.0">
+          <TableView fx:id="tvSubInstitutions" editable="true" layoutX="117.0" layoutY="204.0"
+                     minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0"
+                     AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <columns>
+              <TableColumn prefWidth="174.0" sortable="false" text="Division"/>
+              <TableColumn prefWidth="75.0" text="Type"/>
+              <TableColumn maxWidth="47.0" minWidth="47.0" prefWidth="47.0" sortable="false"/>
+              <TableColumn prefWidth="191.0" sortable="false" text="Website"/>
+            </columns>
+          </TableView>
+        </AnchorPane>
+        <AnchorPane minHeight="0.0" minWidth="0.0">
+          <TableView fx:id="tvPersons" layoutX="109.0" layoutY="204.0" minHeight="0.0" minWidth="0.0"
+                     AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                     AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <columns>
+              <TableColumn editable="false" prefWidth="93.0" text="Name"/>
+              <TableColumn editable="false" prefWidth="106.0" text="Rank"/>
+              <TableColumn editable="false" prefWidth="124.0" text="Field"/>
+              <TableColumn editable="false" prefWidth="98.0" text="Division"/>
+              <TableColumn prefWidth="40.0" text="Past"/>
+            </columns>
+          </TableView>
+        </AnchorPane>
+      </SplitPane>
+    </AnchorPane>
+  </GridPane>
 </AnchorPane>

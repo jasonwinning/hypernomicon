@@ -323,7 +323,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       if (offlineItem == null) return;
 
-      HDI_OnlineBase.class.cast(onlineItem).getToOfflineValue(offlineItem, tag);
+      ((HDI_OnlineBase<HDI_OfflineBase>) onlineItem).getToOfflineValue(offlineItem, tag);
       tagToNestedItem.put(tag, offlineItem);
     });
   }

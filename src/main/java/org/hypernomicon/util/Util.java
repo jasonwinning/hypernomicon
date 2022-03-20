@@ -459,7 +459,7 @@ public final class Util
 
     str = str.toLowerCase();
 
-    Pattern p = Pattern.compile("([\\.:?!]\\h)(\\p{IsAlphabetic})");
+    Pattern p = Pattern.compile("([.:?!]\\h)(\\p{IsAlphabetic})");
 
     str = p.matcher(str).replaceAll(match -> match.group(1) + match.group(2).toUpperCase());
 

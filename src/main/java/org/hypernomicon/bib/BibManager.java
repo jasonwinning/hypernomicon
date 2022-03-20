@@ -157,7 +157,7 @@ public class BibManager extends HyperDlg
 
   private BibManager init()
   {
-    entryTable = new BibEntryTable(tableView, PREF_KEY_HT_BIB_ENTRIES, this);
+    entryTable = new BibEntryTable(tableView, this);
     collTree = new CollectionTree(treeView);
 
     setupSearchField();

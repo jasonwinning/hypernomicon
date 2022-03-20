@@ -22,17 +22,23 @@
 <?import javafx.scene.control.TreeTableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="700.0" prefWidth="1111.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.ChooseParentDlgCtrlr">
-   <children>
-      <TreeTableView fx:id="ttv" layoutX="514.0" layoutY="280.0" prefHeight="790.0" prefWidth="1111.0" AnchorPane.bottomAnchor="29.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <columns>
-          <TreeTableColumn fx:id="tcName" prefWidth="277.0" text="Name" />
-          <TreeTableColumn fx:id="tcLinked" minWidth="0.0" prefWidth="106.0" text="Linked" />
-          <TreeTableColumn fx:id="tcDesc" minWidth="0.0" prefWidth="719.0" text="Description" />
-        </columns>
-      </TreeTableView>
-      <TextField fx:id="tfPath" editable="false" layoutY="794.0" prefHeight="22.0" prefWidth="972.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="135.0" />
-      <Button fx:id="btnOk" defaultButton="true" layoutX="982.0" layoutY="794.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="69.0" />
-      <Button fx:id="btnCancel" cancelButton="true" layoutX="1062.0" layoutY="794.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="4.0" />
-   </children>
+<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="700.0" prefWidth="1111.0" xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.ChooseParentDlgCtrlr">
+  <TreeTableView fx:id="ttv" layoutX="514.0" layoutY="280.0" prefHeight="790.0" prefWidth="1111.0"
+                 AnchorPane.bottomAnchor="29.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                 AnchorPane.topAnchor="0.0">
+    <columns>
+      <TreeTableColumn fx:id="tcName" prefWidth="277.0" text="Name"/>
+      <TreeTableColumn fx:id="tcLinked" minWidth="0.0" prefWidth="106.0" text="Linked"/>
+      <TreeTableColumn fx:id="tcDesc" minWidth="0.0" prefWidth="719.0" text="Description"/>
+    </columns>
+  </TreeTableView>
+  <TextField fx:id="tfPath" editable="false" layoutY="794.0" prefHeight="22.0" prefWidth="972.0"
+             AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="135.0"/>
+  <Button fx:id="btnOk" defaultButton="true" layoutX="982.0" layoutY="794.0" mnemonicParsing="false"
+          onAction="#btnOkClick" prefWidth="60.0" text="OK" AnchorPane.bottomAnchor="3.0"
+          AnchorPane.rightAnchor="69.0"/>
+  <Button fx:id="btnCancel" cancelButton="true" layoutX="1062.0" layoutY="794.0" mnemonicParsing="false"
+          onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="3.0"
+          AnchorPane.rightAnchor="4.0"/>
 </AnchorPane>

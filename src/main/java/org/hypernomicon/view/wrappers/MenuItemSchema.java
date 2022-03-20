@@ -73,24 +73,26 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("unchecked")
   public void doAction(RowType row)
   {
     if (recordHandler == null)
       rowHandler.accept(row);
     else
-      recordHandler.accept(recordType == hdtNone ? row.getRecord() : row.getRecordByType(recordType));
+      recordHandler.accept((HDT_T)(recordType == hdtNone ? row.getRecord() : row.getRecordByType(recordType)));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("unchecked")
   public boolean testWhetherToShow(RowType row)
   {
     if (condRecordHandler == null)
       return condRowHandler.test(row);
 
-    HDT_T record = recordType == hdtNone ? row.getRecord() : row.getRecordByType(recordType);
-    return (record != null) && condRecordHandler.test(record);
+    HDT_Record record = recordType == hdtNone ? row.getRecord() : row.getRecordByType(recordType);
+    return (record != null) && condRecordHandler.test((HDT_T) record);
   }
 
 //---------------------------------------------------------------------------

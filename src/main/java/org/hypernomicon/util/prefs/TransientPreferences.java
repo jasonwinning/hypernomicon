@@ -39,7 +39,7 @@ class TransientPreferences extends AbstractPreferences
   TransientPreferences()                                         { this(null, ""); }
 
   @Override public boolean isUserNode()                     { return true; }
-  @Override protected boolean isRemoved()                   { return super.isRemoved(); }
+  @Override protected boolean isRemoved()                   { return super.isRemoved(); } // Make visible to this package
   @Override protected void putSpi(String key, String value) { values.put(key, value); }
   @Override protected String getSpi(String key)             { return safeStr(values.get(key)); }
   @Override protected void removeSpi(String key)            { values.remove(key); }

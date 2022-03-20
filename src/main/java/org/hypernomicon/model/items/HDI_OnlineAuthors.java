@@ -44,7 +44,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Authors getAuthors() { return HDT_RecordWithAuthors.class.cast(record).getAuthors(); }
+  private Authors getAuthors() { return ((HDT_RecordWithAuthors<?>) record).getAuthors(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

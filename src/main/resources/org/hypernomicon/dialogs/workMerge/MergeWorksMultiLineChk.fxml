@@ -25,118 +25,98 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.workMerge.MergeWorksMLChkCtrlr">
-  <children>
-     <GridPane fx:id="gp" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <columnConstraints>
-           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
-        </rowConstraints>
-        <children>
-           <GridPane>
-              <columnConstraints>
-                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="20.0" prefWidth="20.0" />
-                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-              <children>
-                 <AnchorPane GridPane.columnIndex="1">
-                    <children>
-                       <CheckBox fx:id="chk1" contentDisplay="RIGHT" layoutX="-1.0" layoutY="7.0" mnemonicParsing="false" selected="true" textAlignment="CENTER" AnchorPane.leftAnchor="2.0">
-                       </CheckBox>
-                    </children>
-                 </AnchorPane>
-                 <AnchorPane>
-                    <children>
-                       <Label fx:id="lbl" text="" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
-                    </children>
-                 </AnchorPane>
-              </children>
-           </GridPane>
-           <GridPane GridPane.columnIndex="1">
-              <columnConstraints>
-                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="20.0" prefWidth="20.0" />
-                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-              <children>
-                 <AnchorPane GridPane.columnIndex="1">
-                    <children>
-                       <CheckBox fx:id="chk2" contentDisplay="RIGHT" layoutX="-1.0" layoutY="7.0" mnemonicParsing="false" selected="true" textAlignment="CENTER" AnchorPane.leftAnchor="2.0" />
-                    </children>
-                 </AnchorPane>
-              </children>
-           </GridPane>
-           <GridPane GridPane.columnIndex="2">
-              <columnConstraints>
-                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="20.0" prefWidth="20.0" />
-                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-              <children>
-                 <AnchorPane GridPane.columnIndex="1">
-                    <children>
-                       <CheckBox fx:id="chk3" contentDisplay="RIGHT" layoutX="-1.0" layoutY="7.0" mnemonicParsing="false" selected="true" textAlignment="CENTER" AnchorPane.leftAnchor="2.0" />
-                    </children>
-                 </AnchorPane>
-              </children>
-           </GridPane>
-           <GridPane GridPane.columnIndex="3">
-              <columnConstraints>
-                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="20.0" prefWidth="20.0" />
-                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-              <children>
-                 <AnchorPane GridPane.columnIndex="1">
-                    <children>
-                       <CheckBox fx:id="chk4" contentDisplay="RIGHT" layoutX="-1.0" layoutY="7.0" mnemonicParsing="false" selected="true" textAlignment="CENTER" AnchorPane.leftAnchor="2.0" />
-                    </children>
-                 </AnchorPane>
-              </children>
-           </GridPane>
-           <AnchorPane GridPane.rowIndex="1">
-               <children>
-                  <TextArea fx:id="ta1" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-           </AnchorPane>
-           <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
-              <children>
-                 <TextArea fx:id="ta2" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-              </children>
-           </AnchorPane>
-           <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
-              <children>
-                 <TextArea fx:id="ta3" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-              </children>
-           </AnchorPane>
-           <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
-              <children>
-                 <TextArea fx:id="ta4" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-              </children>
-           </AnchorPane>
-        </children>
-     </GridPane>
-  </children>
+<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.workMerge.MergeWorksMLChkCtrlr">
   <GridPane.margin>
-     <Insets bottom="4.0" left="4.0" right="4.0" />
+    <Insets bottom="4.0" left="4.0" right="4.0"/>
   </GridPane.margin>
+  <GridPane fx:id="gp" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+            AnchorPane.topAnchor="0.0">
+    <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+    </columnConstraints>
+    <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS"/>
+    </rowConstraints>
+    <GridPane>
+      <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="20.0" prefWidth="20.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      </columnConstraints>
+      <rowConstraints>
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      </rowConstraints>
+      <AnchorPane GridPane.columnIndex="1">
+        <CheckBox fx:id="chk1" contentDisplay="RIGHT" layoutX="-1.0" layoutY="7.0" mnemonicParsing="false"
+                  selected="true" textAlignment="CENTER" AnchorPane.leftAnchor="2.0">
+        </CheckBox>
+      </AnchorPane>
+      <AnchorPane>
+        <Label fx:id="lbl" text="" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0"/>
+      </AnchorPane>
+    </GridPane>
+    <GridPane GridPane.columnIndex="1">
+      <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="20.0" prefWidth="20.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      </columnConstraints>
+      <rowConstraints>
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      </rowConstraints>
+      <AnchorPane GridPane.columnIndex="1">
+        <CheckBox fx:id="chk2" contentDisplay="RIGHT" layoutX="-1.0" layoutY="7.0" mnemonicParsing="false"
+                  selected="true" textAlignment="CENTER" AnchorPane.leftAnchor="2.0"/>
+      </AnchorPane>
+    </GridPane>
+    <GridPane GridPane.columnIndex="2">
+      <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="20.0" prefWidth="20.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      </columnConstraints>
+      <rowConstraints>
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      </rowConstraints>
+      <AnchorPane GridPane.columnIndex="1">
+        <CheckBox fx:id="chk3" contentDisplay="RIGHT" layoutX="-1.0" layoutY="7.0" mnemonicParsing="false"
+                  selected="true" textAlignment="CENTER" AnchorPane.leftAnchor="2.0"/>
+      </AnchorPane>
+    </GridPane>
+    <GridPane GridPane.columnIndex="3">
+      <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="20.0" minWidth="20.0" prefWidth="20.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      </columnConstraints>
+      <rowConstraints>
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      </rowConstraints>
+      <AnchorPane GridPane.columnIndex="1">
+        <CheckBox fx:id="chk4" contentDisplay="RIGHT" layoutX="-1.0" layoutY="7.0" mnemonicParsing="false"
+                  selected="true" textAlignment="CENTER" AnchorPane.leftAnchor="2.0"/>
+      </AnchorPane>
+    </GridPane>
+    <AnchorPane GridPane.rowIndex="1">
+      <TextArea fx:id="ta1" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <TextArea fx:id="ta2" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
+      <TextArea fx:id="ta3" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
+      <TextArea fx:id="ta4" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+  </GridPane>
 </AnchorPane>

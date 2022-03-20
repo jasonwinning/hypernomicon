@@ -28,117 +28,112 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="297.0" minHeight="297.0" minWidth="550.0" prefHeight="297.0" prefWidth="764.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.FileDlgCtrlr">
-   <children>
-      <GridPane layoutX="22.0" layoutY="348.0" prefHeight="220.0" prefWidth="724.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="616.0" />
-          <ColumnConstraints hgrow="NEVER" maxWidth="140.0" minWidth="140.0" prefWidth="140.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0">
-               <children>
-                  <TextField fx:id="tfCurrentPath" layoutX="-246.0" prefHeight="22.0" prefWidth="599.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-               <children>
-                  <Button mnemonicParsing="false" onAction="#btnLaunchClick" prefHeight="22.0" text="Launch" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0" />
-                  <Button fx:id="btnBrowseOld" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="26.0" text="..." AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-               <children>
-                  <Label layoutX="10.0" layoutY="2.0" text="File current location" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-               <children>
-                  <TextField fx:id="tfRecordName" layoutX="-223.0" layoutY="-1.0" prefHeight="22.0" prefWidth="599.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-               <children>
-                  <Button layoutX="23.0" mnemonicParsing="false" onAction="#btnUseFileClick" prefHeight="22.0" text="Use file name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-               <children>
-                  <Label fx:id="lblName" layoutX="-37.0" layoutY="-1.0" text="This will be the record name" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-               <children>
-                  <TextField fx:id="tfFileName" layoutX="-264.0" layoutY="-14.0" prefHeight="22.0" prefWidth="599.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-               <children>
-                  <Button fx:id="btnUseRecord" layoutX="1.0" mnemonicParsing="false" onAction="#btnUseRecordClick" prefHeight="22.0" text="Use record name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
-               <children>
-                  <Label layoutX="-10.0" layoutY="7.0" text="File name will be changed to this" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
-               <children>
-                  <ComboBox fx:id="cbType" layoutX="11.0" layoutY="1.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">
-               <children>
-                  <TextField fx:id="tfNewPath" layoutX="-253.0" layoutY="2.0" prefHeight="22.0" prefWidth="599.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
-               <children>
-                  <Button layoutY="2.0" mnemonicParsing="false" onAction="#btnExploreClick" prefHeight="22.0" text="Explore" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0" />
-                  <Button layoutX="66.0" layoutY="3.0" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false" onAction="#btnBrowseNewClick" prefHeight="22.0" prefWidth="26.0" text="..." AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9">
-               <children>
-                  <Label layoutX="-24.0" layoutY="7.0" text="File will be copied or moved to this location" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10">
-               <children>
-                  <RadioButton fx:id="rbMove" layoutX="4.0" layoutY="5.0" mnemonicParsing="false" selected="true" text="Move" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="0.0">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="group" />
-                     </toggleGroup></RadioButton>
-                  <RadioButton fx:id="rbCopy" layoutX="57.0" mnemonicParsing="false" text="Copy" toggleGroup="$group" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="57.0" />
-                  <RadioButton fx:id="rbNeither" layoutX="110.0" mnemonicParsing="false" text="Use current location" toggleGroup="$group" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="114.0" />
-                  <CheckBox fx:id="chkDontChangeFilename" layoutX="277.0" layoutY="5.0" mnemonicParsing="false" text="Don't change file name" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="277.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
-               <children>
-                  <Button fx:id="btnOk" layoutX="16.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" text="OK" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="72.0" AnchorPane.topAnchor="0.0" />
-                  <Button fx:id="btnCancel" layoutX="76.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="22.0" text="Cancel" AnchorPane.leftAnchor="72.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
-               <children>
-                  <Label layoutX="19.0" layoutY="5.0" text="File type" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-         </children>
-      </GridPane>
-   </children>
+<AnchorPane maxHeight="297.0" minHeight="297.0" minWidth="550.0" prefHeight="297.0" prefWidth="764.0"
+            xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.FileDlgCtrlr">
+  <GridPane layoutX="22.0" layoutY="348.0" prefHeight="220.0" prefWidth="724.0" AnchorPane.bottomAnchor="4.0"
+            AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0">
+    <columnConstraints>
+      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="616.0"/>
+      <ColumnConstraints hgrow="NEVER" maxWidth="140.0" minWidth="140.0" prefWidth="140.0"/>
+    </columnConstraints>
+    <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0">
+      <TextField fx:id="tfCurrentPath" layoutX="-246.0" prefHeight="22.0" prefWidth="599.0"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+      <Button mnemonicParsing="false" onAction="#btnLaunchClick" prefHeight="22.0" text="Launch"
+              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0"/>
+      <Button fx:id="btnBrowseOld" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false" prefHeight="22.0"
+              prefWidth="26.0" text="..." AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+      <Label layoutX="10.0" layoutY="2.0" text="File current location" AnchorPane.leftAnchor="0.0"
+             AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+      <TextField fx:id="tfRecordName" layoutX="-223.0" layoutY="-1.0" prefHeight="22.0" prefWidth="599.0"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+      <Button layoutX="23.0" mnemonicParsing="false" onAction="#btnUseFileClick" prefHeight="22.0"
+              text="Use file name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+      <Label fx:id="lblName" layoutX="-37.0" layoutY="-1.0" text="This will be the record name"
+             AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+      <TextField fx:id="tfFileName" layoutX="-264.0" layoutY="-14.0" prefHeight="22.0" prefWidth="599.0"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+      <Button fx:id="btnUseRecord" layoutX="1.0" mnemonicParsing="false" onAction="#btnUseRecordClick"
+              prefHeight="22.0" text="Use record name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
+      <Label layoutX="-10.0" layoutY="7.0" text="File name will be changed to this" AnchorPane.leftAnchor="0.0"
+             AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
+      <ComboBox fx:id="cbType" layoutX="11.0" layoutY="1.0" prefHeight="22.0" prefWidth="150.0"
+                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">
+      <TextField fx:id="tfNewPath" layoutX="-253.0" layoutY="2.0" prefHeight="22.0" prefWidth="599.0"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+      <Button layoutY="2.0" mnemonicParsing="false" onAction="#btnExploreClick" prefHeight="22.0" text="Explore"
+              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0"/>
+      <Button layoutX="66.0" layoutY="3.0" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false"
+              onAction="#btnBrowseNewClick" prefHeight="22.0" prefWidth="26.0" text="..."
+              AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9">
+      <Label layoutX="-24.0" layoutY="7.0" text="File will be copied or moved to this location"
+             AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10">
+      <RadioButton fx:id="rbMove" layoutX="4.0" layoutY="5.0" mnemonicParsing="false" selected="true" text="Move"
+                   AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="0.0">
+        <toggleGroup>
+          <ToggleGroup fx:id="group"/>
+        </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="rbCopy" layoutX="57.0" mnemonicParsing="false" text="Copy" toggleGroup="$group"
+                   AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="57.0"/>
+      <RadioButton fx:id="rbNeither" layoutX="110.0" mnemonicParsing="false" text="Use current location"
+                   toggleGroup="$group" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="114.0"/>
+      <CheckBox fx:id="chkDontChangeFilename" layoutX="277.0" layoutY="5.0" mnemonicParsing="false"
+                text="Don't change file name" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="277.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
+      <Button fx:id="btnOk" layoutX="16.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnOkClick"
+              prefHeight="22.0" text="OK" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="72.0"
+              AnchorPane.topAnchor="0.0"/>
+      <Button fx:id="btnCancel" layoutX="76.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnCancelClick"
+              prefHeight="22.0" text="Cancel" AnchorPane.leftAnchor="72.0" AnchorPane.rightAnchor="0.0"
+              AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
+      <Label layoutX="19.0" layoutY="5.0" text="File type" AnchorPane.leftAnchor="0.0"
+             AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+  </GridPane>
 </AnchorPane>

@@ -22,6 +22,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 
 import java.io.IOException;
 import java.nio.file.DirectoryIteratorException;
@@ -91,7 +92,7 @@ public class FileTable extends DragNDropContainer<FileRow>
       if (this == obj) return true;
       if (obj == null) return false;
       if (getClass() != obj.getClass()) return false;
-      if (sortVal.getClass() != FileCellValue.class.cast(obj).sortVal.getClass()) return false;
+      if (sortVal.getClass() != ((FileCellValue<Comp_T>) obj).sortVal.getClass()) return false;
 
       FileCellValue<Comp_T> other = (FileCellValue<Comp_T>)obj;
       return sortVal.equals(other.sortVal);
@@ -112,7 +113,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   private boolean refreshing = false;
 
-  @SuppressWarnings("unchecked") FileTable(TableView<FileRow> fileTV, String prefID, FileManager dlg)
+  @SuppressWarnings("unchecked") FileTable(TableView<FileRow> fileTV, FileManager dlg)
   {
     super(fileTV);
 
@@ -120,8 +121,7 @@ public class FileTable extends DragNDropContainer<FileRow>
     this.fileTV = fileTV;
     rows = FXCollections.observableArrayList();
 
-    if (prefID.length() > 0)
-      HyperTable.registerTable(fileTV, prefID, dlg);
+    HyperTable.registerTable(fileTV, PREF_KEY_HT_MGR_FILES, dlg);
 
     fileTV.setItems(rows);
     fileTV.setPlaceholder(new Text("This folder is empty."));
@@ -256,7 +256,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   void startDragFromFolderTree(FileRow fileRow)
   {
-    draggingRows = List.of(new MarkedRowInfo(fileRow, false));
+    draggingRows = List.of(new MarkedRowInfo(fileRow));
   }
 
 //---------------------------------------------------------------------------

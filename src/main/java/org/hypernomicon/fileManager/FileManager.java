@@ -317,7 +317,7 @@ public class FileManager extends HyperDlg
 
   private void initContainers()
   {
-    fileTable = new FileTable(fileTV, PREF_KEY_HT_MGR_FILES, this);
+    fileTable = new FileTable(fileTV, this);
     folderTree = new FolderTreeWrapper(treeView, fileTable);
 
     folderTree.getTreeModel().addParentChildRelation(rtParentFolderOfFolder, true);
@@ -925,14 +925,13 @@ public class FileManager extends HyperDlg
 
   static class MarkedRowInfo
   {
-    MarkedRowInfo(FileRow row, boolean related)
+    MarkedRowInfo(FileRow row)
     {
       this.row = row;
-      this.related = related;
     }
 
     final FileRow row;
-    private boolean related;
+    private boolean related = false;
 
     public boolean isRelated() { return related; }
   }
@@ -945,18 +944,18 @@ public class FileManager extends HyperDlg
     List<FileRow> rowList = fileTV.getSelectionModel().getSelectedItems();
 
     if (collEmpty(rowList) == false)
-      return rowList.stream().map(fileRow -> new MarkedRowInfo(fileRow, false)).collect(Collectors.toList());
+      return rowList.stream().map(MarkedRowInfo::new).collect(Collectors.toList());
 
     if (srcRow != null)
-      return List.of(new MarkedRowInfo(srcRow, false));
+      return List.of(new MarkedRowInfo(srcRow));
 
     FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
 
     if (fileRow != null)
-      return List.of(new MarkedRowInfo(fileRow, false));
+      return List.of(new MarkedRowInfo(fileRow));
 
     if (curFolder != null)
-      return List.of(new MarkedRowInfo(getFolderRow(), false));
+      return List.of(new MarkedRowInfo(getFolderRow()));
 
     return Collections.emptyList();
   }
@@ -1192,7 +1191,7 @@ public class FileManager extends HyperDlg
       return;
     }
 
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Rename " + noun + ": " + fileRow.getFilePath(), ntFolder, fileRow.getFileName());
+    RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Rename " + noun + ": " + fileRow.getFilePath(), isDir ? ntFolder : ntFile, fileRow.getFileName());
 
     if (dlg.showModal() == false) return;
 

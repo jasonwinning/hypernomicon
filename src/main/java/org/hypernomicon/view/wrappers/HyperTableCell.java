@@ -43,7 +43,7 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
   private int id;
   private final String text;
   private final RecordType type;
-  private CellSortMethod sortMethod = smStandard;
+  private CellSortMethod sortMethod;
 
   public int getID()          { return id; }
   public String getText()     { return text; }

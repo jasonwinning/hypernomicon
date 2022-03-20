@@ -21,15 +21,20 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane layoutX="-1.0" maxHeight="116.0" minHeight="116.0" prefHeight="116.0" prefWidth="838.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr">
-   <children>
-      <Button fx:id="btnNew" layoutX="12.0" layoutY="11.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="196.0" text="Choose From File System..." AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="11.0" />
-      <Button fx:id="btnExisting" layoutX="12.0" layoutY="45.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="196.0" text="Use Existing Misc. File Record:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="45.0" />
-      <ComboBox fx:id="cbExisting" editable="true" layoutX="215.0" layoutY="45.0" prefHeight="25.0" prefWidth="611.0" AnchorPane.leftAnchor="215.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="45.0" />
-      <BorderPane layoutX="12.0" layoutY="79.0" prefHeight="25.0" prefWidth="814.0" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="79.0">
-         <center>
-            <Button cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="90.0" text="Cancel" BorderPane.alignment="CENTER" />
-         </center>
-      </BorderPane>
-   </children>
+<AnchorPane layoutX="-1.0" maxHeight="116.0" minHeight="116.0" prefHeight="116.0" prefWidth="838.0"
+            xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr">
+  <Button fx:id="btnNew" layoutX="12.0" layoutY="11.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="196.0"
+          text="Choose From File System..." AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="11.0"/>
+  <Button fx:id="btnExisting" layoutX="12.0" layoutY="45.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="196.0"
+          text="Use Existing Misc. File Record:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="45.0"/>
+  <ComboBox fx:id="cbExisting" editable="true" layoutX="215.0" layoutY="45.0" prefHeight="25.0" prefWidth="611.0"
+            AnchorPane.leftAnchor="215.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="45.0"/>
+  <BorderPane layoutX="12.0" layoutY="79.0" prefHeight="25.0" prefWidth="814.0" AnchorPane.bottomAnchor="7.0"
+              AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="79.0">
+    <center>
+      <Button cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="90.0" text="Cancel"
+              BorderPane.alignment="CENTER"/>
+    </center>
+  </BorderPane>
 </AnchorPane>

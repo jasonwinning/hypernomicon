@@ -115,11 +115,8 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
         if (strToItemType == null) initMap();
         DisplayItemType itemType = strToItemType.get(nodeText);
 
-        switch (itemType)
-        {
-          case diRecord: displayItems.add(new DisplayItem(objID, objType)); break;
-          default:       displayItems.add(new DisplayItem(itemType));       break;
-        }
+        displayItems.add(itemType == diRecord ? new DisplayItem(objID, objType) : new DisplayItem(itemType));
+
         return;
 
       case tagKeyWork :
@@ -134,6 +131,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
             idSet.add(objID);
           }
         }
+
         return;
 
       default :

@@ -457,8 +457,8 @@ public class PDFJSWrapper
       {
         String pathStr = request.getURL();
 
-        while (pathStr.matches(".*file:\\/[^/].*"))
-          pathStr = pathStr.replaceFirst("file:\\/", "file:///");
+        while (pathStr.matches(".*file:/[^/].*"))
+          pathStr = pathStr.replaceFirst("file:/", "file:///");
 
         path = new URL(pathStr);
       }

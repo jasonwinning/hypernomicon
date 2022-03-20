@@ -445,7 +445,7 @@ public class FileDlgCtrlr extends HyperDlg
     else
     {
       if (recordType == hdtWorkFile)
-        ((HDT_WorkFile) curFileRecord).setName(tfRecordName.getText());
+        curFileRecord.setName(tfRecordName.getText());
 
       HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
       if (folder == null)

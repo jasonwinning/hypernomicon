@@ -100,7 +100,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   public abstract String entryFileNode();
   public abstract String collectionFileNode();
 
-  public final Set<BibCollection_T> getColls()           { return new LinkedHashSet<>(keyToColl.values()); }
   public final Set<BibEntry_T> getTrash()                { return new LinkedHashSet<>(keyToTrashEntry.values()); }
   public final Set<BibEntry_T> getAllEntries()           { return new LinkedHashSet<>(keyToAllEntry.values()); }
   public final Map<String, BibCollection> getKeyToColl() { return Collections.unmodifiableMap(keyToColl); }

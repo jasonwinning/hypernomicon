@@ -660,9 +660,9 @@ public class PreviewWrapper
       ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
 
     if (workFile == null)
-      contentsWindow.update(curPrevFile.filePath, pageNum, true);
+      contentsWindow.update(curPrevFile.filePath, pageNum);
     else
-      contentsWindow.update(workFile, pageNum, true);
+      contentsWindow.update(workFile, pageNum);
 
     return true;
   }

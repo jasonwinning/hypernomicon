@@ -453,8 +453,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
             onlineLibVersion = item.getVersion();
         });
 
-        for (int ndx = 0; ndx < uploadCount; ndx++)
-          uploadQueue.remove(0);
+        uploadQueue.subList(0, uploadCount).clear();
       }
     }
 

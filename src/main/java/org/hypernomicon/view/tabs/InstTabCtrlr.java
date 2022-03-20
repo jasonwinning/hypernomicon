@@ -361,7 +361,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         HDT_Institution subInst = subInstID < 1 ? db.createNewBlankRecord(hdtInstitution) : db.institutions.getByID(subInstID);
 
         subInst.setName(row.getText(0));
-        subInst.parentInst.setID(curInst.getID());
+        subInst.parentInst.set(curInst);
         subInst.instType.setID(row.getID(1));
         subInst.setURL(row.getText(3));
 
@@ -375,10 +375,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     if (locationChanged == false) return true;
 
     if (hasSubInstWithDifferentLocation(curInst, curInst))
-      if (!confirmDialog("One or more sub-institutions have a different location than the present one. Should they also be updated?"))
-        return true;
-
-    curInst.overwriteSubInstLocations();
+      if (confirmDialog("One or more sub-institutions have a different location than the present one. Should they also be updated?"))
+        curInst.overwriteSubInstLocations();
 
     return true;
   }

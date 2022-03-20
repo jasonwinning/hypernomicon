@@ -35,11 +35,13 @@ import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
-public class SimpleRecordTypes
+public final class SimpleRecordTypes
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  private SimpleRecordTypes() { throw new UnsupportedOperationException(); }
 
   public interface HDT_RecordWithDescription extends HDT_Record { MainText getDesc(); }
 

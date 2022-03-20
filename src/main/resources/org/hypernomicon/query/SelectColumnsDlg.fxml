@@ -21,21 +21,19 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefWidth="349.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.SelectColumnsDlgCtrlr">
-   <children>
-      <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="130.0" layoutY="142.0" prefViewportHeight="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <content>
-            <AnchorPane fx:id="innerPane">
-               <children>
-                  <CheckBox fx:id="chkSelectAll" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Select All" />
-                  <CheckBox fx:id="chkSelectNone" layoutX="14.0" layoutY="37.0" mnemonicParsing="false" text="Select None" />
-                  <CheckBox fx:id="chkFirstType" layoutX="14.0" layoutY="75.0" mnemonicParsing="false" text="Person fields" />
-                  <CheckBox fx:id="chkFirstField" layoutX="36.0" layoutY="98.0" mnemonicParsing="false" text="Name" />
-                  <CheckBox fx:id="chkSecondType" layoutX="14.0" layoutY="130.0" mnemonicParsing="false" text="Work fields" />
-               </children>
-            </AnchorPane>
-         </content>
-      </ScrollPane>
-      <Button fx:id="btnOk" defaultButton="true" mnemonicParsing="false" prefHeight="22.0" prefWidth="48.0" text="OK" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="14.0" />
-   </children>
+<AnchorPane prefWidth="349.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.SelectColumnsDlgCtrlr">
+  <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="130.0" layoutY="142.0"
+              prefViewportHeight="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <AnchorPane fx:id="innerPane">
+      <CheckBox fx:id="chkSelectAll" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Select All"/>
+      <CheckBox fx:id="chkSelectNone" layoutX="14.0" layoutY="37.0" mnemonicParsing="false" text="Select None"/>
+      <CheckBox fx:id="chkFirstType" layoutX="14.0" layoutY="75.0" mnemonicParsing="false" text="Person fields"/>
+      <CheckBox fx:id="chkFirstField" layoutX="36.0" layoutY="98.0" mnemonicParsing="false" text="Name"/>
+      <CheckBox fx:id="chkSecondType" layoutX="14.0" layoutY="130.0" mnemonicParsing="false" text="Work fields"/>
+    </AnchorPane>
+  </ScrollPane>
+  <Button fx:id="btnOk" defaultButton="true" mnemonicParsing="false" prefHeight="22.0" prefWidth="48.0" text="OK"
+          AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="14.0"/>
 </AnchorPane>

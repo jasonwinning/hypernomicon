@@ -66,7 +66,6 @@ public final class Const
     PREF_KEY_PDF_READER = "pdfReader",
     PREF_KEY_PDF_READER_COMMANDS = "pdfReaderCommands",
     PREF_KEY_PDF_READER_COMMAND_TYPE = "pdfReaderCommandType",
-    PREF_KEY_DO_INTERNET_CHECK = "doInternetCheck",
 
     PREF_KEY_XML_FOLDER_ID = "xmlFolderID",
     PREF_KEY_PICTURES_FOLDER_ID = "picturesFolderID",
@@ -83,7 +82,6 @@ public final class Const
     PREF_KEY_PERSON_ID = "personID",
     PREF_KEY_DEBATE_ID = "debateID",
     PREF_KEY_INSTITUTION_ID = "institutionID",
-    PREF_KEY_INVESTIGATION_ID = "investigationID",
     PREF_KEY_POSITION_ID = "positionID",
     PREF_KEY_ARGUMENT_ID = "argumentID",
     PREF_KEY_TERM_ID = "termID",

@@ -24,44 +24,42 @@
 <MasterDetailPane fx:id="spMain" dividerPosition="0.14361702127659576" detailSide="TOP" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.QueryViewCtrlr">
    <detailNode>
      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-          <children>
-             <TableView fx:id="tvFields" editable="true" layoutX="466.0" layoutY="24.0" prefHeight="101.0" prefWidth="1057.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <columns>
-                 <TableColumn prefWidth="96.0" text="Query Type" />
-                 <TableColumn prefWidth="212.0" text="Query" />
-                   <TableColumn prefWidth="220.0" text="Operand 1" />
-                   <TableColumn prefWidth="225.0" text="Operand 2" />
-                   <TableColumn prefWidth="209.0" text="Operand 3" />
-                   <TableColumn prefWidth="105.0" text="Logic" />
-               </columns>
-             </TableView>
-          </children>
-       </AnchorPane>
+       <TableView fx:id="tvFields" editable="true" layoutX="466.0" layoutY="24.0" prefHeight="101.0" prefWidth="1057.0"
+                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                  AnchorPane.topAnchor="0.0">
+         <columns>
+           <TableColumn prefWidth="96.0" text="Query Type"/>
+           <TableColumn prefWidth="212.0" text="Query"/>
+           <TableColumn prefWidth="220.0" text="Operand 1"/>
+           <TableColumn prefWidth="225.0" text="Operand 2"/>
+           <TableColumn prefWidth="209.0" text="Operand 3"/>
+           <TableColumn prefWidth="105.0" text="Logic"/>
+         </columns>
+       </TableView>
+     </AnchorPane>
      </detailNode>
      <masterNode>
-     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-          <children>
-             <MasterDetailPane fx:id="spLower" showDetailNode="false" dividerPosition="0.55" layoutX="476.0" layoutY="102.0" detailSide="BOTTOM" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <masterNode>
-                 <AnchorPane fx:id="apResults" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                      <children>
-                         <TableView fx:id="tvResults" layoutX="455.0" layoutY="4.0" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <columns>
-                             <TableColumn prefWidth="75.0" text="ID" />
-                             <TableColumn prefWidth="75.0" text="Name" />
-                           </columns>
-                         </TableView>
-                      </children>
-                   </AnchorPane>
-                 </masterNode>
-               <detailNode>
-                 <AnchorPane fx:id="apDescription" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                      <children>
-                      </children>
-                   </AnchorPane>
-               </detailNode>
-             </MasterDetailPane>
-          </children>
+       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+         <MasterDetailPane fx:id="spLower" showDetailNode="false" dividerPosition="0.55" layoutX="476.0" layoutY="102.0"
+                           detailSide="BOTTOM" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0"
+                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+           <masterNode>
+             <AnchorPane fx:id="apResults" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+               <TableView fx:id="tvResults" layoutX="455.0" layoutY="4.0" prefHeight="200.0" prefWidth="200.0"
+                          tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                 <columns>
+                   <TableColumn prefWidth="75.0" text="ID"/>
+                   <TableColumn prefWidth="75.0" text="Name"/>
+                 </columns>
+               </TableView>
+             </AnchorPane>
+           </masterNode>
+           <detailNode>
+             <AnchorPane fx:id="apDescription" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+             </AnchorPane>
+           </detailNode>
+         </MasterDetailPane>
        </AnchorPane>
    </masterNode>
 </MasterDetailPane>

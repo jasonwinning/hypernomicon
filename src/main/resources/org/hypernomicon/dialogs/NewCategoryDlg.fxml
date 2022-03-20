@@ -25,81 +25,74 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="119.0" minHeight="119.0" prefHeight="119.0" prefWidth="762.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewCategoryDlgCtrlr">
-   <children>
-      <GridPane layoutX="134.0" layoutY="39.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
-          <ColumnConstraints hgrow="SOMETIMES" percentWidth="17.0" />
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <AnchorPane>
-               <children>
-                  <Label layoutY="7.0" text="Record Type:" AnchorPane.leftAnchor="4.0">
-                  </Label>
-                  <ComboBox fx:id="cbRecordType" layoutX="74.0" layoutY="4.0" prefHeight="22.0" prefWidth="172.0" AnchorPane.leftAnchor="82.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.rowIndex="1">
-               <children>
-                  <Label layoutY="7.0" text="Compare:" AnchorPane.leftAnchor="4.0" GridPane.rowIndex="1">
-                  </Label>
-                  <ComboBox fx:id="cbCompare" layoutX="70.0" layoutY="3.0" prefWidth="150.0" AnchorPane.leftAnchor="82.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
-               <children>
-                  <Label layoutY="7.0" text="ID:" AnchorPane.leftAnchor="4.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                  </Label>
-                  <TextField fx:id="tfCompareID" editable="false" layoutX="29.0" layoutY="5.0" prefHeight="22.0" prefWidth="225.0" AnchorPane.leftAnchor="29.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
-               <children>
-                  <Label layoutY="9.0" text="Sort Key:" AnchorPane.leftAnchor="4.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                  </Label>
-                  <TextField fx:id="tfCompareKey" editable="false" layoutX="60.0" layoutY="5.0" prefHeight="22.0" prefWidth="196.0" AnchorPane.leftAnchor="58.0" AnchorPane.rightAnchor="4.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.rowIndex="2">
-               <children>
-                  <Label layoutY="7.0" text="New Name:" AnchorPane.leftAnchor="4.0" GridPane.rowIndex="2">
-                  </Label>
-                  <TextField fx:id="tfNewName" layoutX="70.0" layoutY="5.0" AnchorPane.leftAnchor="82.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="2">
-               <children>
-                  <Label layoutY="9.0" text="ID:" AnchorPane.leftAnchor="4.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                  </Label>
-                  <TextField fx:id="tfNewID" editable="false" layoutX="35.0" layoutY="5.0" AnchorPane.leftAnchor="29.0" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="2">
-               <children>
-                  <Label layoutY="7.0" text="Sort Key:" AnchorPane.leftAnchor="4.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                  </Label>
-                  <TextField fx:id="tfNewKey" layoutX="60.0" layoutY="3.0" AnchorPane.leftAnchor="58.0" AnchorPane.rightAnchor="4.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-               <children>
-                  <Button layoutY="3.0" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="80.0" text="OK" AnchorPane.rightAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3">
-               <children>
-                  <Button layoutY="3.0" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="80.0" text="Cancel" AnchorPane.leftAnchor="3.0" />
-               </children>
-            </AnchorPane>
-         </children>
-      </GridPane>
-   </children>
+<AnchorPane maxHeight="119.0" minHeight="119.0" prefHeight="119.0" prefWidth="762.0" minWidth="300.0"
+            xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.NewCategoryDlgCtrlr">
+  <GridPane layoutX="134.0" layoutY="39.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" percentWidth="17.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.0"/>
+    </columnConstraints>
+    <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <AnchorPane>
+      <Label layoutY="7.0" text="Record Type:" AnchorPane.leftAnchor="4.0">
+      </Label>
+      <ComboBox fx:id="cbRecordType" layoutX="74.0" layoutY="4.0" prefHeight="22.0" prefWidth="172.0"
+                AnchorPane.leftAnchor="82.0" AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.rowIndex="1">
+      <Label layoutY="7.0" text="Compare:" AnchorPane.leftAnchor="4.0" GridPane.rowIndex="1">
+      </Label>
+      <ComboBox fx:id="cbCompare" layoutX="70.0" layoutY="3.0" prefWidth="150.0" AnchorPane.leftAnchor="82.0"
+                AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <Label layoutY="7.0" text="ID:" AnchorPane.leftAnchor="4.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+      </Label>
+      <TextField fx:id="tfCompareID" editable="false" layoutX="29.0" layoutY="5.0" prefHeight="22.0"
+                 prefWidth="225.0" AnchorPane.leftAnchor="29.0" AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
+      <Label layoutY="9.0" text="Sort Key:" AnchorPane.leftAnchor="4.0" GridPane.columnIndex="2"
+             GridPane.rowIndex="1">
+      </Label>
+      <TextField fx:id="tfCompareKey" editable="false" layoutX="60.0" layoutY="5.0" prefHeight="22.0"
+                 prefWidth="196.0" AnchorPane.leftAnchor="58.0" AnchorPane.rightAnchor="4.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.rowIndex="2">
+      <Label layoutY="7.0" text="New Name:" AnchorPane.leftAnchor="4.0" GridPane.rowIndex="2">
+      </Label>
+      <TextField fx:id="tfNewName" layoutX="70.0" layoutY="5.0" AnchorPane.leftAnchor="82.0"
+                 AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="2">
+      <Label layoutY="9.0" text="ID:" AnchorPane.leftAnchor="4.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+      </Label>
+      <TextField fx:id="tfNewID" editable="false" layoutX="35.0" layoutY="5.0" AnchorPane.leftAnchor="29.0"
+                 AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="2">
+      <Label layoutY="7.0" text="Sort Key:" AnchorPane.leftAnchor="4.0" GridPane.columnIndex="2"
+             GridPane.rowIndex="2">
+      </Label>
+      <TextField fx:id="tfNewKey" layoutX="60.0" layoutY="3.0" AnchorPane.leftAnchor="58.0"
+                 AnchorPane.rightAnchor="4.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+      <Button layoutY="3.0" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnOkClick"
+              prefWidth="80.0" text="OK" AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2"
+                GridPane.rowIndex="3">
+      <Button layoutY="3.0" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnCancelClick"
+              prefWidth="80.0" text="Cancel" AnchorPane.leftAnchor="3.0"/>
+    </AnchorPane>
+  </GridPane>
 </AnchorPane>

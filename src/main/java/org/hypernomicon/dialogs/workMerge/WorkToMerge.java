@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
@@ -54,8 +53,6 @@ public class WorkToMerge
 
   public List<ObjectGroup> getAuthorGroups(HDT_Work work) { return htAuthors.getAuthorGroups(work, 0, -1, 2, 3); }
   public HDT_WorkType getWorkType()                       { return hcbType.selectedRecord(); }
-  public BibData getBibData()                             { return bibData; }
-  public boolean hasField(BibFieldEnum bibFieldEnum)      { return (bibData != null) && bibData.fieldNotEmpty(bibFieldEnum); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

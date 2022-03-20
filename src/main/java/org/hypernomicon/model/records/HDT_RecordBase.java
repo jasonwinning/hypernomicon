@@ -356,7 +356,7 @@ public abstract class HDT_RecordBase implements HDT_Record
       newState.viewDate     = getViewDate();
     }
 
-    newState.items.forEach((tag, offlineItem) -> HDI_OnlineBase.class.cast(items.get(tag)).getToOfflineValue(offlineItem, tag));
+    newState.items.forEach((tag, offlineItem) -> ((HDI_OnlineBase<HDI_OfflineBase>) items.get(tag)).getToOfflineValue(offlineItem, tag));
 
     return newState;
   }

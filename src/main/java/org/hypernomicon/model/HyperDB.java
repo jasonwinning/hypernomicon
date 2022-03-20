@@ -465,7 +465,7 @@ public final class HyperDB
 
   private void finalizeXMLFile(List<StringBuilder> xmlList, List<String> filenameList, String fileName)
   {
-    xmlList.get(xmlList.size() - 1).append(System.lineSeparator() + "</records>");
+    xmlList.get(xmlList.size() - 1).append(System.lineSeparator()).append("</records>");
     filenameList.add(fileName);
     xmlList.add(new StringBuilder());
   }
@@ -479,12 +479,12 @@ public final class HyperDB
 
     if (xml.length() == 0)
     {
-      xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + System.lineSeparator() + System.lineSeparator())
-         .append("<records version=\"" + getVersionNumberSavingAs(appVersionToMaxRecordsXMLVersion) + "\" xmlns=\"org.hypernomicon\"")
+      xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append(System.lineSeparator()).append(System.lineSeparator())
+         .append("<records version=\"").append(getVersionNumberSavingAs(appVersionToMaxRecordsXMLVersion)).append("\" xmlns=\"org.hypernomicon\"")
 
       //   .append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"org.hypernomicon http://hypernomicon.org/records.xsd\"")
 
-         .append(">" + System.lineSeparator() + System.lineSeparator());
+         .append(">").append(System.lineSeparator()).append(System.lineSeparator());
     }
 
     datasets.get(type).writeToXML(xml);
@@ -1595,16 +1595,12 @@ public final class HyperDB
 
           throw new HyperDataException("Too many nested elements in XML");
 
-        case XMLStreamConstants.END_ELEMENT :
-
-          notDone = false;
-          break;
-
         case XMLStreamConstants.CHARACTERS :
 
           nodeText.append(event.asCharacters().getData());
           break;
 
+        case XMLStreamConstants.END_ELEMENT  : // fall through
         case XMLStreamConstants.END_DOCUMENT :
 
           notDone = false;

@@ -40,8 +40,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
@@ -61,8 +59,6 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
   @FXML private TextField tfChar, tfCodePoint, tfHex, tfHTML, tfDesc;
   @FXML private CheckBox chkUseFont;
   @FXML private GridPane gp;
-  @FXML private TabPane tp;
-  @FXML private Tab tabGeneral;
 
   private CharacterGrid charGrid = null;
   private static SymbolPickerDlgCtrlr instance = null;

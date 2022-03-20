@@ -70,7 +70,6 @@ public final class Connector
   public MainText getMainText()              { return mainText; }
   public HDT_Hub getHub()                    { return link == null ? null : link.getHub(); }
   public HDT_RecordWithConnector getSpoke()  { return record; }
-  public String listName()                   { return record == null ? "" : record.listName(); }
   public static boolean isEmpty(Connector c) { return (c == null) || HDT_Record.isEmpty(c.getSpoke()); }
 
   @Override public int hashCode()            { return record == null ? 0 : (31 * record.hashCode()); }

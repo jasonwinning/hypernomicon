@@ -24,21 +24,17 @@
 <?import javafx.scene.web.WebView?>
 <?scenebuilder-stylesheet textarea.css?>
 
-<AnchorPane id="SpecialUI" maxHeight="300.0" maxWidth="738.0" minHeight="300.0" minWidth="738.0" prefHeight="300.0" prefWidth="738.0" styleClass="anchor-pane" stylesheets="@about.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.AboutDlgCtrlr">
-   <children>
-      <TabPane fx:id="tabPane" prefHeight="54.0" prefWidth="898.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <tabs>
-            <Tab fx:id="tabGeneral" closable="false" text="General" />
-            <Tab fx:id="tabContributors" closable="false" text="Contributors" />
-            <Tab fx:id="tabAcknowledgements" closable="false" text="Acknowledgements" />
-            <Tab closable="false" text="License" />
-         </tabs>
-      </TabPane>
-      <ImageView fitHeight="152.0" fitWidth="121.0" layoutX="50.0" layoutY="55.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="75.0">
-         <image>
-            <Image url="@../resources/images/logobig.png" />
-         </image>
-      </ImageView>
-      <WebView fx:id="webView" layoutX="182.0" layoutY="75.0" prefHeight="225.0" prefWidth="627.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="221.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="75.0" />
-   </children>
+<AnchorPane id="SpecialUI" maxHeight="300.0" maxWidth="738.0" minHeight="300.0" minWidth="738.0" prefHeight="300.0" prefWidth="738.0" styleClass="anchor-pane" stylesheets="@about.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.AboutDlgCtrlr">
+  <TabPane fx:id="tabPane" prefHeight="54.0" prefWidth="898.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+           AnchorPane.topAnchor="0.0">
+    <Tab fx:id="tabGeneral" closable="false" text="General"/>
+    <Tab fx:id="tabContributors" closable="false" text="Contributors"/>
+    <Tab fx:id="tabAcknowledgements" closable="false" text="Acknowledgements"/>
+    <Tab closable="false" text="License"/>
+  </TabPane>
+  <ImageView fitHeight="152.0" fitWidth="121.0" layoutX="50.0" layoutY="55.0" pickOnBounds="true" preserveRatio="true"
+             AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="75.0">
+    <Image url="@../resources/images/logobig.png"/>
+  </ImageView>
+  <WebView fx:id="webView" layoutX="182.0" layoutY="75.0" prefHeight="225.0" prefWidth="627.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="221.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="75.0" />
 </AnchorPane>

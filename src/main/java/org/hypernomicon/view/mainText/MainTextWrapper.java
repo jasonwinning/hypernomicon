@@ -383,7 +383,7 @@ public final class MainTextWrapper
     if (mainTextRecord.getType() == hdtWorkLabel) return (HDT_WorkLabel) mainTextRecord;
     if (mainTextRecord.getType() != hdtHub)       return null;
 
-    return ((HDT_Hub) mainTextRecord).getLink().getLabel();
+    return mainTextRecord.getLink().getLabel();
   }
 
 //---------------------------------------------------------------------------

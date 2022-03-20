@@ -24,18 +24,31 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="346.0" prefWidth="811.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.ImportBibEntryDlgCtrlr">
-   <children>
-      <Label layoutX="6.0" layoutY="14.0" text="Import file:" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="14.0" />
-      <TextField fx:id="tfFile" editable="false" layoutX="76.0" layoutY="10.0" prefHeight="25.0" prefWidth="687.0" AnchorPane.leftAnchor="79.0" AnchorPane.rightAnchor="45.0" AnchorPane.topAnchor="10.0" />
-      <Button fx:id="btnBrowse" layoutX="770.0" layoutY="10.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="27.0" text="..." AnchorPane.rightAnchor="11.0" AnchorPane.topAnchor="10.0" />
-      <Label layoutX="7.0" layoutY="42.0" text="Contents:" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="42.0" />
-      <TextArea fx:id="taContents" layoutX="76.0" layoutY="42.0" prefHeight="200.0" prefWidth="721.0" AnchorPane.bottomAnchor="104.0" AnchorPane.leftAnchor="79.0" AnchorPane.rightAnchor="11.0" AnchorPane.topAnchor="42.0" />
-      <Button fx:id="btnCreateNew" layoutX="9.0" layoutY="253.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="230.0" text="Create New Work Record" AnchorPane.bottomAnchor="68.0" AnchorPane.leftAnchor="9.0" />
-      <CheckBox fx:id="chkNewEntry" layoutX="247.0" layoutY="257.0" mnemonicParsing="false" selected="true" text="Create new Zotero entry (unless existing work is already assigned to one)" AnchorPane.bottomAnchor="72.0" AnchorPane.leftAnchor="247.0" />
-      <Button fx:id="btnExisting" layoutX="9.0" layoutY="285.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="230.0" text="Import Data Into Existing Work Record:" AnchorPane.bottomAnchor="36.0" AnchorPane.leftAnchor="9.0" />
-      <ComboBox fx:id="cbWork" layoutX="243.0" layoutY="285.0" prefHeight="25.0" prefWidth="558.0" AnchorPane.bottomAnchor="36.0" AnchorPane.leftAnchor="242.0" AnchorPane.rightAnchor="11.0" />
-      <CheckBox fx:id="chkDeleteFile" layoutX="9.0" layoutY="317.0" mnemonicParsing="false" text="Delete import file after import is complete" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="9.0" />
-      <Button fx:id="btnCancel" cancelButton="true" layoutX="727.0" layoutY="313.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="70.0" text="Cancel" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="11.0" />
-   </children>
+<AnchorPane prefHeight="346.0" prefWidth="811.0" minHeight="300.0" minWidth="300.0"
+            xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.ImportBibEntryDlgCtrlr">
+  <Label layoutX="6.0" layoutY="14.0" text="Import file:" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="14.0"/>
+  <TextField fx:id="tfFile" editable="false" layoutX="76.0" layoutY="10.0" prefHeight="25.0" prefWidth="687.0"
+             AnchorPane.leftAnchor="79.0" AnchorPane.rightAnchor="45.0" AnchorPane.topAnchor="10.0"/>
+  <Button fx:id="btnBrowse" layoutX="770.0" layoutY="10.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="27.0"
+          text="..." AnchorPane.rightAnchor="11.0" AnchorPane.topAnchor="10.0"/>
+  <Label layoutX="7.0" layoutY="42.0" text="Contents:" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="42.0"/>
+  <TextArea fx:id="taContents" layoutX="76.0" layoutY="42.0" prefHeight="200.0" prefWidth="721.0"
+            AnchorPane.bottomAnchor="104.0" AnchorPane.leftAnchor="79.0" AnchorPane.rightAnchor="11.0"
+            AnchorPane.topAnchor="42.0"/>
+  <Button fx:id="btnCreateNew" layoutX="9.0" layoutY="253.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="230.0"
+          text="Create New Work Record" AnchorPane.bottomAnchor="68.0" AnchorPane.leftAnchor="9.0"/>
+  <CheckBox fx:id="chkNewEntry" layoutX="247.0" layoutY="257.0" mnemonicParsing="false" selected="true"
+            text="Create new Zotero entry (unless existing work is already assigned to one)"
+            AnchorPane.bottomAnchor="72.0" AnchorPane.leftAnchor="247.0"/>
+  <Button fx:id="btnExisting" layoutX="9.0" layoutY="285.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="230.0"
+          text="Import Data Into Existing Work Record:" AnchorPane.bottomAnchor="36.0" AnchorPane.leftAnchor="9.0"/>
+  <ComboBox fx:id="cbWork" layoutX="243.0" layoutY="285.0" prefHeight="25.0" prefWidth="558.0"
+            AnchorPane.bottomAnchor="36.0" AnchorPane.leftAnchor="242.0" AnchorPane.rightAnchor="11.0"/>
+  <CheckBox fx:id="chkDeleteFile" layoutX="9.0" layoutY="317.0" mnemonicParsing="false"
+            text="Delete import file after import is complete" AnchorPane.bottomAnchor="12.0"
+            AnchorPane.leftAnchor="9.0"/>
+  <Button fx:id="btnCancel" cancelButton="true" layoutX="727.0" layoutY="313.0" mnemonicParsing="false"
+          onAction="#btnCancelClick" prefHeight="25.0" prefWidth="70.0" text="Cancel" AnchorPane.bottomAnchor="8.0"
+          AnchorPane.rightAnchor="11.0"/>
 </AnchorPane>

@@ -71,14 +71,6 @@ public final class FileDownloadUtility
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private int length()
-    {
-      return lengths.stream().reduce(0, Math::addExact);
-    }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
     public void saveToFile(FilePath saveFilePath) throws IOException
     {
       try (OutputStream os = Files.newOutputStream(saveFilePath.toPath()))
@@ -86,28 +78,6 @@ public final class FileDownloadUtility
         for (int bufferNdx = 0; bufferNdx < buffers.size(); bufferNdx++)
           os.write(buffers.get(bufferNdx), 0, lengths.get(bufferNdx));
       }
-    }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-    public void reposition(int pos)
-    {
-      int origPos = pos;
-
-      for (int bufferNdx = 0; bufferNdx < buffers.size(); bufferNdx++)
-      {
-        if (pos < lengths.get(bufferNdx))
-        {
-          curBufferNdx = bufferNdx;
-          curPosition = pos;
-          return;
-        }
-
-        pos = pos - lengths.get(bufferNdx);
-      }
-
-      throw new IndexOutOfBoundsException("Length = " + length() + "; index = " + origPos);
     }
 
   //---------------------------------------------------------------------------

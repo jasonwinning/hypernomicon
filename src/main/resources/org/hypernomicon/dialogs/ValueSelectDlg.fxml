@@ -23,21 +23,24 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="303.0" prefWidth="314.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.ValueSelectDlgCtrlr">
-   <children>
-      <ListView fx:id="listView" layoutX="57.0" layoutY="36.0" prefHeight="275.0" prefWidth="314.0" AnchorPane.bottomAnchor="28.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      <GridPane hgap="4.0" layoutX="35.0" layoutY="244.0" prefHeight="26.0" prefWidth="314.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Button fx:id="btnOK" defaultButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" text="OK" GridPane.halignment="RIGHT" />
-            <Button fx:id="btnCancel" cancelButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" text="Cancel" GridPane.columnIndex="1" />
-         </children>
-      </GridPane>
-   </children>
+<AnchorPane prefHeight="303.0" prefWidth="314.0" minHeight="300.0" minWidth="300.0"
+            xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.ValueSelectDlgCtrlr">
+  <ListView fx:id="listView" layoutX="57.0" layoutY="36.0" prefHeight="275.0" prefWidth="314.0"
+            AnchorPane.bottomAnchor="28.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+            AnchorPane.topAnchor="0.0"/>
+  <GridPane hgap="4.0" layoutX="35.0" layoutY="244.0" prefHeight="26.0" prefWidth="314.0"
+            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+    <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+    </columnConstraints>
+    <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <Button fx:id="btnOK" defaultButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick"
+            text="OK" GridPane.halignment="RIGHT"/>
+    <Button fx:id="btnCancel" cancelButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick"
+            text="Cancel" GridPane.columnIndex="1"/>
+  </GridPane>
 </AnchorPane>

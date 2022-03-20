@@ -587,7 +587,7 @@ public class PreviewWindow extends HyperDlg
 
       if (record.getType() == hdtWork)
       {
-        String recStr = ((HDT_Work) record).getCBText();
+        String recStr = record.getCBText();
         lblRecord.setText(recStr);
         setToolTip(lblRecord, recStr);
 
@@ -668,9 +668,9 @@ public class PreviewWindow extends HyperDlg
       workFile = (HDT_WorkFile) record;
 
     if (workFile == null)
-      contentsWindow.update(curWrapper().getFilePath(), pageNum, true);
+      contentsWindow.update(curWrapper().getFilePath(), pageNum);
     else
-      contentsWindow.update(workFile, pageNum, true);
+      contentsWindow.update(workFile, pageNum);
 
     disablePreviewUpdating = false;
   }

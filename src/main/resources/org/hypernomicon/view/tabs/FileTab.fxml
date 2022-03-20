@@ -22,8 +22,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -35,137 +33,134 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabCtrlr">
-   <items>
-      <GridPane>
-         <columnConstraints>
-            <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="52.0" />
-         </columnConstraints>
-         <rowConstraints>
-            <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="NEVER" />
-            <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="NEVER" />
-            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-         </rowConstraints>
-         <children>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowSpan="2">
-               <children>
-                  <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
-                     <graphic>
-                        <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../../resources/images/treeview.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-               <children>
-                  <Label text="Name:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
-                  <TextField fx:id="tfName" layoutX="122.0" layoutY="3.0" prefHeight="22.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-               <children>
-                  <Label text="Search Key:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0" />
-                  <TextField fx:id="tfSearchKey" layoutX="140.0" layoutY="3.0" prefHeight="22.0" prefWidth="354.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="203.0" AnchorPane.topAnchor="5.0" />
-                  <CheckBox fx:id="checkAnnotated" layoutX="423.0" layoutY="8.0" mnemonicParsing="false" prefWidth="77.0" text="Annotated" AnchorPane.rightAnchor="123.0" AnchorPane.topAnchor="8.0" />
-                  <SplitMenuButton fx:id="btnShow" layoutX="332.0" layoutY="3.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="119.0" text="Show in Folder" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-               <children>
-                  <Label text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
-                  <ComboBox fx:id="cbType" layoutX="48.0" layoutY="3.0" prefHeight="22.0" prefWidth="129.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
-                  <Button fx:id="btnWork" layoutX="174.0" layoutY="3.0" maxWidth="83.0" minWidth="83.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Work:" AnchorPane.leftAnchor="174.0" AnchorPane.topAnchor="5.0" />
-                  <ComboBox fx:id="cbWork" layoutX="261.0" layoutY="5.0" prefHeight="22.0" prefWidth="404.0" AnchorPane.leftAnchor="261.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-               <children>
-                  <Label text="File Name:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0" />
-                  <TextField fx:id="tfFileName" layoutX="85.0" layoutY="3.0" maxHeight="22.0" minHeight="22.0" prefHeight="22.0" prefWidth="354.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="203.0" AnchorPane.topAnchor="5.0" />
-                  <Button fx:id="btnManage" layoutX="423.0" layoutY="5.0" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" onAction="#btnManageClick" prefHeight="22.0" prefWidth="77.0" AnchorPane.rightAnchor="123.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../../resources/images/form-pencil.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnLaunch" layoutX="343.0" layoutY="3.0" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="119.0" text="Launch" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../../resources/images/rocket-fly.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                     <tooltip>
-                        <Tooltip text="Open file in external viewer" />
-                     </tooltip>
-                  </Button>
-               </children>
-            </AnchorPane>
-            <SplitPane fx:id="spRightHoriz" dividerPositions="0.73" prefHeight="160.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
-              <items>
-                <AnchorPane fx:id="apDescription" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                     <children>
-                        <SplitPane fx:id="spRightVert" dividerPositions="0.38315217391304346" layoutX="240.0" layoutY="269.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <items>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                                 <children>
-                                    <TableView fx:id="tvAuthors" layoutX="-36.0" layoutY="51.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                      <columns>
-                                        <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" />
-                                        <TableColumn prefWidth="75.0" text="Author" />
-                                      </columns>
-                                       <columnResizePolicy>
-                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                       </columnResizePolicy>
-                                    </TableView>
-                                 </children>
-                              </AnchorPane>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                                 <children>
-                                    <TableView fx:id="tvLabels" editable="true" layoutX="230.0" layoutY="36.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                      <columns>
-                                        <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" />
-                                        <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" />
-                                          <TableColumn prefWidth="75.0" sortable="false" text="Labels" />
-                                      </columns>
-                                       <columnResizePolicy>
-                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                       </columnResizePolicy>
-                                    </TableView>
-                                 </children>
-                              </AnchorPane>
-                          </items>
-                        </SplitPane>
-                     </children>
-                  </AnchorPane>
-              </items>
-            </SplitPane>
-         </children>
-      </GridPane>
-      <AnchorPane>
-         <children>
-            <TableView fx:id="tvKeyMentions" maxHeight="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <columns>
-                  <TableColumn maxWidth="200.0" minWidth="69.0" prefWidth="69.0" text="Type" />
-                  <TableColumn prefWidth="629.0" text="Record Listing This Under Key Works" />
-                  <TableColumn prefWidth="766.0" text="Description" />
-               </columns>
-               <columnResizePolicy>
-                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-               </columnResizePolicy>
+<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0"
+           prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="org.hypernomicon.view.tabs.FileTabCtrlr">
+  <GridPane>
+    <columnConstraints>
+      <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" percentWidth="52.0"/>
+    </columnConstraints>
+    <rowConstraints>
+      <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="NEVER"/>
+      <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="NEVER"/>
+      <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowSpan="2">
+      <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0"
+              mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0"
+              AnchorPane.topAnchor="8.0">
+        <graphic>
+          <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@../../resources/images/treeview.png"/>
+          </ImageView>
+        </graphic>
+      </Button>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+      <Label text="Name:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0"/>
+      <TextField fx:id="tfName" layoutX="122.0" layoutY="3.0" prefHeight="22.0" AnchorPane.leftAnchor="38.0"
+                 AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+      <Label text="Search Key:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0"/>
+      <TextField fx:id="tfSearchKey" layoutX="140.0" layoutY="3.0" prefHeight="22.0" prefWidth="354.0"
+                 AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="203.0" AnchorPane.topAnchor="5.0"/>
+      <CheckBox fx:id="checkAnnotated" layoutX="423.0" layoutY="8.0" mnemonicParsing="false" prefWidth="77.0"
+                text="Annotated" AnchorPane.rightAnchor="123.0" AnchorPane.topAnchor="8.0"/>
+      <SplitMenuButton fx:id="btnShow" layoutX="332.0" layoutY="3.0" mnemonicParsing="false" prefHeight="22.0"
+                       prefWidth="119.0" text="Show in Folder" AnchorPane.rightAnchor="2.0"
+                       AnchorPane.topAnchor="5.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <Label text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0"/>
+      <ComboBox fx:id="cbType" layoutX="48.0" layoutY="3.0" prefHeight="22.0" prefWidth="129.0"
+                AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0"/>
+      <Button fx:id="btnWork" layoutX="174.0" layoutY="3.0" maxWidth="83.0" minWidth="83.0"
+              mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Work:"
+              AnchorPane.leftAnchor="174.0" AnchorPane.topAnchor="5.0"/>
+      <ComboBox fx:id="cbWork" layoutX="261.0" layoutY="5.0" prefHeight="22.0" prefWidth="404.0"
+                AnchorPane.leftAnchor="261.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+      <Label text="File Name:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0"/>
+      <TextField fx:id="tfFileName" layoutX="85.0" layoutY="3.0" maxHeight="22.0" minHeight="22.0"
+                 prefHeight="22.0" prefWidth="354.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="203.0"
+                 AnchorPane.topAnchor="5.0"/>
+      <Button fx:id="btnManage" layoutX="423.0" layoutY="5.0" maxHeight="22.0" minHeight="22.0"
+              mnemonicParsing="false" onAction="#btnManageClick" prefHeight="22.0" prefWidth="77.0"
+              AnchorPane.rightAnchor="123.0">
+        <graphic>
+          <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@../../resources/images/form-pencil.png"/>
+          </ImageView>
+        </graphic>
+      </Button>
+      <Button fx:id="btnLaunch" layoutX="343.0" layoutY="3.0" maxHeight="22.0" minHeight="22.0"
+              mnemonicParsing="false" prefHeight="22.0" prefWidth="119.0" text="Launch"
+              AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+        <graphic>
+          <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@../../resources/images/rocket-fly.png"/>
+          </ImageView>
+        </graphic>
+        <tooltip>
+          <Tooltip text="Open file in external viewer"/>
+        </tooltip>
+      </Button>
+    </AnchorPane>
+    <SplitPane fx:id="spRightHoriz" dividerPositions="0.73" prefHeight="160.0" prefWidth="200.0"
+               GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+      <AnchorPane fx:id="apDescription" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0"/>
+      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+        <SplitPane fx:id="spRightVert" dividerPositions="0.38315217391304346" layoutX="240.0"
+                   layoutY="269.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0"
+                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                   AnchorPane.topAnchor="0.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+            <TableView fx:id="tvAuthors" layoutX="-36.0" layoutY="51.0" prefHeight="200.0"
+                       prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <columns>
+                <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false"/>
+                <TableColumn prefWidth="75.0" text="Author"/>
+              </columns>
+              <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+              </columnResizePolicy>
             </TableView>
-         </children>
+          </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+            <TableView fx:id="tvLabels" editable="true" layoutX="230.0" layoutY="36.0"
+                       prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
+                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                       AnchorPane.topAnchor="0.0">
+              <columns>
+                <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false"/>
+                <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false"/>
+                <TableColumn prefWidth="75.0" sortable="false" text="Labels"/>
+              </columns>
+              <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+              </columnResizePolicy>
+            </TableView>
+          </AnchorPane>
+        </SplitPane>
       </AnchorPane>
-   </items>
+    </SplitPane>
+  </GridPane>
+  <AnchorPane>
+    <TableView fx:id="tvKeyMentions" maxHeight="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <columns>
+        <TableColumn maxWidth="200.0" minWidth="69.0" prefWidth="69.0" text="Type"/>
+        <TableColumn prefWidth="629.0" text="Record Listing This Under Key Works"/>
+        <TableColumn prefWidth="766.0" text="Description"/>
+      </columns>
+      <columnResizePolicy>
+        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+      </columnResizePolicy>
+    </TableView>
+  </AnchorPane>
 </SplitPane>

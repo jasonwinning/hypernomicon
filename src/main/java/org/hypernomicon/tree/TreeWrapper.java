@@ -507,14 +507,13 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
            allRowsHeight = rHeight * ttv.getExpandedItemCount(),
            vpHeight = allRowsHeight * sb.getVisibleAmount(),
            vpTop = (allRowsHeight - vpHeight) * sb.getValue(),
-           scrollValue = -1,
 
            y1 = ndx * rHeight,
            y2 = (ndx + 1) * rHeight;
 
     if (y2 > (vpTop + (vpHeight / 4.0)))
     {
-      scrollValue = y2 - (vpHeight * 0.25);
+      double scrollValue = y2 - (vpHeight * 0.25);
       if (scrollValue > allRowsHeight - vpHeight)
         scrollValue = allRowsHeight - vpHeight;
 

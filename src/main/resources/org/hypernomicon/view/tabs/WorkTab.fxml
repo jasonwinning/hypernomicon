@@ -43,335 +43,258 @@
 <GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
   <columnConstraints>
     <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
-      <ColumnConstraints hgrow="SOMETIMES" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="70.0" minWidth="70.0" prefWidth="70.0" />
-      <ColumnConstraints hgrow="SOMETIMES" percentWidth="40.0" />
+    <ColumnConstraints hgrow="SOMETIMES" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="70.0" minWidth="70.0" prefWidth="70.0" />
+    <ColumnConstraints hgrow="SOMETIMES" percentWidth="40.0" />
   </columnConstraints>
   <rowConstraints>
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
-   <children>
-      <AnchorPane GridPane.rowSpan="2">
-         <children>
-            <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
-               <graphic>
-                  <ImageView id="noScale" fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../../resources/images/treeview.png" />
-                     </image>
-                     <viewport>
-                        <Rectangle2D />
-                     </viewport>
-                  </ImageView>
-               </graphic>
-            </Button>
-         </children>
+  <AnchorPane GridPane.rowSpan="2">
+    <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
+      <graphic>
+        <ImageView id="noScale" fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+          <viewport>
+            <Rectangle2D />
+          </viewport>
+          <Image url="@../../resources/images/treeview.png" />
+        </ImageView>
+      </graphic>
+    </Button>
+  </AnchorPane>
+  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+    <Label fx:id="lblTitle" layoutX="2.0" layoutY="9.0" text="Title:" underline="true" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0">
+      <cursor>
+        <Cursor fx:constant="HAND" />
+      </cursor>
+    </Label>
+    <TextField fx:id="tfTitle" layoutX="39.0" layoutY="5.0" maxHeight="25.0" prefHeight="25.0" prefWidth="389.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="5.0" />
+    <Label layoutX="435.0" layoutY="9.0" text="Type:" AnchorPane.rightAnchor="133.0" AnchorPane.topAnchor="9.0" />
+    <ComboBox fx:id="cbType" layoutX="468.0" layoutY="5.0" prefHeight="22.0" prefWidth="126.0" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+  </AnchorPane>
+  <AnchorPane GridPane.columnIndex="2" GridPane.rowSpan="2">
+    <Button fx:id="btnTopAutofill" contentDisplay="TOP" mnemonicParsing="false" text="Auto-Fill" wrapText="true" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+      <graphic>
+        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+          <Image url="@../../resources/images/wand-magic.png" />
+        </ImageView>
+      </graphic>
+    </Button>
+  </AnchorPane>
+  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3">
+    <Label fx:id="lblSearchKey" layoutY="9.0" text="Search key:" underline="true" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0">
+      <cursor>
+        <Cursor fx:constant="HAND" />
+      </cursor>
+    </Label>
+    <TextField fx:id="tfSearchKey" layoutX="66.0" layoutY="3.0" prefHeight="22.0" prefWidth="238.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="200.0" AnchorPane.topAnchor="5.0" />
+    <Button fx:id="btnWebSrch1" layoutX="304.0" layoutY="5.0" maxWidth="108.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="108.0" text="WorldCat" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="5.0" />
+    <SplitMenuButton fx:id="smbWebSrch1" alignment="CENTER" layoutX="304.0" layoutY="5.0" maxWidth="108.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="108.0" text="WorldCat" visible="false" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="5.0" />
+    <Button fx:id="btnWebSrch2" maxWidth="86.0" minWidth="86.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="86.0" text="PhilPapers" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+  </AnchorPane>
+  <AnchorPane fx:id="apLowerMid" GridPane.columnIndex="1" GridPane.rowIndex="1">
+    <Label layoutX="4.0" layoutY="9.0" text="Year:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
+    <TextField fx:id="tfYear" layoutX="38.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
+    <Button fx:id="btnLargerWork" layoutX="84.0" layoutY="5.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="84.0" AnchorPane.topAnchor="5.0" />
+    <ComboBox fx:id="cbLargerWork" layoutX="182.0" layoutY="5.0" prefHeight="25.0" prefWidth="413.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="169.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+  </AnchorPane>
+  <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
+    <Button fx:id="btnURL" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="URL:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
+    <TextField fx:id="tfURL" layoutX="55.0" prefHeight="22.0" prefWidth="435.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+  </AnchorPane>
+  <SplitPane fx:id="spVert" dividerPositions="0.25338753387533874, 0.7642276422764228" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+    <SplitPane fx:id="spHoriz1" dividerPositions="0.73" prefHeight="160.0" prefWidth="200.0">
+      <AnchorPane fx:id="apDescription" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
+      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+        <TableView fx:id="tvAuthors" editable="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+          <columns>
+            <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
+            <TableColumn prefWidth="110.0" text="Author" />
+            <TableColumn maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" sortable="false" text="Ed." />
+            <TableColumn maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" sortable="false" text="Tr." />
+          </columns>
+          <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+          </columnResizePolicy>
+        </TableView>
       </AnchorPane>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-         <children>
-            <Label fx:id="lblTitle" layoutX="2.0" layoutY="9.0" text="Title:" underline="true" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0">
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor></Label>
-            <TextField fx:id="tfTitle" layoutX="39.0" layoutY="5.0" maxHeight="25.0" prefHeight="25.0" prefWidth="389.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="5.0" />
-            <Label layoutX="435.0" layoutY="9.0" text="Type:" AnchorPane.rightAnchor="133.0" AnchorPane.topAnchor="9.0" />
-            <ComboBox fx:id="cbType" layoutX="468.0" layoutY="5.0" prefHeight="22.0" prefWidth="126.0" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-         </children>
-      </AnchorPane>
-      <AnchorPane GridPane.columnIndex="2" GridPane.rowSpan="2">
-         <children>
-            <Button fx:id="btnTopAutofill" contentDisplay="TOP" mnemonicParsing="false" text="Auto-Fill" wrapText="true" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
-               <graphic>
-                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../../resources/images/wand-magic.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-            </Button>
-         </children>
-      </AnchorPane>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3">
-         <children>
-            <Label fx:id="lblSearchKey" layoutY="9.0" text="Search key:" underline="true" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0">
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor></Label>
-            <TextField fx:id="tfSearchKey" layoutX="66.0" layoutY="3.0" prefHeight="22.0" prefWidth="238.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="200.0" AnchorPane.topAnchor="5.0" />
-            <Button fx:id="btnWebSrch1" layoutX="304.0" layoutY="5.0" maxWidth="108.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="108.0" text="WorldCat" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="5.0" />
-            <SplitMenuButton fx:id="smbWebSrch1" alignment="CENTER" layoutX="304.0" layoutY="5.0" maxWidth="108.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="108.0" text="WorldCat" visible="false" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="5.0" />
-            <Button fx:id="btnWebSrch2" maxWidth="86.0" minWidth="86.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="86.0" text="PhilPapers" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-         </children>
-      </AnchorPane>
-      <AnchorPane fx:id="apLowerMid" GridPane.columnIndex="1" GridPane.rowIndex="1">
-         <children>
-            <Label layoutX="4.0" layoutY="9.0" text="Year:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
-            <TextField fx:id="tfYear" layoutX="38.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
-            <Button fx:id="btnLargerWork" layoutX="84.0" layoutY="5.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="84.0" AnchorPane.topAnchor="5.0" />
-            <ComboBox fx:id="cbLargerWork" layoutX="182.0" layoutY="5.0" prefHeight="25.0" prefWidth="413.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="169.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-         </children>
-      </AnchorPane>
-      <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
-         <children>
-            <Button fx:id="btnURL" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="URL:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
-            <TextField fx:id="tfURL" layoutX="55.0" prefHeight="22.0" prefWidth="435.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-         </children>
-      </AnchorPane>
-      <SplitPane fx:id="spVert" dividerPositions="0.25338753387533874, 0.7642276422764228" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
-        <items>
-            <SplitPane fx:id="spHoriz1" dividerPositions="0.73" prefHeight="160.0" prefWidth="200.0">
-              <items>
-                <AnchorPane fx:id="apDescription" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                     <children>
-                        <TableView fx:id="tvAuthors" editable="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <columns>
-                            <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
-                            <TableColumn prefWidth="110.0" text="Author" />
-                              <TableColumn maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" sortable="false" text="Ed." />
-                              <TableColumn maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" sortable="false" text="Tr." />
-                          </columns>
-                           <columnResizePolicy>
-                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                           </columnResizePolicy>
-                        </TableView>
-                     </children>
-                  </AnchorPane>
-              </items>
-            </SplitPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="262.0" prefWidth="1206.0">
-               <children>
-                  <SplitPane fx:id="spHoriz2" dividerPositions="0.73" layoutX="645.0" layoutY="59.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <items>
-                        <AnchorPane>
-                           <children>
-                              <TabPane fx:id="tabPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                 <tabs>
-                                    <Tab fx:id="tabWorkFiles" closable="false" text="Main Files">
-                                      <content>
-                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                             <children>
-                                                <TableView fx:id="tvWorkFiles" editable="true" layoutX="338.0" layoutY="-34.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                  <columns>
-                                                    <TableColumn editable="false" prefWidth="44.0" resizable="false" sortable="false" />
-                                                      <TableColumn prefWidth="74.0" text="Annotated?" />
-                                                      <TableColumn editable="false" prefWidth="338.0" text="File name" />
-                                                    <TableColumn minWidth="0.0" prefWidth="64.0" text="Start pg." />
-                                                      <TableColumn minWidth="0.0" prefWidth="64.0" text="End pg." />
-                                                      <TableColumn minWidth="0.0" prefWidth="270.0" text="Description" />
-                                                  </columns>
-                                                </TableView>
-                                             </children>
-                                          </AnchorPane>
-                                      </content>
-                                    </Tab>
-                                    <Tab fx:id="tabSubworks" closable="false" text="Sub-works">
-                                       <content>
-                                          <TableView fx:id="tvSubworks" layoutX="385.0" prefHeight="146.0" prefWidth="941.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
-                                            <columns>
-                                              <TableColumn editable="false" prefWidth="235.0" text="Author" />
-                                              <TableColumn editable="false" prefWidth="353.0" text="Title" />
-                                                <TableColumn maxWidth="1000.0" prefWidth="200.0" text="Year" />
-                                            </columns>
-                                             <columnResizePolicy>
-                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                             </columnResizePolicy>
-                                          </TableView>
-                                       </content>
-                                    </Tab>
-                                    <Tab fx:id="tabMiscFiles" closable="false" text="Supplementary (Misc.) Files">
-                                      <content>
-                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                             <children>
-                                                <TableView fx:id="tvMiscFiles" editable="true" layoutX="248.0" layoutY="-31.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                  <columns>
-                                                    <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" />
-                                                    <TableColumn prefWidth="75.0" text="Name" />
-                                                  </columns>
-                                                   <columnResizePolicy>
-                                                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                                   </columnResizePolicy>
-                                                </TableView>
-                                             </children>
-                                          </AnchorPane>
-                                      </content>
-                                    </Tab>
-                                    <Tab fx:id="tabBibDetails" closable="false" text="Bibliographic Data">
-                                      <content>
-                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                          <children>
-                                                <SplitMenuButton fx:id="btnDOI" alignment="CENTER" contentDisplay="CENTER" layoutX="-13.0" layoutY="3.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="DOI" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="3.0">
-                                                  <items>
-                                                    <MenuItem fx:id="mnuGoogle" mnemonicParsing="false" text="Search this DOI on Google" />
-                                                    <MenuItem fx:id="mnuCrossref" mnemonicParsing="false" text="Retrieve bibliographic information from Crossref using this DOI" />
-                                                  </items>
-                                                </SplitMenuButton>
-                                            <TextField fx:id="tfDOI" layoutX="82.0" layoutY="3.0" prefHeight="25.0" prefWidth="165.0" AnchorPane.leftAnchor="124.0" AnchorPane.topAnchor="3.0" />
-                                                <MenuButton layoutX="4.0" layoutY="30.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="Web Query" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="30.0">
-                                                  <items>
-                                                    <MenuItem fx:id="mnuFindDOIonCrossref" mnemonicParsing="false" text="Find DOI and bibliographic information on Crossref" />
-                                                    <MenuItem fx:id="mnuFindISBNonGoogleBooks" mnemonicParsing="false" text="Find ISBN and bibliographic information on Google Books" />
-                                                  </items>
-                                                </MenuButton>
-                                                <MenuButton layoutX="4.0" layoutY="57.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="PDF metadata" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="57.0">
-                                                  <items>
-                                                    <MenuItem fx:id="mnuShowMetadata" mnemonicParsing="false" text="Show existing metadata in PDF" />
-                                                    <MenuItem fx:id="mnuStoreMetadata" mnemonicParsing="false" text="Store this metadata into PDF" />
-                                                  </items>
-                                                </MenuButton>
-                                                <Button fx:id="btnUseDOI" layoutX="4.0" layoutY="84.0" mnemonicParsing="false" prefWidth="118.0" text="Use this DOI" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="84.0" />
-                                                <Button fx:id="btnUseISBN" layoutX="4.0" layoutY="111.0" mnemonicParsing="false" prefWidth="118.0" text="Use these ISBNs" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="111.0" />
-                                                <Button fx:id="btnMergeBib" layoutX="4.0" layoutY="138.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="118.0" text="Merge" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="138.0" />
-                                                <TabPane fx:id="tpBib" layoutX="220.0" layoutY="63.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="124.0" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="30.0">
-                                                  <tabs>
-                                                    <Tab fx:id="tabEntry" closable="false" text="Entry">
-                                                      <content>
-                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                                               <children>
-                                                                  <TextArea fx:id="taEntry" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                               </children></AnchorPane>
-                                                      </content>                                                                                        
-                                                    </Tab>
-                                                    
-                                                    <Tab fx:id="tabMiscBib" closable="false" text="Misc. Info">
-                                                      <content>
-                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                                               <children>
-                                                                  <TextArea fx:id="taMiscBib" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                               </children></AnchorPane>
-                                                      </content>
-                                                    </Tab>
-                                                      <Tab fx:id="tabPdfMetadata" text="PDF metadata">
-                                                        <content>
-                                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                                               <children>
-                                                                  <TextArea fx:id="taPdfMetadata" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                               </children></AnchorPane>
-                                                        </content>
-                                                      </Tab>
-                                                      <Tab fx:id="tabCrossref" text="Crossref">
-                                                        <content>
-                                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                                             <children>
-                                                                <TextArea fx:id="taCrossref" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                             </children></AnchorPane>
-                                                        </content>
-                                                      </Tab>
-                                                      <Tab fx:id="tabGoogleBooks" text="Google Books">
-                                                        <content>
-                                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                                             <children>
-                                                                <TextArea fx:id="taGoogleBooks" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                             </children></AnchorPane>
-                                                        </content>
-                                                      </Tab>
-                                                  </tabs>
-                                                </TabPane>
-                                                <ProgressBar fx:id="progressBar" layoutX="450.0" layoutY="33.0" prefWidth="200.0" visible="false" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="33.0" />
-                                                <Button fx:id="btnStop" layoutX="640.0" layoutY="30.0" mnemonicParsing="false" visible="false" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="30.0">
-                                                   <graphic>
-                                                      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                                         <image>
-                                                            <Image url="@../../resources/images/cancel.png" />
-                                                         </image>
-                                                      </ImageView>
-                                                   </graphic>
-                                                </Button>
-                                                <TableView fx:id="tvISBN" editable="true" layoutX="682.0" layoutY="41.0" prefHeight="200.0" prefWidth="174.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0">
-                                                  <columns>
-                                                    <TableColumn prefWidth="75.0" text="ISBN" />
-                                                  </columns>
-                                                   <columnResizePolicy>
-                                                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                                   </columnResizePolicy>
-                                                </TableView>
-                                                <Button fx:id="btnAutofill" layoutX="544.0" layoutY="3.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="Auto-Fill" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="3.0">
-                                                   <graphic>
-                                                      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                                         <image>
-                                                            <Image url="@../../resources/images/wand-magic.png" />
-                                                         </image>
-                                                      </ImageView>
-                                                   </graphic>
-                                                </Button>
-                                          </children>
-                                        </AnchorPane>
-                                      </content>
-                                    </Tab>
-                                 </tabs>
-                              </TabPane>
-                              <Button fx:id="btnBibManager" layoutX="646.0" layoutY="2.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="32.0" AnchorPane.rightAnchor="192.0" AnchorPane.topAnchor="2.0">
-                                 <graphic>
-                                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../../resources/images/card-catalog_tr.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                              </Button>
-                              <Button fx:id="btnNewChapter" mnemonicParsing="false" onAction="#btnNewChapterClick" prefHeight="22.0" prefWidth="112.0" text="New Chapter" AnchorPane.rightAnchor="79.0" AnchorPane.topAnchor="2.0" />
-                              <Button fx:id="btnLaunch" mnemonicParsing="false" prefHeight="22.0" prefWidth="75.0" text="Launch" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
-                                 <graphic>
-                                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../../resources/images/rocket-fly.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Open work file in external viewer" />
-                                 </tooltip>
-                              </Button>
-                           </children>
-                        </AnchorPane>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                           <children>
-                              <TableView fx:id="tvLabels" editable="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                <columns>
-                                  <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
-                                  <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
-                                    <TableColumn prefWidth="75.0" text="Labels" />
-                                </columns>
-                                 <columnResizePolicy>
-                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                 </columnResizePolicy>
-                              </TableView>
-                           </children>
-                        </AnchorPane>
-                    </items>
-                  </SplitPane>
-               </children>
-            </AnchorPane>
-            <SplitPane fx:id="spMentioners" dividerPositions="0.5">
-              <items>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                     <children>
-                        <TableView fx:id="tvArguments" layoutX="503.0" layoutY="-24.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <columns>
-                              <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" />
-                            <TableColumn prefWidth="197.0" text="Target of Argument" />
-                            <TableColumn prefWidth="202.0" text="Verdict" />
-                              <TableColumn prefWidth="300.0" text="Argument name" />
-                          </columns>
-                        </TableView>
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <TableView fx:id="tvKeyMentions" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <columns>
-                              <TableColumn prefWidth="62.0" text="Type" />
-                              <TableColumn prefWidth="246.0" text="Record Having This as Key Work" />
-                              <TableColumn prefWidth="300.0" text="Description" />
-                           </columns>
-                        </TableView>
-                     </children>
-                  </AnchorPane>
-               </items>
-            </SplitPane>
-        </items>
+    </SplitPane>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="262.0" prefWidth="1206.0">
+      <SplitPane fx:id="spHoriz2" dividerPositions="0.73" layoutX="645.0" layoutY="59.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <AnchorPane>
+          <TabPane fx:id="tabPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <Tab fx:id="tabWorkFiles" closable="false" text="Main Files">
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <TableView fx:id="tvWorkFiles" editable="true" layoutX="338.0" layoutY="-34.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <columns>
+                    <TableColumn editable="false" prefWidth="44.0" resizable="false" sortable="false" />
+                    <TableColumn prefWidth="74.0" text="Annotated?" />
+                    <TableColumn editable="false" prefWidth="338.0" text="File name" />
+                    <TableColumn minWidth="0.0" prefWidth="64.0" text="Start pg." />
+                    <TableColumn minWidth="0.0" prefWidth="64.0" text="End pg." />
+                    <TableColumn minWidth="0.0" prefWidth="270.0" text="Description" />
+                  </columns>
+                </TableView>
+              </AnchorPane>
+            </Tab>
+            <Tab fx:id="tabSubworks" closable="false" text="Sub-works">
+              <TableView fx:id="tvSubworks" layoutX="385.0" prefHeight="146.0" prefWidth="941.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                <columns>
+                  <TableColumn editable="false" prefWidth="235.0" text="Author" />
+                  <TableColumn editable="false" prefWidth="353.0" text="Title" />
+                  <TableColumn maxWidth="1000.0" prefWidth="200.0" text="Year" />
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+              </TableView>
+            </Tab>
+            <Tab fx:id="tabMiscFiles" closable="false" text="Supplementary (Misc.) Files">
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <TableView fx:id="tvMiscFiles" editable="true" layoutX="248.0" layoutY="-31.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <columns>
+                    <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" />
+                    <TableColumn prefWidth="75.0" text="Name" />
+                  </columns>
+                  <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                  </columnResizePolicy>
+                </TableView>
+              </AnchorPane>
+            </Tab>
+            <Tab fx:id="tabBibDetails" closable="false" text="Bibliographic Data">
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <SplitMenuButton fx:id="btnDOI" alignment="CENTER" contentDisplay="CENTER" layoutX="-13.0" layoutY="3.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="DOI" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="3.0">
+                  <items>
+                    <MenuItem fx:id="mnuGoogle" mnemonicParsing="false" text="Search this DOI on Google" />
+                    <MenuItem fx:id="mnuCrossref" mnemonicParsing="false" text="Retrieve bibliographic information from Crossref using this DOI" />
+                  </items>
+                </SplitMenuButton>
+                <TextField fx:id="tfDOI" layoutX="82.0" layoutY="3.0" prefHeight="25.0" prefWidth="165.0" AnchorPane.leftAnchor="124.0" AnchorPane.topAnchor="3.0" />
+                <MenuButton layoutX="4.0" layoutY="30.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="Web Query" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="30.0">
+                  <items>
+                    <MenuItem fx:id="mnuFindDOIonCrossref" mnemonicParsing="false" text="Find DOI and bibliographic information on Crossref" />
+                    <MenuItem fx:id="mnuFindISBNonGoogleBooks" mnemonicParsing="false" text="Find ISBN and bibliographic information on Google Books" />
+                  </items>
+                </MenuButton>
+                <MenuButton layoutX="4.0" layoutY="57.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="PDF metadata" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="57.0">
+                  <items>
+                    <MenuItem fx:id="mnuShowMetadata" mnemonicParsing="false" text="Show existing metadata in PDF" />
+                    <MenuItem fx:id="mnuStoreMetadata" mnemonicParsing="false" text="Store this metadata into PDF" />
+                  </items>
+                </MenuButton>
+                <Button fx:id="btnUseDOI" layoutX="4.0" layoutY="84.0" mnemonicParsing="false" prefWidth="118.0" text="Use this DOI" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="84.0" />
+                <Button fx:id="btnUseISBN" layoutX="4.0" layoutY="111.0" mnemonicParsing="false" prefWidth="118.0" text="Use these ISBNs" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="111.0" />
+                <Button fx:id="btnMergeBib" layoutX="4.0" layoutY="138.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="118.0" text="Merge" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="138.0" />
+                <TabPane fx:id="tpBib" layoutX="220.0" layoutY="63.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="124.0" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="30.0">
+                  <Tab fx:id="tabEntry" closable="false" text="Entry">
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                      <TextArea fx:id="taEntry" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    </AnchorPane>
+                  </Tab>
+
+                  <Tab fx:id="tabMiscBib" closable="false" text="Misc. Info">
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                      <TextArea fx:id="taMiscBib" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    </AnchorPane>
+                  </Tab>
+                  <Tab fx:id="tabPdfMetadata" text="PDF metadata">
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                      <TextArea fx:id="taPdfMetadata" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    </AnchorPane>
+                  </Tab>
+                  <Tab fx:id="tabCrossref" text="Crossref">
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                      <TextArea fx:id="taCrossref" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    </AnchorPane>
+                  </Tab>
+                  <Tab fx:id="tabGoogleBooks" text="Google Books">
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                      <TextArea fx:id="taGoogleBooks" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    </AnchorPane>
+                  </Tab>
+                </TabPane>
+                <ProgressBar fx:id="progressBar" layoutX="450.0" layoutY="33.0" prefWidth="200.0" visible="false" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="33.0" />
+                <Button fx:id="btnStop" layoutX="640.0" layoutY="30.0" mnemonicParsing="false" visible="false" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="30.0">
+                  <graphic>
+                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                      <Image url="@../../resources/images/cancel.png" />
+                    </ImageView>
+                  </graphic>
+                </Button>
+                <TableView fx:id="tvISBN" editable="true" layoutX="682.0" layoutY="41.0" prefHeight="200.0" prefWidth="174.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0">
+                  <columns>
+                    <TableColumn prefWidth="75.0" text="ISBN" />
+                  </columns>
+                  <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                  </columnResizePolicy>
+                </TableView>
+                <Button fx:id="btnAutofill" layoutX="544.0" layoutY="3.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="Auto-Fill" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="3.0">
+                  <graphic>
+                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                      <Image url="@../../resources/images/wand-magic.png" />
+                    </ImageView>
+                  </graphic>
+                </Button>
+              </AnchorPane>
+            </Tab>
+          </TabPane>
+          <Button fx:id="btnBibManager" layoutX="646.0" layoutY="2.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="32.0" AnchorPane.rightAnchor="192.0" AnchorPane.topAnchor="2.0">
+            <graphic>
+              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../../resources/images/card-catalog_tr.png" />
+              </ImageView>
+            </graphic>
+          </Button>
+          <Button fx:id="btnNewChapter" mnemonicParsing="false" onAction="#btnNewChapterClick" prefHeight="22.0" prefWidth="112.0" text="New Chapter" AnchorPane.rightAnchor="79.0" AnchorPane.topAnchor="2.0" />
+          <Button fx:id="btnLaunch" mnemonicParsing="false" prefHeight="22.0" prefWidth="75.0" text="Launch" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
+            <graphic>
+              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../../resources/images/rocket-fly.png" />
+              </ImageView>
+            </graphic>
+            <tooltip>
+              <Tooltip text="Open work file in external viewer" />
+            </tooltip>
+          </Button>
+        </AnchorPane>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+          <TableView fx:id="tvLabels" editable="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <columns>
+              <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
+              <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
+              <TableColumn prefWidth="75.0" text="Labels" />
+            </columns>
+            <columnResizePolicy>
+              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+          </TableView>
+        </AnchorPane>
       </SplitPane>
-   </children>
+    </AnchorPane>
+    <SplitPane fx:id="spMentioners" dividerPositions="0.5">
+      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+        <TableView fx:id="tvArguments" layoutX="503.0" layoutY="-24.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+          <columns>
+            <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" />
+            <TableColumn prefWidth="197.0" text="Target of Argument" />
+            <TableColumn prefWidth="202.0" text="Verdict" />
+            <TableColumn prefWidth="300.0" text="Argument name" />
+          </columns>
+        </TableView>
+      </AnchorPane>
+      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+        <TableView fx:id="tvKeyMentions" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+          <columns>
+            <TableColumn prefWidth="62.0" text="Type" />
+            <TableColumn prefWidth="246.0" text="Record Having This as Key Work" />
+            <TableColumn prefWidth="300.0" text="Description" />
+          </columns>
+        </TableView>
+      </AnchorPane>
+    </SplitPane>
+  </SplitPane>
 </GridPane>

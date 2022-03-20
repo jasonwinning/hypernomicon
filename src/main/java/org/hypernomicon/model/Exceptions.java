@@ -24,8 +24,10 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 @SuppressWarnings("serial")
-public class Exceptions
+public final class Exceptions
 {
+  private Exceptions() { throw new UnsupportedOperationException(); }
+
   public static class InvalidItemException extends Exception
   {
     public InvalidItemException(int recordID, RecordType recordType, String itemName)

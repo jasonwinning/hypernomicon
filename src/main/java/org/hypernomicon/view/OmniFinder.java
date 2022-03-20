@@ -62,11 +62,12 @@ public class OmniFinder
   private final EnumMap<TierEnum, ImmutableSet<RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
   private final Set<HDT_Record> records = new HashSet<>();
   private final RecordType typeFilter;
+  private final boolean incremental;
 
   private String query = "";
   private Iterator<HDT_Record> source = null;
   private FinderThread finderThread = null;
-  private boolean stopRequested = false, showingMore = false, incremental = true;
+  private boolean stopRequested = false, showingMore = false;
   public Runnable doneHndlr = null;
 
   public boolean noResults()  { return collEmpty(records); }
@@ -349,7 +350,7 @@ public class OmniFinder
           }
           return false;
 
-        case tierPersonMatch:
+        case tierPersonMatch: case tierPersonMatchStart:
 
           return authorMatch(getPersonList(record).get(0), "", curTier);
 
@@ -376,10 +377,6 @@ public class OmniFinder
             authorMatch(getPersonList(record).get(0), "", tierAuthorContains)
           :
             record.getNameEngChar().toLowerCase().contains(queryLC);
-
-        case tierPersonMatchStart:
-
-          return authorMatch(getPersonList(record).get(0), "", curTier);
 
         case tierNameStartExact:
 

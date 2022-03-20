@@ -457,17 +457,16 @@ public class PictureDlgCtrlr extends HyperDlg
     if (picture == null) return;
 
     double picRatio = picture.getWidth() / picture.getHeight(),
-           ivRatio = ivWidth / ivHeight,
-           sizeRatio = 1.0;
+           ivRatio = ivWidth / ivHeight;
 
     if (ivRatio >= picRatio)
     {
-      sizeRatio = ivPicture.getFitHeight() / picture.getHeight(); // Extra space is at the sides, not the top and bottom
+      double sizeRatio = ivPicture.getFitHeight() / picture.getHeight(); // Extra space is at the sides, not the top and bottom
       picRect = new Rectangle2D((ivWidth - (picture.getWidth() * sizeRatio)) / 2.0, 0, picture.getWidth() * sizeRatio, ivHeight);
     }
     else
     {
-      sizeRatio = ivPicture.getFitWidth() / picture.getWidth();
+      double sizeRatio = ivPicture.getFitWidth() / picture.getWidth();
       picRect = new Rectangle2D(0, (ivHeight - (picture.getHeight() * sizeRatio)) / 2.0, ivWidth, picture.getHeight() * sizeRatio);
     }
   }

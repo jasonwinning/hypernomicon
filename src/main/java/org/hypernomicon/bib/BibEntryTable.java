@@ -40,6 +40,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -66,13 +67,13 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked") BibEntryTable(TableView<BibEntryRow> tv, String prefID, BibManager dlg)
+  @SuppressWarnings("unchecked") BibEntryTable(TableView<BibEntryRow> tv, BibManager dlg)
   {
     this.tv = tv;
     rows = FXCollections.observableArrayList();
     keyToRow = new HashMap<>();
 
-    HyperTable.registerTable(tv, prefID, dlg);
+    HyperTable.registerTable(tv, PREF_KEY_HT_BIB_ENTRIES, dlg);
 
     filteredRows = new FilteredList<>(rows, row -> true);
 

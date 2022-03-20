@@ -107,7 +107,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   {
     FXMLLoader loader = new FXMLLoader(App.class.getResource(ctrlrFilename + ".fxml"));
     tab.setContent(loader.load());
-    HyperTab.class.cast(loader.getController()).baseInit(tabEnum, tab);
+    ((HyperTab<?, ?>) loader.getController()).baseInit(tabEnum, tab);
   }
 
 //---------------------------------------------------------------------------
@@ -224,14 +224,10 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
     if (viewRecord == null) return null;
 
-    switch (viewRecord.getType())
-    {
-      case hdtConcept :
-        return (HDT_RT) ((HDT_Concept) viewRecord).term.get();
-
-      default :
-        return (HDT_RT) viewRecord;
-    }
+    return viewRecord.getType() == hdtConcept ?
+      (HDT_RT) ((HDT_Concept) viewRecord).term.get()
+    :
+      (HDT_RT) viewRecord;
   }
 
 //---------------------------------------------------------------------------
