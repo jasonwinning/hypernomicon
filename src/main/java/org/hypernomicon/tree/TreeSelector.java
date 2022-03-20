@@ -35,8 +35,8 @@ import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_Term;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 
 public class TreeSelector
 {

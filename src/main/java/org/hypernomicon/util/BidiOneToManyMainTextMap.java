@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import com.google.common.collect.Sets;
-import org.hypernomicon.model.items.MainText;
+import org.hypernomicon.model.unities.MainText;
 
 public class BidiOneToManyMainTextMap
 {

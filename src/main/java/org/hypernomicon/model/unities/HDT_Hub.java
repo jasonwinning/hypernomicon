@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.records;
+package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
@@ -23,6 +23,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.records.RecordState;
 
 public class HDT_Hub extends HDT_RecordWithConnector
 {

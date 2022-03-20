@@ -34,12 +34,13 @@ import org.hypernomicon.App;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
-import org.hypernomicon.model.items.KeyWork;
-import org.hypernomicon.model.items.MainText;
-import org.hypernomicon.model.items.MainText.DisplayItem;
-import org.hypernomicon.model.items.MainText.DisplayItemType;
-import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.KeyWork;
+import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.model.unities.MainText.DisplayItem;
+import org.hypernomicon.model.unities.MainText.DisplayItemType;
+import org.hypernomicon.model.unities.StrongLink;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 
 import static org.hypernomicon.App.*;

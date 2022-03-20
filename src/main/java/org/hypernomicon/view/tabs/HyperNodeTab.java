@@ -22,7 +22,7 @@ import java.util.prefs.Preferences;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;

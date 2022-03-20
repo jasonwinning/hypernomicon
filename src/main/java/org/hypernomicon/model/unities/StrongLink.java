@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -34,7 +34,7 @@ import org.hypernomicon.model.records.*;
  * There is always one object of this class for every hub record.
  *
  * The reason for not simply folding this functionality into
- * {@link org.hypernomicon.model.records.HDT_Hub HDT_Hub} is that it has to be
+ * {@link HDT_Hub HDT_Hub} is that it has to be
  * in the same package as {@link Connector Connector}, and it is safer
  * for both of those classes to not be in the same package as the record
  * classes.

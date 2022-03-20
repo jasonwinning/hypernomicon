@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.unities;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -24,17 +24,17 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
-import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
+import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
-import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.unities.HDI_OfflineConnector.DisplayItem;
 import org.hypernomicon.view.mainText.MainTextUtil;
-import org.hypernomicon.model.items.HDI_OfflineConnector.DisplayItem;
+import org.hypernomicon.model.items.HDI_OnlineBase;
 
 //---------------------------------------------------------------------------
 
@@ -116,7 +116,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
           HDT_RecordWithPath keyWorkRecord = keyWork.getRecord();
           mainText.keyWorks.add(keyWork.getOnlineCopy());
 
-          RecordState recordState = val.recordState;
+          RecordState recordState = val.getRecordState();
 
           if (recordState.type == hdtHub)
           {

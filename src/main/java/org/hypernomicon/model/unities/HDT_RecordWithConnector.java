@@ -15,22 +15,29 @@
  *
  */
 
-package org.hypernomicon.model.records;
+package org.hypernomicon.model.unities;
 
-import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
+import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.items.KeyWork;
-import org.hypernomicon.model.items.MainText;
-import org.hypernomicon.model.items.MainText.DisplayItem;
-import org.hypernomicon.model.items.Connector;
-import org.hypernomicon.model.items.StrongLink;
+import org.hypernomicon.model.Exceptions.HubChangedException;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.Exceptions.RestoreException;
+import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.records.HDT_Argument;
+import org.hypernomicon.model.records.HDT_Debate;
+import org.hypernomicon.model.records.HDT_Position;
+import org.hypernomicon.model.records.HDT_RecordBase;
+import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
+import org.hypernomicon.model.unities.MainText.DisplayItem;
 
 public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements HDT_RecordWithDescription
 {
@@ -172,6 +179,30 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
     displayItems.add(new DisplayItem(parent));
     getMainText().setDisplayItemsFromList(displayItems);
     db.runningConversion = rc;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
+  {
+    int backupHubID = nullSwitch((HDI_OfflineConnector)backupState.items.get(tagHub), -1, HDI_OfflineConnector::getHubID);
+
+    if (isOnline() && isUnitable())
+    {
+      int curHubID = nullSwitch(getHub(), -1, HDT_Hub::getID);
+
+      if (curHubID != backupHubID)
+        throw new HubChangedException(curHubID >= 1);
+    }
+
+    super.restoreTo(backupState, rebuildMentions);
+
+    if (backupHubID > 0)                                    // this is being done last so it can overwrite an existing
+    {                                                       // hypernomicon.view.mainText item. See HDI_OnlineConnector constructor.
+      connector.initFromHub(db.hubs.getByID(backupHubID));
+      setSearchKey(backupState.getSearchKey(), true, rebuildMentions);
+    }
   }
 
 //---------------------------------------------------------------------------

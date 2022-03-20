@@ -27,6 +27,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PersonStatus;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Rank;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 import org.hypernomicon.util.SplitString;
 
 import java.util.ArrayList;

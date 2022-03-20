@@ -38,6 +38,12 @@ import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.HyperSubjPointer;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.*;
+import org.hypernomicon.model.unities.HDI_OfflineConnector;
+import org.hypernomicon.model.unities.HDI_OnlineConnector;
+import org.hypernomicon.model.unities.HDI_OnlineHubSpokes;
+import org.hypernomicon.model.unities.HDT_Hub;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -129,10 +135,12 @@ public abstract class HDT_RecordBase implements HDT_Record
   protected final <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType)
   { return (HyperSubjPointer<HDT_SubjType, HDT_ObjType>) db.getSubjPointer(relType, this); }
 
+  protected boolean isOnline() { return online; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HDT_RecordBase(RecordState xmlState, HyperDataset<? extends HDT_Record> dataset, Tag nameTag)
+  protected HDT_RecordBase(RecordState xmlState, HyperDataset<? extends HDT_Record> dataset, Tag nameTag)
   {
     name = new NameItem();
     type = RecordType.typeByRecordClass(getClass());
@@ -265,26 +273,8 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
-  public final void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
+  public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
   {
-    if (online)
-    {
-      if (isUnitable())
-      {
-        HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector)this;
-        int curHubID = -1;
-
-        if (uRecord.getHub() != null)
-          curHubID = uRecord.getHub().getID();
-
-        if (curHubID != ((HDI_OfflineConnector)backupState.items.get(tagHub)).getHubID())
-          throw new HubChangedException(curHubID >= 1);
-      }
-
-      if (this.getType() == hdtTerm)
-        ((HDT_Term) this).throwExceptionIfConceptIDsChanged(backupState);
-    }
-
     online = true;
 
     if (type.getDisregardDates() == false)
@@ -297,7 +287,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     if (this instanceof HDT_SimpleRecord)
       setNameInternal(backupState.simpleName, false);
 
-    int hubID = nullSwitch((HDI_OfflineConnector)backupState.items.get(tagHub), -1, HDI_OfflineConnector::getHubID);
+    int backupHubID = nullSwitch((HDI_OfflineConnector)backupState.items.get(tagHub), -1, HDI_OfflineConnector::getHubID);
 
     for (Entry<Tag, HDI_OfflineBase> backupEntry : backupState.items.entrySet())
     {
@@ -306,8 +296,8 @@ public abstract class HDT_RecordBase implements HDT_Record
       if ((tag == tagMainText) || (tag == tagHub)) continue; // handle hub after loop ends
 
       HDI_OnlineBase liveValue = items.get(tag);
-      if ((liveValue.getCategory() == hdcConnector) && (hubID > 0)) // Correct data will be in hub's record state,
-        continue;                                                   // not this one's
+      if ((liveValue.getCategory() == hdcConnector) && (backupHubID > 0)) // Correct data will be in hub's record state,
+        continue;                                                         // not this one's
 
       HDI_OfflineBase backupValue = backupEntry.getValue();
 
@@ -321,11 +311,8 @@ public abstract class HDT_RecordBase implements HDT_Record
         liveValue.setFromOfflineValue(backupValue, tag);
     }
 
-    if (hubID > 0)  // this is being done last so it can overwrite an existing hypernomicon.view.mainText item
-                    // See HDI_OnlineConnector constructor
-      ((HDT_RecordWithConnector)this).connector.initFromHub(db.hubs.getByID(hubID));
-
-    setSearchKey(backupState.searchKey, true, rebuildMentions);
+    if (backupHubID == -1)                                        // This should be done after hub is initialized, so it is done at
+      setSearchKey(backupState.searchKey, true, rebuildMentions); // the end of HDT_RecordWithConnector.restoreTo when hubID >= 0.
   }
 
 //---------------------------------------------------------------------------

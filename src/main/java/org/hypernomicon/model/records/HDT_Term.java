@@ -30,11 +30,14 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.model.Exceptions.ConceptChangedException;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.Exceptions.RestoreException;
+import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HDI_OfflinePointerMulti;
-import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.HyperObjList;
+import org.hypernomicon.model.unities.MainText;
 
 public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescription
 {
@@ -121,6 +124,17 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 
     if ((offlineIDs.containsAll(onlineIDs) && onlineIDs.containsAll(offlineIDs)) == false)
       throw new ConceptChangedException();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
+  {
+    if (isOnline())
+      throwExceptionIfConceptIDsChanged(backupState);
+
+    super.restoreTo(backupState, rebuildMentions);
   }
 
 //---------------------------------------------------------------------------

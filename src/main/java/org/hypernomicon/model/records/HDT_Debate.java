@@ -23,6 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 
 public class HDT_Debate extends HDT_RecordWithConnector
 {

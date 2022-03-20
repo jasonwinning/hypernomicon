@@ -24,7 +24,7 @@ import com.google.common.collect.EnumHashBiMap;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.items.MainText;
+import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.model.HyperDB.*;

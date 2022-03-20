@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -23,8 +23,8 @@ import static org.hypernomicon.model.records.RecordType.*;
 import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.items.HDI_OnlineBase;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Hub;
 
 public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 {

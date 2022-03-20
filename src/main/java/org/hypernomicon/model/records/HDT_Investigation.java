@@ -22,6 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.relations.HyperObjPointer;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 
 public class HDT_Investigation extends HDT_RecordWithConnector
 {

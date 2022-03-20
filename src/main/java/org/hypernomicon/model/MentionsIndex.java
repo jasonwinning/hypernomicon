@@ -33,13 +33,13 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.model.items.MainText;
-import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.model.unities.StrongLink;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.jsoup.nodes.Element;
@@ -47,8 +47,8 @@ import org.jsoup.nodes.Element;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 
 class MentionsIndex
 {

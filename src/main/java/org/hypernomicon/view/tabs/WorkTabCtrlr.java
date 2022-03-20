@@ -39,6 +39,7 @@ import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;

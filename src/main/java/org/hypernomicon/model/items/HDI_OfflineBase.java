@@ -36,7 +36,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
 
   private static final String QUOTE = "\"";
 
-  final RecordState recordState;
+  protected final RecordState recordState;
 
   public HDI_OfflineBase(HDI_Schema schema, RecordState recordState)
   {
@@ -87,7 +87,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, String value)
+  protected static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, String value)
   {
     writePointerTag(xml, tag, objID, objType, value, false);
   }
@@ -110,7 +110,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void writeStringTag(StringBuilder xml, Tag tag, String tagText)
+  protected static void writeStringTag(StringBuilder xml, Tag tag, String tagText)
   {
     if (tagText.isEmpty()) return;
     xml.append("  <").append(db.getTagStr(tag)).append(">")

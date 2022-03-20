@@ -15,16 +15,14 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.records.HDT_Hub;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_RecordWithConnector;
 
 /**
  * Every record that has a main HTML description field has its own object of
@@ -34,7 +32,7 @@ import org.hypernomicon.model.records.HDT_RecordWithConnector;
  * {@link MainText MainText} and {@link StrongLink StrongLink} objects.
  *
  * The reason for not folding this functionality into the
- * {@link org.hypernomicon.model.records.HDT_RecordWithConnector HDT_RecordWithConnector}
+ * {@link HDT_RecordWithConnector HDT_RecordWithConnector}
  * class is that it has to be in the same package as {@link StrongLink StrongLink},
  * and it is safer for both of those classes to not be in the same package as the
  * record classes.

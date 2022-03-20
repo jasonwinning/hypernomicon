@@ -34,6 +34,7 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 
 import com.google.common.collect.Sets;
 

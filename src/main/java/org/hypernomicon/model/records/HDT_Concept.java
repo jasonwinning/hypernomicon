@@ -28,6 +28,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjPointer;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 
 public class HDT_Concept extends HDT_RecordWithConnector
 {

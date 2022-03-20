@@ -20,7 +20,7 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
-import org.hypernomicon.model.records.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;

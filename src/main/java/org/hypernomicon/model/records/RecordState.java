@@ -32,6 +32,8 @@ import java.util.Map;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
 import org.hypernomicon.model.items.*;
+import org.hypernomicon.model.unities.HDI_OfflineConnector;
+import org.hypernomicon.model.unities.HDI_OfflineHubSpokes;
 
 public class RecordState
 {
@@ -46,6 +48,8 @@ public class RecordState
   public Instant creationDate, modifiedDate, viewDate;
   public boolean stored;
   final boolean dummyFlag;
+
+  public String getSearchKey() { return searchKey; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

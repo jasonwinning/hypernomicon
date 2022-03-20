@@ -15,13 +15,13 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.*;
@@ -33,7 +33,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 /**
  * Every record that has a main HTML description field refers to an object of
  * this class, which stores the HTML. All such record classes are subclasses of
- * {@link org.hypernomicon.model.records.HDT_RecordWithConnector HDT_RecordWithConnector};
+ * {@link HDT_RecordWithConnector HDT_RecordWithConnector};
  * each record will have its own {@link Connector Connector} object, which then
  * holds a direct reference to the MainText object. Some of those record types, but not all,
  * also can be "united" to other records so that their {@link Connector Connector} objects will

@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
+import org.hypernomicon.model.unities.HDT_Hub;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

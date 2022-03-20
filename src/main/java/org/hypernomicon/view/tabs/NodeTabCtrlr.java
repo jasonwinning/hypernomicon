@@ -19,6 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;

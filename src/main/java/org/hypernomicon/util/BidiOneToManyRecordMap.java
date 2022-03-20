@@ -23,8 +23,8 @@ import static org.hypernomicon.util.Util.*;
 import java.util.Collections;
 import java.util.Map;
 
-import org.hypernomicon.model.records.HDT_Hub;
-import org.hypernomicon.model.items.StrongLink;
+import org.hypernomicon.model.unities.HDT_Hub;
+import org.hypernomicon.model.unities.StrongLink;
 import org.hypernomicon.model.records.HDT_Record;
 
 import java.util.Set;
