@@ -22,6 +22,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -158,11 +159,11 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   private MenuItem makeMenuItem(HDT_RecordWithConnector record)
   {
     MenuItem miUnlink = new MenuItem();
-    miUnlink.setText("Unlink");
+    miUnlink.setText("Disunite");
     miUnlink.setOnAction(ae ->
     {
       if (ui.cantSaveRecord()) return;
-      record.getLink().disconnectRecord(record.getType(), true);
+      record.getHub().disuniteRecord(record.getType(), true);
       ui.update();
     });
 
@@ -194,13 +195,13 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
     if (record != null)
     {
-      if (record.isLinked())
+      if (record.hasHub())
       {
-        debate   = record.getLink().getDebate();
-        position = record.getLink().getPosition();
-        concept  = record.getLink().getConcept();
-        label    = record.getLink().getLabel();
-        note     = record.getLink().getNote();
+        debate   = record.getHub().getDebate();
+        position = record.getHub().getPosition();
+        concept  = record.getHub().getConcept();
+        label    = record.getHub().getLabel();
+        note     = record.getHub().getNote();
       }
 
       if (record.getType().equals(recordType) == false)
@@ -216,7 +217,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         debateLink.setStyle("-fx-background-color: blue; -fx-text-fill: white;");
 
-        if (record.getLink().getDebate() != null)
+        if (record.getHub().getDebate() != null)
         {
           debateLink.setText("Go to Debate...");
           debateLink.setContextMenu(new ContextMenu(makeMenuItem(debate)));
@@ -229,13 +230,13 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
           setGoToEvent(debateLink, position);
         }
 
-        setTooltip(debateLink);
+        setDisuniteTooltip(debateLink);
       }
       else
       {
         debateLink.setStyle("");
-        debateLink.setText("Link to Debate/Position...");
-        setToolTip(debateLink, "");
+        debateLink.setText("Unite with Debate/Position...");
+        setUniteTooltip(debateLink);
         debateLink.setContextMenu(null);
         setLinkToEvent(debateLink, hdtDebate);
       }
@@ -247,15 +248,15 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         conceptLink.setStyle("-fx-background-color: aqua; -fx-text-fill: red;");
         conceptLink.setText("Go to Term...");
-        setTooltip(conceptLink);
+        setDisuniteTooltip(conceptLink);
         conceptLink.setContextMenu(new ContextMenu(makeMenuItem(concept)));
         setGoToEvent(conceptLink, concept);
       }
       else
       {
         conceptLink.setStyle("");
-        conceptLink.setText("Link to Term...");
-        setToolTip(conceptLink, "");
+        conceptLink.setText("Unite with Term...");
+        setUniteTooltip(conceptLink);
         conceptLink.setContextMenu(null);
         conceptLink.setOnMouseClicked(mouseEvent ->
         {
@@ -271,15 +272,15 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         noteLink.setStyle("-fx-background-color: lime; -fx-text-fill: maroon;");
         noteLink.setText("Go to Note...");
-        setTooltip(noteLink);
+        setDisuniteTooltip(noteLink);
         noteLink.setContextMenu(new ContextMenu(makeMenuItem(note)));
         setGoToEvent(noteLink, note);
       }
       else
       {
         noteLink.setStyle("");
-        noteLink.setText("Link to Note...");
-        setToolTip(noteLink, "");
+        noteLink.setText("Unite with Note...");
+        setUniteTooltip(noteLink);
         noteLink.setContextMenu(null);
         setLinkToEvent(noteLink, hdtNote);
       }
@@ -291,19 +292,19 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         labelLink.setStyle("-fx-background-color: fuchsia; -fx-text-fill: yellow;");
         labelLink.setText("Go to Label...");
-        setTooltip(labelLink);
+        setDisuniteTooltip(labelLink);
         labelLink.setContextMenu(new ContextMenu(makeMenuItem(label)));
         labelLink.setOnMouseClicked(mouseEvent ->
         {
           if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
-            ui.goToTreeRecord(record.getLink().getLabel());
+            ui.goToTreeRecord(record.getHub().getLabel());
         });
       }
       else
       {
         labelLink.setStyle("");
-        labelLink.setText("Link to Label...");
-        setToolTip(labelLink, "");
+        labelLink.setText("Unite with Label...");
+        setUniteTooltip(labelLink);
         labelLink.setContextMenu(null);
         setLinkToEvent(labelLink, hdtWorkLabel);
       }
@@ -331,9 +332,38 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setTooltip(Label label)
+  private void setDisuniteTooltip(Label label)
   {
-    setToolTip(label, "Use right/secondary button to unlink");
+    setToolTip(label, "Use right/secondary button to disunite");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static WebTooltip uniteToolTip = null;
+
+  public void setUniteTooltip(Label label)
+  {
+    if (uniteToolTip == null) uniteToolTip = new WebTooltip(
+
+      "Click this link to choose another record to \"unite\" this record with.<br>" +
+      "<br>" +
+      "To understand what \"uniting\" two records means, consider the fact that sometimes, you might have multiple<br>" +
+      "records that represent the same topic and contain redundant information. For example, you might have a Term<br>" +
+      "record for \"Cause\" and a Problem/Debate record for \"What is the nature of causation?\".<br>" +
+      "<br>" +
+      "Instead of letting each one contain some information and key works relevant to the other and having to manually<br>" +
+      "make sure they stay in sync with each other, you can \"unite\" these records, which causes them to always have<br>" +
+      "the same description text and the same key works. Making a change to the description or key works of one record<br>" +
+      "will automatically cause the other to be updated as well. Problem/Debates, Positions, Terms, and Labels can<br>" +
+      "all be united together.<br>" +
+      "<br>" +
+      "Uniting records does not actually cause them to become merged into a single record. They will remain distinct<br>" +
+      "records possessing some fields not possessed by the record(s) they are united with (a record cannot be united<br>" +
+      "with another record of the same type). Once records are united together, you can right/secondary click this<br>" +
+      "link to disunite them.");
+
+    label.setTooltip(uniteToolTip);
   }
 
 //---------------------------------------------------------------------------

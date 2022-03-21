@@ -361,7 +361,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     Consumer<HDT_WorkLabel> consumer = label ->
     {
-      if ((label.isLinked() == false) && (topicRecordsAdded.contains(label) == false))
+      if ((label.hasHub() == false) && (topicRecordsAdded.contains(label) == false))
         otherToAdd.add(label);
     };
 

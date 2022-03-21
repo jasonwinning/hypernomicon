@@ -48,12 +48,11 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
   {
     super(schema, record);
 
-    record.initConnector();
-    connector = record.getConnector();
+    connector = record.initConnector();
 
     if (record.getType() != hdtHub)                 // MainText reference should be reset when creating a new Online Item, in case it points to
-      connector.mainText = new MainText(connector); // an existing MainText of a linked Hub. If that is the case, it will be pointed back to the
-  }                                                 // Hub MainText later in HDT_RecordBase.restoreTo, after the main loop of that procedure
+      connector.mainText = new MainText(connector); // an out-of-date MainText of a linked Hub. If that is the case, it will be pointed back to
+  }                                                 // the Hub MainText later in HDT_RecordWithConnector.restoreTo
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -155,7 +154,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
     {
       case tagHub :
 
-        val.hubID = connector.isLinked() ? connector.getHub().getID() : -1;
+        val.hubID = connector.hasHub() ? connector.getHub().getID() : -1;
         break;
 
       case tagDisplayRecord :

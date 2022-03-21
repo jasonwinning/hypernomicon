@@ -65,7 +65,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
   String htmlText;
   final List<DisplayItem> displayItems;
   final List<KeyWork> keyWorks;
-  final Map<RecordType, Set<Integer>> usedKeyWorks;
+  private final Map<RecordType, Set<Integer>> usedKeyWorks;
 
   private static Map<String, DisplayItemType> strToItemType = null;
 

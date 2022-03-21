@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.StrongLink;
 import org.hypernomicon.model.records.HDT_Record;
 
 import java.util.Set;
@@ -62,23 +61,23 @@ public class BidiOneToManyRecordMap
   {
     if (toRecord.getType() == hdtHub)
     {
-      StrongLink link = ((HDT_Hub) toRecord).getLink();
+      HDT_Hub hub = (HDT_Hub) toRecord;
 
-      nullSwitch(link.getNote    (), note    -> addForward(fromRecord, note   ));
-      nullSwitch(link.getLabel   (), label   -> addForward(fromRecord, label  ));
-      nullSwitch(link.getDebate  (), debate  -> addForward(fromRecord, debate ));
-      nullSwitch(link.getPosition(), pos     -> addForward(fromRecord, pos    ));
-      nullSwitch(link.getConcept (), concept -> addForward(fromRecord, concept));
+      nullSwitch(hub.getNote    (), note    -> addForward(fromRecord, note   ));
+      nullSwitch(hub.getLabel   (), label   -> addForward(fromRecord, label  ));
+      nullSwitch(hub.getDebate  (), debate  -> addForward(fromRecord, debate ));
+      nullSwitch(hub.getPosition(), pos     -> addForward(fromRecord, pos    ));
+      nullSwitch(hub.getConcept (), concept -> addForward(fromRecord, concept));
     }
     else if (fromRecord.getType() == hdtHub)
     {
-      StrongLink link = ((HDT_Hub) fromRecord).getLink();
+      HDT_Hub hub = (HDT_Hub) fromRecord;
 
-      nullSwitch(link.getNote    (), note    -> addForward(note   , toRecord));
-      nullSwitch(link.getLabel   (), label   -> addForward(label  , toRecord));
-      nullSwitch(link.getDebate  (), debate  -> addForward(debate , toRecord));
-      nullSwitch(link.getPosition(), pos     -> addForward(pos    , toRecord));
-      nullSwitch(link.getConcept (), concept -> addForward(concept, toRecord));
+      nullSwitch(hub.getNote    (), note    -> addForward(note   , toRecord));
+      nullSwitch(hub.getLabel   (), label   -> addForward(label  , toRecord));
+      nullSwitch(hub.getDebate  (), debate  -> addForward(debate , toRecord));
+      nullSwitch(hub.getPosition(), pos     -> addForward(pos    , toRecord));
+      nullSwitch(hub.getConcept (), concept -> addForward(concept, toRecord));
     }
     else
       addForwardMapping(fromRecord, toRecord);

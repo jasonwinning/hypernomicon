@@ -41,7 +41,7 @@ import org.hypernomicon.model.unities.MainText.DisplayItem;
 
 public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements HDT_RecordWithDescription
 {
-  protected Connector connector;     //  Do not set connector to null here because this line executes immediately AFTER the
+  private Connector connector;       //  Do not set connector to null here because this line executes immediately AFTER the
   private boolean alreadyModifying;  //  super constructor is called, and items are initialized in the super constructor.
 
 //---------------------------------------------------------------------------
@@ -61,17 +61,11 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 
   @Override public final MainText getDesc()  { return connector.getMainText(); }
   public MainText getMainText()              { return connector.getMainText(); }
-  public void initConnector()                { if (connector == null) connector = new Connector(this); }
-  public StrongLink getLink()                { return connector.getLink(); }
+  Connector initConnector()                  { return connector == null ? (connector = new Connector(this)) : connector; }
   public HDT_Hub getHub()                    { return connector.getHub(); }
-  public boolean isLinked()                  { return connector.isLinked(); }
+  public boolean hasHub()                    { return connector.hasHub(); }
   public Connector getConnector()            { return connector; }
-  public HDT_RecordWithConnector mainSpoke() { return nullSwitch(getLink(), this, link -> link.mainSpoke(false)); }
-
-  public HDT_RecordWithConnector mainSpoke(boolean prioritizeNoteOverConcept)
-  {
-    return nullSwitch(getLink(), this, link -> link.mainSpoke(prioritizeNoteOverConcept));
-  }
+  public HDT_RecordWithConnector mainSpoke() { return nullSwitch(getHub(), this, hub -> hub.mainSpoke(false)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -81,17 +75,16 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
     boolean expiringHub = false;
     HDT_Hub hub = null;
 
-    if (isLinked())
+    if (hasHub())
     {
-      StrongLink link = connector.getLink();
-      hub = link.getHub();
+      hub = connector.getHub();
 
       int cnt = 0;
-      if (link.getDebate  () != null) cnt++;
-      if (link.getLabel   () != null) cnt++;
-      if (link.getNote    () != null) cnt++;
-      if (link.getPosition() != null) cnt++;
-      if (link.getConcept () != null) cnt++;
+      if (hub.getDebate  () != null) cnt++;
+      if (hub.getLabel   () != null) cnt++;
+      if (hub.getNote    () != null) cnt++;
+      if (hub.getPosition() != null) cnt++;
+      if (hub.getConcept () != null) cnt++;
 
       if (cnt == 2) expiringHub = true;
     }
@@ -108,7 +101,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final void modifyNow()
+  @Override public void modifyNow()
   {
     if (alreadyModifying) return;
 
@@ -199,7 +192,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
     super.restoreTo(backupState, rebuildMentions);
 
     if (backupHubID > 0)                                    // this is being done last so it can overwrite an existing
-    {                                                       // hypernomicon.view.mainText item. See HDI_OnlineConnector constructor.
+    {                                                       // MainText item. See HDI_OnlineConnector constructor.
       connector.initFromHub(db.hubs.getByID(backupHubID));
       setSearchKey(backupState.getSearchKey(), true, rebuildMentions);
     }

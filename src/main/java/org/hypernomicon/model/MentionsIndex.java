@@ -37,9 +37,9 @@ import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 import org.hypernomicon.model.unities.MainText;
-import org.hypernomicon.model.unities.StrongLink;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.jsoup.nodes.Element;
@@ -109,15 +109,15 @@ class MentionsIndex
     if (record.isUnitable())
     {
       HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector) record;
-      if (uRecord.isLinked())
+      if (uRecord.hasHub())
       {
-        StrongLink link = uRecord.getLink();
+        HDT_Hub hub = uRecord.getHub();
 
-        reindexMentioner(link.getNote());
-        reindexMentioner(link.getLabel());
-        reindexMentioner(link.getDebate());
-        reindexMentioner(link.getPosition());
-        reindexMentioner(link.getConcept());
+        reindexMentioner(hub.getNote());
+        reindexMentioner(hub.getLabel());
+        reindexMentioner(hub.getDebate());
+        reindexMentioner(hub.getPosition());
+        reindexMentioner(hub.getConcept());
         return;
       }
     }

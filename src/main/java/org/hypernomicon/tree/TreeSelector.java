@@ -248,30 +248,30 @@ public class TreeSelector
     if (HyperDB.isUnstoredRecord(record2.getID(), record2.getType()))
       return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record cannot be connected to another record.");
 
-    if (record2.isLinked())
+    if (record2.hasHub())
     {
-      if (record2.getLink().getSpoke(record1.getType()) != null)
+      if (record2.getHub().getSpoke(record1.getType()) != null)
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(record1.getType()) + " record.");
 
-      if ((record1.getType() == hdtDebate) && (record2.getLink().getSpoke(hdtPosition) != null))
+      if ((record1.getType() == hdtDebate) && (record2.getHub().getSpoke(hdtPosition) != null))
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(hdtPosition) + " record.");
 
-      if ((record1.getType() == hdtPosition) && (record2.getLink().getSpoke(hdtDebate) != null))
+      if ((record1.getType() == hdtPosition) && (record2.getHub().getSpoke(hdtDebate) != null))
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(hdtDebate) + " record.");
 
-      if (record1.isLinked())
-        return falseWithErrMsgCond(showErrMsg, "Both records are already linked to other records.");
+      if (record1.hasHub())
+        return falseWithErrMsgCond(showErrMsg, "Both records are already united with other records.");
     }
 
-    if (record1.isLinked())
+    if (record1.hasHub())
     {
-      if (record1.getLink().getSpoke(record2.getType()) != null)
+      if (record1.getHub().getSpoke(record2.getType()) != null)
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(record2.getType()) + " record.");
 
-      if ((record2.getType() == hdtDebate) && (record1.getLink().getSpoke(hdtPosition) != null))
+      if ((record2.getType() == hdtDebate) && (record1.getHub().getSpoke(hdtPosition) != null))
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(hdtPosition) + " record.");
 
-      if ((record2.getType() == hdtPosition) && (record1.getLink().getSpoke(hdtDebate) != null))
+      if ((record2.getType() == hdtPosition) && (record1.getHub().getSpoke(hdtDebate) != null))
         falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(hdtDebate) + " record.");
     }
 

@@ -108,7 +108,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getKeyWorksString()
+  private String getKeyWorksString()
   {
     return keyWorks.stream().map(keyWork -> keyWork.getSearchKey(true)).reduce((s1, s2) -> s1 + " " + s2).orElse("");
   }
@@ -244,24 +244,24 @@ public class MainText
 
     if (src1.getRecord().getType() == hdtHub)
     {
-      StrongLink link = src1.connector.getLink();
+      HDT_Hub hub = src1.connector.getHub();
 
-      if (link.getDebate  () != null) src1Connectors.add(link.debateSpoke  );
-      if (link.getPosition() != null) src1Connectors.add(link.positionSpoke);
-      if (link.getConcept () != null) src1Connectors.add(link.conceptSpoke );
-      if (link.getNote    () != null) src1Connectors.add(link.noteSpoke    );
+      if (hub.getDebate  () != null) src1Connectors.add(hub.debateSpoke  );
+      if (hub.getPosition() != null) src1Connectors.add(hub.positionSpoke);
+      if (hub.getConcept () != null) src1Connectors.add(hub.conceptSpoke );
+      if (hub.getNote    () != null) src1Connectors.add(hub.noteSpoke    );
     }
     else
       src1Connectors.add(src1.connector);
 
     if (src2.getRecord().getType() == hdtHub)
     {
-      StrongLink link = src2.connector.getLink();
+      HDT_Hub hub = src2.connector.getHub();
 
-      if (link.getDebate  () != null) src2Connectors.add(link.debateSpoke  );
-      if (link.getPosition() != null) src2Connectors.add(link.positionSpoke);
-      if (link.getConcept () != null) src2Connectors.add(link.conceptSpoke );
-      if (link.getNote    () != null) src2Connectors.add(link.noteSpoke    );
+      if (hub.getDebate  () != null) src2Connectors.add(hub.debateSpoke  );
+      if (hub.getPosition() != null) src2Connectors.add(hub.positionSpoke);
+      if (hub.getConcept () != null) src2Connectors.add(hub.conceptSpoke );
+      if (hub.getNote    () != null) src2Connectors.add(hub.noteSpoke    );
     }
     else
       src2Connectors.add(src2.connector);
@@ -447,18 +447,18 @@ public class MainText
   {
     if (connector == null) return;
 
-    StrongLink link = connector.getLink();
+    HDT_Hub hub = connector.getHub();
 
-    if (link == null)
+    if (hub == null)
     {
       db.handleKeyWork(getRecord(), keyWorkRecord, affirm);
       return;
     }
 
-    nullSwitch(link.getDebate  (), debate  -> db.handleKeyWork(debate , keyWorkRecord, affirm));
-    nullSwitch(link.getPosition(), pos     -> db.handleKeyWork(pos    , keyWorkRecord, affirm));
-    nullSwitch(link.getNote    (), note    -> db.handleKeyWork(note   , keyWorkRecord, affirm));
-    nullSwitch(link.getConcept (), concept -> db.handleKeyWork(concept, keyWorkRecord, affirm));
+    nullSwitch(hub.getDebate  (), debate  -> db.handleKeyWork(debate , keyWorkRecord, affirm));
+    nullSwitch(hub.getPosition(), pos     -> db.handleKeyWork(pos    , keyWorkRecord, affirm));
+    nullSwitch(hub.getNote    (), note    -> db.handleKeyWork(note   , keyWorkRecord, affirm));
+    nullSwitch(hub.getConcept (), concept -> db.handleKeyWork(concept, keyWorkRecord, affirm));
   }
 
 //---------------------------------------------------------------------------
@@ -498,7 +498,7 @@ public class MainText
     if (modify)
       connector.modifyNow();
 
-    nullSwitch(connector.getLink(), link -> nullSwitch(link.getLabel(), HDT_WorkLabel::refreshSubjects));
+    nullSwitch(connector.getHub(), hub -> nullSwitch(hub.getLabel(), HDT_WorkLabel::refreshSubjects));
   }
 
 //---------------------------------------------------------------------------

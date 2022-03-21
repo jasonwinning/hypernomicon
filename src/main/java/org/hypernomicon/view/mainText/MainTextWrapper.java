@@ -35,12 +35,12 @@ import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
-import org.hypernomicon.model.unities.StrongLink;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 
 import static org.hypernomicon.App.*;
@@ -384,7 +384,7 @@ public final class MainTextWrapper
     if (mainTextRecord.getType() == hdtWorkLabel) return (HDT_WorkLabel) mainTextRecord;
     if (mainTextRecord.getType() != hdtHub)       return null;
 
-    return mainTextRecord.getLink().getLabel();
+    return mainTextRecord.getHub().getLabel();
   }
 
 //---------------------------------------------------------------------------
@@ -406,16 +406,16 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private List<HDT_Concept> getRelatedConcepts(StrongLink link)
+  private List<HDT_Concept> getRelatedConcepts(HDT_Hub hub)
   {
     List<HDT_Concept> concepts = new ArrayList<>();
-    if (link == null) return concepts;
+    if (hub == null) return concepts;
 
-    link.getSpokes().forEachOrdered(spoke -> { switch (spoke.getType())
+    hub.getSpokes().forEachOrdered(spoke -> { switch (spoke.getType())
     {
       case hdtDebate :
 
-        HDT_Debate debate = link.getDebate();
+        HDT_Debate debate = hub.getDebate();
 
         addLinkedTerms(debate.largerDebates, concepts);
         addLinkedTerms(debate.subDebates   , concepts);
@@ -424,7 +424,7 @@ public final class MainTextWrapper
 
       case hdtPosition :
 
-        HDT_Position position = link.getPosition();
+        HDT_Position position = hub.getPosition();
 
         addLinkedTerms(position.largerDebates  , concepts);
         addLinkedTerms(position.largerPositions, concepts);
@@ -434,7 +434,7 @@ public final class MainTextWrapper
 
       case hdtNote :
 
-        HDT_Note note = link.getNote();
+        HDT_Note note = hub.getNote();
 
         addLinkedTerms(note.parentNotes, concepts);
         addLinkedTerms(note.subNotes   , concepts);
@@ -442,7 +442,7 @@ public final class MainTextWrapper
 
       case hdtWorkLabel :
 
-        HDT_WorkLabel label = link.getLabel();
+        HDT_WorkLabel label = hub.getLabel();
 
         addLinkedTerms(label.parentLabels, concepts);
         addLinkedTerms(label.subLabels   , concepts);
@@ -466,9 +466,9 @@ public final class MainTextWrapper
   {
     uRecords.forEach(uRecord ->
     {
-      if (uRecord.isLinked() == false) return;
+      if (uRecord.hasHub() == false) return;
 
-      nullSwitch(uRecord.getLink().getConcept(), concept ->
+      nullSwitch(uRecord.getHub().getConcept(), concept ->
       {
         if (concepts.contains(concept) == false)
           concepts.add(concept);
@@ -570,7 +570,7 @@ public final class MainTextWrapper
     StringBuilder relRecordsHtml = new StringBuilder();
     if (curRecord.getType() == hdtConcept)
     {
-      List<HDT_Concept> concepts = getRelatedConcepts(curRecord.getLink());
+      List<HDT_Concept> concepts = getRelatedConcepts(curRecord.getHub());
 
       concepts.forEach(concept ->
       {

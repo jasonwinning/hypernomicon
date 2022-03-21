@@ -45,43 +45,42 @@ public final class Connector
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public Connector(HDT_RecordWithConnector record)
+  Connector(HDT_RecordWithConnector record)
   {
     this.record = record;
     mainText = new MainText(this);
 
     if (record.getType() == hdtHub)
-      link = new StrongLink((HDT_Hub) record);  // This only gets used if the record will be loaded from a record state; a new StrongLink is created
-  }                                             // that overwrites this one in StrongLink.connectRecords
+      hub = (HDT_Hub) record;
+  }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   private final HDT_RecordWithConnector record;
-  StrongLink link;
+  HDT_Hub hub;
   MainText mainText;
   private boolean alreadyModifying = false;
 
   public RecordType getType()                { return getSpoke().getType(); }
-  public boolean isLinked()                  { return link != null; }
-  public StrongLink getLink()                { return link; }
-  public MainText getMainText()              { return mainText; }
-  public HDT_Hub getHub()                    { return link == null ? null : link.getHub(); }
+  boolean hasHub()                           { return hub != null; }
+  HDT_Hub getHub()                           { return hub; }
+  MainText getMainText()                     { return mainText; }
   public HDT_RecordWithConnector getSpoke()  { return record; }
-  public static boolean isEmpty(Connector c) { return (c == null) || HDT_Record.isEmpty(c.getSpoke()); }
+  static boolean isEmpty(Connector c)        { return (c == null) || HDT_Record.isEmpty(c.getSpoke()); }
 
   @Override public int hashCode()            { return record == null ? 0 : (31 * record.hashCode()); }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void modifyNow()
+  void modifyNow()
   {
     if (db.runningConversion || alreadyModifying) return;
 
     alreadyModifying = true;
 
-    if (isLinked()) link.modifyNow();
+    if (hasHub()) hub.modifyNow();
     record.modifyNow();
 
     alreadyModifying = false;
@@ -94,7 +93,7 @@ public final class Connector
   void resolvePointers() throws HDB_InternalError
   {
     if (HDT_Record.isEmptyThrowsException(getHub()))
-      link = null;
+      hub = null;
 
     mainText.resolvePointers();
   }
@@ -106,8 +105,8 @@ public final class Connector
   {
     if (getType() == hdtHub) return;
 
-    if (isLinked())
-      link.disconnectRecord(getType(), false);
+    if (hasHub())
+      hub.disuniteRecord(getType(), false);
 
     mainText.expire();
   }
@@ -127,9 +126,9 @@ public final class Connector
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void initFromHub(HDT_Hub hub)
+  void initFromHub(HDT_Hub hub)
   {
-    link = hub.getLink();
+    this.hub = hub;
 
     db.replaceMainText(mainText, hub.getMainText());
 

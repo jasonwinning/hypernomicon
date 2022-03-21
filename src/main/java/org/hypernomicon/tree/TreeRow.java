@@ -125,12 +125,12 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
         if (rowRecord.isUnitable() == false) { setGraphic(null); return; }
 
         HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector)rowRecord;
-        if (uRecord.isLinked() == false) { setGraphic(null); return; }
+        if (uRecord.hasHub() == false) { setGraphic(null); return; }
 
         TreeWrapper treeWrapper = (TreeWrapper) treeRow.getTreeWrapper();
 
         HBox hBox = new HBox();
-        uRecord.getLink().getSpokes().map(Connector::getSpoke).filter(record -> record != uRecord).forEachOrdered(spokeRecord ->
+        uRecord.getHub().getSpokes().map(Connector::getSpoke).filter(record -> record != uRecord).forEachOrdered(spokeRecord ->
         {
           if ((spokeRecord.getType() == hdtConcept) && (treeWrapper.getHasTerms() == false))
             return;

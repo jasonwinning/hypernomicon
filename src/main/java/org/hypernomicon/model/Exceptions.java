@@ -102,8 +102,8 @@ public final class Exceptions
   {
     public HubChangedException(boolean formerlyUnlinked)
     {
-      super(formerlyUnlinked ? "The record is now linked to a record that it was not previously linked to." :
-                               "The record has been unlinked from a record it was previously linked to.");
+      super(formerlyUnlinked ? "The record is now united with a record that it was not previously united with." :
+                               "The record has been disunited from a record it was previously united with.");
     }
   }
 

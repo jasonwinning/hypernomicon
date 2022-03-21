@@ -42,8 +42,8 @@ import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
+import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithConnector;
-import org.hypernomicon.model.unities.StrongLink;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -148,26 +148,26 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   private Set<HDT_Record> removeDupMentioners(Set<HDT_Record> mentioners)
   {
     Set<HDT_Record> output = new HashSet<>();
-    Set<StrongLink> usedLinks = new HashSet<>();
-    StrongLink thisLink = curNote.getLink();
+    Set<HDT_Hub> usedHubs = new HashSet<>();
+    HDT_Hub thisHub = curNote.getHub();
 
     mentioners.forEach(mentioner ->
     {
       if (mentioner.equals(curNote)) return;
 
-      StrongLink link = ((HDT_RecordWithConnector) mentioner).getLink();
+      HDT_Hub hub = ((HDT_RecordWithConnector) mentioner).getHub();
 
-      if (link == null)
+      if (hub == null)
       {
         output.add(mentioner);
         return;
       }
 
-      if ((link == thisLink) || usedLinks.contains(link)) return;
+      if ((hub == thisHub) || usedHubs.contains(hub)) return;
 
-      usedLinks.add(link);
+      usedHubs.add(hub);
 
-      output.add(link.mainSpoke());
+      output.add(hub.mainSpoke());
     });
 
     return output;

@@ -53,7 +53,6 @@ import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithConnector;
-import org.hypernomicon.model.unities.StrongLink;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryTabCtrlr;
 import org.hypernomicon.query.ResultsRow;
@@ -2144,15 +2143,15 @@ public final class MainCtrlr
 
       case hdtWorkLabel :
 
-        StrongLink link = ((HDT_WorkLabel)record).getLink();
+        HDT_Hub hub = ((HDT_WorkLabel)record).getHub();
 
-        if (link == null)
+        if (hub == null)
         {
           goToTreeRecord(record);
           return;
         }
 
-        record = link.mainSpoke();
+        record = hub.mainSpoke();
         break;
 
       case hdtFolder :
@@ -2556,7 +2555,7 @@ public final class MainCtrlr
   {
     String desc;
 
-    if      ((record2.getType() == hdtWorkLabel) && (record2.isLinked() == false))       desc = record1.getMainText().getHtml();
+    if      ((record2.getType() == hdtWorkLabel) && (record2.hasHub() == false))         desc = record1.getMainText().getHtml();
     else if (ultraTrim(convertToSingleLine(record1.getMainText().getPlain())).isEmpty()) desc = record2.getMainText().getHtml();
     else if (ultraTrim(convertToSingleLine(record2.getMainText().getPlain())).isEmpty()) desc = record1.getMainText().getHtml();
     else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))    desc = record1.getMainText().getHtml();
@@ -2570,7 +2569,7 @@ public final class MainCtrlr
       desc = frmMerge.getDesc();
     }
 
-    if (StrongLink.connectRecords(record1.getConnector(), record2.getConnector(), desc))
+    if (HDT_Hub.uniteRecords(record1.getConnector(), record2.getConnector(), desc))
       goToRecord(goToRecord2 ? record2 : record1, false);
     else
       update();

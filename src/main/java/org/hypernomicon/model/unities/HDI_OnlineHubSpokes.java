@@ -51,13 +51,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void setFromOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
-    StrongLink link = hub.getLink();
-
-    if (val.debateID   > 0) link.debateSpoke   = db.debates   .getByID(val.debateID  ).getConnector();
-    if (val.positionID > 0) link.positionSpoke = db.positions .getByID(val.positionID).getConnector();
-    if (val.noteID     > 0) link.noteSpoke     = db.notes     .getByID(val.noteID    ).getConnector();
-    if (val.labelID    > 0) link.labelSpoke    = db.workLabels.getByID(val.labelID   ).getConnector();
-    if (val.conceptID  > 0) link.conceptSpoke  = db.concepts  .getByID(val.conceptID ).getConnector();
+    if (val.debateID   > 0) hub.debateSpoke   = db.debates   .getByID(val.debateID  ).getConnector();
+    if (val.positionID > 0) hub.positionSpoke = db.positions .getByID(val.positionID).getConnector();
+    if (val.noteID     > 0) hub.noteSpoke     = db.notes     .getByID(val.noteID    ).getConnector();
+    if (val.labelID    > 0) hub.labelSpoke    = db.workLabels.getByID(val.labelID   ).getConnector();
+    if (val.conceptID  > 0) hub.conceptSpoke  = db.concepts  .getByID(val.conceptID ).getConnector();
   }
 
 //---------------------------------------------------------------------------
@@ -65,14 +63,13 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void getToOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
-    StrongLink link = hub.getLink();
     HDT_Record record;
 
-    record = link.getDebate  (); if (record != null) val.debateID   = record.getID();
-    record = link.getPosition(); if (record != null) val.positionID = record.getID();
-    record = link.getNote    (); if (record != null) val.noteID     = record.getID();
-    record = link.getLabel   (); if (record != null) val.labelID    = record.getID();
-    record = link.getConcept (); if (record != null) val.conceptID  = record.getID();
+    record = hub.getDebate  (); if (record != null) val.debateID   = record.getID();
+    record = hub.getPosition(); if (record != null) val.positionID = record.getID();
+    record = hub.getNote    (); if (record != null) val.noteID     = record.getID();
+    record = hub.getLabel   (); if (record != null) val.labelID    = record.getID();
+    record = hub.getConcept (); if (record != null) val.conceptID  = record.getID();
   }
 
 //---------------------------------------------------------------------------
@@ -81,21 +78,20 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
   @Override public void resolvePointers()
   {
     int spokeCount = 0;
-    StrongLink link = hub.getLink();
 
-    if (Connector.isEmpty(link.noteSpoke    )) link.noteSpoke     = null;  else  spokeCount++;
-    if (Connector.isEmpty(link.conceptSpoke )) link.conceptSpoke  = null;  else  spokeCount++;
-    if (Connector.isEmpty(link.labelSpoke   )) link.labelSpoke    = null;  else  spokeCount++;
-    if (Connector.isEmpty(link.debateSpoke  )) link.debateSpoke   = null;  else  spokeCount++;
-    if (Connector.isEmpty(link.positionSpoke)) link.positionSpoke = null;  else  spokeCount++;
+    if (Connector.isEmpty(hub.noteSpoke    )) hub.noteSpoke     = null;  else  spokeCount++;
+    if (Connector.isEmpty(hub.conceptSpoke )) hub.conceptSpoke  = null;  else  spokeCount++;
+    if (Connector.isEmpty(hub.labelSpoke   )) hub.labelSpoke    = null;  else  spokeCount++;
+    if (Connector.isEmpty(hub.debateSpoke  )) hub.debateSpoke   = null;  else  spokeCount++;
+    if (Connector.isEmpty(hub.positionSpoke)) hub.positionSpoke = null;  else  spokeCount++;
 
     if (spokeCount == 1)  // If only one connector, no reason for hub to exist...
     {
-      if      (link.noteSpoke     != null) link.disconnectRecord(hdtNote,      false);
-      else if (link.debateSpoke   != null) link.disconnectRecord(hdtDebate,    false);
-      else if (link.positionSpoke != null) link.disconnectRecord(hdtPosition,  false);
-      else if (link.conceptSpoke  != null) link.disconnectRecord(hdtConcept,   false);
-      else if (link.labelSpoke    != null) link.disconnectRecord(hdtWorkLabel, false);
+      if      (hub.noteSpoke     != null) hub.disuniteRecord(hdtNote,      false);
+      else if (hub.debateSpoke   != null) hub.disuniteRecord(hdtDebate,    false);
+      else if (hub.positionSpoke != null) hub.disuniteRecord(hdtPosition,  false);
+      else if (hub.conceptSpoke  != null) hub.disuniteRecord(hdtConcept,   false);
+      else if (hub.labelSpoke    != null) hub.disuniteRecord(hdtWorkLabel, false);
 
       spokeCount = 0;
     }
