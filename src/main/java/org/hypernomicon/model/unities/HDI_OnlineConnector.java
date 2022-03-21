@@ -22,12 +22,12 @@ import java.util.function.Predicate;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
@@ -40,7 +40,11 @@ import org.hypernomicon.model.items.HDI_OnlineBase;
 
 public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 {
-  private Connector connector = null;
+  private final HDT_RecordWithConnector recordWMT;
+
+  private HDT_Hub getHub()       { return recordWMT.getHub(); }
+  private boolean hasHub()       { return recordWMT.hasHub(); }
+  private MainText getMainText() { return recordWMT.getMainText(); }
 
   //---------------------------------------------------------------------------
 
@@ -48,25 +52,28 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
   {
     super(schema, record);
 
-    connector = record.initConnector();
-
-    if (record.getType() != hdtHub)                 // MainText reference should be reset when creating a new Online Item, in case it points to
-      connector.mainText = new MainText(connector); // an out-of-date MainText of a linked Hub. If that is the case, it will be pointed back to
-  }                                                 // the Hub MainText later in HDT_RecordWithConnector.restoreTo
+    recordWMT = record;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void expire()          { connector.expire(); }
+  @Override public void expire()
+  {
+    if (recordWMT.getType() == hdtHub) return;
 
-  @Override public void resolvePointers() throws HDB_InternalError { connector.resolvePointers(); }
+    if (hasHub())
+      getHub().disuniteRecord(recordWMT.getType(), false);
+
+    getMainText().expire();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setFromOfflineValue(HDI_OfflineConnector val, Tag tag)
   {
-    MainText mainText = connector.getMainText();
+    final MainText mainText = getMainText();
 
     switch (tag)
     {
@@ -127,12 +134,21 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
             if (spokes.conceptID  > 0) db.handleKeyWork(db.concepts .getByID(spokes.conceptID ), keyWorkRecord, true);
           }
           else
-            db.handleKeyWork(connector.getSpoke(), keyWorkRecord, true);
+            db.handleKeyWork(recordWMT, keyWorkRecord, true);
         }
 
         break;
 
-      case tagHub : return; // this gets taken care of in HDT_RecordBase.restoreTo
+      case tagHub :
+
+        if (val.hubID < 1)
+          return;
+
+        HDT_Hub hub = db.hubs.getByID(val.hubID);
+        recordWMT.hub = hub;
+        db.replaceMainText(mainText, hub.getMainText());
+        recordWMT.mainText = hub.getMainText();
+        return;
 
       default :
 
@@ -148,13 +164,13 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
   @Override public void getToOfflineValue(HDI_OfflineConnector val, Tag tag)
   {
-    MainText mainText = connector.getMainText();
+    MainText mainText = getMainText();
 
     switch (tag)
     {
       case tagHub :
 
-        val.hubID = connector.hasHub() ? connector.getHub().getID() : -1;
+        val.hubID = nullSwitch(getHub(), -1, HDT_Record::getID);
         break;
 
       case tagDisplayRecord :
@@ -188,6 +204,10 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
         break;
 
+      case tagMainText : // This tag is always redundant because there is always another tag that is the actual main text
+                         // tag for the record type. It exists only for the Main Text query result column to work.
+        break;
+
       default :
 
         val.htmlText = mainText.getPlain().matches(".*\\p{Alnum}.*") ? mainText.getHtml() : "";
@@ -200,7 +220,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    list.add(connector.getMainText().getPlainForDisplay());  // Important: this needs to call the function, not access the member directly
+    list.add(getMainText().getPlainForDisplay());  // Important: this needs to call the function, not access the member directly
   }
 
 //---------------------------------------------------------------------------
@@ -210,15 +230,15 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
   {
     switch (tag)
     {
-      case tagDisplayRecord : return connector.getMainText().getDisplayItemsString();
+      case tagDisplayRecord : return getMainText().getDisplayItemsString();
       case tagKeyWork       :
 
-        return connector.getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
-                                                        .filter(Predicate.not(String::isBlank))
-                                                        .limit(20)
-                                                        .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+        return getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
+                                              .filter(Predicate.not(String::isBlank))
+                                              .limit(20)
+                                              .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
       case tagHub           : return "";
-      default               : return connector.getMainText().getPlain();
+      default               : return getMainText().getPlain();
     }
   }
 

@@ -2569,7 +2569,7 @@ public final class MainCtrlr
       desc = frmMerge.getDesc();
     }
 
-    if (HDT_Hub.uniteRecords(record1.getConnector(), record2.getConnector(), desc))
+    if (HDT_Hub.uniteRecords(record1, record2, desc))
       goToRecord(goToRecord2 ? record2 : record1, false);
     else
       update();

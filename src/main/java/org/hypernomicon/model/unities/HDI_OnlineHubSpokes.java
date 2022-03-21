@@ -22,6 +22,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.List;
 
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.items.HDI_OnlineBase;
 import org.hypernomicon.model.records.HDT_Record;
@@ -51,11 +52,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void setFromOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
-    if (val.debateID   > 0) hub.debateSpoke   = db.debates   .getByID(val.debateID  ).getConnector();
-    if (val.positionID > 0) hub.positionSpoke = db.positions .getByID(val.positionID).getConnector();
-    if (val.noteID     > 0) hub.noteSpoke     = db.notes     .getByID(val.noteID    ).getConnector();
-    if (val.labelID    > 0) hub.labelSpoke    = db.workLabels.getByID(val.labelID   ).getConnector();
-    if (val.conceptID  > 0) hub.conceptSpoke  = db.concepts  .getByID(val.conceptID ).getConnector();
+    if (val.debateID   > 0) hub.debateSpoke   = db.debates   .getByID(val.debateID  );
+    if (val.positionID > 0) hub.positionSpoke = db.positions .getByID(val.positionID);
+    if (val.noteID     > 0) hub.noteSpoke     = db.notes     .getByID(val.noteID    );
+    if (val.labelID    > 0) hub.labelSpoke    = db.workLabels.getByID(val.labelID   );
+    if (val.conceptID  > 0) hub.conceptSpoke  = db.concepts  .getByID(val.conceptID );
   }
 
 //---------------------------------------------------------------------------
@@ -75,17 +76,17 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void resolvePointers()
+  @Override public void resolvePointers() throws HDB_InternalError
   {
     int spokeCount = 0;
 
-    if (Connector.isEmpty(hub.noteSpoke    )) hub.noteSpoke     = null;  else  spokeCount++;
-    if (Connector.isEmpty(hub.conceptSpoke )) hub.conceptSpoke  = null;  else  spokeCount++;
-    if (Connector.isEmpty(hub.labelSpoke   )) hub.labelSpoke    = null;  else  spokeCount++;
-    if (Connector.isEmpty(hub.debateSpoke  )) hub.debateSpoke   = null;  else  spokeCount++;
-    if (Connector.isEmpty(hub.positionSpoke)) hub.positionSpoke = null;  else  spokeCount++;
+    if (HDT_Record.isEmptyThrowsException(hub.noteSpoke    )) hub.noteSpoke     = null;  else  spokeCount++;
+    if (HDT_Record.isEmptyThrowsException(hub.conceptSpoke )) hub.conceptSpoke  = null;  else  spokeCount++;
+    if (HDT_Record.isEmptyThrowsException(hub.labelSpoke   )) hub.labelSpoke    = null;  else  spokeCount++;
+    if (HDT_Record.isEmptyThrowsException(hub.debateSpoke  )) hub.debateSpoke   = null;  else  spokeCount++;
+    if (HDT_Record.isEmptyThrowsException(hub.positionSpoke)) hub.positionSpoke = null;  else  spokeCount++;
 
-    if (spokeCount == 1)  // If only one connector, no reason for hub to exist...
+    if (spokeCount == 1)  // If only one spoke left, no reason for hub to exist...
     {
       if      (hub.noteSpoke     != null) hub.disuniteRecord(hdtNote,      false);
       else if (hub.debateSpoke   != null) hub.disuniteRecord(hdtDebate,    false);

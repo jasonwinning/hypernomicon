@@ -205,8 +205,8 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
         break;
 
-      case tagMainText :
-
+      case tagMainText : // This tag is always redundant because there is always another tag that is the actual main text
+                         // tag for the record type. It exists only for the Main Text query result column to work.
         break;
 
       default :

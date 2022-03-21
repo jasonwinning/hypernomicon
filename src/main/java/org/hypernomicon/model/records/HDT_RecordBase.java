@@ -38,7 +38,6 @@ import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.HyperSubjPointer;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.*;
-import org.hypernomicon.model.unities.HDI_OfflineConnector;
 import org.hypernomicon.model.unities.HDI_OnlineConnector;
 import org.hypernomicon.model.unities.HDI_OnlineHubSpokes;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -50,7 +49,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 
 //---------------------------------------------------------------------------
 
@@ -287,18 +285,10 @@ public abstract class HDT_RecordBase implements HDT_Record
     if (this instanceof HDT_SimpleRecord)
       setNameInternal(backupState.simpleName, false);
 
-    int backupHubID = nullSwitch((HDI_OfflineConnector)backupState.items.get(tagHub), -1, HDI_OfflineConnector::getHubID);
-
     for (Entry<Tag, HDI_OfflineBase> backupEntry : backupState.items.entrySet())
     {
       Tag tag = backupEntry.getKey();
-
-      if ((tag == tagMainText) || (tag == tagHub)) continue; // handle hub after loop ends
-
       HDI_OnlineBase liveValue = items.get(tag);
-      if ((liveValue.getCategory() == hdcConnector) && (backupHubID > 0)) // Correct data will be in hub's record state,
-        continue;                                                         // not this one's
-
       HDI_OfflineBase backupValue = backupEntry.getValue();
 
       if (tag == tagFirstName)
@@ -311,8 +301,7 @@ public abstract class HDT_RecordBase implements HDT_Record
         liveValue.setFromOfflineValue(backupValue, tag);
     }
 
-    if (backupHubID == -1)                                        // This should be done after hub is initialized, so it is done at
-      setSearchKey(backupState.searchKey, true, rebuildMentions); // the end of HDT_RecordWithConnector.restoreTo when hubID >= 0.
+    setSearchKey(backupState.searchKey, true, rebuildMentions);
   }
 
 //---------------------------------------------------------------------------
@@ -463,7 +452,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final void resolvePointers() throws HDB_InternalError
+  @Override public void resolvePointers() throws HDB_InternalError
   {
     if (db.resolvingPointers() == false) throw new HDB_InternalError(59928);
 

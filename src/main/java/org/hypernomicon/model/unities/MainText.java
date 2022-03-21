@@ -33,11 +33,10 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 /**
  * Every record that has a main HTML description field refers to an object of
  * this class, which stores the HTML. All such record classes are subclasses of
- * {@link HDT_RecordWithConnector HDT_RecordWithConnector};
- * each record will have its own {@link Connector Connector} object, which then
- * holds a direct reference to the MainText object. Some of those record types, but not all,
- * also can be "united" to other records so that their {@link Connector Connector} objects will
- * refer to the same MainText object.
+ * {@link HDT_RecordWithConnector HDT_RecordWithConnector}.
+ *
+ * Some of those record types, but not all, also can be "united" to other
+ * records so that they will refer to the same MainText object.
  *
  * @author  Jason Winning
  * @since   1.0
@@ -93,10 +92,10 @@ public class MainText
   final List<DisplayItem> displayItems;
   final List<KeyWork> keyWorks;  // this can be works or miscFiles
   private String plainText = "", htmlText = "";
-  final private Connector connector;
+  final private HDT_RecordWithConnector recordWMT;
 
   public String getHtml()                         { return htmlText; }
-  public HDT_RecordWithConnector getRecord()      { return connector.getSpoke(); }
+  public HDT_RecordWithConnector getRecord()      { return recordWMT; }
   public String getPlain()                        { return plainText; }
   private boolean hasKeyWork(HDT_Record rec)      { return getKeyWork(rec) != null; }
   public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
@@ -184,9 +183,9 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MainText(Connector connector)  // called by Connector constructor
+  MainText(HDT_RecordWithConnector recordWMT)  // called by HDT_RecordWithConnector constructor
   {
-    this.connector = connector;
+    this.recordWMT = recordWMT;
 
     displayItems = Collections.synchronizedList(new ArrayList<>());
 
@@ -198,9 +197,9 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MainText(MainText mainText, Connector connector)  // called by StrongLink.disconnectRecords
+  MainText(MainText mainText, HDT_RecordWithConnector recordWMT)  // called by HDT_Hub.disuniteRecords
   {
-    this.connector = connector;
+    this.recordWMT = recordWMT;
 
     keyWorks = Collections.synchronizedList(new ArrayList<>());
 
@@ -208,9 +207,9 @@ public class MainText
 
     displayItems = Collections.synchronizedList(new ArrayList<>());
 
-    if (connector.getType() == hdtWorkLabel)
+    if (recordWMT.getType() == hdtWorkLabel)
     {
-      ((HDT_WorkLabel) connector.getSpoke()).refreshSubjects();
+      ((HDT_WorkLabel) recordWMT).refreshSubjects();
       addDefaultItems();
     }
     else
@@ -233,38 +232,34 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MainText(MainText src1, MainText src2, Connector hubConnector, String newHtml)  // called by StrongLink.connectRecords
+  MainText(MainText src1, MainText src2, HDT_Hub hub, String newHtml)  // called by HDT_Hub.uniteRecords
   {
-    connector = hubConnector;
+    recordWMT = hub;
 
     displayItems = Collections.synchronizedList(new ArrayList<>(src1.displayItems));
 
-    List<Connector> src1Connectors = new ArrayList<>(),
-                    src2Connectors = new ArrayList<>();
+    List<HDT_RecordWithConnector> src1Spokes = new ArrayList<>(),
+                                  src2Spokes = new ArrayList<>();
 
-    if (src1.getRecord().getType() == hdtHub)
+    if (src1.getRecord() == hub)
     {
-      HDT_Hub hub = src1.connector.getHub();
-
-      if (hub.getDebate  () != null) src1Connectors.add(hub.debateSpoke  );
-      if (hub.getPosition() != null) src1Connectors.add(hub.positionSpoke);
-      if (hub.getConcept () != null) src1Connectors.add(hub.conceptSpoke );
-      if (hub.getNote    () != null) src1Connectors.add(hub.noteSpoke    );
+      if (hub.getDebate  () != null) src1Spokes.add(hub.debateSpoke  );
+      if (hub.getPosition() != null) src1Spokes.add(hub.positionSpoke);
+      if (hub.getConcept () != null) src1Spokes.add(hub.conceptSpoke );
+      if (hub.getNote    () != null) src1Spokes.add(hub.noteSpoke    );
     }
     else
-      src1Connectors.add(src1.connector);
+      src1Spokes.add(src1.getRecord());
 
-    if (src2.getRecord().getType() == hdtHub)
+    if (src2.getRecord() == hub)
     {
-      HDT_Hub hub = src2.connector.getHub();
-
-      if (hub.getDebate  () != null) src2Connectors.add(hub.debateSpoke  );
-      if (hub.getPosition() != null) src2Connectors.add(hub.positionSpoke);
-      if (hub.getConcept () != null) src2Connectors.add(hub.conceptSpoke );
-      if (hub.getNote    () != null) src2Connectors.add(hub.noteSpoke    );
+      if (hub.getDebate  () != null) src2Spokes.add(hub.debateSpoke  );
+      if (hub.getPosition() != null) src2Spokes.add(hub.positionSpoke);
+      if (hub.getConcept () != null) src2Spokes.add(hub.conceptSpoke );
+      if (hub.getNote    () != null) src2Spokes.add(hub.noteSpoke    );
     }
     else
-      src2Connectors.add(src2.connector);
+      src2Spokes.add(src2.getRecord());
 
     for (int ndx = 0; ndx < src2.displayItems.size(); ndx++)
     {
@@ -286,7 +281,7 @@ public class MainText
       keyWorks.add(keyWork.getOnlineCopy());
 
       if (src2.hasKeyWork(keyWork.getRecord()) == false)
-        src2Connectors.forEach(curConn ->  db.handleKeyWork(curConn.getSpoke(), keyWork.getRecord(), true));
+        src2Spokes.forEach(spoke ->  db.handleKeyWork(spoke, keyWork.getRecord(), true));
     });
 
     src2.keyWorks.forEach(keyWork ->
@@ -295,7 +290,7 @@ public class MainText
       {
         keyWorks.add(keyWork.getOnlineCopy());
 
-        src1Connectors.forEach(curConn -> db.handleKeyWork(curConn.getSpoke(), keyWork.getRecord(), true));
+        src1Spokes.forEach(spoke -> db.handleKeyWork(spoke, keyWork.getRecord(), true));
       }
     });
 
@@ -320,10 +315,8 @@ public class MainText
 
     setInternal(newHtml, extractTextFromHTML(newHtml).trim());
 
-    if (modify == false) return;
-
-    if (connector != null)
-      connector.modifyNow();
+    if (modify)
+      recordWMT.modifyMainText();
   }
 
 //---------------------------------------------------------------------------
@@ -437,7 +430,7 @@ public class MainText
         modify = true;
       }
 
-    if (modify) connector.modifyNow();
+    if (modify) recordWMT.modifyMainText();
   }
 
 //---------------------------------------------------------------------------
@@ -445,9 +438,9 @@ public class MainText
 
   private void runKeyWorkHandler(HDT_RecordWithPath keyWorkRecord, boolean affirm)
   {
-    if (connector == null) return;
+    if (recordWMT == null) return;
 
-    HDT_Hub hub = connector.getHub();
+    HDT_Hub hub = recordWMT.getHub();
 
     if (hub == null)
     {
@@ -493,12 +486,12 @@ public class MainText
       }
     }
 
-    if (connector == null) return;
+    if (recordWMT == null) return;
 
     if (modify)
-      connector.modifyNow();
+      recordWMT.modifyMainText();
 
-    nullSwitch(connector.getHub(), hub -> nullSwitch(hub.getLabel(), HDT_WorkLabel::refreshSubjects));
+    nullSwitch(recordWMT.getHub(), hub -> nullSwitch(hub.getLabel(), HDT_WorkLabel::refreshSubjects));
   }
 
 //---------------------------------------------------------------------------

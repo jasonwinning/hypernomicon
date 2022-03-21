@@ -27,7 +27,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.unities.Connector;
 import org.hypernomicon.model.unities.HDT_RecordWithConnector;
 
 import javafx.scene.Cursor;
@@ -130,7 +129,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
         TreeWrapper treeWrapper = (TreeWrapper) treeRow.getTreeWrapper();
 
         HBox hBox = new HBox();
-        uRecord.getHub().getSpokes().map(Connector::getSpoke).filter(record -> record != uRecord).forEachOrdered(spokeRecord ->
+        uRecord.getHub().getSpokes().filter(record -> record != uRecord).forEachOrdered(spokeRecord ->
         {
           if ((spokeRecord.getType() == hdtConcept) && (treeWrapper.getHasTerms() == false))
             return;

@@ -117,22 +117,16 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void throwExceptionIfConceptIDsChanged(RecordState backupState) throws ConceptChangedException
-  {
-    List<Integer> offlineIDs = ((HDI_OfflinePointerMulti)backupState.items.get(tagConcept)).getObjIDs(),
-                  onlineIDs = concepts.stream().map(HDT_Record::getID).collect(Collectors.toList());
-
-    if ((offlineIDs.containsAll(onlineIDs) && onlineIDs.containsAll(offlineIDs)) == false)
-      throw new ConceptChangedException();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
   {
     if (isOnline())
-      throwExceptionIfConceptIDsChanged(backupState);
+    {
+      List<Integer> offlineIDs = ((HDI_OfflinePointerMulti)backupState.items.get(tagConcept)).getObjIDs(),
+                    onlineIDs = concepts.stream().map(HDT_Record::getID).collect(Collectors.toList());
+
+      if ((offlineIDs.containsAll(onlineIDs) && onlineIDs.containsAll(offlineIDs)) == false)
+        throw new ConceptChangedException();
+    }
 
     super.restoreTo(backupState, rebuildMentions);
   }

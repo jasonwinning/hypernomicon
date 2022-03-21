@@ -20,12 +20,14 @@ package org.hypernomicon.model.unities;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.records.RecordType.hdtHub;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HubChangedException;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.RestoreException;
@@ -33,16 +35,28 @@ import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Position;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 
+/**
+ * Every record that has a main HTML description field is an instance of
+ * this class. Some of those record types, but not all, also can be "united"
+ * to other records so that they have the same {@link MainText MainText} object.
+ * They will also each have a reference to the same {@link HDT_Hub HDT_Hub}
+ * object (record of type Hub).
+ *
+ * @author  Jason Winning
+ * @since   1.0
+ */
 public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements HDT_RecordWithDescription
 {
-  private Connector connector;       //  Do not set connector to null here because this line executes immediately AFTER the
-  private boolean alreadyModifying;  //  super constructor is called, and items are initialized in the super constructor.
+  HDT_Hub hub;
+  MainText mainText;
+  private boolean alreadyModifying;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -51,21 +65,34 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
   {
     super(xmlState, dataset, nameTag);
 
-    if (connector == null)
-      connector = new Connector(this);
+    mainText = new MainText(this);
+
+    if (getType() == hdtHub)
+      hub = (HDT_Hub) this;
 
     alreadyModifying = false;
   }
 
 //---------------------------------------------------------------------------
 
-  @Override public final MainText getDesc()  { return connector.getMainText(); }
-  public MainText getMainText()              { return connector.getMainText(); }
-  Connector initConnector()                  { return connector == null ? (connector = new Connector(this)) : connector; }
-  public HDT_Hub getHub()                    { return connector.getHub(); }
-  public boolean hasHub()                    { return connector.hasHub(); }
-  public Connector getConnector()            { return connector; }
-  public HDT_RecordWithConnector mainSpoke() { return nullSwitch(getHub(), this, hub -> hub.mainSpoke(false)); }
+  @Override public final MainText getDesc()  { return mainText; }
+  public MainText getMainText()              { return mainText; }
+  public HDT_Hub getHub()                    { return hub; }
+  public boolean hasHub()                    { return hub != null; }
+  public HDT_RecordWithConnector mainSpoke() { return hub == null ? this : hub.mainSpoke(false); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void resolvePointers() throws HDB_InternalError
+  {
+    super.resolvePointers();
+
+    if (HDT_Record.isEmptyThrowsException(hub))
+      hub = null;
+
+    mainText.resolvePointers();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -73,12 +100,9 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
   @Override public void expire()
   {
     boolean expiringHub = false;
-    HDT_Hub hub = null;
 
     if (hasHub())
     {
-      hub = connector.getHub();
-
       int cnt = 0;
       if (hub.getDebate  () != null) cnt++;
       if (hub.getLabel   () != null) cnt++;
@@ -89,7 +113,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
       if (cnt == 2) expiringHub = true;
     }
 
-    for (KeyWork keyWork : getMainText().getKeyWorksUnmod())
+    for (KeyWork keyWork : mainText.getKeyWorksUnmod())
     {
       if (expiringHub) db.handleKeyWork(hub, keyWork.getRecord(), false); // hub is also getting deleted after this; go ahead and remove it from index
       db.handleKeyWork(this, keyWork.getRecord(), false);
@@ -101,17 +125,15 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void modifyNow()
+  public void modifyMainText()
   {
-    if (alreadyModifying) return;
+    modifyNow();
 
-    super.modifyNow();
-
-    if (db.runningConversion) return;
+    if (db.runningConversion || alreadyModifying || (hasHub() == false)) return;
 
     alreadyModifying = true;
 
-    connector.modifyNow();
+    hub.modifyNow();
 
     alreadyModifying = false;
   }
@@ -121,10 +143,10 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 
   public void addParentDisplayRecord()
   {
-    if (getMainText().getPlain().trim().length() > 0) return;
+    if (mainText.getPlain().trim().length() > 0) return;
 
     HDT_RecordWithConnector parent = null;
-    List<DisplayItem> displayItems = getMainText().getDisplayItemsCopy();
+    List<DisplayItem> displayItems = mainText.getDisplayItemsCopy();
     RecordType type = getType();
 
     if (displayItems.stream().anyMatch(displayItem -> displayItem.type == diRecord)) return;
@@ -170,7 +192,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
     boolean rc = db.runningConversion;
     db.runningConversion = true;
     displayItems.add(new DisplayItem(parent));
-    getMainText().setDisplayItemsFromList(displayItems);
+    mainText.setDisplayItemsFromList(displayItems);
     db.runningConversion = rc;
   }
 
@@ -190,12 +212,6 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
     }
 
     super.restoreTo(backupState, rebuildMentions);
-
-    if (backupHubID > 0)                                    // this is being done last so it can overwrite an existing
-    {                                                       // MainText item. See HDI_OnlineConnector constructor.
-      connector.initFromHub(db.hubs.getByID(backupHubID));
-      setSearchKey(backupState.getSearchKey(), true, rebuildMentions);
-    }
   }
 
 //---------------------------------------------------------------------------
