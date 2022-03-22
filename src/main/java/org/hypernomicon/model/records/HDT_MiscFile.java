@@ -36,9 +36,9 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
-public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordWithPath, HDT_RecordWithAuthors<Authors>
+public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<Authors>
 {
   protected final HyperPath path;
   public final HyperObjList<HDT_MiscFile, HDT_WorkLabel> labels;

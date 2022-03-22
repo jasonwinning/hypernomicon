@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ public enum RecordType
 //---------------------------------------------------------------------------
 
   private final Class<? extends HDT_Record> klass;
-  private final boolean simple, gotConnector, disregardDates;
+  private final boolean simple, gotMainText, disregardDates;
   private final static Map<Class<? extends HDT_Record>, RecordType> classToType;
 
 //---------------------------------------------------------------------------
@@ -77,7 +77,7 @@ public enum RecordType
   {
     this.klass = klass;
     simple = HDT_SimpleRecord.class.isAssignableFrom(klass);
-    gotConnector = HDT_RecordWithConnector.class.isAssignableFrom(klass);
+    gotMainText = HDT_RecordWithMainText.class.isAssignableFrom(klass);
     disregardDates = simple || (klass == HDT_Subfield.class) || (klass == HDT_Region.class) || (klass == HDT_Hub.class);
   }
 
@@ -96,7 +96,7 @@ public enum RecordType
 
   public Class<? extends HDT_Record> getRecordClass() { return klass; }
   public boolean isSimple()                           { return simple; }
-  public boolean hasConnector()                       { return gotConnector; }
+  public boolean hasMainText()                        { return gotMainText; }
   public boolean getDisregardDates()                  { return disregardDates; }
 
   public static RecordType typeByRecordClass(Class<? extends HDT_Record> klass) { return classToType.getOrDefault(klass, hdtNone); }

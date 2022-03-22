@@ -19,7 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.controls.WebTooltip;
@@ -53,7 +53,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 
-public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWithConnector>
+public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWithMainText>
 {
   @FXML AnchorPane apDescription, apLowerPane;
   @FXML GridPane gpToolBar;
@@ -156,7 +156,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private MenuItem makeMenuItem(HDT_RecordWithConnector record)
+  private MenuItem makeMenuItem(HDT_RecordWithMainText record)
   {
     MenuItem miUnlink = new MenuItem();
     miUnlink.setText("Disunite");
@@ -377,7 +377,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
     if (frmSelectConcept.showModal() == false) return;
 
-    HDT_RecordWithConnector source = (HDT_RecordWithConnector) ui.activeRecord();
+    HDT_RecordWithMainText source = (HDT_RecordWithMainText) ui.activeRecord();
     HDT_Term term = frmSelectConcept.getTerm();
     HDT_Concept concept;
 
@@ -418,7 +418,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setGoToEvent(Label label, HDT_RecordWithConnector record)
+  private void setGoToEvent(Label label, HDT_RecordWithMainText record)
   {
     label.setOnMouseClicked(mouseEvent ->
     {

@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class HDI_OfflineConnector extends HDI_OfflineBase
+public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 {
 
 //---------------------------------------------------------------------------
@@ -72,7 +72,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDI_OfflineConnector(HDI_Schema schema, RecordState recordState)
+  public HDI_OfflineMainTextAndHub(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
     htmlText = "";
@@ -86,7 +86,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int getHubID()        { return hubID; }
+  int getHubID()               { return hubID; }
   RecordState getRecordState() { return recordState; }
 
 //---------------------------------------------------------------------------

@@ -36,7 +36,7 @@ import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
@@ -79,7 +79,7 @@ public final class MainTextWrapper
                                      jHiliteContents = new StringBuilder();
 
   private final AnchorPane parentPane;
-  private HDT_RecordWithConnector curRecord;
+  private HDT_RecordWithMainText curRecord;
   private String html, completeHtml;
   private List<DisplayItem> displayItems;
   private List<KeyWork> keyWorks;
@@ -349,7 +349,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadFromRecord(HDT_RecordWithConnector record, boolean show, TextViewInfo viewInfo)
+  public void loadFromRecord(HDT_RecordWithMainText record, boolean show, TextViewInfo viewInfo)
   {
     curRecord = record;
     this.viewInfo = viewInfo;
@@ -377,9 +377,9 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_WorkLabel getLabelOfRecord(HDT_RecordWithConnector record)
+  private HDT_WorkLabel getLabelOfRecord(HDT_RecordWithMainText record)
   {
-    HDT_RecordWithConnector mainTextRecord = record.getMainText().getRecord();
+    HDT_RecordWithMainText mainTextRecord = record.getMainText().getRecord();
 
     if (mainTextRecord.getType() == hdtWorkLabel) return (HDT_WorkLabel) mainTextRecord;
     if (mainTextRecord.getType() != hdtHub)       return null;
@@ -390,7 +390,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int getNestedKeyWorkCount(HDT_RecordWithConnector record, List<KeyWork> passedKeyWorks)
+  private int getNestedKeyWorkCount(HDT_RecordWithMainText record, List<KeyWork> passedKeyWorks)
   {
     int keyWorkCount = passedKeyWorks.size();
 
@@ -462,7 +462,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addLinkedTerms(List<? extends HDT_RecordWithConnector> uRecords, List<HDT_Concept> concepts)
+  private void addLinkedTerms(List<? extends HDT_RecordWithMainText> uRecords, List<HDT_Concept> concepts)
   {
     uRecords.forEach(uRecord ->
     {
@@ -645,7 +645,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean displayerIsAlreadyShowing(HDT_RecordWithConnector displayer)
+  private boolean displayerIsAlreadyShowing(HDT_RecordWithMainText displayer)
   {
     for (DisplayItem displayItem : displayItems)
     {
@@ -708,7 +708,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveToRecord(HDT_RecordWithConnector record)
+  public void saveToRecord(HDT_RecordWithMainText record)
   {
     curRecord = record;
     save();

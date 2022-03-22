@@ -32,15 +32,15 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.unities.HDI_OfflineConnector.DisplayItem;
+import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub.DisplayItem;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.model.items.HDI_OnlineBase;
 
 //---------------------------------------------------------------------------
 
-public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
+public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainTextAndHub>
 {
-  private final HDT_RecordWithConnector recordWMT;
+  private final HDT_RecordWithMainText recordWMT;
 
   private HDT_Hub getHub()       { return recordWMT.getHub(); }
   private boolean hasHub()       { return recordWMT.hasHub(); }
@@ -48,7 +48,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
   //---------------------------------------------------------------------------
 
-  public HDI_OnlineConnector(HDI_Schema schema, HDT_RecordWithConnector record)
+  public HDI_OnlineMainTextAndHub(HDI_Schema schema, HDT_RecordWithMainText record)
   {
     super(schema, record);
 
@@ -71,7 +71,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflineConnector val, Tag tag)
+  @Override public void setFromOfflineValue(HDI_OfflineMainTextAndHub val, Tag tag)
   {
     final MainText mainText = getMainText();
 
@@ -87,7 +87,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
           {
             if (displayItem.type == diRecord)
             {
-              HDT_RecordWithConnector displayed = (HDT_RecordWithConnector) db.records(displayItem.recordType).getByID(displayItem.recordID);
+              HDT_RecordWithMainText displayed = (HDT_RecordWithMainText) db.records(displayItem.recordType).getByID(displayItem.recordID);
 
               mainText.displayItems.add(new MainText.DisplayItem(displayed));
 
@@ -162,7 +162,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getToOfflineValue(HDI_OfflineConnector val, Tag tag)
+  @Override public void getToOfflineValue(HDI_OfflineMainTextAndHub val, Tag tag)
   {
     MainText mainText = getMainText();
 

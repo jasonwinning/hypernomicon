@@ -52,7 +52,7 @@ import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryTabCtrlr;
 import org.hypernomicon.query.ResultsRow;
@@ -1836,7 +1836,7 @@ public final class MainCtrlr
     boolean success = true;
     String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + "\"";
 
-    HDT_Hub hub = record.isUnitable() ? ((HDT_RecordWithConnector) record).getHub() : null;
+    HDT_Hub hub = record.isUnitable() ? ((HDT_RecordWithMainText) record).getHub() : null;
     RecordState backupState = record.getRecordStateBackup(),
                 hubState = hub == null ? null : hub.getRecordStateBackup();
 
@@ -2551,7 +2551,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void uniteRecords(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2, boolean goToRecord2)
+  public void uniteRecords(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2, boolean goToRecord2)
   {
     String desc;
 
@@ -2848,7 +2848,7 @@ public final class MainCtrlr
       case mrNo  : importMiscFile(null, filePath      ); return;
       case mrOk  : importBibFile (null, filePath      ); return;
 
-      default         : return;
+      default    : return;
     }
   }
 

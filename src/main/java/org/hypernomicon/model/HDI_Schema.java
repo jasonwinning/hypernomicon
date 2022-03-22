@@ -59,7 +59,7 @@ public final class HDI_Schema
     Builder<Tag> builder = ImmutableList.builder();
     builder.add(tags);
 
-    if (category == hdcConnector)
+    if (category == hdcMainTextAndHub)
       builder.add(tagMainText);
 
     this.tags = builder.build();

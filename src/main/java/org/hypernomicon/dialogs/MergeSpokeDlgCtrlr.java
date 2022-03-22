@@ -20,7 +20,7 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
@@ -43,7 +43,7 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MergeSpokeDlgCtrlr build(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2)
+  public static MergeSpokeDlgCtrlr build(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2)
   {
     return ((MergeSpokeDlgCtrlr) create("MergeSpokeDlg", "Select How to Merge Fields", true)).init(record1, record2);
   }
@@ -51,7 +51,7 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private MergeSpokeDlgCtrlr init(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2)
+  private MergeSpokeDlgCtrlr init(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2)
   {
     rbDesc1.setText(db.getTypeName(record1.getType()));
     rbDesc2.setText(db.getTypeName(record2.getType()));

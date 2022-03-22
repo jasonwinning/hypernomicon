@@ -117,7 +117,7 @@ import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.BidiOneToManyMainTextMap;
 import org.hypernomicon.util.CryptoUtil;
@@ -156,7 +156,7 @@ public final class HyperDB
   final private MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
   final private List<HDT_Record> initialNavList = new ArrayList<>();
   final private EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
-  final private Map<HDT_RecordWithPath, Set<HDT_RecordWithConnector>> keyWorkIndex = new HashMap<>();
+  final private Map<HDT_RecordWithPath, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
   final private BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
   final private Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
   final private Map<String, String> xmlChecksums = new HashMap<>();
@@ -2097,12 +2097,12 @@ public final class HyperDB
       addPointerMulti(hdtArgument, rtWorkOfArgument, tagWork);
       addPointerMulti(hdtArgument, rtPositionOfArgument, tagPosition);
       addPointerMulti(hdtArgument, rtCounterOfArgument, tagCounterargument);
-      addConnectorItem(hdtArgument, tagDescription, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtArgument, tagDescription, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtDebate, tagName);
       addPointerMulti(hdtDebate, rtParentDebateOfDebate, tagLargerDebate);
       addPointerMulti(hdtDebate, rtParentPosOfDebate, tagLargerPosition);
-      addConnectorItem(hdtDebate, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtDebate, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtMiscFile, tagName);
       addPointerSingle(hdtMiscFile, rtTypeOfFile, tagFileType);
@@ -2111,7 +2111,7 @@ public final class HyperDB
       addPathItem(hdtMiscFile, rtFolderOfMiscFile, tagFolder, tagFileName);
       addAuthorsItem(hdtMiscFile, rtAuthorOfFile);
       addBooleanItem(hdtMiscFile, tagAnnotated);
-      addConnectorItem(hdtMiscFile, tagDescription, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtMiscFile, tagDescription, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtWorkFile, tagName);
       addPathItem(hdtWorkFile, rtFolderOfWorkFile, tagFolder, tagFileName);
@@ -2130,12 +2130,12 @@ public final class HyperDB
 
       addStringItem(hdtInvestigation, tagName);
       addPointerSingle(hdtInvestigation, rtPersonOfInv, tagPerson);
-      addConnectorItem(hdtInvestigation, tagDescription, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtInvestigation, tagDescription, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtNote, tagName);
       addPointerMulti(hdtNote, rtParentNoteOfNote, tagParentNote);
       addPointerSingle(hdtNote, rtFolderOfNote, tagFolder);
-      addConnectorItem(hdtNote, tagHub, tagText, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtNote, tagHub, tagText, tagDisplayRecord, tagKeyWork);
 
       addPersonNameItem();
       addPointerSingle(hdtPerson, rtStatusOfPerson, tagPersonStatus);
@@ -2147,7 +2147,7 @@ public final class HyperDB
       addStringItem(hdtPerson, tagORCID);
       addPathItem(hdtPerson, rtPictureFolderOfPerson, tagPictureFolder, tagPicture);
       addStringItem(hdtPerson, tagPictureCrop);
-      addConnectorItem(hdtPerson, tagWhyFamous, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtPerson, tagWhyFamous, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtPersonGroup, tagName);
       addPointerMulti(hdtPersonGroup, rtParentGroupOfGroup, tagParentGroup);
@@ -2155,7 +2155,7 @@ public final class HyperDB
       addStringItem(hdtPosition, tagName);
       addPointerMulti(hdtPosition, rtParentDebateOfPos, tagDebate);
       addPointerMulti(hdtPosition, rtParentPosOfPos, tagLargerPosition);
-      addConnectorItem(hdtPosition, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtPosition, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtRegion, tagName);
       addStringItem(hdtRegion, tagAbbreviation);
@@ -2172,7 +2172,7 @@ public final class HyperDB
 
       addStringItem(hdtConcept, tagName);
       addPointerSingle(hdtConcept, rtGlossaryOfConcept, tagGlossary);
-      addConnectorItem(hdtConcept, tagHub, tagDefinition, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtConcept, tagHub, tagDefinition, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtGlossary, tagName);
       addBooleanItem(hdtGlossary, tagActive);
@@ -2192,15 +2192,15 @@ public final class HyperDB
       addStringItem(hdtWork, tagMiscBib);
       addStringItem(hdtWork, tagDOI);
       addStringItem(hdtWork, tagISBN);
-      addConnectorItem(hdtWork, tagComments, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtWork, tagComments, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtWorkLabel, tagText);
       addPointerMulti(hdtWorkLabel, rtParentLabelOfLabel, tagParentLabel);
-      addConnectorItem(hdtWorkLabel, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtWorkLabel, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtHub, tagName);
       addHubSpokesItem();
-      addConnectorItem(hdtHub, tagDescription, tagDisplayRecord, tagKeyWork);
+      addMainTextItem(hdtHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
       initialized = true;
     }
@@ -2258,15 +2258,15 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  private void addTernaryItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary      , rtNone, tags); }
+  private void addTernaryItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary       , rtNone, tags); }
 
-  private void addBooleanItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean      , rtNone, tags); }
-  private void addPointerMulti (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti , rt    , tags); }
-  private void addPointerSingle(RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle, rt    , tags); }
-  private void addStringItem   (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString       , rtNone, tags); }
-  private void addPathItem     (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath         , rt    , tags); }
-  private void addConnectorItem(RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
-  private void addAuthorsItem  (RecordType type, RelationType rt             ) throws HDB_InternalError { addItem(type, hdcAuthors      , rt    , tagAuthor); }
+  private void addBooleanItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean       , rtNone, tags); }
+  private void addPointerMulti (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti  , rt    , tags); }
+  private void addPointerSingle(RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle , rt    , tags); }
+  private void addStringItem   (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString        , rtNone, tags); }
+  private void addPathItem     (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath          , rt    , tags); }
+  private void addMainTextItem (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcMainTextAndHub, rtNone, tags); }
+  private void addAuthorsItem  (RecordType type, RelationType rt             ) throws HDB_InternalError { addItem(type, hdcAuthors       , rt    , tagAuthor); }
 
   private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone, tagBibEntryKey           ); }
 
@@ -2435,11 +2435,11 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void handleKeyWork(HDT_RecordWithConnector record, HDT_RecordWithPath keyWorkRecord, boolean affirm)
+  public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithPath keyWorkRecord, boolean affirm)
   {
     if (record.getType() != hdtWorkLabel)
     {
-      Set<HDT_RecordWithConnector> set = keyWorkIndex.get(keyWorkRecord);
+      Set<HDT_RecordWithMainText> set = keyWorkIndex.get(keyWorkRecord);
 
       if (affirm)
       {
@@ -2469,11 +2469,11 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<HDT_RecordWithConnector> displayerStream(HDT_RecordWithConnector displayed)
+  public Stream<HDT_RecordWithMainText> displayerStream(HDT_RecordWithMainText displayed)
   {
     return displayedAtIndex.getForwardStream(displayed.getMainText()).filter(Predicate.not(mainText ->
     {
-      HDT_RecordWithConnector record = mainText.getRecord();
+      HDT_RecordWithMainText record = mainText.getRecord();
       return HDT_Record.isEmpty(record) || (record.getMainText() != mainText);
 
     })).map(displayerText -> displayerText.getRecord().mainSpoke());
@@ -2482,11 +2482,11 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<HDT_RecordWithConnector> keyWorkMentionerStream(HDT_RecordWithPath record)
+  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithPath record)
   {
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),
-                      set -> set.stream().map(HDT_RecordWithConnector::mainSpoke));
+                      set -> set.stream().map(HDT_RecordWithMainText::mainSpoke));
   }
 
 //---------------------------------------------------------------------------

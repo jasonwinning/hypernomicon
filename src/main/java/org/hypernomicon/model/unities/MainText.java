@@ -33,7 +33,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 /**
  * Every record that has a main HTML description field refers to an object of
  * this class, which stores the HTML. All such record classes are subclasses of
- * {@link HDT_RecordWithConnector HDT_RecordWithConnector}.
+ * {@link HDT_RecordWithMainText HDT_RecordWithMainText}.
  *
  * Some of those record types, but not all, also can be "united" to other
  * records so that they will refer to the same MainText object.
@@ -51,11 +51,11 @@ public class MainText
 
   public static class DisplayItem
   {
-    DisplayItem(DisplayItemType type)                  { this.type = type; record = null; }
-    public DisplayItem(HDT_RecordWithConnector record) { type = diRecord; this.record = record; }
+    DisplayItem(DisplayItemType type)                 { this.type = type; record = null; }
+    public DisplayItem(HDT_RecordWithMainText record) { type = diRecord; this.record = record; }
 
     public final DisplayItemType type;
-    public final HDT_RecordWithConnector record;
+    public final HDT_RecordWithMainText record;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -92,10 +92,10 @@ public class MainText
   final List<DisplayItem> displayItems;
   final List<KeyWork> keyWorks;  // this can be works or miscFiles
   private String plainText = "", htmlText = "";
-  final private HDT_RecordWithConnector recordWMT;
+  final private HDT_RecordWithMainText recordWMT;
 
   public String getHtml()                         { return htmlText; }
-  public HDT_RecordWithConnector getRecord()      { return recordWMT; }
+  public HDT_RecordWithMainText getRecord()       { return recordWMT; }
   public String getPlain()                        { return plainText; }
   private boolean hasKeyWork(HDT_Record rec)      { return getKeyWork(rec) != null; }
   public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
@@ -183,7 +183,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MainText(HDT_RecordWithConnector recordWMT)  // called by HDT_RecordWithConnector constructor
+  MainText(HDT_RecordWithMainText recordWMT)  // called by HDT_RecordWithMainText constructor
   {
     this.recordWMT = recordWMT;
 
@@ -197,7 +197,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MainText(MainText mainText, HDT_RecordWithConnector recordWMT)  // called by HDT_Hub.disuniteRecords
+  MainText(MainText mainText, HDT_RecordWithMainText recordWMT)  // called by HDT_Hub.disuniteRecords
   {
     this.recordWMT = recordWMT;
 
@@ -235,11 +235,10 @@ public class MainText
   MainText(MainText src1, MainText src2, HDT_Hub hub, String newHtml)  // called by HDT_Hub.uniteRecords
   {
     recordWMT = hub;
-
     displayItems = Collections.synchronizedList(new ArrayList<>(src1.displayItems));
 
-    List<HDT_RecordWithConnector> src1Spokes = new ArrayList<>(),
-                                  src2Spokes = new ArrayList<>();
+    List<HDT_RecordWithMainText> src1Spokes = new ArrayList<>(),
+                                 src2Spokes = new ArrayList<>();
 
     if (src1.getRecord() == hub)
     {
@@ -387,7 +386,7 @@ public class MainText
     addDefaultItemsToList(getRecord(), displayItems);
   }
 
-  public static void addDefaultItemsToList(HDT_RecordWithConnector record, List<DisplayItem> displayItems)
+  public static void addDefaultItemsToList(HDT_RecordWithMainText record, List<DisplayItem> displayItems)
   {
     RecordType recordType = record.getType();
 
@@ -400,30 +399,30 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<HDT_RecordWithConnector> getRecordDisplayItems()
+  private Set<HDT_RecordWithMainText> getRecordDisplayItems()
   {
     return displayItems.stream().filter(item -> item.type == diRecord).map(item -> item.record).collect(Collectors.toSet());
   }
 
   public void setDisplayItemsFromList(List<DisplayItem> src)
   {
-    Set<HDT_RecordWithConnector> oldSet = getRecordDisplayItems();
+    Set<HDT_RecordWithMainText> oldSet = getRecordDisplayItems();
 
     displayItems.clear();
     displayItems.addAll(src);
 
-    Set<HDT_RecordWithConnector> newSet = getRecordDisplayItems();
+    Set<HDT_RecordWithMainText> newSet = getRecordDisplayItems();
 
     boolean modify = false;
 
-    for (HDT_RecordWithConnector displayRecord : oldSet)
+    for (HDT_RecordWithMainText displayRecord : oldSet)
       if (newSet.contains(displayRecord) == false)
       {
         db.handleDisplayRecord(this, displayRecord.getMainText(), false);
         modify = true;
       }
 
-    for (HDT_RecordWithConnector displayRecord : newSet)
+    for (HDT_RecordWithMainText displayRecord : newSet)
       if (oldSet.contains(displayRecord) == false)
       {
         db.handleDisplayRecord(this, displayRecord.getMainText(), true);

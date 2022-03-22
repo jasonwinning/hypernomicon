@@ -1163,7 +1163,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           if ((row.getID(3) != EQUAL_TO_OPERAND_ID) && (row.getID(3) != NOT_EQUAL_TO_OPERAND_ID))
             cat = hdcString;
 
-          if ((cat == hdcString) || (cat == hdcPersonName) || (cat == hdcBibEntryKey) || (cat == hdcConnector))
+          if ((cat == hdcString) || (cat == hdcPersonName) || (cat == hdcBibEntryKey) || (cat == hdcMainTextAndHub))
           {
             clearOperands(row, 3);
             vp3.setRestricted(row, false);

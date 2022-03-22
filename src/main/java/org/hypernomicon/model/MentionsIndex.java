@@ -38,7 +38,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
 import org.hypernomicon.view.mainText.MainTextUtil;
@@ -108,7 +108,7 @@ class MentionsIndex
 
     if (record.isUnitable())
     {
-      HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector) record;
+      HDT_RecordWithMainText uRecord = (HDT_RecordWithMainText) record;
       if (uRecord.hasHub())
       {
         HDT_Hub hub = uRecord.getHub();
@@ -147,7 +147,7 @@ class MentionsIndex
 
     if (record.hasMainText())
     {
-      MainText mainText = ((HDT_RecordWithConnector)record).getMainText();
+      MainText mainText = ((HDT_RecordWithMainText)record).getMainText();
 
       MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
       ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();

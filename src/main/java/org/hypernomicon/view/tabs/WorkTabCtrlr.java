@@ -39,7 +39,7 @@ import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
@@ -938,12 +938,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   static void populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable table)
   {
-    Set<HDT_RecordWithConnector> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
+    Set<HDT_RecordWithMainText> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
 
-    Stream<HDT_RecordWithConnector> stream = db.keyWorkMentionerStream(record);
+    Stream<HDT_RecordWithMainText> stream = db.keyWorkMentionerStream(record);
 
     if (record.hasMainText())
-      stream = Stream.concat(stream, db.displayerStream((HDT_RecordWithConnector)record));
+      stream = Stream.concat(stream, db.displayerStream((HDT_RecordWithMainText)record));
 
     stream.forEachOrdered(mentioner -> (mentioner.getType() == hdtInvestigation ? invSet : set).add(mentioner));
 

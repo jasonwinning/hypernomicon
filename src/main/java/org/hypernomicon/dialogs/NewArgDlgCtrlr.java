@@ -36,7 +36,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
@@ -63,7 +63,7 @@ public class NewArgDlgCtrlr extends HyperDlg
   @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfTargetName, tfTitle;
   @FXML private WebView view;
 
-  private HDT_RecordWithConnector target;
+  private HDT_RecordWithMainText target;
   private HDT_Argument argument;
   private HyperCB hcbPerson, hcbVerdict, hcbWork;
   private boolean revising = false, programmaticWorkChange = false, programmaticVerdictChange = false;
@@ -88,7 +88,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private NewArgDlgCtrlr init(HDT_RecordWithConnector target)
+  private NewArgDlgCtrlr init(HDT_RecordWithMainText target)
   {
     this.target = target;
     RecordType verdictType = target.getType() == hdtPosition ? hdtPositionVerdict : hdtArgumentVerdict;

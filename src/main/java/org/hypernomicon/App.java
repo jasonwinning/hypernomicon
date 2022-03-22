@@ -152,8 +152,8 @@ public final class App extends Application
       return;
     }
 
-    db.viewTestingInProgress = true;
-    testMainTextEditing = true;
+    //db.viewTestingInProgress = true;
+    //testMainTextEditing = true;
   }
 
 //---------------------------------------------------------------------------

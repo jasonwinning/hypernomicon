@@ -25,9 +25,9 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
-public class HDT_Position extends HDT_RecordWithConnector
+public class HDT_Position extends HDT_RecordWithMainText
 {
   public final List<HDT_Debate> largerDebates, subDebates;
   public final List<HDT_Position> largerPositions, subPositions;

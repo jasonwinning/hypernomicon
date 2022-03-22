@@ -27,9 +27,9 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.relations.HyperSubjList;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
-public class HDT_WorkLabel extends HDT_RecordWithConnector
+public class HDT_WorkLabel extends HDT_RecordWithMainText
 {
   public final List<HDT_WorkLabel> parentLabels, subLabels;
   public final HyperSubjList<HDT_Work, HDT_WorkLabel> works;

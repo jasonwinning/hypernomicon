@@ -34,13 +34,13 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 import com.google.common.collect.Sets;
 
 //---------------------------------------------------------------------------
 
-public class HDT_Argument extends HDT_RecordWithConnector
+public class HDT_Argument extends HDT_RecordWithMainText
 {
   public final List<HDT_Position> positions;
   public final List<HDT_Argument> counteredArgs, counterArgs;

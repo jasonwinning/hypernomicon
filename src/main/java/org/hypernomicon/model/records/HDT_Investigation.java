@@ -22,9 +22,9 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
-public class HDT_Investigation extends HDT_RecordWithConnector
+public class HDT_Investigation extends HDT_RecordWithMainText
 {
   public final HyperObjPointer<HDT_Investigation, HDT_Person> person;
 

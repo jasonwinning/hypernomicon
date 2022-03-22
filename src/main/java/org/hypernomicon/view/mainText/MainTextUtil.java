@@ -50,7 +50,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.model.records.HDT_WorkLabel;
@@ -489,7 +489,7 @@ public final class MainTextUtil
           recordTypeOrd = parseInt(span.attr("hypnconType"), -1);
       RecordType recordType = getEnumVal(recordTypeOrd, RecordType.class);
 
-      HDT_RecordWithConnector record = (HDT_RecordWithConnector) db.records(recordType).getByID(recordID);
+      HDT_RecordWithMainText record = (HDT_RecordWithMainText) db.records(recordType).getByID(recordID);
 
       StringBuilder innerHtml = new StringBuilder();
 
@@ -505,7 +505,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void appendKeyWorkSpanAndBody(HDT_RecordWithConnector recordWMT, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, boolean topmost, TextViewInfo viewInfo)
+  static void appendKeyWorkSpanAndBody(HDT_RecordWithMainText recordWMT, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, boolean topmost, TextViewInfo viewInfo)
   {
     innerHtml.append(keyWorkSpanElement(recordWMT, tagNdx, sortByName, topmost));
 
@@ -537,7 +537,7 @@ public final class MainTextUtil
 
   // Returns HTML for record description that is being embedded within another record's description
 
-  static String getSecondaryDisplayHtml(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, TextViewInfo viewInfo)
+  static String getSecondaryDisplayHtml(HDT_RecordWithMainText recordWMT, MutableInt tagNdx, TextViewInfo viewInfo)
   {
     MainText mainText = recordWMT.getMainText();
     List<KeyWork> keyWorks = mainText.getKeyWorksUnmod();
@@ -662,7 +662,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getAnchorForUnitable(HDT_RecordWithConnector uRecord)
+  private static String getAnchorForUnitable(HDT_RecordWithMainText uRecord)
   {
     uRecord = uRecord.mainSpoke();
 
@@ -674,7 +674,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String keyWorkSpanElement(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, boolean sortByName, boolean topmost)
+  private static String keyWorkSpanElement(HDT_RecordWithMainText recordWMT, MutableInt tagNdx, boolean sortByName, boolean topmost)
   {
     tagNdx.increment();
 

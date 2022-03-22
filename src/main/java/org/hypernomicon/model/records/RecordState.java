@@ -32,7 +32,7 @@ import java.util.Map;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
 import org.hypernomicon.model.items.*;
-import org.hypernomicon.model.unities.HDI_OfflineConnector;
+import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub;
 import org.hypernomicon.model.unities.HDI_OfflineHubSpokes;
 
 public class RecordState
@@ -95,17 +95,17 @@ public class RecordState
 
       switch (schema.getCategory())
       {
-        case hdcBoolean       : item = new HDI_OfflineBoolean      (schema, this); break;
-        case hdcTernary       : item = new HDI_OfflineTernary      (schema, this); break;
-        case hdcConnector     : item = new HDI_OfflineConnector    (schema, this); break;
-        case hdcPersonName    : item = new HDI_OfflinePersonName   (schema, this); break;
-        case hdcPath          : item = new HDI_OfflinePath         (schema, this); break;
-        case hdcPointerMulti  : item = new HDI_OfflinePointerMulti (schema, this); break;
-        case hdcPointerSingle : item = new HDI_OfflinePointerSingle(schema, this); break;
-        case hdcString        : item = new HDI_OfflineString       (schema, this); break;
-        case hdcBibEntryKey   : item = new HDI_OfflineString       (schema, this); break;
-        case hdcAuthors       : item = new HDI_OfflineAuthors      (schema, this); break;
-        case hdcHubSpokes     : item = new HDI_OfflineHubSpokes    (schema, this); break;
+        case hdcBoolean        : item = new HDI_OfflineBoolean       (schema, this); break;
+        case hdcTernary        : item = new HDI_OfflineTernary       (schema, this); break;
+        case hdcMainTextAndHub : item = new HDI_OfflineMainTextAndHub(schema, this); break;
+        case hdcPersonName     : item = new HDI_OfflinePersonName    (schema, this); break;
+        case hdcPath           : item = new HDI_OfflinePath          (schema, this); break;
+        case hdcPointerMulti   : item = new HDI_OfflinePointerMulti  (schema, this); break;
+        case hdcPointerSingle  : item = new HDI_OfflinePointerSingle (schema, this); break;
+        case hdcString         : item = new HDI_OfflineString        (schema, this); break;
+        case hdcBibEntryKey    : item = new HDI_OfflineString        (schema, this); break;
+        case hdcAuthors        : item = new HDI_OfflineAuthors       (schema, this); break;
+        case hdcHubSpokes      : item = new HDI_OfflineHubSpokes     (schema, this); break;
         default:
           messageDialog("Internal error #78934", mtError);
           return;

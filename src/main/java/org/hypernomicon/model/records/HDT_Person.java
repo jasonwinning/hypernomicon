@@ -27,7 +27,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PersonStatus;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Rank;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.SplitString;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
-public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWithPath
+public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWithPath
 {
   public final List<HDT_Institution> institutions;
   public final List<HDT_Work> works;

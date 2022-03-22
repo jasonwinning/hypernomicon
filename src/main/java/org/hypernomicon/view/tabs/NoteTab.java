@@ -43,7 +43,7 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -155,7 +155,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     {
       if (mentioner.equals(curNote)) return;
 
-      HDT_Hub hub = ((HDT_RecordWithConnector) mentioner).getHub();
+      HDT_Hub hub = ((HDT_RecordWithMainText) mentioner).getHub();
 
       if (hub == null)
       {

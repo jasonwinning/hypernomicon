@@ -313,7 +313,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       if (tag != tagMainText)
         tagToSchema.put(tag, schema);
 
-      if (schema.getCategory() == hdcConnector)
+      if (schema.getCategory() == hdcMainTextAndHub)
       {
         switch (tag)
         {

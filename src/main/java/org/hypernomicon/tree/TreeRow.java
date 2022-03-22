@@ -27,7 +27,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
@@ -123,7 +123,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
         if (rowRecord.isUnitable() == false) { setGraphic(null); return; }
 
-        HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector)rowRecord;
+        HDT_RecordWithMainText uRecord = (HDT_RecordWithMainText)rowRecord;
         if (uRecord.hasHub() == false) { setGraphic(null); return; }
 
         TreeWrapper treeWrapper = (TreeWrapper) treeRow.getTreeWrapper();

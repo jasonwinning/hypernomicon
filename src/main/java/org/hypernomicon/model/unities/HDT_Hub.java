@@ -38,7 +38,7 @@ import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
-public class HDT_Hub extends HDT_RecordWithConnector
+public class HDT_Hub extends HDT_RecordWithMainText
 {
 
 //---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<HDT_RecordWithConnector> getSpokes()
+  public Stream<HDT_RecordWithMainText> getSpokes()
   {
     return Stream.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).map(this::getSpoke)
                                                                                .filter(Objects::nonNull);
@@ -74,7 +74,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordWithConnector getSpoke(RecordType spokeType)
+  public HDT_RecordWithMainText getSpoke(RecordType spokeType)
   {
     switch (spokeType)
     {
@@ -91,14 +91,14 @@ public class HDT_Hub extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HDT_RecordWithConnector mainSpoke()
+  @Override public HDT_RecordWithMainText mainSpoke()
   {
     return mainSpoke(false);
   }
 
-  public HDT_RecordWithConnector mainSpoke(boolean prioritizeNoteOverConcept)
+  public HDT_RecordWithMainText mainSpoke(boolean prioritizeNoteOverConcept)
   {
-    HDT_RecordWithConnector spoke = getDebate();
+    HDT_RecordWithMainText spoke = getDebate();
     if (spoke != null) return spoke;
 
     spoke = getPosition();
@@ -169,7 +169,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean uniteRecords(HDT_RecordWithConnector spoke1, HDT_RecordWithConnector spoke2, String newDesc)
+  public static boolean uniteRecords(HDT_RecordWithMainText spoke1, HDT_RecordWithMainText spoke2, String newDesc)
   {
     if ((spoke1.getType() == hdtPosition) && (spoke2.getType() == hdtDebate))  // Sanity checks
       return falseWithErrorMessage("A position record and a problem/debate record cannot be united.");
@@ -222,7 +222,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
       hub = db.createNewBlankRecord(hdtHub);
     }
 
-    List<HDT_RecordWithConnector> spokes = Arrays.asList(spoke1, spoke2);
+    List<HDT_RecordWithMainText> spokes = Arrays.asList(spoke1, spoke2);
 
     spokes.forEach(spoke ->
     {
@@ -268,7 +268,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
 
   public boolean disuniteRecord(RecordType spokeType, boolean deleteHub)
   {
-    HDT_RecordWithConnector firstSpoke = null, otherSpoke = null;
+    HDT_RecordWithMainText firstSpoke = null, otherSpoke = null;
     int numSpokes = 0;
 
     // check number of spokes

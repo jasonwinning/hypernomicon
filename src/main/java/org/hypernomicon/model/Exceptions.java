@@ -94,7 +94,7 @@ public final class Exceptions
   {
     public ConceptChangedException()
     {
-      super("The set of concept records linked to this term record has changed.");
+      super("The set of concept records associated with this term record has changed.");
     }
   }
 

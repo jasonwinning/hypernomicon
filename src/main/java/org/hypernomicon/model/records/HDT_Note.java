@@ -27,10 +27,10 @@ import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.filePath.FilePath;
 
-public class HDT_Note extends HDT_RecordWithConnector implements HDT_RecordWithPath
+public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPath
 {
   public final List<HDT_Note> parentNotes, subNotes;
   public final HyperObjPointer<HDT_Note, HDT_Folder> folder;

@@ -51,7 +51,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
@@ -112,7 +112,7 @@ public class MainTextCtrlr
   @FXML private TitledPane tpKeyWorks;
 
   private HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
-  private HDT_RecordWithConnector curRecord;
+  private HDT_RecordWithMainText curRecord;
   private boolean ignoreKeyEvent = false;
 
 //---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ public class MainTextCtrlr
 
     EnumSet.allOf(RecordType.class).forEach(type ->
     {
-      if (type.hasConnector() && (type != hdtHub) && (type != hdtWorkLabel))
+      if (type.hasMainText() && (type != hdtHub) && (type != hdtWorkLabel))
         typeSet.add(type);
     });
 
@@ -536,7 +536,7 @@ public class MainTextCtrlr
 
   private void btnInsertClick()
   {
-    HDT_RecordWithConnector record = HyperTableCell.getRecord(hcbName.selectedHTC());
+    HDT_RecordWithMainText record = HyperTableCell.getRecord(hcbName.selectedHTC());
     if (record == null) return;
 
     DisplayItem item = new DisplayItem(record);
@@ -726,7 +726,7 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void set(HDT_RecordWithConnector record, String html, List<DisplayItem> displayItems, List<KeyWork> keyWorks)
+  void set(HDT_RecordWithMainText record, String html, List<DisplayItem> displayItems, List<KeyWork> keyWorks)
   {
     String keyWorksText = "";
     curRecord = record;

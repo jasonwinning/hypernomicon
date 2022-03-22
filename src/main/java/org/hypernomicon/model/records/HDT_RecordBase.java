@@ -38,10 +38,10 @@ import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.HyperSubjPointer;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.*;
-import org.hypernomicon.model.unities.HDI_OnlineConnector;
+import org.hypernomicon.model.unities.HDI_OnlineMainTextAndHub;
 import org.hypernomicon.model.unities.HDI_OnlineHubSpokes;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithConnector;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
@@ -58,10 +58,10 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   public enum HyperDataCategory
   {
-    hdcPointerSingle, hdcPointerMulti, hdcNestedPointer,
-    hdcString,        hdcConnector,    hdcBoolean,
-    hdcTernary,       hdcPath,         hdcPersonName,
-    hdcBibEntryKey,   hdcAuthors,      hdcHubSpokes
+    hdcPointerSingle, hdcPointerMulti,   hdcNestedPointer,
+    hdcString,        hdcMainTextAndHub, hdcBoolean,
+    hdcTernary,       hdcPath,           hdcPersonName,
+    hdcBibEntryKey,   hdcAuthors,        hdcHubSpokes
   }
 
 //---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final Instant getCreationDate()      { return type.getDisregardDates() ? null : creationDate; }
   @Override public final Tag getNameTag()               { return nameTag; }
   @Override public final boolean isDummy()              { return dummyFlag; }
-  @Override public final boolean hasMainText()          { return this instanceof HDT_RecordWithConnector; }
+  @Override public final boolean hasMainText()          { return this instanceof HDT_RecordWithMainText; }
   @Override public final boolean hasDesc()              { return this instanceof HDT_RecordWithDescription; }
   @Override public final int getID()                    { return id; }
   @Override public final int keyNdx()                   { return db.records(type).getKeyNdxByID(id); }
@@ -178,20 +178,20 @@ public abstract class HDT_RecordBase implements HDT_Record
 
       switch (schema.getCategory())
       {
-        case hdcConnector     : item = new HDI_OnlineConnector    (schema, (HDT_RecordWithConnector ) this); break;
-        case hdcPath          : item = new HDI_OnlinePath         (schema, (HDT_RecordWithPath      ) this); break;
-        case hdcBibEntryKey   : item = new HDI_OnlineBibEntryKey  (schema, (HDT_Work                ) this); break;
-        case hdcAuthors       : item = new HDI_OnlineAuthors      (schema, (HDT_RecordWithAuthors<?>) this); break;
-        case hdcHubSpokes     : item = new HDI_OnlineHubSpokes    (schema, (HDT_Hub                 ) this); break;
-        case hdcPersonName    : item = new HDI_OnlinePersonName   (schema, (HDT_Person              ) this); break;
+        case hdcMainTextAndHub : item = new HDI_OnlineMainTextAndHub(schema, (HDT_RecordWithMainText ) this); break;
+        case hdcPath           : item = new HDI_OnlinePath          (schema, (HDT_RecordWithPath      ) this); break;
+        case hdcBibEntryKey    : item = new HDI_OnlineBibEntryKey   (schema, (HDT_Work                ) this); break;
+        case hdcAuthors        : item = new HDI_OnlineAuthors       (schema, (HDT_RecordWithAuthors<?>) this); break;
+        case hdcHubSpokes      : item = new HDI_OnlineHubSpokes     (schema, (HDT_Hub                 ) this); break;
+        case hdcPersonName     : item = new HDI_OnlinePersonName    (schema, (HDT_Person              ) this); break;
 
-        case hdcBoolean       : item = new HDI_OnlineBoolean      (schema, this); break;
-        case hdcTernary       : item = new HDI_OnlineTernary      (schema, this); break;
-        case hdcPointerMulti  : item = new HDI_OnlinePointerMulti (schema, this); break;
-        case hdcPointerSingle : item = new HDI_OnlinePointerSingle(schema, this); break;
-        case hdcString        : item = new HDI_OnlineString       (schema, this); break;
+        case hdcBoolean        : item = new HDI_OnlineBoolean       (schema, this); break;
+        case hdcTernary        : item = new HDI_OnlineTernary       (schema, this); break;
+        case hdcPointerMulti   : item = new HDI_OnlinePointerMulti  (schema, this); break;
+        case hdcPointerSingle  : item = new HDI_OnlinePointerSingle (schema, this); break;
+        case hdcString         : item = new HDI_OnlineString        (schema, this); break;
 
-        case hdcNestedPointer :
+        case hdcNestedPointer  :
           messageDialog("Internal error #78933", mtError); // Nested items are only created in RelationSet.getNestedItem
           return;
       }

@@ -44,15 +44,27 @@ import org.hypernomicon.model.unities.MainText.DisplayItem;
 
 /**
  * Every record that has a main HTML description field is an instance of
- * this class. Some of those record types, but not all, also can be "united"
+ * this class. This description field corresponds to a {@link MainText MainText} object, a reference
+ * to which is held in member variable {@code mainText} of this class.<br>
+ * <br>
+ * Some of those record types instantiating this class, but not all, also can be "united"
  * to other records so that they have the same {@link MainText MainText} object.
  * They will also each have a reference to the same {@link HDT_Hub HDT_Hub}
- * object (record of type Hub).
+ * object (record of type Hub).<br>
+ * <br>
+ * This class differs from {@link org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription HDT_RecordWithDescription}
+ * because this class will always have a description field that is considered
+ * to be the "main" one, whereas implementing {@link org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription HDT_RecordWithDescription}
+ * only implies that there is at least one description field but none that is
+ * considered to be the "main" one. For example, {@link org.hypernomicon.model.records.HDT_Term HDT_Term}
+ * instantiates {@code HDT_RecordWithDescription} but not {@code HDT_RecordWithMainText} because there can be multiple
+ * definitions (multiple {@link org.hypernomicon.model.records.HDT_Concept HDT_Concept} records). Hence,
+ * {@code HDT_Term} records are united one definition at a time.
  *
  * @author  Jason Winning
  * @since   1.0
  */
-public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements HDT_RecordWithDescription
+public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements HDT_RecordWithDescription
 {
   HDT_Hub hub;
   MainText mainText;
@@ -61,7 +73,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordWithConnector(RecordState xmlState, HyperDataset<? extends HDT_RecordWithConnector> dataset, Tag nameTag)
+  public HDT_RecordWithMainText(RecordState xmlState, HyperDataset<? extends HDT_RecordWithMainText> dataset, Tag nameTag)
   {
     super(xmlState, dataset, nameTag);
 
@@ -75,11 +87,11 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 
 //---------------------------------------------------------------------------
 
-  @Override public final MainText getDesc()  { return mainText; }
-  public MainText getMainText()              { return mainText; }
-  public HDT_Hub getHub()                    { return hub; }
-  public boolean hasHub()                    { return hub != null; }
-  public HDT_RecordWithConnector mainSpoke() { return hub == null ? this : hub.mainSpoke(false); }
+  @Override public final MainText getDesc() { return mainText; }
+  public MainText getMainText()             { return mainText; }
+  public HDT_Hub getHub()                   { return hub; }
+  public boolean hasHub()                   { return hub != null; }
+  public HDT_RecordWithMainText mainSpoke() { return hub == null ? this : hub.mainSpoke(false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -125,7 +137,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void modifyMainText()
+  protected void modifyMainText()
   {
     modifyNow();
 
@@ -145,7 +157,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
   {
     if (mainText.getPlain().trim().length() > 0) return;
 
-    HDT_RecordWithConnector parent = null;
+    HDT_RecordWithMainText parent = null;
     List<DisplayItem> displayItems = mainText.getDisplayItemsCopy();
     RecordType type = getType();
 
@@ -201,7 +213,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 
   @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
   {
-    int backupHubID = nullSwitch((HDI_OfflineConnector)backupState.items.get(tagHub), -1, HDI_OfflineConnector::getHubID);
+    int backupHubID = nullSwitch((HDI_OfflineMainTextAndHub)backupState.items.get(tagHub), -1, HDI_OfflineMainTextAndHub::getHubID);
 
     if (isOnline() && isUnitable())
     {
