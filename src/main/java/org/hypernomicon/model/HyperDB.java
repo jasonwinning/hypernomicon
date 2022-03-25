@@ -1187,9 +1187,7 @@ public final class HyperDB
 
   private void addRootFolder()
   {
-    Set<HyperPath> set = filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), k -> Sets.newConcurrentHashSet());
-
-    set.add(getRootFolder().getPath());
+    filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), k -> Sets.newConcurrentHashSet()).add(getRootFolder().getPath());
   }
 
 //---------------------------------------------------------------------------
@@ -1296,11 +1294,9 @@ public final class HyperDB
   @SuppressWarnings("unchecked")
   public <T extends HDT_RecordBase> T createNewBlankRecord(RecordType type)
   {
-    RecordState recordState = new RecordState(type, -1, "", "", "", "");
-
     try
     {
-      return (T) datasets.get(type).createNewRecord(recordState, true);
+      return (T) datasets.get(type).createNewRecord(new RecordState(type), true);
     }
     catch (HDB_InternalError e)
     {
@@ -1767,26 +1763,26 @@ public final class HyperDB
     {
       RecordState recordState;
 
-      recordState = new RecordState(hdtFolder, ROOT_FOLDER_ID, "", "", "", "");
+      recordState = new RecordState(hdtFolder, ROOT_FOLDER_ID);
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new RecordState(hdtDebate, 1, "", "", "", "");
+      recordState = new RecordState(hdtDebate, 1);
       ((HDI_OfflineString) recordState.items.get(tagName)).set("All debates");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new RecordState(hdtNote, 1, "", "", "", "");
+      recordState = new RecordState(hdtNote, 1);
       ((HDI_OfflineString) recordState.items.get(tagName)).set("All notes");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new RecordState(hdtWorkLabel, 1, "", "", "", "");
+      recordState = new RecordState(hdtWorkLabel, 1);
       ((HDI_OfflineString) recordState.items.get(tagText)).set("All labels");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new RecordState(hdtPersonGroup, 1, "", "", "", "");
+      recordState = new RecordState(hdtPersonGroup, 1);
       ((HDI_OfflineString) recordState.items.get(tagName)).set("All groups");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new RecordState(hdtGlossary, 1, "", "", "", "");
+      recordState = new RecordState(hdtGlossary, 1);
       ((HDI_OfflineString) recordState.items.get(tagName)).set("General");
       ((HDI_OfflineBoolean) recordState.items.get(tagActive)).set(true);
       createNewRecordFromState(recordState, bringOnline);
@@ -1869,7 +1865,7 @@ public final class HyperDB
 
   private void createSpecialFolderRecord(int id, String name, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException
   {
-    RecordState recordState = new RecordState(hdtFolder, id, "", "", "", "");
+    RecordState recordState = new RecordState(hdtFolder, id);
     ((HDI_OfflinePath) recordState.items.get(tagFileName)).setFileName(name);
     ((HDI_OfflinePath) recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
     createNewRecordFromState(recordState, true);
@@ -2514,7 +2510,7 @@ public final class HyperDB
   {
     switch (workTypeEnum)
     {
-      case wtBook    :
+      case wtBook    : // fall through
       case wtChapter : return booksFolder;
       case wtPaper   : return papersFolder;
       case wtThesis  : return db.prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
@@ -2548,10 +2544,10 @@ public final class HyperDB
 
   public FilePath resolveExtFilePath(String url)
   {
-    if ((url != null) && url.startsWith(EXT_1) && (extPath() != null))
-      return extPath().resolve(FilenameUtils.separatorsToSystem(url.substring(7)));
-
-    return null;
+    return (url != null) && url.startsWith(EXT_1) && (extPath() != null) ?
+      extPath().resolve(FilenameUtils.separatorsToSystem(url.substring(7)))
+    :
+      null;
   }
 
 //---------------------------------------------------------------------------

@@ -33,7 +33,6 @@ import static java.util.Objects.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -43,6 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.collect.EnumHashBiMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
@@ -515,8 +516,8 @@ public class BibManager extends HyperDlg
 
   public enum BibEntryRelation { Parent, Sibling, Child }
 
-  private static final List<EntryType> childTypes  = Arrays.asList(etBookChapter, etEncyclopediaArticle, etConferencePaper, etDictionaryEntry),
-                                       parentTypes = Arrays.asList(etBook, etConferenceProceedings);
+  private static final ImmutableSet<EntryType> childTypes  = Sets.immutableEnumSet(etBookChapter, etEncyclopediaArticle, etConferencePaper, etDictionaryEntry),
+                                               parentTypes = Sets.immutableEnumSet(etBook, etConferenceProceedings);
 
 //---------------------------------------------------------------------------
 

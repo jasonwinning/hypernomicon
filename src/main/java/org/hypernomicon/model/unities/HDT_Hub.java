@@ -20,11 +20,13 @@ package org.hypernomicon.model.unities;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -45,30 +47,28 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 
   private boolean alreadyModifying = false;
-  HDT_Note noteSpoke;
-  HDT_Concept conceptSpoke;
-  HDT_Debate debateSpoke;
-  HDT_Position positionSpoke;
-  HDT_WorkLabel labelSpoke;
+
+  final Map<RecordType, HDT_RecordWithMainText> spokes = new HashMap<>();
 
   public HDT_Hub(RecordState xmlState, HyperDataset<HDT_Hub> dataset)
   {
     super(xmlState, dataset, tagName);
+
+    hub = this;
   }
 
-  public HDT_Note      getNote    () { return noteSpoke;     }
-  public HDT_Concept   getConcept () { return conceptSpoke;  }
-  public HDT_Debate    getDebate  () { return debateSpoke;   }
-  public HDT_Position  getPosition() { return positionSpoke; }
-  public HDT_WorkLabel getLabel   () { return labelSpoke;    }
+  public HDT_Note      getNote    () { return (HDT_Note     ) spokes.get(hdtNote     ); }
+  public HDT_Concept   getConcept () { return (HDT_Concept  ) spokes.get(hdtConcept  ); }
+  public HDT_Debate    getDebate  () { return (HDT_Debate   ) spokes.get(hdtDebate   ); }
+  public HDT_Position  getPosition() { return (HDT_Position ) spokes.get(hdtPosition ); }
+  public HDT_WorkLabel getLabel   () { return (HDT_WorkLabel) spokes.get(hdtWorkLabel); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public Stream<HDT_RecordWithMainText> getSpokes()
   {
-    return Stream.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).map(this::getSpoke)
-                                                                               .filter(Objects::nonNull);
+    return Stream.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).map(spokes::get).filter(Objects::nonNull);
   }
 
 //---------------------------------------------------------------------------
@@ -76,16 +76,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
   public HDT_RecordWithMainText getSpoke(RecordType spokeType)
   {
-    switch (spokeType)
-    {
-      case hdtNote      : return noteSpoke;
-      case hdtPosition  : return positionSpoke;
-      case hdtDebate    : return debateSpoke;
-      case hdtConcept   : return conceptSpoke;
-      case hdtWorkLabel : return labelSpoke;
-
-      default           : return null;
-    }
+    return spokes.get(spokeType);
   }
 
 //---------------------------------------------------------------------------
@@ -157,11 +148,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
     alreadyModifying = true;
 
-    if (noteSpoke     != null) noteSpoke    .modifyMainText();
-    if (conceptSpoke  != null) conceptSpoke .modifyMainText();
-    if (debateSpoke   != null) debateSpoke  .modifyMainText();
-    if (positionSpoke != null) positionSpoke.modifyMainText();
-    if (labelSpoke    != null) labelSpoke   .modifyMainText();
+    spokes.values().forEach(HDT_RecordWithMainText::modifyMainText);
 
     alreadyModifying = false;
   }
@@ -178,7 +165,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
     if (spoke1.getType() == spoke2.getType())
       return falseWithErrorMessage("Two records of the same type cannot be united.");
     if ((spoke1.isUnitable() == false) || (spoke2.isUnitable() == false))
-      return falseWithErrorMessage("One or more of the records are not of a linkable type.");
+      return falseWithErrorMessage("One or more of the records are not of a unitable type.");
     if (HyperDB.isUnstoredRecord(spoke1.getID(), spoke1.getType()))
       return falseWithErrorMessage("That " + db.getTypeName(spoke1.getType()) + " record cannot be united to another record.");
     if (HyperDB.isUnstoredRecord(spoke2.getID(), spoke2.getType()))
@@ -222,23 +209,10 @@ public class HDT_Hub extends HDT_RecordWithMainText
       hub = db.createNewBlankRecord(hdtHub);
     }
 
-    List<HDT_RecordWithMainText> spokes = Arrays.asList(spoke1, spoke2);
-
-    spokes.forEach(spoke ->
-    {
-      switch (spoke.getType())
-      {
-        case hdtNote      : hub.noteSpoke     = (HDT_Note     ) spoke; break;
-        case hdtPosition  : hub.positionSpoke = (HDT_Position ) spoke; break;
-        case hdtDebate    : hub.debateSpoke   = (HDT_Debate   ) spoke; break;
-        case hdtConcept   : hub.conceptSpoke  = (HDT_Concept  ) spoke; break;
-        case hdtWorkLabel : hub.labelSpoke    = (HDT_WorkLabel) spoke; break;
-
-        default           : break;
-      }
-    });
-
     MainText mainText = new MainText(spoke1.getMainText(), spoke2.getMainText(), hub, newDesc);
+
+    hub.spokes.put(spoke1.getType(), spoke1);
+    hub.spokes.put(spoke2.getType(), spoke2);
 
     db.replaceMainText(hub.getMainText(), mainText);
     hub.mainText = mainText;
@@ -249,15 +223,13 @@ public class HDT_Hub extends HDT_RecordWithMainText
     if      (spoke1.name().isEmpty()) spoke1.setName(spoke2.name());
     else if (spoke2.name().isEmpty()) spoke2.setName(spoke1.name());
 
-    spokes.forEach(spoke ->
+    hub.spokes.values().forEach(spoke ->
     {
       db.replaceMainText(spoke.mainText, mainText);
       spoke.mainText = mainText;
-
-      if (spoke.getType() == hdtWorkLabel)
-        ((HDT_WorkLabel) spoke).refreshSubjects();
     });
 
+    nullSwitch(hub.getLabel(), HDT_WorkLabel::refreshSubjects);
     hub.modifyNow();
 
     return true;
@@ -268,43 +240,24 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
   public boolean disuniteRecord(RecordType spokeType, boolean deleteHub)
   {
-    HDT_RecordWithMainText firstSpoke = null, otherSpoke = null;
-    int numSpokes = 0;
-
-    // check number of spokes
-
-    if (conceptSpoke  != null) { numSpokes++; if (spokeType != hdtConcept  ) otherSpoke = getSpoke(hdtConcept  ); }
-    if (positionSpoke != null) { numSpokes++; if (spokeType != hdtPosition ) otherSpoke = getSpoke(hdtPosition ); }
-    if (debateSpoke   != null) { numSpokes++; if (spokeType != hdtDebate   ) otherSpoke = getSpoke(hdtDebate   ); }
-    if (noteSpoke     != null) { numSpokes++; if (spokeType != hdtNote     ) otherSpoke = getSpoke(hdtNote     ); }
-    if (labelSpoke    != null) { numSpokes++; if (spokeType != hdtWorkLabel) otherSpoke = getSpoke(hdtWorkLabel); }
-
-    if (numSpokes == 0) return false;
-
     // Disconnect the spoke
 
-    switch (spokeType)
-    {
-      case hdtNote      : firstSpoke = getSpoke(hdtNote     ); noteSpoke     = null; break;
-      case hdtDebate    : firstSpoke = getSpoke(hdtDebate   ); debateSpoke   = null; break;
-      case hdtPosition  : firstSpoke = getSpoke(hdtPosition ); positionSpoke = null; break;
-      case hdtConcept   : firstSpoke = getSpoke(hdtConcept  ); conceptSpoke  = null; break;
-      case hdtWorkLabel : firstSpoke = getSpoke(hdtWorkLabel); labelSpoke    = null; break;
+    HDT_RecordWithMainText spokeBeingDisconnected = spokes.remove(spokeType);
 
-      default           : return false;
-    }
+    if (spokeBeingDisconnected == null) return false;
 
-    modifyNow();
+    modifyNow(); // Okay to set hub as modified here but spoke being disconnected should only be
+                 // set as modified by caller, because it may be in the process of being expired
 
-    firstSpoke.hub = null;
-    firstSpoke.mainText = new MainText(mainText, firstSpoke);
-    numSpokes--;
+    spokeBeingDisconnected.hub = null;
+    spokeBeingDisconnected.mainText = new MainText(mainText, spokeBeingDisconnected);
 
     // Done disconnecting, now need to disconnect other spoke if only one left
 
-    if (numSpokes == 1) return disuniteRecord(otherSpoke.getType(), deleteHub);
+    if (spokes.size() == 1)
+      return disuniteRecord(List.copyOf(spokes.keySet()).get(0), deleteHub);
 
-    if (deleteHub && (numSpokes == 0))
+    if (deleteHub && spokes.isEmpty())
       db.deleteRecord(this);  // Hub now has no more spokes, must be sacrificed
 
     return true;

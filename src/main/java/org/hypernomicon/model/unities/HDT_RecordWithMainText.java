@@ -20,7 +20,6 @@ package org.hypernomicon.model.unities;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.RecordType.hdtHub;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
@@ -79,9 +78,6 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 
     mainText = new MainText(this);
 
-    if (getType() == hdtHub)
-      hub = (HDT_Hub) this;
-
     alreadyModifying = false;
   }
 
@@ -116,6 +112,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
     if (hasHub())
     {
       int cnt = 0;
+
       if (hub.getDebate  () != null) cnt++;
       if (hub.getLabel   () != null) cnt++;
       if (hub.getNote    () != null) cnt++;

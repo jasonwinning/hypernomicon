@@ -76,7 +76,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
     {
       case QUERY_RECORD_TYPE :
 
-        vp1.setPopulator(row, new RecordTypePopulator());
+        vp1.setPopulator(row, new RecordTypePopulator(true));
         break;
 
       case QUERY_LINKING_TO_RECORD :
@@ -84,7 +84,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
       case QUERY_RECORD_EQUALS :
       case QUERY_MENTIONED_BY :
 
-        vp1.setPopulator(row, new RecordTypePopulator());
+        vp1.setPopulator(row, new RecordTypePopulator(true));
         vp2.setPopulator(row, new RecordByTypePopulator());
         break;
 
@@ -221,8 +221,8 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 //---------------------------------------------------------------------------
 
   @Override public void op2Change(int query, HyperTableCell op1, HyperTableCell op2,
-      HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2,
-      VariablePopulator vp3)
+                                  HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2,
+                                  VariablePopulator vp3)
   {
 
     switch (query)

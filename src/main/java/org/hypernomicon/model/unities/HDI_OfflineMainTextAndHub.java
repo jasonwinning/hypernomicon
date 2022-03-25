@@ -67,8 +67,6 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
   final List<KeyWork> keyWorks;
   private final Map<RecordType, Set<Integer>> usedKeyWorks;
 
-  private static Map<String, DisplayItemType> strToItemType = null;
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -92,18 +90,6 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static private void initMap()
-  {
-    strToItemType = new HashMap<>();
-
-    strToItemType.put(DI_TYPE_DESC     , diDescription);
-    strToItemType.put(DI_TYPE_RECORD   , diRecord     );
-    strToItemType.put(DI_TYPE_KEY_WORKS, diKeyWorks   );
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     switch (tag)
@@ -115,12 +101,14 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 
       case tagDisplayRecord :
 
-        if (strToItemType == null) initMap();
-        DisplayItemType itemType = strToItemType.get(nodeText);
+        switch (nodeText)
+        {
+          case DI_TYPE_DESC      : displayItems.add(new DisplayItem(diDescription )); break;
+          case DI_TYPE_KEY_WORKS : displayItems.add(new DisplayItem(diKeyWorks    )); break;
+          case DI_TYPE_RECORD    : displayItems.add(new DisplayItem(objID, objType)); break;
+        }
 
-        displayItems.add(itemType == diRecord ? new DisplayItem(objID, objType) : new DisplayItem(itemType));
-
-        return;
+        break;
 
       case tagKeyWork :
 
@@ -135,7 +123,7 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
           }
         }
 
-        return;
+        break;
 
       default :
 
@@ -146,8 +134,8 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final String DI_TYPE_DESC = "description",
-                              DI_TYPE_RECORD = "record",
+  private static final String DI_TYPE_DESC      = "description",
+                              DI_TYPE_RECORD    = "record",
                               DI_TYPE_KEY_WORKS = "key_works";
 
 //---------------------------------------------------------------------------

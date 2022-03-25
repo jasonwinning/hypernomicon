@@ -33,7 +33,6 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
-import org.hypernomicon.view.wrappers.ReadOnlyCell.CustomAddNewGraphicProvider;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
@@ -42,6 +41,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -102,7 +102,7 @@ public class HyperTableColumn
     this(table, objType, ctrlType, populator, targetCol, btnHandler, null, null, btnCaption, null); }
 
   HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
-                   CustomAddNewGraphicProvider graphicProvider) {
+                   Function<HyperTableRow, Node> graphicProvider) {
     this(table, objType, ctrlType, populator, targetCol, null, null, null, null, graphicProvider); }
 
 //---------------------------------------------------------------------------
@@ -111,7 +111,7 @@ public class HyperTableColumn
   @SuppressWarnings("unchecked")
   private HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
                            ButtonCellHandler btnHandler, EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption,
-                           CustomAddNewGraphicProvider graphicProvider)
+                           Function<HyperTableRow, Node> graphicProvider)
   {
     this.ctrlType = ctrlType;
     this.populator = populator;

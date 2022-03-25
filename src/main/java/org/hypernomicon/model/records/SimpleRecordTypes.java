@@ -48,7 +48,7 @@ public final class SimpleRecordTypes
    * retrieves the default description field.<br>
    * <br>
    * This class differs from {@link org.hypernomicon.model.unities.HDT_RecordWithMainText HDT_RecordWithMainText}
-   * because this unlike this class, {@code HDT_RecordWithMainText} records will always have a description field that is considered
+   * because unlike this class, {@code HDT_RecordWithMainText} records will always have a description field that is considered
    * to be the "main" one, whereas implementing {@link HDT_RecordWithDescription HDT_RecordWithDescription}
    * only implies that there is at least one description field but none that is
    * considered to be the "main" one. For example, {@link org.hypernomicon.model.records.HDT_Term HDT_Term}

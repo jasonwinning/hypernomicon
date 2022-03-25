@@ -90,7 +90,7 @@ public class MainText
 //---------------------------------------------------------------------------
 
   final List<DisplayItem> displayItems;
-  final List<KeyWork> keyWorks;  // this can be works or miscFiles
+  final List<KeyWork> keyWorks = Collections.synchronizedList(new ArrayList<>());
   private String plainText = "", htmlText = "";
   final private HDT_RecordWithMainText recordWMT;
 
@@ -190,8 +190,6 @@ public class MainText
     displayItems = Collections.synchronizedList(new ArrayList<>());
 
     addDefaultItems();
-
-    keyWorks = Collections.synchronizedList(new ArrayList<>());
   }
 
 //---------------------------------------------------------------------------
@@ -200,8 +198,6 @@ public class MainText
   MainText(MainText mainText, HDT_RecordWithMainText recordWMT)  // called by HDT_Hub.disuniteRecords
   {
     this.recordWMT = recordWMT;
-
-    keyWorks = Collections.synchronizedList(new ArrayList<>());
 
     mainText.keyWorks.forEach(keyWork -> keyWorks.add(keyWork.getOnlineCopy()));
 
@@ -237,28 +233,8 @@ public class MainText
     recordWMT = hub;
     displayItems = Collections.synchronizedList(new ArrayList<>(src1.displayItems));
 
-    List<HDT_RecordWithMainText> src1Spokes = new ArrayList<>(),
-                                 src2Spokes = new ArrayList<>();
-
-    if (src1.getRecord() == hub)
-    {
-      if (hub.getDebate  () != null) src1Spokes.add(hub.debateSpoke  );
-      if (hub.getPosition() != null) src1Spokes.add(hub.positionSpoke);
-      if (hub.getConcept () != null) src1Spokes.add(hub.conceptSpoke );
-      if (hub.getNote    () != null) src1Spokes.add(hub.noteSpoke    );
-    }
-    else
-      src1Spokes.add(src1.getRecord());
-
-    if (src2.getRecord() == hub)
-    {
-      if (hub.getDebate  () != null) src2Spokes.add(hub.debateSpoke  );
-      if (hub.getPosition() != null) src2Spokes.add(hub.positionSpoke);
-      if (hub.getConcept () != null) src2Spokes.add(hub.conceptSpoke );
-      if (hub.getNote    () != null) src2Spokes.add(hub.noteSpoke    );
-    }
-    else
-      src2Spokes.add(src2.getRecord());
+    List<HDT_RecordWithMainText> src1Spokes = src1.getRecord() == hub ? List.copyOf(hub.spokes.values()) : Collections.singletonList(src1.getRecord()),
+                                 src2Spokes = src2.getRecord() == hub ? List.copyOf(hub.spokes.values()) : Collections.singletonList(src2.getRecord());
 
     for (int ndx = 0; ndx < src2.displayItems.size(); ndx++)
     {
@@ -272,8 +248,6 @@ public class MainText
           displayItems.add(displayItem);
       }
     }
-
-    keyWorks = Collections.synchronizedList(new ArrayList<>());
 
     src1.keyWorks.forEach(keyWork ->
     {

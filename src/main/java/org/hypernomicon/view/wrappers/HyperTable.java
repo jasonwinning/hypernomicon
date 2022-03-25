@@ -45,7 +45,6 @@ import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
-import org.hypernomicon.view.wrappers.ReadOnlyCell.CustomAddNewGraphicProvider;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 
 import java.util.ArrayList;
@@ -58,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,6 +72,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
@@ -454,7 +455,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public HyperTableColumn addIconCol() {
     return addCol(new HyperTableColumn(this, hdtNone, ctIcon, null, -1));  }
 
-  public HyperTableColumn addReadOnlyColWithCustomGraphic(RecordType objType, CustomAddNewGraphicProvider graphicProvider) {
+  public HyperTableColumn addReadOnlyColWithCustomGraphic(RecordType objType, Function<HyperTableRow, Node> graphicProvider) {
     return addCol(new HyperTableColumn(this, objType, ctNone, null, -1, graphicProvider)); }
 
 //---------------------------------------------------------------------------

@@ -37,22 +37,34 @@ import org.hypernomicon.model.unities.HDI_OfflineHubSpokes;
 
 public class RecordState
 {
-  public final Map<Tag, HDI_OfflineBase> items;
-  private static final String QUOTE = "\"";
+  final public Map<Tag, HDI_OfflineBase> items;
+  final public RecordType type;
+  final String sortKeyAttr, searchKey;
+  final boolean dummyFlag;
+
+  final private static String QUOTE = "\"";
 
   public int id;
-  public final RecordType type;
-  final String sortKeyAttr, searchKey;
   public String listName;
-  String simpleName;
   public Instant creationDate, modifiedDate, viewDate;
   public boolean stored;
-  final boolean dummyFlag;
+
+  String simpleName;
 
   public String getSearchKey() { return searchKey; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  public RecordState(RecordType type)
+  {
+    this(type, -1, "", "", "", "", false);
+  }
+
+  public RecordState(RecordType type, int id)
+  {
+    this(type, id, "", "", "", "", false);
+  }
 
   public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, String listName)
   {

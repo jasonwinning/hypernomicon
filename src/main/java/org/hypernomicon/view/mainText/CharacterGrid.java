@@ -39,10 +39,9 @@ import static org.hypernomicon.App.*;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-
-import org.hypernomicon.view.mainText.SymbolPickerDlgCtrlr.SymbolHndlr;
 
 public class CharacterGrid
 {
@@ -51,7 +50,7 @@ public class CharacterGrid
 //---------------------------------------------------------------------------
 
   private final int colCount, rowCount;
-  private final SymbolHndlr symbolHndlr;
+  private final Consumer<Symbol> symbolHndlr;
   private final SymbolCtrl[][] symbolCtrls;
   private final Symbol[][] symbols;
 
@@ -109,7 +108,7 @@ public class CharacterGrid
         }
 
         if ((obs == null) || (Boolean.TRUE.equals(nv) == false)) return;
-        symbolHndlr.handle(symbols[col][row]);
+        symbolHndlr.accept(symbols[col][row]);
       });
 
       setOnMouseClicked(mouseEvent ->
@@ -125,7 +124,7 @@ public class CharacterGrid
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CharacterGrid(GridPane gp, int colCount, int rowCount, SymbolHndlr symbolHndlr)
+  public CharacterGrid(GridPane gp, int colCount, int rowCount, Consumer<Symbol> symbolHndlr)
   {
     this.colCount = colCount;
     this.rowCount = rowCount;
@@ -260,7 +259,7 @@ public class CharacterGrid
     assignCell(focusCtrl.col, focusCtrl.row, symbol, focusCtrl);
 
     if (symbol != null)
-      symbolHndlr.handle(symbol);
+      symbolHndlr.accept(symbol);
   }
 
 //---------------------------------------------------------------------------

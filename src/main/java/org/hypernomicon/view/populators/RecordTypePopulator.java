@@ -39,7 +39,12 @@ public class RecordTypePopulator extends Populator
   private boolean changed = true;
   private final List<HyperTableCell> choices = new ArrayList<>();
 
-  public RecordTypePopulator()                           { this(null); }
+  public RecordTypePopulator(boolean noHubs)
+  {
+    types = EnumSet.allOf(RecordType.class);
+    types.removeAll(noHubs ? EnumSet.of(hdtNone, hdtAuxiliary, hdtHub) : EnumSet.of(hdtNone, hdtAuxiliary));
+  }
+
   public RecordTypePopulator(Collection<RecordType> set) { setTypes(set); }
 
   public Set<RecordType> getTypes()                      { return types; }
@@ -59,11 +64,6 @@ public class RecordTypePopulator extends Populator
       types = (Set<RecordType>)collection;
     else
       types = EnumSet.copyOf(collection);
-
-    if (types.isEmpty())
-      for (RecordType type : RecordType.values())
-        if ((type != hdtNone) && (type != hdtAuxiliary))
-          types.add(type);
 
     changed = true;
   }

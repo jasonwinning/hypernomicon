@@ -37,7 +37,6 @@ import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
@@ -111,13 +110,7 @@ class MentionsIndex
       HDT_RecordWithMainText uRecord = (HDT_RecordWithMainText) record;
       if (uRecord.hasHub())
       {
-        HDT_Hub hub = uRecord.getHub();
-
-        reindexMentioner(hub.getNote());
-        reindexMentioner(hub.getLabel());
-        reindexMentioner(hub.getDebate());
-        reindexMentioner(hub.getPosition());
-        reindexMentioner(hub.getConcept());
+        uRecord.getHub().getSpokes().forEach(this::reindexMentioner);
         return;
       }
     }

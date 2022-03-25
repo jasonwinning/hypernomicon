@@ -164,6 +164,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     {
       if (ui.cantSaveRecord()) return;
       record.getHub().disuniteRecord(record.getType(), true);
+      record.modifyNow();
       ui.update();
     });
 

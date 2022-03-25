@@ -227,7 +227,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final List<String> titleKeyList = Arrays.asList(
+  private static final List<String> titleKeyList = List.of(
 
       "publicationTitle", "bookTitle"   , "encyclopediaTitle", "proceedingsTitle", "dictionaryTitle",
       "forumTitle",       "programTitle", "websiteTitle"     , "blogTitle"       , "seriesTitle");

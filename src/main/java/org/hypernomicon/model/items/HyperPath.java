@@ -200,7 +200,7 @@ public class HyperPath
 
     if ((parentRecord == null) || (doCreateRecord == false)) return null;
 
-    RecordState recordState = new RecordState(hdtFolder, -1, "", "", "", "");
+    RecordState recordState = new RecordState(hdtFolder);
 
     try
     {

@@ -96,8 +96,6 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  interface SymbolHndlr { void handle(Symbol symbol); }
-
   private boolean programmaticChange = false;
 
   private SymbolPickerDlgCtrlr init()

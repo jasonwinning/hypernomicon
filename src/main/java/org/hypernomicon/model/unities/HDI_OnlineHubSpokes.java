@@ -19,6 +19,7 @@ package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.items.HDI_OnlineBase;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.RecordType;
 
 public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 {
@@ -52,11 +54,20 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void setFromOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
-    if (val.debateID   > 0) hub.debateSpoke   = db.debates   .getByID(val.debateID  );
-    if (val.positionID > 0) hub.positionSpoke = db.positions .getByID(val.positionID);
-    if (val.noteID     > 0) hub.noteSpoke     = db.notes     .getByID(val.noteID    );
-    if (val.labelID    > 0) hub.labelSpoke    = db.workLabels.getByID(val.labelID   );
-    if (val.conceptID  > 0) hub.conceptSpoke  = db.concepts  .getByID(val.conceptID );
+    setOnlineSpoke(hdtDebate,    val.debateID  );
+    setOnlineSpoke(hdtPosition,  val.positionID);
+    setOnlineSpoke(hdtNote,      val.noteID    );
+    setOnlineSpoke(hdtWorkLabel, val.labelID   );
+    setOnlineSpoke(hdtConcept,   val.conceptID );
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setOnlineSpoke(RecordType type, int id)
+  {
+    if (id > 0)
+      hub.spokes.put(type, (HDT_RecordWithMainText) db.records(type).getByID(id));
   }
 
 //---------------------------------------------------------------------------
@@ -64,13 +75,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void getToOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
-    HDT_Record record;
-
-    record = hub.getDebate  (); if (record != null) val.debateID   = record.getID();
-    record = hub.getPosition(); if (record != null) val.positionID = record.getID();
-    record = hub.getNote    (); if (record != null) val.noteID     = record.getID();
-    record = hub.getLabel   (); if (record != null) val.labelID    = record.getID();
-    record = hub.getConcept (); if (record != null) val.conceptID  = record.getID();
+    val.debateID   = nullSwitch(hub.getDebate  (), -1, HDT_Record::getID);
+    val.positionID = nullSwitch(hub.getPosition(), -1, HDT_Record::getID);
+    val.noteID     = nullSwitch(hub.getNote    (), -1, HDT_Record::getID);
+    val.labelID    = nullSwitch(hub.getLabel   (), -1, HDT_Record::getID);
+    val.conceptID  = nullSwitch(hub.getConcept (), -1, HDT_Record::getID);
   }
 
 //---------------------------------------------------------------------------
@@ -80,19 +89,19 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
   {
     int spokeCount = 0;
 
-    if (HDT_Record.isEmptyThrowsException(hub.noteSpoke    )) hub.noteSpoke     = null;  else  spokeCount++;
-    if (HDT_Record.isEmptyThrowsException(hub.conceptSpoke )) hub.conceptSpoke  = null;  else  spokeCount++;
-    if (HDT_Record.isEmptyThrowsException(hub.labelSpoke   )) hub.labelSpoke    = null;  else  spokeCount++;
-    if (HDT_Record.isEmptyThrowsException(hub.debateSpoke  )) hub.debateSpoke   = null;  else  spokeCount++;
-    if (HDT_Record.isEmptyThrowsException(hub.positionSpoke)) hub.positionSpoke = null;  else  spokeCount++;
+    for (HDT_RecordWithMainText spoke : List.copyOf(hub.spokes.values()))
+    {
+      if (HDT_Record.isEmptyThrowsException(spoke))
+        hub.spokes.remove(spoke.getType());
+      else
+        spokeCount++;
+    }
 
     if (spokeCount == 1)  // If only one spoke left, no reason for hub to exist...
     {
-      if      (hub.noteSpoke     != null) hub.disuniteRecord(hdtNote,      false);
-      else if (hub.debateSpoke   != null) hub.disuniteRecord(hdtDebate,    false);
-      else if (hub.positionSpoke != null) hub.disuniteRecord(hdtPosition,  false);
-      else if (hub.conceptSpoke  != null) hub.disuniteRecord(hdtConcept,   false);
-      else if (hub.labelSpoke    != null) hub.disuniteRecord(hdtWorkLabel, false);
+      HDT_RecordWithMainText spoke = List.copyOf(hub.spokes.values()).get(0);
+      hub.disuniteRecord(spoke.getType(), false);
+      spoke.modifyNow();
 
       spokeCount = 0;
     }

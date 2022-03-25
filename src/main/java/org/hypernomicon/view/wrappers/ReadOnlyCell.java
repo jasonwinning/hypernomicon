@@ -23,6 +23,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.hypernomicon.model.records.HDT_Record;
 
@@ -35,15 +36,13 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 {
   private final boolean incremental;
   private final HyperTable table;
-  private final CustomAddNewGraphicProvider graphicProvider;
+  private final Function<HyperTableRow, Node> graphicProvider;
   public static final int INCREMENTAL_ROWS = 20;
 
-  @FunctionalInterface public interface CustomAddNewGraphicProvider { Node provide(HyperTableRow row); }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ReadOnlyCell(HyperTable table, boolean incremental, CustomAddNewGraphicProvider graphicProvider)
+  ReadOnlyCell(HyperTable table, boolean incremental, Function<HyperTableRow, Node> graphicProvider)
   {
     super();
 
@@ -112,7 +111,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     {
       setText("");
       setTooltip(null);
-      setGraphic(graphicProvider.provide(row));
+      setGraphic(graphicProvider.apply(row));
       return;
     }
 
