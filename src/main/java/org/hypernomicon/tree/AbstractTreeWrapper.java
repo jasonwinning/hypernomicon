@@ -32,7 +32,7 @@ import static org.hypernomicon.util.UIUtil.*;
 
 public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>> extends DragNDropContainer<RowType>
 {
-  protected boolean selectingFromCB = false;
+  boolean selectingFromCB = false;
 
   protected abstract RowType newRow(HDT_Record rootRecord, TreeModel<RowType> treeModel);
   protected abstract TreeItem<RowType> getTreeItem(RowType treeRow);

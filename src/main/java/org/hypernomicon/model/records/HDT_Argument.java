@@ -25,6 +25,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.HyperDataset;
@@ -35,8 +36,6 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-
-import com.google.common.collect.Sets;
 
 //---------------------------------------------------------------------------
 
@@ -120,7 +119,7 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
   public static boolean posVerdictIDIsInFavor(int id)
   {
-    return Sets.newHashSet(1, 3, 6, 17).contains(id);
+    return Set.of(1, 3, 6, 17).contains(id);
   }
 
 //---------------------------------------------------------------------------

@@ -354,7 +354,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     workFile.works.forEach(work ->
     {
-      if ((work.getID() != getID()) && HDT_Work.isUnenteredSet(work) &&
+      if ((work.getID() != getID()) && isUnenteredSet(work) &&
         ((sourceUnenteredWork == work) || confirmDialog("Okay to remove the file from the the unentered set of work files: \"" + work.name() + "\"?")))
           db.getObjectList(rtWorkFileOfWork, work, true).remove(workFile);
     });

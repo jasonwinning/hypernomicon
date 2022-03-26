@@ -67,7 +67,7 @@ public abstract class FilteredQuerySource implements QuerySource
   public RecordType recordType()                        { return queryType.getRecordType(); }
   public boolean containsCell(HyperTableCell cell)      { ensureGenerated(); return list.contains(HyperTableCell.getRecord(cell)); }
   public void addAllTo(Set<HDT_Record> filteredRecords) { ensureGenerated(); filteredRecords.addAll(list); }
-  protected void ensureGenerated()                      { if (!generated) { runFilter(); it = list.iterator(); generated = true; }}
+  private void ensureGenerated()                        { if (!generated) { runFilter(); it = list.iterator(); generated = true; }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

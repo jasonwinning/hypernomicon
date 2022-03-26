@@ -43,7 +43,7 @@ import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-public class CharacterGrid
+class CharacterGrid
 {
 
 //---------------------------------------------------------------------------

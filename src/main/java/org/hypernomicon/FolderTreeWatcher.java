@@ -99,7 +99,7 @@ public class FolderTreeWatcher
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    WatcherThread(WatchService watcher, Map<WatchKey, HDT_Folder> watchKeyToDir)
+    private WatcherThread(WatchService watcher, Map<WatchKey, HDT_Folder> watchKeyToDir)
     {
       super("FolderTreeWatcher");
 
@@ -296,7 +296,7 @@ public class FolderTreeWatcher
             else if (((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
                      appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                      (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
-                     newPath.getExtensionOnly().equalsIgnoreCase("pdf"))
+                     "pdf".equalsIgnoreCase(newPath.getExtensionOnly()))
             {
               downloading.add(newPath);
 
@@ -372,8 +372,8 @@ public class FolderTreeWatcher
             {
               if (appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                   (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
-                  (oldPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") == false) &&
-                  newPath.getExtensionOnly().equalsIgnoreCase("pdf"))
+                  ("pdf".equalsIgnoreCase(oldPathInfo.getFilePath().getExtensionOnly()) == false) &&
+                  "pdf".equalsIgnoreCase(newPath.getExtensionOnly()))
               {
                 doImport(newPath);
               }

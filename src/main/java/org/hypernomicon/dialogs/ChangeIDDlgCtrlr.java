@@ -39,7 +39,8 @@ import javafx.scene.control.TextField;
 
 public class ChangeIDDlgCtrlr extends HyperDlg
 {
-  public HyperCB hcbType, hcbRecord;
+  private HyperCB hcbType;
+  public HyperCB hcbRecord;
 
   @FXML private ComboBox<HyperTableCell> cbType, cbRecord;
   @FXML public TextField tfOldID, tfNewID;

@@ -213,9 +213,9 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static class RebuildThread extends HyperThread
+  private static class RebuildThread extends HyperThread
   {
-    RebuildThread(HyperTask task)
+    private RebuildThread(HyperTask task)
     {
       super(task);
       setDaemon(true);

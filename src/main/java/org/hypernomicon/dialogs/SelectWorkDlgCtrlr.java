@@ -185,8 +185,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     hcbAuthor = new HyperCB(cbAuthor, ctDropDownList, new StandardPopulator(hdtPerson));
     hcbAuthor.dontCreateNewRecord = true;
 
-    HybridSubjectPopulator workPop = new HybridSubjectPopulator(rtAuthorOfWork);
-    workPop.setFilter(id ->
+    HybridSubjectPopulator workPop = new HybridSubjectPopulator(rtAuthorOfWork, id ->
     {
       if (bibEntryIsConstant == false) return true;
 

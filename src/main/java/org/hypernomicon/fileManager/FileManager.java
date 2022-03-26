@@ -925,15 +925,12 @@ public class FileManager extends HyperDlg
 
   static class MarkedRowInfo
   {
-    MarkedRowInfo(FileRow row)
-    {
-      this.row = row;
-    }
+    MarkedRowInfo(FileRow row) { this.row = row; }
 
     final FileRow row;
     private boolean related = false;
 
-    public boolean isRelated() { return related; }
+    private boolean isRelated() { return related; }
   }
 
   // srcRow is non-null when invoked from right-clicking a column or dragging
@@ -1312,7 +1309,7 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void btnBackClick()
+  private void btnBackClick()
   {
     if (btnBack.isDisabled()) return;
 
@@ -1348,7 +1345,7 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void btnForwardClick()
+  private void btnForwardClick()
   {
     if (btnForward.isDisabled()) return;
 

@@ -68,7 +68,7 @@ public class WebButton
 
   //---------------------------------------------------------------------------
 
-    public boolean nonblank(String str)
+    private boolean nonblank(String str)
     {
       if (safeStr(str).isBlank())
         return false;

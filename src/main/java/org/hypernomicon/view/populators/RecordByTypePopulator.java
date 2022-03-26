@@ -44,15 +44,16 @@ public class RecordByTypePopulator extends Populator
   private final Map<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
   private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
   private final boolean nameOnly;
+  private final Predicate<Integer> idFilter;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public RecordByTypePopulator() { this(null, false); }
 
-  RecordByTypePopulator(Predicate<Integer> filter, boolean nameOnly)
+  RecordByTypePopulator(Predicate<Integer> idFilter, boolean nameOnly)
   {
-    this.filter = filter;
+    this.idFilter = idFilter;
     this.nameOnly = nameOnly;
   }
 
@@ -78,7 +79,7 @@ public class RecordByTypePopulator extends Populator
     {
       HDT_Record record = it.next();
 
-      if ((filter == null) || filter.test(record.getID()))
+      if ((idFilter == null) || idFilter.test(record.getID()))
         if (isUnstoredRecord(record.getID(), record.getType()) == false)
           return record;
     }
@@ -236,7 +237,7 @@ public class RecordByTypePopulator extends Populator
 
   private HyperTableCell getCell(HDT_Record record)
   {
-    if ((record == null) || ((filter != null) && (filter.test(record.getID()) == false)))
+    if ((record == null) || ((idFilter != null) && (idFilter.test(record.getID()) == false)))
       return null;
 
     if (nameOnly)

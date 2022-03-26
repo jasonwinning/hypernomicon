@@ -67,7 +67,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
   public static class FileNameAuthor
   {
-    public final String name;
+    private final String name;
     public final boolean isEditor, isTrans;
 
     public FileNameAuthor(String name, boolean isEditor, boolean isTrans)
@@ -80,12 +80,12 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
 //---------------------------------------------------------------------------
 
-  public static class FileNameComponentConfig
+  private static class FileNameComponentConfig
   {
-    public final int code;
-    public final String beforeSep, withinSep, afterSep;
+    private final int code;
+    private final String beforeSep, withinSep, afterSep;
 
-    public FileNameComponentConfig(int code, String beforeSep, String withinSep, String afterSep)
+    private FileNameComponentConfig(int code, String beforeSep, String withinSep, String afterSep)
     {
       this.code = code;
       this.beforeSep = beforeSep;

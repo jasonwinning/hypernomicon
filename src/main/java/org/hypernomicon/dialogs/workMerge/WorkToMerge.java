@@ -44,7 +44,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
-public class WorkToMerge
+class WorkToMerge
 {
   private final BibData bibData;
   private final HyperCB hcbType;
@@ -57,9 +57,9 @@ public class WorkToMerge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public WorkToMerge(BibData bibData, RadioButton rbTitle, TextField tfTitle, RadioButton rbType, ComboBox<HyperTableCell> cbType,
-                                      RadioButton rbYear, TextField tfYear, RadioButton rbAuthors, TableView<HyperTableRow> tvAuthors,
-                                      HDT_Work destWork, boolean creatingNewWork, MutableBoolean alreadyChangingTitle)
+  WorkToMerge(BibData bibData, RadioButton rbTitle, TextField tfTitle, RadioButton rbType, ComboBox<HyperTableCell> cbType,
+              RadioButton rbYear, TextField tfYear, RadioButton rbAuthors, TableView<HyperTableRow> tvAuthors,
+              HDT_Work destWork, boolean creatingNewWork, MutableBoolean alreadyChangingTitle)
   {
     this.bibData = bibData;
     this.creatingNewWork = creatingNewWork;

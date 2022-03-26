@@ -159,7 +159,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void updateArgCounts()
+  private void updateArgCounts()
   {
     lowerCtrlr.tabWhereMade.setText("Where made (" + htWhereMade.dataRowCount() + ")");
   }

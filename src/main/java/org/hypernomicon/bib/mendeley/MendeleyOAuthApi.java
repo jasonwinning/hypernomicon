@@ -31,8 +31,8 @@ public class MendeleyOAuthApi extends DefaultApi20
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class InstanceHolder       { private static final MendeleyOAuthApi INSTANCE = new MendeleyOAuthApi(); }
-  public static MendeleyOAuthApi instance() { return InstanceHolder.INSTANCE; }
+  private static class InstanceHolder        { private static final MendeleyOAuthApi INSTANCE = new MendeleyOAuthApi(); }
+  private static MendeleyOAuthApi instance() { return InstanceHolder.INSTANCE; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -43,7 +43,7 @@ public class MendeleyOAuthApi extends DefaultApi20
       .apiSecret("ShGQ9F8yP9t3u3nR")
       .callback("http://hypernomicon.org/verification.html")
       .defaultScope("all")
-      .build(MendeleyOAuthApi.instance()));
+      .build(instance()));
   }
 
 //---------------------------------------------------------------------------

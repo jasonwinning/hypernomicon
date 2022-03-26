@@ -26,7 +26,7 @@ import org.hypernomicon.query.ResultsTable.ResultColumn;
 
 import javafx.scene.control.TableView;
 
-public final class ColumnGroupItem
+final class ColumnGroupItem
 {
 
   //---------------------------------------------------------------------------

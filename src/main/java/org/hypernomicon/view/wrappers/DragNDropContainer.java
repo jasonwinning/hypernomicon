@@ -59,10 +59,10 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  abstract public void startDrag(RowType row);
-  abstract public void dragDone();
-  abstract public boolean isValidDragTarget(RowType item, DragEvent event, TreeItem<RowType> treeItem);
-  abstract public void dragDroppedOnto(RowType item);
+  protected abstract void startDrag(RowType row);
+  protected abstract void dragDone();
+  protected abstract boolean isValidDragTarget(RowType item, DragEvent event, TreeItem<RowType> treeItem);
+  protected abstract void dragDroppedOnto(RowType item);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

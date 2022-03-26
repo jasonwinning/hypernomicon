@@ -218,7 +218,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         debateLink.setStyle("-fx-background-color: blue; -fx-text-fill: white;");
 
-        if (record.getHub().getDebate() != null)
+        if (debate != null)
         {
           debateLink.setText("Go to Debate...");
           debateLink.setContextMenu(new ContextMenu(makeMenuItem(debate)));
@@ -350,8 +350,8 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       "Click this link to choose another record to \"unite\" this record with.<br>" +
       "<br>" +
       "To understand what \"uniting\" two records means, consider the fact that sometimes, you might have multiple<br>" +
-      "records that represent the same topic and contain redundant information. For example, you might have a Term<br>" +
-      "record for \"Cause\" and a Problem/Debate record for \"What is the nature of causation?\".<br>" +
+      "records of different types that represent the same topic and contain redundant information. For example, you<br>" +
+      "might have a Term record for \"Cause\" and a Problem/Debate record for \"What is the nature of causation?\".<br>" +
       "<br>" +
       "Instead of letting each one contain some information and key works relevant to the other and having to manually<br>" +
       "make sure they stay in sync with each other, you can \"unite\" these records, which causes them to always have<br>" +

@@ -92,7 +92,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   final private ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
   final private FilteredList<HyperTableRow> filteredRows;
   final private Map<Integer, HyperTableCell> colNdxToDefaultValue = new HashMap<>();
-  final List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
+  private final List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
   Consumer<? extends HDT_Record> dblClickHandler = null;
   Runnable onShowMore = null;
@@ -327,7 +327,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       return row;
     });
 
-    HyperTable.preventMovingColumns(tv, tableCols);
+    preventMovingColumns(tv, tableCols);
   }
 
 //---------------------------------------------------------------------------

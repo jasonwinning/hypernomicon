@@ -21,36 +21,48 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-public class CustomRecordPopulator extends Populator
+public class CustomPopulator extends Populator
 {
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public interface PopulateHandler { List<HDT_Record> handle(HyperTableRow row, boolean force); }
+  @FunctionalInterface public interface PopulateHandler { Stream<HyperTableCell> handle(HyperTableRow row, boolean force); }
+
+  @FunctionalInterface public interface RecordPopulateHandler { Stream<? extends HDT_Record> handle(HyperTableRow row, boolean force); }
 
 //---------------------------------------------------------------------------
 
   private final RecordType recordType;
   private final PopulateHandler handler;
+  private final CellValueType cellValueType;
 
 //---------------------------------------------------------------------------
 
-  public CustomRecordPopulator(RecordType recordType, PopulateHandler handler)
+  public CustomPopulator(CellValueType cellValueType, PopulateHandler handler)
+  {
+    this.recordType = RecordType.hdtNone;
+    this.handler = handler;
+    this.cellValueType = cellValueType;
+  }
+
+  public CustomPopulator(RecordType recordType, RecordPopulateHandler handler)
   {
     this.recordType = recordType;
-    this.handler = handler;
+    this.handler = (row, force) -> handler.handle(row, force).map(record -> new HyperTableCell(record, record.getCBText()));
+    this.cellValueType = cvtRecord;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public CellValueType getValueType()                                 { return cvtRecord; }
+  @Override public CellValueType getValueType()                                 { return cellValueType; }
   @Override public RecordType getRecordType(HyperTableRow row)                  { return recordType; }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
 
@@ -59,9 +71,7 @@ public class CustomRecordPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    return handler.handle(row, force).stream().filter(record -> (filter == null) || filter.test(record.getID()))
-                                              .map(record -> new HyperTableCell(record, record.getCBText()))
-                                              .collect(Collectors.toList());
+    return handler.handle(row, force).collect(Collectors.toList());
   }
 
 //---------------------------------------------------------------------------

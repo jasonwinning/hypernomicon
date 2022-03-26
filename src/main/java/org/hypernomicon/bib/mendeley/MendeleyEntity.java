@@ -21,7 +21,7 @@ import java.time.Instant;
 
 import org.hypernomicon.bib.BibEntity;
 
-public interface MendeleyEntity extends BibEntity
+interface MendeleyEntity extends BibEntity
 {
   Instant lastModified();
 }

@@ -81,11 +81,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.escape.Escaper;
+import com.google.common.html.HtmlEscapers;
+import com.google.common.xml.XmlEscapers;
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.Transliterator;
-
-import static com.google.common.xml.XmlEscapers.*;
-import static com.google.common.html.HtmlEscapers.*;
 
 //---------------------------------------------------------------------------
 
@@ -94,9 +93,9 @@ public final class Util
   public static final StopWatch stopWatch1 = new StopWatch(), stopWatch2 = new StopWatch(), stopWatch3 = new StopWatch(),
                                 stopWatch4 = new StopWatch(), stopWatch5 = new StopWatch(), stopWatch6 = new StopWatch();
 
-  public static final Escaper htmlEscaper         = htmlEscaper(),
-                              xmlContentEscaper   = xmlContentEscaper(),
-                              xmlAttributeEscaper = xmlAttributeEscaper();
+  public static final Escaper htmlEscaper         = HtmlEscapers.htmlEscaper(),
+                              xmlContentEscaper   = XmlEscapers.xmlContentEscaper(),
+                              xmlAttributeEscaper = XmlEscapers.xmlAttributeEscaper();
 
   private Util() { throw new UnsupportedOperationException(); }
 
@@ -683,7 +682,7 @@ public final class Util
 
     if (!classPath.startsWith("jar")) return "";   // Class not from JAR
 
-    String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
+    String manifestPath = classPath.substring(0, classPath.lastIndexOf('!') + 1) + "/META-INF/MANIFEST.MF";
 
     try (InputStream is = new URL(manifestPath).openStream())
     {

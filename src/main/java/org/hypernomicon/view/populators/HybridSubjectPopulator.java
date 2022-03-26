@@ -47,25 +47,21 @@ public class HybridSubjectPopulator extends Populator
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
   public HybridSubjectPopulator(RelationType relType)
+  {
+    this(relType, null);
+  }
+
+  public HybridSubjectPopulator(RelationType relType, Predicate<Integer> idFilter)
   {
     rowToChanged = new HashMap<>();
     rowToPop = new HashMap<>();
 
-    standardPop = new StandardPopulator(db.getSubjType(relType));
-    subjPop = new SubjectPopulator(relType, true);
+    standardPop = new StandardPopulator(db.getSubjType(relType), idFilter, false);
+    subjPop = new SubjectPopulator(relType, true, idFilter);
 
     this.relType = relType;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void setFilter(Predicate<Integer> filter)
-  {
-    super.setFilter(filter);
-    standardPop.setFilter(filter);
-    subjPop.setFilter(filter);
   }
 
 //---------------------------------------------------------------------------

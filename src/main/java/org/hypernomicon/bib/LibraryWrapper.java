@@ -96,9 +96,9 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   public abstract void loadFromDisk(FilePath filePath) throws IOException, ParseException;
   public abstract LibraryType type();
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
-  public abstract void safePrefs();
-  public abstract String entryFileNode();
-  public abstract String collectionFileNode();
+  protected abstract void safePrefs();
+  protected abstract String entryFileNode();
+  protected abstract String collectionFileNode();
 
   public final Set<BibEntry_T> getTrash()                { return new LinkedHashSet<>(keyToTrashEntry.values()); }
   public final Set<BibEntry_T> getAllEntries()           { return new LinkedHashSet<>(keyToAllEntry.values()); }

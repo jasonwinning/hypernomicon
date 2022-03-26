@@ -17,6 +17,7 @@
 
 package org.hypernomicon.util;
 
+@FunctionalInterface
 public interface Magnitude<T extends Comparable<? super T>> extends Comparable<T>
 {
 

@@ -99,8 +99,8 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 
   public void setTitle(String newTitle) { setMultiStr(bfTitle, List.of(newTitle)); }
-  protected void addISBN(String newStr) { matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn)); }
-  public void addISSN(String newStr)    { matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn)); }
+  void addISBN(String newStr)           { matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn)); }
+  void addISSN(String newStr)           { matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn)); }
 
   public static boolean isEmpty(BibData bd) { return (bd == null) || EnumSet.allOf(BibFieldEnum.class).stream().noneMatch(bd::fieldNotEmpty); }
 
@@ -135,7 +135,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void addStr(BibFieldEnum bibFieldEnum, String newStr)
+  void addStr(BibFieldEnum bibFieldEnum, String newStr)
   {
     List<String> list = getMultiStr(bibFieldEnum);
     list.add(newStr);
@@ -145,7 +145,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void extractDOIandISBNs(String value)
+  void extractDOIandISBNs(String value)
   {
     setDOI(value);
     addISBN(value);
@@ -155,7 +155,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void setDOI(String newStr)
+  void setDOI(String newStr)
   {
     if (safeStr(newStr).isEmpty()) return;
     String doi = matchDOI(newStr);

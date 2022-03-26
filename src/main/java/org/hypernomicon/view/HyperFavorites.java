@@ -170,14 +170,14 @@ public class HyperFavorites
 
     for (int ndx = 0; ndx < count; ndx++)
     {
-      if (node.node("favTypes").get(String.valueOf(ndx), "").equals("record"))
+      if ("record".equals(node.node("favTypes").get(String.valueOf(ndx), "")))
       {
         int id = node.node("ids").getInt(String.valueOf(ndx), -1);
         RecordType type = db.parseTypeTagStr(node.node("types").get(String.valueOf(ndx), ""));
 
         nullSwitch((HDT_Record)db.records(type).getByID(id), record -> mainList.add(new FavMenuItem(record)));
       }
-      else if (node.node("favTypes").get(String.valueOf(ndx), "").equals("query"))
+      else if ("query".equals(node.node("favTypes").get(String.valueOf(ndx), "")))
       {
         QueryFavorite query = new QueryFavorite();
 
@@ -195,7 +195,7 @@ public class HyperFavorites
             String text    = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("text", ""),
                    typeStr = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("type", "all");
 
-            row.cells[colNdx] = new HyperTableCell(id, text, typeStr.equals("all") ? hdtNone : db.parseTypeTagStr(typeStr));
+            row.cells[colNdx] = new HyperTableCell(id, text, "all".equals(typeStr) ? hdtNone : db.parseTypeTagStr(typeStr));
           }
 
           query.rows.add(row);

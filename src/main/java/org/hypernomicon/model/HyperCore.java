@@ -181,7 +181,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void remove(int id)
+  private void remove(int id)
   {
     sortedIDs.remove(getIDNdxByID(id));
     sortedKeys.remove(getKeyNdxByID(id));

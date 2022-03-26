@@ -20,7 +20,6 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
-import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
@@ -102,7 +101,7 @@ public abstract class HyperDlg
       Scene scene = new Scene(mainPane);
       dialogStage.setScene(scene);
 
-      if (safeStr(mainPane.getId()).equals("SpecialUI") == false)
+      if ("SpecialUI".equals(mainPane.getId()) == false)
         scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
       final T dlg = loader.getController();
@@ -216,11 +215,11 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final void rescale()
+  private void rescale()
   {
     if (shownAlready == false)
     {
-      if (safeStr(stagePane.getId()).equals("SpecialUI") == false)
+      if ("SpecialUI".equals(stagePane.getId()) == false)
       {
         scaleNodeForDPI(stagePane);
         setFontSize(stagePane);

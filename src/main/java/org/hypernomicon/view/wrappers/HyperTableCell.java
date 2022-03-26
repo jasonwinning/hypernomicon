@@ -49,13 +49,13 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
   public String getText()     { return text; }
   public RecordType getType() { return type; }
 
-  public <HDT_T extends HDT_Record> HDT_T getRecord()            { return HyperTableCell.getRecord(this); }
+  public <HDT_T extends HDT_Record> HDT_T getRecord()            { return getRecord(this); }
 
   static HyperTableCell checkboxCellFromBoolean(boolean boolVal) { return boolVal ? trueCheckboxCell : falseCheckboxCell; }
   public static int getCellID(HyperTableCell cell)               { return cell == null ? -1 : cell.id; }
   public static String getCellText(HyperTableCell cell)          { return cell == null ? "" : safeStr(cell.text); }
   public static RecordType getCellType(HyperTableCell cell)      { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
-  public static boolean isEmpty(HyperTableCell cell)             { return (cell == null) || cell.equals(HyperTableCell.blankCell); }
+  public static boolean isEmpty(HyperTableCell cell)             { return (cell == null) || cell.equals(blankCell); }
 
   @Override public HyperTableCell clone()
   { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
@@ -151,7 +151,7 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
       return text.compareTo(otherCell.text);
     else if (sortMethod == smNumeric)
     {
-      return parseInt(text, Integer.MAX_VALUE) - parseInt(HyperTableCell.getCellText(otherCell), Integer.MAX_VALUE);
+      return parseInt(text, Integer.MAX_VALUE) - parseInt(getCellText(otherCell), Integer.MAX_VALUE);
     }
     else if (sortMethod == smWork)
     {

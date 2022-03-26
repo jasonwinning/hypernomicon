@@ -32,7 +32,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
 
-public class WebButtonBar extends WebButtonCtrl
+class WebButtonBar extends WebButtonCtrl
 {
 
 //---------------------------------------------------------------------------

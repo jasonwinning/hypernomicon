@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
@@ -30,7 +31,7 @@ public class VersionNumber implements Magnitude<VersionNumber>
 {
   private final List<Integer> parts;
   private final int minParts;
-  public static final int minimumParts = 2;
+  private static final int minimumParts = 2;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -49,10 +50,8 @@ public class VersionNumber implements Magnitude<VersionNumber>
 
   public VersionNumber(String str)
   {
-    List<Integer> tempParts = new ArrayList<>();
-
-    Arrays.asList(str.split("\\.")).forEach(partStr -> tempParts.add(parseInt(partStr, 0)));
-
+    List<Integer> tempParts = Arrays.stream(str.split("\\.")).map(partStr -> parseInt(partStr, 0))
+                                                             .collect(Collectors.toCollection(ArrayList::new));
     minParts = minimumParts;
 
     while (tempParts.size() < minParts)

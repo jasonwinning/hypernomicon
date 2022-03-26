@@ -62,18 +62,18 @@ public class InterComputerMsg
   public boolean writeToDisk(boolean getFolderFromAppPrefs)
   {
     FilePath filePath;
-    List<String> s = Lists.newArrayList(source, dest);
+    List<String> lines = Lists.newArrayList(source, dest);
 
     switch (type)
     {
-      case hmtEchoRequest    : s.add("echo request"   ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
-      case hmtEchoReply      : s.add("echo reply"     ); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
-      case hmtUnlockRequest  : s.add("unlock request" ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
-      case hmtUnlockComplete : s.add("unlock complete"); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
+      case hmtEchoRequest    : lines.add("echo request"   ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
+      case hmtEchoReply      : lines.add("echo reply"     ); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
+      case hmtUnlockRequest  : lines.add("unlock request" ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
+      case hmtUnlockComplete : lines.add("unlock complete"); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
       default                : return false;
     }
 
-    try { FileUtils.writeLines(filePath.toFile(), s); }
+    try { FileUtils.writeLines(filePath.toFile(), lines); }
     catch (IOException e) { return false; }
     return true;
   }

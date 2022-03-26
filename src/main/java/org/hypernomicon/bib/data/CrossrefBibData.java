@@ -353,9 +353,9 @@ public class CrossrefBibData extends BibDataStandalone
 
     alreadyCheckedIDs.add(doi.toLowerCase());
 
-    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(title, yearStr, authors, engCharForAuthors, doi), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(getQueryUrl(title, yearStr, authors, engCharForAuthors, doi), httpClient, jsonObj ->
     {
-      BibData bd = CrossrefBibData.createFromJSON(jsonObj, title, yearStr, isPaper, doi);
+      BibData bd = createFromJSON(jsonObj, title, yearStr, isPaper, doi);
 
       if ((bd == null) && engCharForAuthors && (authors != null) && authors.notAllEngCharLastNames())
       {

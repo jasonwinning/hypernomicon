@@ -676,7 +676,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   @Override public void createReport(ReportGenerator report)
   {
-    ZoteroItem.createReport(this, report);
+    createReport(this, report);
   }
 
   private static void createReport(ZoteroItem item, ReportGenerator report)

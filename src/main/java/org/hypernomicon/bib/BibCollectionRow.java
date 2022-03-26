@@ -22,7 +22,7 @@ import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import static org.hypernomicon.bib.CollectionTree.BibCollectionType.*;
 import javafx.scene.control.TreeItem;
 
-public class BibCollectionRow
+class BibCollectionRow
 {
   private final TreeItem<BibCollectionRow> treeItem;
   private final String key;

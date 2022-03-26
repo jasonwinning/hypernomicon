@@ -222,7 +222,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     static { EnumSet.allOf(ZoteroHeader.class).forEach(header -> headerMap.put(header.name.toLowerCase(), header)); }
 
-    public static ZoteroHeader get(Header header) { return headerMap.getOrDefault(header.getName().toLowerCase(), None); }
+    private static ZoteroHeader get(Header header) { return headerMap.getOrDefault(header.getName().toLowerCase(), None); }
   }
 
 //---------------------------------------------------------------------------
@@ -575,7 +575,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   @Override public SyncTask createNewSyncTask()
   {
-    syncTask = new SyncTask() { @Override public Boolean call() throws TerminateTaskException, HyperDataException
+    return syncTask = new SyncTask() { @Override public Boolean call() throws TerminateTaskException, HyperDataException
     {
     //---------------------------------------------------------------------------
     // The algorithm for Zotero syncing is described here:
@@ -705,8 +705,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         throw new HyperDataException(msg, e);
       }
     }};
-
-    return syncTask;
   }
 
 //---------------------------------------------------------------------------

@@ -48,7 +48,7 @@ import com.google.common.collect.Iterators;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class SearchResultFileList
+class SearchResultFileList
 {
   private static class SearchResultFile
   {

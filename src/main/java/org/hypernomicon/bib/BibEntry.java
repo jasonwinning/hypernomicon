@@ -51,7 +51,7 @@ public abstract class BibEntry extends BibData implements BibEntity
   protected abstract List<String> getCollKeys(boolean deletedOK);
   protected abstract boolean isNewEntry();
   public abstract String getEntryURL();
-  public abstract LibraryWrapper<?, ?> getLibrary();
+  protected abstract LibraryWrapper<?, ?> getLibrary();
   public abstract List<String> getReportFieldOrder();
 
   public BibEntry(boolean thisIsBackup)       { this.thisIsBackup = thisIsBackup; }

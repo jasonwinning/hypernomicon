@@ -17,7 +17,7 @@
 
 package org.hypernomicon.tree;
 
-public class HyperTreeCellValue implements Comparable<HyperTreeCellValue>
+class HyperTreeCellValue implements Comparable<HyperTreeCellValue>
 {
   final private TreeRow row;
   final private String key;

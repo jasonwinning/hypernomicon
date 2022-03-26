@@ -37,7 +37,8 @@ import javafx.scene.control.TextField;
 
 public class NewCategoryDlgCtrlr extends HyperDlg
 {
-  public HyperCB hcbRecordType, hcbCompare;
+  public HyperCB hcbRecordType;
+  private HyperCB hcbCompare;
 
   @FXML private ComboBox<HyperTableCell> cbRecordType, cbCompare;
   @FXML private TextField tfCompareID, tfCompareKey;

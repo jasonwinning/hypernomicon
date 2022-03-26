@@ -62,13 +62,14 @@ public class HyperCB implements CommitableWrapper
 {
   private final ComboBox<HyperTableCell> cb;
   private final Populator populator;
-  final HyperTableRow row;
+  private final HyperTableRow row;
 
   public HyperTableCell typedMatch;
   private HyperTableCell preShowingValue;
   private EventHandler<ActionEvent> onAction, innerOnAction;
   private MutableBoolean adjusting;
-  public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false, silentMode = false;
+  public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
+  private boolean silentMode = false;
 
   private final List<HTCListener> listeners = new ArrayList<>();
 
@@ -77,6 +78,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FunctionalInterface
   public interface HTCListener { void changed(HyperTableCell oldValue, HyperTableCell newValue); }
 
   public EventHandler<ActionEvent> getOnAction() { return onAction; }
@@ -402,7 +404,7 @@ public class HyperCB implements CommitableWrapper
 
   private void endEditModeIfInTable(ActionEvent event)
   {
-    if (isInTable()) ((ComboBoxCell) cb.getParent()).commit();
+    if (isInTable()) ((CommitableWrapper) cb.getParent()).commit();
 
     if ((event != null) && (innerOnAction != null))
       innerOnAction.handle(event);  // activates the "Execute" button in the queries hyperTab
@@ -548,18 +550,18 @@ public class HyperCB implements CommitableWrapper
             if ((personName.getFirst().length() > 0) &&
                 (author.getFirstName(true).toLowerCase().contains(personName.getFirst()) ||
                  author.getLastName (true).toLowerCase().contains(personName.getFirst())))
-              {
-                cells.add(cell);
-                continue cbItemsLoop;
-              }
+            {
+              cells.add(cell);
+              continue cbItemsLoop;
+            }
 
             if ((personName.getLast().length() > 0) &&
                 (author.getFirstName(true).toLowerCase().contains(personName.getLast()) ||
                  author.getLastName (true).toLowerCase().contains(personName.getLast())))
-              {
-                cells.add(cell);
-                continue cbItemsLoop;
-              }
+            {
+              cells.add(cell);
+              continue cbItemsLoop;
+            }
           }
         }
 

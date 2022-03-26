@@ -30,7 +30,7 @@ import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.WebButton.UrlPattern;
 import org.hypernomicon.util.WebButton.WebButtonField;
 
-public abstract class WebButtonCtrl
+abstract class WebButtonCtrl
 {
 
 //---------------------------------------------------------------------------
@@ -39,7 +39,6 @@ public abstract class WebButtonCtrl
   static final String CUSTOM_NAME = "Custom";
 
   final String prefKey;
-
   final List<WebButton> webBtnList;
 
 //---------------------------------------------------------------------------

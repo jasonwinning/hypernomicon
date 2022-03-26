@@ -23,16 +23,15 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Term;
-import org.hypernomicon.view.populators.CustomRecordPopulator;
+import org.hypernomicon.view.populators.CustomPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -67,25 +66,17 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   {
     hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm));
 
-    CustomRecordPopulator pop = new CustomRecordPopulator(hdtGlossary, (row, force) ->
+    CustomPopulator pop = new CustomPopulator(hdtGlossary, (row, force) ->
     {
-      List<HDT_Record> glossaries = new ArrayList<>();
-
       HDT_Term term = hcbTerm.selectedRecord();
-      if (term == null) return glossaries;
+      if (term == null) return Stream.empty();
 
       if (oldConcept == null)
-      {
-        term.concepts.forEach(curConcept -> glossaries.add(curConcept.glossary.get()));
-      }
-      else
-      {
-        List<HDT_Glossary> termGlossaries = term.getGlossaries();
+        return term.concepts.stream().map(curConcept -> curConcept.glossary.get());
 
-        db.glossaries.stream().filter(Predicate.not(termGlossaries::contains)).forEachOrdered(glossaries::add);
-      }
+      List<HDT_Glossary> termGlossaries = term.getGlossaries();
 
-      return glossaries;
+      return db.glossaries.stream().filter(Predicate.not(termGlossaries::contains));
     });
 
     hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, pop);

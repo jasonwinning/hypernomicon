@@ -42,12 +42,12 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public class RequestThread extends HyperThread
+  class RequestThread extends HyperThread
   {
     private final ResponseHandler<? extends Boolean> responseHandler;
     private final Consumer<Exception> failHndlr;
 
-    public RequestThread(ResponseHandler<? extends Boolean> responseHandler, Consumer<Exception> failHndlr)
+    private RequestThread(ResponseHandler<? extends Boolean> responseHandler, Consumer<Exception> failHndlr)
     {
       super("HttpRequest");
 
@@ -92,7 +92,7 @@ public class AsyncHttpClient
   public boolean wasCancelledByUser() { return cancelledByUser; }
   public String lastUrl()             { return lastUrl; }
   public void clearLastUrl()          { lastUrl = ""; }
-  public boolean isRunning()          { return (stopped == false) && nullSwitch(requestThread, false, RequestThread::isAlive); }
+  private boolean isRunning()         { return (stopped == false) && nullSwitch(requestThread, false, RequestThread::isAlive); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

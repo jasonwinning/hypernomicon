@@ -80,7 +80,7 @@ public class FavOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void moveRecord(int diff)
+  private void moveRecord(int diff)
   {
     if (lvRecord.getSelectionModel().getSelectedIndex() < 0) return;
 
@@ -102,7 +102,7 @@ public class FavOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void moveQuery(int diff)
+  private void moveQuery(int diff)
   {
     int oldNdx = lvQuery.getSelectionModel().getSelectedIndex(),
         newNdx = oldNdx + diff;

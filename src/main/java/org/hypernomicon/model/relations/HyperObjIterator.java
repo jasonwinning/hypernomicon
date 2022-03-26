@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 
 import org.hypernomicon.model.records.HDT_Record;
 
-public class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements Iterator<HDT_ObjType>
+class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements Iterator<HDT_ObjType>
 {
   private final HyperObjList<HDT_SubjType, HDT_ObjType> list;
   private int nextNdx = 0, lastNdx = -1;

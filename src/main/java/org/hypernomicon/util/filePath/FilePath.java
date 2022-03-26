@@ -480,7 +480,7 @@ public class FilePath implements Comparable<FilePath>
     if (equals(subFilePath)) return true;
 
     FilePath parent = subFilePath.getParent();
-    return (FilePath.isEmpty(parent) == false) && isSubpath(parent);
+    return (isEmpty(parent) == false) && isSubpath(parent);
   }
 
 //---------------------------------------------------------------------------
@@ -488,7 +488,7 @@ public class FilePath implements Comparable<FilePath>
 
   public String toURLString()
   {
-    String pathStr = "";
+    String pathStr;
 
     try
     {

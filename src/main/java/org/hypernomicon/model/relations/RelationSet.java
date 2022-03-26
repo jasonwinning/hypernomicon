@@ -86,7 +86,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   public Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
   public RecordType getTargetType(Tag tag)                { return tagToTargetType.get(tag); }
   public boolean getHasNestedItems()                      { return hasNestedItems; }
-  public Set<Tag> getNestedTags()                         { return new HashSet<>(tagToSchema.keySet()); }
+  public Set<Tag> getNestedTags()                         { return EnumSet.copyOf(tagToSchema.keySet()); }
   public void addChangeHandler(RelationChangeHandler rch) { changeHandlers.add(rch); }
   public Set<HDT_Subj> getOrphans()                       { return ImmutableSet.copyOf(orphans); } // Make a new copy of the set to prevent concurrent modification exception
   private void addObjAndMod(HDT_Subj subj, HDT_Obj obj)   { new HyperObjList<>(this, subj, true).add(obj); }

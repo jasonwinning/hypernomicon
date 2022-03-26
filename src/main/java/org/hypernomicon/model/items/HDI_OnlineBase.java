@@ -35,16 +35,16 @@ public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extend
     this.record = record;
   }
 
-  public void expire() { return; }
+  public void expire() { }
 
   public abstract void setFromOfflineValue(HDI_Derived val, Tag tag) throws RelationCycleException;
 
   public abstract void getToOfflineValue(HDI_Derived val, Tag tag);
 
   /**
-   * @throws HDB_InternalError
+   * @throws HDB_InternalError - if a non-expired record has a positive ID
    */
-  public void resolvePointers() throws HDB_InternalError { return; }
+  public void resolvePointers() throws HDB_InternalError { }
 
   public abstract void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords);
 

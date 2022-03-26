@@ -47,19 +47,19 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(RecordType recordType, Predicate<Integer> filter)
+  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(RecordType recordType, Predicate<Integer> idFilter)
   {
     RecordDropdownDlgCtrlr<HDT_T2> rdd = create("RecordDropdownDlg", "Select a Term Record to Merge With", true);
-    rdd.init(recordType, filter);
+    rdd.init(recordType, idFilter);
     return rdd;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(RecordType recordType, Predicate<Integer> filter)
+  private void init(RecordType recordType, Predicate<Integer> idFilter)
   {
-    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, filter, false));
+    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, idFilter, false));
     typeName = db.getTypeName(recordType);
   }
 

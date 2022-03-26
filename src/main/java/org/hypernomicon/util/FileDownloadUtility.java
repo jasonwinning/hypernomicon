@@ -58,8 +58,9 @@ public final class FileDownloadUtility
 
     private Buffer(InputStream inputStream) throws IOException
     {
-      int bytesRead = -1;
+      int bytesRead;
       byte[] buffer = new byte[BUFFER_SIZE];
+
       while ((bytesRead = inputStream.read(buffer)) != -1)
       {
         buffers.add(buffer);
@@ -168,7 +169,7 @@ public final class FileDownloadUtility
       {
         // extracts file name from URL
 
-        String origFileNameStr = fileURL.substring(fileURL.lastIndexOf("/") + 1);
+        String origFileNameStr = fileURL.substring(fileURL.lastIndexOf('/') + 1);
 
         if (origFileNameStr.indexOf('?') >= 0)
           origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('?'));
@@ -224,7 +225,7 @@ public final class FileDownloadUtility
         try (InputStream inputStream = entity.getContent();
              OutputStream outputStream = Files.newOutputStream(saveFilePath.toPath()))
         {
-          int bytesRead = -1;
+          int bytesRead;
           byte[] byteBuffer = new byte[BUFFER_SIZE];
 
           while ((bytesRead = inputStream.read(byteBuffer)) != -1)

@@ -24,7 +24,7 @@ public class HDI_Base
 {
   private final HDI_Schema schema;
 
-  public HDI_Base(HDI_Schema schema)
+  HDI_Base(HDI_Schema schema)
   {
     this.schema = schema;
   }

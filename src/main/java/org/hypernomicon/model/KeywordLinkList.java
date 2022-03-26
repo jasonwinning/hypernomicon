@@ -69,12 +69,12 @@ public final class KeywordLinkList implements Iterable<KeywordLink>
     {
       String fourChars = safeSubstring(text, ndx, ndx + 4).toLowerCase();
 
-      if (fourChars.equals("http"))
+      if ("http".equals(fourChars))
       {
         for (; (ndx < text.length()) && charIsPartOfWebLink(text, ndx); ndx++);
         continue;
       }
-      else if (fourChars.equals("href")) // don't convert anything in an anchor tag to a link
+      else if ("href".equals(fourChars)) // don't convert anything in an anchor tag to a link
       {
         for (; (ndx < text.length()) && (text.charAt(ndx) != '>'); ndx++);
         continue;

@@ -40,8 +40,8 @@ public class ZoteroOAuthApi extends DefaultApi10a
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class InstanceHolder     { private static final ZoteroOAuthApi INSTANCE = new ZoteroOAuthApi(); }
-  public static ZoteroOAuthApi instance() { return InstanceHolder.INSTANCE; }
+  private static class InstanceHolder      { private static final ZoteroOAuthApi INSTANCE = new ZoteroOAuthApi(); }
+  private static ZoteroOAuthApi instance() { return InstanceHolder.INSTANCE; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -51,7 +51,7 @@ public class ZoteroOAuthApi extends DefaultApi10a
     return service != null ?
       service
     :
-      (service = new ServiceBuilder("e9d7bdc517f7cd37a455").apiSecret("89d44b5b0887f9c2a893").build(ZoteroOAuthApi.instance()));
+      (service = new ServiceBuilder("e9d7bdc517f7cd37a455").apiSecret("89d44b5b0887f9c2a893").build(instance()));
   }
 
 //---------------------------------------------------------------------------

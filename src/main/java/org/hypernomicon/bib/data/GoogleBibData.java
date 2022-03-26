@@ -221,9 +221,9 @@ public class GoogleBibData extends BibDataStandalone
     alreadyCheckedIDs.add(isbn.toLowerCase());
     String finalIsbn = isbn;
 
-    JsonHttpClient.getObjAsync(GoogleBibData.getQueryUrl(title, authors, isbn), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(getQueryUrl(title, authors, isbn), httpClient, jsonObj ->
     {
-      BibData bd = GoogleBibData.createFromJSON(jsonObj, title, finalIsbn);
+      BibData bd = createFromJSON(jsonObj, title, finalIsbn);
 
       if ((bd == null) && (isbnIt != null) && isbnIt.hasNext())
       {

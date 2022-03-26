@@ -74,11 +74,11 @@ public class PDFBibData extends BibDataStandalone
         return;
       }
 
-      int ndx = str.indexOf(":");
+      int ndx = str.indexOf(':');
       prefix = str.substring(0, ndx);
       name = str.substring(ndx + 1);
 
-      ndx = name.indexOf("[");
+      ndx = name.indexOf('[');
       if (ndx >= 0)
       {
         arrayNdx = parseInt(name.substring(ndx + 1, name.indexOf(']')), 0) - 1;
@@ -128,7 +128,7 @@ public class PDFBibData extends BibDataStandalone
 
       if (path != null)
       {
-        int ndx = path.lastIndexOf("/");
+        int ndx = path.lastIndexOf('/');
         String subPath = path.substring(ndx + 1);
 
         PathParts parts = new PathParts(subPath);
@@ -154,7 +154,7 @@ public class PDFBibData extends BibDataStandalone
       if (subPath.startsWith("/"))
         subPath = subPath.substring(1);
 
-      int ndx = subPath.indexOf("/");
+      int ndx = subPath.indexOf('/');
       if (ndx >= 0)
         subPath = subPath.substring(0, ndx);
 
@@ -265,31 +265,37 @@ public class PDFBibData extends BibDataStandalone
     {
       if (elements.isEmpty() == false)
       {
-        if (prefix.equals("dc"))
+        if ("dc".equals(prefix))
         {
-          if (name.equals("creator"))
+          switch (name)
           {
-            authors.clear();
+            case "creator":
 
-            elements.forEach(child -> authors.add(AuthorType.author, new PersonName(child.value)));
-          }
-          else if (name.equals("title"))
-          {
-            bd.setMultiStr(bfTitle, Collections.emptyList());
+              authors.clear();
+              elements.forEach(child -> authors.add(AuthorType.author, new PersonName(child.value)));
+              break;
 
-            elements.forEach(child ->
-            {
-              if (child.value.equalsIgnoreCase("untitled") == false)
-                bd.addStr(bfTitle, child.value);
-            });
-          }
-          else if (name.equals("description"))
-          {
-            elements.forEach(child -> bd.addStr(bfMisc, child.value));
-          }
-          else if (name.equals("publisher"))
-          {
-            bd.setStr(bfPublisher, elements.get(0).value);
+            case "title":
+
+              bd.setMultiStr(bfTitle, Collections.emptyList());
+
+              elements.forEach(child ->
+              {
+                if (child.value.equalsIgnoreCase("untitled") == false)
+                  bd.addStr(bfTitle, child.value);
+              });
+
+              break;
+
+            case "description":
+
+              elements.forEach(child -> bd.addStr(bfMisc, child.value));
+              break;
+
+            case "publisher":
+
+              bd.setStr(bfPublisher, elements.get(0).value);
+              break;
           }
         }
         else if (safeStr(prefix).startsWith("prism"))

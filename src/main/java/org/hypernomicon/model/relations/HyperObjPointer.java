@@ -27,9 +27,9 @@ import org.hypernomicon.model.records.HDT_Record;
 
 public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record>
 {
-  final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
-  final HDT_SubjType subj;
-  final protected boolean modTracking;
+  private final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
+  private final HDT_SubjType subj;
+  private final boolean modTracking;
   private Exception lastException;
 
   public HyperObjPointer(RelationSet<HDT_SubjType, HDT_ObjType> relSet, HDT_SubjType subj, boolean modTracking)

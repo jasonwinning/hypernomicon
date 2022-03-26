@@ -55,7 +55,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
   TreeModel<FileRow> getTreeModel()                                      { return treeModel; }
 
-  @Override public TreeItem<FileRow> getRoot()                           { return tv.getRoot(); }
+  @Override protected TreeItem<FileRow> getRoot()                        { return tv.getRoot(); }
   @Override public Control getControl()                                  { return tv; }
   @Override public void expandMainBranches()                             { treeModel.expandMainBranch(); }
   @Override public SelectionModel<TreeItem<FileRow>> getSelectionModel() { return tv.getSelectionModel(); }
@@ -117,7 +117,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override protected void clear()
   {
     if (tv.getRoot() != null)
     {
@@ -134,7 +134,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void reset()
+  @Override protected void reset()
   {
     super.reset();
 

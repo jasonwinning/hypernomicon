@@ -152,7 +152,7 @@ public final class MediaUtil
       imageName = "document-pdf";
     else if (containsAny(typeStr, "djv", "book", "epub"))
       imageName = "book";
-    else if (mimetype.getType().equals("image"))
+    else if ("image".equals(mimetype.getType()))
       imageName = "image";
     else if (typeStr.contains("plain"))
       imageName = "document-text";
@@ -183,9 +183,9 @@ public final class MediaUtil
       imageName = "edit_mathematics";
     else if (containsAny(typeStr, "graphic", "image"))
       imageName = "image";
-    else if (mimetype.getType().equals("audio"))
+    else if ("audio".equals(mimetype.getType()))
       imageName = "sound_wave";
-    else if (mimetype.getType().equals("video") || containsAny(typeStr, "flash", "mp4"))
+    else if ("video".equals(mimetype.getType()) || containsAny(typeStr, "flash", "mp4"))
       imageName = "recording";
     else if (containsAny(typeStr, "text", "docu"))
       imageName = "document-text";

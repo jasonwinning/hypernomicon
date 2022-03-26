@@ -298,8 +298,8 @@ public class WorkDlgCtrlr extends HyperDlg
     lblAutoPopulated.setText("");
     tfOrigFile.setEditable(false);
 
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType));
-    hcbType.getPopulator().setFilter(id -> HDT_WorkType.workTypeIDToEnumVal(id) != WorkTypeEnum.wtUnenteredSet);
+    StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != WorkTypeEnum.wtUnenteredSet, false);
+    hcbType = new HyperCB(cbType, ctDropDownList, pop);
 
     destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
 

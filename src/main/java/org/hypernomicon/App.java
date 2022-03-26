@@ -215,7 +215,7 @@ public final class App extends Application
     {
       FilePath filePath = new FilePath(args.get(0));
 
-      if (filePath.getExtensionOnly().equalsIgnoreCase("hdb"))
+      if ("hdb".equalsIgnoreCase(filePath.getExtensionOnly()))
       {
         appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
         appPrefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());

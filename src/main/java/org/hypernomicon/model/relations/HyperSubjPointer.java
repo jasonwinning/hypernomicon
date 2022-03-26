@@ -23,8 +23,8 @@ import static org.hypernomicon.util.Util.*;
 
 public class HyperSubjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record>
 {
-  final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
-  final HDT_ObjType obj;
+  private final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
+  private final HDT_ObjType obj;
 
   public HyperSubjPointer(RelationSet<HDT_SubjType, HDT_ObjType> relSet, HDT_ObjType obj)
   {

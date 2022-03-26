@@ -24,7 +24,6 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -45,7 +44,7 @@ public abstract class Populator
 
   //---------------------------------------------------------------------------
 
-    SimplePopulator(CellValueType cellValueType, List<HyperTableCell> choices)
+    private SimplePopulator(CellValueType cellValueType, List<HyperTableCell> choices)
     {
       this.cellValueType = cellValueType;
       this.choices = choices;
@@ -65,6 +64,7 @@ public abstract class Populator
     }
 
   //---------------------------------------------------------------------------
+
   }
 
   //---------------------------------------------------------------------------
@@ -83,12 +83,8 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected Predicate<Integer> filter = null;
-
   public abstract List<HyperTableCell> populate(HyperTableRow row, boolean force);
   public abstract CellValueType getValueType();
-
-  public void setFilter(Predicate<Integer> filter) { this.filter = filter; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -120,7 +116,7 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected HyperTableCell equalMatch(HyperTableRow row, HyperTableCell cell)
+  HyperTableCell equalMatch(HyperTableRow row, HyperTableCell cell)
   {
     return populate(nullSwitch(row, dummyRow), false).contains(cell) ? cell : null;
   }

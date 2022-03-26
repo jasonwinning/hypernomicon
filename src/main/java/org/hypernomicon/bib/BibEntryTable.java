@@ -17,10 +17,7 @@
 
 package org.hypernomicon.bib;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,7 +47,7 @@ import static org.hypernomicon.util.Util.*;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
+class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 {
 
 //---------------------------------------------------------------------------
@@ -233,11 +230,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     {
       String entryStr = row.getEntry().getCBText().toLowerCase();
 
-      for (String str : strArray)
-        if (entryStr.contains(str) == false)
-          return false;
-
-      return true;
+      return Arrays.stream(strArray).noneMatch(str -> entryStr.contains(str) == false);
     });
   }
 

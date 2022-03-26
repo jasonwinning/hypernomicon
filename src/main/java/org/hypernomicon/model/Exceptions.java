@@ -88,7 +88,7 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class RestoreException extends Exception { public RestoreException(String msg) { super(msg); } }
+  public static class RestoreException extends Exception { RestoreException(String msg) { super(msg); } }
 
   public static class ConceptChangedException extends RestoreException
   {

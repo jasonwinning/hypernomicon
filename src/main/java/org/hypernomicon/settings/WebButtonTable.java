@@ -30,17 +30,15 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.util.WebButton;
-import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.populators.CustomPopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import com.google.common.collect.Lists;
-
 import javafx.scene.control.TableView;
 
-public class WebButtonTable extends WebButtonCtrl
+class WebButtonTable extends WebButtonCtrl
 {
 
 //---------------------------------------------------------------------------
@@ -59,10 +57,10 @@ public class WebButtonTable extends WebButtonCtrl
     ht = new HyperTable(tv, 0, true, "");
     this.defaults = defaults;
 
-    List<HyperTableCell> presetCells = Lists.transform(webBtnList, webButton -> new HyperTableCell(webButton.getName(), hdtNone));
+    CustomPopulator pop = new CustomPopulator(cvtSrchBtnPreset, (row, force) -> webBtnList.stream().map(webButton -> new HyperTableCell(webButton.getName(), hdtNone)));
 
     ht.addTextEditCol(hdtNone, true, false);
-    ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDownList, Populator.create(cvtSrchBtnPreset, presetCells),
+    ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDownList, pop,
                                            (row, cellVal, nextColNdx, nextPopulator) ->
                                              row.setCellValue(0, nullSwitch(htcToWebButton(cellVal), "", WebButton::getCaption), hdtNone));
 

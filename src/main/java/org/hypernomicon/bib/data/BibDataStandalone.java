@@ -40,7 +40,7 @@ public abstract class BibDataStandalone extends BibData
 {
   private EntryType entryType;
   private final Map<BibFieldEnum, BibField> bibFieldEnumToBibField = new HashMap<>();
-  protected YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
+  private YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
   final BibAuthorsStandalone authors = new BibAuthorsStandalone();
 
   private static final EnumSet<BibFieldType> stringBibFieldTypes = EnumSet.of(bftString, bftMultiString);
@@ -68,7 +68,7 @@ public abstract class BibDataStandalone extends BibData
   @Override public BibAuthors getAuthors()                               { return authors; }
   @Override public EntryType getEntryType()                              { return entryType; }
   @Override public void setMultiStr(BibFieldEnum bfe, List<String> list) { bibFieldEnumToBibField.get(bfe).setAll(list); }
-  @Override public void setEntryType(EntryType entryType)                { this.entryType = entryType; }
+  @Override protected void setEntryType(EntryType entryType)             { this.entryType = entryType; }
   @Override public HDT_WorkType getWorkType()                            { return EntryType.toWorkType(getEntryType()); }
   @Override public void setWorkType(HDT_WorkType workType)               { return; }
 

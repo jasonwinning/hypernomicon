@@ -308,7 +308,7 @@ public final class MainTextUtil
     {
       LinkKind kind = LinkKind.none;
 
-      if (safeSubstring(entirePlainText, curMatchNdx, curMatchNdx + 4).equalsIgnoreCase("http"))
+      if ("http".equalsIgnoreCase(safeSubstring(entirePlainText, curMatchNdx, curMatchNdx + 4)))
         kind = LinkKind.web;
       else if ((link != null) && (curMatchNdx == link.offset))
         kind = LinkKind.keyword;

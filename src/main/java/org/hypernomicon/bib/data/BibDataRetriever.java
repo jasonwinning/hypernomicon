@@ -53,6 +53,7 @@ public class BibDataRetriever
   private final boolean queryCrossref, queryGoogle;
   private final Set<String> alreadyCheckedIDs = new HashSet<>();
 
+  @FunctionalInterface
   public interface RetrieveHandler { void handle(BibData pdfBD, BibData queryBD, boolean messageShown); }
 
   public BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, List<FilePath> pdfFiles, RetrieveHandler doneHndlr)

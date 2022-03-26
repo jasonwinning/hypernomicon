@@ -38,8 +38,13 @@ import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.util.SplitString;
 import org.hypernomicon.util.filePath.FilePath;
 
-public class InterProcClient
+public final class InterProcClient
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private InterProcClient() { throw new UnsupportedOperationException(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -32,7 +32,7 @@ import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.relations.HyperObjList;
 
-public class RecordTreeEdge
+class RecordTreeEdge
 {
 
 //---------------------------------------------------------------------------

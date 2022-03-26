@@ -85,7 +85,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
       strToComp = null;
     }
 
-    ResultCellValue(String text, Function<String, Comp_T> strToComp)
+    private ResultCellValue(String text, Function<String, Comp_T> strToComp)
     {
       this.text = text;
       this.strToComp = strToComp;

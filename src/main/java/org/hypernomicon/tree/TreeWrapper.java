@@ -144,7 +144,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public TreeItem<TreeRow> getTreeItem(TreeRow treeRow)        { return treeRow.getTreeItem(); }
+  @Override protected TreeItem<TreeRow> getTreeItem(TreeRow treeRow)     { return treeRow.getTreeItem(); }
   @Override public TreeItem<TreeRow> getRoot()                           { return ttv.getRoot(); }
   @Override public Control getControl()                                  { return ttv; }
   @Override public SelectionModel<TreeItem<TreeRow>> getSelectionModel() { return ttv.getSelectionModel(); }

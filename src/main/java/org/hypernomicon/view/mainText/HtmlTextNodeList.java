@@ -30,7 +30,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
-public class HtmlTextNodeList
+class HtmlTextNodeList
 {
 
 //---------------------------------------------------------------------------
@@ -130,8 +130,8 @@ public class HtmlTextNodeList
 
   private static boolean skipElement(Element element)
   {
-    return (element.tagName().equalsIgnoreCase("summary") || // Don't create any keyword links within collapsible headings
-            element.tagName().equalsIgnoreCase("a")       || // Don't create any keyword links within anchor tags (they already link to somewhere)
+    return ("summary".equalsIgnoreCase(element.tagName()) || // Don't create any keyword links within collapsible headings
+            "a".equalsIgnoreCase(element.tagName())       || // Don't create any keyword links within anchor tags (they already link to somewhere)
             element.hasAttr(NO_LINKS_ATTR));
   }
 

@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.hypernomicon.util.FilenameMap;
 
-public class FilePathIterator implements Iterator<FilePath>
+class FilePathIterator implements Iterator<FilePath>
 {
   private final Iterator<Set<FilePath>> nameIterator;
   private Iterator<FilePath> pathIterator;

@@ -33,7 +33,7 @@ import org.hypernomicon.query.SelectColumnsDlgCtrlr.TypeCheckBox;
 
 import com.google.common.collect.ForwardingCollection;
 
-public final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
+final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
 {
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------

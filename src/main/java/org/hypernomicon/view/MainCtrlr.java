@@ -1357,7 +1357,7 @@ public final class MainCtrlr
             int size;
             byte[] buffer = new byte[2048];
 
-            if (filePath.getExtensionOnly().equals("hdb"))
+            if ("hdb".equals(filePath.getExtensionOnly()))
               srcFilePath = filePath;
 
             try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(filePath.toPath()), buffer.length))
@@ -1763,7 +1763,7 @@ public final class MainCtrlr
       return;
     }
 
-    HDT_Record record = null;
+    HDT_Record record;
 
     if (activeTabEnum() == termTabEnum)
     {

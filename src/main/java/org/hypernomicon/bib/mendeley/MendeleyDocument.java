@@ -87,8 +87,8 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
   @Override public EntryType getEntryType() { return parseMendeleyType(jObj.getStrSafe(getFieldKey(bfEntryType))); }
 
-  @Override public LibraryWrapper<?, ?> getLibrary() { return mWrapper; }
-  static EntryType parseMendeleyType(String mType)   { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
+  @Override public LibraryWrapper<?, ?> getLibrary()       { return mWrapper; }
+  private static EntryType parseMendeleyType(String mType) { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -624,7 +624,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
   @Override public void createReport(ReportGenerator report)
   {
-    MendeleyDocument.createReport(this, report);
+    createReport(this, report);
   }
 
 //---------------------------------------------------------------------------
@@ -683,7 +683,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
           JsonArray jArr = jObj.getArray(key);
 
-          if (key.equals("authors") || key.equals("editors") || key.equals("translators"))
+          if ("authors".equals(key) || "editors".equals(key) || "translators".equals(key))
           {
             fieldName = formatMendeleyFieldName(key.substring(0, key.length() - 1));
             report.addField(fieldName, makeCreatorsReportContent(report, jArr, fieldName));
@@ -695,7 +695,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         case STRING :
 
-          report.addField(fieldName, key.equals("notes") ?
+          report.addField(fieldName, "notes".equals(key) ?
             report.makeRows(fieldName, document.getMultiStr(bfMisc))
           :
             makeReportString(report, fieldName, jObj.getStrSafe(key)));
@@ -727,7 +727,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   {
     if (str.isBlank()) return "";
 
-    if (fieldName.equals("Type"))
+    if ("Type".equals(fieldName))
       str = formatMendeleyFieldName(str);
 
     return report.makeRow(fieldName, str);
@@ -773,7 +773,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   {
     List<String> list;
 
-    if (fieldName.equalsIgnoreCase("websites"))
+    if ("websites".equalsIgnoreCase(fieldName))
     {
       fieldName = "URL";
       list = StreamSupport.stream(jArr.getStrs().spliterator(), false).map(report::getUrlContent).collect(Collectors.toList());

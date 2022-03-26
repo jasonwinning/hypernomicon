@@ -1469,7 +1469,7 @@ public final class HyperDB
             case XMLStreamConstants.END_ELEMENT :
 
               wasAlreadyInStartTag = false;
-              if (event.asEndElement().getName().getLocalPart().equals("record"))
+              if ("record".equals(event.asEndElement().getName().getLocalPart()))
                 notDoneReadingRecord = false;
               else
               {
@@ -2323,7 +2323,7 @@ public final class HyperDB
     tagCreationDate,   tagModifiedDate, tagViewDate,     tagDisplayRecord,   tagKeyWork,         tagLinkedRecord,   tagParentInst,   tagHub,
     tagPictureFolder,  tagPast,         tagMainText;
 
-    final static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
+    private final static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
 
     public int getNum()                    { return tagToNum.get(this); }
     public static Tag getTagByNum(int num) { return tagToNum.inverse().get(num); }

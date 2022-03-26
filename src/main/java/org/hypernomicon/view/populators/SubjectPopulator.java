@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -43,19 +44,34 @@ public class SubjectPopulator extends Populator
   private final Map<HyperTableRow, HDT_Record> rowToObj;
   private final RelationType relType;
   private final boolean trackObjByRow, nameOnly;
+  private final Predicate<Integer> idFilter;
 
-  private HDT_Record obj = null;
+  private HDT_Record obj;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
-  public SubjectPopulator(RelationType relType, boolean trackObjByRow) { this(relType, trackObjByRow, false); }
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow, boolean nameOnly)
+  {
+    this(relType, trackObjByRow, null, nameOnly);
+  }
+
+  public SubjectPopulator(RelationType relType, boolean trackObjByRow, Predicate<Integer> idFilter)
+  {
+    this(relType, trackObjByRow, idFilter, false);
+  }
+
+  public SubjectPopulator(RelationType relType, boolean trackObjByRow)
+  {
+    this(relType, trackObjByRow, null, false);
+  }
+
+  public SubjectPopulator(RelationType relType, boolean trackObjByRow, Predicate<Integer> idFilter, boolean nameOnly)
   {
     this.relType = relType;
     this.trackObjByRow = trackObjByRow;
     this.nameOnly = nameOnly;
+    this.idFilter = idFilter;
 
     rowToObj = trackObjByRow ? new HashMap<>() : null;
   }
@@ -131,7 +147,7 @@ public class SubjectPopulator extends Populator
     boolean noneYet = true;
     for (HDT_Record subj : db.getSubjectList(relType, curObj))
     {
-      if ((filter != null) && (filter.test(subj.getID()) == false))
+      if ((idFilter != null) && (idFilter.test(subj.getID()) == false))
         continue;
 
       if (noneYet)

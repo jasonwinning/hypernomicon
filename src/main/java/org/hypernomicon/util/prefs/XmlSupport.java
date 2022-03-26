@@ -39,8 +39,13 @@ import org.xml.sax.SAXParseException;
 
 // This class consists of code adapted from java.util.prefs.XmlSupport from JRE 11
 
-public class XmlSupport
+public final class XmlSupport
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private XmlSupport() { throw new UnsupportedOperationException(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

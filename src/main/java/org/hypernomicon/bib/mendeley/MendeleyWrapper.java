@@ -121,7 +121,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     static { EnumSet.allOf(MendeleyHeader.class).forEach(header -> map.put(header.name.toLowerCase(), header)); }
 
-    public static MendeleyHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }
+    private static MendeleyHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }
   }
 
 //---------------------------------------------------------------------------
@@ -204,7 +204,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       if ((jsonArray != null) && (jsonArray.size() > 0))
       {
         JsonObj jsonObj = jsonArray.getObj(0);
-        if (jsonObj.getStrSafe("errorId").equals("oauth/TOKEN_EXPIRED"))
+        if ("oauth/TOKEN_EXPIRED".equals(jsonObj.getStrSafe("errorId")))
         {
           try (OAuth20Service service = MendeleyOAuthApi.service())
           {
@@ -359,7 +359,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   @Override public SyncTask createNewSyncTask()
   {
-    syncTask = new SyncTask() { @Override public Boolean call() throws TerminateTaskException, HyperDataException
+    return syncTask = new SyncTask() { @Override public Boolean call() throws TerminateTaskException, HyperDataException
     {
     //---------------------------------------------------------------------------
 
@@ -500,8 +500,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
         } while ((jsonClient.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED) || didMergeDuringSync);
 
-        didMergeDuringSync = false;
-
 // Get list of folders from server ----------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
@@ -589,8 +587,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
         throw new HyperDataException(msg, e);
       }
     }};
-
-    return syncTask;
   }
 
 //---------------------------------------------------------------------------

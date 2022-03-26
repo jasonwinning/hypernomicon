@@ -361,7 +361,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void dispose(Browser browser, boolean wait)
+  private static void dispose(Browser browser, boolean wait)
   {
     if ((browser == null) || browser.isDisposed()) return;
 

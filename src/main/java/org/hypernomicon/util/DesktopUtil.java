@@ -257,7 +257,7 @@ public final class DesktopUtil
 
     String readerPath = appPrefs.get(PREF_KEY_PDF_READER, "");
 
-    if ((filePath.getExtensionOnly().equalsIgnoreCase("pdf") == false) || readerPath.isEmpty())
+    if (("pdf".equalsIgnoreCase(filePath.getExtensionOnly()) == false) || readerPath.isEmpty())
     {
       openFile(filePath);
       return;
@@ -347,7 +347,7 @@ public final class DesktopUtil
       if (SystemUtils.IS_OS_WINDOWS)
       {
         output = execReadToString("wmic csproduct get UUID");
-        uuid = output.substring(output.indexOf("\n")).trim();
+        uuid = output.substring(output.indexOf('\n')).trim();
       }
       else if (SystemUtils.IS_OS_MAC)
       {
@@ -408,7 +408,7 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String execReadToString(String execCommand) throws IOException, InterruptedException
+  private static String execReadToString(String execCommand) throws IOException, InterruptedException
   {
     Process process = Runtime.getRuntime().exec(execCommand);
     String output = "";

@@ -17,10 +17,10 @@
 
 package org.hypernomicon.view.wrappers;
 
+import javafx.beans.property.Property;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -130,7 +130,7 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
     setGraphic(checkBox);
 
     if (booleanProperty != null)
-      checkBox.selectedProperty().unbindBidirectional((BooleanProperty) booleanProperty);
+      checkBox.selectedProperty().unbindBidirectional((Property<Boolean>) booleanProperty);
 
     booleanProperty = item.booleanProperty;
 
@@ -138,7 +138,7 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
     {
       checkBox.setVisible(true);
       checkBox.setSelected(booleanProperty.getValue());
-      checkBox.selectedProperty().bindBidirectional((BooleanProperty) booleanProperty);
+      checkBox.selectedProperty().bindBidirectional((Property<Boolean>) booleanProperty);
     }
     else
       checkBox.setVisible(false);

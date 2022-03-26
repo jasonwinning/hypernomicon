@@ -87,13 +87,13 @@ public class HyperPath
       return;
     }
 
-    if (HyperPath.getHyperPathSetForFilePath(filePath).size() > 0)
+    if (getHyperPathSetForFilePath(filePath).size() > 0)
     {
       messageDialog("Internal error #90178", mtError);
       return;
     }
 
-    folder = HyperPath.getFolderFromFilePath(filePath, false);
+    folder = getFolderFromFilePath(filePath, false);
     assignNameInternal(filePath.getNameOnly());
   }
 
@@ -250,7 +250,7 @@ public class HyperPath
       return null;
     }
 
-    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath.getDirOnly(), true);
+    HDT_Folder folder = getFolderFromFilePath(filePath.getDirOnly(), true);
     if (folder == null) return null;
 
     HDT_RecordWithPath file = db.createNewBlankRecord(type);
@@ -311,7 +311,7 @@ public class HyperPath
     if (srcFilePath.isDirectory())
       return falseWithErrorMessage("Internal error #77393");
 
-    Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(srcFilePath);
+    Set<HyperPath> set = getHyperPathSetForFilePath(srcFilePath);
 
     destFilePath = newFolder.filePath().resolve(changeFilename ? new FilePath(newName) : srcFilePath.getNameOnly());
 
@@ -347,7 +347,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void assignInternal(HDT_Folder parentFolder, FilePath nameOnly)
+  private void assignInternal(HDT_Folder parentFolder, FilePath nameOnly)
   {
     if (folderPtr == null)
     {
@@ -410,7 +410,7 @@ public class HyperPath
 
     if (getRecordType() == hdtPerson)
     {
-      HyperPath.getHyperPathSetForFilePath(filePath()).forEach(hyperPath ->
+      getHyperPathSetForFilePath(filePath()).forEach(hyperPath ->
       {
         if (hyperPath.getRecordType() != hdtPerson) return;
 
