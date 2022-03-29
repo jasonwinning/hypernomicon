@@ -27,7 +27,6 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -44,29 +43,22 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.layout.HBox;
 
 //---------------------------------------------------------------------------
 
-public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
+public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 {
   private HyperTable htParents, htArguments, htRightChildren;
   private HDT_Position curPosition;
 
   @Override protected RecordType type()             { return hdtPosition; }
-  @Override public void enable(boolean enabled)     { ui.tabPositions.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Position pos) { curPosition = pos; }
 
-  private PositionTab() throws IOException
-  {
-    super(ui.tabPositions);
-    baseInit(positionTabEnum, ui.tabPositions);
-  }
-
-  @SuppressWarnings("unused") public static void create() throws IOException { new PositionTab(); }
+  private PositionTab(Tab tab) throws IOException       { super(tab); }
+  public static void create(Tab tab) throws IOException { new PositionTab(tab).baseInit(positionTabEnum, tab); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -151,11 +143,9 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   @Override protected void init()
   {
-    List<TableColumn<HyperTableRow, ?>> cols;
-
     ctrlr.init(hdtPosition, this);
 
-    cols = ctrlr.tvLeftChildren.getColumns();
+    List<TableColumn<HyperTableRow, ?>> cols = ctrlr.tvLeftChildren.getColumns();
 
     cols.get(2).setText("Title of Work");
     cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Year"));
@@ -308,7 +298,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void newArgumentClick(HDT_Position target)
+  public static void newArgumentClick(HDT_Position target)
   {
     NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.build(target);
 

@@ -48,6 +48,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
@@ -136,7 +137,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
   @Override protected RecordType type()              { return hdtPerson; }
-  @Override public void enable(boolean enabled)      { ui.tabPersons.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Person person) { curPerson = person; }
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
@@ -256,7 +256,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     {
       row.setCellValue(0, file, "");  // it's blank because file records don't have a year
 
-      row.setCellValue(1, file, "File" + (file.fileType.isNull() ? "" : " (" + file.fileType.get().name() + ")"));
+      row.setCellValue(1, file, "File" + (file.fileType.isNull() ? "" : " (" + file.fileType.get().name() + ')'));
 
       row.setCellValue(2, file, "");
       row.setCellValue(3, file, "");
@@ -266,9 +266,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
  // Add topic records to be populated to sets
  // -----------------------------------------
 
-    LinkedHashSet<HDT_Argument> argsToAdd  = new LinkedHashSet<>();
-    LinkedHashSet<HDT_Position> posToAdd   = new LinkedHashSet<>();
-    LinkedHashSet<HDT_Record>   otherToAdd = new LinkedHashSet<>();
+    Set<HDT_Argument> argsToAdd  = new LinkedHashSet<>();
+    Set<HDT_Position> posToAdd   = new LinkedHashSet<>();
+    Set<HDT_Record> otherToAdd = new LinkedHashSet<>();
 
     db.displayerStream(curPerson).forEachOrdered(displayer ->
     {
@@ -357,7 +357,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
+  private static void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
   {
     Consumer<HDT_WorkLabel> consumer = label ->
     {
@@ -427,7 +427,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addPosToTopicTable(HDT_Position position, HyperTableRow row, Set<HDT_Record> otherToAdd)
+  private static void addPosToTopicTable(HDT_Position position, HyperTableRow row, Set<HDT_Record> otherToAdd)
   {
     row.setCellValue(2, position, position.listName());
 
@@ -441,9 +441,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addOtherToTopicTable(HDT_Record displayer, HyperTableRow row)
+  private static void addOtherToTopicTable(HDT_Record displayer, HyperTableRow row)
   {
-    row.setCellValue(1, displayer, displayer.getType() == hdtWorkLabel ? ((HDT_WorkLabel) displayer).getExtendedText() : displayer.listName());
+    row.setCellValue(1, displayer, displayer.getType() == hdtWorkLabel ? ((HDT_WorkLabel) displayer).extendedText() : displayer.listName());
   }
 
 //---------------------------------------------------------------------------
@@ -634,13 +634,13 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       return true;
     }
 
-    List<List<Author>> matchedAuthorsList = new ArrayList<>();
+    ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
 
-    HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(singletonList(personName), singletonList(new Author(curPerson)), matchedAuthorsList, null);
+    HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(personName, new Author(curPerson), matchedAuthorsList, null);
 
     if (!HyperTask.performTaskWithProgressDialog(task)) return false;
 
-    List<Author> matchedAuthors = matchedAuthorsList.get(0);
+    ArrayList<Author> matchedAuthors = matchedAuthorsList.get(0);
 
     if (matchedAuthors.size() > 0)
       return NewPersonDlgCtrlr.build(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors).showModal();
@@ -771,7 +771,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
 
-    ui.setSearchKeyToolTip(tfSearchKey);
+    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
 
     lblWebsite.setOnMouseClicked(event -> openWebLink(tfWebsite.getText()));
 
@@ -799,9 +799,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
-    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + "1"));
-    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + "1"));
-    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + "2"));
+    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
+    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
+    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '2'));
 
     ivPerson.setOnMouseClicked(event ->
     {
@@ -910,7 +910,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class InvestigationView
+  public static final class InvestigationView
   {
     private InvestigationView(HDT_Investigation record, TextField tfName, TextField tfSearchKey, MainTextWrapper textWrapper, Tab tab)
     {
@@ -966,7 +966,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     iV.tab.setText(newName);
     iV.tab.setOnCloseRequest(this::deleteInvestigation);
 
-    ui.setSearchKeyToolTip(iV.tfSearchKey);
+    MainCtrlr.setSearchKeyToolTip(iV.tfSearchKey);
 
     GridPane gPane = new GridPane();
     gPane.add(new Label("Investigation name:"), 0, 0); // column=2 row=1
@@ -1193,7 +1193,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     updateWebButtons(node, PREF_KEY_PERSON_SRCH, 2, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH + "2").getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH + '2').getCaption());
 
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
   }

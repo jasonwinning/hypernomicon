@@ -73,11 +73,7 @@ public class RecordTypePopulator extends Populator
 
   public HyperTableCell getChoiceByType(HyperTableRow row, RecordType type)
   {
-    for (HyperTableCell cell : populate(nullSwitch(row, dummyRow), false))
-      if (HyperTableCell.getCellType(cell) == type)
-        return cell;
-
-    return null;
+    return findFirst(populate(nullSwitch(row, dummyRow), false), cell -> HyperTableCell.getCellType(cell) == type);
   }
 
 //---------------------------------------------------------------------------
@@ -104,13 +100,8 @@ public class RecordTypePopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    for (HyperTableCell choice : populate(row, false))
-      if (HyperTableCell.getCellType(choice) == HyperTableCell.getCellType(cell))
-        return choice;
-
-    return null;
+    return findFirst(populate(row, false), choice -> HyperTableCell.getCellType(choice) == HyperTableCell.getCellType(cell));
   }
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -62,7 +62,8 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
       last = ultraTrim(name.substring(0, ndx));
       return;
     }
-    else if (ndx == 0)
+
+    if (ndx == 0)
     {
       first = ultraTrim(name.substring(ndx + 1));
       last = "";
@@ -128,7 +129,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public String getLastFirst()    { return (first.length() > 0) && (last.length() > 0) ? (last + ", " + first) : (last + first); }
   public boolean isEmpty()        { return (getLast().length() + getFirst().length()) == 0; }
   public PersonName toLowerCase() { return new PersonName(first.toLowerCase(), last.toLowerCase()); }
-  public String getFull()         { return (first + " " + last).trim(); }
+  public String getFull()         { return (first + ' ' + last).trim(); }
   public String getSingle()       { return getLast().length() > 0 ? getLast() : getFirst(); }
   public PersonName toEngChar()   { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
   public String getSortKey()      { return last.isEmpty() || first.isEmpty() ? (last + first) : (last + '\u0000' + first); }
@@ -196,7 +197,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
         }
         else
         {
-          nameStr = nameStr + " " + splitStr.next();
+          nameStr = nameStr + ' ' + splitStr.next();
           initialList.add(nameStr.substring(0, 1));
         }
       }

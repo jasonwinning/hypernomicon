@@ -17,6 +17,7 @@
 
 package org.hypernomicon.query.engines;
 
+import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.query.sources.DatasetQuerySource;
@@ -26,7 +27,6 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -43,7 +43,7 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
-    if (app.debugging())
+    if (App.debugging())
       pop.addEntry(row, QUERY_SET_DECEASED_AS_PAST, "Set deceased people as past members of institutions");
 
     pop.addEntry(row, QUERY_MULTIPLE_INST, "with multiple affiliations");

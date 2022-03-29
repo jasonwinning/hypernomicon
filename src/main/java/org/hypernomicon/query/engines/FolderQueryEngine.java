@@ -17,7 +17,6 @@
 
 package org.hypernomicon.query.engines;
 
-import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
@@ -27,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.FilteredQuerySource;
@@ -54,7 +54,7 @@ public class FolderQueryEngine extends QueryEngine<HDT_Folder>
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
-    if (app.debugging())
+    if (App.debugging())
       pop.addEntry(row, QUERY_DUPLICATE_FOLDERS, "that are duplicate folders");
   }
 

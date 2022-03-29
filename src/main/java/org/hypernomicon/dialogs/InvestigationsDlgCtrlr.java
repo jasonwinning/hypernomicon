@@ -43,7 +43,7 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static class InvestigationSetting
+  public static final class InvestigationSetting
   {
     private final SimpleBooleanProperty selected;
     private final String name;

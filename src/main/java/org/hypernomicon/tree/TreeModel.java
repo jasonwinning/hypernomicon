@@ -57,16 +57,16 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private class MappingFromRecordToRows
+  private final class MappingFromRecordToRows
   {
-    final private SetMultimap<HDT_Record, RowType> recordToRows = LinkedHashMultimap.create();
+    final private SetMultimap<HDT_Record, RowType> recordToRowsMap = LinkedHashMultimap.create();
     final private TreeCB tcb;
 
     //---------------------------------------------------------------------------
 
     private MappingFromRecordToRows(TreeCB tcb)              { this.tcb = tcb; }
-    private Set<RowType> getRowsForRecord(HDT_Record record) { return recordToRows.get(record); }
-    private void clear()                                     { recordToRows.clear(); }
+    private Set<RowType> getRowsForRecord(HDT_Record record) { return recordToRowsMap.get(record); }
+    private void clear()                                     { recordToRowsMap.clear(); }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -75,10 +75,10 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
     {
       HDT_Record record = row.getRecord();
 
-      if ((tcb != null) && (recordToRows.containsKey(record) == false))
+      if ((tcb != null) && (recordToRowsMap.containsKey(record) == false))
         tcb.add(record);
 
-      recordToRows.put(record, row);
+      recordToRowsMap.put(record, row);
     }
 
     //---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
     {
       HDT_Record record = row.getRecord();
 
-      if (recordToRows.remove(record, row) && (tcb != null))
+      if (recordToRowsMap.remove(record, row) && (tcb != null))
         tcb.checkIfShouldBeRemoved(record);
     }
   }

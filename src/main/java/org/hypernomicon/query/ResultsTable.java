@@ -63,7 +63,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
 //---------------------------------------------------------------------------
 
-  static class ResultColumn<Comp_T extends Comparable<Comp_T>> extends TableColumn<ResultsRow, ResultCellValue<Comp_T>>
+  static final class ResultColumn<Comp_T extends Comparable<Comp_T>> extends TableColumn<ResultsRow, ResultCellValue<Comp_T>>
   {
     private ResultColumn(String caption) { super(caption); }
 
@@ -144,7 +144,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private <Comp_T extends Comparable<Comp_T>> ObservableValue<ResultCellValue<Comp_T>> getCustomCellValue(String str, Function<String, Comp_T> strToComp)
+  private static <Comp_T extends Comparable<Comp_T>> ObservableValue<ResultCellValue<Comp_T>> getCustomCellValue(String str, Function<String, Comp_T> strToComp)
   {
     return new ResultCellValue<>(str, strToComp).getObservable();
   }

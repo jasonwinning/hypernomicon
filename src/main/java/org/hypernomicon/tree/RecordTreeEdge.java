@@ -50,18 +50,18 @@ class RecordTreeEdge
     this.parent = parent;
     this.child = child;
 
-    RelationType relType = getRelation(child.getType(), parent.getType());
+    RelationType tempRelType = getRelation(child.getType(), parent.getType());
 
-    if (relType != rtNone)
+    if (tempRelType != rtNone)
     {
       subj = child;
       obj = parent;
     }
     else
     {
-      relType = getRelation(parent.getType(), child.getType());
+      tempRelType = getRelation(parent.getType(), child.getType());
 
-      if (relType == rtNone)
+      if (tempRelType == rtNone)
       {
         subj = null;
         obj = null;
@@ -73,7 +73,7 @@ class RecordTreeEdge
       }
     }
 
-    this.relType = relType;
+    relType = tempRelType;
   }
 
 //---------------------------------------------------------------------------

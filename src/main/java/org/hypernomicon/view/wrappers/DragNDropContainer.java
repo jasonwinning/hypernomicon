@@ -24,7 +24,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.tree.AbstractTreeRow;
 
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.control.Cell;
 import javafx.scene.control.Control;
 import javafx.scene.control.ScrollBar;
@@ -69,14 +68,10 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
   private ScrollBar getScrollBar()
   {
-    for (Node child: ctrl.lookupAll(".scroll-bar")) if (child instanceof ScrollBar)
-    {
-      ScrollBar sb = (ScrollBar) child;
-      if (sb.getOrientation().equals(Orientation.VERTICAL))
-        return sb;
-    }
-
-    return null;
+    return ctrl.lookupAll(".scroll-bar").stream().filter(child -> child instanceof ScrollBar)
+                                                 .map(child -> (ScrollBar) child)
+                                                 .filter(sb -> sb.getOrientation().equals(Orientation.VERTICAL))
+                                                 .findFirst().orElse(null);
   }
 
 //---------------------------------------------------------------------------

@@ -166,7 +166,7 @@ public final class MainTextUtil
 
   public static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo)
   {
-    int recordID = -1, recordTypeOrd;
+    int recordID = -1;
     RecordType recordType = hdtNone;
     JSObject jsToJava = null;
 
@@ -190,7 +190,7 @@ public final class MainTextUtil
     if ((jsEvent == JS_EVENT_OPEN_RECORD) || (jsEvent == JS_EVENT_LAUNCH_FILE) || (jsEvent == JS_EVENT_OPEN_PREVIEW))
     {
       recordID = (Integer)jsToJava.getMember("recordID");
-      recordTypeOrd = (Integer)jsToJava.getMember("recordType");
+      int recordTypeOrd = (Integer)jsToJava.getMember("recordType");
       recordType = getEnumVal(recordTypeOrd, RecordType.class);
 
       if ((recordType == hdtNote) && (jsEvent == JS_EVENT_OPEN_PREVIEW))
@@ -390,7 +390,7 @@ public final class MainTextUtil
       }
     }
 
-    if (style.length() > 0) style = " style=\"" + style + "\"";
+    if (style.length() > 0) style = " style=\"" + style + '"';
 
     if (record.getType() == hdtMiscFile)
       return getGoToRecordAnchor(record, style, text) + "&nbsp;" +
@@ -413,7 +413,7 @@ public final class MainTextUtil
   static String getGoToRecordAnchor(HDT_Record record, String style, String content)
   {
     String parms = getOpenRecordParms(record),
-           anchor = "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" ";
+           anchor = "<a title=\"" + recordTooltip(record) + '"' + style + " hypncon=\"true\" ";
 
     switch (record.getType())
     {
@@ -442,24 +442,24 @@ public final class MainTextUtil
       if (work.workType.isNotNull())
         typeName = work.workType.get().listName();
 
-      StringBuilder tooltip = new StringBuilder("(").append(typeName).append(")");
+      StringBuilder tooltip = new StringBuilder("(").append(typeName).append(')');
 
       if (work.getAuthors().size() == 1)
-        tooltip.append(" ").append(work.getAuthors().get(0).singleName());
+        tooltip.append(' ').append(work.getAuthors().get(0).singleName());
       else if (work.getAuthors().size() == 2)
-        tooltip.append(" ").append(work.getAuthors().get(0).singleName()).append(" & ").append(work.getAuthors().get(1).singleName());
+        tooltip.append(' ').append(work.getAuthors().get(0).singleName()).append(" & ").append(work.getAuthors().get(1).singleName());
       else if (work.getAuthors().size() > 2)
       {
         for (int ndx = 0; ndx < (work.getAuthors().size() - 1); ndx++)
-          tooltip.append(" ").append(work.getAuthors().get(ndx).singleName()).append(",");
+          tooltip.append(' ').append(work.getAuthors().get(ndx).singleName()).append(',');
 
         tooltip.append(" & ").append(work.getAuthors().get(work.getAuthors().size() - 1).singleName());
       }
 
       if (work.getYear().length() > 0)
-        tooltip.append(" (").append(work.getYear()).append(")");
+        tooltip.append(" (").append(work.getYear()).append(')');
 
-      tooltip.append(" ").append(work.name());
+      tooltip.append(' ').append(work.name());
 
       return htmlEscaper.escape(tooltip.toString());
     }
@@ -472,10 +472,10 @@ public final class MainTextUtil
         typeName = typeName + " - " + miscFile.fileType.get().listName();
 
       if (miscFile.pathNotEmpty())
-        return htmlEscaper.escape("(" + typeName + ") " + miscFile.getPath().getNameStr());
+        return htmlEscaper.escape('(' + typeName + ") " + miscFile.getPath().getNameStr());
     }
 
-    return htmlEscaper.escape("(" + typeName + ") " + record.getCBText());
+    return htmlEscaper.escape('(' + typeName + ") " + record.getCBText());
   }
 
 //---------------------------------------------------------------------------
@@ -557,7 +557,7 @@ public final class MainTextUtil
 
     secondaryHtml.append("</div>");
 
-    if ((ultraTrim(convertToSingleLine(mainText.getPlain())).length() > 0) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + " "))
+    if ((ultraTrim(convertToSingleLine(mainText.getPlain())).length() > 0) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + ' '))
       secondaryHtml.append("<br>").append(embeddedHtml);
 
     return secondaryHtml.toString();
@@ -599,7 +599,7 @@ public final class MainTextUtil
             innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(authorBibStr).append("</span>");
 
           if (work.getYear().length() > 0)
-            innerHtml.append("&nbsp;(").append(work.getYear()).append(")");
+            innerHtml.append("&nbsp;(").append(work.getYear()).append(')');
 
           innerHtml.append("&nbsp;").append(getGoToRecordAnchor(work, "", work.name()));
 
@@ -666,7 +666,7 @@ public final class MainTextUtil
   {
     uRecord = uRecord.mainSpoke();
 
-    String recordName = uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).getExtendedName() : uRecord.name();
+    String recordName = uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).extendedName() : uRecord.name();
 
     return getKeywordLink(recordName, new KeywordLink(0, uRecord.name().length(), new SearchKeyword(uRecord.name(), uRecord)), "text-decoration: none;");
   }
@@ -680,7 +680,7 @@ public final class MainTextUtil
 
     String span = "<span id=SKW" + tagNdx + " hypnconType=" + recordWMT.getType().ordinal() + " hypnconID=" + recordWMT.getID();
 
-    return span + " class=\"" + (sortByName ? ALPHA_SORTED_INNER_CLASS : NUMERIC_SORTED_INNER_CLASS) + (topmost ? " " + TOPMOST_CLASS : "") + "\">";
+    return span + " class=\"" + (sortByName ? ALPHA_SORTED_INNER_CLASS : NUMERIC_SORTED_INNER_CLASS) + (topmost ? ' ' + TOPMOST_CLASS : "") + "\">";
   }
 
 //---------------------------------------------------------------------------
@@ -708,7 +708,7 @@ public final class MainTextUtil
       viewInfo.openDivits.add(strippedDivitID);
     }
 
-    return "<details id=\"" + divitID + "\" " + (open ? "open" : "closed") + ">";
+    return "<details id=\"" + divitID + "\" " + (open ? "open" : "closed") + '>';
   }
 
 //---------------------------------------------------------------------------
@@ -860,7 +860,7 @@ public final class MainTextUtil
   {
     if (str.contains("</html>") == false)
       return convertPlainMainTextToHtml(str.isEmpty() ? "<br>" : str);
-    else if (forEditor)
+    if (forEditor)
       return str;
 
     MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
@@ -874,10 +874,10 @@ public final class MainTextUtil
              widthAttr  = elementProp.get().attr("width");
 
       if (heightAttr.isBlank() == false)
-        heightAttr = " height=\"" + heightAttr + "\"";
+        heightAttr = " height=\"" + heightAttr + '"';
 
       if (widthAttr.isBlank() == false)
-        widthAttr = " width=\"" + widthAttr + "\"";
+        widthAttr = " width=\"" + widthAttr + '"';
 
       String url = nullSwitch(miscFile.filePath(), "", FilePath::toURLString);
 
@@ -940,7 +940,7 @@ public final class MainTextUtil
 
       appPrefs.putInt(prefID, ndx);
       view.setZoom(zoomFactors.get(ndx) / 100.0);
-      ui.lblStatus.setText("Zoom: " + zoomFactors.get(ndx) + "%");
+      ui.lblStatus.setText("Zoom: " + zoomFactors.get(ndx) + '%');
     });
 
     view.setZoom(zoomFactors.get(appPrefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);

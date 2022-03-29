@@ -110,7 +110,7 @@ public class BidiOneToManyMainTextMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<MainText> getSet(Map<MainText, Set<MainText>> map1, MainText mainText1)
+  private static Set<MainText> getSet(Map<MainText, Set<MainText>> map1, MainText mainText1)
   {
     if (map1.containsKey(mainText1)) return map1.get(mainText1);
 

@@ -21,11 +21,10 @@ import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 
-public class QueryViewCtrlr extends SplitPane
+public class QueryViewCtrlr
 {
   @FXML MasterDetailPane spMain, spLower;
   @FXML TableView<HyperTableRow> tvFields;

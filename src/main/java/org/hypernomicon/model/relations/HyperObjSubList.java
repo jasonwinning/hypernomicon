@@ -20,6 +20,7 @@ package org.hypernomicon.model.relations;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.hypernomicon.model.records.HDT_Record;
 
@@ -58,10 +59,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 
   @Override public boolean contains(Object o)
   {
-    for (int ndx = startNdx; ndx < endNdx; ndx++)
-      if (parentList.get(ndx) == o) return true;
-
-    return false;
+    return IntStream.range(startNdx, endNdx).anyMatch(ndx -> parentList.get(ndx) == o);
   }
 
 //---------------------------------------------------------------------------
@@ -70,7 +68,6 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   @Override public Object[] toArray()
   {
     List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx);
-    if (objList == null) return new Object[0];
 
     Object[] array = new Object[objList.size()];
 
@@ -86,15 +83,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   @SuppressWarnings("unchecked")
   @Override public <T> T[] toArray(T[] a)
   {
-    List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj);
-    if (objList != null)
-      objList = objList.subList(startNdx, endNdx);
-
-    if (objList == null)
-    {
-      if (a.length > 0) a[0] = null;
-      return a;
-    }
+    List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx);
 
     if (a.length < objList.size())
       a = (T[]) new HDT_Record[objList.size()];

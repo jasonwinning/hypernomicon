@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDataset;
@@ -85,8 +86,6 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final Instant getCreationDate()      { return type.getDisregardDates() ? null : creationDate; }
   @Override public final Tag getNameTag()               { return nameTag; }
   @Override public final boolean isDummy()              { return dummyFlag; }
-  @Override public final boolean hasMainText()          { return this instanceof HDT_RecordWithMainText; }
-  @Override public final boolean hasDesc()              { return this instanceof HDT_RecordWithDescription; }
   @Override public final int getID()                    { return id; }
   @Override public final int keyNdx()                   { return db.records(type).getKeyNdxByID(id); }
   @Override public final void viewNow()                 { if (db.viewTestingInProgress == false) viewDate = Instant.now(); }
@@ -107,6 +106,8 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public String getCBText()                   { return listName(); }
   @Override public String getXMLObjectName()            { return listName(); }
   @Override public boolean isUnitable()                 { return false; }
+  @Override public boolean hasMainText()                { return false; }
+  @Override public boolean hasDesc()                    { return false; }
   @Override public String getSearchKey()                { return db.getSearchKey(this); }
   @Override public List<SearchKeyword> getSearchKeys()  { return db.getKeysByRecord(this); }
   @Override public String firstActiveKeyWord()          { return db.firstActiveKeyWord(this); }
@@ -141,7 +142,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   protected HDT_RecordBase(RecordState xmlState, HyperDataset<? extends HDT_Record> dataset, Tag nameTag)
   {
     name = new NameItem();
-    type = RecordType.typeByRecordClass(getClass());
+    type = typeByRecordClass(getClass());
 
     this.xmlState = xmlState;
     id = xmlState.id;
@@ -282,9 +283,6 @@ public abstract class HDT_RecordBase implements HDT_Record
       viewDate     = backupState.viewDate;
     }
 
-    if (this instanceof HDT_SimpleRecord)
-      setNameInternal(backupState.simpleName, false);
-
     for (Entry<Tag, HDI_OfflineBase> backupEntry : backupState.items.entrySet())
     {
       Tag tag = backupEntry.getKey();
@@ -415,21 +413,9 @@ public abstract class HDT_RecordBase implements HDT_Record
   {
     List<ObjectGroup> oldGroups = db.getObjectGroupList(relType, this, tags);
 
-    if (newGroups.size() == oldGroups.size())
-    {
-      boolean theSame = true;
-
-      for (int ndx = 0; ndx < newGroups.size(); ndx++)
-        if (newGroups.get(ndx).equals(oldGroups.get(ndx)) == false)
-        {
-          theSame = false;
-          break;
-        }
-
-      if (theSame) return;
-    }
-
-    db.updateObjectGroups(relType, this, newGroups);
+    if ((newGroups.size() != oldGroups.size()) ||
+        (IntStream.range(0, newGroups.size()).anyMatch(ndx -> newGroups.get(ndx).equals(oldGroups.get(ndx)) == false)))
+      db.updateObjectGroups(relType, this, newGroups);
   }
 
 //---------------------------------------------------------------------------
@@ -465,48 +451,15 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   @Override public final String makeSortKey()
   {
-    String sortKey;
+    return makeSortKeyByType(makeSortKeyTypeSpecific(), type);
+  }
 
-    try
-    {
-      switch (type)
-      {
-        case hdtInstitution :
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-          HDT_Institution inst = (HDT_Institution)this;
-          if (inst.parentInst.isNotNull())
-          {
-            int parentType = inst.parentInst.get().instType.getID();
-
-            sortKey = (parentType == 1) || (parentType == 6) ? inst.name() : (inst.parentInst.get().name() + " " + inst.name());
-          }
-          else
-            sortKey = inst.name();
-
-          break;
-
-        case hdtConcept :
-
-          sortKey = ((HDT_Concept)this).term.get().name();
-          break;
-
-        case hdtFolder : case hdtWorkFile :
-
-          sortKey = ((HDT_RecordWithPath)this).getPath().getNameStr();
-          break;
-
-        default :
-
-          sortKey = sortKeyAttr.length() > 0 ? sortKeyAttr : name.get();
-          break;
-      }
-    }
-    catch (NullPointerException e)
-    {
-      return "";
-    }
-
-    return makeSortKeyByType(sortKey, type);
+  protected String makeSortKeyTypeSpecific()
+  {
+    return safeStr(sortKeyAttr).length() > 0 ? sortKeyAttr : name();
   }
 
 //---------------------------------------------------------------------------

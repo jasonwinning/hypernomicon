@@ -177,7 +177,7 @@ public class RecordState
     String searchKeyAttr = "", sortKeyAttrXML = "";
 
     if (listNameAttr.length() > 0)
-      listNameAttr = " " + db.getTagStr(tagListName) + "=" + QUOTE + xmlAttributeEscaper.escape(listNameAttr) + QUOTE;
+      listNameAttr = ' ' + db.getTagStr(tagListName) + '=' + QUOTE + xmlAttributeEscaper.escape(listNameAttr) + QUOTE;
 
     if (searchKey.length() > 0)
       searchKeyAttr = " search_key=" + QUOTE + xmlAttributeEscaper.escape(searchKey) + QUOTE;
@@ -186,7 +186,7 @@ public class RecordState
       sortKeyAttrXML = " sort_key=" + QUOTE + xmlAttributeEscaper.escape(sortKeyAttr) + QUOTE;
 
     xml.append("<record type=").append(QUOTE).append(db.getTypeTagStr(type)).append(QUOTE).append(" id=").append(QUOTE).append(id).append(QUOTE)
-       .append(sortKeyAttrXML).append(searchKeyAttr).append(listNameAttr).append(">").append(xmlContentEscaper.escape(nameToUse)).append("</record>")
+       .append(sortKeyAttrXML).append(searchKeyAttr).append(listNameAttr).append('>').append(xmlContentEscaper.escape(nameToUse)).append("</record>")
        .append(System.lineSeparator());
   }
 
@@ -209,7 +209,7 @@ public class RecordState
       sortKeyAttrXML = " sort_key=" + QUOTE + xmlAttributeEscaper.escape(sortKeyAttrXML) + QUOTE;
 
     xml.append("<record type=").append(QUOTE).append(typeName).append(QUOTE)
-       .append(" id=").append(QUOTE).append(id).append(QUOTE).append(sortKeyAttrXML).append(searchKeyAttr).append(">")
+       .append(" id=").append(QUOTE).append(id).append(QUOTE).append(sortKeyAttrXML).append(searchKeyAttr).append('>')
        .append(System.lineSeparator());
 
     if (creationDate == null) return;

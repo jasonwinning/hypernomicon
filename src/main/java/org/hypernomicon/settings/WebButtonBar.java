@@ -62,11 +62,7 @@ class WebButtonBar extends WebButtonCtrl
 
       @Override public WebButton fromString(String str)
       {
-        for (WebButton btn : cbPreset.getItems())
-          if (btn.getName().equalsIgnoreCase(str))
-            return btn;
-
-        return null;
+        return findFirst(cbPreset.getItems(), btn -> btn.getName().equalsIgnoreCase(str));
       }
     });
 

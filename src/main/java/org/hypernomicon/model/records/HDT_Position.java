@@ -51,8 +51,8 @@ public class HDT_Position extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()    { return name(); }
-  @Override public boolean isUnitable() { return true; }
+  @Override public String listName()          { return name(); }
+  @Override public final boolean isUnitable() { return true; }
 
   public void setLargerPositions(List<HDT_Position> list) { updateObjectsFromList(rtParentPosOfPos   , list); }
   public void setLargerDebates  (List<HDT_Debate>   list) { updateObjectsFromList(rtParentDebateOfPos, list); }
@@ -76,7 +76,6 @@ public class HDT_Position extends HDT_RecordWithMainText
   public LinkedHashSet<ArgumentAuthor> getPeople()
   {
     LinkedHashSet<ArgumentAuthor> people = new LinkedHashSet<>();
-
     subPositions.forEach(subPos -> people.addAll(subPos.getPeople()));
 
     arguments.stream().filter(arg -> arg.isInFavor(this)).forEachOrdered(arg -> arg.getPeople().forEachOrdered(people::add));
@@ -97,10 +96,10 @@ public class HDT_Position extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public PositionSource getLaunchableWork()   { return getSource(true , false, false); }
-  public PositionSource getWork()             { return getSource(true , false, true ); }
-  public PositionSource getArgument()         { return getSource(true , true , true ); }
-  public PositionSource getWorkWithAuthor()   { return getSource(false, false, true ); }
+  public PositionSource getLaunchableWork() { return getSource(true , false, false); }
+  public PositionSource getWork()           { return getSource(true , false, true ); }
+  public PositionSource getArgument()       { return getSource(true , true , true ); }
+  public PositionSource getWorkWithAuthor() { return getSource(false, false, true ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

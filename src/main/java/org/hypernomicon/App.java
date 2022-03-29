@@ -116,7 +116,7 @@ public final class App extends Application
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
   public static final String appTitle = "Hypernomicon";
 
-  public boolean debugging()        { return isDebugging; }
+  public static boolean debugging() { return isDebugging; }
   public VersionNumber getVersion() { return version; }
 
 //---------------------------------------------------------------------------
@@ -251,13 +251,14 @@ public final class App extends Application
     JsonHttpClient.getArrayAsync("https://api.github.com/repos/jasonwinning/hypernomicon/releases", httpClient, jsonArray ->
     {
       VersionNumber updateNum =  app.version;
-      Pattern p = Pattern.compile("(\\A|\\D)(\\d(\\d|(\\.\\d))+)(\\z|\\D)");
 
       if (jsonArray.getObjs().hasNext() == false)
       {
         failHndlr.run();
         return;
       }
+
+      Pattern p = Pattern.compile("(\\A|\\D)(\\d(\\d|(\\.\\d))+)(\\z|\\D)");
 
       for (JsonObj jsonObj : jsonArray.getObjs())
       {
@@ -307,7 +308,7 @@ public final class App extends Application
       if (testMainTextEditing)
       {
         MainTextWrapper mainText = record.getType() == hdtInvestigation ?
-          ui.personHyperTab().getInvMainTextWrapper((HDT_Investigation)record)
+          MainCtrlr.personHyperTab().getInvMainTextWrapper((HDT_Investigation)record)
         :
           ui.activeTab().mainTextWrapper();
 
@@ -328,7 +329,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initMainWindows(Stage stage) throws IOException
+  private static void initMainWindows(Stage stage) throws IOException
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
 
@@ -378,7 +379,7 @@ public final class App extends Application
 
       if (board.hasFiles())
       {
-        if (ui.workHyperTab().processDragEvent(event))
+        if (MainCtrlr.workHyperTab().processDragEvent(event))
         {
           event.setDropCompleted(true);
           return;
@@ -458,7 +459,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initScaling(Region rootNode)
+  private static void initScaling(Region rootNode)
   {
     setFontSize(rootNode);
 

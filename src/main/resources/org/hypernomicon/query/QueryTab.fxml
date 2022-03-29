@@ -53,7 +53,7 @@
   <TabPane fx:id="tabPane" layoutY="28.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0">
     <Tab fx:id="tabNew" closable="false" text="+">
-      <AnchorPane fx:id="apDescription" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+      <AnchorPane fx:id="apOrigDescription" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
         <WebView fx:id="webView" layoutX="455.0" layoutY="3.0" prefHeight="200.0" prefWidth="200.0"
                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                  AnchorPane.topAnchor="0.0"/>

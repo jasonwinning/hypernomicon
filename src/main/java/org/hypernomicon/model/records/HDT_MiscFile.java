@@ -40,7 +40,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<Authors>
 {
-  protected final HyperPath path;
+  private final HyperPath path;
   public final HyperObjList<HDT_MiscFile, HDT_WorkLabel> labels;
 
   public final HyperObjPointer<HDT_MiscFile, HDT_Work> work;

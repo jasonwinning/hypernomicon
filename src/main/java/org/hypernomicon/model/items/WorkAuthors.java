@@ -78,8 +78,7 @@ public class WorkAuthors extends Authors
 
   @Override public Author get(int ndx)
   {
-    if (allRecords) return new Author(work, objList.get(ndx));
-    else            return authorList.get(ndx);
+    return allRecords ? new Author(work, objList.get(ndx)) : authorList.get(ndx);
   }
 
   //---------------------------------------------------------------------------

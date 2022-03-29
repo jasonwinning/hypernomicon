@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -55,14 +54,8 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWrapper;
 
-import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
-import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -73,13 +66,18 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
+import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import javafx.application.Platform;
@@ -207,7 +205,7 @@ public class WorkDlgCtrlr extends HyperDlg
         cbEntryType.getSelectionModel().select(newEntryType);
     };
 
-    curWork = ui.workHyperTab().activeRecord();
+    curWork = workHyperTab().activeRecord();
     curBD = new GUIBibData(curWork.getBibData());
 
     this.newEntryChoice = newEntryChoice;
@@ -239,7 +237,7 @@ public class WorkDlgCtrlr extends HyperDlg
       rbCopy.setDisable(true);
     }
 
-    ui.workHyperTab().getBibDataFromGUI(curBD);
+    workHyperTab().getBibDataFromGUI(curBD);
     populateFieldsFromBibData(curBD, false);
 
     htAuthors.clear();
@@ -247,7 +245,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     boolean atLeastOneInFilename = false;
 
-    for (HyperTableRow origRow : ui.workHyperTab().htAuthors.dataRows())
+    for (HyperTableRow origRow : workHyperTab().htAuthors.dataRows())
     {
       int authID = origRow.getID(1);
       String authName = origRow.getText(1);
@@ -298,7 +296,7 @@ public class WorkDlgCtrlr extends HyperDlg
     lblAutoPopulated.setText("");
     tfOrigFile.setEditable(false);
 
-    StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != WorkTypeEnum.wtUnenteredSet, false);
+    StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet, false);
     hcbType = new HyperCB(cbType, ctDropDownList, pop);
 
     destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
@@ -327,7 +325,7 @@ public class WorkDlgCtrlr extends HyperDlg
     btnAutoFill       .setOnAction(event -> extractDataFromPdf(true , true, false));
     mnuPopulateFromPDF.setOnAction(event -> extractDataFromPdf(false, true, false));
 
-    setToolTip(btnAutoFill,   MainCtrlr.AUTOFILL_TOOLTIP);
+    setToolTip(btnAutoFill, AUTOFILL_TOOLTIP);
 
     htISBN = new HyperTable(tvISBN, 0, true, "");
 
@@ -417,13 +415,12 @@ public class WorkDlgCtrlr extends HyperDlg
 
     tfTitle.textProperty().addListener((ob, oldValue, newValue) ->
     {
-      int pos;
       String fileTitle = newValue;
 
       fileTitle = fileTitle.replace('?', ':')
                            .replace('/', '-');
 
-      pos = fileTitle.indexOf(':');
+      int pos = fileTitle.indexOf(':');
       if (pos >= 0) fileTitle = fileTitle.substring(0, pos);
 
       fileTitle = FilePath.removeInvalidFileNameChars(fileTitle);
@@ -546,9 +543,11 @@ public class WorkDlgCtrlr extends HyperDlg
           row.setCheckboxValue(1, true);
           htAuthors.refresh();
         });
+
         return;
       }
-      else if (cellVal.equals(HyperTableCell.falseCheckboxCell))
+
+      if (cellVal.equals(HyperTableCell.falseCheckboxCell))
         return;
 
       String text = row.getText(0);
@@ -650,13 +649,9 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     if (dontRegenerateFilename) return;
 
-    String ext, year, fileName, newFileName = "";
-
-    ext = FilenameUtils.getExtension(tfOrigFile.getText());
+    String ext = FilenameUtils.getExtension(tfOrigFile.getText());
     if (ext.isEmpty())
       ext = FilenameUtils.getExtension(tfNewFile.getText());
-
-    year = tfYear.getText();
 
     List<FileNameAuthor> authors = new ArrayList<>();
 
@@ -667,7 +662,7 @@ public class WorkDlgCtrlr extends HyperDlg
           authors.add(new FileNameAuthor(row.getText(0), row.getCheckboxValue(3), row.getCheckboxValue(4)));
     });
 
-    fileName = HDT_WorkFile.makeFileName(authors, year, tfFileTitle.getText(), ext);
+    String newFileName = "", fileName = HDT_WorkFile.makeFileName(authors, tfYear.getText(), tfFileTitle.getText(), ext);
 
     if (fileName.isBlank())
     {
@@ -685,7 +680,7 @@ public class WorkDlgCtrlr extends HyperDlg
         break;
       }
 
-      newFileName = FilenameUtils.getBaseName(fileName) + (ctr == 1 ? "" : "_" + String.valueOf(1000 + (ctr % 1000)).substring(1, 4)) +
+      newFileName = FilenameUtils.getBaseName(fileName) + (ctr == 1 ? "" : '_' + String.valueOf(1000 + (ctr % 1000)).substring(1, 4)) +
                     FilenameUtils.EXTENSION_SEPARATOR_STR + FilenameUtils.getExtension(fileName);
       nameTaken = false;
 
@@ -722,7 +717,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
 
-    if ((folder == null) || (folder.getID() == HyperDB.ROOT_FOLDER_ID))
+    if ((folder == null) || (folder.getID() == ROOT_FOLDER_ID))
     {
       messageDialog("You must choose a subfolder of the main database folder.", mtError);
       return;
@@ -1184,7 +1179,7 @@ public class WorkDlgCtrlr extends HyperDlg
       EntryType entryType = curBD.getEntryType();
       if (cbEntryType.getItems().contains(entryType) == false)
       {
-        messageDialog("\"" + entryType.getUserFriendlyName() + "\" is not a valid " +
+        messageDialog('"' + entryType.getUserFriendlyName() + "\" is not a valid " +
                       db.getBibLibrary().type().getUserFriendlyName() + " entry type.", mtWarning);
         cbEntryType.getSelectionModel().select(null);
       }
@@ -1259,8 +1254,6 @@ public class WorkDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    FilePath newFilePath;
-
     getBibDataFromGUI();
 
     if (chkCreateBibEntry.isVisible())
@@ -1287,7 +1280,7 @@ public class WorkDlgCtrlr extends HyperDlg
       return true;
     }
 
-    newFilePath = rbCurrent.isSelected() ?
+    FilePath newFilePath = rbCurrent.isSelected() ?
       (chkKeepFilenameUnchanged.isSelected() ?
         origFilePath
       :

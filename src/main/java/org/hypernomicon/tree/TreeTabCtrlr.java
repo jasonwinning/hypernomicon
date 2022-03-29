@@ -27,9 +27,11 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
+import org.hypernomicon.view.tabs.PositionTab;
 import org.hypernomicon.view.wrappers.MenuItemSchema;
 
 import com.google.common.collect.LinkedHashMultimap;
@@ -81,7 +83,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private TreeWrapper tree;
 
   @Override protected RecordType type()           { return hdtNone; }
-  @Override public void enable(boolean enabled)   { ui.tabTree.getContent().setDisable(enabled == false); }
   @Override public void clear()                   { tree.clear(); }
   @Override public boolean saveToRecord()         { return true; }
   @Override public void setRecord(HDT_Record rec) { return; }
@@ -145,7 +146,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         if ((db.isLoaded() == false) || (record == null)) return false;
         return record.getType() != hdtConcept;
       },
-      this::chooseParent);
+      TreeTabCtrlr::chooseParent);
 
     tree.addContextMenuItem("Detach from this parent",
       row -> tree.canDetach(row, false),
@@ -153,11 +154,11 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tree.addContextMenuItem("Rename...", HDT_WorkLabel.class,
       label -> db.isLoaded(),
-      this::renameRecord);
+      TreeTabCtrlr::renameRecord);
 
     tree.addContextMenuItem("Rename...", HDT_Glossary.class,
       glossary -> db.isLoaded(),
-      this::renameRecord);
+      TreeTabCtrlr::renameRecord);
 
     addCreateNewSchema(tree.addContextMenuItem("Create new sub-label under this label", HDT_WorkLabel.class,
       label -> db.isLoaded(),
@@ -177,7 +178,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new argument for/against this position", HDT_Position.class,
       pos -> db.isLoaded(),
-      pos -> ui.positionHyperTab().newArgumentClick(pos)));
+      PositionTab::newArgumentClick));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new position under this position", HDT_Position.class,
       pos -> db.isLoaded(),
@@ -185,7 +186,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new counterargument to this argument", HDT_Argument.class,
       arg -> db.isLoaded(),
-      arg -> ui.argumentHyperTab().newCounterargumentClick(arg)));
+      arg -> MainCtrlr.argumentHyperTab().newCounterargumentClick(arg)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new note under this note", HDT_Note.class,
       note -> db.isLoaded(),
@@ -193,7 +194,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
-      this::createTerm));
+      TreeTabCtrlr::createTerm));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new glossary under this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
@@ -349,7 +350,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     if (row == null) return items;
 
     Set<MenuItemSchema<? extends HDT_Record, TreeRow>> schemas = recordTypeToSchemas.get(row.getRecordType());
-    if (schemas == null) return items;
 
     schemas.forEach(schema ->
     {
@@ -374,7 +374,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void createChild(HDT_Record parent, RelationType relType)
+  private static void createChild(HDT_Record parent, RelationType relType)
   {
     HDT_Record child = db.createNewBlankRecord(db.getSubjType(relType));
 
@@ -384,7 +384,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void createTerm(HDT_Glossary glossary)
+  private static void createTerm(HDT_Glossary glossary)
   {
     HDT_Term term = HDT_Term.create(glossary);
 
@@ -430,7 +430,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void renameRecord(HDT_Record record)
+  private static void renameRecord(HDT_Record record)
   {
     String typeName = db.getTypeName(record.getType());
 
@@ -452,7 +452,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void chooseParent(HDT_Record child)
+  private static void chooseParent(HDT_Record child)
   {
     ChooseParentDlgCtrlr dlg = ChooseParentDlgCtrlr.build(child);
 

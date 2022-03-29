@@ -17,7 +17,6 @@
 
 package org.hypernomicon.query.reports;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.dialogs.NewPersonDlgCtrlr.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -37,6 +36,7 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.query.QueryTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -125,7 +125,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HyperTableCell getWorkCell(Author author)
+  private static HyperTableCell getWorkCell(Author author)
   {
     return nullSwitch(author.getWork(), new HyperTableCell("", hdtWork), work -> new HyperTableCell(work, work.getCBText()));
   }
@@ -172,7 +172,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
       if (npdc.showModal() == false) return;
 
-      ui.queryHyperTab().btnExecuteClick();
+      QueryTabCtrlr.btnExecuteClick();
     });
 
     ht.addCol(hdtNone, ctNone);

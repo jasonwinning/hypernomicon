@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -87,7 +86,7 @@ class WorkToMerge
     tfTitle.setText(bibData.getStr(bfTitle));
     if (tfTitle.getText().isEmpty() == false) rbTitle.setSelected(true);
 
-    tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle, rbTitle));
+    tfTitle.setTextFormatter(titleFormatter(alreadyChangingTitle, rbTitle));
 
     tfYear.setText(bibData.getStr(bfYear));
     if (tfYear.getText().isEmpty() == false) rbYear.setSelected(true);
@@ -151,7 +150,7 @@ class WorkToMerge
 
     htAuthors.getPopulator(0).populate(null, false);
 
-    WorkDlgCtrlr.loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork);
+    loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork);
   }
 
 //---------------------------------------------------------------------------

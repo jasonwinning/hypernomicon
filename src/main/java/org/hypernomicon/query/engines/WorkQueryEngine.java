@@ -17,6 +17,7 @@
 
 package org.hypernomicon.query.engines;
 
+import org.hypernomicon.App;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.QueryPopulator;
@@ -27,7 +28,6 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.App.app;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,7 +62,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
     pop.addEntry(row, QUERY_4_OR_MORE_AUTHORS,         "with 4 or more authors");
     pop.addEntry(row, QUERY_WORK_NEEDING_PAGE_NUMBERS, "in a PDF with one or more other works, missing page number(s)");
 
-    if (app.debugging())
+    if (App.debugging())
       pop.addEntry(row, QUERY_ANALYZE_METADATA, "analyze pdf metadata");
   }
 
@@ -112,7 +112,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
       case QUERY_WORK_NEEDING_PAGE_NUMBERS :
 
         for (HDT_WorkFile workFile : work.workFiles)
-          if ((workFile.works.size() > 1) && workFile.filePath().getExtensionOnly().equalsIgnoreCase("pdf"))
+          if ((workFile.works.size() > 1) && "pdf".equalsIgnoreCase(workFile.filePath().getExtensionOnly()))
             if ((work.getStartPageNum(workFile) == -1) || (work.getEndPageNum(workFile) == -1))
               for (HDT_Work otherWork : workFile.works)
                 if ((otherWork != work) && (otherWork.largerWork.get() != work))

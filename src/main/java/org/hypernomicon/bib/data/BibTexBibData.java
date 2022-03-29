@@ -40,7 +40,7 @@ import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 import org.jbibtex.Value;
 
-public class BibTexBibData extends BibDataStandalone
+public final class BibTexBibData extends BibDataStandalone
 {
 
 //---------------------------------------------------------------------------
@@ -74,7 +74,7 @@ public class BibTexBibData extends BibDataStandalone
 
     for (Entry<Key, Value> mapping : entry.getFields().entrySet())
     {
-      String val = mapping.getValue().toUserString();
+      String val = safeStr(mapping.getValue().toUserString());
 
       if (val.indexOf('\\') > -1 || val.indexOf('{') > -1)
         val = latexPrinter.print(latexParser.parse(val));
@@ -85,10 +85,10 @@ public class BibTexBibData extends BibDataStandalone
       {
         case "address"   : setStr(bfPubLoc, val); break;
         case "author"    : addBibTexAuthor(val, AuthorType.author); break;
-        case "booktitle" : setMultiStr(bfContainerTitle, List.of(val)); break;
+        case "booktitle" : setMultiStr(bfContainerTitle, safeListOf(val)); break;
         case "edition"   : setStr(bfEdition, val); break;
         case "editor"    : addBibTexAuthor(val, AuthorType.editor); break;
-        case "journal"   : setMultiStr(bfContainerTitle, List.of(val)); break;
+        case "journal"   : setMultiStr(bfContainerTitle, safeListOf(val)); break;
         case "language"  : setStr(bfLanguage, val); break;
         case "note"      : addStr(bfMisc, val); break;
         case "number"    : setStr(bfIssue, val); break;

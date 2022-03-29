@@ -48,9 +48,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
   public final class CoreAccessor implements Iterable<HDT_DT>
   {
-    private final HyperCore<HDT_DT> core;
-
-    private CoreAccessor(HyperCore<HDT_DT> core) { this.core = core; }
+    private CoreAccessor()                       { }
 
     public int size()                            { return core.size(); }
     public Stream<HDT_DT> stream()               { return core.stream(); }
@@ -124,7 +122,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
   Tag getMainTextTag()                             { return mainTextTag; }
   void resolvePointers() throws HDB_InternalError  { core.resolvePointers(); }
-  CoreAccessor getAccessor()                       { return new CoreAccessor(core); }
+  CoreAccessor getAccessor()                       { return new CoreAccessor(); }
   boolean idAvailable(int id)                      { return (isUnstoredRecord(id, type) == false) && (core.containsID(id) == false); }
   public String getKeyByID(int id)                 { return core.getKeyByID(id); }
 

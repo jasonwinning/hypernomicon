@@ -234,6 +234,8 @@ public final class MediaUtil
         if (miscFile.pathNotEmpty())
           return imgRelPath(miscFile.filePath(), null, false);
 
+        // Fall through
+
       default :
 
         return imgRelPathByType(record.getType());

@@ -31,7 +31,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.hypernomicon.App;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
@@ -97,8 +96,8 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean isEditing()         { return showing && editing; }
-  WebEngine getEditorEngine() { return editCtrlr == null ? null : editCtrlr.getEngine(); }
+  boolean isEditing()                { return showing && editing; }
+  static WebEngine getEditorEngine() { return editCtrlr == null ? null : editCtrlr.getEngine(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -270,7 +269,7 @@ public final class MainTextWrapper
 
   private boolean canEdit()
   {
-    return (curRecord != null) && (HyperDB.isUnstoredRecord(curRecord.getID(), curRecord.getType()) == false);
+    return (curRecord != null) && (isUnstoredRecord(curRecord.getID(), curRecord.getType()) == false);
   }
 
 //---------------------------------------------------------------------------
@@ -377,7 +376,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_WorkLabel getLabelOfRecord(HDT_RecordWithMainText record)
+  private static HDT_WorkLabel getLabelOfRecord(HDT_RecordWithMainText record)
   {
     HDT_RecordWithMainText mainTextRecord = record.getMainText().getRecord();
 
@@ -390,7 +389,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int getNestedKeyWorkCount(HDT_RecordWithMainText record, List<KeyWork> passedKeyWorks)
+  private static int getNestedKeyWorkCount(HDT_RecordWithMainText record, List<KeyWork> passedKeyWorks)
   {
     int keyWorkCount = passedKeyWorks.size();
 
@@ -462,7 +461,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addLinkedTerms(List<? extends HDT_RecordWithMainText> uRecords, List<HDT_Concept> concepts)
+  private static void addLinkedTerms(List<? extends HDT_RecordWithMainText> uRecords, List<HDT_Concept> concepts)
   {
     uRecords.forEach(uRecord ->
     {
@@ -575,7 +574,7 @@ public final class MainTextWrapper
       concepts.forEach(concept ->
       {
         relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b " + NO_LINKS_ATTR + "=true>Related concepts: </b>" : "; ");
-        relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.getExtendedName()));
+        relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.extendedName()));
       });
     }
     else

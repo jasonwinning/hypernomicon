@@ -141,9 +141,9 @@ public class BibManager extends HyperDlg
 
   @Override protected boolean isValid()  { return true; }
 
-  private void hideBottomControls()      { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
-  private void viewOnWeb()               { viewOnWeb(tableView.getSelectionModel().getSelectedItem().getEntry()); }
-  private void viewOnWeb(BibEntry entry) { DesktopUtil.openWebLink(entry.getEntryURL()); }
+  private void hideBottomControls()             { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
+  private void viewOnWeb()                      { viewOnWeb(tableView.getSelectionModel().getSelectedItem().getEntry()); }
+  private static void viewOnWeb(BibEntry entry) { DesktopUtil.openWebLink(entry.getEntryURL()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -195,9 +195,9 @@ public class BibManager extends HyperDlg
 
           if (EnumSet.of(wtBook, wtChapter, wtThesis, wtWebPage, wtPaper).contains(workTypeEnum))
           {
-            EntryType entryType = EntryType.fromWorkType(workTypeEnum);
+            EntryType entryType = fromWorkType(workTypeEnum);
             if (libraryWrapper.getEntryTypeMap().containsKey(entryType))
-              cbNewType.getSelectionModel().select(EntryType.fromWorkType(workTypeEnum));
+              cbNewType.getSelectionModel().select(fromWorkType(workTypeEnum));
           }
         }
       }
@@ -543,7 +543,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class RelatedBibEntry
+  public static final class RelatedBibEntry
   {
     public final BibEntryRelation relation;
     public final BibEntry entry;
@@ -614,7 +614,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateRelative(RelatedBibEntry relative, BibEntry entry)
+  private static void updateRelative(RelatedBibEntry relative, BibEntry entry)
   {
     relative.entry.setStr(bfVolume   , entry.getStr(bfVolume   ));
     relative.entry.setStr(bfPublisher, entry.getStr(bfPublisher));
@@ -884,7 +884,7 @@ public class BibManager extends HyperDlg
 
       @Override public EntryType fromString(String string)
       {
-        EntryType et = EntryType.parse(string);
+        EntryType et = parse(string);
         return map.containsKey(et) ? et : null;
       }
     });

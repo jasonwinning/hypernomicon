@@ -91,7 +91,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  private static class Preset
+  private static final class Preset
   {
     private Preset(OperatingSystemEnum opSys, String name, LaunchCommandTypeEnum commandType, String commandsPrefKey, String commands)
     {
@@ -184,7 +184,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
     cbCommandType.setItems(FXCollections.observableArrayList(EnumSet.allOf(LaunchCommandTypeEnum.class)));
     cbCommandType.setConverter(typeStrConv);
 
-    cbCommandType.getSelectionModel().select(LaunchCommandTypeEnum.getByPrefVal(typePrefVal));
+    cbCommandType.getSelectionModel().select(getByPrefVal(typePrefVal));
 
     presets.forEach(preset ->
     {
@@ -212,7 +212,6 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   public static void launch(String appPath, FilePath filePath, String commandsPrefKey, String commandTypePrefKey, int pageNum)
   {
-    String[] argz;
     String commands = appPrefs.get(commandsPrefKey, "");
     LaunchCommandTypeEnum commandType = getByPrefVal(appPrefs.get(commandTypePrefKey, ""));
 
@@ -220,9 +219,9 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
     {
       if ((commandType == appleScript) && SystemUtils.IS_OS_MAC)
       {
-        argz = new String[] { "osascript",
-                              "-e",
-                              resolve(commands, appPath, filePath, pageNum) };
+        String[] argz = new String[] { "osascript",
+                                       "-e",
+                                       resolve(commands, appPath, filePath, pageNum) };
         try
         {
           Runtime.getRuntime().exec(argz);
@@ -275,9 +274,9 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
   private static final List<Preset> presets = List.of(
 
     new Preset(OperatingSystemEnum.windows, "Adobe Acrobat", opSysCmdAndArgs, PREF_KEY_PDF_READER_COMMANDS,
-               appPathVar + "\n" +
+               appPathVar + '\n' +
                "/A\n" +
-               "page=" + pageNumVar + "\n" +
+               "page=" + pageNumVar + '\n' +
                filePathVar),
 
     new Preset(OperatingSystemEnum.mac, "Preview (macOS)", appleScript, PREF_KEY_PDF_READER_COMMANDS,
@@ -287,7 +286,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
                "end tell\n" +
                "tell application \"System Events\"\n" +
                "  keystroke \"g\" using {option down, command down}\n" +
-               "  keystroke " + pageNumVar + "\n" +
+               "  keystroke " + pageNumVar + '\n' +
                "  keystroke return\n" +
                "end tell"),
 

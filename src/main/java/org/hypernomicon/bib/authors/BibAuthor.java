@@ -81,7 +81,8 @@ public final class BibAuthor implements Cloneable
 
     if (getName() != null)
     {
-      first = getName().getFirst(); last = getName().getLast();
+      first = getName().getFirst();
+      last  = getName().getLast();
     }
 
     result = prime * result + safeStr(last).hashCode();
@@ -111,12 +112,14 @@ public final class BibAuthor implements Cloneable
 
     if (name != null)
     {
-      first = name.getFirst(); last = name.getLast();
+      first = name.getFirst();
+      last  = name.getLast();
     }
 
     if (other.name != null)
     {
-      otherFirst = other.name.getFirst(); otherLast = other.name.getLast();
+      otherFirst = other.name.getFirst();
+      otherLast  = other.name.getLast();
     }
 
     return (safeStr(first).equals(safeStr(otherFirst)) &&

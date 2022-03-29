@@ -138,9 +138,9 @@ public class HDT_Argument extends HDT_RecordWithMainText
   // Wrapper class for Author that treats authors the same if they have the same person record. If the
   // person record is null for both authors, then they are the same if they have the same name.
 
-  public static class ArgumentAuthor
+  public static final class ArgumentAuthor
   {
-    public ArgumentAuthor(Author author)
+    private ArgumentAuthor(Author author)
     {
       person = author.getPerson();
       name = person == null ? author.getName() : null;

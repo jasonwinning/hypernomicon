@@ -38,12 +38,12 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.query.engines.AllQueryEngine;
 import org.hypernomicon.util.AutoCompleteCB;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
@@ -449,7 +449,8 @@ public class HyperCB implements CommitableWrapper
 
         return selection;
       }
-      else if (cells.size() == 1)
+
+      if (cells.size() == 1)
       {
         selection = cells.get(0);
 
@@ -480,30 +481,28 @@ public class HyperCB implements CommitableWrapper
               populate(true);                  // A new record has been created so force it to repopulate
               return populator.getChoiceByID(row, npdc.getPerson().getID());
             }
+
+            Populator pop = table.getPopulator(colNdx);
+
+            if (npdc.getPerson() != null)    // By the time we get back here, the ComboBox is gone
+            {                                // and the table is already out of edit mode
+              pop.setChanged(row);           // A new record has been created so force it to repopulate
+              table.selectID(colNdx, row, npdc.getPerson().getID());
+            }
             else
             {
-              Populator pop = table.getPopulator(colNdx);
+              pop.populate(row, false);
+              row.setCellValue(colNdx, pop.addEntry(row, npdc.getNameLastFirst()));
 
-              if (npdc.getPerson() != null)    // By the time we get back here, the ComboBox is gone
-              {                                // and the table is already out of edit mode
-                pop.setChanged(row);           // A new record has been created so force it to repopulate
-                table.selectID(colNdx, row, npdc.getPerson().getID());
-              }
-              else
-              {
-                pop.populate(row, false);
-                row.setCellValue(colNdx, pop.addEntry(row, npdc.getNameLastFirst()));
-
-                table.cancelEditing(); // For some reason in this case the keystroke event from earlier causes
-              }                        // the table to enter edit mode again
-            }
+              table.cancelEditing(); // For some reason in this case the keystroke event from earlier causes
+            }                        // the table to enter edit mode again
           }
 
           break;
 
         case hdtInstitution :
 
-          ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
+          MainCtrlr.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
           break;
 
         default: break;

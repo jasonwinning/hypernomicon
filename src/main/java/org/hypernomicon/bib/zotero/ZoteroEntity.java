@@ -37,7 +37,7 @@ public interface ZoteroEntity extends BibEntity
 
     if (subObj.containsKey("itemType"))
     {
-      if (subObj.getStrSafe("itemType").equals("attachment") == false)
+      if ("attachment".equals(subObj.getStrSafe("itemType")) == false)
         return new ZoteroItem(zWrapper, jObj, false);
     }
     else if (subObj.containsKey("parentCollection"))

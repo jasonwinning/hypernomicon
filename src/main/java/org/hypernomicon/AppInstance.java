@@ -15,42 +15,57 @@
  *
  */
 
-package org.hypernomicon.model.relations;
+package org.hypernomicon;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_Record;
-import static org.hypernomicon.model.relations.HyperSubjList.*;
+import org.hypernomicon.util.SplitString;
+import org.hypernomicon.util.filePath.FilePath;
 
-class HyperSubjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements Iterator<HDT_SubjType>
+//---------------------------------------------------------------------------
+
+class AppInstance
 {
-  private final HyperSubjList<HDT_SubjType, HDT_ObjType> list;
-  private int nextNdx = 0;
+  private final String id;
+  private final int portNum;
+  private final FilePath dbPath;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  public HyperSubjIterator(HyperSubjList<HDT_SubjType, HDT_ObjType> list)
+  AppInstance(String id, int portNum, FilePath dbPath)
   {
-    this.list = list;
+    this.id = id;
+    this.portNum = portNum;
+    this.dbPath = FilePath.isEmpty(dbPath) ? new FilePath("") : dbPath;
+  }
+
+  String getID()       { return id; }
+  int getPortNum()     { return portNum; }
+  FilePath getDBPath() { return dbPath; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+
+  @Override public String toString()
+  {
+    return id + ';' + portNum + ';' + dbPath;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean hasNext() { return nextNdx < list.size(); }
-  @Override public void remove()     { throw uoe(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HDT_SubjType next()
+  static AppInstance fromString(String line)
   {
-    if (hasNext())
-      return list.get(nextNdx++);
+    SplitString splitStr = new SplitString(line, ';');
 
-    throw new NoSuchElementException();
+    String id = splitStr.next();
+    int portNum = parseInt(splitStr.next(), -1);
+    FilePath dbPath = new FilePath(splitStr.next());
+
+    if (safeStr(id).isBlank() || (portNum < 1)) return null;
+
+    return new AppInstance(id, portNum, dbPath);
   }
 
 //---------------------------------------------------------------------------

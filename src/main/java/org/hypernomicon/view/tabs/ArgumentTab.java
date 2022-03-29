@@ -33,7 +33,6 @@ import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
@@ -51,7 +50,7 @@ import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
 
-public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
+public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 {
   private ArgumentLowerPaneCtrlr lowerCtrlr;
   private HyperTable htParents, htWhereMade, htCounters;
@@ -59,18 +58,10 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   private HDT_Argument curArgument;
 
   @Override protected RecordType type()             { return hdtArgument; }
-  @Override public void enable(boolean enabled)     { ui.tabArguments.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Argument arg) { curArgument = arg; }
 
-  private ArgumentTab() throws IOException
-  {
-    super(ui.tabArguments);
-    baseInit(argumentTabEnum, ui.tabArguments);
-  }
-
-  @SuppressWarnings("unused") public static void create() throws IOException { new ArgumentTab(); }
+  private ArgumentTab(Tab tab) throws IOException       { super(tab); }
+  public static void create(Tab tab) throws IOException { new ArgumentTab(tab).baseInit(argumentTabEnum, tab); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -134,7 +125,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       row.setCellValue(3, counterArg, counterArg.listName());
     });
 
-    lowerCtrlr.tabCounters.setText("Counterarguments (" + curArgument.counterArgs.size() + ")");
+    lowerCtrlr.tabCounters.setText("Counterarguments (" + curArgument.counterArgs.size() + ')');
 
   // Set active tab
   // --------------
@@ -161,7 +152,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   private void updateArgCounts()
   {
-    lowerCtrlr.tabWhereMade.setText("Where made (" + htWhereMade.dataRowCount() + ")");
+    lowerCtrlr.tabWhereMade.setText("Where made (" + htWhereMade.dataRowCount() + ')');
   }
 
 //---------------------------------------------------------------------------
@@ -316,16 +307,15 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   @Override public boolean saveToRecord()
   {
-    boolean okToSave = true;
-
     if (!ctrlr.saveToRecord(curArgument)) return false;
+
+    boolean okToSave = true;
 
     for (HyperTableRow row : htParents.dataRows())
     {
-      if ((row.getID(3) > 0) && (row.getID(4) < 1))
-        okToSave = false;
+      if (((row.getID(3) > 0) && (row.getID(4) < 1)) ||
+          ((row.getID(4) > 0) && (row.getID(3) < 1)))
 
-      if ((row.getID(4) > 0) && (row.getID(3) < 1))
         okToSave = false;
     }
 

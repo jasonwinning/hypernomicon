@@ -257,7 +257,7 @@ public final class Util
     int pos2 = str.indexOf(')');
     String result = str.substring(0, pos1).trim();
     if (pos2 > pos1)
-      result = (result + " " + safeSubstring(str, pos2 + 1, str.length())).trim();
+      result = (result + ' ' + safeSubstring(str, pos2 + 1, str.length())).trim();
 
     return result;
   }
@@ -412,11 +412,11 @@ public final class Util
 
   public static int indexOfAny(String chars, String text)
   {
-    int lowestPos = -1, curPos;
+    int lowestPos = -1;
 
     for (char c : chars.toCharArray())
     {
-      curPos = text.indexOf(c);
+      int curPos = text.indexOf(c);
 
       if ((curPos > -1) && ((lowestPos == -1) || (curPos < lowestPos)))
         lowestPos = curPos;
@@ -493,7 +493,7 @@ public final class Util
         {
           lastChar = pre.charAt(pre.length() - 1);
 
-          if (convertToEnglishChars(String.valueOf(lastChar)).equals("'"))
+          if ("'".equals(convertToEnglishChars(String.valueOf(lastChar))))
             if (pre.length() > 1)
               if (pre.charAt(pre.length() - 2) != ' ') // don't capitalize letter immediately after apostrophe
                 if (str.charAt(start - 1) != ' ')      // do capitalize letter after an apostrophe plus a space
@@ -795,7 +795,7 @@ public final class Util
       while ((line = reader.readLine()) != null)
       {
         if (keepEOLchars && (strBuilder.length() > 0))
-          strBuilder.append("\n");
+          strBuilder.append('\n');
 
         strBuilder.append(line);
       }
@@ -935,18 +935,18 @@ public final class Util
     str = prepareForIDMatch(str, false);
 
     Pattern p = Pattern.compile("(\\A|\\D)(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
-    Matcher m = p.matcher(safeStr(str));
+    Matcher m = p.matcher(str);
 
     if (m.find()) return m.group(2);
 
     str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign
 
-    m = p.matcher(safeStr(str));
+    m = p.matcher(str);
 
     if (m.find()) return m.group(2);
 
     p = Pattern.compile("([dD]0[i1])(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
-    m = p.matcher(safeStr(str));
+    m = p.matcher(str);
 
     return m.find() ? m.group(2) : "";
   }

@@ -48,7 +48,7 @@ public class JsonArray implements Cloneable
   public JsonObj getObj(int ndx)          { return new JsonObj((JSONObject) jArr.get(ndx)); }
   public JsonArray getArray(int ndx)      { return new JsonArray((JSONArray) jArr.get(ndx)); }
   public int size()                       { return jArr.size(); }
-  public JsonNodeType getType(int ndx)    { return JsonObj.determineType(jArr.get(ndx)); }
+  public JsonNodeType getType(int ndx)    { return determineType(jArr.get(ndx)); }
   public String getLongAsStrSafe(int ndx) { return nullSwitch(jArr.get(ndx), "", obj -> String.valueOf(((Long)obj).longValue())); }
   public JsonObjIterator getObjs()        { return new JsonObjIterator(); }
   public JsonStrIterator getStrs()        { return new JsonStrIterator(); }

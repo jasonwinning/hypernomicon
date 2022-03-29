@@ -40,7 +40,7 @@ public abstract class ReportGenerator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class ReportField
+  private static final class ReportField
   {
     private final String name, content;
 

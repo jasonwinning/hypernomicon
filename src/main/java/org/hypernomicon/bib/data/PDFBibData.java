@@ -59,7 +59,7 @@ public class PDFBibData extends BibDataStandalone
 // https://svn.apache.org/viewvc/pdfbox/trunk/examples/src/main/java/org/apache/pdfbox/examples/pdmodel/AddMetadataFromDocInfo.java?view=markup
 // Or google "import org.apache.xmpbox.schema"
 
-  private static class PathParts
+  private static final class PathParts
   {
     private String prefix = null, name = null;
     int arrayNdx = -1;
@@ -90,7 +90,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private class XMPNode
+  private final class XMPNode
   {
     private final XMPNode parent;
     private final XMPMeta xmpMeta;
@@ -196,9 +196,9 @@ public class PDFBibData extends BibDataStandalone
       if (safeStr(value).length() > 0)
       {
         if (arrayNdx >= 0)
-          line = "[" + (arrayNdx + 1) + "]";
+          line = "[" + (arrayNdx + 1) + ']';
 
-        line = line + escape(value) + "," + getCsvPath();
+        line = line + escape(value) + ',' + getCsvPath();
       }
 
       line = convertToSingleLine(line).replace("\"", "");
@@ -226,7 +226,7 @@ public class PDFBibData extends BibDataStandalone
       String line = parent == null ? "" : parent.getCsvPath();
 
       if (safeStr(name).length() > 0)
-        line = (safeStr(name).isEmpty() ? "" : (line + ",")) + escape(prefix) + "," + escape(name);
+        line = (safeStr(name).isEmpty() ? "" : (line + ',')) + escape(prefix) + ',' + escape(name);
 
       return line;
     }
@@ -281,7 +281,7 @@ public class PDFBibData extends BibDataStandalone
 
               elements.forEach(child ->
               {
-                if (child.value.equalsIgnoreCase("untitled") == false)
+                if ("untitled".equalsIgnoreCase(child.value) == false)
                   bd.addStr(bfTitle, child.value);
               });
 
@@ -300,7 +300,7 @@ public class PDFBibData extends BibDataStandalone
         }
         else if (safeStr(prefix).startsWith("prism"))
         {
-          YearType yt = YearType.getByDesc(name);
+          YearType yt = getByDesc(name);
 
           if (yt != ytUnknown)
             bd.setYear(elements.get(0).value, yt);
@@ -309,7 +309,7 @@ public class PDFBibData extends BibDataStandalone
 
       if (safeStr(prefix).startsWith("prism"))
       {
-        YearType yt = YearType.getByDesc(name);
+        YearType yt = getByDesc(name);
 
         if (yt != ytUnknown)
           bd.setYear(value, yt);
@@ -330,14 +330,14 @@ public class PDFBibData extends BibDataStandalone
           }
         }
       }
-      else if (safeStr(prefix).equals("xmp"))
+      else if ("xmp".equals(safeStr(prefix)))
       {
-        if (name.equals("Label"))
+        if ("Label".equals(name))
           bd.addStr(bfMisc, value);
       }
-      else if (safeStr(prefix).equals("dc"))
+      else if ("dc".equals(safeStr(prefix)))
       {
-        if (name.equals("source") && isStringUrl(value))
+        if ("source".equals(name) && isStringUrl(value))
           bd.setStr(bfURL, value);
       }
 
@@ -490,7 +490,7 @@ public class PDFBibData extends BibDataStandalone
     if (safeStr(docInfo.getTitle()).length() > 0)
     {
       String title = docInfo.getTitle();
-      if (title.equalsIgnoreCase("untitled") == false)
+      if ("untitled".equalsIgnoreCase(title) == false)
         setTitle(title);
     }
 

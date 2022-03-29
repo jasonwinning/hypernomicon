@@ -27,6 +27,7 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static org.hypernomicon.FolderTreeWatcher.WatcherEvent.WatcherEventKind.*;
+import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
@@ -65,7 +66,7 @@ import javafx.stage.Modality;
 
 public class FolderTreeWatcher
 {
-  static class WatcherEvent
+  static final class WatcherEvent
   {
     enum WatcherEventKind { wekRename, wekDelete, wekCreate, wekModify }
 
@@ -88,25 +89,18 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private class WatcherThread extends HyperThread
+  private final class WatcherThread extends HyperThread
   {
     private boolean done = false;
-    private final WatchService watcher;
-    private final Map<WatchKey, HDT_Folder> watchKeyToDir;
     private boolean sentResponse = false;
     private HDB_MessageType requestType;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private WatcherThread(WatchService watcher, Map<WatchKey, HDT_Folder> watchKeyToDir)
+    private WatcherThread()
     {
       super("FolderTreeWatcher");
-
-      this.watcher = watcher;
-      this.watchKeyToDir = watchKeyToDir;
-
-      start();
     }
 
   //---------------------------------------------------------------------------
@@ -135,7 +129,7 @@ public class FolderTreeWatcher
         return;
       }
 
-      if (app.debugging())
+      if (debugging())
         System.out.println("Watcher start");
 
       clearKeyQueue();
@@ -257,7 +251,7 @@ public class FolderTreeWatcher
     {
       return "A file that is in use by the database, \"" + filePath.getNameOnly() +
              "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. " +
-             "Changes to database files should be made using the " + App.appTitle + " File Manager instead.";
+             "Changes to database files should be made using the " + appTitle + " File Manager instead.";
     }
 
     //---------------------------------------------------------------------------
@@ -266,7 +260,7 @@ public class FolderTreeWatcher
     private String changedFolderMsg()
     {
       return "There has been a change to a folder that is in use by the database. " +
-             "This may or may not cause a data integrity problem. Changes to database folders should be made using the " + App.appTitle + " File Manager instead.";
+             "This may or may not cause a data integrity problem. Changes to database folders should be made using the " + appTitle + " File Manager instead.";
     }
 
     //---------------------------------------------------------------------------
@@ -274,7 +268,7 @@ public class FolderTreeWatcher
 
     private void processEventList(List<WatcherEvent> eventList) throws IOException
     {
-      if (app.debugging())
+      if (debugging())
       {
         System.out.println("---------------------------");
         System.out.println("New event list");
@@ -414,18 +408,18 @@ public class FolderTreeWatcher
 
                     if (workFile.works.contains(ui.activeRecord()))
                     {
-                      if      (ui.workHyperTab().wdc != null) ui.workHyperTab().wdc.btnCancel.fire();
-                      else if (ui.workHyperTab().fdc != null) ui.workHyperTab().fdc.btnCancel.fire();
+                      if      (workHyperTab().wdc != null) workHyperTab().wdc.btnCancel.fire();
+                      else if (workHyperTab().fdc != null) workHyperTab().fdc.btnCancel.fire();
 
-                      ui.workHyperTab().refreshFiles();
+                      workHyperTab().refreshFiles();
                     }
                   }
                   else if ((record.getType() == hdtMiscFile) && (ui.activeTabEnum() == fileTabEnum))
                   {
-                    if (ui.fileHyperTab().fdc != null)
-                      ui.fileHyperTab().fdc.btnCancel.fire();
+                    if (fileHyperTab().fdc != null)
+                      fileHyperTab().fdc.btnCancel.fire();
 
-                    ui.fileHyperTab().refreshFile();
+                    fileHyperTab().refreshFile();
                   }
                 });
               }
@@ -446,20 +440,84 @@ public class FolderTreeWatcher
 
         }
 
-        if (app.debugging())
+        if (debugging())
         {
           switch (watcherEvent.kind)
           {
-            case wekCreate : System.out.println("Created: \""       + watcherEvent.newPathInfo + "\""); break;
-            case wekDelete : System.out.println("Deleted: \""       + watcherEvent.oldPathInfo + "\""); break;
-            case wekModify : System.out.println("Modified: \""      + watcherEvent.newPathInfo + "\""); break;
+            case wekCreate : System.out.println("Created: \""       + watcherEvent.newPathInfo + '"'); break;
+            case wekDelete : System.out.println("Deleted: \""       + watcherEvent.oldPathInfo + '"'); break;
+            case wekModify : System.out.println("Modified: \""      + watcherEvent.newPathInfo + '"'); break;
             case wekRename : System.out.println("Renamed: \""       + watcherEvent.oldPathInfo +
-                                                "\" to: \""         + watcherEvent.newPathInfo.getFilePath().getNameOnly() + "\""); break;
+                                                "\" to: \""         + watcherEvent.newPathInfo.getFilePath().getNameOnly() + '"'); break;
 
-            default        : System.out.println("Unknown event: \"" + watcherEvent.newPathInfo + "\""); break;
+            default        : System.out.println("Unknown event: \"" + watcherEvent.newPathInfo + '"'); break;
           }
         }
       }
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    private void registerTree(FilePath rootFilePath) throws IOException
+    {
+      Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<>()
+      {
+        /**
+         * Invoked for a directory before entries in the directory are visited.
+         */
+        @Override public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException
+        {
+          Objects.requireNonNull(path);
+          Objects.requireNonNull(attrs);
+
+          if (new FilePath(path).exists() == false) return FileVisitResult.SKIP_SUBTREE;
+
+          HDT_Folder folder = HyperPath.getFolderFromFilePath(new FilePath(path), true);
+
+          if (folder == null)
+            throw new IOException(new HDB_InternalError(92733));
+
+          watchKeyToDir.put(path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY), folder);
+
+          return FileVisitResult.CONTINUE;
+        }
+
+        /**
+         * Invoked for a file in a directory.
+         */
+        @Override public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
+        {
+          Objects.requireNonNull(path);
+          Objects.requireNonNull(attrs);
+          return FileVisitResult.CONTINUE;
+        }
+
+        /**
+         * Invoked for a file that could not be visited.
+         */
+        @Override public FileVisitResult visitFileFailed(Path path, IOException exc) throws IOException
+        {
+          Objects.requireNonNull(path);
+
+          if (new FilePath(path).exists() == false) return FileVisitResult.CONTINUE; // If folder doesn't exist just keep going
+
+          throw exc;
+        }
+
+        /**
+         * Invoked for a directory after entries in the directory, and all of their
+         * descendants, have been visited.
+         */
+        @Override public FileVisitResult postVisitDirectory(Path path, IOException exc) throws IOException
+        {
+          Objects.requireNonNull(path);
+
+          if (exc != null) throw exc;
+
+          return FileVisitResult.CONTINUE;
+        }
+      });
     }
 
   //---------------------------------------------------------------------------
@@ -561,70 +619,6 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void registerTree(FilePath rootFilePath) throws IOException
-  {
-    Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<>()
-    {
-      /**
-       * Invoked for a directory before entries in the directory are visited.
-       */
-      @Override public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException
-      {
-        Objects.requireNonNull(path);
-        Objects.requireNonNull(attrs);
-
-        if (new FilePath(path).exists() == false) return FileVisitResult.SKIP_SUBTREE;
-
-        HDT_Folder folder = HyperPath.getFolderFromFilePath(new FilePath(path), true);
-
-        if (folder == null)
-          throw new IOException(new HDB_InternalError(92733));
-
-        watchKeyToDir.put(path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY), folder);
-
-        return FileVisitResult.CONTINUE;
-      }
-
-      /**
-       * Invoked for a file in a directory.
-       */
-      @Override public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
-      {
-        Objects.requireNonNull(path);
-        Objects.requireNonNull(attrs);
-        return FileVisitResult.CONTINUE;
-      }
-
-      /**
-       * Invoked for a file that could not be visited.
-       */
-      @Override public FileVisitResult visitFileFailed(Path path, IOException exc) throws IOException
-      {
-        Objects.requireNonNull(path);
-
-        if (new FilePath(path).exists() == false) return FileVisitResult.CONTINUE; // If folder doesn't exist just keep going
-
-        throw exc;
-      }
-
-      /**
-       * Invoked for a directory after entries in the directory, and all of their
-       * descendants, have been visited.
-       */
-      @Override public FileVisitResult postVisitDirectory(Path path, IOException exc) throws IOException
-      {
-        Objects.requireNonNull(path);
-
-        if (exc != null) throw exc;
-
-        return FileVisitResult.CONTINUE;
-      }
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void start()
   {
     if (watcherThread != null)
@@ -633,7 +627,7 @@ public class FolderTreeWatcher
       stop();
     }
 
-    watcherThread = new WatcherThread(watcher, watchKeyToDir);
+    (watcherThread = new WatcherThread()).start();
     stopped = false;
   }
 
@@ -657,12 +651,12 @@ public class FolderTreeWatcher
         watcher.close();
         stopped = true;
 
-        if (app.debugging())
+        if (debugging())
           System.out.println("Watcher closed");
       }
       catch (IOException e)
       {
-        if (app.debugging())
+        if (debugging())
           System.out.println("Watcher close exception");
       }
     }

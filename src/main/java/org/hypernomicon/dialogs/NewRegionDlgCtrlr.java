@@ -72,13 +72,13 @@ public class NewRegionDlgCtrlr extends HyperDlg
     if (tfAbbrev.getText().isBlank())
       return falseWithWarningMessage("You must enter an abbreviation.", tfAbbrev);
 
-    for (HDT_Region region : db.regions)
+    for (HDT_Region otherRegion : db.regions)
     {
-      if (ultraTrim(convertToEnglishChars(region.name())).equalsIgnoreCase(ultraTrim(convertToEnglishChars(tfName.getText()))))
-        return falseWithWarningMessage("A state/region with the name " + region.name() + " already exists.", tfName);
+      if (ultraTrim(convertToEnglishChars(otherRegion.name())).equalsIgnoreCase(ultraTrim(convertToEnglishChars(tfName.getText()))))
+        return falseWithWarningMessage("A state/region with the name " + otherRegion.name() + " already exists.", tfName);
 
-      if (ultraTrim(convertToEnglishChars(region.getAbbreviation())).equalsIgnoreCase(ultraTrim(convertToEnglishChars(tfAbbrev.getText()))))
-        return falseWithWarningMessage("A state/region with the abbreviation " + region.getAbbreviation() + " already exists.", tfName);
+      if (ultraTrim(convertToEnglishChars(otherRegion.getAbbreviation())).equalsIgnoreCase(ultraTrim(convertToEnglishChars(tfAbbrev.getText()))))
+        return falseWithWarningMessage("A state/region with the abbreviation " + otherRegion.getAbbreviation() + " already exists.", tfName);
     }
 
     region = db.createNewBlankRecord(hdtRegion);

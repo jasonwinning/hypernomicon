@@ -89,7 +89,7 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class HistoryItem
+  private static final class HistoryItem
   {
     private final HDT_Folder folder;
     private final FilePath fileName;
@@ -106,7 +106,7 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class FolderHistory
+  private static final class FolderHistory
   {
     private final List<HistoryItem> history = new ArrayList<>();
     private final Button btnForward, btnBack;
@@ -605,7 +605,7 @@ public class FileManager extends HyperDlg
         {
           if (destFilePath.isDirectory())
             throw new TerminateTaskException("A folder already exists at destination path \"" + destFilePath + "\".");
-          else if (db.isProtectedFile(destFilePath, true))
+          if (db.isProtectedFile(destFilePath, true))
             throw new TerminateTaskException("Cannot overwrite destination path: \"" + destFilePath + "\".");
         }
       }
@@ -674,13 +674,10 @@ public class FileManager extends HyperDlg
 
             StringBuilder confirmMessage = new StringBuilder("The file \"" + entry.getValue() + "\" is assigned to the following record(s):\n\n");
 
-            set.forEach(hyperPath ->
-            {
-              if (hyperPath.getRecordType() != hdtNone)
-                confirmMessage.append(db.getTypeName(hyperPath.getRecord().getType())).append(" ID ")
-                              .append(hyperPath.getRecord().getID()).append(": ")
-                              .append(hyperPath.getRecord().getCBText()).append("\n");
-            });
+            set.stream().filter(hyperPath -> hyperPath.getRecordType() != hdtNone).forEach(hyperPath ->
+              confirmMessage.append(db.getTypeName(hyperPath.getRecord().getType())).append(" ID ")
+                            .append(hyperPath.getRecord().getID()).append(": ")
+                            .append(hyperPath.getRecord().getCBText()).append('\n'));
 
             confirmMessage.append("\nOkay to overwrite the file with \"").append(entry.getKey()).append("\"?");
 
@@ -739,10 +736,10 @@ public class FileManager extends HyperDlg
             throw new TerminateTaskException();
 
           if ((copying == false) && (entry.getKey().canObtainLock() == false))
-            throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getKey() + "\"");
+            throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getKey() + '"');
 
           if (entry.getValue().canObtainLock() == false)
-            throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getValue() + "\"");
+            throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getValue() + '"');
         }
       }
       catch (IOException e)
@@ -761,12 +758,9 @@ public class FileManager extends HyperDlg
 
   void paste(FileRow destRow, boolean copying, boolean dragging)
   {
+    if ((destRow == null) && ((destRow = getFolderRow()) == null)) return;
+
     Map<FilePath, FilePath> srcToDest = new HashMap<>();
-
-    if (destRow == null)
-      destRow = getFolderRow();
-
-    if (destRow == null) return;
 
     if (!doPasteChecks(destRow, srcToDest, copying, dragging))
     {
@@ -1041,7 +1035,7 @@ public class FileManager extends HyperDlg
 
     suppressNeedRefresh = true;
 
-    rowInfoList.stream().allMatch(this::deleteRow); // Deletes rows until deleteRow returns false
+    rowInfoList.stream().allMatch(FileManager::deleteRow); // Deletes rows until deleteRow returns false
 
     folderTree.prune();
 
@@ -1058,7 +1052,7 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean deleteRow(MarkedRowInfo rowInfo)
+  private static boolean deleteRow(MarkedRowInfo rowInfo)
   {
     HyperPath hyperPath = rowInfo.row.getHyperPath();
     HDT_RecordWithPath fileRecord = hyperPath.getRecord();
@@ -1067,20 +1061,16 @@ public class FileManager extends HyperDlg
     if (rowInfo.related == false)
     {
       if (rowInfo.row.isDirectory())
-      {
         return ((HDT_Folder) fileRecord).delete(true);
-      }
-      else
-      {
-        try { Files.delete(filePath.toPath()); }
-        catch (IOException e)
-        {
-          return falseWithErrorMessage("Unable to delete the file: " + e.getMessage());
-        }
 
-        db.unmapFilePath(filePath);
-        return true;
+      try { Files.delete(filePath.toPath()); }
+      catch (IOException e)
+      {
+        return falseWithErrorMessage("Unable to delete the file: " + e.getMessage());
       }
+
+      db.unmapFilePath(filePath);
+      return true;
     }
 
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
@@ -1106,7 +1096,7 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean canCutRow(MarkedRowInfo rowInfo, boolean deleting)
+  private static boolean canCutRow(MarkedRowInfo rowInfo, boolean deleting)
   {
     String opPast = deleting ? "deleted" : "moved";
     HyperPath hyperPath = rowInfo.row.getHyperPath();
@@ -1119,7 +1109,7 @@ public class FileManager extends HyperDlg
     boolean isDir = filePath.isDirectory();
 
     if (db.isProtectedFile(filePath, true))
-      return falseWithErrorMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + ".");
+      return falseWithErrorMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
 
     if (deleting == false) return true;
 

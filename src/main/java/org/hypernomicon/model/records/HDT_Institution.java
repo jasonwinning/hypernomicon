@@ -21,6 +21,8 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
+import java.util.List;
+
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_InstitutionType;
@@ -31,16 +33,18 @@ import org.hypernomicon.model.relations.HyperSubjList;
 
 public class HDT_Institution extends HDT_RecordBase
 {
-  public static final int FACULTY_INST_TYPE_ID = 9,
-                          DEPARTMENT_INST_TYPE_ID = 10;
+  public static final int UNIV_SYS_INST_TYPE_ID    = 1,
+                          COLLEGE_SYS_INST_TYPE_ID = 6,
+                          FACULTY_INST_TYPE_ID     = 9,
+                          DEPARTMENT_INST_TYPE_ID  = 10;
 
-  public final HyperSubjList<HDT_Person, HDT_Institution> persons;
+  public final HyperSubjList<HDT_Person     , HDT_Institution> persons;
   public final HyperSubjList<HDT_Institution, HDT_Institution> subInstitutions;
 
-  public final HyperObjPointer<HDT_Institution, HDT_Region> region;
-  public final HyperObjPointer<HDT_Institution, HDT_Country> country;
+  public final HyperObjPointer<HDT_Institution, HDT_Region         > region;
+  public final HyperObjPointer<HDT_Institution, HDT_Country        > country;
   public final HyperObjPointer<HDT_Institution, HDT_InstitutionType> instType;
-  public final HyperObjPointer<HDT_Institution, HDT_Institution> parentInst;
+  public final HyperObjPointer<HDT_Institution, HDT_Institution    > parentInst;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -50,11 +54,11 @@ public class HDT_Institution extends HDT_RecordBase
     super(xmlState, dataset, tagName);
 
     subInstitutions = getSubjList(rtParentInstOfInst);
-    persons = getSubjList(rtInstOfPerson);
+    persons         = getSubjList(rtInstOfPerson    );
 
-    region = getObjPointer(rtRegionOfInst);
-    country = getObjPointer(rtCountryOfInst);
-    instType = getObjPointer(rtTypeOfInst);
+    region     = getObjPointer(rtRegionOfInst    );
+    country    = getObjPointer(rtCountryOfInst   );
+    instType   = getObjPointer(rtTypeOfInst      );
     parentInst = getObjPointer(rtParentInstOfInst);
   }
 
@@ -66,33 +70,24 @@ public class HDT_Institution extends HDT_RecordBase
   public boolean isDeptOrFaculty()    { return (instType.getID() == FACULTY_INST_TYPE_ID) ||
                                                (instType.getID() == DEPARTMENT_INST_TYPE_ID); }
 
-  public void setURL(String newURL) { updateTagString(tagWebURL, newURL); }
-  public String getURL()            { return getTagString(tagWebURL); }
+  public void setURL(String newURL)   { updateTagString(tagWebURL, newURL); }
+  public String getURL()              { return getTagString(tagWebURL); }
+
+  @Override public String listName()                   { return extendedName(false); }
+  @Override public String getXMLObjectName()           { return extendedName(true ); }
+  @Override protected String makeSortKeyTypeSpecific() { return extendedName(true ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getXMLObjectName()
+  private String extendedName(boolean parentFirst)
   {
-    if (parentInst.isNull())
+    int parentTypeID = parentInst.isNull() ? -1 : parentInst.get().instType.getID();
+
+    if (List.of(-1, UNIV_SYS_INST_TYPE_ID, COLLEGE_SYS_INST_TYPE_ID).contains(parentTypeID))
       return name();
 
-    int parentType = parentInst.get().instType.getID();
-
-    return (parentType == 1) || (parentType == 6) ? name() : (parentInst.get().name() + " " + name());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public String listName()
-  {
-    if (parentInst.isNull())
-      return name();
-
-    int parentType = parentInst.get().instType.getID();
-
-    return (parentType == 1) || (parentType == 6) ? name() : (name() + ", " + parentInst.get().name());
+    return parentFirst ? (parentInst.get().name() + ' ' + name()) : (name() + ", " + parentInst.get().name());
   }
 
 //---------------------------------------------------------------------------

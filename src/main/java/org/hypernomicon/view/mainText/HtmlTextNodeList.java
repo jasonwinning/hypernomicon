@@ -36,7 +36,7 @@ class HtmlTextNodeList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static class HtmlTextNode
+  static final class HtmlTextNode
   {
     private int startNdx;
     private final int endNdx;
@@ -45,7 +45,7 @@ class HtmlTextNodeList
 
   //---------------------------------------------------------------------------
 
-    public HtmlTextNode(String text, TextNode textNode, int startNdx)
+    private HtmlTextNode(String text, TextNode textNode, int startNdx)
     {
       this.text = text;
       this.textNode = textNode;
@@ -54,8 +54,8 @@ class HtmlTextNodeList
     }
 
     public String getText()       { return text; }
-    public int getStartNdx()      { return startNdx; }
     public TextNode getTextNode() { return textNode; }
+    int getStartNdx()             { return startNdx; }
 
   //---------------------------------------------------------------------------
 

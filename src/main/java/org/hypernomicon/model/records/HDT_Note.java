@@ -55,9 +55,9 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public void setParentNotes(List<HDT_Note> list) { updateObjectsFromList(rtParentNoteOfNote, list); }
 
-  @Override public HyperPath getPath()  { return folder.isNull() ? null : folder.get().getPath(); }
-  @Override public String listName()    { return name(); }
-  @Override public boolean isUnitable() { return true; }
+  @Override public HyperPath getPath()        { return folder.isNull() ? null : folder.get().getPath(); }
+  @Override public String listName()          { return name(); }
+  @Override public final boolean isUnitable() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

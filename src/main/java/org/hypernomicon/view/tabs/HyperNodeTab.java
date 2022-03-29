@@ -23,6 +23,7 @@ import java.util.prefs.Preferences;
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
@@ -32,6 +33,8 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   final NodeTabCtrlr<HDT_RT, HDT_CT> ctrlr;
 
   @Override public final MainTextWrapper mainTextWrapper() { return ctrlr.mainTextWrapper(); }
+  @Override public void findWithinDesc(String text)        { ctrlr.hilite(text); }
+  @Override public TextViewInfo mainTextInfo()             { return ctrlr.mainTextInfo(); }
   @Override public String recordName()                     { return ctrlr.nameCtrl().getText(); }
   @Override void updateWebButtons(Preferences node)        { ctrlr.updateWebButtons(node); }
 

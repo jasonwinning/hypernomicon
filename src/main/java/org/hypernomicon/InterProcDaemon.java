@@ -27,6 +27,9 @@ import org.hypernomicon.HyperTask.HyperThread;
 
 class InterProcDaemon extends HyperThread
 {
+
+//---------------------------------------------------------------------------
+
   InterProcDaemon()
   {
     super("InterProc");

@@ -144,19 +144,10 @@ public class SelectWorkDlgCtrlr extends HyperDlg
           List<String> isbns = bibEntry.getMultiStr(BibFieldEnum.bfISBNs);
 
           if (isbns.isEmpty() == false)
-          {
             for (HDT_Work curWork : db.works)
-            {
-              if (curWork.getWorkTypeEnum() == WorkTypeEnum.wtBook) for (String isbn : curWork.getISBNs())
-              {
-                if (isbns.contains(isbn))
-                {
+              if (curWork.getWorkTypeEnum() == WorkTypeEnum.wtBook)
+                if (curWork.getISBNs().stream().anyMatch(isbns::contains))
                   work = curWork;
-                  break;
-                }
-              }
-            }
-          }
         }
 
         if (work == null)
@@ -189,9 +180,9 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     {
       if (bibEntryIsConstant == false) return true;
 
-      HDT_Work work = db.works.getByID(id);
+      HDT_Work curWork = db.works.getByID(id);
 
-      return (HDT_Work.isUnenteredSet(work) == false) && work.getBibEntryKey().isBlank();
+      return (HDT_Work.isUnenteredSet(curWork) == false) && curWork.getBibEntryKey().isBlank();
     });
 
     hcbWork = new HyperCB(cbWork, ctDropDownList, workPop);
@@ -220,7 +211,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
     hcbAuthor.addListener((oldValue, newValue) ->
     {
-      if ((newValue == null) || (HyperTableCell.getCellID(oldValue) == HyperTableCell.getCellID(newValue))) return;
+      if ((newValue == null) || (getCellID(oldValue) == getCellID(newValue))) return;
 
       ((HybridSubjectPopulator)hcbWork.getPopulator()).setObj(Populator.dummyRow, getRecord(newValue));
       hcbWork.selectID(-1);
@@ -228,7 +219,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
     hcbWork.addListener((oldValue, newValue) ->
     {
-      if ((newValue == null) || (HyperTableCell.getCellID(oldValue) == HyperTableCell.getCellID(newValue))) return;
+      if ((newValue == null) || (getCellID(oldValue) == getCellID(newValue))) return;
 
       if (filePathIsConstant == false)
       {

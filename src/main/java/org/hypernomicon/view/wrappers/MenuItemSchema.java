@@ -43,10 +43,10 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
 //---------------------------------------------------------------------------
 
   MenuItemSchema(String caption, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
-  { this(caption, RecordType.typeByRecordClass(klass), condRecordHandler, recordHandler, null, null); }
+  { this(caption, typeByRecordClass(klass), condRecordHandler, recordHandler, null, null); }
 
   MenuItemSchema(String caption, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
-  { this(caption, RecordType.typeByRecordClass(klass), record -> true, recordHandler, null, null); }
+  { this(caption, typeByRecordClass(klass), record -> true, recordHandler, null, null); }
 
   MenuItemSchema(String caption, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
   { this(caption, hdtNone, null, null, condRowHandler, rowHandler); }

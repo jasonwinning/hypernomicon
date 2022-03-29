@@ -17,7 +17,6 @@
 
 package org.hypernomicon.tree;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 
@@ -34,6 +33,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+import org.hypernomicon.view.MainCtrlr;
 
 public class ChooseParentDlgCtrlr extends HyperDlg
 {
@@ -75,7 +75,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
     popupTree.reset();
 
-    TreeWrapper tree = ui.tree();
+    TreeWrapper tree = MainCtrlr.tree();
     tree.debateTree.copyTo(popupTree.debateTree);
     tree.noteTree  .copyTo(popupTree.noteTree  );
     tree.labelTree .copyTo(popupTree.labelTree );
@@ -126,7 +126,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (types.contains(popupTree.selectedItem().getValue().getRecordType()) == false)
-      return falseWithErrorMessage("You must " + title.toLowerCase() + ".");
+      return falseWithErrorMessage("You must " + title.toLowerCase() + '.');
 
     parent = popupTree.selectedItem().getValue().getRecord();
 

@@ -43,7 +43,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
   final private class RowMenuItem extends MenuItem
   {
-    RowMenuItem(MenuItemSchema<? extends HDT_Record, RowType> schema)
+    private RowMenuItem(MenuItemSchema<? extends HDT_Record, RowType> schema)
     {
       super(schema.getCaption());
       this.schema = schema;

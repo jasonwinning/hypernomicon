@@ -50,7 +50,7 @@ import com.google.common.collect.Iterators;
 
 class SearchResultFileList
 {
-  private static class SearchResultFile
+  private static final class SearchResultFile
   {
     private final FilePath filePath;
     private final int startPage;
@@ -117,7 +117,7 @@ class SearchResultFileList
       {
         PDPage page = pdf.getPage(curPageNdx);
 
-        if (page.getAnnotations().stream().anyMatch(an -> (an.getSubtype().equals("Link") == false) && (an.getSubtype().equals("Widget") == false)))
+        if (page.getAnnotations().stream().anyMatch(an -> ("Link".equals(an.getSubtype()) == false) && ("Widget".equals(an.getSubtype()) == false)))
           return true;
       }
 
@@ -138,7 +138,7 @@ class SearchResultFileList
 
       while (destFilePath.exists())
       {
-        destStr = baseStr + "_" + String.valueOf(num++).substring(1) + ext;
+        destStr = baseStr + '_' + String.valueOf(num++).substring(1) + ext;
         destFilePath = new FilePath(destStr);
       }
 
@@ -150,8 +150,6 @@ class SearchResultFileList
 
     private void copyToResultsFolder(boolean excludeAnnots, List<String> errList)
     {
-      PDFCloneUtility cloneUtil = null;
-
       try
       {
         FilePath destFilePath = getDestPath(filePath);
@@ -185,7 +183,7 @@ class SearchResultFileList
             }
             else try (PDDocument destPdf = new PDDocument())
             {
-              cloneUtil = new PDFCloneUtility(destPdf);
+              PDFCloneUtility cloneUtil = new PDFCloneUtility(destPdf);
 
               for (int curPageNdx = startPage - 1; curPageNdx < endPage; curPageNdx++)
               {
@@ -200,7 +198,7 @@ class SearchResultFileList
                     {
                       String subtype = ((COSName) ((COSDictionary) annot).getItem(COSName.SUBTYPE)).getName();
 
-                      return (subtype.equals("Link") == false) && (subtype.equals("Widget") == false);
+                      return ("Link".equals(subtype) == false) && ("Widget".equals(subtype) == false);
                     });
                   }
                 }
@@ -216,7 +214,7 @@ class SearchResultFileList
       catch (Throwable e)
       {
         String msg = e.getMessage();
-        if (String.valueOf(msg).equals("null"))
+        if ("null".equals(String.valueOf(msg)))
           msg = e.getClass().getName();
 
         errList.add("Error: Unable to copy \"" + filePath + "\". Reason: " + msg);

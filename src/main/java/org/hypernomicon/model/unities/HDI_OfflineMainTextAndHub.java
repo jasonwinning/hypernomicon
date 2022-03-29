@@ -29,7 +29,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +78,7 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
     hubID = -1;
     keyWorks = new ArrayList<>();
     displayItems = new ArrayList<>();
-    usedKeyWorks = new HashMap<>();
+    usedKeyWorks = new EnumMap<>(RecordType.class);
   }
 
 //---------------------------------------------------------------------------

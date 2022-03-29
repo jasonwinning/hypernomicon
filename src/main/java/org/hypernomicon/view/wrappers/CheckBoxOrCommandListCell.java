@@ -32,7 +32,7 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.util.StringConverter;
 
-public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
+public final class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 {
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------

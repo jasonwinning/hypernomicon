@@ -24,13 +24,9 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
+import javafx.beans.value.ObservableDoubleValue;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.util.PopupDialog.DialogResult;
@@ -309,10 +305,8 @@ public final class UIUtil
 
   private static List<Node> getChildren(Parent parent)
   {
-    if (parent instanceof Pane)
-      return ((Pane)parent).getChildren();
-    else if (parent instanceof ToolBar)
-      return ((ToolBar)parent).getItems();
+    if (parent instanceof Pane   ) return ((Pane)parent).getChildren();
+    if (parent instanceof ToolBar) return ((ToolBar)parent).getItems();
 
     return null;
   }
@@ -464,10 +458,10 @@ public final class UIUtil
 
     if (node.getId() != null)
     {
-      if (node.getId().equals("noScale"))
+      if ("noScale".equals(node.getId()))
         return;
 
-      if (node.getId().equals("childrenOnly"))
+      if ("childrenOnly".equals(node.getId()))
         childrenOnly = true;
     }
 
@@ -478,8 +472,8 @@ public final class UIUtil
         Region region = (Region)node;
 
         scalePropertiesForDPI(region.prefHeightProperty(), region.prefWidthProperty(),
-                              region.maxHeightProperty() , region.maxWidthProperty(),
-                              region.minHeightProperty() , region.minWidthProperty());
+                              region.maxHeightProperty (), region.maxWidthProperty (),
+                              region.minHeightProperty (), region.minWidthProperty ());
       }
 
       if (((node instanceof javafx.scene.shape.Path) == false) &&
@@ -533,10 +527,7 @@ public final class UIUtil
 
   private static void scalePropertiesForDPI(DoubleProperty... props)
   {
-    double[] vals = new double[props.length];
-
-    for (int ndx = 0; ndx < props.length; ndx++)
-      vals[ndx] = props[ndx].get();
+    double[] vals = Arrays.stream(props).mapToDouble(ObservableDoubleValue::get).toArray();
 
     for (int ndx = 0; ndx < props.length; ndx++)
     {

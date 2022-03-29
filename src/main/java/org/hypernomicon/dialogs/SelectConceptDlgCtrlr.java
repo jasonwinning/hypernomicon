@@ -17,7 +17,6 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -31,6 +30,7 @@ import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Term;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.CustomPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -68,13 +68,13 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     CustomPopulator pop = new CustomPopulator(hdtGlossary, (row, force) ->
     {
-      HDT_Term term = hcbTerm.selectedRecord();
-      if (term == null) return Stream.empty();
+      HDT_Term tempTerm = hcbTerm.selectedRecord();
+      if (tempTerm == null) return Stream.empty();
 
       if (oldConcept == null)
-        return term.concepts.stream().map(curConcept -> curConcept.glossary.get());
+        return tempTerm.concepts.stream().map(curConcept -> curConcept.glossary.get());
 
-      List<HDT_Glossary> termGlossaries = term.getGlossaries();
+      List<HDT_Glossary> termGlossaries = tempTerm.getGlossaries();
 
       return db.glossaries.stream().filter(Predicate.not(termGlossaries::contains));
     });
@@ -89,12 +89,11 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
       alreadyChanging = true;
 
-      HDT_Term term = HyperTableCell.getRecord(newCell);
       List<HyperTableCell> glossaryCells = hcbGlossary.populate(true);
 
       boolean selectedGlossary = false;
 
-      if (term != null)
+      if (HyperTableCell.getRecord(newCell) != null)
       {
         if (oldConcept == null)
         {
@@ -119,7 +118,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       alreadyChanging = false;
     });
 
-    ui.setSearchKeyToolTip(tfSearchKey);
+    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
 
     btnCreate.setOnAction(event -> btnCreateClick());
     createNew = false;

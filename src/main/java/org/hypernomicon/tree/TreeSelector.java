@@ -37,6 +37,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.view.MainCtrlr;
 
 public class TreeSelector
 {
@@ -110,7 +111,7 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class TreeTargetType
+  private static final class TreeTargetType
   {
     private TreeTargetType(RelationType relType, RecordType objType)
     {
@@ -158,7 +159,7 @@ public class TreeSelector
       return;
 
     if ((folder != null) && ((HDT_Note) subj).folder.isNull())
-      ui.noteHyperTab().assignFolder(folder);
+      MainCtrlr.noteHyperTab().assignFolder(folder);
   }
 
 //---------------------------------------------------------------------------
@@ -174,7 +175,7 @@ public class TreeSelector
     RelationType relType = getRelTypeForTargetType(record.getType());
 
     if (relType == rtNone)
-      return falseWithErrMsgCond(showErrMsg, "You must select a record of type: " + getTypesStr() + ".");
+      return falseWithErrMsgCond(showErrMsg, "You must select a record of type: " + getTypesStr() + '.');
 
     if (relType == rtUnited)
       return selectToUnite((HDT_RecordWithMainText) record, showErrMsg);
@@ -187,7 +188,7 @@ public class TreeSelector
       if (base.getType() == hdtTerm)
       {
         ui.goToRecord(base, false);
-        ui.termHyperTab().addGlossary((HDT_Glossary) record);
+        MainCtrlr.termHyperTab().addGlossary((HDT_Glossary) record);
         ui.update();
         return true;
       }

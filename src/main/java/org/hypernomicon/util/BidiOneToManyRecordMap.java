@@ -104,7 +104,7 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<HDT_Record> getSet(Map<HDT_Record, Set<HDT_Record>> map1, HDT_Record record1)
+  private static Set<HDT_Record> getSet(Map<HDT_Record, Set<HDT_Record>> map1, HDT_Record record1)
   {
     if (map1.containsKey(record1)) return map1.get(record1);
 

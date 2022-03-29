@@ -146,7 +146,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void notifyIfNoLongerInUse(FilePath filePath)
+  private static void notifyIfNoLongerInUse(FilePath filePath)
   {
     if (FilePath.isEmpty(filePath)   ||
         (filePath.exists() == false) ||
@@ -175,8 +175,8 @@ public class HyperPath
 
     if (FilePath.isEmpty(fileName)) return null;
 
-    return nullSwitch(parentFolder()   , fileName, folder   ->
-           nullSwitch(folder.filePath(), fileName, folderFP -> folderFP.resolve(fileName)));
+    return nullSwitch(parentFolder()   , fileName, pFolder   ->
+           nullSwitch(pFolder.filePath(), fileName, parentFP -> parentFP.resolve(fileName)));
   }
 
 //---------------------------------------------------------------------------
@@ -305,7 +305,7 @@ public class HyperPath
     if ((folderID == -1) || (db.folders.getByID(folderID) == null))
       return falseWithErrorMessage("Internal error #77392");
 
-    FilePath srcFilePath = filePath(), destFilePath;
+    FilePath srcFilePath = filePath();
     HDT_Folder newFolder = db.folders.getByID(folderID);
 
     if (srcFilePath.isDirectory())
@@ -313,7 +313,7 @@ public class HyperPath
 
     Set<HyperPath> set = getHyperPathSetForFilePath(srcFilePath);
 
-    destFilePath = newFolder.filePath().resolve(changeFilename ? new FilePath(newName) : srcFilePath.getNameOnly());
+    FilePath destFilePath = newFolder.filePath().resolve(changeFilename ? new FilePath(newName) : srcFilePath.getNameOnly());
 
     if (srcFilePath.equals(destFilePath)) return true;
 

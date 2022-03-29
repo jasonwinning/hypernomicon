@@ -115,9 +115,10 @@ public class LicenseReportEngine extends ReportEngine
   {
     String str = nullSwitch(row, "", r -> nullSwitch(r.getCell(0), "", HyperTableCell::getText));
 
-    if      (str.contains("LICENSE")) return license.toString();
-    else if (str.contains("NOTICE" )) return notice .toString();
-    else                              return "";
+    if (str.contains("LICENSE")) return license.toString();
+    if (str.contains("NOTICE" )) return notice .toString();
+
+    return "";
   }
 
 //---------------------------------------------------------------------------

@@ -105,7 +105,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
     // The remainder of this method is for backwards compatibility with records XML version 1.0
 
-    if ((relType != RelationType.rtPictureFolderOfPerson) || hyperPath.isEmpty() || (hyperPath.parentFolder() != null)) return;
+    if ((relType != rtPictureFolderOfPerson) || hyperPath.isEmpty() || (hyperPath.parentFolder() != null)) return;
 
     // This has to be done after bringing records online because special folder IDs are loaded from the Settings file afterward
 

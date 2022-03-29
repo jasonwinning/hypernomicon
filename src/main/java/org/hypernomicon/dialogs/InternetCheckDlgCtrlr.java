@@ -65,10 +65,9 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 
     task = new HyperTask("CheckForInternet") { @Override protected Boolean call()
     {
-      HttpURLConnection con;
       try
       {
-        con = (HttpURLConnection) new URL("https://www.google.com/").openConnection();
+        HttpURLConnection con = (HttpURLConnection) new URL("https://www.google.com/").openConnection();
         con.connect();
 
         if (con.getResponseCode() == HttpURLConnection.HTTP_OK)

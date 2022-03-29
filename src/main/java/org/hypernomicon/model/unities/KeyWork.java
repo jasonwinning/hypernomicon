@@ -71,7 +71,7 @@ public class KeyWork implements Comparable<KeyWork>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private static class OfflineRecordPointer extends RecordPointer
+  private static final class OfflineRecordPointer extends RecordPointer
   {
     private final RecordType type;
     private final int id;
@@ -93,7 +93,7 @@ public class KeyWork implements Comparable<KeyWork>
 
   }
 
-  private static class OnlineRecordPointer extends RecordPointer
+  private static final class OnlineRecordPointer extends RecordPointer
   {
     private final HDT_Record record;
 
@@ -170,13 +170,13 @@ public class KeyWork implements Comparable<KeyWork>
             lwSearchKey = WorkTabCtrlr.makeWorkSearchKey(work.largerWork.get().getAuthors(), work.largerWork.get().getYear(), work);
 
           if (lwSearchKey.isEmpty())
-            lwSearchKey = (work.largerWork.get().getYear() + " " + work.largerWork.get().name()).trim();
+            lwSearchKey = (work.largerWork.get().getYear() + ' ' + work.largerWork.get().name()).trim();
 
           searchKey = new SplitString(work.name(), ':').next() + " in " +
                       new SplitString(lwSearchKey, ':').next();
         }
         else
-          searchKey = (work.getYear() + " " + work.name()).trim();
+          searchKey = (work.getYear() + ' ' + work.name()).trim();
       }
 
       searchKey = new SplitString(searchKey, ':').next();
@@ -257,7 +257,7 @@ public class KeyWork implements Comparable<KeyWork>
   {
     if (recordPtr.getType() == hdtWork)
       return parseInt(((HDT_Work) recordPtr.getRecord()).getYear(), 0);
-    else if (recordPtr.getType() == hdtMiscFile)
+    if (recordPtr.getType() == hdtMiscFile)
       return nullSwitch(((HDT_MiscFile) recordPtr.getRecord()).work.get(), 0, work -> parseInt(work.getYear(), 0));
 
     return 0;

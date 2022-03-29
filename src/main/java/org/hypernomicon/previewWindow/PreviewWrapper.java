@@ -40,6 +40,7 @@ import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.MainCtrlr;
 
 import javafx.application.Platform;
 import javafx.scene.control.MenuItem;
@@ -53,7 +54,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class PreviewFile
+  private static final class PreviewFile
   {
     private final FilePath filePath;
     private final HDT_RecordWithPath record;
@@ -308,7 +309,7 @@ public class PreviewWrapper
     int page = curPrevFile.navList.get(ndx);
     String pageLabel = safeStr(getLabelByPage(page)), pageStr = String.valueOf(page);
 
-    MenuItem item = new MenuItem("Page " + (pageLabel.isEmpty() || pageLabel.equals(pageStr) ? pageStr : (pageLabel + " (" + pageStr + ")")));
+    MenuItem item = new MenuItem("Page " + (pageLabel.isEmpty() || pageLabel.equals(pageStr) ? pageStr : (pageLabel + " (" + pageStr + ')')));
 
     item.setOnAction(event ->
     {
@@ -657,7 +658,7 @@ public class PreviewWrapper
       work.setEndPageNum(workFile, pageNum);
 
     if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
-      ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
+      MainCtrlr.workHyperTab().setPageNum(workFile, pageNum, isStart);
 
     if (workFile == null)
       contentsWindow.update(curPrevFile.filePath, pageNum);

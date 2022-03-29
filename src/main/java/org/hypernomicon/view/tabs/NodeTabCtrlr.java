@@ -22,6 +22,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -130,11 +131,11 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         labelLink = null;
     }
 
-    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "1"));
-    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "1"));
-    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "2"));
-    btnWebSrch3.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "3"));
-    btnWebSrch4.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "4"));
+    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '1'));
+    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '1'));
+    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '2'));
+    btnWebSrch3.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '3'));
+    btnWebSrch4.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '4'));
     btnTree    .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
 
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "Google");
@@ -142,7 +143,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Stanford Encyclopedia of Philosophy");
     setToolTip(btnWebSrch4, TOOLTIP_PREFIX + "Wikipedia");
 
-    ui.setSearchKeyToolTip(tfSearchKey);
+    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
 
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
@@ -156,7 +157,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private MenuItem makeMenuItem(HDT_RecordWithMainText record)
+  private static MenuItem makeMenuItem(HDT_RecordWithMainText record)
   {
     MenuItem miUnlink = new MenuItem();
     miUnlink.setText("Disunite");
@@ -186,7 +187,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void updateLinkLabels(HDT_CT record)
+  private void updateLinkLabels(HDT_CT record)
   {
     HDT_Debate    debate   = null;
     HDT_Position  position = null;
@@ -205,7 +206,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         note     = record.getHub().getNote();
       }
 
-      if (record.getType().equals(recordType) == false)
+      if (record.getType() != recordType)
       {
         messageDialog("Internal Error #28788", mtError);
         return;
@@ -261,7 +262,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         conceptLink.setContextMenu(null);
         conceptLink.setOnMouseClicked(mouseEvent ->
         {
-          if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
+          if (mouseEvent.getButton() == MouseButton.PRIMARY)
             linkToTermClick();
         });
       }
@@ -297,7 +298,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         labelLink.setContextMenu(new ContextMenu(makeMenuItem(label)));
         labelLink.setOnMouseClicked(mouseEvent ->
         {
-          if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
+          if (mouseEvent.getButton() == MouseButton.PRIMARY)
             ui.goToTreeRecord(record.getHub().getLabel());
         });
       }
@@ -317,7 +318,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       lblMergeTerms.setContextMenu(new ContextMenu(makeMoveConceptItem()));
       lblMergeTerms.setOnMouseClicked(mouseEvent ->
       {
-        if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
+        if (mouseEvent.getButton() == MouseButton.PRIMARY)
           ((TermTab) hyperTab).merge();
       });
     }
@@ -333,7 +334,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setDisuniteTooltip(Label label)
+  private static void setDisuniteTooltip(Label label)
   {
     setToolTip(label, "Use right/secondary button to disunite");
   }
@@ -343,7 +344,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
   private static WebTooltip uniteToolTip = null;
 
-  public void setUniteTooltip(Label label)
+  private static void setUniteTooltip(Label label)
   {
     if (uniteToolTip == null) uniteToolTip = new WebTooltip(
 
@@ -370,7 +371,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void linkToTermClick()
+  private static void linkToTermClick()
   {
     if (ui.cantSaveRecord()) return;
 
@@ -404,11 +405,11 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setLinkToEvent(Label label, RecordType type)
+  private static void setLinkToEvent(Label label, RecordType type)
   {
     label.setOnMouseClicked(mouseEvent ->
     {
-      if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
+      if (mouseEvent.getButton() == MouseButton.PRIMARY)
       {
         ui.treeSelector.linking(ui.viewRecord(), type);
         ui.goToTreeRecord(db.records(type).getByID(1));
@@ -419,11 +420,11 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setGoToEvent(Label label, HDT_RecordWithMainText record)
+  private static void setGoToEvent(Label label, HDT_RecordWithMainText record)
   {
     label.setOnMouseClicked(mouseEvent ->
     {
-      if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
+      if (mouseEvent.getButton() == MouseButton.PRIMARY)
         ui.goToRecord(record, true);
     });
   }
@@ -501,9 +502,9 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   {
     HyperTab.updateWebButtons(node, PREF_KEY_GEN_SRCH, 4, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + "2").getCaption());
-    btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + "3").getCaption());
-    btnWebSrch4.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + "4").getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '2').getCaption());
+    btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '3').getCaption());
+    btnWebSrch4.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '4').getCaption());
 
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
     setToolTip(btnWebSrch3, TOOLTIP_PREFIX + btnWebSrch3.getText());

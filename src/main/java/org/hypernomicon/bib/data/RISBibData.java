@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.PersonName;
 
-public class RISBibData extends BibDataStandalone
+public final class RISBibData extends BibDataStandalone
 {
   private static class RISException extends Exception { private static final long serialVersionUID = -5457122244377661495L; }
 
@@ -58,7 +58,7 @@ public class RISBibData extends BibDataStandalone
         String tag = m.group(1),
                val = m.group(2).trim();
 
-        if ((gotType == false) && (tag.equals("TY") == false))
+        if ((gotType == false) && ("TY".equals(tag) == false))
           throw new RISException();
 
         switch (tag)
@@ -144,7 +144,7 @@ public class RISBibData extends BibDataStandalone
             addStr(bfMisc, val); break;
         }
       }
-      else if (ultraTrim(line).equals("ER"))
+      else if ("ER".equals(ultraTrim(line)))
       {
         if (gotType)
         {
@@ -164,10 +164,10 @@ public class RISBibData extends BibDataStandalone
 
   private void setJournalTitle(String jf, String jo, String t2, String singleTitle)
   {
-    String containerTitle;
-
-    if (getEntryType().equals(etJournalArticle) == false)
+    if (getEntryType() != etJournalArticle)
       return;
+
+    String containerTitle;
 
     if (safeStr(jf).isBlank() == false)
       containerTitle = jf;
@@ -176,10 +176,10 @@ public class RISBibData extends BibDataStandalone
     else
     {
       containerTitle = safeStr(t2);
-      setMultiStr(bfTitle, List.of(safeStr(singleTitle)));
+      setMultiStr(bfTitle, safeListOf(singleTitle));
     }
 
-    setMultiStr(bfContainerTitle, List.of(safeStr(containerTitle)));
+    setMultiStr(bfContainerTitle, safeListOf(containerTitle));
   }
 
 //---------------------------------------------------------------------------

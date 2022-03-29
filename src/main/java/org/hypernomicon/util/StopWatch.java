@@ -19,8 +19,8 @@ package org.hypernomicon.util;
 
 public class StopWatch
 {
-  long startTime, elapsedTime;
-  boolean stopped;
+  private long startTime, elapsedTime;
+  private boolean stopped;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -79,11 +79,11 @@ public class StopWatch
     long num = 1000000000000000L + elapsed();
 
     String str = String.valueOf(num);
-    str = str.substring(0, 7) + "." + str.substring(7);
+    str = str.substring(0, 7) + '.' + str.substring(7);
     str = str.replaceFirst("^10*", "");
 
     if (str.startsWith("."))
-      str = "0" + str;
+      str = '0' + str;
 
     return str + " sec";
   }

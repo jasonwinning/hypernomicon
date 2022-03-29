@@ -35,6 +35,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -166,7 +167,7 @@ public class ContentsWindow extends HyperDlg
   private void setPageNum(HDT_Work work, int num, boolean isStart)
   {
     if ((ui.activeTabEnum() == workTabEnum) && (curWorkFile != null) && (ui.activeTab().activeRecord() == work))
-      ui.workHyperTab().setPageNum(curWorkFile, num, isStart);
+      MainCtrlr.workHyperTab().setPageNum(curWorkFile, num, isStart);
     else
     {
       if (isStart)
@@ -252,7 +253,7 @@ public class ContentsWindow extends HyperDlg
 
       if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
       {
-        wtc = ui.workHyperTab();
+        wtc = MainCtrlr.workHyperTab();
 
         title = wtc.getTitle();
         year = wtc.tfYear.getText();

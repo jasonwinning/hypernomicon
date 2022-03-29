@@ -47,14 +47,7 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType exten
   @Override public HDT_SubjType get(int index)          { return parentList.get(startNdx + index); }
   @Override public boolean containsAll(Collection<?> c) { return c.stream().allMatch(this::contains); }
 
-  @Override public boolean add(HDT_SubjType e)                                     { throw uoe(); }
-  @Override public boolean remove(Object o)                                        { throw uoe(); }
-  @Override public boolean addAll(Collection<? extends HDT_SubjType> c)            { throw uoe(); }
-  @Override public boolean addAll(int index, Collection<? extends HDT_SubjType> c) { throw uoe(); }
-  @Override public boolean retainAll(Collection<?> c)                              { throw uoe(); }
-  @Override public void clear()                                                    { throw uoe(); }
   @Override public HDT_SubjType set(int index, HDT_SubjType element)               { throw uoe(); }
-  @Override public void add(int index, HDT_SubjType element)                       { throw uoe(); }
   @Override public HDT_SubjType remove(int index)                                  { throw uoe(); }
 
 //---------------------------------------------------------------------------

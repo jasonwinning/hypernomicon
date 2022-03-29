@@ -24,7 +24,6 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HubChangedException;
@@ -83,11 +82,13 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 
 //---------------------------------------------------------------------------
 
-  @Override public final MainText getDesc() { return mainText; }
-  public MainText getMainText()             { return mainText; }
-  public HDT_Hub getHub()                   { return hub; }
-  public boolean hasHub()                   { return hub != null; }
-  public HDT_RecordWithMainText mainSpoke() { return hub == null ? this : hub.mainSpoke(false); }
+  @Override public final boolean hasMainText() { return true; }
+  @Override public final boolean hasDesc()     { return true; }
+  @Override public final MainText getDesc()    { return mainText; }
+  public MainText getMainText()                { return mainText; }
+  public HDT_Hub getHub()                      { return hub; }
+  public boolean hasHub()                      { return hub != null; }
+  public HDT_RecordWithMainText mainSpoke()    { return hub == null ? this : hub.mainSpoke(false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -134,7 +135,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void modifyMainText()
+  void modifyMainText()
   {
     modifyNow();
 
@@ -196,7 +197,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
       default: break;
     }
 
-    if ((parent == null) || HyperDB.isUnstoredRecord(parent.getID(), parent.getType())) return;
+    if ((parent == null) || isUnstoredRecord(parent.getID(), parent.getType())) return;
 
     boolean rc = db.runningConversion;
     db.runningConversion = true;

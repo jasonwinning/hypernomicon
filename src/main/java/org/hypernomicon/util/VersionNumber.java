@@ -68,7 +68,7 @@ public class VersionNumber implements Magnitude<VersionNumber>
 
   @Override public String toString()
   {
-    return parts.stream().map(String::valueOf).reduce((part1, part2) -> part1 + "." + part2).orElse("");
+    return parts.stream().map(String::valueOf).reduce((part1, part2) -> part1 + '.' + part2).orElse("");
   }
 
 //---------------------------------------------------------------------------

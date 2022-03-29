@@ -17,7 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.App.*;
+import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
@@ -83,9 +83,9 @@ public class MergeTermDlgCtrlr extends HyperDlg
     tfName3.textProperty().addListener((ob, oldValue, newValue) -> rbName3.setSelected(true));
     tfKey3 .textProperty().addListener((ob, oldValue, newValue) -> rbKey3 .setSelected(true));
 
-    ui.setSearchKeyToolTip(tfKey1);
-    ui.setSearchKeyToolTip(tfKey2);
-    ui.setSearchKeyToolTip(tfKey3);
+    setSearchKeyToolTip(tfKey1);
+    setSearchKeyToolTip(tfKey2);
+    setSearchKeyToolTip(tfKey3);
 
     return this;
   }
@@ -95,9 +95,9 @@ public class MergeTermDlgCtrlr extends HyperDlg
 
   public String getName()
   {
-    if      (rbName1.isSelected()) return tfName1.getText();
-    else if (rbName2.isSelected()) return tfName2.getText();
-    else                           return tfName3.getText();
+    if (rbName1.isSelected()) return tfName1.getText();
+    if (rbName2.isSelected()) return tfName2.getText();
+                              return tfName3.getText();
   }
 
 //---------------------------------------------------------------------------
@@ -105,9 +105,9 @@ public class MergeTermDlgCtrlr extends HyperDlg
 
   public String getKey()
   {
-    if      (rbKey1.isSelected()) return tfKey1.getText();
-    else if (rbKey2.isSelected()) return tfKey2.getText();
-    else                          return tfKey3.getText();
+    if (rbKey1.isSelected()) return tfKey1.getText();
+    if (rbKey2.isSelected()) return tfKey2.getText();
+                             return tfKey3.getText();
   }
 
 //---------------------------------------------------------------------------

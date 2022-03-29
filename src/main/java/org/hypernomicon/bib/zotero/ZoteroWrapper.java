@@ -18,7 +18,6 @@
 package org.hypernomicon.bib.zotero;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.App.app;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -41,6 +40,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -51,6 +51,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
+import org.hypernomicon.App;
 import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.EnumHashBiMap;
@@ -94,7 +95,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     this.userID = userID;
   }
 
-  JsonObj getTemplate(EntryType type)          { return templates.get(type); }
+  static JsonObj getTemplate(EntryType type)   { return templates.get(type); }
 
   @Override public LibraryType type()          { return LibraryType.ltZotero; }
   @Override public void safePrefs()            { db.prefs.putLong(PREF_KEY_BIB_LIBRARY_VERSION, offlineLibVersion); }
@@ -108,7 +109,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private JsonArray doWriteCommand(ZoteroCmd command, String jsonPostData) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
-    String url = "https://api.zotero.org/users/" + userID + "/";
+    String url = "https://api.zotero.org/users/" + userID + '/';
 
     switch (command)
     {
@@ -139,7 +140,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private JsonArray doReadCommand(ZoteroCmd command, String itemKey, String collectionKey) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
-    String url = "https://api.zotero.org/users/" + userID + "/";
+    String url = "https://api.zotero.org/users/" + userID + '/';
 
     switch (command)
     {
@@ -222,7 +223,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     static { EnumSet.allOf(ZoteroHeader.class).forEach(header -> headerMap.put(header.name.toLowerCase(), header)); }
 
-    private static ZoteroHeader get(Header header) { return headerMap.getOrDefault(header.getName().toLowerCase(), None); }
+    static ZoteroHeader getHeaderEnum(Header header) { return headerMap.getOrDefault(header.getName().toLowerCase(), None); }
   }
 
 //---------------------------------------------------------------------------
@@ -230,8 +231,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private JsonArray doHttpRequest(String url, HttpRequestType requestType, String postJsonData) throws IOException, UnsupportedOperationException, ParseException, TerminateTaskException
   {
-    RequestBuilder rb;
-
     if (retryTime != null)
     {
       while ((retryTime.compareTo(Instant.now()) > 0) && (syncTask.isCancelled() == false))
@@ -249,6 +248,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         if (syncTask.isCancelled()) throw new TerminateTaskException();
       }
     }
+
+    RequestBuilder rb;
 
     switch (requestType)
     {
@@ -297,7 +298,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       int sec;
 
-      switch (ZoteroHeader.get(header))
+      switch (getHeaderEnum(header))
       {
         case Zotero_API_Version    : assignSB(apiVersion, header.getValue()); break;
         case Total_Results         : totalResults.setValue(parseInt(header.getValue(), -1)); break;
@@ -400,14 +401,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private boolean syncChangedEntriesToServer() throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
-    List<ZoteroItem> uploadQueue = new ArrayList<>(); // implemented as array because indices are returned by server
+    List<ZoteroItem> uploadQueue; // implemented as array because indices are returned by server
     JsonArray jArr = new JsonArray();
 
-    getAllEntries().forEach(entry ->
-    {
-      if (entry.isSynced() == false)
-        uploadQueue.add(entry);
-    });
+    uploadQueue = getAllEntries().stream().filter(entry -> entry.isSynced() == false).collect(Collectors.toList());
 
     if (uploadQueue.isEmpty()) return false;
 
@@ -463,7 +460,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private void showWriteErrorMessages(JsonObj jUnchanged, JsonObj jFailed, List<ZoteroItem> uploadQueue)
+  private static void showWriteErrorMessages(JsonObj jUnchanged, JsonObj jFailed, List<ZoteroItem> uploadQueue)
   {
     List<String> errMsgList = Lists.newArrayList("Attempt(s) to upload changes to server failed:");
 
@@ -476,7 +473,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1));
       JsonObj jError = jFailed.getObj(queueNdx);
-      errMsgList.add(item.getKey() + " code: " + jError.getLong("code", -1) + " " + jError.getStr("message"));
+      errMsgList.add(item.getKey() + " code: " + jError.getLong("code", -1) + ' ' + jError.getStr("message"));
     });
 
     messageDialog(strListToStr(errMsgList, false), mtError, true);
@@ -488,13 +485,13 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   @SuppressWarnings("unchecked")
   private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
-    List<String> downloadQueue = new ArrayList<>();
-
     JsonArray jArr = doReadCommand(versionsCmd, "", "");
 
     if ((jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED))
       if (onlineLibVersion <= offlineLibVersion)
         return true;
+
+    List<String> downloadQueue = new ArrayList<>();
 
     if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
     {
@@ -524,7 +521,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       int downloadCount = Math.min(downloadQueue.size(), 50);
       for (int ndx = 0; ndx < downloadCount; ndx++)
-        keys = keys + (keys.isEmpty() ? downloadQueue.get(ndx) : "," + downloadQueue.get(ndx));
+        keys = keys + (keys.isEmpty() ? downloadQueue.get(ndx) : ',' + downloadQueue.get(ndx));
 
       jArr = readCmd == ZoteroCmd.readCollections ?
         doReadCommand(ZoteroCmd.readCollections, "", keys)
@@ -581,117 +578,117 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     // The algorithm for Zotero syncing is described here:
     // https://www.zotero.org/support/dev/web_api/v3/syncing
 
-      int statusCode;
       didMergeDuringSync = false;
 
       try
       {
 
-      /*********************************************/
-      /*        Try sending local updates          */
-      /*********************************************/
+    /*********************************************/
+    /*        Try sending local updates          */
+    /*********************************************/
 
-      if (syncChangedEntriesToServer() == false)
-        statusCode = HttpStatus.SC_PRECONDITION_FAILED;
-      else
-      {
-        statusCode = jsonClient.getStatusCode();
-        changed = true;
-      }
+        int statusCode;
 
-      /*********************************************/
-      /*         Retrieve remote updates           */
-      /*********************************************/
-
-      while (statusCode == HttpStatus.SC_PRECONDITION_FAILED)
-      {
-        if (!getRemoteUpdates(ZoteroCmd.readChangedCollVersions, ZoteroCmd.readCollections, keyToColl)) return false;
-
-        if (onlineLibVersion <= offlineLibVersion)
-          return true;
+        if (syncChangedEntriesToServer() == false)
+          statusCode = HttpStatus.SC_PRECONDITION_FAILED;
         else
+        {
+          statusCode = jsonClient.getStatusCode();
+          changed = true;
+        }
+
+    /*********************************************/
+    /*         Retrieve remote updates           */
+    /*********************************************/
+
+        while (statusCode == HttpStatus.SC_PRECONDITION_FAILED)
+        {
+          if (!getRemoteUpdates(ZoteroCmd.readChangedCollVersions, ZoteroCmd.readCollections, keyToColl)) return false;
+
+          if (onlineLibVersion <= offlineLibVersion)
+            return true;
+
           changed = true;
 
-        if (!getRemoteUpdates(ZoteroCmd.readChangedItemVersions, ZoteroCmd.readItems, keyToAllEntry  )) return false;
-        if (!getRemoteUpdates(ZoteroCmd.readTrashVersions,       ZoteroCmd.readTrash, keyToTrashEntry)) return false;
+          if (!getRemoteUpdates(ZoteroCmd.readChangedItemVersions, ZoteroCmd.readItems, keyToAllEntry  )) return false;
+          if (!getRemoteUpdates(ZoteroCmd.readTrashVersions,       ZoteroCmd.readTrash, keyToTrashEntry)) return false;
 
-        /*********************************************/
-        /*       Retrieve remote deletions           */
-        /*********************************************/
+      /*********************************************/
+      /*       Retrieve remote deletions           */
+      /*********************************************/
 
-        JsonArray jArr = doReadCommand(ZoteroCmd.readDeletions, "", "");
+          JsonArray jArr = doReadCommand(ZoteroCmd.readDeletions, "", "");
 
-        if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return false;
+          if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return false;
 
-        jArr.getObj(0).getArray("items").getStrs().forEach(key ->
-        {
-          if (keyToAllEntry.containsKey(key))
+          jArr.getObj(0).getArray("items").getStrs().forEach(key ->
           {
-            // A remote deletion will simply override local changes. Undocument code to change this behavior.
+            if (keyToAllEntry.containsKey(key))
+            {
+              // A remote deletion will simply override local changes. Undocument code to change this behavior.
 
-//            ZoteroItem item = keyToAllEntry.get(key);
+//              ZoteroItem item = keyToAllEntry.get(key);
 //
-//            if (item.isSynced())
-//            {
-              HDT_Work work = db.getWorkByBibEntryKey(key);
-              if (work != null)
-                work.setBibEntryKey("");
+//              if (item.isSynced())
+//              {
+                HDT_Work work = db.getWorkByBibEntryKey(key);
+                if (work != null)
+                  work.setBibEntryKey("");
 
-              keyToAllEntry.remove(key);
-              keyToTrashEntry.remove(key);
-//            }
-//            else
-//            {
-//              // Perform conflict resolution!
-//              noOp();
-//            }
-          }
-        });
+                keyToAllEntry.remove(key);
+                keyToTrashEntry.remove(key);
+//              }
+//              else
+//              {
+//                // Perform conflict resolution!
+//                noOp();
+//              }
+            }
+          });
 
-        jArr.getObj(0).getArray("collections").getStrs().forEach(key ->
-        {
-          if (keyToColl.containsKey(key))
+          jArr.getObj(0).getArray("collections").getStrs().forEach(key ->
           {
-            // A remote deletion will simply override local changes. Undocument code to change this behavior.
+            if (keyToColl.containsKey(key))
+            {
+              // A remote deletion will simply override local changes. Undocument code to change this behavior.
 
-//            ZoteroCollection coll = keyToColl.get(key);
+//              ZoteroCollection coll = keyToColl.get(key);
 //
-//            if (coll.isSynced())
-//            {
-              keyToColl.remove(key);
-//            }
-//            else
-//            {
-//              // Perform conflict resolution!
-//              noOp();
-//            }
-          }
-        });
+//              if (coll.isSynced())
+//              {
+                keyToColl.remove(key);
+//              }
+//              else
+//              {
+//                // Perform conflict resolution!
+//                noOp();
+//              }
+            }
+          });
 
-        if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
-          offlineLibVersion = onlineLibVersion;
-        else
-          return false;
+          if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
+            offlineLibVersion = onlineLibVersion;
+          else
+            return false;
 
-        /*********************************************/
-        /*      Try sending local updates again      */
-        /*********************************************/
-        syncChangedEntriesToServer();
+      /*********************************************/
+      /*      Try sending local updates again      */
+      /*********************************************/
+          syncChangedEntriesToServer();
 
-        statusCode = jsonClient.getStatusCode();
-      }
+          statusCode = jsonClient.getStatusCode();
+        }
 
-      offlineLibVersion = onlineLibVersion;
+        offlineLibVersion = onlineLibVersion;
 
-      if (app.debugging())
-        System.out.println("libraryVersion: " + offlineLibVersion);
+        if (App.debugging())
+          System.out.println("libraryVersion: " + offlineLibVersion);
 
-      return true;
-
+        return true;
       }
       catch (HttpResponseException e)
       {
-        String msg = "An error occurred while syncing: " + e.getStatusCode() + " " + e.getMessage();
+        String msg = "An error occurred while syncing: " + e.getStatusCode() + ' ' + e.getMessage();
         throw new HyperDataException(msg, e);
       }
       catch (UnknownHostException e)

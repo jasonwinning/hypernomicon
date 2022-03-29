@@ -72,7 +72,7 @@ public final class DesktopUtil
 //      if (exec(false, false, sb, "gvfs-open" , pathStr)) return true;
     }
 
-    return falseWithErrorMessage("Unable to open the file: " + pathStr + (sb.length() > 0 ? "\n" + sb : "") + ".");
+    return falseWithErrorMessage("Unable to open the file: " + pathStr + (sb.length() > 0 ? "\n" + sb : "") + '.');
   }
 
 //---------------------------------------------------------------------------
@@ -83,7 +83,7 @@ public final class DesktopUtil
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)))
-        return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ".");
+        return falseWithErrorMessage("An error occurred while trying to browse to: " + url + '.');
 
       Desktop.getDesktop().browse(new URI(url));
       return true;
@@ -129,7 +129,7 @@ public final class DesktopUtil
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.EDIT)))
-        return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ".");
+        return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + '.');
 
       Desktop.getDesktop().edit(filePath.toFile());
       return true;
@@ -157,12 +157,11 @@ public final class DesktopUtil
     }
 
     ProcessBuilder pb = new ProcessBuilder(command);
-    Process proc;
     int exitValue = 0;
 
     try
     {
-      proc = pb.start();
+      Process proc = pb.start();
 
       if (wait)
       {
@@ -278,7 +277,7 @@ public final class DesktopUtil
     try
     {
       if (SystemUtils.IS_OS_WINDOWS)
-        Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + "\"").waitFor();
+        Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + '"').waitFor();
 
       else if (SystemUtils.IS_OS_MAC)
         Runtime.getRuntime().exec(new String[] {"open", "-R", filePath.toString()}).waitFor();

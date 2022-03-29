@@ -45,7 +45,6 @@ import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
-import org.hypernomicon.view.populators.Populator.CellValueType;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -230,7 +229,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class ColumnSettings
+  private static final class ColumnSettings
   {
     private ColumnSettings(int oldNdx, double oldWidth, boolean defVisible)
     {
@@ -609,7 +608,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       pop = cols.get(colNdx - 1).getPopulator();
 
-      if ((pop != null) && (pop.getValueType() == CellValueType.cvtRecordType))
+      if ((pop != null) && (pop.getValueType() == cvtRecordType))
       {
         rtp = (RecordTypePopulator) pop;
 
@@ -761,73 +760,70 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     db.getNestedTags(relType).stream().filter(Predicate.not(colNdxToTag::containsValue)).forEach(tag -> colNdxToTag.put(-1, tag));
 
-    rows.forEach(row ->
+    rows.stream().filter(row -> row.getRecordType(primaryColNdx) == objType).forEach(row ->
     {
-      if (row.getRecordType(primaryColNdx) == objType)
+      int id = row.getID(primaryColNdx);
+      if ((id < 1) && row.getText(primaryColNdx).isEmpty())
+        return;
+
+      HDT_Record obj;
+      ObjectGroup group;
+
+      if (id < 1)
       {
-        int id = row.getID(primaryColNdx);
-        if ((id > 0) || (row.getText(primaryColNdx).length() > 0))
+        obj = null;
+        group = new ObjectGroup(row.getText(primaryColNdx));
+      }
+      else
+      {
+        obj = db.records(objType).getByID(id);
+        group = new ObjectGroup(obj);
+      }
+
+      colNdxToTag.forEach((colNdx, tag) ->
+      {
+        HyperDataCategory hdc = db.getNestedSchema(relType, tag).getCategory();
+        NestedValue val = new NestedValue(hdc);
+
+        if (colNdx < 0)
         {
-          HDT_Record obj;
-          ObjectGroup group;
-
-          if (id < 1)
+          if (subj != null)
           {
-            obj = null;
-            group = new ObjectGroup(row.getText(primaryColNdx));
-          }
-          else
-          {
-            obj = db.records(objType).getByID(id);
-            group = new ObjectGroup(obj);
-          }
-
-          colNdxToTag.forEach((colNdx, tag) ->
-          {
-            HyperDataCategory hdc = db.getNestedSchema(relType, tag).getCategory();
-            NestedValue val = new NestedValue(hdc);
-
-            if (colNdx < 0)
+            if (id > 0)
             {
-              if (subj != null)
+              switch (hdc)
               {
-                if (id > 0)
-                {
-                  switch (hdc)
-                  {
-                    case hdcString        : val.str     = db.getNestedString (subj, obj, tag); break;
-                    case hdcBoolean       : val.bool    = db.getNestedBoolean(subj, obj, tag); break;
-                    case hdcTernary       : val.ternary = db.getNestedTernary(subj, obj, tag); break;
-                    case hdcNestedPointer : val.target  = db.getNestedPointer(subj, obj, tag); break;
-                    default               : break;
-                  }
-                }
-                else
-                {
-                  if (tag == Tag.tagInFileName)
-                  {
-                    Author author = ((HDT_Work)subj).getAuthors().getAuthor(new PersonName(group.getPrimaryStr()));
-                    if (author != null)
-                      val.ternary = author.getInFileName();
-                  }
-                }
+                case hdcString        : val.str     = db.getNestedString (subj, obj, tag); break;
+                case hdcBoolean       : val.bool    = db.getNestedBoolean(subj, obj, tag); break;
+                case hdcTernary       : val.ternary = db.getNestedTernary(subj, obj, tag); break;
+                case hdcNestedPointer : val.target  = db.getNestedPointer(subj, obj, tag); break;
+                default               : break;
               }
             }
-            else switch (hdc)
+		        else
             {
-              case hdcString        : val.str     = row.getText(colNdx); break;
-              case hdcBoolean       : val.bool    = row.getCheckboxValue(colNdx); break;
-              case hdcTernary       : val.ternary = row.getCheckboxValue(colNdx) ? Ternary.True : Ternary.False; break;
-              case hdcNestedPointer : val.target  = row.getRecord(colNdx); break;
-              default               : break;
+              if (tag == tagInFileName)
+              {
+                Author author = ((HDT_Work) subj).getAuthors().getAuthor(new PersonName(group.getPrimaryStr()));
+                if (author != null)
+                  val.ternary = author.getInFileName();
+              }
             }
-
-            group.addNestedEntry(tag, val);
-          });
-
-          list.add(group);
+          }
+	      }
+        else switch (hdc)
+        {
+          case hdcString        : val.str     = row.getText(colNdx); break;
+          case hdcBoolean       : val.bool    = row.getCheckboxValue(colNdx); break;
+          case hdcTernary       : val.ternary = row.getCheckboxValue(colNdx) ? Ternary.True : Ternary.False; break;
+          case hdcNestedPointer : val.target  = row.getRecord(colNdx); break;
+          default               : break;
         }
-      }
+
+        group.addNestedEntry(tag, val);
+      });
+
+      list.add(group);
     });
 
     return list;

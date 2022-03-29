@@ -17,12 +17,13 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
+import javafx.scene.control.Tab;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -44,24 +45,16 @@ import org.hypernomicon.model.records.HDT_Position.PositionSource;
 
 //---------------------------------------------------------------------------
 
-public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
+public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 {
   private HyperTable htParents, htSubdebates, htPositions;
   private HDT_Debate curDebate;
 
-  @Override protected RecordType type()             { return hdtDebate; }
-  @Override public void enable(boolean enabled)     { ui.tabDebates.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
-  @Override public void setRecord(HDT_Debate deb)   { curDebate = deb; }
+  @Override protected RecordType type()           { return hdtDebate; }
+  @Override public void setRecord(HDT_Debate deb) { curDebate = deb; }
 
-  private DebateTab() throws IOException
-  {
-    super(ui.tabDebates);
-    baseInit(debateTabEnum, ui.tabDebates);
-  }
-
-  @SuppressWarnings("unused") public static void create() throws IOException { new DebateTab(); }
+  private DebateTab(Tab tab) throws IOException         { super(tab); }
+  public static void create(Tab tab) throws IOException { new DebateTab(tab).baseInit(debateTabEnum, tab); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

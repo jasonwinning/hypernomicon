@@ -232,8 +232,8 @@ public class WebButtonSettingsCtrlr implements SettingsControl
     btn = new WebButton("Bing Maps", "Bing Maps");
 
     btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "http://www.bing.com/maps/default.aspx?where1=" + WebButtonField.Name.key + "," +
-        WebButtonField.City.key + "," + WebButtonField.Region.key + "," +
+        "http://www.bing.com/maps/default.aspx?where1=" + WebButtonField.Name.key + ',' +
+        WebButtonField.City.key + ',' + WebButtonField.Region.key + ',' +
         WebButtonField.Country.key));
 
     instMapSrchList.add(btn);

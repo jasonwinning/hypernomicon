@@ -167,7 +167,7 @@ public class RecordByTypePopulator extends Populator
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());
 
-    List<HyperTableCell> choices = rowToChoices.get(row), recentChoices = new ArrayList<>();
+    List<HyperTableCell> choices = rowToChoices.get(row);
 
     if ((hasChanged(row) == false) && (force == false))
       return choices;
@@ -178,6 +178,7 @@ public class RecordByTypePopulator extends Populator
 
     if ((recordType == hdtNone) || (db.isLoaded() == false)) return choices;
 
+    List<HyperTableCell> recentChoices = new ArrayList<>();
     Map<Integer, Boolean> map = new HashMap<>();
     boolean firstAdd = true;
 

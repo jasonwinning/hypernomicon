@@ -45,7 +45,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean addNameToSet(FilePathSet set, String name)
+  private static boolean addNameToSet(FilePathSet set, String name)
   {
     name = ultraTrim(name);
 
@@ -86,7 +86,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 
     try
     {
-      saveStringBuilderToFile(new StringBuilder(DEFAULT_XML_PATH + "/" + SETTINGS_FILE_NAME), filePath.resolve(HDB_DEFAULT_FILENAME));
+      saveStringBuilderToFile(new StringBuilder(DEFAULT_XML_PATH + '/' + SETTINGS_FILE_NAME), filePath.resolve(HDB_DEFAULT_FILENAME));
 
       success              = filePath.resolve(DEFAULT_XML_PATH                   ).toFile().mkdirs();
       if (success) success = filePath.resolve(ultraTrim(tfPictures    .getText())).toFile().mkdirs();

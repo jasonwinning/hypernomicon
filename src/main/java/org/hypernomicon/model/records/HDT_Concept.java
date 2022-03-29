@@ -49,16 +49,16 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String name()                       { return term.get().name(); }
+  @Override public String name()                       { return term.isNull() ? "" : term.get().name(); }
   @Override public String getSearchKey()               { return term.get().getSearchKey(); }
   @Override public List<SearchKeyword> getSearchKeys() { return db.getKeysByRecord(term.get()); }
-  @Override public String getCBText()                  { return getExtendedName(); }
-  @Override public String getXMLObjectName()           { return getExtendedName(); }
+  @Override public String getCBText()                  { return extendedName(); }
+  @Override public String getXMLObjectName()           { return extendedName(); }
   @Override public String getNameEngChar()             { return term.get().getNameEngChar(); }
   @Override public String firstActiveKeyWord()         { return term.get().firstActiveKeyWord(); }
   @Override public void setName(String str)            { term.get().setName(str); }
   @Override public String listName()                   { return name(); }
-  @Override public boolean isUnitable()                { return true; }
+  @Override public final boolean isUnitable()          { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -74,12 +74,12 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getExtendedName()
+  public String extendedName()
   {
     return glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().concepts.size() == 1)) ?
       name()
     :
-      name() + " (" + glossary.get().name() + ")";
+      name() + " (" + glossary.get().name() + ')';
   }
 
 //---------------------------------------------------------------------------

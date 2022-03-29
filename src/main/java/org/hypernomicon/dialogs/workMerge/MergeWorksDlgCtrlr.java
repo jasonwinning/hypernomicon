@@ -27,7 +27,6 @@ import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
@@ -87,9 +86,9 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   private AnchorPane apPreview;
   private MasterDetailPane mdp;
   private PDFJSWrapper jsWrapper = null;
-  private final EnumMap<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
+  private final Map<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
+  private final Map<BibFieldEnum, BibFieldRow> extraRows = new EnumMap<>(BibFieldEnum.class);
   private final List<WorkToMerge> works = new ArrayList<>(4);
-  private final Map<BibFieldEnum, BibFieldRow> extraRows = new HashMap<>();
   private int nextRowNdx = 4;
   private boolean creatingNewWork, previewInitialized = false;
   private Ternary newEntryChoice;
@@ -423,10 +422,10 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
   private HDT_WorkType getMergedWorkType()
   {
-    if      (rbType1.isSelected()) return works.get(0).getWorkType();
-    else if (rbType2.isSelected()) return works.get(1).getWorkType();
-    else if (rbType3.isSelected()) return works.get(2).getWorkType();
-    else                           return works.get(3).getWorkType();
+    if (rbType1.isSelected()) return works.get(0).getWorkType();
+    if (rbType2.isSelected()) return works.get(1).getWorkType();
+    if (rbType3.isSelected()) return works.get(2).getWorkType();
+                              return works.get(3).getWorkType();
   }
 
 //---------------------------------------------------------------------------

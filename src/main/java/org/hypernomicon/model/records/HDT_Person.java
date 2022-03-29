@@ -73,13 +73,13 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     institutions = getObjList(rtInstOfPerson);
 
-    works = getSubjList(rtAuthorOfWork);
-    miscFiles = getSubjList(rtAuthorOfFile);
+    works          = getSubjList(rtAuthorOfWork);
+    miscFiles      = getSubjList(rtAuthorOfFile);
     investigations = getSubjList(rtPersonOfInv);
 
-    rank = getObjPointer(rtRankOfPerson);
-    status = getObjPointer(rtStatusOfPerson);
-    field = getObjPointer(rtFieldOfPerson);
+    rank     = getObjPointer(rtRankOfPerson);
+    status   = getObjPointer(rtStatusOfPerson);
+    field    = getObjPointer(rtFieldOfPerson);
     subfield = getObjPointer(rtSubfieldOfPerson);
 
     picture = new HyperPath(getObjPointer(rtPictureFolderOfPerson), this);
@@ -96,8 +96,8 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   public boolean instIsPast(HDT_Institution inst)          { return db.getNestedBoolean(this, inst, tagPast); }
   public void setWebURL(String newStr)                     { updateTagString(tagWebURL, newStr); }
   public void setORCID(String newOrcid)                    { updateTagString(tagORCID, newOrcid); }
-  void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + "|" + newStr.replace("|", ""), update); }
-  void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + "|" + getFirstName(), update); }
+  void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + '|' + newStr.replace("|", ""), update); }
+  void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + '|' + getFirstName(), update); }
 
   @Override public void setName(String str) { messageDialog("Internal error #19982", mtError); }
   @Override public String listName()        { return getNameLastFirst(false); }
@@ -215,7 +215,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class PotentialKeySet
+  public static final class PotentialKeySet
   {
     private final Map<String, Boolean> keys = new HashMap<>();
     private final boolean lowerCase;
@@ -240,11 +240,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     public boolean startsWith(String str)
     {
-      for (String key : keys.keySet())
-        if (key.replaceAll("[.,;]", "").startsWith(str))
-          return true;
-
-      return false;
+      return keys.keySet().stream().anyMatch(key -> key.replaceAll("[.,;]", "").startsWith(str));
     }
   }
 
@@ -255,14 +251,14 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
   public static HDT_Person makeSearchKey(PersonName name, HDT_Person person, StringBuilder newSearchKey)
   {
-    HDT_Person rv, otherPerson = null;
+    HDT_Person otherPerson = null;
     StringBuilder keys = new StringBuilder();
 
     PotentialKeySet keySet = makeSearchKeySet(name, false, false, false);
 
     for (Entry<String, Boolean> entry : keySet.keys.entrySet())
     {
-      rv = addSearchKey(keys, entry.getKey(), person);
+      HDT_Person rv = addSearchKey(keys, entry.getKey(), person);
 
       if (rv != null)
       {
@@ -288,8 +284,6 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
   private static String getSearchKeyComponents(String first, String last, List<String> nameList, List<String> initialList, StringBuilder nickNames)
   {
-    String name;
-
     first = first.replace(".", ". ");
 
     first = SearchKeys.prepSearchKey(first);
@@ -316,7 +310,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     while (splitStr.hasNext())
     {
-      name = splitStr.next();
+      String name = splitStr.next();
       if (name.isEmpty()) continue;
 
       if (name.endsWith("."))
@@ -328,7 +322,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
         }
         else
         {
-          name = name + " " + splitStr.next();
+          name = name + ' ' + splitStr.next();
           initialList.add(name.substring(0, 1));
           nameList.add(name);
         }
@@ -371,7 +365,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
         if (useAllInitials)
           keySet.add(initialList.get(0) + ". " + last, false);
 
-        keySet.add(nameList.get(0) + " " + last, true);
+        keySet.add(nameList.get(0) + ' ' + last, true);
       }
       else
       {
@@ -380,7 +374,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
         for (int ndx = 1; ndx < nameList.size(); ndx++)
           if (nameList.get(ndx).length() > 0)
           {
-            keySet.add(nameList.get(ndx) + " " + last, false);
+            keySet.add(nameList.get(ndx) + ' ' + last, false);
             break;
           }
       }
@@ -401,7 +395,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
         if (nameList.get(0).length() > 0)
         {
-          name = nameList.get(0) + " ";
+          name = nameList.get(0) + ' ';
           for (int ndx = 1; ndx < initialList.size(); ndx++)
             name = name + initialList.get(ndx) + ". ";
 
@@ -413,7 +407,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
       {
         String name = "";
         for (int ndx = 0; ndx < nameList.size(); ndx++)
-          name = name + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + " ") : (initialList.get(ndx) + ". "));
+          name = name + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + ' ') : (initialList.get(ndx) + ". "));
 
         keySet.add(name + last, true);
 
@@ -422,7 +416,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
           String middleNames = "", middleInits = "";
           for (int ndx = 1; ndx < nameList.size(); ndx++)
           {
-            middleNames = middleNames + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + " ") : (initialList.get(ndx) + ". "));
+            middleNames = middleNames + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + ' ') : (initialList.get(ndx) + ". "));
             middleInits = middleInits + initialList.get(ndx) + ". ";
           }
 
@@ -458,7 +452,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
         nickNameList.add(nickName);
 
       for (String nName : nickNameList)
-        keySet.add(nName + " " + last, false);
+        keySet.add(nName + ' ' + last, false);
     }
 
     return keySet;
@@ -500,7 +494,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
         width  = (int) viewPort.getWidth(),
         height = (int) viewPort.getHeight();
 
-    updateTagString(tagPictureCrop, x + ";" + y + ";" + width + ";" + height);
+    updateTagString(tagPictureCrop, x + ";" + y + ';' + width + ';' + height);
   }
 
   //---------------------------------------------------------------------------

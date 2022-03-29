@@ -49,7 +49,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.hypernomicon.App;
 import org.hypernomicon.fileManager.FileManager;
 
 public class FilePath implements Comparable<FilePath>
@@ -289,7 +288,7 @@ public class FilePath implements Comparable<FilePath>
 
     if (singleCall && SystemUtils.IS_OS_WINDOWS)
     {
-      ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "RD /S /Q \"" + filePath + "\"");
+      ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "RD /S /Q \"" + filePath + '"');
       Process proc = pb.redirectErrorStream(true).start();
 
       try
@@ -308,7 +307,7 @@ public class FilePath implements Comparable<FilePath>
         if (errStr.length() > 0)
         {
           if (errStr.toLowerCase().contains("denied") || errStr.toLowerCase().contains("access"))
-            errStr = errStr + "\n\nIt may work to restart " + App.appTitle + " and try again.";
+            errStr = errStr + "\n\nIt may work to restart " + appTitle + " and try again.";
 
           throw new IOException(errStr);
         }
@@ -331,7 +330,7 @@ public class FilePath implements Comparable<FilePath>
 
     if (SystemUtils.IS_OS_WINDOWS)
     {
-      ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "ren \"" + srcFilePath + "\" \"" + destFilePath.getNameOnly() + "\"");
+      ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "ren \"" + srcFilePath + "\" \"" + destFilePath.getNameOnly() + '"');
       Process proc = pb.redirectErrorStream(true).start();
 
       try
@@ -350,7 +349,7 @@ public class FilePath implements Comparable<FilePath>
         if (errStr.length() > 0)
         {
           if (errStr.toLowerCase().contains("denied"))
-            errStr = errStr + "\n\nIt may work to restart " + App.appTitle + " and try again.";
+            errStr = errStr + "\n\nIt may work to restart " + appTitle + " and try again.";
 
           throw new IOException(errStr);
         }

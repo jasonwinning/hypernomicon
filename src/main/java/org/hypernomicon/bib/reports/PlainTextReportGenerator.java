@@ -22,7 +22,7 @@ import java.util.Objects;
 
 import org.hypernomicon.bib.data.BibData;
 
-public class PlainTextReportGenerator extends ReportGenerator
+public final class PlainTextReportGenerator extends ReportGenerator
 {
 
 //---------------------------------------------------------------------------

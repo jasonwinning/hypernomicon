@@ -56,6 +56,7 @@ import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.controls.HiddenSidesPane;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -113,6 +114,7 @@ public class MainTextCtrlr
 
   private HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
   private HDT_RecordWithMainText curRecord;
+  private BooleanProperty prop = null; // Needs to be a member variable to prevent being garbage-collected
   private boolean ignoreKeyEvent = false;
 
 //---------------------------------------------------------------------------
@@ -204,7 +206,7 @@ public class MainTextCtrlr
 
     hsPane.setTriggerDistance(32.0);
 
-    BooleanProperty prop = new SimpleBooleanProperty();
+    prop = new SimpleBooleanProperty();
     prop.bind(cbType.focusedProperty().or(cbName.focusedProperty()));
 
     prop.addListener((ob, oldValue, newValue) ->
@@ -426,12 +428,12 @@ public class MainTextCtrlr
 
     if (keyType == hdtWork)
     {
-      if (ui.workHyperTab().showWorkDialog(null) == false)
+      if (MainCtrlr.workHyperTab().showWorkDialog(null) == false)
         ui.deleteCurrentRecord(false);
     }
     else
     {
-      if (ui.fileHyperTab().showFileDialog(null) == false)
+      if (MainCtrlr.fileHyperTab().showFileDialog(null) == false)
         ui.deleteCurrentRecord(false);
     }
   }
@@ -597,7 +599,7 @@ public class MainTextCtrlr
 
     Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
 
-    String imageTag = "<" + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
+    String imageTag = '<' + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
 
     engine.executeScript("insertHtmlAtCursor('" + htmlEscaper.escape(imageTag) + "<br>')");
   }
@@ -795,7 +797,8 @@ public class MainTextCtrlr
 
         return;
       }
-      else if (type == diDescription)
+
+      if (type == diDescription)
         descNdx = ndx;
     }
 

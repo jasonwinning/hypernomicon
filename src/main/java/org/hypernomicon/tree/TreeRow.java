@@ -73,7 +73,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 //---------------------------------------------------------------------------
 
   HyperTreeCellValue getNameCell() { return new HyperTreeCellValue(this); }
-  String getCBText()               { return record == null ? text : "(" + db.getTypeName(getRecordType()) + ") " + getName(); }
+  String getCBText()               { return record == null ? text : '(' + db.getTypeName(getRecordType()) + ") " + getName(); }
   String getName()                 { return record == null ? text : (record.getType() == hdtWork ? record.getCBText() : record.listName()); }
   ImageView getGraphic()           { return graphic != null ? graphic : imgViewForRecord(record); }
 
@@ -111,7 +111,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
           if (indicator.isBlank() == false)
           {
-            if (indicator.equals("web"))
+            if ("web".equals(indicator))
               indicator = "Web";
             else
               indicator = titleCase(indicator) + " file";
@@ -137,7 +137,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
           Label label = new Label("", imgViewForRecord(spokeRecord));
           label.setOnMouseClicked(event -> treeRow.getTreeWrapper().selectRecord(spokeRecord, 0, false));
           label.setCursor(Cursor.HAND);
-          setToolTip(label, "Go to " + db.getTypeName(spokeRecord.getType()) + " record \"" + spokeRecord.name() + "\"");
+          setToolTip(label, "Go to " + db.getTypeName(spokeRecord.getType()) + " record \"" + spokeRecord.name() + '"');
           hBox.getChildren().add(label);
         });
 

@@ -47,7 +47,7 @@ public final class FileDownloadUtility
 
   private FileDownloadUtility() { throw new UnsupportedOperationException(); }
 
-  public static class Buffer extends InputStream
+  public static final class Buffer extends InputStream
   {
     private final List<byte[]> buffers = new ArrayList<>();
     private final List<Integer> lengths = new ArrayList<>();
@@ -86,8 +86,6 @@ public final class FileDownloadUtility
 
     @Override public int read() throws IOException
     {
-      byte val;
-
       if (curPosition >= lengths.get(curBufferNdx))
       {
         curPosition = 0;
@@ -97,7 +95,7 @@ public final class FileDownloadUtility
       if (curBufferNdx >= buffers.size())
         throw new IOException("End of buffer");
 
-      val = buffers.get(curBufferNdx)[curPosition++];
+      byte val = buffers.get(curBufferNdx)[curPosition++];
 
       return val + 128;
     }
@@ -131,11 +129,11 @@ public final class FileDownloadUtility
 
     ResponseHandler<Boolean> responseHndlr = response ->
     {
-      String contentType = "";
       MutableInt contentLength = new MutableInt(-1);
 
       int statusCode = response.getStatusLine().getStatusCode();
-      String reasonPhrase = response.getStatusLine().getReasonPhrase();
+      String reasonPhrase = response.getStatusLine().getReasonPhrase(),
+             contentType = "";
 
       if (statusCode >= 400)
       {
@@ -160,6 +158,8 @@ public final class FileDownloadUtility
               if (index > 0)
                 assignSB(fileName, disposition.substring(index + 10, disposition.length() - 1));
             }
+
+            break;
 
           default : break;
         }

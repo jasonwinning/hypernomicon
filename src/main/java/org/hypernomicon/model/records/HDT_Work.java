@@ -63,7 +63,8 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public final List<HDT_Person> authorRecords;
   public final HyperObjList<HDT_Work, HDT_WorkLabel> labels;
   public final List<HDT_WorkFile> workFiles;
-  public final HyperSubjList<HDT_Work, HDT_Work> subWorks;
+
+  public final HyperSubjList<HDT_Work    , HDT_Work> subWorks;
   public final HyperSubjList<HDT_MiscFile, HDT_Work> miscFiles;
   public final HyperSubjList<HDT_Argument, HDT_Work> arguments;
 
@@ -80,14 +81,15 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     authors = new WorkAuthors(getObjList(rtAuthorOfWork), this);
 
     authorRecords = Collections.unmodifiableList(getObjList(rtAuthorOfWork));
-    labels = getObjList(rtLabelOfWork);
-    workFiles = Collections.unmodifiableList(getObjList(rtWorkFileOfWork));
+    workFiles     = Collections.unmodifiableList(getObjList(rtWorkFileOfWork));
 
-    subWorks = getSubjList(rtParentWorkOfWork);
+    labels = getObjList(rtLabelOfWork);
+
+    subWorks  = getSubjList(rtParentWorkOfWork);
     miscFiles = getSubjList(rtWorkOfMiscFile);
     arguments = getSubjList(rtWorkOfArgument);
 
-    workType = getObjPointer(rtTypeOfWork);
+    workType   = getObjPointer(rtTypeOfWork);
     largerWork = getObjPointer(rtParentWorkOfWork);
   }
 
@@ -242,10 +244,10 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
            cbStr = "";
 
     if (authorStr.length() > 0)
-      cbStr = authorStr + " ";
+      cbStr = authorStr + ' ';
 
     if (yearStr.length() > 0)
-      cbStr += "(" + yearStr + ") ";
+      cbStr += '(' + yearStr + ") ";
 
     if (titleStr.length() > 0)
       cbStr += titleStr;
@@ -263,7 +265,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     largerWork.setID(newID);
 
     if (newID < 1) return;
-    HDT_Work largerWork = db.works.getByID(newID);
+    HDT_Work largerWorkRec = db.works.getByID(newID);
 
     /***********************************************/
     /*          Update ISBNs                       */
@@ -271,7 +273,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     if (noIsbnUpdate == false)
     {
-      List<String> ISBNs = getISBNs(), lwISBNs = largerWork.getISBNs();
+      List<String> ISBNs = getISBNs(), lwISBNs = largerWorkRec.getISBNs();
 
       boolean notAllInLW = false, notAllInSW = false;
 
@@ -285,7 +287,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
       if ((notAllInLW == false) && notAllInSW)
       {
-        updateISBNstrRecursively(largerWork.getTagString(tagISBN));
+        updateISBNstrRecursively(largerWorkRec.getTagString(tagISBN));
       }
       else if (notAllInLW)
       {
@@ -302,7 +304,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
       }
     }
 
-    if (largerWork.workFiles.isEmpty()) return;
+    if (largerWorkRec.workFiles.isEmpty()) return;
 
     /***********************************************/
     /*          Update work files                  */
@@ -310,17 +312,17 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     if (workFiles.isEmpty())
     {
-      largerWork.workFiles.forEach(workFile -> addWorkFile(workFile.getID()));
+      largerWorkRec.workFiles.forEach(workFile -> addWorkFile(workFile.getID()));
       return;
     }
 
-    if ((workFiles.size() != largerWork.workFiles.size()) || (largerWork.workFiles.containsAll(workFiles) == false))
+    if ((workFiles.size() != largerWorkRec.workFiles.size()) || (largerWorkRec.workFiles.containsAll(workFiles) == false))
     {
       String msg = workFiles.size() == 1 ? " file is " : " files are ";
       if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?"))
       {
         getObjList(rtWorkFileOfWork).clear();
-        largerWork.workFiles.forEach(workFile -> addWorkFile(workFile.getID()));
+        largerWorkRec.workFiles.forEach(workFile -> addWorkFile(workFile.getID()));
       }
     }
   }
@@ -444,7 +446,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     String indicator = getFileIndicator(record);
 
-    return indicator.isBlank() ? str : (str + " (" + indicator + ")").trim();
+    return indicator.isBlank() ? str : (str + " (" + indicator + ')').trim();
   }
 
 //---------------------------------------------------------------------------
@@ -453,7 +455,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public static String getFileIndicator(HDT_RecordWithPath record)
   {
     if (record == null) return "";
-    String indicator = "";
 
     FilePath filePath = record.filePath();
     if (FilePath.isEmpty(filePath) == false)
@@ -467,7 +468,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
         return nullSwitch(db.resolveExtFilePath(work.getURL()), "web", filePath2 -> filePath2.getExtensionOnly().toLowerCase());
     }
 
-    return indicator;
+    return "";
   }
 
 //---------------------------------------------------------------------------

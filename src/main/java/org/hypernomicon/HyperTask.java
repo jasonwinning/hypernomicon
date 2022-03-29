@@ -39,19 +39,17 @@ public abstract class HyperTask extends Task<Boolean>
     public HyperThread(String name)                    { super(          newThreadName(name           )); }
     public HyperThread(HyperTask task)                 { super(task,     newThreadName(task.threadName)); }
     public HyperThread(Runnable runnable, String name) { super(runnable, newThreadName(name           )); }
-  }
 
-//---------------------------------------------------------------------------
+    private static final ConcurrentHashMap<String, Integer> threadNameBaseToNum = new ConcurrentHashMap<>();
 
-  private static final ConcurrentHashMap<String, Integer> threadNameBaseToNum = new ConcurrentHashMap<>();
+    private static synchronized String newThreadName(String base)
+    {
+      int num = threadNameBaseToNum.getOrDefault(base, -1) + 1;
 
-  private static synchronized String newThreadName(String base)
-  {
-    int num = threadNameBaseToNum.getOrDefault(base, -1) + 1;
+      threadNameBaseToNum.put(base, num);
 
-    threadNameBaseToNum.put(base, num);
-
-    return "Hypernomicon-" + base + "-" + num;
+      return "Hypernomicon-" + base + '-' + num;
+    }
   }
 
 //---------------------------------------------------------------------------

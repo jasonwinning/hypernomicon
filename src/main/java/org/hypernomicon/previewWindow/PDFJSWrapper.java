@@ -242,11 +242,11 @@ public class PDFJSWrapper
   {
     Platform.runLater(() ->
     {
-      if ((App.previewWindow != null) && App.previewWindow.getStage().isShowing())
-        App.previewWindow.getStage().close();
+      if ((previewWindow != null) && previewWindow.getStage().isShowing())
+        previewWindow.getStage().close();
 
-      if ((App.contentsWindow != null) && App.contentsWindow.getStage().isShowing())
-        App.contentsWindow.getStage().close();
+      if ((contentsWindow != null) && contentsWindow.getStage().isShowing())
+        contentsWindow.getStage().close();
     });
   }
 
@@ -307,7 +307,7 @@ public class PDFJSWrapper
       @Override public void onAlert(DialogParams params) { MessageDialog.show(browserView, "Alert", params.getMessage()); }
     });
 
-    if (app.debugging()) browser.addConsoleListener(event ->
+    if (debugging()) browser.addConsoleListener(event ->
     {
       String msg = event.getMessage();
       Level level = event.getLevel();
@@ -523,8 +523,6 @@ public class PDFJSWrapper
       if (retrievedDataHndlr == null) return;
 
       List<Integer> hilitePages = new ArrayList<>();
-      Map<String, Integer> labelToPage = new HashMap<>();
-      Map<Integer, String> pageToLabel = new HashMap<>();
 
       JSArray annotPages = obj.getProperty("annotPages").asArray();
 
@@ -537,6 +535,8 @@ public class PDFJSWrapper
       }
 
       JSValue val = obj.getProperty("pageLabels");
+      Map<String, Integer> labelToPage = new HashMap<>();
+      Map<Integer, String> pageToLabel = new HashMap<>();
 
       if (val.isArray())
       {
@@ -633,10 +633,10 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int SidebarView_NONE = 0,
-                          SidebarView_THUMBS = 1,
-                          SidebarView_OUTLINE = 2,
-                          SidebarView_ATTACHMENTS = 3;
+  static final int SidebarView_NONE = 0,
+                   SidebarView_THUMBS = 1,
+                   SidebarView_OUTLINE = 2,
+                   SidebarView_ATTACHMENTS = 3;
 
   void loadPdf(FilePath file, int initialPage)
   {
@@ -676,7 +676,7 @@ public class PDFJSWrapper
   {
     if (!ready) return;
 
-    browser.executeJavaScript("PDFViewerApplication.pdfViewer.currentPageNumber = " + pageNum + ";");
+    browser.executeJavaScript("PDFViewerApplication.pdfViewer.currentPageNumber = " + pageNum + ';');
   }
 
 //---------------------------------------------------------------------------
@@ -706,22 +706,22 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void printIndented(String text, int indent)
+  private static void printIndented(String text, int indent)
   {
     for (int ndx = 0; ndx < indent; ndx++)
-      text = " " + text;
+      text = ' ' + text;
 
     System.out.println(text);
   }
 
-  private void printJSValue(JSValue val, int indent)
+  private static void printJSValue(JSValue val, int indent)
   {
     if      (val.isNull        ()) { printIndented("NULL", indent); }
     else if (val.isNumberObject()) { printIndented(String.valueOf(val.asNumberObject().getNumberValue()), indent); }
     else if (val.isNumber      ()) { printIndented(String.valueOf(val.getNumberValue()), indent); }
     else if (val.isBoolean     ()) { printIndented(String.valueOf(val.getBooleanValue()), indent); }
-    else if (val.isStringObject()) { printIndented("\"" + val.asStringObject().getStringValue() + "\"", indent); }
-    else if (val.isString      ()) { printIndented("\"" + val.asString().getStringValue() + "\"", indent); }
+    else if (val.isStringObject()) { printIndented('"' + val.asStringObject().getStringValue() + '"', indent); }
+    else if (val.isString      ()) { printIndented('"' + val.asString().getStringValue() + '"', indent); }
     else if (val.isUndefined   ()) { printIndented("UNDEFINED", indent); }
     else if (val.isFunction    ()) { printIndented(val.asFunction().toJSONString(), indent); }
 
@@ -731,7 +731,7 @@ public class PDFJSWrapper
 
       for (int ndx = 0; ndx < array.length(); ndx++)
       {
-        printIndented("[" + ndx + "]", indent);
+        printIndented("[" + ndx + ']', indent);
         printJSValue(array.get(ndx), indent + 2);
       }
     }
@@ -742,7 +742,7 @@ public class PDFJSWrapper
 
       obj.getPropertyNames().forEach(propName ->
       {
-        printIndented(propName + ":", indent);
+        printIndented(propName + ':', indent);
         printJSValue(obj.getProperty(propName), indent + 2);
       });
     }

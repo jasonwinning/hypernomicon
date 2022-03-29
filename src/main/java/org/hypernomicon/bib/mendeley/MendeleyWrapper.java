@@ -308,7 +308,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   private JsonArray doReadCommand(MendeleyCmd command) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.mendeley.com/", mediaType = "";
-    StringBuilder nextUrl = new StringBuilder();
 
     switch (command)
     {
@@ -333,6 +332,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
         break;
     }
 
+    StringBuilder nextUrl = new StringBuilder();
     JsonArray jsonArray = doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl);
 
     while (nextUrl.length() > 0)
@@ -573,7 +573,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       }
       catch (HttpResponseException e)
       {
-        String msg = "An error occurred while syncing: " + e.getStatusCode() + " " + e.getMessage();
+        String msg = "An error occurred while syncing: " + e.getStatusCode() + ' ' + e.getMessage();
         throw new HyperDataException(msg, e);
       }
       catch (UnknownHostException e)

@@ -17,8 +17,8 @@
 
 package org.hypernomicon.bib.data;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +39,7 @@ import static org.hypernomicon.util.Util.*;
 public abstract class BibDataStandalone extends BibData
 {
   private EntryType entryType;
-  private final Map<BibFieldEnum, BibField> bibFieldEnumToBibField = new HashMap<>();
+  private final Map<BibFieldEnum, BibField> bibFieldEnumToBibField = new EnumMap<>(BibFieldEnum.class);
   private YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
   final BibAuthorsStandalone authors = new BibAuthorsStandalone();
 
@@ -50,14 +50,8 @@ public abstract class BibDataStandalone extends BibData
     entryType = EntryType.etUnentered;
     setWorkType(null);
 
-    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum ->
-    {
-      if (stringBibFieldTypes.contains(bibFieldEnum.getType()))
-      {
-        BibField bibField = new BibField(bibFieldEnum);
-        bibFieldEnumToBibField.put(bibFieldEnum, bibField);
-      }
-    });
+    EnumSet.allOf(BibFieldEnum.class).stream().filter(bibFieldEnum -> stringBibFieldTypes.contains(bibFieldEnum.getType())).forEach(bibFieldEnum ->
+      bibFieldEnumToBibField.put(bibFieldEnum, new BibField(bibFieldEnum)));
   }
 
 //---------------------------------------------------------------------------
@@ -157,7 +151,7 @@ public abstract class BibDataStandalone extends BibData
 
     String[] arr = field.getStr().split("-");
 
-    field.setStr(value + "-" + (arr.length > 1 ? arr[1] : ""));
+    field.setStr(value + '-' + (arr.length > 1 ? arr[1] : ""));
   }
 
 //---------------------------------------------------------------------------
@@ -169,7 +163,7 @@ public abstract class BibDataStandalone extends BibData
 
     String[] arr = field.getStr().split("-");
 
-    field.setStr((arr.length > 0 ? arr[0] : "") + "-" + value);
+    field.setStr((arr.length > 0 ? arr[0] : "") + '-' + value);
   }
 
 //---------------------------------------------------------------------------

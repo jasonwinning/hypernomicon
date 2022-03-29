@@ -17,7 +17,6 @@
 
 package org.hypernomicon.query.sources;
 
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -36,7 +35,7 @@ public class CombinedUnfilteredQuerySource implements QuerySource
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CombinedUnfilteredQuerySource(EnumSet<RecordType> types)
+  public CombinedUnfilteredQuerySource(Set<RecordType> types)
   {
     this.types = types;
 

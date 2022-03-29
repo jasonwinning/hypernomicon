@@ -18,7 +18,6 @@
 package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.view.HyperView;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -48,6 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.dialogs.MergeTermDlgCtrlr;
 import org.hypernomicon.dialogs.RecordDropdownDlgCtrlr;
@@ -55,13 +55,12 @@ import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjList;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 //---------------------------------------------------------------------------
 
-public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
+public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 {
-  private static class ConceptTab extends Tab
+  private static final class ConceptTab extends Tab
   {
     private HDT_Concept concept;
 
@@ -97,21 +96,13 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
   @Override protected RecordType type()             { return hdtTerm; }
-  @Override public void enable(boolean enabled)     { ui.tabTerms.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Concept rec)  { curConcept = rec; curTerm = curConcept == null ? null : curConcept.term.get(); }
   @Override public boolean saveToRecord()           { return ctrlr.saveToRecord(curConcept); }
 
-  private ConceptTab curTab()      { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
+  private ConceptTab curTab()                       { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
 
-  private TermTab() throws IOException
-  {
-    super(ui.tabTerms);
-    baseInit(termTabEnum, ui.tabTerms);
-  }
-
-  @SuppressWarnings("unused") public static void create() throws IOException { new TermTab(); }
+  private TermTab(Tab tab) throws IOException           { super(tab); }
+  public static void create(Tab tab) throws IOException { new TermTab(tab).baseInit(termTabEnum, tab); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -312,7 +303,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     for (HDT_Glossary glossary : curTerm.getGlossaries())
       if (otherGlossaries.contains(glossary))
       {
-        messageDialog("Both terms already have definitions for glossary \"" + glossary.name() + "\"", mtError);
+        messageDialog("Both terms already have definitions for glossary \"" + glossary.name() + '"', mtError);
         return;
       }
 
@@ -402,11 +393,9 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private void reorderGlossaries(List<HDT_Glossary> newGlossaryList)
   {
-    List<HDT_Concept> newConceptList = new ArrayList<>();
+    List<HDT_Concept> newConceptList = newGlossaryList.stream().map(curTerm::getConcept).collect(Collectors.toList());
 
-    newGlossaryList.forEach(glossary -> newConceptList.add(curTerm.getConcept(glossary)));
-
-    HyperObjList<HDT_Term, HDT_Concept> objList = db.getObjectList(RelationType.rtConceptOfTerm, curTerm, true);
+    HyperObjList<HDT_Term, HDT_Concept> objList = db.getObjectList(rtConceptOfTerm, curTerm, true);
 
     objList.reorder(newConceptList);
   }

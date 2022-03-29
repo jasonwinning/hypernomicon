@@ -38,7 +38,7 @@ import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-public class GoogleBibData extends BibDataStandalone
+public final class GoogleBibData extends BibDataStandalone
 {
 
 //---------------------------------------------------------------------------
@@ -53,11 +53,9 @@ public class GoogleBibData extends BibDataStandalone
 
   private static GoogleBibData createFromJSON(JsonObj jsonObj, String title, String queryIsbn)
   {
-    JsonArray jsonArray;
-
     try
     {
-      jsonArray = jsonObj.getArray("items");
+      JsonArray jsonArray = jsonObj.getArray("items");
 
       if (jsonArray.size() == 0) return null;
 
@@ -165,9 +163,9 @@ public class GoogleBibData extends BibDataStandalone
         String name = author.getName().toEngChar().getLast();
 
         if (ed)
-          eds = eds + (eds.length() > 0 ? "+" : "") + escapeURL("\"" + name + "\"", false);
+          eds = eds + (eds.length() > 0 ? "+" : "") + escapeURL('"' + name + '"', false);
         else if (tr == false)
-          auths = auths + (auths.length() > 0 ? "+" : "") + escapeURL("\"" + name + "\"", false);
+          auths = auths + (auths.length() > 0 ? "+" : "") + escapeURL('"' + name + '"', false);
       }
     }
 
@@ -176,12 +174,12 @@ public class GoogleBibData extends BibDataStandalone
     title = convertToEnglishChars(title).trim();
 
     if (title.length() > 0)
-      url = url + escapeURL("\"" + title + "\"", false);
+      url = url + escapeURL('"' + title + '"', false);
 
     if (auths.length() > 0)
     {
       if (title.length() > 0)
-        url = url + "+";
+        url = url + '+';
 
       url = url + auths;
     }

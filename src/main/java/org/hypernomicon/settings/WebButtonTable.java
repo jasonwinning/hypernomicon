@@ -123,13 +123,7 @@ class WebButtonTable extends WebButtonCtrl
 
   private WebButton htcToWebButton(HyperTableCell cell)
   {
-    if (cell == null) return null;
-
-    for (WebButton webButton : webBtnList)
-      if (cell.getText().equals(webButton.getName()))
-        return webButton;
-
-    return null;
+    return cell == null ? null : findFirst(webBtnList, webButton -> cell.getText().equals(webButton.getName()));
   }
 
 //---------------------------------------------------------------------------

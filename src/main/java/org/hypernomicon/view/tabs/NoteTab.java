@@ -21,8 +21,10 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -38,14 +40,12 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -64,7 +64,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 //---------------------------------------------------------------------------
 
-public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
+public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 {
   final private SplitMenuButton btnFolder = new SplitMenuButton();
   final private Button btnBrowse = new Button("..."), btnCreateFolder = new Button("Create Folder");
@@ -74,19 +74,11 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   private FilePath folderPath;
   private HDT_Note curNote;
 
-  @Override protected RecordType type()             { return hdtNote; }
-  @Override public void enable(boolean enabled)     { ui.tabNotes.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
-  @Override public void setRecord(HDT_Note note)    { curNote = note; }
+  @Override protected RecordType type()          { return hdtNote; }
+  @Override public void setRecord(HDT_Note note) { curNote = note; }
 
-  private NoteTab() throws IOException
-  {
-    super(ui.tabNotes);
-    baseInit(noteTabEnum, ui.tabNotes);
-  }
-
-  @SuppressWarnings("unused") public static void create() throws IOException { new NoteTab(); }
+  private NoteTab(Tab tab) throws IOException           { super(tab); }
+  public static void create(Tab tab) throws IOException { new NoteTab(tab).baseInit(noteTabEnum, tab); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -99,7 +91,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     bp.setLeft(curNote.folder.isNull() ? btnCreateFolder : btnFolder);
 
-    bp.setDisable(HyperDB.isUnstoredRecord(curNote.getID(), hdtNote));
+    bp.setDisable(isUnstoredRecord(curNote.getID(), hdtNote));
 
     folderPath = curNote.filePath();
 
@@ -233,9 +225,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     ctrlr.gpToolBar.getColumnConstraints().get(0).setMaxWidth(510.0);
     ctrlr.gpToolBar.getColumnConstraints().get(0).setHgrow(javafx.scene.layout.Priority.NEVER);
 
-    ctrlr.gpToolBar.getColumnConstraints().get(1).setMinWidth(USE_COMPUTED_SIZE);
-    ctrlr.gpToolBar.getColumnConstraints().get(1).setMaxWidth(USE_COMPUTED_SIZE);
-    ctrlr.gpToolBar.getColumnConstraints().get(1).setPrefWidth(USE_COMPUTED_SIZE);
+    ctrlr.gpToolBar.getColumnConstraints().get(1).setMinWidth(Control.USE_COMPUTED_SIZE);
+    ctrlr.gpToolBar.getColumnConstraints().get(1).setMaxWidth(Control.USE_COMPUTED_SIZE);
+    ctrlr.gpToolBar.getColumnConstraints().get(1).setPrefWidth(Control.USE_COMPUTED_SIZE);
     ctrlr.gpToolBar.getColumnConstraints().get(1).setHgrow(javafx.scene.layout.Priority.ALWAYS);
     ctrlr.gpToolBar.getChildren().set(1, bp);
 

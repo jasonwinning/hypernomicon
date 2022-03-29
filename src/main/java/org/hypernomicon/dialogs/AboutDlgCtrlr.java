@@ -142,7 +142,7 @@ public class AboutDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String anchorTag(String text, String url)
+  private static String anchorTag(String text, String url)
   {
     return "<a href=\"\" onclick=\"openURL('" + url + "'); return false;\">" + text + "</a>";
   }
@@ -168,7 +168,7 @@ public class AboutDlgCtrlr extends HyperDlg
 
   private String getGeneralTabHtml()
   {
-    String maxHeap = app.debugging() ? "Max heap space: " + new DecimalFormat("#,###").format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
+    String maxHeap = debugging() ? "Max heap space: " + new DecimalFormat("#,###").format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
 
     return htmlStart +
 
@@ -177,7 +177,7 @@ public class AboutDlgCtrlr extends HyperDlg
         "Copyright \u00a9 2015-2022 Jason Winning.<br><br>" +
         "Operating system: " + SystemUtils.OS_NAME + "<br>" +
         "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
-        "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + " " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
+        "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + ' ' + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
         maxHeap +
         "JavaFX version: " + VersionInfo. getRuntimeVersion() + "<br>" +
         anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +

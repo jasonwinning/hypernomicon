@@ -116,7 +116,7 @@ public abstract class Authors implements Iterable<Author>
     {
       if (ndx != 0)
       {
-        peopleStr = peopleStr + delimiter + " ";
+        peopleStr = peopleStr + delimiter + ' ';
 
         if ((ndx == (authors.size() - 1)) && amp)
           peopleStr = peopleStr.trim() + " & ";

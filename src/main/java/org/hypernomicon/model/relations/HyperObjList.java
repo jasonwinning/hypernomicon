@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.stream.IntStream;
 
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
@@ -86,7 +87,6 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     lastException = null;
 
     List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj);
-    if (objList == null) return new Object[0];
 
     Object[] array = new Object[objList.size()];
 
@@ -105,11 +105,6 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     lastException = null;
 
     List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj);
-    if (objList == null)
-    {
-      if (a.length > 0) a[0] = null;
-      return a;
-    }
 
     if (a.length < objList.size())
       a = (T[]) new HDT_Record[objList.size()];
@@ -126,6 +121,17 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Adds a record the object list if it is not already present.
+   * <p>
+   * <i>(Violation)</i> The {@code List} interface requires that this
+   * method returns {@code true} always. However this class may return
+   * {@code false} because of the {@code Set} behavior, or because a
+   * cycle would result.
+   *
+   * @param obj  the record to add
+   * @return true if record was added
+   */
   @Override public boolean add(HDT_ObjType obj)
   {
     lastException = null;
@@ -154,16 +160,8 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     if (modTracking == false) return;
 
     List<HDT_ObjType> after = relSet.getUnmodifiableObjectList(subj);
-    boolean modified = false;
 
-    if (after == null)
-      modified = before.isEmpty();
-    else if (before.size() != after.size())
-      modified = true;
-    else if (before.equals(after) == false)
-      modified = true;
-
-    if (modified)
+    if ((before.size() != after.size()) || (before.equals(after) == false))
       subj.modifyNow();
   }
 
@@ -255,6 +253,20 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Adds a collection of records to the end of the list avoiding duplicates.
+   * <p>
+   * Only records that are not already in this list will be added, and
+   * duplicates, as well as records that would result in a cycle, from
+   * the specified collection will be ignored.
+   * <p>
+   * <i>(Violation)</i> The {@code List} interface makes the assumption
+   * that the elements are always inserted. This may not happen with this
+   * implementation.
+   *
+   * @param c  the collection to add in iterator order
+   * @return true if this collection changed
+   */
   @Override public boolean addAll(Collection<? extends HDT_ObjType> c)
   {
     lastException = null;
@@ -289,6 +301,22 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Adds a collection of records at a specific index in the list avoiding
+   * duplicates.
+   * <p>
+   * Only elements that are not already in this list will be added, and
+   * duplicates, as well as records that would result in a cycle, from
+   * the specified collection will be ignored.
+   * <p>
+   * <i>(Violation)</i> The {@code List} interface makes the assumption
+   * that the elements are always inserted. This may not happen with this
+   * implementation.
+   *
+   * @param index  the index to insert at
+   * @param c  the collection to add in iterator order
+   * @return true if this collection changed
+   */
   @Override public boolean addAll(int index, Collection<? extends HDT_ObjType> c)
   {
     lastException = null;
@@ -387,6 +415,17 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Adds a record to a specific index in the list if it is not already
+   * present.
+   * <p>
+   * <i>(Violation)</i> The {@code List} interface makes the assumption
+   * that the element is always inserted. This may not happen with this
+   * implementation.
+   *
+   * @param index  the index to insert at
+   * @param obj  the record to add
+   */
   @Override public void add(int index, HDT_ObjType obj)
   {
     lastException = null;
@@ -523,10 +562,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
     if (list.size() != size()) return false;
 
-    for (int ndx = 0; ndx < list.size(); ndx++)
-      if (list.get(ndx) != get(ndx)) return false;
-
-    return true;
+    return IntStream.range(0, list.size()).noneMatch(ndx -> list.get(ndx) != get(ndx));
   }
 
 //---------------------------------------------------------------------------

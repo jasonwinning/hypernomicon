@@ -44,13 +44,14 @@ import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.util.json.JsonObj.JsonNodeType;
 
-public class CrossrefBibData extends BibDataStandalone
+public final class CrossrefBibData extends BibDataStandalone
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // CrossRef API documentation: https://github.com/CrossRef/rest-api-doc
+  // CrossRef API documentation: https://api.crossref.org/swagger-ui/index.html
+  //                    Old URL: https://github.com/CrossRef/rest-api-doc
 
   private static CrossrefBibData createFromJSON(JsonObj jsonObj, String title, String yearStr, boolean isPaper, String queryDoi)
   {
@@ -272,11 +273,11 @@ public class CrossrefBibData extends BibDataStandalone
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
     if (doi.length() > 0)
-      return url + "/" + doi;
+      return url + '/' + doi;
 
     if (safeStr(title).isEmpty()) return url;
 
-    url = url + "?";
+    url = url + '?';
 
     if (authors != null)
     {
@@ -291,9 +292,9 @@ public class CrossrefBibData extends BibDataStandalone
           author.getName().getLast();
 
         if (ed)
-          eds = eds + " " + name;
+          eds = eds + ' ' + name;
         else if (tr == false)
-          auths = auths + " " + name;
+          auths = auths + ' ' + name;
       }
     }
 
@@ -310,7 +311,7 @@ public class CrossrefBibData extends BibDataStandalone
     {
       int year = parseInt(yearStr, -1);
       if (year > 1929)
-        url = url + "query.bibliographic=" + yearStr + "&";
+        url = url + "query.bibliographic=" + yearStr + '&';
     }
 
     if (auths.length() > 0)
@@ -319,7 +320,7 @@ public class CrossrefBibData extends BibDataStandalone
     if (title.length() > 0)
     {
       if (auths.length() > 0)
-        url = url + "&";
+        url = url + '&';
 
       url = url + "query.bibliographic=" + escapeURL(title, false); // query.title is deprecated
     }

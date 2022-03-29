@@ -36,8 +36,9 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
+import static java.util.Collections.*;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +55,8 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 
+import org.hypernomicon.view.MainCtrlr;
+
 public class NewPersonDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apDup;
@@ -69,8 +72,8 @@ public class NewPersonDlgCtrlr extends HyperDlg
   private boolean alreadyChangingName = false, noTabUpdate = false;
   private HyperTask task;
   private HyperThread thread;
-  private List<Author> matchedAuthors = null;
-  private final List<List<Author>> matchedAuthorsList = new ArrayList<>();
+  private ArrayList<Author> matchedAuthors = null;
+  private final ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
 
   public HDT_Person getPerson()     { return person; }
   public PersonName getName()       { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
@@ -91,7 +94,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewPersonDlgCtrlr build(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, List<Author> matchedAuthors)
+  public static NewPersonDlgCtrlr build(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
   {
     return ((NewPersonDlgCtrlr) create("NewPersonDlg", "Potential Duplicate(s)", true))
       .init(null, personName, searchKey, mustCreate, person, origAuthor, matchedAuthors);
@@ -100,7 +103,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private NewPersonDlgCtrlr init(String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, List<Author> matchedAuthors)
+  private NewPersonDlgCtrlr init(String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
   {
     this.matchedAuthors = matchedAuthors;
     this.person = person;
@@ -130,7 +133,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     setToolTip(lblSearchKey   , "Regenerate search key");
     setToolTip(lblDupSearchKey, "Regenerate search key");
 
-    ui.setSearchKeyToolTip(tfSearchKey);
+    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
 
     lblSearchKey.setOnMouseClicked(event -> setSearchKey(new PersonName(tfFirstName.getText(), tfLastName.getText())));
 
@@ -355,8 +358,8 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     for (PersonForDupCheck person2 : list)
     {
-      if      (nullSwitch(person1.author     , false, author1    -> author1    == person2.author     )) continue;
-      else if (nullSwitch(person1.getPerson(), false, personRec1 -> personRec1 == person2.getPerson())) continue;
+      if (nullSwitch(person1.author     , false, author1    -> author1    == person2.author     )) continue;
+      if (nullSwitch(person1.getPerson(), false, personRec1 -> personRec1 == person2.getPerson())) continue;
 
       boolean isMatch = false;
 
@@ -401,7 +404,13 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, List<List<Author>> matchedAuthorsList, Runnable finishHndlr)
+  public static HyperTask createDupCheckTask(PersonName name, Author queryAuthor, ArrayList<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
+  {
+    // The list passed into the second parameter needs to be able to contain null values
+    return createDupCheckTask(singletonList(name), singletonList(queryAuthor), matchedAuthorsList, finishHndlr);
+  }
+
+  public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, ArrayList<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
   {
     return new HyperTask("CheckForDupAuthors") { @Override protected Boolean call() throws Exception
     {
@@ -413,10 +422,9 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
       for (int ndx = 0; ndx < nameList.size(); ndx++)
       {
-        List<Author> matchedAuthors = new ArrayList<>();
+        ArrayList<Author> matchedAuthors = new ArrayList<>();
         matchedAuthorsList.add(matchedAuthors);
-        Author author = queryAuthors.get(ndx);
-        PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), author);
+        PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), queryAuthors.get(ndx));
 
         doDupCheck(person, list, matchedAuthors, this, ndx * list.size(), nameList.size() * list.size());
       }
@@ -440,7 +448,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     lblStatus.setVisible(true);
     progressIndicator.setVisible(true);
 
-    task = createDupCheckTask(List.of(personName), List.of(origAuthor), matchedAuthorsList, this::finishDupSearch);
+    task = createDupCheckTask(personName, origAuthor, matchedAuthorsList, this::finishDupSearch);
 
     task.updateProgress(0, 1);
 
@@ -459,7 +467,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     progressIndicator.progressProperty().unbind();
     progressIndicator.setProgress(1.0);
 
-    matchedAuthors = matchedAuthorsList.size() > 0 ? matchedAuthorsList.get(0) : Collections.emptyList();
+    matchedAuthors = matchedAuthorsList.size() > 0 ? matchedAuthorsList.get(0) : new ArrayList<>();
 
     if (origAuthor != null)
       matchedAuthors.removeIf(origAuthor::equals);

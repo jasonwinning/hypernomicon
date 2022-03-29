@@ -54,7 +54,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  private static class MessageSenderThread extends HyperThread
+  private static final class MessageSenderThread extends HyperThread
   {
     private final LockedDlgCtrlr dlg;
     private InterComputerMsg sentMsg;
@@ -66,7 +66,6 @@ public class LockedDlgCtrlr extends HyperDlg
       this.dlg = dlg;
       this.sentMsg = sentMsg;
       done = false;
-      start();
     }
 
   //---------------------------------------------------------------------------
@@ -74,13 +73,11 @@ public class LockedDlgCtrlr extends HyperDlg
 
     @Override public void run()
     {
-      InterComputerMsg receivedMsg;
-
       while (done == false)
       {
         if (gotResponse == false)
         {
-          receivedMsg = InterComputerMsg.checkForMessage(db.getResponseMessageFilePath(true));
+          InterComputerMsg receivedMsg = InterComputerMsg.checkForMessage(db.getResponseMessageFilePath(true));
 
           if (receivedMsg != null)
           {
@@ -254,7 +251,7 @@ public class LockedDlgCtrlr extends HyperDlg
     sentMsg.writeToDisk(true);
     sentTime = sentMsg.getSentTime();
 
-    thread = new MessageSenderThread(this, sentMsg);
+    (thread = new MessageSenderThread(this, sentMsg)).start();
   }
 
 //---------------------------------------------------------------------------

@@ -109,7 +109,7 @@ public class MainText
 
   private String getKeyWorksString()
   {
-    return keyWorks.stream().map(keyWork -> keyWork.getSearchKey(true)).reduce((s1, s2) -> s1 + " " + s2).orElse("");
+    return keyWorks.stream().map(keyWork -> keyWork.getSearchKey(true)).reduce((s1, s2) -> s1 + ' ' + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------
@@ -118,7 +118,7 @@ public class MainText
   String getDisplayItemsString()
   {
     return displayItems.stream().filter(item -> item.type == diRecord)
-                                .map(item -> item.record.listName() + " (" + db.getTypeName(item.record.getType()) + ")")
+                                .map(item -> item.record.listName() + " (" + db.getTypeName(item.record.getType()) + ')')
                                 .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 
@@ -299,7 +299,7 @@ public class MainText
   {
     plainText = safeStr(newPlainText);
 
-    if (ultraTrim(convertToSingleLine(plainText)).isEmpty() && (newHtmlText.contains("&lt;" + EMBEDDED_FILE_TAG + " ") == false))
+    if (ultraTrim(convertToSingleLine(plainText)).isEmpty() && (newHtmlText.contains("&lt;" + EMBEDDED_FILE_TAG + ' ') == false))
     {
       htmlText = "";
       plainText = "";

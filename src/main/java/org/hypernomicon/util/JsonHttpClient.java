@@ -157,7 +157,8 @@ public class JsonHttpClient
       lastException = null;
       throw e;
     }
-    else if (lastException instanceof UnsupportedOperationException)
+
+    if (lastException instanceof UnsupportedOperationException)
     {
       UnsupportedOperationException e = (UnsupportedOperationException) lastException;
       lastException = null;
@@ -205,7 +206,8 @@ public class JsonHttpClient
 
           return true;
         }
-        else if (obj instanceof JSONArray)
+
+        if (obj instanceof JSONArray)
         {
           jsonArray = new JsonArray((JSONArray) obj);
 

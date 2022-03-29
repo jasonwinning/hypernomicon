@@ -74,7 +74,8 @@ public final class KeywordLinkList implements Iterable<KeywordLink>
         for (; (ndx < text.length()) && charIsPartOfWebLink(text, ndx); ndx++);
         continue;
       }
-      else if ("href".equals(fourChars)) // don't convert anything in an anchor tag to a link
+
+      if ("href".equals(fourChars)) // don't convert anything in an anchor tag to a link
       {
         for (; (ndx < text.length()) && (text.charAt(ndx) != '>'); ndx++);
         continue;
@@ -92,12 +93,9 @@ public final class KeywordLinkList implements Iterable<KeywordLink>
       }
 
       SearchKeyword curKey = null;
-      List<SearchKeyword> keys;
       int curMatchLen = 0;
 
-      keys = overrideSet ? searchKeysToUse.getKeywordsByPrefix(prefix) : db.getKeysByPrefix(prefix);
-
-      for (SearchKeyword key : keys)
+      for (SearchKeyword key : (overrideSet ? searchKeysToUse.getKeywordsByPrefix(prefix) : db.getKeysByPrefix(prefix)))
       {
         int matchLen;
         String focusStr = safeSubstring(text, ndx, ndx + key.text.length());
@@ -162,7 +160,7 @@ public final class KeywordLinkList implements Iterable<KeywordLink>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean charIsPartOfKeywordLink(String text, int ndx)
+  private static boolean charIsPartOfKeywordLink(String text, int ndx)
   {
     char c = text.charAt(ndx);
 
@@ -181,14 +179,14 @@ public final class KeywordLinkList implements Iterable<KeywordLink>
 
   private int add(String text, int ndx, int matchLen, SearchKeyword key, List<Integer> posMap)
   {
-    int right = ndx + matchLen, replaceLen;
+    int right = ndx + matchLen;
 
     if (right < text.length())
       while (charIsPartOfKeywordLink(text, right))
         if (++right >= text.length())
           break;
 
-    replaceLen = right - ndx;
+    int replaceLen = right - ndx;
 
     // The next two lines are for cases where a special character exists in the original html that translates to multiple plain-text characters, e.g., ellipsis
     int realNdx = posMap.get(ndx),

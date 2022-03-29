@@ -31,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.List;
 
-import org.hypernomicon.App;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -205,7 +204,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
       if (filePath().exists() == false)
         if (isSpecial(false) || (path.getRecordsString().length() > 0))
           messageDialog("The folder: \"" + filePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
-                        "Next time, only use the " + App.appTitle + " File Manager to make changes to move, rename, or delete database folders.", mtWarning);
+                        "Next time, only use the " + appTitle + " File Manager to make changes to move, rename, or delete database folders.", mtWarning);
 
     childFolders.forEach(HDT_Folder::checkExists);
   }

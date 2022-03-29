@@ -69,7 +69,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     super(false);
 
     jObj = new JsonObj();
-    jData = zWrapper.getTemplate(newType).clone();
+    jData = ZoteroWrapper.getTemplate(newType).clone();
     jData.put(getFieldKey(bfEntryType), ZoteroWrapper.entryTypeMap.getOrDefault(newType, ""));
     jObj.put("data", jData);
     this.zWrapper = zWrapper;
@@ -250,13 +250,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
       case bfContainerTitle :
 
-        JsonObj template = zWrapper.getTemplate(getEntryType());
-        if (template == null) return "";
-
-        for (String titleKey : titleKeyList)
-          if (template.containsKey(titleKey)) return titleKey;
-
-        return "";
+        JsonObj template = ZoteroWrapper.getTemplate(getEntryType());
+        return template == null ? "" : safeStr(findFirst(titleKeyList, template::containsKey));
 
       case bfISBNs : return "ISBN";
       case bfISSNs : return "ISSN";
@@ -279,7 +274,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   private boolean thisTypeHasFieldKey(BibFieldEnum bibFieldEnum)
   {
-    JsonObj template = zWrapper.getTemplate(getEntryType());
+    JsonObj template = ZoteroWrapper.getTemplate(getEntryType());
     if (template == null) return false;
 
     String fieldKey = getFieldKey(bibFieldEnum);
@@ -464,14 +459,14 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         creatorsArr1.getObjs().forEach(creator ->
         {
           String type = creator.getStrSafe("creatorType");
-          if (type.equals("editor") || type.equals("bookAuthor"))
+          if ("editor".equals(type) || "bookAuthor".equals(type))
             jArr1.add(creator);
         });
 
         creatorsArr2.getObjs().forEach(creator ->
         {
           String type = creator.getStrSafe("creatorType");
-          if (type.equals("editor") || type.equals("bookAuthor"))
+          if ("editor".equals(type) || "bookAuthor".equals(type))
             jArr2.add(creator);
         });
 
@@ -582,7 +577,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         {
           JsonObj creator = it.next();
           String type = creator.getStrSafe("creatorType");
-          if (type.equals("editor") || type.equals("bookAuthor"))
+          if ("editor".equals(type) || "bookAuthor".equals(type))
             it.remove();
         }
 
@@ -622,17 +617,17 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         {
           JsonObj creator = it.next();
           String type = creator.getStrSafe("creatorType");
-          if (type.equals("editor") || type.equals("author"))
+          if ("editor".equals(type) || "author".equals(type))
             it.remove();
         }
 
         jData.getArray("creators").getObjs().forEach(oldCreator ->
         {
           String type = oldCreator.getStrSafe("creatorType");
-          if (type.equals("editor") || type.equals("bookAuthor"))
+          if ("editor".equals(type) || "bookAuthor".equals(type))
           {
             JsonObj newCreator = oldCreator.clone();
-            if (newCreator.getStrSafe("creatorType").equals("bookAuthor"))
+            if ("bookAuthor".equals(newCreator.getStrSafe("creatorType")))
               newCreator.put("creatorType", "book");
 
             newCreatorsArr.add(newCreator);
@@ -654,7 +649,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         {
           JsonObj creator = it.next();
           String type = creator.getStrSafe("creatorType");
-          if (type.equals("editor") || type.equals("bookAuthor"))
+          if ("editor".equals(type) || "bookAuthor".equals(type))
             it.remove();
         }
 
@@ -663,7 +658,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         srcCreatorsArr.getObjs().forEach(creator ->
         {
           String type = creator.getStrSafe("creatorType");
-          if (type.equals("editor") || type.equals("bookAuthor"))
+          if ("editor".equals(type) || "bookAuthor".equals(type))
             destCreatorsArr.add(creator.clone());
         });
 
@@ -706,9 +701,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
           JsonArray jArr = jData.getArray(key);
 
-          if (key.equals("creators"))
+          if ("creators".equals(key))
             report.addField("Creators", makeCreatorsReportContent(report, jArr));
-          else if (key.equals("tags"))
+          else if ("tags".equals(key))
             report.addField("Tags", makeTagsReportContent(report, jArr));
           else
             report.addField(fieldName, makeReportArray(report, fieldName, jArr));
@@ -733,10 +728,10 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   {
     if (str.isEmpty()) return "";
 
-    if (fieldName.equals("Item Type"))
+    if ("Item Type".equals(fieldName))
       str = camelToTitle(str);
 
-    if (fieldName.equals("URL"))
+    if ("URL".equals(fieldName))
       str = report.getUrlContent(str);
 
     return report.makeRow(fieldName, str);

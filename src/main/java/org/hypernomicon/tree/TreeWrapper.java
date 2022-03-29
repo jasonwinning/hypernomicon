@@ -294,7 +294,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       if (row.getName().toLowerCase().contains(text) ||
           ((searchingNameOnly == false) && row.getDescString().toLowerCase().contains(text)))
       {
-        ui.treeHyperTab().textToHilite = text;
+        MainCtrlr.treeHyperTab().textToHilite = text;
         selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), true);
         return;
       }
@@ -319,7 +319,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private TreeItem<TreeRow> lastDescendant(TreeItem<TreeRow> treeItem)
+  private static TreeItem<TreeRow> lastDescendant(TreeItem<TreeRow> treeItem)
   {
     return treeItem.getChildren().size() > 0 ?
       lastDescendant(treeItem.getChildren().get(treeItem.getChildren().size() - 1))
@@ -330,7 +330,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private TreeItem<TreeRow> getNext(TreeItem<TreeRow> item, boolean fromChild)
+  private static TreeItem<TreeRow> getNext(TreeItem<TreeRow> item, boolean fromChild)
   {
     return (fromChild == false) && (item.getChildren().size() > 0) ?
       item.getChildren().get(0)

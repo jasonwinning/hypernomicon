@@ -106,10 +106,10 @@ public abstract class BibEntry extends BibData implements BibEntity
            cbStr = "";
 
     if (authorStr.length() > 0)
-      cbStr = authorStr + " ";
+      cbStr = authorStr + ' ';
 
     if (yearStr.length() > 0)
-      cbStr += "(" + yearStr + ") ";
+      cbStr += '(' + yearStr + ") ";
 
     if (titleStr.length() > 0)
       cbStr += titleStr;
@@ -196,19 +196,18 @@ public abstract class BibEntry extends BibData implements BibEntity
     {
       List<BibAuthor> authorList = new ArrayList<>(),
                       editorList = new ArrayList<>(),
-                      translatorList = new ArrayList<>(),
-                      authors1, authors2;
+                      translatorList = new ArrayList<>();
 
       e1.getAuthors().getLists(authorList, editorList, translatorList);
 
-      authors1 = authorList.isEmpty() ? editorList : authorList;
+      List<BibAuthor> authors1 = authorList.isEmpty() ? editorList : authorList;
 
       authorList = new ArrayList<>();
       editorList = new ArrayList<>();
 
       e2.getAuthors().getLists(authorList, editorList, translatorList);
 
-      authors2 = authorList.isEmpty() ? editorList : authorList;
+      List <BibAuthor> authors2 = authorList.isEmpty() ? editorList : authorList;
 
       int cResult, numAuthors = Math.max(authors1.size(), authors2.size());
 

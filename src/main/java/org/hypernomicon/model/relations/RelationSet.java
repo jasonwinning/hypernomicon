@@ -127,22 +127,22 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   private RelationSet(RelationType newType) throws HDB_InternalError
   {
-    boolean trackOrphans = false;
+    boolean tempTrackOrphans = false;
     type = newType;
 
     relationSets.put(type, this);
-    cycleGroup = cycleGroups.stream().filter(cycleGroup -> cycleGroup.contains(type)).findAny().map(EnumSet::copyOf).orElse(null);
+    cycleGroup = cycleGroups.stream().filter(cGroup -> cGroup.contains(type)).findAny().map(EnumSet::copyOf).orElse(null);
 
     switch (type)
     {
       case rtParentWorkOfWork         : hasNestedItems = false; subjType = hdtWork;          objType = hdtWork;            break;
       case rtParentGroupOfGroup       : hasNestedItems = false; subjType = hdtPersonGroup;   objType = hdtPersonGroup;
 
-        trackOrphans = true; break;
+        tempTrackOrphans = true; break;
 
       case rtParentLabelOfLabel       : hasNestedItems = false; subjType = hdtWorkLabel;     objType = hdtWorkLabel;
 
-        trackOrphans = true; break;
+        tempTrackOrphans = true; break;
 
       case rtCounterOfArgument        : hasNestedItems = true;  subjType = hdtArgument;      objType = hdtArgument;
 
@@ -150,24 +150,24 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       case rtParentDebateOfDebate     : hasNestedItems = false; subjType = hdtDebate;        objType = hdtDebate;
 
-        trackOrphans = true; break;
+        tempTrackOrphans = true; break;
 
       case rtParentNoteOfNote         : hasNestedItems = false; subjType = hdtNote;          objType = hdtNote;
 
-        trackOrphans = true; break;
+        tempTrackOrphans = true; break;
 
       case rtParentPosOfPos           : hasNestedItems = false; subjType = hdtPosition;      objType = hdtPosition;
 
-        trackOrphans = true; break;
+        tempTrackOrphans = true; break;
 
       case rtWorkOfArgument           : hasNestedItems = false; subjType = hdtArgument;      objType = hdtWork;            break;
       case rtParentDebateOfPos        : hasNestedItems = false; subjType = hdtPosition;      objType = hdtDebate;
 
-        trackOrphans = true; break;
+        tempTrackOrphans = true; break;
 
       case rtParentPosOfDebate        : hasNestedItems = false; subjType = hdtDebate;        objType = hdtPosition;
 
-        trackOrphans = true; break;
+        tempTrackOrphans = true; break;
 
       case rtPositionOfArgument       : hasNestedItems = true;  subjType = hdtArgument;      objType = hdtPosition;
 
@@ -201,7 +201,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtGlossaryOfConcept        : hasNestedItems = false; subjType = hdtConcept;       objType = hdtGlossary;        break;
       case rtParentGlossaryOfGlossary : hasNestedItems = false; subjType = hdtGlossary;      objType = hdtGlossary;
 
-        trackOrphans = true; break;
+        tempTrackOrphans = true; break;
 
       case rtLabelOfWork              : hasNestedItems = false; subjType = hdtWork;          objType = hdtWorkLabel;       break;
       case rtLabelOfFile              : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtWorkLabel;       break;
@@ -224,7 +224,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     }
 
     typeMappings.put(subjType, objType, type);
-    this.trackOrphans = trackOrphans;
+    this.trackOrphans = tempTrackOrphans;
 
     if (trackOrphans)
     {
@@ -696,7 +696,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> ArrayListMultimap<HDT_Key, HDT_Value> rebuildMultimap(ArrayListMultimap<HDT_Key, HDT_Value> oldMap) throws HDB_InternalError
+  private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> ArrayListMultimap<HDT_Key, HDT_Value> rebuildMultimap(ArrayListMultimap<HDT_Key, HDT_Value> oldMap) throws HDB_InternalError
   {
     ArrayListMultimap<HDT_Key, HDT_Value> newMap = ArrayListMultimap.create();
 
@@ -908,7 +908,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   void reorderObjects (HDT_Subj subj, List<HDT_Obj>  newObjList)  { reorderList(subj, newObjList,  subjToObjList); }
   void reorderSubjects(HDT_Obj   obj, List<HDT_Subj> newSubjList) { reorderList(obj,  newSubjList, objToSubjList); }
 
-  private <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> void reorderList(HDT_Key key, List<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
+  private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> void reorderList(HDT_Key key, List<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
   {
     if (key == null) throw new NullPointerException();
 

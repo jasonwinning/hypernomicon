@@ -226,7 +226,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
     while (startNdx < nonRecordNames.size())
     {
-      List<List<Author>> matchedAuthorsList = new ArrayList<>(); // List of matches for each non-record author
+      ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>(); // List of matches for each non-record author
 
       HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(nonRecordNames  .subList(startNdx, nonRecordNames.size()),
                                                             nonRecordAuthors.subList(startNdx, nonRecordNames.size()),
@@ -239,7 +239,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
       for (ndx = startNdx; ndx < nonRecordNames.size(); ndx++)
       {
-        List<Author> matchedAuthors = matchedAuthorsList.get(ndx - startNdx);
+        ArrayList<Author> matchedAuthors = matchedAuthorsList.get(ndx - startNdx);
 
         if (matchedAuthors.size() > 0)
         {
@@ -281,7 +281,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void removeDupPersonRecordsFromLists(List<PersonName> nameList, List<HDT_Person> personList)
+  private static void removeDupPersonRecordsFromLists(List<PersonName> nameList, List<HDT_Person> personList)
   {
     Set<Integer> indicesToRemove = new HashSet<>();
 

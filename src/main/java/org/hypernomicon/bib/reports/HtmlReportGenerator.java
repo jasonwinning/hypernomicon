@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.view.mainText.MainTextUtil;
 
-public class HtmlReportGenerator extends ReportGenerator
+public final class HtmlReportGenerator extends ReportGenerator
 {
 
 //---------------------------------------------------------------------------

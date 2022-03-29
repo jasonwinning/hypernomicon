@@ -70,19 +70,7 @@ public class WebButton
 
     private boolean nonblank(String str)
     {
-      if (safeStr(str).isBlank())
-        return false;
-
-      switch (this)
-      {
-        case NumericYear:
-
-          return StringUtils.isNumeric(str);
-
-        default:
-
-          return true;
-      }
+      return (safeStr(str).isBlank() == false) && ((this != NumericYear) || StringUtils.isNumeric(str));
     }
 
   //---------------------------------------------------------------------------
@@ -248,9 +236,9 @@ public class WebButton
 
             DialogResult result = new PopupDialog("How should the name be phrased? Initials often works well with Google Scholar.")
 
-              .addButton(first1 + " " + last, mrYes)
-              .addButton(first2 + " " + last, mrNo)
-              .addButton(first3 + " " + last, mrOk)
+              .addButton(first1 + ' ' + last, mrYes)
+              .addButton(first2 + ' ' + last, mrNo)
+              .addButton(first3 + ' ' + last, mrOk)
               .addButton("Cancel", mrCancel)
 
               .showModal();

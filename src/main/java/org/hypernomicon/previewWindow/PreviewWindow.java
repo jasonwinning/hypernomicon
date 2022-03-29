@@ -24,6 +24,7 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -86,8 +87,8 @@ public class PreviewWindow extends HyperDlg
 
   public boolean disablePreviewUpdating = false;
 
-  private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new HashMap<>();
-  private final Map<PreviewSource, PreviewSetting> srcToSetting = new HashMap<>();
+  private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new EnumMap<>(PreviewSource.class);
+  private final Map<PreviewSource, PreviewSetting> srcToSetting = new EnumMap<>(PreviewSource.class);
   private static final Map<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
   private ClickHoldButton chbBack, chbForward;
 
@@ -104,7 +105,7 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class PreviewSetting
+  private static final class PreviewSetting
   {
     private PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
     {
@@ -678,7 +679,7 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void openContentsWindow()
+  private static void openContentsWindow()
   {
     if (contentsWindow.getStage().isShowing())
       ui.windows.focusStage(contentsWindow.getStage());
@@ -724,7 +725,7 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void cleanup()
+  public static void cleanup()
   {
     if (jxBrowserInitialized)
       getDisposeHandler(tabToWrapper.values().iterator()).run();

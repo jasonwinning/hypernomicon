@@ -98,7 +98,7 @@ public abstract class BibData
 
 //---------------------------------------------------------------------------
 
-  public void setTitle(String newTitle) { setMultiStr(bfTitle, List.of(newTitle)); }
+  public void setTitle(String newTitle) { setMultiStr(bfTitle, safeListOf(newTitle)); }
   void addISBN(String newStr)           { matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn)); }
   void addISSN(String newStr)           { matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn)); }
 
@@ -118,7 +118,7 @@ public abstract class BibData
 
   protected static String getMultiStrSpaceDelimited(List<String> list)
   {
-    return ultraTrim(list.stream().map(Util::ultraTrim).reduce((s1, s2) -> s1 + " " + s2).orElse(""));
+    return ultraTrim(list.stream().map(Util::ultraTrim).reduce((s1, s2) -> s1 + ' ' + s2).orElse(""));
   }
 
 //---------------------------------------------------------------------------
@@ -228,7 +228,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addCreatorsToReport(BibFieldEnum bibFieldEnum, ReportGenerator report, String str)
+  private static void addCreatorsToReport(BibFieldEnum bibFieldEnum, ReportGenerator report, String str)
   {
     String fieldName = bibFieldEnum.getUserFriendlyName();
     report.addField(fieldName, report.makeRow(fieldName, str));

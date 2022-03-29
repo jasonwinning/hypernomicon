@@ -128,7 +128,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     });
 
     String noun = target.getType() == hdtPosition ? "Position" : "Target argument";
-    lblTargetName.setText(noun + ":");
+    lblTargetName.setText(noun + ':');
     lblTargetDesc.setText(noun + " description:");
 
     tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));

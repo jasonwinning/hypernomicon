@@ -47,7 +47,6 @@ import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
@@ -68,6 +67,7 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.File;
@@ -148,9 +148,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private BibDataRetriever bibDataRetriever = null;
   private MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
-  private final ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<>(),
-                                        pdfBD      = new SimpleObjectProperty<>(),
-                                        googleBD   = new SimpleObjectProperty<>();
+  private final ObjectProperty<BibData> crossrefBDprop = new SimpleObjectProperty<>(),
+                                        pdfBDprop      = new SimpleObjectProperty<>(),
+                                        googleBDprop   = new SimpleObjectProperty<>();
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
   private static final String TOOLTIP_PREFIX = "Search for this work in ";
@@ -162,7 +162,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public String recordName()               { return tfTitle.getText(); }
   @Override protected RecordType type()              { return hdtWork; }
-  @Override public void enable(boolean enabled)      { ui.tabWorks.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)  { mainText.hilite(text); }
   @Override public TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
   @Override public void setRecord(HDT_Work work)     { curWork = work; }
@@ -173,7 +172,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
   private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }
   public String getTitle()                     { return tfTitle.getText(); }
-  private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ")"); }
+  private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ')'); }
   private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList())); }
   private void useDOIClick()                   { tfDOI.setText(getDoiFromBibTab()); }
   private void useISBNClick()                  { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, isbn, hdtNone)); }
@@ -192,10 +191,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
-    setToolTip(btnAutofill, MainCtrlr.AUTOFILL_TOOLTIP);
-    setToolTip(btnTopAutofill, MainCtrlr.AUTOFILL_TOOLTIP);
+    setToolTip(btnAutofill, AUTOFILL_TOOLTIP);
+    setToolTip(btnTopAutofill, AUTOFILL_TOOLTIP);
 
-    ui.setSearchKeyToolTip(tfSearchKey);
+    setSearchKeyToolTip(tfSearchKey);
 
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
 
@@ -442,9 +441,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), true);
     hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), true);
 
-    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + "1"));
-    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + "1"));
-    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + "2"));
+    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + '1'));
+    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + '1'));
+    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + '2'));
 
     btnDOI.setOnAction(event -> searchDOI(tfDOI.getText()));
 
@@ -533,7 +532,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           Platform.runLater(() -> cbType.setValue(oldValue));
           return;
         }
-        else if (curWork.getBibEntryKey().length() > 0)
+
+        if (curWork.getBibEntryKey().length() > 0)
         {
           programmaticTypeChange = true;
           messageDialog("You cannot change a work that is assigned to a " + db.getBibLibrary().type().getUserFriendlyName() + " entry into an unentered set of work files.", mtError);
@@ -590,9 +590,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));
 
-    crossrefBD.addListener((ob, oldBD, newBD) -> updateMergeButton());
-    pdfBD     .addListener((ob, oldBD, newBD) -> updateMergeButton());
-    googleBD  .addListener((ob, oldBD, newBD) -> updateMergeButton());
+    crossrefBDprop.addListener((ob, oldBD, newBD) -> updateMergeButton());
+    pdfBDprop     .addListener((ob, oldBD, newBD) -> updateMergeButton());
+    googleBDprop  .addListener((ob, oldBD, newBD) -> updateMergeButton());
 
     taMiscBib    .textProperty().addListener((ob, ov, nv) -> updateBibButtons());
     taPdfMetadata.textProperty().addListener((ob, ov, nv) -> updateBibButtons());
@@ -601,9 +601,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tpBib.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> updateBibButtons());
 
-    tabPdfMetadata.setOnClosed(event -> { taPdfMetadata.clear(); pdfBD     .set(null); });
-    tabCrossref   .setOnClosed(event -> { taCrossref   .clear(); crossrefBD.set(null); });
-    tabGoogleBooks.setOnClosed(event -> { taGoogleBooks.clear(); googleBD  .set(null); });
+    tabPdfMetadata.setOnClosed(event -> { taPdfMetadata.clear(); pdfBDprop     .set(null); });
+    tabCrossref   .setOnClosed(event -> { taCrossref   .clear(); crossrefBDprop.set(null); });
+    tabGoogleBooks.setOnClosed(event -> { taGoogleBooks.clear(); googleBDprop  .set(null); });
 
     btnMergeBib.setOnAction(event -> btnMergeBibClick());
 
@@ -636,7 +636,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void updateMergeButton()
   {
-    btnMergeBib.setDisable((crossrefBD.get() == null) && (pdfBD.get() == null) && (googleBD.get() == null));
+    btnMergeBib.setDisable((crossrefBDprop.get() == null) && (pdfBDprop.get() == null) && (googleBDprop.get() == null));
 
     tabPane.requestLayout();
   }
@@ -698,7 +698,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public void update()
   {
-    btnTree.setDisable(ui.tree().getRowsForRecord(curWork).isEmpty());
+    btnTree.setDisable(tree().getRowsForRecord(curWork).isEmpty());
 
     WorkTypeEnum workTypeEnumVal = curWork.getWorkTypeEnum();
 
@@ -735,7 +735,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (curWork.workType.isNotNull())
     {
       hcbType.addAndSelectEntry(curWork.workType, HDT_Record::name);
-      ui.tabWorks.setGraphic(imgViewForRecord(curWork));
+      getTab().setGraphic(imgViewForRecord(curWork));
     }
 
   // Populate authors and investigations
@@ -762,7 +762,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Populate Labels
   // ------------------
 
-    htLabels.buildRows(curWork.labels, (row, label) -> row.setCellValue(2, label, label.getExtendedText()));
+    htLabels.buildRows(curWork.labels, (row, label) -> row.setCellValue(2, label, label.extendedText()));
 
   // Populate works
   // ----------------------
@@ -1215,7 +1215,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         if ((moveOrCopy == mrMove) && (srcFilePath.canObtainLock() == false))
         {
-          messageDialog("Unable to obtain lock on path: \"" + srcFilePath + "\"", mtError);
+          messageDialog("Unable to obtain lock on path: \"" + srcFilePath + '"', mtError);
           return;
         }
 
@@ -1223,7 +1223,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
         if (destFilePath.canObtainLock() == false)
         {
-          messageDialog("Unable to obtain lock on path: \"" + destFilePath + "\"", mtError);
+          messageDialog("Unable to obtain lock on path: \"" + destFilePath + '"', mtError);
           return;
         }
       }
@@ -1361,9 +1361,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     disableCache(taPdfMetadata);
     disableCache(taGoogleBooks);
 
-    pdfBD     .set(null);
-    crossrefBD.set(null);
-    googleBD  .set(null);
+    pdfBDprop     .set(null);
+    crossrefBDprop.set(null);
+    googleBDprop  .set(null);
 
     tpBib.getTabs().removeAll(tabEntry, tabCrossref, tabPdfMetadata, tabGoogleBooks);
 
@@ -1396,7 +1396,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     changeToNormalMode();
 
-    ui.tabWorks.setGraphic(imgViewForRecordType(hdtWork));
+    getTab().setGraphic(imgViewForRecordType(hdtWork));
 
     if (db.bibLibraryIsLinked())
     {
@@ -1498,7 +1498,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private static String makeWorkSearchKey(String name, String year, HDT_Work work)
   {
-    return name.isEmpty() || year.isEmpty() ? "" : makeWorkSearchKey(name + " " + year, work);
+    return name.isEmpty() || year.isEmpty() ? "" : makeWorkSearchKey(name + ' ' + year, work);
   }
 
 //---------------------------------------------------------------------------
@@ -1634,8 +1634,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   public boolean showWorkDialog(HDT_WorkFile workFile, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
-    boolean result;
-
     if (ui.cantSaveRecord()) return false;
 
     if (HDT_Work.isUnenteredSet(curWork))
@@ -1644,7 +1642,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       fdc.setSrcFilePath(filePathToUse, true);
 
-      result = fdc.showModal();
+      boolean result = fdc.showModal();
       fdc = null;
 
       if (result == false) return false;
@@ -1656,7 +1654,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       :
         WorkDlgCtrlr.build(workFile);
 
-      result = wdc.showModal();
+      boolean result = wdc.showModal();
 
       if (result == false)
       {
@@ -1718,9 +1716,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     Tab curTab = tpBib.getSelectionModel().getSelectedItem();
 
-    if (curTab == tabPdfMetadata) return pdfBD     .get();
-    if (curTab == tabCrossref   ) return crossrefBD.get();
-    if (curTab == tabGoogleBooks) return googleBD  .get();
+    if (curTab == tabPdfMetadata) return pdfBDprop     .get();
+    if (curTab == tabCrossref   ) return crossrefBDprop.get();
+    if (curTab == tabGoogleBooks) return googleBDprop  .get();
 
     return null;
   }
@@ -1733,7 +1731,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     stopRetrieving();
 
     taPdfMetadata.clear();
-    pdfBD.set(null);
+    pdfBDprop.set(null);
 
     if (tpBib.getTabs().contains(tabPdfMetadata) == false)
       tpBib.getTabs().add(tabPdfMetadata);
@@ -1745,19 +1743,19 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
                                                             .collect(Collectors.toList());
     try
     {
-      pdfBD.set(PDFBibData.createFromFiles(pdfFilePaths));
+      pdfBDprop.set(PDFBibData.createFromFiles(pdfFilePaths));
 
-      if (pdfBD.get() == null)
-        pdfBD.set(PDFBibData.createFromFiles(safeListOf(db.resolveExtFilePath(tfURL.getText()))));
+      if (pdfBDprop.get() == null)
+        pdfBDprop.set(PDFBibData.createFromFiles(safeListOf(db.resolveExtFilePath(tfURL.getText()))));
 
-      if (pdfBD.get() == null)
+      if (pdfBDprop.get() == null)
         taPdfMetadata.setText("[No PDF file.]");
       else
-        taPdfMetadata.appendText(pdfBD.get().createReport());
+        taPdfMetadata.appendText(pdfBDprop.get().createReport());
     }
     catch (IOException e)
     {
-      taPdfMetadata.setText("[Error: " + e.getMessage() + "]");
+      taPdfMetadata.setText("[Error: " + e.getMessage() + ']');
     }
 
     updateBibButtons();
@@ -1790,8 +1788,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       setAllVisible(false, btnStop, progressBar);
 
-      if (crossref) crossrefBD.set(queryBD);
-      else          googleBD  .set(queryBD);
+      if (crossref) crossrefBDprop.set(queryBD);
+      else          googleBDprop  .set(queryBD);
 
       ta.setText("Query URL: " + httpClient.lastUrl() + System.lineSeparator());
 
@@ -1815,7 +1813,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         bd.setStr(bfYear, tfYear.getText());
       }
       else
-        bd.setStr(bfDOI, safeStr(doi));
+        bd.setStr(bfDOI, doi);
 
       bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, doneHndlr);
     }
@@ -1917,7 +1915,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     try
     {
       mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", workBibData,
-                                     pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, true, Ternary.Unset);
+                                     pdfBDprop.get(), crossrefBDprop.get(), googleBDprop.get(), curWork, false, true, Ternary.Unset);
     }
     catch (IOException e)
     {
@@ -1988,7 +1986,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     updateWebButtons(node, PREF_KEY_WORK_SRCH, 2, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH + "2").getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH + '2').getCaption());
     mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(PREF_KEY_DOI_SRCH).getCaption());
 
     isbnSrchMenuItemSchema.setCaption(ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).getCaption());

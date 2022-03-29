@@ -24,13 +24,12 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Debate;
@@ -48,7 +47,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
   private boolean alreadyModifying = false;
 
-  final Map<RecordType, HDT_RecordWithMainText> spokes = new HashMap<>();
+  final Map<RecordType, HDT_RecordWithMainText> spokes = new EnumMap<>(RecordType.class);
 
   public HDT_Hub(RecordState xmlState, HyperDataset<HDT_Hub> dataset)
   {
@@ -166,9 +165,9 @@ public class HDT_Hub extends HDT_RecordWithMainText
       return falseWithErrorMessage("Two records of the same type cannot be united.");
     if ((spoke1.isUnitable() == false) || (spoke2.isUnitable() == false))
       return falseWithErrorMessage("One or more of the records are not of a unitable type.");
-    if (HyperDB.isUnstoredRecord(spoke1.getID(), spoke1.getType()))
+    if (isUnstoredRecord(spoke1.getID(), spoke1.getType()))
       return falseWithErrorMessage("That " + db.getTypeName(spoke1.getType()) + " record cannot be united to another record.");
-    if (HyperDB.isUnstoredRecord(spoke2.getID(), spoke2.getType()))
+    if (isUnstoredRecord(spoke2.getID(), spoke2.getType()))
       return falseWithErrorMessage("That " + db.getTypeName(spoke2.getType()) + " record cannot be united to another record.");
 
     HDT_Hub hub;

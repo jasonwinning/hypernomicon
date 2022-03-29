@@ -98,7 +98,6 @@ import com.google.common.collect.Sets;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-import org.hypernomicon.App;
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.InterProcClient;
@@ -121,7 +120,6 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.BidiOneToManyMainTextMap;
 import org.hypernomicon.util.CryptoUtil;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.FilenameMap;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.VersionNumber;
@@ -466,7 +464,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void finalizeXMLFile(List<StringBuilder> xmlList, List<String> filenameList, String fileName)
+  private static void finalizeXMLFile(List<StringBuilder> xmlList, List<String> filenameList, String fileName)
   {
     xmlList.get(xmlList.size() - 1).append(System.lineSeparator()).append("</records>");
     filenameList.add(fileName);
@@ -487,7 +485,7 @@ public final class HyperDB
 
       //   .append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"org.hypernomicon http://hypernomicon.org/records.xsd\"")
 
-         .append(">").append(System.lineSeparator()).append(System.lineSeparator());
+         .append('>').append(System.lineSeparator()).append(System.lineSeparator());
     }
 
     datasets.get(type).writeToXML(xml);
@@ -517,10 +515,10 @@ public final class HyperDB
 
       if (hex.equalsIgnoreCase(entry.getValue()) == false)
       {
-        if (confirmDialog("Changes have been made to the XML files from outside of this instance of " + App.appTitle + ". Overwrite these changes?"))
+        if (confirmDialog("Changes have been made to the XML files from outside of this instance of " + appTitle + ". Overwrite these changes?"))
           break;
-        else
-          return false;
+
+        return false;
       }
     }
 
@@ -621,7 +619,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private VersionNumber getVersionNumberSavingAs(Map<VersionNumber, VersionNumber> appVersionToMaxVersion)
+  private static VersionNumber getVersionNumberSavingAs(Map<VersionNumber, VersionNumber> appVersionToMaxVersion)
   {
     VersionNumber versionNumber = new VersionNumber(0);
 
@@ -1310,7 +1308,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private class HDX_Element
+  private final class HDX_Element
   {
     private final Tag tag;
     private int objID;
@@ -1693,10 +1691,10 @@ public final class HyperDB
       try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
       catch (IOException e) { return "whatevervolleyball"; }
 
-      if (s.get(0).equals(DesktopUtil.getComputerName()) == false)
+      if (s.get(0).equals(getComputerName()) == false)
         return s.get(0);
-      else
-        filePath.deleteReturnsBoolean(true);
+
+      filePath.deleteReturnsBoolean(true);
     }
 
     getRequestMessageFilePath (true).deletePromptOnFail(true);
@@ -1712,7 +1710,7 @@ public final class HyperDB
   {
     lockFilePath = getLockFilePath(true);
 
-    try { FileUtils.writeLines(lockFilePath.toFile(), singletonList(DesktopUtil.getComputerName())); }
+    try { FileUtils.writeLines(lockFilePath.toFile(), singletonList(getComputerName())); }
     catch (IOException e) { return false; }
 
     return true;
@@ -1761,9 +1759,7 @@ public final class HyperDB
 
     try
     {
-      RecordState recordState;
-
-      recordState = new RecordState(hdtFolder, ROOT_FOLDER_ID);
+      RecordState recordState = new RecordState(hdtFolder, ROOT_FOLDER_ID);
       createNewRecordFromState(recordState, bringOnline);
 
       recordState = new RecordState(hdtDebate, 1);
@@ -2074,7 +2070,7 @@ public final class HyperDB
 
       for (RelationType relType : RelationType.values())
         if ((relType != rtUnited) && (relType != rtNone))
-          relationSets.put(relType, RelationSet.createSet(relType));
+          relationSets.put(relType, createSet(relType));
 
       relationSets.values().forEach(RelationSet::initCycleGroup);
       MainText.init();

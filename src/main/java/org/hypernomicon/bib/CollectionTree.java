@@ -156,7 +156,7 @@ public class CollectionTree
       TreeItem<BibCollectionRow> childItem = it.next();
 
       BibCollectionRow row = childItem.getValue();
-      if (row.getType() == BibCollectionType.bctUser)
+      if (row.getType() == bctUser)
       {
         String key = row.getKey();
 
@@ -208,7 +208,7 @@ public class CollectionTree
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void insertTreeItem(List<TreeItem<BibCollectionRow>> list, BibCollectionRow newRow)
+  private static void insertTreeItem(List<TreeItem<BibCollectionRow>> list, BibCollectionRow newRow)
   {
     for (int ndx = 0; ndx < list.size(); ndx++)
     {

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.query.QueryTabCtrlr;
 import org.hypernomicon.query.QueryTabCtrlr.QueryView;
 import org.hypernomicon.query.engines.QueryEngine.QueryType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -92,7 +91,7 @@ public class QueryPopulator extends Populator
       rowToChoices.put(row, new ArrayList<>());
 
     rowToChoices.get(row).clear();
-    QueryTabCtrlr.addQueries(this, row, newType);
+    addQueries(this, row, newType);
   }
 
 //---------------------------------------------------------------------------

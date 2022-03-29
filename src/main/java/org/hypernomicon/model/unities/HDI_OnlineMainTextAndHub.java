@@ -191,9 +191,9 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
         for (KeyWork keyWork : mainText.keyWorks)
         {
-          HDT_Record record = keyWork.getRecord();
+          HDT_Record kwRecord = keyWork.getRecord();
 
-          if ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile))
+          if ((kwRecord.getType() != hdtWork) && (kwRecord.getType() != hdtMiscFile))
           {
             messageDialog("Internal error #59047", mtError);
             return;

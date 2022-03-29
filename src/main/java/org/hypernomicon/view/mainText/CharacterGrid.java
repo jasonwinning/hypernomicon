@@ -64,7 +64,7 @@ class CharacterGrid
     public Symbol(int codepoint, String html, String desc)
     {
       this.codepoint = codepoint;
-      this.html = safeStr(html).isBlank() ? "&#" + codepoint + ";" : html;
+      this.html = safeStr(html).isBlank() ? "&#" + codepoint + ';' : html;
       this.desc = desc;
       ch = (char) codepoint;
     }
@@ -81,11 +81,11 @@ class CharacterGrid
 
 //---------------------------------------------------------------------------
 
-  public class SymbolCtrl extends Hyperlink
+  public final class SymbolCtrl extends Hyperlink
   {
-    final int col, row;
+    private final int col, row;
 
-    public SymbolCtrl(String family, int col, int row)
+    private SymbolCtrl(String family, int col, int row)
     {
       super();
 

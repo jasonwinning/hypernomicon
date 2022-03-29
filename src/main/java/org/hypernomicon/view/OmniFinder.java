@@ -142,9 +142,8 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private class FinderThread extends HyperThread
+  private final class FinderThread extends HyperThread
   {
-    private final HyperTable htFind;
     private final List<HDT_Record> buffer = new ArrayList<>();
 
     private TierEnum curTier;
@@ -158,14 +157,11 @@ public class OmniFinder
     private int rowNdx = 0, runLaters = 0;
     private long startTime, nextInterval;
 
-    private FinderThread(HyperTable htFind)
+    private FinderThread()
     {
       super("OmniFinder");
 
       setDaemon(true);
-      this.htFind = htFind;
-
-      start();
     }
 
     //---------------------------------------------------------------------------
@@ -289,7 +285,7 @@ public class OmniFinder
 
           if (year.isBlank()) return false;
 
-          String singleName = otherPerson.getAuthor().singleName(true).toLowerCase().trim() + " " + year;
+          String singleName = otherPerson.getAuthor().singleName(true).toLowerCase().trim() + ' ' + year;
 
           if (removeFirstParenthetical(singleName).equals(queryLC)) return true;
 
@@ -480,7 +476,7 @@ public class OmniFinder
             HDT_WorkLabel label = (HDT_WorkLabel) record;
 
             cells.set(2, new HyperTableCell(label, "", smNumeric));
-            cells.set(3, new HyperTableCell(label, label.getExtendedText()));
+            cells.set(3, new HyperTableCell(label, label.extendedText()));
 
             break;
 
@@ -648,7 +644,7 @@ public class OmniFinder
     this.source = source;
     this.showingMore = showingMore;
 
-    finderThread = new FinderThread(htFind);
+    (finderThread = new FinderThread()).start();
   }
 
 //---------------------------------------------------------------------------
@@ -666,7 +662,7 @@ public class OmniFinder
     this.showingMore = showingMore;
 
     if (newThread)
-      finderThread = new FinderThread(htFind);
+      (finderThread = new FinderThread()).start();
   }
 
 //---------------------------------------------------------------------------

@@ -38,6 +38,7 @@ import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
@@ -101,7 +102,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
   private PictureDlgCtrlr init(Rectangle2D viewPort)
   {
-    this.personHyperTab = ui.personHyperTab();
+    this.personHyperTab = MainCtrlr.personHyperTab();
 
     ivPicture.fitWidthProperty ().bind(apPicture.widthProperty ());
     ivPicture.fitHeightProperty().bind(apPicture.heightProperty());
@@ -268,10 +269,8 @@ public class PictureDlgCtrlr extends HyperDlg
 
   private void autoGenerateName()
   {
-    String ext = "";
-
     FilePath filePath = getDestFilePath(tfName.getText());
-    ext = filePath.getExtensionOnly();
+    String ext = filePath.getExtensionOnly();
     if (ext.isEmpty()) ext = "jpg";
 
     String fileName = makeFileName(personHyperTab.tfLast.getText(), ext);
@@ -288,7 +287,7 @@ public class PictureDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String makeFileName(String name, String ext)
+  private static String makeFileName(String name, String ext)
   {
     name = FilePath.removeInvalidFileNameChars(name.replaceAll("\\h+", ""));
 
@@ -511,7 +510,6 @@ public class PictureDlgCtrlr extends HyperDlg
   private void btnEditClick()
   {
     FilePath src, dest;
-    boolean sameFile;
 
     if (rbCurrent.isSelected())
     {
@@ -531,6 +529,8 @@ public class PictureDlgCtrlr extends HyperDlg
     }
     else if (rbFile.isSelected() || rbWeb.isSelected())
     {
+      boolean sameFile;
+
       if (rbFile.isSelected())
       {
         if (tfFile.getText().isEmpty()) return;

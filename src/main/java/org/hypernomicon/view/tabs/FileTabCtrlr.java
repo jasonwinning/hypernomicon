@@ -24,6 +24,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -77,7 +78,6 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public String recordName()                 { return tfName.getText(); }
   @Override protected RecordType type()                { return hdtMiscFile; }
-  @Override public void enable(boolean enabled)        { ui.tabFiles.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)    { mainText.hilite(text); }
   @Override public TextViewInfo mainTextInfo()         { return mainText.getViewInfo(); }
   @Override public MainTextWrapper mainTextWrapper()   { return mainText; }
@@ -90,7 +90,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public void update()
   {
-    btnTree.setDisable(ui.tree().getRowsForRecord(curMiscFile).isEmpty());
+    btnTree.setDisable(MainCtrlr.tree().getRowsForRecord(curMiscFile).isEmpty());
 
     tfName.setText(curMiscFile.name());
     tfSearchKey.setText(curMiscFile.getSearchKey());
@@ -114,7 +114,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     cbWorkChange();
 
-    htLabels.buildRows(curMiscFile.labels, (row, label) -> row.setCellValue(2, label, label.getExtendedText()));
+    htLabels.buildRows(curMiscFile.labels, (row, label) -> row.setCellValue(2, label, label.extendedText()));
 
     safeFocus(tfName);
   }
@@ -217,7 +217,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     setToolTip(btnManage, "Update or rename file");
 
-    ui.setSearchKeyToolTip(tfSearchKey);
+    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
   }
 
 //---------------------------------------------------------------------------

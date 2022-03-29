@@ -250,7 +250,7 @@ public class HyperViewSequence
       bibManagerDlg.workRecordToAssign.set(null);
 
     if (curHyperTab.getTabEnum() == treeTabEnum)
-      ui.treeHyperTab().selectRecord(curView.getViewRecord(), true);
+      MainCtrlr.treeHyperTab().selectRecord(curView.getViewRecord(), true);
   }
 
 //---------------------------------------------------------------------------
@@ -359,7 +359,7 @@ public class HyperViewSequence
 
     if (record == null)
     {
-      item = new MenuItem("(" + view.getHyperTab().getTab().getText() + " tab)");
+      item = new MenuItem('(' + view.getHyperTab().getTab().getText() + " tab)");
     }
     else
     {

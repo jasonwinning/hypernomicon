@@ -134,13 +134,12 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
   private void initComponentCB(ComboBox<String> cb, String prefKey, int defValue)
   {
-    int selNdx = 0, selCode;
     ObservableList<String> choices = FXCollections.observableArrayList(componentMap.keySet());
 
     cb.setItems(null);
     cb.setItems(choices);
 
-    selCode = db.prefs.getInt(prefKey, defValue);
+    int selNdx = 0, selCode = db.prefs.getInt(prefKey, defValue);
     db.prefs.putInt(prefKey, selCode);
 
     for (Entry<String, Integer> entry : componentMap.entrySet())
@@ -186,12 +185,12 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
   private void refreshExample()
   {
-    String author = "", title = "", year = "", trans = "", editor = "", value;
-    int code = BLANK_FN_COMPONENT;
+    String author = "", title = "", year = "", trans = "", editor = "";
 
     for (int ndx = 1; ndx <= 5; ndx++)
     {
-      value = "";
+      int code = BLANK_FN_COMPONENT;
+      String value = "";
 
       switch (ndx)
       {

@@ -77,7 +77,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateTextField(TextField tf, String prefKey)
+  private static void updateTextField(TextField tf, String prefKey)
   {
     tf.setText(db.getRootPath().relativize(db.getSpecialFolder(prefKey).filePath()).toString());
   }
@@ -150,7 +150,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean ancestorIsResultsFolder(HDT_Folder folder)
+  private static boolean ancestorIsResultsFolder(HDT_Folder folder)
   {
     HDT_Folder parentFolder = folder.parentFolder();
 

@@ -331,7 +331,7 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
     MainTextWrapper mtWrapper = ui.activeTab().mainTextWrapper();
     if ((mtWrapper == null) || (mtWrapper.isEditing() == false)) return;
 
-    WebEngine engine = mtWrapper.getEditorEngine();
+    WebEngine engine = MainTextWrapper.getEditorEngine();
     if (engine == null) return;
 
     Symbol symbol = charGrid.getSymbol();

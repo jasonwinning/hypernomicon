@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
 
@@ -106,7 +105,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void cleanupSearchDummy()
+  private static void cleanupSearchDummy()
   {
     if (searchDummy != null)
     {
@@ -146,7 +145,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 
           try
           {
-            dummySearchKeys.setSearchKey(searchDummy, getCellText(param1), true, false);
+            dummySearchKeys.setSearchKey(searchDummy, HyperTableCell.getCellText(param1), true, false);
           }
           catch (SearchKeyException e)
           {
@@ -191,7 +190,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         return result;
     }
 
-    return add;
+    return false;
   }
 
 //---------------------------------------------------------------------------
@@ -274,7 +273,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         {
           @Override protected void runFilter()
           {
-            linkList.generate(getCellText(op1));
+            linkList.generate(HyperTableCell.getCellText(op1));
             if (linkList.size() > 0)
               list.add(linkList.get(0).key.record);
           }
@@ -285,8 +284,8 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         {
           @Override protected void runFilter()
           {
-            RecordType specifiedType = getCellType(op1);
-            int specifiedID = getCellID(op2);
+            RecordType specifiedType = HyperTableCell.getCellType(op1);
+            int specifiedID = HyperTableCell.getCellID(op2);
             if ((specifiedType == hdtNone) || (specifiedID == -1)) return;
             HDT_Record record = db.records(specifiedType).getByID(specifiedID);
             if (record != null)

@@ -76,9 +76,10 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
 
   public String getDesc()
   {
-    if      (rbDesc1.isSelected()) return mainText1;
-    else if (rbDesc2.isSelected()) return mainText2;
-    else                           return getHtmlFromEditor(he3.getHtmlText());
+    if (rbDesc1.isSelected()) return mainText1;
+    if (rbDesc2.isSelected()) return mainText2;
+
+    return getHtmlFromEditor(he3.getHtmlText());
   }
 
 //---------------------------------------------------------------------------

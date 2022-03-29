@@ -47,8 +47,9 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
     path = new HyperPath(getObjPointer(rtFolderOfWorkFile), this);
   }
 
-  @Override public String listName()    { return path.getNameStr(); }
-  @Override public HyperPath getPath()  { return path; }
+  @Override public HyperPath getPath()                 { return path; }
+  @Override public String listName()                   { return path.getNameStr(); }
+  @Override protected String makeSortKeyTypeSpecific() { return path.getNameStr(); }
 
   public boolean getAnnotated()         { return getTagBoolean(tagAnnotated); }
   public void setAnnotated(boolean val) { updateTagBoolean(tagAnnotated, val); }
@@ -68,7 +69,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
   public static class FileNameAuthor
   {
     private final String name;
-    public final boolean isEditor, isTrans;
+    private final boolean isEditor, isTrans;
 
     public FileNameAuthor(String name, boolean isEditor, boolean isTrans)
     {
@@ -80,7 +81,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
 //---------------------------------------------------------------------------
 
-  private static class FileNameComponentConfig
+  private static final class FileNameComponentConfig
   {
     private final int code;
     private final String beforeSep, withinSep, afterSep;
@@ -99,8 +100,6 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
   public static String makeFileName(List<FileNameAuthor> authors, String year, String title, String ext)
   {
     List<FileNameComponentConfig> configList = new ArrayList<>();
-
-    String fileName = "";
 
     configList.add(new FileNameComponentConfig(db.prefs.getInt(PREF_KEY_FN_COMPONENT_1, BLANK_FN_COMPONENT),
                                                db.prefs.get(PREF_KEY_FN_BEFORE_SEP_1, ""),
@@ -128,6 +127,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
                                                db.prefs.get(PREF_KEY_FN_AFTER_SEP_5, "")));
 
     FileNameComponentConfig authConfig = findFirst(configList, config -> config.code == AUTHOR_FN_COMPONENT);
+    String fileName = "";
 
     for (FileNameComponentConfig config : configList)
       fileName = fileName + getFNComponent(config, authConfig, authors, year, title);
@@ -159,11 +159,11 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
     fileName = FilePath.removeInvalidFileNameChars(fileName);
 
-    int maxLen = db.prefs.getInt(PREF_KEY_FN_MAX_CHAR, 255), extLen;
+    int maxLen = db.prefs.getInt(PREF_KEY_FN_MAX_CHAR, 255);
 
     if (ext.length() > 0)
     {
-      extLen = ext.length() + FilenameUtils.EXTENSION_SEPARATOR_STR.length();
+      int extLen = ext.length() + FilenameUtils.EXTENSION_SEPARATOR_STR.length();
       if ((fileName.length() + extLen) > maxLen)
         fileName = fileName.substring(0, (maxLen - extLen));
 
@@ -181,8 +181,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
   private static String getAuthorStr(List<FileNameAuthor> authors, boolean isEditor, boolean isTrans)
   {
-    String authorStr, comp = "";
-    int pos;
+    String comp = "";
 
     for (FileNameAuthor author : authors)
     {
@@ -190,13 +189,13 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
           (author.isEditor && isEditor) ||
           (author.isTrans && isTrans))
       {
-        authorStr = author.name;
-        pos = authorStr.indexOf(',');
+        String authorStr = author.name;
+        int pos = authorStr.indexOf(',');
 
         if (pos >= 0)
           authorStr = authorStr.substring(0, pos);
 
-        comp = comp.isEmpty() ? authorStr : (comp + " " + authorStr);
+        comp = comp.isEmpty() ? authorStr : (comp + ' ' + authorStr);
       }
     }
 

@@ -30,6 +30,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.AnchorPane;
+import org.hypernomicon.view.MainCtrlr;
 
 public class WelcomeDlgCtrlr extends HyperDlg
 {
@@ -79,7 +80,7 @@ public class WelcomeDlgCtrlr extends HyperDlg
     linkWiki         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/wiki/Home/"));
     linkNews         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/news/"));
 
-    List<String> mruList = ui.getHdbMRUs();
+    List<String> mruList = MainCtrlr.getHdbMRUs();
 
     double layoutY = 3;
     for (String mru : mruList)

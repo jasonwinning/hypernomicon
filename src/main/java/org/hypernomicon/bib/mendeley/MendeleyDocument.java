@@ -252,7 +252,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String getFieldKey(BibFieldEnum bibFieldEnum)
+  private static String getFieldKey(BibFieldEnum bibFieldEnum)
   {
     switch (bibFieldEnum)
     {

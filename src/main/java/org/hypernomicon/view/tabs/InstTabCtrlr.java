@@ -74,7 +74,6 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   @Override public String recordName()                 { return tfName.getText(); }
   @Override protected RecordType type()                { return hdtInstitution; }
-  @Override public void enable(boolean enabled)        { ui.tabInst.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Institution rec) { curInst = rec; }
   @Override public void setDividerPositions()          { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
   @Override public void getDividerPositions()          { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
@@ -149,15 +148,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addSiblingInsts(HDT_Institution sibInst, HDT_Institution cousinInst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
+  private static void addSiblingInsts(HDT_Institution sibInst, HDT_Institution cousinInst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
   {
     cousinInst.subInstitutions.forEach(subInst -> addSiblingInsts(sibInst, subInst, peopleMap));
 
-    cousinInst.persons.forEach(person ->
-    {
-      if (peopleMap.containsKey(person))
-        peopleMap.get(person).add(sibInst);
-    });
+    cousinInst.persons.stream().filter(peopleMap::containsKey).forEach(person -> peopleMap.get(person).add(sibInst));
   }
 
 //---------------------------------------------------------------------------

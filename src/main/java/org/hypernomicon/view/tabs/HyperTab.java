@@ -48,14 +48,13 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 
 @SuppressWarnings("unused")
-public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Record> extends Control
+public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Record>
 {
   public enum TabEnum
   {
@@ -78,7 +77,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public abstract void update();
   public abstract void clear();
   public abstract boolean saveToRecord();
-  public abstract void enable(boolean enabled);
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
   public abstract void setRecord(HDT_CT record);
@@ -94,6 +92,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public final HDT_CT viewRecord()         { return view.getViewRecord(); }
   public final Tab getTab()                { return tab; }
   public final TabEnum getTabEnum()        { return tabEnum; }
+  public void enable(boolean enabled)      { getTab().getContent().setDisable(enabled == false); }
   void updateWebButtons(Preferences node)  { return; }
 
   public void newClick(RecordType objType, HyperTableRow row) { }
@@ -113,7 +112,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void baseInit(TabEnum tabEnum, Tab tab)
+  final void baseInit(TabEnum tabEnum, Tab tab)
   {
     this.tab = tab;
     this.tabEnum = tabEnum;
@@ -139,8 +138,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     {
       if (e.getTooShort())
         return falseWithErrorMessage("Unable to modify record: search key must be at least 3 characters.", tfSearchKey);
-      else
-        return falseWithErrorMessage("Unable to modify record: search key already exists.", tfSearchKey);
+
+      return falseWithErrorMessage("Unable to modify record: search key already exists.", tfSearchKey);
     }
 
     return true;
@@ -237,10 +236,10 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   public void refreshRecordPtr()
   {
-    nullSwitch(getView(), view ->
+    nullSwitch(getView(), thisView ->
     {
-      view.refreshRecordPtr();
-      nullSwitch(view.getViewRecord(), this::setRecord);
+      thisView.refreshRecordPtr();
+      nullSwitch(thisView.getViewRecord(), this::setRecord);
     });
   }
 
@@ -284,7 +283,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
       btn.setVisible(false);
       smb.setVisible(true);
 
-      smb.setText(ui.webButtonMap.get(prefKey + "1").getCaption());
+      smb.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
       setToolTip(smb, toolTipPrefix + smb.getText());
 
       smb.getItems().clear();
@@ -303,7 +302,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
       smb.setVisible(false);
       btn.setVisible(true);
 
-      btn.setText(ui.webButtonMap.get(prefKey + "1").getCaption());
+      btn.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
       setToolTip(btn, toolTipPrefix + btn.getText());
     }
   }

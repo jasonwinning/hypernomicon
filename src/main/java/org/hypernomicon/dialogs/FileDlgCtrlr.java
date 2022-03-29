@@ -267,8 +267,8 @@ public class FileDlgCtrlr extends HyperDlg
           Platform.runLater(this::btnOkClick);
           return;
         }
-        else
-          messageDialog(HyperPath.alreadyInUseMessage(newSrc, existingRecord), mtInformation);
+
+        messageDialog(HyperPath.alreadyInUseMessage(newSrc, existingRecord), mtInformation);
 
         // disable moving, only enable copying
         setRB_CopyOnly();

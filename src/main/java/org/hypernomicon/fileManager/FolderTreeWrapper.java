@@ -188,7 +188,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void pruneNode(TreeItem<FileRow> nodeItem)
+  private static void pruneNode(TreeItem<FileRow> nodeItem)
   {
     nodeItem.getChildren().removeIf(childItem ->
     {

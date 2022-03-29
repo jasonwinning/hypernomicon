@@ -53,6 +53,7 @@ import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryTabCtrlr;
 import org.hypernomicon.query.ResultsRow;
@@ -157,8 +158,7 @@ public final class MainCtrlr
   @FXML private ToolBar topToolBar;
   @FXML public Label lblStatus;
   @FXML public Menu mnuFavorites, mnuQueries;
-  @FXML private Tab tabQueries;
-  @FXML public Tab tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabTerms, tabTree, tabWorks;
+  @FXML private Tab tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML public ToggleButton btnPointerLaunch;
 
   public final WindowStack windows = new WindowStack();
@@ -191,9 +191,9 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private List<ResultsRow> results()          { return curQV.resultsTable.getTV().getItems(); }
+  private static List<ResultsRow> results()   { return curQV.resultsTable.getTV().getItems(); }
   MenuBar getMenuBar()                        { return menuBar; }
-  public TreeWrapper tree()                   { return treeHyperTab().getTree(); }
+  public static TreeWrapper tree()            { return treeHyperTab().getTree(); }
   public Stage getStage()                     { return stage; }
   public boolean isShuttingDown()             { return shuttingDown; }
 
@@ -205,22 +205,22 @@ public final class MainCtrlr
   @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) SettingsDlgCtrlr.build().showModal(); }
   @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord()) searchForMentions(activeRecord(), false); }
 
-  public PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }
-  public InstTabCtrlr   instHyperTab    () { return getHyperTab(instTabEnum    ); }
-  public WorkTabCtrlr   workHyperTab    () { return getHyperTab(workTabEnum    ); }
-  public FileTabCtrlr   fileHyperTab    () { return getHyperTab(fileTabEnum    ); }
-  public DebateTab      debateHyperTab  () { return getHyperTab(debateTabEnum  ); }
-  public PositionTab    positionHyperTab() { return getHyperTab(positionTabEnum); }
-  public ArgumentTab    argumentHyperTab() { return getHyperTab(argumentTabEnum); }
-  public NoteTab        noteHyperTab    () { return getHyperTab(noteTabEnum    ); }
-  public TermTab        termHyperTab    () { return getHyperTab(termTabEnum    ); }
-  public QueryTabCtrlr  queryHyperTab   () { return getHyperTab(queryTabEnum   ); }
-  public TreeTabCtrlr   treeHyperTab    () { return getHyperTab(treeTabEnum    ); }
+  public static PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }
+  public static InstTabCtrlr   instHyperTab    () { return getHyperTab(instTabEnum    ); }
+  public static WorkTabCtrlr   workHyperTab    () { return getHyperTab(workTabEnum    ); }
+  public static FileTabCtrlr   fileHyperTab    () { return getHyperTab(fileTabEnum    ); }
+  public static DebateTab      debateHyperTab  () { return getHyperTab(debateTabEnum  ); }
+  public static PositionTab    positionHyperTab() { return getHyperTab(positionTabEnum); }
+  public static ArgumentTab    argumentHyperTab() { return getHyperTab(argumentTabEnum); }
+  public static NoteTab        noteHyperTab    () { return getHyperTab(noteTabEnum    ); }
+  public static TermTab        termHyperTab    () { return getHyperTab(termTabEnum    ); }
+  public static QueryTabCtrlr  queryHyperTab   () { return getHyperTab(queryTabEnum   ); }
+  public static TreeTabCtrlr   treeHyperTab    () { return getHyperTab(treeTabEnum    ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class CreateMenuItems
+  private static final class CreateMenuItems
   {
     private final List<MenuItem> list1, list2;
 
@@ -233,19 +233,19 @@ public final class MainCtrlr
       list2.clear();
     }
 
-    public void add(MenuItem menuItem)
+    private void add(MenuItem menuItem)
     {
       list1.add(menuItem);
       list2.add(copyOf(menuItem));
     }
 
-    public void addSeparator()
+    private void addSeparator()
     {
       list1.add(new SeparatorMenuItem());
       list2.add(new SeparatorMenuItem());
     }
 
-    public void clear()
+    private void clear()
     {
       SeparatorMenuItem sepItem = (SeparatorMenuItem) findFirst(list1, item -> item instanceof SeparatorMenuItem);
       if (sepItem == null) return;
@@ -321,11 +321,11 @@ public final class MainCtrlr
     WorkTabCtrlr  .addHyperTab(workTabEnum  , tabWorks  , "view/tabs/WorkTab");
     FileTabCtrlr  .addHyperTab(fileTabEnum  , tabFiles  , "view/tabs/FileTab");
 
-    DebateTab  .create();
-    PositionTab.create();
-    ArgumentTab.create();
-    NoteTab    .create();
-    TermTab    .create();
+    DebateTab  .create(tabDebates);
+    PositionTab.create(tabPositions);
+    ArgumentTab.create(tabArguments);
+    NoteTab    .create(tabNotes);
+    TermTab    .create(tabTerms);
 
     QueryTabCtrlr .addHyperTab(queryTabEnum , tabQueries, "query/QueryTab");
     TreeTabCtrlr  .addHyperTab(treeTabEnum  , tabTree   , "tree/TreeTab");
@@ -659,7 +659,7 @@ public final class MainCtrlr
     mnuFindWithinName.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, QueryType.qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
         mnuFindWithinNameClick();
     });
@@ -669,9 +669,9 @@ public final class MainCtrlr
     mnuFindWithinAnyField.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, QueryType.qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
-        showSearch(true, QueryType.fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
     });
 
 //---------------------------------------------------------------------------
@@ -679,7 +679,7 @@ public final class MainCtrlr
     mnuAutoImport.setSelected(appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
     mnuAutoImport.setOnAction(event -> appPrefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
 
-    mnuChangeID.setVisible(app.debugging());
+    mnuChangeID.setVisible(debugging());
 
 //---------------------------------------------------------------------------
 
@@ -924,7 +924,7 @@ public final class MainCtrlr
 
     lblStatus.setText("");
 
-    if (!showSearch(true, QueryType.fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(query, hdtNone), null, query))
+    if (!showSearch(true, fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(query, hdtNone), null, query))
     {
       discardLastQuery(backClick);
       return;
@@ -942,7 +942,7 @@ public final class MainCtrlr
       else if (num == 0)
       {
         discardLastQuery(backClick);
-        lblStatus.setText("No results: searched " + db.getTypeName(type) + " records for \"" + query + "\"");
+        lblStatus.setText("No results: searched " + db.getTypeName(type) + " records for \"" + query + '"');
       }
     });
   }
@@ -1010,9 +1010,9 @@ public final class MainCtrlr
       bibManagerDlg.getDividerPositions();
 
       boolean iconified = stage.isIconified(), fullScreen = stage.isFullScreen(),
-              maximized = Environment.isMac() ? this.maximized : stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS. JDK-8087618
+              maximizedPrefVal = Environment.isMac() ? this.maximized : stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS. JDK-8087618
 
-      if (fullScreen || maximized) iconified = false; // This has to be done due to bug JDK-8087997
+      if (fullScreen || maximizedPrefVal) iconified = false; // This has to be done due to bug JDK-8087997
 
       appPrefs.putDouble(PREF_KEY_WINDOW_X, stage.getX());
       appPrefs.putDouble(PREF_KEY_WINDOW_Y, stage.getY());
@@ -1020,7 +1020,7 @@ public final class MainCtrlr
       appPrefs.putDouble(PREF_KEY_WINDOW_HEIGHT, stage.getHeight());
       appPrefs.putBoolean(PREF_KEY_WINDOW_ICONIFIED, iconified);
       appPrefs.putBoolean(PREF_KEY_WINDOW_FULLSCREEN, fullScreen);
-      appPrefs.putBoolean(PREF_KEY_WINDOW_MAXIMIZED, maximized);
+      appPrefs.putBoolean(PREF_KEY_WINDOW_MAXIMIZED, maximizedPrefVal);
 
       if (fileManagerDlg.shownAlready())
         HyperDlg.saveBoundPrefs(fileManagerDlg.getStage(), PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_WIDTH, PREF_KEY_FM_WINDOW_HEIGHT);
@@ -1041,7 +1041,7 @@ public final class MainCtrlr
     InterProcClient.removeThisInstance();
 
     if (jxBrowserInitialized)
-      Platform.runLater(previewWindow::cleanup); // This eventually closes the application main window
+      Platform.runLater(PreviewWindow::cleanup); // This eventually closes the application main window
     else
     {
       stage.close();
@@ -1354,11 +1354,11 @@ public final class MainCtrlr
           }
           else
           {
-            int size;
-            byte[] buffer = new byte[2048];
-
             if ("hdb".equals(filePath.getExtensionOnly()))
               srcFilePath = filePath;
+
+            int size;
+            byte[] buffer = new byte[2048];
 
             try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(filePath.toPath()), buffer.length))
             {
@@ -1462,8 +1462,8 @@ public final class MainCtrlr
       if (ultraTrim(name).isEmpty())
         name = activeTab().recordName();
 
-      if (confirmDialog("Type: " + db.getTypeName(type) + "\n" +
-                        "Name: " + name + "\n" +
+      if (confirmDialog("Type: " + db.getTypeName(type) + '\n' +
+                        "Name: " + name + '\n' +
                         "ID: " + record.getID() + "\n\n" + msg) == false) return false;
     }
 
@@ -1746,7 +1746,7 @@ public final class MainCtrlr
       if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.get(0).getRecord() != record)))
         return;
 
-      lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + record.listName() + "\"");
+      lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + record.listName() + '"');
     }
 
     discardLastQuery(backClick);
@@ -1831,10 +1831,10 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean revertToDiskCopy(HDT_Record record)
+  private static boolean revertToDiskCopy(HDT_Record record)
   {
     boolean success = true;
-    String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + "\"";
+    String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + '"';
 
     HDT_Hub hub = record.isUnitable() ? ((HDT_RecordWithMainText) record).getHub() : null;
     RecordState backupState = record.getRecordStateBackup(),
@@ -1963,7 +1963,7 @@ public final class MainCtrlr
       return (hdbPath != null) && falseWithErrorMessage("Unable to load database. The file does not exist: " + hdbPath);
 
     if (InterProcClient.checkFolder(hdbPath) == false)
-      return falseWithErrorMessage("Unable to load database: Database folder(s) are already in use by another instance of " + App.appTitle);
+      return falseWithErrorMessage("Unable to load database: Database folder(s) are already in use by another instance of " + appTitle);
 
     if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
     {
@@ -2032,7 +2032,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void saveHdbMRUs(List<String> mruList)
+  private static void saveHdbMRUs(List<String> mruList)
   {
     mruList.removeIf(String::isBlank);
     removeDupsInStrList(mruList);
@@ -2044,7 +2044,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<String> getHdbMRUs()
+  public static List<String> getHdbMRUs()
   {
     List<String> mruList = new ArrayList<>();
 
@@ -2522,7 +2522,7 @@ public final class MainCtrlr
     {
       String text = HyperTableCell.getCellText(hcbGoTo.selectedHTC()).trim();
       if (text.length() > 0)
-        lblStatus.setText("No results: searched " + db.getTypeName(selectorType()) + " records for \"" + text + "\"");
+        lblStatus.setText("No results: searched " + db.getTypeName(selectorType()) + " records for \"" + text + '"');
 
       return;
     }
@@ -2848,7 +2848,7 @@ public final class MainCtrlr
       case mrNo  : importMiscFile(null, filePath      ); return;
       case mrOk  : importBibFile (null, filePath      ); return;
 
-      default    : return;
+      default    : break;
     }
   }
 
@@ -2971,7 +2971,7 @@ public final class MainCtrlr
 
   private static WebTooltip searchKeyToolTip = null;
 
-  public void setSearchKeyToolTip(TextField tf)
+  public static void setSearchKeyToolTip(TextField tf)
   {
     if (searchKeyToolTip == null) searchKeyToolTip = new WebTooltip(
 

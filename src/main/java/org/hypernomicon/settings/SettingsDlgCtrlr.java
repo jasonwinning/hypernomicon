@@ -38,7 +38,6 @@ import org.hypernomicon.bib.mendeley.MendeleyOAuthApi;
 import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.util.CryptoUtil;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -220,7 +219,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
     btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
-    lblRedirect.setOnMouseClicked(event -> DesktopUtil.openWebLink(authUrl.get()));
+    lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
 
     btnVerify.setOnAction(event ->
     {
@@ -341,7 +340,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initAppTextField(TextField tf, String prefKey)
+  private static void initAppTextField(TextField tf, String prefKey)
   {
     tf.setText(appPrefs.get(prefKey, ""));
 
@@ -355,7 +354,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initDBCheckBox(CheckBox chk, String prefKey, boolean defValue)
+  private static void initDBCheckBox(CheckBox chk, String prefKey, boolean defValue)
   {
     chk.setSelected(db.prefs.getBoolean(prefKey, defValue));
     chk.selectedProperty().addListener((ob, oldValue, newValue) ->
@@ -369,7 +368,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initAppCheckBox(CheckBox chk, String prefKey, boolean defValue)
+  private static void initAppCheckBox(CheckBox chk, String prefKey, boolean defValue)
   {
     chk.setSelected(appPrefs.getBoolean(prefKey, defValue));
     chk.selectedProperty().addListener((ob, oldValue, newValue) ->
@@ -386,7 +385,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   {
     try
     {
-      lblStep2Instructions.setText("Click link to open web site where you will authorize " + App.appTitle + " to access your " +
+      lblStep2Instructions.setText("Click link to open web site where you will authorize " + appTitle + " to access your " +
                                    libType.getUserFriendlyName() + " account and get verification code.");
 
       if (libType == LibraryType.ltZotero)
@@ -514,7 +513,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     String typeName = db.getBibLibrary().type().getUserFriendlyName();
 
     if (confirmDialog("Do you really want to unlink your " + typeName + " account?" + System.lineSeparator() +
-                      "All associations between " + App.appTitle + " records and " + typeName + " entries will be erased." + System.lineSeparator() +
+                      "All associations between " + appTitle + " records and " + typeName + " entries will be erased." + System.lineSeparator() +
                       "This process cannot be undone.") == false)
       return;
 

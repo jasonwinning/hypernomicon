@@ -35,7 +35,6 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.apache.commons.io.FileUtils;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
-import org.hypernomicon.util.SplitString;
 import org.hypernomicon.util.filePath.FilePath;
 
 public final class InterProcClient
@@ -45,45 +44,6 @@ public final class InterProcClient
 //---------------------------------------------------------------------------
 
   private InterProcClient() { throw new UnsupportedOperationException(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static class AppInstance
-  {
-    private final String instanceID;
-    private final int portNum;
-    private final FilePath dbPath;
-
-    private AppInstance(String instanceID, int portNum, FilePath dbPath)
-    {
-      this.instanceID = instanceID;
-      this.portNum = portNum;
-      this.dbPath = FilePath.isEmpty(dbPath) ? new FilePath("") : dbPath;
-    }
-
-  //---------------------------------------------------------------------------
-
-    @Override public String toString()
-    {
-      return instanceID + ";" + portNum + ";" + dbPath;
-    }
-
-  //---------------------------------------------------------------------------
-
-    private static AppInstance fromString(String line)
-    {
-      SplitString splitStr = new SplitString(line, ';');
-
-      String instanceID = splitStr.next();
-      int portNum = parseInt(splitStr.next(), -1);
-      FilePath dbPath = new FilePath(splitStr.next());
-
-      if (safeStr(instanceID).isBlank() || (portNum < 1)) return null;
-
-      return new AppInstance(instanceID, portNum, dbPath);
-    }
-  }
 
 //---------------------------------------------------------------------------
 
@@ -114,17 +74,17 @@ public final class InterProcClient
     FilePath filePath = tempDir().resolve(new FilePath(tempFileName));
     if (filePath.exists() == false) return;
 
-    List<String> s = null;
+    List<String> lines = null;
 
-    try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
+    try { lines = FileUtils.readLines(filePath.toFile(), UTF_8); }
     catch (IOException e) { noOp(); }
 
-    if (collEmpty(s) == false) s.forEach(line ->
+    if (collEmpty(lines) == false) lines.forEach(line ->
     {
       AppInstance instance = AppInstance.fromString(line);
 
       if (instance != null)
-        idToInstance.put(instance.instanceID, instance);
+        idToInstance.put(instance.getID(), instance);
     });
 
     if (firstRun && idToInstance.isEmpty())
@@ -176,7 +136,7 @@ public final class InterProcClient
     {
       if (instanceID.equals(thisInstanceID)) return;
 
-      try (Socket clientSocket = new Socket("localhost", instance.portNum);
+      try (Socket clientSocket = new Socket("localhost", instance.getPortNum());
            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
       {
@@ -187,7 +147,7 @@ public final class InterProcClient
         AppInstance newInstance = AppInstance.fromString(line);
 
         if (newInstance != null)
-          idToInstance.put(newInstance.instanceID, newInstance);
+          idToInstance.put(newInstance.getID(), newInstance);
       }
       catch (IOException e) { noOp(); }
     });
@@ -235,9 +195,9 @@ public final class InterProcClient
 
     for (AppInstance instance : idToInstance.values())
     {
-      if (instance.instanceID.equals(thisInstanceID) == false)
-        if (FilePath.isEmpty(instance.dbPath) == false)
-          if (instance.dbPath.isSubpath(newDbPath) || newDbPath.isSubpath(instance.dbPath))
+      if (instance.getID().equals(thisInstanceID) == false)
+        if (FilePath.isEmpty(instance.getDBPath()) == false)
+          if (instance.getDBPath().isSubpath(newDbPath) || newDbPath.isSubpath(instance.getDBPath()))
             return false;
     }
 

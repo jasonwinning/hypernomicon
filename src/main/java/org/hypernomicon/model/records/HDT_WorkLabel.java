@@ -42,30 +42,30 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
   {
     super(xmlState, dataset, tagText);
 
-    parentLabels = getObjList(rtParentLabelOfLabel);
-    subLabels = getSubjList(rtParentLabelOfLabel);
-    works = getSubjList(rtLabelOfWork);
-    miscFiles = getSubjList(rtLabelOfFile);
+    parentLabels = getObjList (rtParentLabelOfLabel);
+    subLabels    = getSubjList(rtParentLabelOfLabel);
+    works        = getSubjList(rtLabelOfWork);
+    miscFiles    = getSubjList(rtLabelOfFile);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()    { return name(); }
-  @Override public String getCBText()   { return getExtendedText(); }
-  @Override public boolean isUnitable() { return true; }
+  @Override public String listName()          { return name(); }
+  @Override public String getCBText()         { return extendedText(); }
+  @Override public final boolean isUnitable() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getExtendedText()
+  public String extendedText()
   {
     if (parentLabels.size() > 0)
     {
       if (parentLabels.get(0).getID() == 1) return name();
-      String parentText = parentLabels.get(0).getExtendedText();
+      String parentText = parentLabels.get(0).extendedText();
       if (parentText.length() > 0)
-        return parentText + "/" + name();
+        return parentText + '/' + name();
     }
 
     return name();

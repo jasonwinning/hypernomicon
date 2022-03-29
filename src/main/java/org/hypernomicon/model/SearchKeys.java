@@ -80,7 +80,7 @@ public final class SearchKeys
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    @Override public String toString()  { return (startOnly ? "^" + text : text) + (endOnly ? "$" : ""); }
+    @Override public String toString()  { return (startOnly ? '^' + text : text) + (endOnly ? "$" : ""); }
     private String getPrefix()          { return text.substring(0, 3).toLowerCase(); }
     private HDT_Record getRecord()      { return record; }
 

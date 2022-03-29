@@ -213,14 +213,13 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class RebuildThread extends HyperThread
+  private static final class RebuildThread extends HyperThread
   {
     private RebuildThread(HyperTask task)
     {
       super(task);
       setDaemon(true);
       task.setThread(this);
-      start();
     }
   }
 
@@ -293,7 +292,7 @@ class MentionsIndex
       :
         () -> ui.updateProgress("Indexing:", ctr / total)));
 
-    thread = new RebuildThread(task);
+    (thread = new RebuildThread(task)).start();
   }
 
 //---------------------------------------------------------------------------

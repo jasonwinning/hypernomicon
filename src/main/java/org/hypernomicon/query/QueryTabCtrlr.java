@@ -46,6 +46,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -110,7 +111,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
-  public class QueryView
+  public final class QueryView
   {
     private MasterDetailPane spMain, spLower;
     private TableView<HyperTableRow> tvFields;
@@ -181,12 +182,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, queryTypePopulator, (row, cellVal, nextColNdx, nextPopulator) ->
       {
         int query = row.getID(1);
-        QueryType qt = QueryType.codeToVal(HyperTableCell.getCellID(cellVal));
+        QueryType qt = QueryType.codeToVal(getCellID(cellVal));
 
         boolean tempDASD = disableAutoShowDropdownList;
         disableAutoShowDropdownList = true;
 
-        if ((qt == QueryType.qtReport) ||
+        if ((qt == qtReport) ||
             ((query != QUERY_ANY_FIELD_CONTAINS) &&
              (query != QUERY_WITH_NAME_CONTAINING) &&
              (query != QUERY_LIST_ALL)))
@@ -228,7 +229,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
           disableAutoShowDropdownList = tempDASD;
 
-          if ((HyperTableCell.getCellID(cellVal) >= 0) && (pop.getValueType() == cvtOperand))
+          if ((getCellID(cellVal) >= 0) && (pop.getValueType() == cvtOperand))
           {
             row.setCellValue(nextColNdx, pop.getChoiceByID(null, EQUAL_TO_OPERAND_ID));
             if ((tempDASD == false) && queryHasOperand(row.getID(1), getQueryType(row), 3, cellVal))
@@ -282,8 +283,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       switchToRecordMode();
 
-      scaleNodeForDPI(ctrlr);
-      setFontSize(ctrlr);
+      scaleNodeForDPI(spMain);
+      setFontSize(spMain);
     }
 
   //---------------------------------------------------------------------------
@@ -610,7 +611,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       for (HyperTableRow row : htFields.dataRows())
       {
-        if (QueryType.codeToVal(row.getID(0)) == QueryType.qtReport)
+        if (QueryType.codeToVal(row.getID(0)) == qtReport)
         {
           htFields.setDataRows(List.of(row));
 
@@ -731,7 +732,6 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       task = new HyperTask("Query") { @Override protected Boolean call() throws Exception
       {
         boolean firstCall = true;
-        HDT_Record record;
 
         recordTypeToColumnGroup.clear();
         resultsBackingList.clear();
@@ -750,7 +750,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           if ((recordNdx % 50) == 0)
             updateProgress(recordNdx, total);
 
-          record = combinedSource.next();
+          HDT_Record record = combinedSource.next();
 
           boolean lastConnectiveWasOr = false, firstRow = true, add = false;
 
@@ -808,14 +808,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     private void addColumns(RecordType recordType, ColumnGroup group)
     {
-      EnumMap<RecordType, ColumnGroupItem> map;
-
       for (ColumnGroupItem item : group)
       {
         if (item.tag == tagName) continue;
 
         ResultColumn<? extends Comparable<?>> col = null;
-        map = new EnumMap<>(RecordType.class);
+        EnumMap<RecordType, ColumnGroupItem> map = new EnumMap<>(RecordType.class);
         map.put(recordType, item);
 
         for (ColumnGroup grp : colGroups) for (ColumnGroupItem otherItem : grp)
@@ -948,13 +946,13 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       for (HyperTableRow row : htFields.dataRows())
       {
-        if (row.getID(0) == QueryType.qtAllRecords.getCode())
+        if (row.getID(0) == qtAllRecords.getCode())
         {
           switch (row.getID(1))
           {
             case AllQueryEngine.QUERY_LINKING_TO_RECORD : case AllQueryEngine.QUERY_MATCHING_RECORD :
 
-              HDT_Record record = HyperTableCell.getRecord(row.getCell(3));
+              HDT_Record record = getRecord(row.getCell(3));
               if (record != null) return record;
               break;
 
@@ -980,7 +978,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           {
             if (((VariablePopulator) htFields.getPopulator(colNdx)).getRestricted(row) == false)
             {
-              String cellText = HyperTableCell.getCellText(row.getCell(colNdx));
+              String cellText = getCellText(row.getCell(colNdx));
               if (cellText.length() > 0)
                 return cellText;
             }
@@ -1126,7 +1124,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           HyperDataCategory cat = hdcString;
           boolean catSet = false;
 
-          for (HDI_Schema schema : db.getSchemasByTag(Tag.getTagByNum(row.getID(2))))
+          for (HDI_Schema schema : db.getSchemasByTag(getTagByNum(row.getID(2))))
           {
             relType = schema.getRelType();
 
@@ -1227,7 +1225,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       htFields.clear();
 
       HyperTableRow row = htFields.newDataRow();
-      htFields.selectID(0, row, QueryType.qtAllRecords.getCode());
+      htFields.selectID(0, row, qtAllRecords.getCode());
       htFields.selectID(1, row, QUERY_ANY_FIELD_CONTAINS);
       htFields.selectRow(row);
 
@@ -1317,7 +1315,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML private TextField tfName;
   @FXML private TabPane tabPane;
   @FXML private Tab tabNew;
-  @FXML private AnchorPane apDescription;
+  @FXML private AnchorPane apOrigDescription;
   @FXML private WebView webView;
 
   private ComboBox<CheckBoxOrCommand> fileBtn = null;
@@ -1339,8 +1337,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public final List<QueryView> queryViews = new ArrayList<>();
 
   public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(); }
-  private void updateCB()                           { if (curQV != null) curQV.updateCB(); }
-  public void btnExecuteClick()                     { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
+  private static void updateCB()                    { if (curQV != null) curQV.updateCB(); }
+  public static void btnExecuteClick()              { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
                                                                                        // will all be treated as unfiltered
   @Override protected RecordType type()             { return hdtNone; }
   @Override public void update()                    { curQV.refreshView(true); }
@@ -1361,7 +1359,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private List<ResultsRow> results()
+  private static List<ResultsRow> results()
   {
     if ((curQV == null) || (curQV.inRecordMode == false)) return FXCollections.observableArrayList();
 
@@ -1428,9 +1426,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tfName.textProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue == null) return;
-      if (safeStr(oldValue).equals(newValue)) return;
-      if (curQV == null) return;
+      if ((newValue == null) || newValue.equals(safeStr(oldValue)) || (curQV == null)) return;
 
       curQV.favNameChange();
     });
@@ -1552,7 +1548,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     clearingViews = true;
 
     removeFromParent(webView);
-    addToParent(webView, apDescription);
+    addToParent(webView, apOrigDescription);
 
     queryViews.removeIf(queryView ->
     {
@@ -1574,7 +1570,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private <HDT_T extends HDT_Record> boolean evaluate(HDT_T record, HyperTableRow row, boolean searchLinkedRecords, boolean firstCall, boolean lastCall)
+  private static <HDT_T extends HDT_Record> boolean evaluate(HDT_T record, HyperTableRow row, boolean searchLinkedRecords, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
@@ -1615,10 +1611,14 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
               if (subjRecord.getID() == getCellID(param3))
                 return opID == EQUAL_TO_OPERAND_ID;
 
+              break;
+
             case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
 
               if (subjRecord.listName().toLowerCase().contains(getCellText(param3).toLowerCase()))
                 return opID == CONTAINS_OPERAND_ID;
+
+              break;
 
             default :
               break;
@@ -1639,7 +1639,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       case QUERY_WHERE_FIELD :
 
-        Tag tag = Tag.getTagByNum(getCellID(param1));
+        Tag tag = getTagByNum(getCellID(param1));
         HDI_Schema schema = record.getSchema(tag);
 
         if (schema == null) return false;
@@ -1702,6 +1702,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
                 return (record.resultTextForTag(tag).length() > 0) == (getCellID(param2) == IS_NOT_EMPTY_OPERAND_ID);
             }
+
+          default : return false;
         }
 
       default :
@@ -1715,7 +1717,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   public static void addQueries(QueryPopulator pop, HyperTableRow row, QueryType newType)
   {
-    if (newType == QueryType.qtReport)
+    if (newType == qtReport)
     {
       ReportEngine.addQueries(pop, row);
       return;
@@ -1867,11 +1869,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @Override public void enable(boolean enabled)
   {
-    getChildren().forEach(node ->
-    {
-      if (node != tabPane)
-        node.setDisable(enabled == false);
-    });
+    ((Parent)getTab().getContent()).getChildrenUnmodifiable().stream().filter(node -> node != tabPane)
+                                                                      .forEach(node -> node.setDisable(enabled == false));
   }
 
 //---------------------------------------------------------------------------

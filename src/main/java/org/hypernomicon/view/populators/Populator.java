@@ -35,7 +35,7 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class SimplePopulator extends Populator
+  private static final class SimplePopulator extends Populator
   {
   //---------------------------------------------------------------------------
 
@@ -126,11 +126,7 @@ public abstract class Populator
 
   public HyperTableCell getChoiceByID(HyperTableRow row, int id)
   {
-    for (HyperTableCell cell : populate(nullSwitch(row, dummyRow), false))
-      if (HyperTableCell.getCellID(cell) == id)
-        return cell;
-
-    return null;
+    return findFirst(populate(nullSwitch(row, dummyRow), false), cell -> HyperTableCell.getCellID(cell) == id);
   }
 
 //---------------------------------------------------------------------------

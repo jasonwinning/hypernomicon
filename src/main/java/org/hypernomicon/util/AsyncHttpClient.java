@@ -42,7 +42,7 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  class RequestThread extends HyperThread
+  final class RequestThread extends HyperThread
   {
     private final ResponseHandler<? extends Boolean> responseHandler;
     private final Consumer<Exception> failHndlr;
@@ -55,8 +55,6 @@ public class AsyncHttpClient
 
       this.responseHandler = responseHandler;
       this.failHndlr = failHndlr;
-
-      start();
     }
 
     @Override public void run()
@@ -112,7 +110,7 @@ public class AsyncHttpClient
       lastUrl = "";
     }
 
-    requestThread = new RequestThread(responseHandler, failHndlr);
+    (requestThread = new RequestThread(responseHandler, failHndlr)).start();
     stopped = false;
   }
 
@@ -153,7 +151,7 @@ public class AsyncHttpClient
     {
       sc = SSLContext.getInstance("TLS");
 
-      X509TrustManager trustMgr = new X509TrustManager()
+      TrustManager trustMgr = new X509TrustManager()
       {
         @Override public void checkClientTrusted(X509Certificate[] chain, String authType) { return; }
         @Override public void checkServerTrusted(X509Certificate[] chain, String authType) { return; }

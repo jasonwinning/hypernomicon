@@ -70,7 +70,7 @@ public class BibField
 
     public BibFieldType getType()       { return type; }
     public String getUserFriendlyName() { return userFriendlyName; }
-    public boolean isMultiLine()        { return type == BibFieldType.bftMultiString; }
+    public boolean isMultiLine()        { return type == bftMultiString; }
   }
 
   public enum BibFieldType { bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor }
@@ -150,9 +150,9 @@ public class BibField
       if (sb.length() > 0)
       {
         if (StringUtils.isAlpha(StringUtils.right(sb.toString(), 1)))
-          sb.append(":");
+          sb.append(':');
 
-        sb.append(" ");
+        sb.append(' ');
       }
 
       sb.append(titleStr);

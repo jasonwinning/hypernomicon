@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.relations;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -30,7 +30,7 @@ public final class ObjectGroup
 {
   private final HDT_Record primary;
   private final String primaryStr;
-  private final Map<Tag, NestedValue> map = new HashMap<>();
+  private final Map<Tag, NestedValue> map = new EnumMap<>(Tag.class);
 
   public ObjectGroup(HDT_Record primary) { this.primary = primary; primaryStr = null;       }
   public ObjectGroup(String primaryStr)  { primary = null;    this.primaryStr = primaryStr; }

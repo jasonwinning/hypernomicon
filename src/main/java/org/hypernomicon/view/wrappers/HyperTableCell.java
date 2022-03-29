@@ -144,16 +144,17 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
   {
     if (sortMethod == smLast)
       return Integer.MAX_VALUE;
-    else if (otherCell.sortMethod == smLast)
+
+    if (otherCell.sortMethod == smLast)
       return Integer.MIN_VALUE + 1;
 
     if (sortMethod == smTextSimple)
       return text.compareTo(otherCell.text);
-    else if (sortMethod == smNumeric)
-    {
+
+    if (sortMethod == smNumeric)
       return parseInt(text, Integer.MAX_VALUE) - parseInt(getCellText(otherCell), Integer.MAX_VALUE);
-    }
-    else if (sortMethod == smWork)
+
+    if (sortMethod == smWork)
     {
       HDT_Work thisWork = getRecord(), otherWork = otherCell.getRecord();
 

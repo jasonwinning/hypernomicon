@@ -72,7 +72,7 @@ public class EntryTypeCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initOne(ComboBox<EntryType> cb, RadioButton rb, BibData bd)
+  private static void initOne(ComboBox<EntryType> cb, RadioButton rb, BibData bd)
   {
     bibManagerDlg.initCB(cb);
 
@@ -81,7 +81,7 @@ public class EntryTypeCtrlr extends BibFieldRow
       EntryType entryType = bd.getEntryType();
       if (cb.getItems().contains(entryType) == false)
       {
-        messageDialog("\"" + entryType.getUserFriendlyName() + "\" is not a valid " +
+        messageDialog('"' + entryType.getUserFriendlyName() + "\" is not a valid " +
                       db.getBibLibrary().type().getUserFriendlyName() + " entry type.", mtWarning);
         cb.getSelectionModel().select(null);
       }
@@ -100,10 +100,10 @@ public class EntryTypeCtrlr extends BibFieldRow
 
   public EntryType getEntryType()
   {
-    if      (rb1.isSelected()) return cb1.getValue();
-    else if (rb2.isSelected()) return cb2.getValue();
-    else if (rb3.isSelected()) return cb3.getValue();
-    else                       return cb4.getValue();
+    if (rb1.isSelected()) return cb1.getValue();
+    if (rb2.isSelected()) return cb2.getValue();
+    if (rb3.isSelected()) return cb3.getValue();
+                          return cb4.getValue();
   }
 
 //---------------------------------------------------------------------------
