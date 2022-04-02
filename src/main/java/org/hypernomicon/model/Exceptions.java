@@ -28,7 +28,7 @@ public final class Exceptions
 {
   private Exceptions() { throw new UnsupportedOperationException(); }
 
-  public static class InvalidItemException extends Exception
+  public static class InvalidItemException extends HyperDataException
   {
     public InvalidItemException(int recordID, RecordType recordType, String itemName)
     {
@@ -59,7 +59,7 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class DuplicateRecordException extends Exception
+  public static class DuplicateRecordException extends HyperDataException
   {
     DuplicateRecordException(int id, RecordType type)
     {
@@ -70,7 +70,7 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class SearchKeyException extends Exception
+  public static class SearchKeyException extends HyperDataException
   {
     private final boolean tooShort;
 
@@ -88,7 +88,7 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class RestoreException extends Exception { RestoreException(String msg) { super(msg); } }
+  public static class RestoreException extends HyperDataException { RestoreException(String msg) { super(msg); } }
 
   public static class ConceptChangedException extends RestoreException
   {
@@ -110,7 +110,7 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class RelationCycleException extends Exception
+  public static class RelationCycleException extends HyperDataException
   {
     public RelationCycleException(HDT_Record child, HDT_Record parent)
     {
@@ -125,14 +125,14 @@ public final class Exceptions
   public static class HyperDataException extends Exception
   {
     public HyperDataException(String msg, Throwable e) { super(msg, e);            }
-    HyperDataException(Throwable e)                    { super(e.getMessage(), e); }
-    HyperDataException(String msg)                     { super(msg);               }
+    public HyperDataException(Throwable e)             { super(e.getMessage(), e); }
+    public HyperDataException(String msg)              { super(msg);               }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class HDB_InternalError extends Exception
+  public static class HDB_InternalError extends HyperDataException
   {
     public HDB_InternalError(int newNum)
     {

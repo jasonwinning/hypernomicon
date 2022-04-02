@@ -191,7 +191,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static List<ResultsRow> results()   { return curQV.resultsTable.getTV().getItems(); }
   MenuBar getMenuBar()                        { return menuBar; }
   public static TreeWrapper tree()            { return treeHyperTab().getTree(); }
   public Stage getStage()                     { return stage; }
@@ -699,7 +698,7 @@ public final class MainCtrlr
       if ((record.getType() == hdtPerson) && (personHyperTab().activeRecord() == record))
         personHyperTab().assignPicture(null, false);  // User has already been asked if they want to delete the picture; don't ask again
 
-      queryHyperTab().queryViews.forEach(qv -> qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
+      queryHyperTab().removeRecord(record);
 
       int ndx = favorites.indexOfRecord(record);
 
@@ -741,7 +740,7 @@ public final class MainCtrlr
     int oldID = parseInt(ctrlr.tfOldID.getText(), -100),
         newID = parseInt(ctrlr.tfNewID.getText(), -1);
 
-    queryHyperTab().queryViews.forEach(qv -> qv.resultsTable.getTV().refresh());
+    queryHyperTab().refreshTables();
     htFind.changeIDs(changedType, oldID, newID);
 
     db.rebuildMentions();
@@ -935,10 +934,11 @@ public final class MainCtrlr
 
     Platform.runLater(() ->
     {
-      int num = results().size();
+      List<ResultsRow> resultList = QueryTabCtrlr.results();
+      int num = resultList.size();
 
       if (num == 1)
-        goToRecord(results().get(0).getRecord(), false);
+        goToRecord(resultList.get(0).getRecord(), false);
       else if (num == 0)
       {
         discardLastQuery(backClick);

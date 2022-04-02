@@ -18,38 +18,26 @@
 package org.hypernomicon.model;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
-import com.google.common.collect.Iterators;
-
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
-public final class KeywordLinkList implements Iterable<KeywordLink>
+public final class KeywordLinkList
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final List<KeywordLink> keywordLinks = new ArrayList<>();
+  public static List<KeywordLink> generate(String text)   { return generate(text, false, null); }
 
-  public int size()                   { return keywordLinks.size(); }
-  public KeywordLink get(int ndx)     { return keywordLinks.get(ndx); }
-  public void generate(String text)   { generate(text, false, null); }
-
-  @Override public Iterator<KeywordLink> iterator() { return Iterators.unmodifiableIterator(keywordLinks.iterator()); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void generate(String text, boolean overrideSet, SearchKeys searchKeysToUse)
+  public static List<KeywordLink> generate(String text, boolean overrideSet, SearchKeys searchKeysToUse)
   {
-    keywordLinks.clear();
+    List<KeywordLink> keywordLinks = new ArrayList<>();
 
-    if (text.isEmpty()) return;
+    if (text.isEmpty()) return keywordLinks;
 
     List<Integer> posMap = new ArrayList<>();
     text = convertToEnglishCharsWithMap(text, posMap); // posMap maps output position (key) to input position (value)
@@ -141,10 +129,12 @@ public final class KeywordLinkList implements Iterable<KeywordLink>
       }
 
       if (curKey != null)
-        ndx = add(text, ndx, curMatchLen, curKey, posMap);
+        ndx = add(keywordLinks, text, ndx, curMatchLen, curKey, posMap);
 
       ndx++;
     }
+
+    return keywordLinks;
   }
 
 //---------------------------------------------------------------------------
@@ -177,7 +167,7 @@ public final class KeywordLinkList implements Iterable<KeywordLink>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int add(String text, int ndx, int matchLen, SearchKeyword key, List<Integer> posMap)
+  private static int add(List<KeywordLink> keywordLinks, String text, int ndx, int matchLen, SearchKeyword key, List<Integer> posMap)
   {
     int right = ndx + matchLen;
 

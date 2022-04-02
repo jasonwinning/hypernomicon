@@ -1170,10 +1170,6 @@ public final class HyperDB
 
       addRootFolder();
     }
-    catch (RelationCycleException | HDB_InternalError | SearchKeyException e)
-    {
-      throw new HyperDataException(e);
-    }
     catch (RestoreException e)
     {
       throw new HyperDataException("Internal error #42837", e);
@@ -1548,12 +1544,9 @@ public final class HyperDB
 
   private void initNestedItems(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relation)
   {
-    Collection<HDI_Schema> schemas = relationSets.get(relation).getSchemas();
-    if (schemas == null) return;
-
     ObjectProperty<HDI_OfflineBase> item = new SimpleObjectProperty<>();
 
-    for (HDI_Schema schema : schemas)
+    for (HDI_Schema schema : relationSets.get(relation).getSchemas())
     {
       switch (schema.getCategory())
       {
@@ -2019,7 +2012,7 @@ public final class HyperDB
                          addTag("parent_glossary"   , tagParentGlossary , "Parent Glossary"          , hdtGlossary   );
                          addTag("linked_record"     , tagLinkedRecord   , "Linked Record"            , hdtAuxiliary  );
                          addTag("key_work"          , tagKeyWork        , "Key Works"                , hdtAuxiliary  );
-                         addTag("display_item"      , tagDisplayRecord  , "Relevant Records"         , hdtAuxiliary  );
+                         addTag("display_item"      , tagDisplayRecord  , "Displayed Records"        , hdtAuxiliary  );
                          addTag("larger_work"       , tagLargerWork     , "Larger Work"              , hdtWork       );
                          addTag("parent_label"      , tagParentLabel    , "Parent Label"             , hdtWorkLabel  );
                          addTag("parent_group"      , tagParentGroup    , "Parent Group"             , hdtPersonGroup);

@@ -37,12 +37,12 @@ import java.util.stream.Collectors;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
 import org.hypernomicon.model.KeywordLink;
+import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.query.engines.AllQueryEngine;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -151,6 +151,7 @@ public class OmniFinder
     private String lastQuery = "", queryLC;
     private Map<HDT_Record, List<PersonForDupCheck>> recordToPersonList;
     private PersonForDupCheck queryPerson;
+    private List<KeywordLink> linkList;
     private Iterator<TierEnum> tierIt;
     private Iterator<? extends HDT_Record> recordIt;
     private Iterator<RecordType> typeIt;
@@ -177,7 +178,7 @@ public class OmniFinder
       buffer.clear();
       firstBuffer = true;
 
-      AllQueryEngine.linkList.generate(query);
+      linkList = KeywordLinkList.generate(query);
 
       tierIt = tierSet.iterator();
       curTier = tierIt.next();
@@ -293,12 +294,12 @@ public class OmniFinder
 
         case tierAuthorKeyword:
 
-          if (AllQueryEngine.linkList.size() > 0)
+          if (linkList.size() > 0)
           {
             HDT_Person otherPersonRecord = otherPerson.getPerson();
 
             if (otherPersonRecord != null)
-              for (KeywordLink keyLink : AllQueryEngine.linkList)
+              for (KeywordLink keyLink : linkList)
                 if (keyLink.key.record == otherPersonRecord)
                   return true;
           }
@@ -357,10 +358,9 @@ public class OmniFinder
 
         case tierKeyword:
 
-          if (AllQueryEngine.linkList.size() > 0)
-            for (KeywordLink keyLink : AllQueryEngine.linkList)
-              if (keyLink.key.record == record)
-                return true;
+          for (KeywordLink keyLink : linkList)
+            if (keyLink.key.record == record)
+              return true;
 
           return false;
 

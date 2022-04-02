@@ -29,6 +29,7 @@ import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.RecordSelectDlgCtrlr;
 import org.hypernomicon.dialogs.ValueSelectDlgCtrlr;
 import org.hypernomicon.model.KeywordLink;
+import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Record;
@@ -36,7 +37,6 @@ import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.query.engines.AllQueryEngine;
 import org.hypernomicon.util.AutoCompleteCB;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.Populator;
@@ -433,7 +433,7 @@ public class HyperCB implements CommitableWrapper
     {
       if (cells.size() > 1)
       {
-        if (populator.getValueType() == CellValueType.cvtRecord)
+        if (populator.getValueType(row) == CellValueType.cvtRecord)
         {
           RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.build(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
           selection = ctrlr.showModal() ? populator.getChoiceByID(row, ctrlr.getRecord().getID()) : null;
@@ -520,7 +520,7 @@ public class HyperCB implements CommitableWrapper
     boolean containsNum = Pattern.compile("\\d").matcher(str).find();
     PersonName personName = null;
 
-    AllQueryEngine.linkList.generate(str);
+    List<KeywordLink> linkList = KeywordLinkList.generate(str);
 
     cbItemsLoop: for (HyperTableCell cell : cb.getItems())
     {
@@ -564,8 +564,8 @@ public class HyperCB implements CommitableWrapper
           }
         }
 
-        if (AllQueryEngine.linkList.size() > 0)
-          for (KeywordLink keyLink : AllQueryEngine.linkList)
+        if (linkList.size() > 0)
+          for (KeywordLink keyLink : linkList)
             if (keyLink.key.record == record)
             {
               cells.add(cell);

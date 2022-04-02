@@ -22,6 +22,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.engines.QueryEngine.QueryType;
@@ -114,9 +115,9 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
 
   public abstract void queryChange(int query, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3);
 
-  public abstract boolean evaluate(HDT_T record, boolean firstCall, boolean lastCall);
+  public abstract boolean evaluate(int curQuery, HDT_T record, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException;
 
-  public void cancelled() { }
+  public void cleanup() { }
 
   public void op1Change(int query, HyperTableCell op1, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3) { }
 

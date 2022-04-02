@@ -49,7 +49,7 @@ public class LicenseReportEngine extends ReportEngine
 
   @Override public boolean alwaysShowDescription() { return true; }
 
-  @Override public void generate(HyperTask task, HyperTableCell param1, HyperTableCell param2, HyperTableCell param3) { }
+  @Override public void generate(HyperTask task, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

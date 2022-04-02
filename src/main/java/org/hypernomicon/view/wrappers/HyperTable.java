@@ -608,7 +608,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       pop = cols.get(colNdx - 1).getPopulator();
 
-      if ((pop != null) && (pop.getValueType() == cvtRecordType))
+      if ((pop != null) && (pop.getValueType(row) == cvtRecordType))
       {
         rtp = (RecordTypePopulator) pop;
 

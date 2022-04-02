@@ -18,9 +18,6 @@
 package org.hypernomicon.query.engines;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
 
@@ -28,8 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-
-import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.records.*;
@@ -50,7 +48,6 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
                            QUERY_MATCHING_STRING        = QUERY_FIRST_NDX + 6;
   private static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7;
 
-  public static final KeywordLinkList linkList = new KeywordLinkList();
   private static final SearchKeys dummySearchKeys = new SearchKeys();
   private static HDT_Record searchDummy = null;
   private static final MutableBoolean choseNotToWait = new MutableBoolean();
@@ -97,15 +94,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void cancelled()
-  {
-    cleanupSearchDummy();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void cleanupSearchDummy()
+  @Override public void cleanup()
   {
     if (searchDummy != null)
     {
@@ -118,14 +107,14 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Record record, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(int curQuery, HDT_Record record, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
   {
     boolean add = false;
 
     switch (curQuery)
     {
       case QUERY_RECORD_TYPE :
-        return record.getType() == HyperTableCell.getCellType(param1);
+        return record.getType() == HyperTableCell.getCellType(op1);
 
       case QUERY_RECORD_EQUALS :
       case QUERY_MATCHING_RECORD :
@@ -139,20 +128,9 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         {
           dummySearchKeys.removeAll();
 
-          RecordState recordState = new RecordState(hdtPerson, -1, "", "", "", "", true);
+          searchDummy = db.createNewRecordFromState(new RecordState(hdtPerson, -1, "", "", "", "", true), true);
 
-          try { searchDummy = db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
-
-          try
-          {
-            dummySearchKeys.setSearchKey(searchDummy, HyperTableCell.getCellText(param1), true, false);
-          }
-          catch (SearchKeyException e)
-          {
-            messageDialog(e.getMessage(), mtError);
-            cleanupSearchDummy();
-            return false;
-          }
+          dummySearchKeys.setSearchKey(searchDummy, HyperTableCell.getCellText(op1), true, false);
         }
 
         if (searchDummy == null) return false;
@@ -162,18 +140,15 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 
         for (String str : list)
         {
-          linkList.generate(str.toLowerCase(), true, dummySearchKeys);
-          if (linkList.size() > 0) add = true;
+          if (KeywordLinkList.generate(str.toLowerCase(), true, dummySearchKeys).size() > 0)
+            add = true;
         }
-
-        if (lastCall)
-          cleanupSearchDummy();
 
         return add;
 
       case QUERY_LINKING_TO_RECORD : case QUERY_MENTIONED_BY :
 
-        HDT_Record specifiedRecord = HyperTableCell.getRecord(param2);
+        HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord)) return false;
 
         boolean result = curQuery == QUERY_LINKING_TO_RECORD ?
@@ -182,10 +157,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
           db.firstMentionsSecond(specifiedRecord, record, true, choseNotToWait);
 
         if (choseNotToWait.isTrue()) // Mentions index rebuild should never be running here
-        {
-          messageDialog("Internal error #54681", mtError);
-          task.cancel();
-        }
+          throw new HDB_InternalError(54681);
 
         return result;
     }
@@ -248,7 +220,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
       case QUERY_MATCHING_RECORD :
         return new FilteredQuerySource(getQueryType(), query, op1, op2)
         {
-          @Override protected void runFilter()
+          @Override protected void runFilter(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
           {
             HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
             if (HDT_Record.isEmpty(specifiedRecord)) return;
@@ -264,16 +236,16 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
             }
 
             if (choseNotToWait.isTrue())
-              messageDialog("Internal error #61187", mtError); // Mentions index rebuild should never be running here
+              throw new HDB_InternalError(61187); // Mentions index rebuild should never be running here
           }
         };
 
       case QUERY_ASSOCIATED_WITH_PHRASE :
         return new FilteredQuerySource(getQueryType(), query, op1)
         {
-          @Override protected void runFilter()
+          @Override protected void runFilter(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
           {
-            linkList.generate(HyperTableCell.getCellText(op1));
+            List<KeywordLink> linkList = KeywordLinkList.generate(HyperTableCell.getCellText(op1));
             if (linkList.size() > 0)
               list.add(linkList.get(0).key.record);
           }
@@ -282,7 +254,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
       case QUERY_RECORD_EQUALS :
         return new FilteredQuerySource(getQueryType(), query, op1, op2)
         {
-          @Override protected void runFilter()
+          @Override protected void runFilter(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
           {
             RecordType specifiedType = HyperTableCell.getCellType(op1);
             int specifiedID = HyperTableCell.getCellID(op2);

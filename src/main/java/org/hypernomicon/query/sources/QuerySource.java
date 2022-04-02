@@ -17,13 +17,18 @@
 
 package org.hypernomicon.query.sources;
 
-import java.util.Iterator;
+import java.util.AbstractCollection;
+import java.util.Collection;
+import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.RecordType;
 
-public interface QuerySource extends Iterator<HDT_Record>
+public abstract class QuerySource extends AbstractCollection<HDT_Record>
 {
-  enum QuerySourceType
+  private static UnsupportedOperationException uoe() { return new UnsupportedOperationException(); }
+
+  public enum QuerySourceType
   {
     QST_allRecords,
     QST_recordsByType,
@@ -32,7 +37,14 @@ public interface QuerySource extends Iterator<HDT_Record>
     QST_combinedUnfilteredRecords
   }
 
-  int count();
-  QuerySourceType sourceType();
-  boolean containsRecord(HDT_Record record);
+  public abstract QuerySourceType sourceType();
+  public abstract RecordType recordType();
+
+  @Override public boolean add(HDT_Record e)                              { throw uoe(); }
+  @Override public boolean addAll(Collection<? extends HDT_Record> c)     { throw uoe(); }
+  @Override public void    clear()                                        { throw uoe(); }
+  @Override public boolean remove(Object o)                               { throw uoe(); }
+  @Override public boolean removeAll(Collection<?> c)                     { throw uoe(); }
+  @Override public boolean removeIf(Predicate<? super HDT_Record> filter) { throw uoe(); }
+  @Override public boolean retainAll(Collection<?> c)                     { throw uoe(); }
 }

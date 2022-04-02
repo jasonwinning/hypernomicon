@@ -671,11 +671,9 @@ public class MainTextCtrlr
     });
 
     Set<HDT_RecordWithPath> keyWorkRecords = new HashSet<>();
-    KeywordLinkList list = new KeywordLinkList();
     String kwText = extractTextFromHTML(subDoc.html());
-    list.generate(kwText);
 
-    list.forEach(link ->
+    KeywordLinkList.generate(kwText).forEach(link ->
     {
       HDT_Record record = link.key.record;
 

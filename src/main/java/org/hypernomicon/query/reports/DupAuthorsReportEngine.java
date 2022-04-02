@@ -65,7 +65,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void generate(HyperTask task, HyperTableCell param1, HyperTableCell param2, HyperTableCell param3) throws TerminateTaskException
+  @Override public void generate(HyperTask task, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws TerminateTaskException
   {
     rows.clear();
     rowToMatch.clear();
@@ -149,7 +149,7 @@ public class DupAuthorsReportEngine extends ReportEngine
     {
       ImmutableList<Author> pair = rowToMatch.get(row).asList();
 
-      Author author1 = null, author2 = null;
+      Author author1, author2;
 
       if ((pair.get(0).getPerson() == null) && (pair.get(1).getPerson() != null))
       {

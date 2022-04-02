@@ -72,7 +72,7 @@ public class FolderQueryEngine extends QueryEngine<HDT_Folder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Folder folder, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(int curQuery, HDT_Folder folder, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
@@ -94,7 +94,7 @@ public class FolderQueryEngine extends QueryEngine<HDT_Folder>
       case QUERY_DUPLICATE_FOLDERS :
         return new FilteredQuerySource(getQueryType(), query)
         {
-          @Override protected void runFilter()
+          @Override protected void runFilter(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
           {
             Map<FilePath, HDT_Folder> map = new HashMap<>();
             Set<HDT_Folder> set = new HashSet<>();

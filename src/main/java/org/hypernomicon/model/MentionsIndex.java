@@ -55,7 +55,6 @@ class MentionsIndex
                                        mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
   private final Set<HDT_Record> removedRecords = Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final List<Runnable> ndxCompleteHandlers;
-  private final KeywordLinkList linkList = new KeywordLinkList();
   private final EnumSet<RecordType> types;
   private final List<String> strList = new ArrayList<>();
 
@@ -133,10 +132,7 @@ class MentionsIndex
     mentionedInDescToMentioners.removeReverseKey(record);
 
     strList.forEach(str ->
-    {
-      linkList.generate(str.toLowerCase());
-      linkList.forEach(link -> mentionedAnywhereToMentioners.addForward(link.key.record, record));
-    });
+      KeywordLinkList.generate(str.toLowerCase()).forEach(link -> mentionedAnywhereToMentioners.addForward(link.key.record, record)));
 
     if (record.hasMainText())
     {
@@ -159,10 +155,7 @@ class MentionsIndex
       String plainText = mainText.getPlain();
 
       if (plainText.length() > 0)
-      {
-        linkList.generate(plainText);
-        linkList.forEach(link -> mentionedInDescToMentioners.addForward(link.key.record, record));
-      }
+        KeywordLinkList.generate(plainText).forEach(link -> mentionedInDescToMentioners.addForward(link.key.record, record));
 
       mainText.getDisplayItemsUnmod().forEach(displayItem ->
       {

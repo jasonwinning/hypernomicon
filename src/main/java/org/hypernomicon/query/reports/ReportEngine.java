@@ -38,7 +38,7 @@ public abstract class ReportEngine
 
   protected TableView<HyperTableRow> tv;
 
-  public abstract void generate(HyperTask task, HyperTableCell param1, HyperTableCell param2, HyperTableCell param3) throws TerminateTaskException;
+  public abstract void generate(HyperTask task, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws TerminateTaskException;
   public abstract List<HyperTableRow> getRows();
   abstract HyperTable prepTable(TableView<HyperTableRow> tv);
   abstract String getHtml(HyperTableRow row);

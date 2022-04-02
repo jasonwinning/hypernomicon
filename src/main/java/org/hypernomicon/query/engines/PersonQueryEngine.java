@@ -63,7 +63,7 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Person person, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(int curQuery, HDT_Person person, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {

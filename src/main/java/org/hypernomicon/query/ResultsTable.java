@@ -51,7 +51,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Window;
 
-public final class ResultsTable extends HasRightClickableRows<ResultsRow>
+final class ResultsTable extends HasRightClickableRows<ResultsRow>
 {
   private final TableView<ResultsRow> tv;
   private boolean datesAdded = false;

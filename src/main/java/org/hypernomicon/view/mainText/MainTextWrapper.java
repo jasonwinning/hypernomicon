@@ -332,7 +332,7 @@ public final class MainTextWrapper
     viewInfo.openDivits = new HashSet<>();
 
     int len = (Integer) divits.getMember("length");
-    String divitID = "";
+    String divitID;
 
     for (int ndx = 0; ndx < len; ndx++)
     {

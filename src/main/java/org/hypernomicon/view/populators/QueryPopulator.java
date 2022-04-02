@@ -75,7 +75,7 @@ public class QueryPopulator extends Populator
 
     if ((newType == null) || newType.equals(oldType)) return;
 
-    curQuery = row.getID(1);
+    int curQuery = row.getID(1);
 
     switch (curQuery)
     {

@@ -81,7 +81,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Work work, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(int curQuery, HDT_Work work, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {

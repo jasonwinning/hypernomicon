@@ -18,7 +18,6 @@
 package org.hypernomicon.query.engines;
 
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.QueryTabCtrlr.*;
 
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.query.sources.DatasetQuerySource;
@@ -61,7 +60,7 @@ public class ConceptQueryEngine extends QueryEngine<HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Concept concept, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(int curQuery, HDT_Concept concept, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {

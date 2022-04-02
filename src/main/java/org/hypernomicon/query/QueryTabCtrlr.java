@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,10 +73,7 @@ import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.query.reports.ReportTable;
 import org.hypernomicon.query.sources.CombinedFilteredQuerySource;
 import org.hypernomicon.query.sources.CombinedUnfilteredQuerySource;
-import org.hypernomicon.query.sources.DatasetQuerySource;
-import org.hypernomicon.query.sources.FilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
-import org.hypernomicon.query.sources.QuerySource.QuerySourceType;
 import org.hypernomicon.view.HyperFavorites.FavMenuItem;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
@@ -119,7 +116,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     private AnchorPane apDescription, apResults;
 
     private HyperTable htFields;
-    public ResultsTable resultsTable;
+    ResultsTable resultsTable;
     private ReportTable reportTable;
 
     public final List<ResultsRow> resultsBackingList = new ArrayList<>();
@@ -584,12 +581,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       reportTable.format(reportEngine);
 
-      task = new HyperTask("GenerateReport") { @Override protected Boolean call() throws Exception
+      HyperTask task = new HyperTask("GenerateReport") { @Override protected Boolean call() throws Exception
       {
         updateMessage("Generating report...");
         updateProgress(0, 1);
 
-        reportEngine.generate(task, row.getCell(2), row.getCell(3), row.getCell(4));
+        reportEngine.generate(this, row.getCell(2), row.getCell(3), row.getCell(4));
 
         return true;
       }};
@@ -600,6 +597,52 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (reportEngine.alwaysShowDescription() && (reportEngine.getRows().size() > 0))
         chkShowDesc.setSelected(true);
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+    // sources parameter is assumed empty and needs to be populated by this function so it can be used by the caller
+
+    private QuerySource getCombinedRecordSource(Map<HyperTableRow, QuerySource> sources)
+    {
+      // Build list of sources and list of unfiltered types
+
+      boolean hasFiltered = false, hasUnfiltered = false;
+      EnumSet<RecordType> unfilteredTypes = EnumSet.noneOf(RecordType.class);
+
+      for (HyperTableRow row : htFields.dataRows())
+      {
+        QuerySource source = getSource(row);
+
+        if (source == null) continue;
+
+        sources.put(row, source);
+        unfilteredTypes.add(source.recordType());
+
+        switch (source.sourceType())
+        {
+          case QST_filteredRecords :
+
+            hasFiltered   = true; break;
+
+          case QST_recordsByType : case QST_allRecords :
+
+            hasUnfiltered = true; break;
+
+          default : break;
+        }
+      }
+
+      // Generate combined record source
+
+      if (hasUnfiltered)
+        return new CombinedUnfilteredQuerySource(unfilteredTypes);
+
+      if (hasFiltered)
+        return new CombinedFilteredQuerySource(sources.values());
+
+      return new CombinedUnfilteredQuerySource(EnumSet.noneOf(RecordType.class));
     }
 
     //---------------------------------------------------------------------------
@@ -654,141 +697,97 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (setCaption)
         setCaption();
 
-      // Build list of sources and list of unfiltered types
-
       Map<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
-      boolean hasFiltered = false, hasUnfiltered = false;
-      EnumSet<RecordType> unfilteredTypes = EnumSet.noneOf(RecordType.class);
 
-      for (HyperTableRow row : htFields.dataRows())
-      {
-        QuerySource source = getSource(row);
+      QuerySource combinedSource = getCombinedRecordSource(sources);
 
-        if (source == null) continue;
-
-        sources.put(row, source);
-
-        switch (source.sourceType())
-        {
-          case QST_filteredRecords :
-
-            hasFiltered = true;
-            unfilteredTypes.add(((FilteredQuerySource) source).recordType());
-            break;
-
-          case QST_recordsByType :
-
-            unfilteredTypes.add(((DatasetQuerySource) source).recordType());
-            hasUnfiltered = true;
-            break;
-
-          case QST_allRecords :
-
-            hasUnfiltered = true;
-            unfilteredTypes = EnumSet.allOf(RecordType.class);
-            unfilteredTypes.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
-            break;
-
-          default : break;
-        }
-      }
-
-      // Generate combined record source
-
-      QuerySource combinedSource;
-      RecordType singleType = null;
-      Set<HDT_Record> filteredRecords = new LinkedHashSet<>();
-
-      if (hasUnfiltered)
-      {
-        combinedSource = new CombinedUnfilteredQuerySource(unfilteredTypes);
-        if (unfilteredTypes.size() == 1) singleType = (RecordType) unfilteredTypes.toArray()[0];
-      }
-      else if (hasFiltered)
-      {
-        for (QuerySource src : sources.values())
-          if (src.sourceType() == QuerySourceType.QST_filteredRecords)
-          {
-            FilteredQuerySource fqs = (FilteredQuerySource) src;
-
-            if (singleType == null)
-              singleType = fqs.recordType();
-            else if ((singleType != hdtNone) && (singleType != fqs.recordType()))
-              singleType = hdtNone;
-
-            fqs.addAllTo(filteredRecords);
-          }
-
-        combinedSource = new CombinedFilteredQuerySource(filteredRecords);
-      }
-      else
-        combinedSource = new CombinedUnfilteredQuerySource(EnumSet.noneOf(RecordType.class));
-
-      boolean searchLinkedRecords = (singleType != null) && (singleType != hdtNone);
-      int total = combinedSource.count();
+      boolean searchLinkedRecords = combinedSource.recordType() != hdtNone;
+      int total = combinedSource.size();
 
       // Evaluate record queries
 
-      task = new HyperTask("Query") { @Override protected Boolean call() throws Exception
+      HyperTask task = new HyperTask("Query")
       {
-        boolean firstCall = true;
+        //---------------------------------------------------------------------------
 
-        recordTypeToColumnGroup.clear();
-        resultsBackingList.clear();
-
-        updateMessage("Running query...");
-        updateProgress(0, 1);
-
-        for (int recordNdx = 0; combinedSource.hasNext(); recordNdx++)
+        @Override protected Boolean call() throws HyperDataException, TerminateTaskException
         {
-          if (isCancelled())
+          boolean firstCall = true;
+
+          recordTypeToColumnGroup.clear();
+          resultsBackingList.clear();
+
+          updateMessage("Running query...");
+          updateProgress(0, 1);
+
+          Iterator<HDT_Record> recordIterator = combinedSource.iterator();
+
+          for (int recordNdx = 0; recordIterator.hasNext(); recordNdx++)
           {
-            sources.keySet().forEach(row -> typeToEngine.get(curQV.getQueryType(row)).cancelled());
-            throw new TerminateTaskException();
-          }
-
-          if ((recordNdx % 50) == 0)
-            updateProgress(recordNdx, total);
-
-          HDT_Record record = combinedSource.next();
-
-          boolean lastConnectiveWasOr = false, firstRow = true, add = false;
-
-          for (Entry<HyperTableRow, QuerySource> entry : sources.entrySet())
-          {
-            HyperTableRow row = entry.getKey();
-            QuerySource source = entry.getValue();
-
-            if (source.containsRecord(record))
+            if (isCancelled())
             {
-              curQuery = row.getID(1);
-              boolean result = false;
-
-              if (curQuery > -1)
-              {
-                param1 = row.getCell(2);
-                param2 = row.getCell(3);
-                param3 = row.getCell(4);
-
-                result = evaluate(record, row, searchLinkedRecords, firstCall, recordNdx == (total - 1));
-                firstCall = false;
-              }
-
-              if      (firstRow)            add = result;
-              else if (lastConnectiveWasOr) add = add || result;
-              else                          add = add && result;
+              cleanup();
+              throw new TerminateTaskException();
             }
 
-            lastConnectiveWasOr = row.getID(5) == OR_CONNECTIVE_ID;
-            firstRow = false;
+            if ((recordNdx % 50) == 0)
+              updateProgress(recordNdx, total);
+
+            HDT_Record record = recordIterator.next();
+
+            boolean lastConnectiveWasOr = false, firstRow = true, add = false;
+
+            try
+            {
+              for (Entry<HyperTableRow, QuerySource> entry : sources.entrySet())
+              {
+                HyperTableRow row = entry.getKey();
+                QuerySource source = entry.getValue();
+
+                if (source.contains(record))
+                {
+                  int curQuery = row.getID(1);
+                  boolean result = false;
+
+                  if (curQuery > -1)
+                  {
+                    result = evaluate(curQuery, record, row, row.getCell(2), row.getCell(3), row.getCell(4), searchLinkedRecords, firstCall, recordNdx == (total - 1));
+                    firstCall = false;
+                  }
+
+                  if      (firstRow)            add = result;
+                  else if (lastConnectiveWasOr) add = add || result;
+                  else                          add = add && result;
+                }
+
+                lastConnectiveWasOr = row.getID(5) == OR_CONNECTIVE_ID;
+                firstRow = false;
+              }
+            }
+            catch (HyperDataException e)
+            {
+              cleanup();
+              throw e;
+            }
+
+            if (add)
+              addRecord(record, false);
           }
 
-          if (add)
-            addRecord(record, false);
+          cleanup();
+
+          return true;
         }
 
-        return true;
-      }};
+        //---------------------------------------------------------------------------
+
+        private void cleanup()
+        {
+          sources.keySet().forEach(row -> typeToEngine.get(curQV.getQueryType(row)).cleanup());
+        }
+
+        //---------------------------------------------------------------------------
+      };
 
       if (!HyperTask.performTaskWithProgressDialog(task)) return false;
 
@@ -998,7 +997,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (db.isLoaded() == false) return false;
 
       VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
-      CellValueType valueType = nullSwitch(vp1.getPopulator(row), cvtVaries, Populator::getValueType);
+      CellValueType valueType = vp1.getValueType(row);
 
       switch (query)
       {
@@ -1290,19 +1289,19 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int QUERY_WITH_NAME_CONTAINING = 1,
-                          QUERY_ANY_FIELD_CONTAINS   = 2,
-                          QUERY_LIST_ALL             = 3,
-                          QUERY_WHERE_FIELD          = 4,
-                          QUERY_WHERE_RELATIVE       = 5,
-                          QUERY_FIRST_NDX            = 6,
+  public static final int  QUERY_WITH_NAME_CONTAINING  = 1,
+                           QUERY_ANY_FIELD_CONTAINS    = 2,
+                           QUERY_LIST_ALL              = 3,
+                           QUERY_WHERE_FIELD           = 4,
+                           QUERY_WHERE_RELATIVE        = 5,
+                           QUERY_FIRST_NDX             = 6;
 
-                          EQUAL_TO_OPERAND_ID         = 1,           AND_CONNECITVE_ID = 1,
-                          NOT_EQUAL_TO_OPERAND_ID     = 2,           OR_CONNECTIVE_ID  = 2,
-                          CONTAINS_OPERAND_ID         = 3,           TRUE_ID  = 1,
-                          DOES_NOT_CONTAIN_OPERAND_ID = 4,           FALSE_ID = 2,
-                          IS_EMPTY_OPERAND_ID         = 5,           UNSET_ID = 3,
-                          IS_NOT_EMPTY_OPERAND_ID     = 6;
+  private static final int EQUAL_TO_OPERAND_ID         = 1,           AND_CONNECITVE_ID = 1,
+                           NOT_EQUAL_TO_OPERAND_ID     = 2,           OR_CONNECTIVE_ID  = 2,
+                           CONTAINS_OPERAND_ID         = 3,           TRUE_ID  = 1,
+                           DOES_NOT_CONTAIN_OPERAND_ID = 4,           FALSE_ID = 2,
+                           IS_EMPTY_OPERAND_ID         = 5,           UNSET_ID = 3,
+                           IS_NOT_EMPTY_OPERAND_ID     = 6;
 
   private static final HyperTableCell andCell = new HyperTableCell(AND_CONNECITVE_ID, "and", hdtNone),
                                       orCell  = new HyperTableCell(OR_CONNECTIVE_ID , "or" , hdtNone),
@@ -1331,11 +1330,9 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                                 excludeAnnots = new SimpleBooleanProperty(),
                                 entirePDF     = new SimpleBooleanProperty();
 
-  public static HyperTask task;
-  public static int curQuery;
-  public static HyperTableCell param1, param2, param3;
-  public final List<QueryView> queryViews = new ArrayList<>();
+  private final List<QueryView> queryViews = new ArrayList<>();
 
+  public void refreshTables()                       { queryViews.forEach(qv -> qv.resultsTable.getTV().refresh()); }
   public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(); }
   private static void updateCB()                    { if (curQV != null) curQV.updateCB(); }
   public static void btnExecuteClick()              { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
@@ -1359,7 +1356,15 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static List<ResultsRow> results()
+  public void removeRecord(HDT_Record record)
+  {
+    queryViews.forEach(qv -> qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static List<ResultsRow> results()
   {
     if ((curQV == null) || (curQV.inRecordMode == false)) return FXCollections.observableArrayList();
 
@@ -1570,20 +1575,29 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private static <HDT_T extends HDT_Record> boolean evaluate(HDT_T record, HyperTableRow row, boolean searchLinkedRecords, boolean firstCall, boolean lastCall)
+  private static <HDT_T extends HDT_Record> boolean evaluate(
+      int curQuery,
+      HDT_T record,
+      HyperTableRow row,
+      HyperTableCell op1,
+      HyperTableCell op2,
+      HyperTableCell op3,
+      boolean searchLinkedRecords,
+      boolean firstCall,
+      boolean lastCall) throws HyperDataException
   {
     switch (curQuery)
     {
       case QUERY_WITH_NAME_CONTAINING :
 
-        return record.listName().toUpperCase().contains(getCellText(param1).toUpperCase());
+        return record.listName().toUpperCase().contains(getCellText(op1).toUpperCase());
 
       case QUERY_ANY_FIELD_CONTAINS :
 
         List<String> list = new ArrayList<>();
         record.getAllStrings(list, searchLinkedRecords);
 
-        String val1 = getCellText(param1).toLowerCase();
+        String val1 = getCellText(op1).toLowerCase();
 
         return list.stream().anyMatch(str -> str.toLowerCase().contains(val1));
 
@@ -1593,11 +1607,11 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       case QUERY_WHERE_RELATIVE :
 
-        RelationType relType = RelationType.codeToVal(getCellID(param1));
+        RelationType relType = RelationType.codeToVal(getCellID(op1));
         if (record.getType() != db.getObjType(relType)) return false;
 
         HyperSubjList<HDT_Record, HDT_Record> subjList = db.getSubjectList(relType, record);
-        int subjCount = subjList.size(), opID = getCellID(param2);
+        int subjCount = subjList.size(), opID = getCellID(op2);
 
         if ((opID == IS_EMPTY_OPERAND_ID) || (opID == IS_NOT_EMPTY_OPERAND_ID))
           return (subjCount == 0) == (opID == IS_EMPTY_OPERAND_ID);
@@ -1608,14 +1622,14 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           {
             case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
 
-              if (subjRecord.getID() == getCellID(param3))
+              if (subjRecord.getID() == getCellID(op3))
                 return opID == EQUAL_TO_OPERAND_ID;
 
               break;
 
             case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
 
-              if (subjRecord.listName().toLowerCase().contains(getCellText(param3).toLowerCase()))
+              if (subjRecord.listName().toLowerCase().contains(getCellText(op3).toLowerCase()))
                 return opID == CONTAINS_OPERAND_ID;
 
               break;
@@ -1639,15 +1653,14 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       case QUERY_WHERE_FIELD :
 
-        Tag tag = getTagByNum(getCellID(param1));
+        Tag tag = getTagByNum(getCellID(op1));
         HDI_Schema schema = record.getSchema(tag);
 
         if (schema == null) return false;
 
-        VariablePopulator vp3 = curQV.htFields.getPopulator(4);
-        CellValueType valueType = nullSwitch(vp3.getPopulator(row), cvtVaries, Populator::getValueType);
+        CellValueType valueType = curQV.htFields.getPopulator(4).getValueType(row);
 
-        switch (getCellID(param2))
+        switch (getCellID(op2))
         {
           case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
 
@@ -1657,34 +1670,34 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
                 for (HDT_Record objRecord : db.getObjectList(schema.getRelType(), record, true))
                 {
-                  if ((objRecord.getID() == getCellID(param3)) && (objRecord.getType() == getCellType(param3)))
-                    return getCellID(param2) == EQUAL_TO_OPERAND_ID;
+                  if ((objRecord.getID() == getCellID(op3)) && (objRecord.getType() == getCellType(op3)))
+                    return getCellID(op2) == EQUAL_TO_OPERAND_ID;
                 }
 
-                return getCellID(param2) == NOT_EQUAL_TO_OPERAND_ID;
+                return getCellID(op2) == NOT_EQUAL_TO_OPERAND_ID;
 
               case cvtBoolean :
 
-                if ((getCellID(param3) != TRUE_ID) && (getCellID(param3) != FALSE_ID)) return false;
+                if ((getCellID(op3) != TRUE_ID) && (getCellID(op3) != FALSE_ID)) return false;
 
-                return (record.getTagBoolean(tag) == (getCellID(param3) == TRUE_ID)) == (getCellID(param2) == EQUAL_TO_OPERAND_ID);
+                return (record.getTagBoolean(tag) == (getCellID(op3) == TRUE_ID)) == (getCellID(op2) == EQUAL_TO_OPERAND_ID);
 
               default :
 
                 String tagStrVal = record.resultTextForTag(tag);
                 if (tagStrVal.isEmpty()) return false;
 
-                return tagStrVal.trim().equalsIgnoreCase(getCellText(param3).trim()) == (getCellID(param2) == EQUAL_TO_OPERAND_ID);
+                return tagStrVal.trim().equalsIgnoreCase(getCellText(op3).trim()) == (getCellID(op2) == EQUAL_TO_OPERAND_ID);
             }
 
           case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
 
-            String val3 = getCellText(param3).trim();
+            String val3 = getCellText(op3).trim();
             if (val3.isEmpty()) return false;
 
             String tagStrVal = record.resultTextForTag(tag).toLowerCase().trim();
 
-            return tagStrVal.contains(val3.toLowerCase()) == (getCellID(param2) == CONTAINS_OPERAND_ID);
+            return tagStrVal.contains(val3.toLowerCase()) == (getCellID(op2) == CONTAINS_OPERAND_ID);
 
           case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
 
@@ -1692,15 +1705,15 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             {
               case cvtRecord :
 
-                return (db.getObjectList(schema.getRelType(), record, true).size() > 0) == (getCellID(param2) == IS_NOT_EMPTY_OPERAND_ID);
+                return (db.getObjectList(schema.getRelType(), record, true).size() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
 
               case cvtBoolean :
 
-                return getCellID(param2) == IS_EMPTY_OPERAND_ID;
+                return getCellID(op2) == IS_EMPTY_OPERAND_ID;
 
               default :
 
-                return (record.resultTextForTag(tag).length() > 0) == (getCellID(param2) == IS_NOT_EMPTY_OPERAND_ID);
+                return (record.resultTextForTag(tag).length() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
             }
 
           default : return false;
@@ -1708,7 +1721,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       default :
 
-        return ((QueryEngine<HDT_T>) typeToEngine.get(curQV.getQueryType(row))).evaluate(record, firstCall, lastCall);
+        return ((QueryEngine<HDT_T>) typeToEngine.get(curQV.getQueryType(row))).evaluate(curQuery, record, op1, op2, op3, firstCall, lastCall);
     }
   }
 
@@ -1770,7 +1783,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     if ((db.isLoaded() == false) || (results().size() < 1)) return false;
 
-    task = new HyperTask("BuildListOfFilesToCopy") { @Override protected Boolean call() throws Exception
+    HyperTask task = new HyperTask("BuildListOfFilesToCopy") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Building list...");
 
@@ -1804,7 +1817,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       updateProgress(0, 1);
 
-      fileList.copyAll(excludeAnnots.getValue(), task);
+      fileList.copyAll(excludeAnnots.getValue(), this);
       return true;
     }};
 

@@ -105,6 +105,9 @@ public abstract class Populator
 
   public HyperTableCell addEntry(HyperTableRow row, String text)         { return addEntry(row, -1, text); }
 
+  @SuppressWarnings("unused")
+  public CellValueType getValueType(HyperTableRow row)                   { return getValueType(); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

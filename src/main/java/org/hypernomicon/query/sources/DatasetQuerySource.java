@@ -34,7 +34,7 @@ public class DatasetQuerySource extends CombinedUnfilteredQuerySource
     this.type = type;
   }
 
-  public RecordType recordType()                { return type; }
+  @Override public RecordType recordType()      { return type; }
   @Override public QuerySourceType sourceType() { return QuerySourceType.QST_recordsByType; }
 
 //---------------------------------------------------------------------------

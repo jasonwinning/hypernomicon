@@ -167,6 +167,47 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static List<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
+  {
+    List<String> list = new ArrayList<>(Arrays.asList(str.split("\\r?\\n")));
+
+    if (list.isEmpty()) return list;
+
+    while (list.get(0).isBlank())
+    {
+      list.remove(0);
+      if (list.isEmpty()) return list;
+    }
+
+    while (list.get(list.size() - 1).isBlank())
+    {
+      list.remove(list.size() - 1);
+      if (list.isEmpty()) return list;
+    }
+
+    if (emptiesOK == false)
+      list.removeIf(s -> ultraTrim(s).isBlank());
+
+    return list;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String strListToStr(List<String> list, boolean emptiesOK)
+  {
+    return strListToStr(list, emptiesOK, false);
+  }
+
+  public static String strListToStr(List<String> list, boolean emptiesOK, boolean useSystemNewLineChar)
+  {
+    Stream<StringBuilder> strm = (emptiesOK ? list.stream() : list.stream().filter(one -> safeStr(one).length() > 0)).map(StringBuilder::new);
+    return strm.reduce((all, one) -> all.append(useSystemNewLineChar ? System.lineSeparator() : "\n").append(one)).orElse(new StringBuilder()).toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static int parseInt(String value, int def)
   {
     try { return Integer.parseInt(value); }
@@ -618,20 +659,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String strListToStr(List<String> list, boolean emptiesOK)
-  {
-    return strListToStr(list, emptiesOK, false);
-  }
-
-  public static String strListToStr(List<String> list, boolean emptiesOK, boolean useSystemNewLineChar)
-  {
-    Stream<StringBuilder> strm = (emptiesOK ? list.stream() : list.stream().filter(one -> safeStr(one).length() > 0)).map(StringBuilder::new);
-    return strm.reduce((all, one) -> all.append(useSystemNewLineChar ? System.lineSeparator() : "\n").append(one)).orElse(new StringBuilder()).toString();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static final String NORMALIZE_ID = "NFD; [:Nonspacing Mark:] Remove; NFC";
   private static final Transliterator transliterator1 = Transliterator.getInstance("NFD; Any-Latin; NFC; "   + NORMALIZE_ID),
                                       transliterator2 = Transliterator.getInstance("NFD; Latin-ASCII; NFC; " + NORMALIZE_ID);
@@ -848,33 +875,6 @@ public final class Util
   {
     try { Thread.sleep(millis); }
     catch (InterruptedException e) { noOp(); }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static List<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
-  {
-    List<String> list = new ArrayList<>(Arrays.asList(str.split("\\r?\\n")));
-
-    if (list.isEmpty()) return list;
-
-    while (list.get(0).isBlank())
-    {
-      list.remove(0);
-      if (list.isEmpty()) return list;
-    }
-
-    while (list.get(list.size() - 1).isBlank())
-    {
-      list.remove(list.size() - 1);
-      if (list.isEmpty()) return list;
-    }
-
-    if (emptiesOK == false)
-      list.removeIf(s -> ultraTrim(s).isBlank());
-
-    return list;
   }
 
 //---------------------------------------------------------------------------

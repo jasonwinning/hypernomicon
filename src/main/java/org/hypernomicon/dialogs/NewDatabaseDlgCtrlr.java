@@ -88,7 +88,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
     {
       saveStringBuilderToFile(new StringBuilder(DEFAULT_XML_PATH + '/' + SETTINGS_FILE_NAME), filePath.resolve(HDB_DEFAULT_FILENAME));
 
-      success              = filePath.resolve(DEFAULT_XML_PATH                   ).toFile().mkdirs();
+                   success = filePath.resolve(DEFAULT_XML_PATH                   ).toFile().mkdirs();
       if (success) success = filePath.resolve(ultraTrim(tfPictures    .getText())).toFile().mkdirs();
       if (success) success = filePath.resolve(ultraTrim(tfBooks       .getText())).toFile().mkdirs();
       if (success) success = filePath.resolve(ultraTrim(tfPapers      .getText())).toFile().mkdirs();

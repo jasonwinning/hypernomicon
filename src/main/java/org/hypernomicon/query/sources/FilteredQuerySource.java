@@ -20,25 +20,27 @@ package org.hypernomicon.query.sources;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.engines.QueryEngine.QueryType;
 
-public abstract class FilteredQuerySource implements QuerySource
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
+
+public abstract class FilteredQuerySource extends QuerySource
 {
   protected final List<HDT_Record> list = new ArrayList<>();
-  private Iterator<HDT_Record> it;
-  protected final HyperTableCell op1, op2, op3;
-  protected final int query;
-  protected final QueryType queryType;
+  private final HyperTableCell op1, op2, op3;
+  private final int query;
+  private final RecordType recordType;
 
   private boolean generated = false;
 
-  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2) { this(queryType, query, op1, op2, null); }
-  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1)                     { this(queryType, query, op1, null, null); }
+  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2) { this(queryType, query, op1 , op2 , null); }
+  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1)                     { this(queryType, query, op1 , null, null); }
   public FilteredQuerySource(QueryType queryType, int query)                                         { this(queryType, query, null, null, null); }
 
 //---------------------------------------------------------------------------
@@ -46,7 +48,7 @@ public abstract class FilteredQuerySource implements QuerySource
 
   public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
-    this.queryType = queryType;
+    recordType = queryType.getRecordType();
     this.query = query;
     this.op1 = op1;
     this.op2 = op2;
@@ -56,18 +58,34 @@ public abstract class FilteredQuerySource implements QuerySource
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int count()                               { ensureGenerated(); return list.size(); }
-  @Override public boolean hasNext()                         { ensureGenerated(); return it.hasNext(); }
-  @Override public HDT_Record next()                         { ensureGenerated(); return it.next(); }
-  @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_filteredRecords; }
-  @Override public boolean containsRecord(HDT_Record record) { ensureGenerated(); return list.contains(record); }
+  @Override public int size()                      { ensureGenerated(); return list.size(); }
+  @Override public Iterator<HDT_Record> iterator() { ensureGenerated(); return list.iterator(); }
+  @Override public QuerySourceType sourceType()    { return QuerySourceType.QST_filteredRecords; }
+  @Override public boolean contains(Object record) { ensureGenerated(); return list.contains(record); }
+  @Override public RecordType recordType()         { return recordType; }
 
-  protected abstract void runFilter();
+  protected abstract void runFilter(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException;
 
-  public RecordType recordType()                        { return queryType.getRecordType(); }
-  public boolean containsCell(HyperTableCell cell)      { ensureGenerated(); return list.contains(HyperTableCell.getRecord(cell)); }
-  public void addAllTo(Set<HDT_Record> filteredRecords) { ensureGenerated(); filteredRecords.addAll(list); }
-  private void ensureGenerated()                        { if (!generated) { runFilter(); it = list.iterator(); generated = true; }}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void ensureGenerated()
+  {
+    if (!generated)
+    {
+      try
+      {
+        runFilter(query, op1, op2, op3);
+      }
+      catch(HyperDataException e)
+      {
+        messageDialog(e.getMessage(), mtError);
+        list.clear();
+      }
+
+      generated = true;
+    }
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

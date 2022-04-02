@@ -53,6 +53,14 @@ public class VariablePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public CellValueType getValueType(HyperTableRow row)
+  {
+    return nullSwitch(rowToPop.get(row), getValueType(), pop -> pop.getValueType(row));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     return nullSwitch(rowToPop.get(row), new ArrayList<>(), pop -> pop.populate(row, force));

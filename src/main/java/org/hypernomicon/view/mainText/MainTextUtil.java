@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -75,8 +76,6 @@ import netscape.javascript.JSObject;
 public final class MainTextUtil
 {
   private MainTextUtil() { throw new UnsupportedOperationException(); }
-
-  private static final KeywordLinkList list = new KeywordLinkList();
 
   public static final String headContent,
                              scriptContent,
@@ -298,11 +297,9 @@ public final class MainTextUtil
   static void addLinks(HtmlTextNodeList nodes, HDT_Record recordToHilite)
   {
     String entirePlainText = nodes.toString();
-    list.generate(entirePlainText);
+    Iterator<KeywordLink> keywordLinkIterator = KeywordLinkList.generate(entirePlainText).iterator();
 
-    int linkNdx = 0;        // index of the current keyword link
-
-    KeywordLink link = linkNdx >= list.size() ? null : list.get(linkNdx);
+    KeywordLink keywordLink = keywordLinkIterator.hasNext() ? keywordLinkIterator.next() : null;
 
     for (int curMatchNdx = 0; curMatchNdx < entirePlainText.length();)
     {
@@ -310,12 +307,12 @@ public final class MainTextUtil
 
       if ("http".equalsIgnoreCase(safeSubstring(entirePlainText, curMatchNdx, curMatchNdx + 4)))
         kind = LinkKind.web;
-      else if ((link != null) && (curMatchNdx == link.offset))
+      else if ((keywordLink != null) && (curMatchNdx == keywordLink.offset))
         kind = LinkKind.keyword;
 
       if (kind != LinkKind.none) // Got a match
       {
-        int linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : link.length;
+        int linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : keywordLink.length;
 
         for (HtmlTextNode node : nodes.getLinkNodes(curMatchNdx, curMatchNdx + linkTextLen)) // 1. Get list of node objects corresponding to matching text
         {
@@ -332,9 +329,9 @@ public final class MainTextUtil
           }
           else
           {
-            String style = link.key.record.equals(recordToHilite) ? "background-color: pink;" : "";
+            String style = keywordLink.key.record.equals(recordToHilite) ? "background-color: pink;" : "";
 
-            textNode.before(getKeywordLink(displayText, link, style));  // 4. Insert anchor
+            textNode.before(getKeywordLink(displayText, keywordLink, style));  // 4. Insert anchor
           }
 
           int offset = displayText.length();
@@ -346,10 +343,7 @@ public final class MainTextUtil
         }
 
         if (kind == LinkKind.keyword)
-        {
-          linkNdx++;
-          link = linkNdx >= list.size() ? null : list.get(linkNdx);
-        }
+          keywordLink = keywordLinkIterator.hasNext() ? keywordLinkIterator.next() : null;
       }
       else // there was no link this time
       {

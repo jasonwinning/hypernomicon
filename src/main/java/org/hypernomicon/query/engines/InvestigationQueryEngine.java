@@ -23,7 +23,6 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.QueryTabCtrlr.*;
 
 import org.hypernomicon.model.records.HDT_Investigation;
 import org.hypernomicon.query.sources.DatasetQuerySource;
@@ -54,7 +53,7 @@ public class InvestigationQueryEngine extends QueryEngine<HDT_Investigation>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Investigation investigation, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(int curQuery, HDT_Investigation investigation, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
