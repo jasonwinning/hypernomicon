@@ -15,9 +15,9 @@
  *
  */
 
-package org.hypernomicon.query;
+package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.query.ResultsTable.*;
+import static org.hypernomicon.query.ui.ResultsTable.*;
 
 import java.util.ArrayList;
 import java.util.List;

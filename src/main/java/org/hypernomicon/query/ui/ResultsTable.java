@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.query;
+package org.hypernomicon.query.ui;
 
 import java.time.Instant;
 import java.util.ArrayList;

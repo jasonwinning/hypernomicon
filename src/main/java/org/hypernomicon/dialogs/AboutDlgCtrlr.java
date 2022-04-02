@@ -31,7 +31,7 @@ import static org.hypernomicon.util.Util.*;
 import java.text.DecimalFormat;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.hypernomicon.query.engines.QueryEngine.QueryType;
+import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.view.HyperView.TextViewInfo;

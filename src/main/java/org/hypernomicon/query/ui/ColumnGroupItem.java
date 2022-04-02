@@ -15,14 +15,14 @@
  *
  */
 
-package org.hypernomicon.query;
+package org.hypernomicon.query.ui;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.query.ResultsTable.ResultColumn;
+import org.hypernomicon.query.ui.ResultsTable.ResultColumn;
 
 import javafx.scene.control.TableView;
 

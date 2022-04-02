@@ -31,6 +31,10 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private KeywordLinkList() { throw new UnsupportedOperationException(); }
+
+//---------------------------------------------------------------------------
+
   public static List<KeywordLink> generate(String text)   { return generate(text, false, null); }
 
   public static List<KeywordLink> generate(String text, boolean overrideSet, SearchKeys searchKeysToUse)

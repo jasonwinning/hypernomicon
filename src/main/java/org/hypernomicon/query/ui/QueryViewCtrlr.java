@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.query;
+package org.hypernomicon.query.ui;
 
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.view.wrappers.HyperTableRow;

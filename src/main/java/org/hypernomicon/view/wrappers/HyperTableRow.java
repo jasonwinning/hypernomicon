@@ -56,6 +56,8 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return HyperTableCell.getRecord(getCell()); }
   public <HDT_T extends HDT_Record> HDT_T getRecord(int ndx)    { return HyperTableCell.getRecord(getCell(ndx)); }
 
+  public <Pop extends Populator> Pop getPopulator(int colNdx)   { return table.getPopulator(colNdx); }
+
 //---------------------------------------------------------------------------
 
   HyperTableRow(int colCount, HyperTable table)

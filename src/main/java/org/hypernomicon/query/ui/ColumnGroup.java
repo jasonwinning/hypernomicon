@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.query;
+package org.hypernomicon.query.ui;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.HyperDB.Tag.*;
@@ -29,7 +29,7 @@ import java.util.Set;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
-import org.hypernomicon.query.SelectColumnsDlgCtrlr.TypeCheckBox;
+import org.hypernomicon.query.ui.SelectColumnsDlgCtrlr.TypeCheckBox;
 
 import com.google.common.collect.ForwardingCollection;
 

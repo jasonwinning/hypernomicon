@@ -33,6 +33,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -314,6 +315,9 @@ class MentionsIndex
     if (choseNotToWait.isTrue())
       return null;
 
+    if (target.getType() == hdtConcept)
+      target = ((HDT_Concept)target).term.get();
+
     return descOnly ?
       mentionedInDescToMentioners.getForwardSet(target)
     :
@@ -328,6 +332,9 @@ class MentionsIndex
     choseNotToWait.setValue(!waitUntilRebuildIsDone());
     if (choseNotToWait.isTrue())
       return false;
+
+    if (target.getType() == hdtConcept)
+      target = ((HDT_Concept)target).term.get();
 
     return descOnly ?
       mentionedInDescToMentioners.getForwardSet(target).contains(mentioner)

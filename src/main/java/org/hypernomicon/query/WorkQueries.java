@@ -15,18 +15,17 @@
  *
  */
 
-package org.hypernomicon.query.engines;
+package org.hypernomicon.query;
 
 import org.hypernomicon.App;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.populators.QueryPopulator;
-import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.QueryTabCtrlr.*;
+import com.google.common.collect.ListMultimap;
+
+import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
 import java.io.IOException;
@@ -37,56 +36,42 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.bib.data.PDFBibData;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
-import org.hypernomicon.query.sources.DatasetQuerySource;
-import org.hypernomicon.query.sources.QuerySource;
+import org.hypernomicon.query.Query.WorkQuery;
 
-public class WorkQueryEngine extends QueryEngine<HDT_Work>
+public final class WorkQueries
 {
+
+//---------------------------------------------------------------------------
+
+  private WorkQueries() { throw new UnsupportedOperationException(); }
+
   private static final int QUERY_LIKELY_EDITED_VOLS        = QUERY_FIRST_NDX + 1,
                            QUERY_4_OR_MORE_AUTHORS         = QUERY_FIRST_NDX + 2,
                            QUERY_ANALYZE_METADATA          = QUERY_FIRST_NDX + 3,
                            QUERY_WORK_NEEDING_PAGE_NUMBERS = QUERY_FIRST_NDX + 4;
 
-  private static List<String> csvFile;
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
+  private static void addQuery(ListMultimap<QueryType, Query<?>> queryTypeToQueries, WorkQuery query)
   {
-    pop.addEntry(row, QUERY_LIKELY_EDITED_VOLS,        "likely edited volumes");
-    pop.addEntry(row, QUERY_4_OR_MORE_AUTHORS,         "with 4 or more authors");
-    pop.addEntry(row, QUERY_WORK_NEEDING_PAGE_NUMBERS, "in a PDF with one or more other works, missing page number(s)");
-
-    if (App.debugging())
-      pop.addEntry(row, QUERY_ANALYZE_METADATA, "analyze pdf metadata");
+    queryTypeToQueries.put(QueryType.qtWorks, query);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void queryChange(int query, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+  public static void addQueries(ListMultimap<QueryType, Query<?>> queryTypeToQueries)
   {
-    switch (query)
+    addQuery(queryTypeToQueries, new WorkQuery(QUERY_LIKELY_EDITED_VOLS, "likely edited volumes")
     {
-      default :
-        break;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean evaluate(int curQuery, HDT_Work work, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
-  {
-    switch (curQuery)
-    {
-      case QUERY_LIKELY_EDITED_VOLS :
-
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      {
         if (work.authorRecords.isEmpty()) return false;
         if (work.getWorkTypeEnum() == WorkTypeEnum.wtPaper) return false;
 
@@ -103,14 +88,32 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
               return true;
             }
 
-        break;
+        return false;
+      }
 
-      case QUERY_4_OR_MORE_AUTHORS :
+      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+    });
 
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    addQuery(queryTypeToQueries, new WorkQuery(QUERY_4_OR_MORE_AUTHORS, "with 4 or more authors")
+    {
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      {
         return work.authorRecords.size() >= 4;
+      }
 
-      case QUERY_WORK_NEEDING_PAGE_NUMBERS :
+      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+    });
 
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    addQuery(queryTypeToQueries, new WorkQuery(QUERY_WORK_NEEDING_PAGE_NUMBERS, "in a PDF with one or more other works, missing page number(s)")
+    {
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      {
         for (HDT_WorkFile workFile : work.workFiles)
           if ((workFile.works.size() > 1) && "pdf".equalsIgnoreCase(workFile.filePath().getExtensionOnly()))
             if ((work.getStartPageNum(workFile) == -1) || (work.getEndPageNum(workFile) == -1))
@@ -119,9 +122,20 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
                   return true;
 
         return false;
+      }
 
-      case QUERY_ANALYZE_METADATA :
+      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+    });
 
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    if (App.debugging()) addQuery(queryTypeToQueries, new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
+    {
+      private List<String> csvFile;
+
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      {
         if (firstCall)
         {
           FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
@@ -167,56 +181,10 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
         }
 
         return true;
-    }
+      }
 
-    return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public QueryType getQueryType()
-  {
-    return QueryType.qtWorks;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public QuerySource getSource(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-  {
-    switch (query)
-    {
-      default :
-        break;
-    }
-
-    return new DatasetQuerySource(hdtWork);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean needsMentionsIndex(int query)
-  {
-    return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
-  {
-    switch (query)
-    {
-      case QUERY_LIKELY_EDITED_VOLS        :
-      case QUERY_4_OR_MORE_AUTHORS         :
-      case QUERY_ANALYZE_METADATA          :
-      case QUERY_WORK_NEEDING_PAGE_NUMBERS :
-        return false;
-    }
-
-    return true;
+      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+    });
   }
 
 //---------------------------------------------------------------------------

@@ -15,11 +15,11 @@
  *
  */
 
-package org.hypernomicon.query;
+package org.hypernomicon.query.ui;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.query.ResultsTable.ResultCellValue;
+import org.hypernomicon.query.ui.ResultsTable.ResultCellValue;
 import org.hypernomicon.view.wrappers.AbstractRow;
 
 import static org.hypernomicon.model.HyperDB.*;

@@ -21,7 +21,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<MasterDetailPane fx:id="spMain" dividerPosition="0.14361702127659576" detailSide="TOP" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.QueryViewCtrlr">
+<MasterDetailPane fx:id="spMain" dividerPosition="0.14361702127659576" detailSide="TOP" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueryViewCtrlr">
    <detailNode>
      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
        <TableView fx:id="tvFields" editable="true" layoutX="466.0" layoutY="24.0" prefHeight="101.0" prefWidth="1057.0"

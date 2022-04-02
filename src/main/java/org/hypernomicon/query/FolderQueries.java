@@ -15,11 +15,11 @@
  *
  */
 
-package org.hypernomicon.query.engines;
+package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.QueryTabCtrlr.*;
+import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,73 +28,50 @@ import java.util.Set;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Folder;
+import org.hypernomicon.query.Query.FolderQuery;
 import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.FilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.populators.QueryPopulator;
-import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-public class FolderQueryEngine extends QueryEngine<HDT_Folder>
+import com.google.common.collect.ListMultimap;
+
+public final class FolderQueries
 {
+
+//---------------------------------------------------------------------------
+
+  private FolderQueries() { throw new UnsupportedOperationException(); }
+
   private static final int QUERY_DUPLICATE_FOLDERS = QUERY_FIRST_NDX + 1;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public QueryType getQueryType()
+  private static void addQuery(ListMultimap<QueryType, Query<?>> queryTypeToQueries, FolderQuery query)
   {
-    return QueryType.qtFolders;
+    queryTypeToQueries.put(QueryType.qtFolders, query);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
+  public static void addQueries(ListMultimap<QueryType, Query<?>> queryTypeToQueries)
   {
-    if (App.debugging())
-      pop.addEntry(row, QUERY_DUPLICATE_FOLDERS, "that are duplicate folders");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void queryChange(int query, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-  {
-    switch (query)
+    if (App.debugging()) addQuery(queryTypeToQueries, new FolderQuery(QUERY_DUPLICATE_FOLDERS, "that are duplicate folders")
     {
-
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean evaluate(int curQuery, HDT_Folder folder, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
-  {
-    switch (curQuery)
-    {
-      case QUERY_DUPLICATE_FOLDERS :
-
+      @Override public boolean evaluate(HDT_Folder folder, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      {
         return true;
-    }
+      }
 
-    return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public QuerySource getSource(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-  {
-    switch (query)
-    {
-      case QUERY_DUPLICATE_FOLDERS :
-        return new FilteredQuerySource(getQueryType(), query)
+      @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        return new FilteredQuerySource(new DatasetQuerySource(hdtFolder))
         {
-          @Override protected void runFilter(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+          @Override protected void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
           {
             Map<FilePath, HDT_Folder> map = new HashMap<>();
             Set<HDT_Folder> set = new HashSet<>();
@@ -119,34 +96,10 @@ public class FolderQueryEngine extends QueryEngine<HDT_Folder>
             });
           }
         };
+      }
 
-      default :
-        break;
-    }
-
-    return new DatasetQuerySource(hdtFolder);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean needsMentionsIndex(int query)
-  {
-    return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
-  {
-    switch (query)
-    {
-      case QUERY_DUPLICATE_FOLDERS :
-        return false;
-    }
-
-    return true;
+      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+    });
   }
 
 //---------------------------------------------------------------------------

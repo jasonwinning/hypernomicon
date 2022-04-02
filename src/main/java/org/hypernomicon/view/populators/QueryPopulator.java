@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.query.QueryTabCtrlr.*;
+import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.ArrayList;
@@ -26,8 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.query.QueryTabCtrlr.QueryView;
-import org.hypernomicon.query.engines.QueryEngine.QueryType;
+import org.hypernomicon.query.QueryType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -69,23 +68,11 @@ public class QueryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setQueryType(HyperTableRow row, QueryType newType, QueryView qV)
+  public void setQueryType(HyperTableRow row, QueryType newType)
   {
     QueryType oldType = rowToQueryType.put(row, newType);
 
     if ((newType == null) || newType.equals(oldType)) return;
-
-    int curQuery = row.getID(1);
-
-    switch (curQuery)
-    {
-      case QUERY_WITH_NAME_CONTAINING : case QUERY_ANY_FIELD_CONTAINS :
-      case QUERY_LIST_ALL             : case QUERY_WHERE_FIELD        :
-        break;
-
-      default :
-        qV.clearOperands(row, 1);
-    }
 
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());
