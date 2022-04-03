@@ -21,7 +21,7 @@ import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.List;
 
-import org.hypernomicon.query.ui.QueryTabCtrlr.QueryView;
+import org.hypernomicon.query.ui.QueryView;
 import org.hypernomicon.util.UIUtil;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 

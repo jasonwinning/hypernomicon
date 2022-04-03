@@ -17,7 +17,7 @@
 
 package org.hypernomicon.query.reports;
 
-import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
+import static org.hypernomicon.query.GeneralQueries.*;
 
 import java.util.List;
 

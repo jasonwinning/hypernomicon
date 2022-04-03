@@ -28,7 +28,7 @@ import com.google.common.collect.ListMultimap;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
+import static org.hypernomicon.query.GeneralQueries.*;
 
 public final class PersonQueries
 {
@@ -37,8 +37,8 @@ public final class PersonQueries
 
   private PersonQueries() { throw new UnsupportedOperationException(); }
 
-  private static final int QUERY_SET_DECEASED_AS_PAST = QUERY_FIRST_NDX + 1,
-                           QUERY_MULTIPLE_INST        = QUERY_FIRST_NDX + 2;
+  private static final int QUERY_SET_DECEASED_AS_PAST = QUERY_FIRST_NDX + 1,  // "Set deceased people as past members of institutions"
+                           QUERY_MULTIPLE_INST        = QUERY_FIRST_NDX + 2;  // "with multiple affiliations"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

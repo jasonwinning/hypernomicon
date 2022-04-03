@@ -89,7 +89,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public final int activeID()              { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
   public int recordNdx()                   { return recordCount() < 1 ? -1 : nullSwitch(activeRecord(), -1, HDT_Record::keyNdx); }
   public final HyperView<HDT_CT> getView() { return view; }
-  public final HDT_CT viewRecord()         { return view.getViewRecord(); }
+  public HDT_CT viewRecord()               { return view.getViewRecord(); }
   public final Tab getTab()                { return tab; }
   public final TabEnum getTabEnum()        { return tabEnum; }
   public void enable(boolean enabled)      { getTab().getContent().setDisable(enabled == false); }

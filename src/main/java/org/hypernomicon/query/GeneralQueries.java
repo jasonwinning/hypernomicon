@@ -21,7 +21,6 @@ import static org.hypernomicon.App.curQV;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
-import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.getCellText;
 
 import java.util.ArrayList;
@@ -54,13 +53,20 @@ public final class GeneralQueries
 
   private GeneralQueries() { throw new UnsupportedOperationException(); }
 
-  private static final int QUERY_RECORD_TYPE            = QUERY_FIRST_NDX + 1,
-                           QUERY_RECORD_EQUALS          = QUERY_FIRST_NDX + 2,
-                           QUERY_ASSOCIATED_WITH_PHRASE = QUERY_FIRST_NDX + 3;
-  public static final int  QUERY_LINKING_TO_RECORD      = QUERY_FIRST_NDX + 4,
-                           QUERY_MATCHING_RECORD        = QUERY_FIRST_NDX + 5,
-                           QUERY_MATCHING_STRING        = QUERY_FIRST_NDX + 6;
-  private static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7;
+  public static final int  QUERY_WITH_NAME_CONTAINING                     = 1,  // "with name containing"
+                           QUERY_ANY_FIELD_CONTAINS                       = 2,  // "where any field contains"
+                           QUERY_LIST_ALL                                 = 3,  // "list all records"
+                           QUERY_WHERE_FIELD                              = 4,  // "where field"
+                           QUERY_WHERE_RELATIVE                           = 5,  // "where set of records having this record as"
+                           QUERY_FIRST_NDX                                = 6;  //
+
+  private static final int QUERY_RECORD_TYPE            = QUERY_FIRST_NDX + 1,  // "record type equals"
+                           QUERY_RECORD_EQUALS          = QUERY_FIRST_NDX + 2,  // "show specified record"
+                           QUERY_ASSOCIATED_WITH_PHRASE = QUERY_FIRST_NDX + 3;  // "show the record this phrase would link to"
+  public static final int  QUERY_LINKING_TO_RECORD      = QUERY_FIRST_NDX + 4,  // "with description linking to record"
+                           QUERY_MATCHING_RECORD        = QUERY_FIRST_NDX + 5,  // "with any text that would link to this record"
+                           QUERY_MATCHING_STRING        = QUERY_FIRST_NDX + 6;  // "with any text that would link to a record having this search key"
+  private static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7;  // "that are mentioned by record"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -205,6 +211,7 @@ public final class GeneralQueries
     });
 
   //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
     addQuery(false, queryTypeToQueries, new RecordQuery(QUERY_RECORD_EQUALS, "show specified record")
     {
@@ -240,6 +247,7 @@ public final class GeneralQueries
     });
 
   //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
     addQuery(false, queryTypeToQueries, new RecordQuery(QUERY_ASSOCIATED_WITH_PHRASE, "show the record this phrase would link to")
     {
@@ -270,6 +278,7 @@ public final class GeneralQueries
       @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return opNum == 1; }
     });
 
+  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     addQuery(true, queryTypeToQueries, new RecordQuery(QUERY_LINKING_TO_RECORD, "with description linking to record")
@@ -304,6 +313,7 @@ public final class GeneralQueries
       @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return opNum < 3; }
     });
 
+  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     addQuery(true, queryTypeToQueries, new RecordQuery(QUERY_MATCHING_RECORD, "with any text that would link to this record")
@@ -356,6 +366,7 @@ public final class GeneralQueries
     });
 
   //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
     addQuery(true, queryTypeToQueries, new RecordQuery(QUERY_MATCHING_STRING, "with any text that would link to a record having this search key")
     {
@@ -405,6 +416,7 @@ public final class GeneralQueries
       @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return opNum == 1; }
     });
 
+  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     addQuery(true, queryTypeToQueries, new RecordQuery(QUERY_MENTIONED_BY, "that are mentioned by record")

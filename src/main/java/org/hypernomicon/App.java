@@ -34,7 +34,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.ContentsWindow;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWindow;
-import org.hypernomicon.query.ui.QueryTabCtrlr.QueryView;
+import org.hypernomicon.query.ui.QueryView;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.MediaUtil;

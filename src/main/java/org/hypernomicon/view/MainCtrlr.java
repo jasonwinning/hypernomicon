@@ -1742,7 +1742,7 @@ public final class MainCtrlr
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
                    new HyperTableCell("", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
     {
-      List<ResultsRow> resultRows = curQV.resultsBackingList;
+      List<ResultsRow> resultRows = curQV.results();
 
       if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.get(0).getRecord() != record)))
         return;
@@ -1795,7 +1795,7 @@ public final class MainCtrlr
       return;
     }
 
-    for (ResultsRow row : curQV.resultsBackingList)
+    for (ResultsRow row : curQV.results())
       if (row.getRecord() == record) return;
 
     curQV.addRecord(record, true);

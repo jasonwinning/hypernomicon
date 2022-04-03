@@ -19,7 +19,7 @@ package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
+import static org.hypernomicon.query.GeneralQueries.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,7 +45,7 @@ public final class FolderQueries
 
   private FolderQueries() { throw new UnsupportedOperationException(); }
 
-  private static final int QUERY_DUPLICATE_FOLDERS = QUERY_FIRST_NDX + 1;
+  private static final int QUERY_DUPLICATE_FOLDERS = QUERY_FIRST_NDX + 1;  // "that are duplicate folders"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

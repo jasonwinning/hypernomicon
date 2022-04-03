@@ -25,7 +25,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import com.google.common.collect.ListMultimap;
 
-import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
+import static org.hypernomicon.query.GeneralQueries.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
 import java.io.IOException;
@@ -50,10 +50,10 @@ public final class WorkQueries
 
   private WorkQueries() { throw new UnsupportedOperationException(); }
 
-  private static final int QUERY_LIKELY_EDITED_VOLS        = QUERY_FIRST_NDX + 1,
-                           QUERY_4_OR_MORE_AUTHORS         = QUERY_FIRST_NDX + 2,
-                           QUERY_ANALYZE_METADATA          = QUERY_FIRST_NDX + 3,
-                           QUERY_WORK_NEEDING_PAGE_NUMBERS = QUERY_FIRST_NDX + 4;
+  private static final int QUERY_LIKELY_EDITED_VOLS        = QUERY_FIRST_NDX + 1,  // "likely edited volumes"
+                           QUERY_4_OR_MORE_AUTHORS         = QUERY_FIRST_NDX + 2,  // "with 4 or more authors"
+                           QUERY_ANALYZE_METADATA          = QUERY_FIRST_NDX + 3,  // "analyze pdf metadata"
+                           QUERY_WORK_NEEDING_PAGE_NUMBERS = QUERY_FIRST_NDX + 4;  // "in a PDF with one or more other works, missing page number(s)"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -26,8 +26,16 @@ import javafx.scene.layout.AnchorPane;
 
 public class QueryViewCtrlr
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML MasterDetailPane spMain, spLower;
   @FXML TableView<HyperTableRow> tvFields;
   @FXML TableView<ResultsRow> tvResults;
   @FXML AnchorPane apDescription, apResults;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

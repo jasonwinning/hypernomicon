@@ -18,13 +18,16 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
+import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.sources.AllQuerySource;
 import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
-import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.query.ui.QueryView;
+import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -89,7 +92,22 @@ public abstract class Query<HDT_T extends HDT_Record>
 
   static void clearOperands(HyperTableRow row, int startOpNum)
   {
-    MainCtrlr.queryHyperTab().clearOperands(row, startOpNum);
+    QueryView.clearOperands(row, startOpNum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static Populator operandPopulator()
+  {
+    return Populator.create(cvtOperand,
+
+        new HyperTableCell(EQUAL_TO_OPERAND_ID        , "Is or includes record", hdtNone),
+        new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID    , "Excludes record"      , hdtNone),
+        new HyperTableCell(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
+        new HyperTableCell(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
+        new HyperTableCell(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
+        new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone));
   }
 
 //---------------------------------------------------------------------------

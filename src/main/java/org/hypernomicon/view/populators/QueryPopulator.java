@@ -78,7 +78,7 @@ public class QueryPopulator extends Populator
       rowToChoices.put(row, new ArrayList<>());
 
     rowToChoices.get(row).clear();
-    addQueries(this, row, newType);
+    addQueriesToPopulator(this, row, newType);
   }
 
 //---------------------------------------------------------------------------
