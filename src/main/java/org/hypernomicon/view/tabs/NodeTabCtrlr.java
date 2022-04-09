@@ -468,7 +468,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         return falseWithErrorMessage("Unable to modify record: term cannot be zero-length.", tfName);
     }
 
-    if (!HyperTab.saveSearchKey(record, tfSearchKey)) return false;
+    if (HyperTab.saveSearchKey(record, tfSearchKey) == false) return false;
 
     record.setName(tfName.getText());
 

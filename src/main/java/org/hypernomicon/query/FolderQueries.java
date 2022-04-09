@@ -18,25 +18,17 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.GeneralQueries.*;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.query.Query.FolderQuery;
-import org.hypernomicon.query.sources.DatasetQuerySource;
-import org.hypernomicon.query.sources.FilteredQuerySource;
-import org.hypernomicon.query.sources.QuerySource;
+import org.hypernomicon.query.Query.FilteredFolderQuery;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-
-import com.google.common.collect.ListMultimap;
 
 public final class FolderQueries
 {
@@ -45,60 +37,39 @@ public final class FolderQueries
 
   private FolderQueries() { throw new UnsupportedOperationException(); }
 
-  private static final int QUERY_DUPLICATE_FOLDERS = QUERY_FIRST_NDX + 1;  // "that are duplicate folders"
+  private static final int QUERY_DUPLICATE_FOLDERS = 3001;  // "that are duplicate folders"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addQuery(ListMultimap<QueryType, Query<?>> queryTypeToQueries, FolderQuery query)
+  public static void addQueries(List<Query<?>> allQueries)
   {
-    queryTypeToQueries.put(QueryType.qtFolders, query);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void addQueries(ListMultimap<QueryType, Query<?>> queryTypeToQueries)
-  {
-    if (App.debugging()) addQuery(queryTypeToQueries, new FolderQuery(QUERY_DUPLICATE_FOLDERS, "that are duplicate folders")
+    if (App.debugging()) allQueries.add(new FilteredFolderQuery(QUERY_DUPLICATE_FOLDERS, "that are duplicate folders")
     {
       @Override public boolean evaluate(HDT_Folder folder, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
       {
         return true;
       }
 
-      @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      @Override protected void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        return new FilteredQuerySource(new DatasetQuerySource(hdtFolder))
+        Map<FilePath, HDT_Folder> map = new HashMap<>();
+
+        db.folders.forEach(folder ->
         {
-          @Override protected void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+          FilePath filePath = folder.filePath();
+
+          if (map.containsKey(filePath))
           {
-            Map<FilePath, HDT_Folder> map = new HashMap<>();
-            Set<HDT_Folder> set = new HashSet<>();
-
-            db.folders.forEach(folder ->
-            {
-              FilePath filePath = folder.filePath();
-
-              if (map.containsKey(filePath))
-              {
-                if (set.contains(map.get(filePath)) == false)
-                {
-                  set.add(map.get(filePath));
-                  list.add(map.get(filePath));
-                }
-
-                set.add(folder);
-                list.add(folder);
-              }
-              else
-                map.put(filePath, folder);
-            });
+            records.add(map.get(filePath));
+            records.add(folder);
           }
-        };
+          else
+            map.put(filePath, folder);
+        });
       }
 
-      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
     });
   }
 

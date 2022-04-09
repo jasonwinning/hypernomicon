@@ -23,6 +23,7 @@ import static org.hypernomicon.util.json.JsonObj.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -30,6 +31,7 @@ import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -74,7 +76,7 @@ public class JsonHttpClient
         successHndlr.accept(jsonClient.jsonArray);
       }), failHndlr);
     }
-    catch (Exception e)
+    catch (IllegalArgumentException e)
     {
       if (failHndlr != null)
         failHndlr.accept(e);
@@ -90,7 +92,7 @@ public class JsonHttpClient
     {
       new JsonHttpClient().doAsyncRequest(new HttpGet(url), httpClient, jsonClient -> runInFXThread(() -> successHndlr.accept(jsonClient.jsonObj)), failHndlr);
     }
-    catch (Exception e)
+    catch (IllegalArgumentException e)
     {
       if (failHndlr != null)
         failHndlr.accept(e);
@@ -109,12 +111,12 @@ public class JsonHttpClient
     {
       lastUrl = request.getURI().toURL().toString();
     }
-    catch (Exception e)
+    catch (MalformedURLException e)
     {
       lastUrl = "";
     }
 
-    httpClient.doRequest(request, getResponseHndlr(successHndlr, failHndlr), failHndlr);
+    httpClient.doRequest(request, response -> handleResponse(response, successHndlr, failHndlr), failHndlr);
   }
 
 //---------------------------------------------------------------------------
@@ -122,7 +124,7 @@ public class JsonHttpClient
 
   public JsonArray requestArrayInThisThread(HttpUriRequest request) throws UnsupportedOperationException, ParseException, IOException
   {
-    if (!doRequestInThisThread(request))
+    if (doRequestInThisThread(request) == false)
       return null;
 
     if (jsonArray == null)
@@ -141,10 +143,10 @@ public class JsonHttpClient
   {
     jsonArray = null;
     jsonObj = null;
-    boolean rc = false;
+    boolean rc;
 
     lastUrl = request.getURI().toURL().toString();
-    ResponseHandler<Boolean> responseHndlr = getResponseHndlr(null, null);
+    ResponseHandler<Boolean> responseHndlr = response -> handleResponse(response, null, null);
 
     try (CloseableHttpClient httpclient = AsyncHttpClient.createClient())
     {
@@ -171,7 +173,7 @@ public class JsonHttpClient
 //----------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ResponseHandler<Boolean> getResponseHndlr(Consumer<JsonHttpClient> successHndlr, Consumer<Exception> failHndlr) { return response ->
+  private boolean handleResponse(HttpResponse response, Consumer<JsonHttpClient> successHndlr, Consumer<Exception> failHndlr)
   {
     statusCode = response.getStatusLine().getStatusCode();
     reasonPhrase = response.getStatusLine().getReasonPhrase();
@@ -217,7 +219,7 @@ public class JsonHttpClient
           return true;
         }
       }
-      catch (UnsupportedOperationException | ParseException e)
+      catch (IOException | ParseException e)
       {
         lastException = e;
 
@@ -238,7 +240,7 @@ public class JsonHttpClient
       runInFXThread(() -> successHndlr.accept(this));
 
     return true;
-  }; }
+  }
 
 //----------------------------------------------------------------------------
 //---------------------------------------------------------------------------

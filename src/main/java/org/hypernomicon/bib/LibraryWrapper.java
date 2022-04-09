@@ -162,7 +162,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
     runInFXThread(() ->
     {
-      MergeWorksDlgCtrlr mwd = null;
+      MergeWorksDlgCtrlr mwd;
 
       try
       {

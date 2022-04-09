@@ -27,7 +27,6 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -52,6 +51,11 @@ public class QueryWhereField extends RecordQuery
   {
     super(queryID, description);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -87,11 +91,10 @@ public class QueryWhereField extends RecordQuery
     RecordType recordType = row.getRecordType(0), objType = hdtNone;
     HyperDataCategory cat = hdcString;
     boolean catSet = false;
-    RelationType relType;
 
     for (HDI_Schema schema : db.getSchemasByTag(getTagByNum(row.getID(2))))
     {
-      relType = schema.getRelType();
+      RelationType relType = schema.getRelType();
 
       RecordType subjType = relType == rtNone ? hdtNone : db.getSubjType(relType);
 
@@ -141,7 +144,7 @@ public class QueryWhereField extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+  @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
   {
     Tag tag = getTagByNum(getCellID(op1));
     HDI_Schema schema = record.getSchema(tag);
@@ -213,12 +216,12 @@ public class QueryWhereField extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean hasOperand(int opNum, HyperTableCell prevOp)
+  @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2)
   {
     if (opNum < 3)
       return true;
 
-    switch (prevOp.getID())
+    switch (op2.getID())
     {
       case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
         return false;

@@ -35,6 +35,7 @@ import org.hypernomicon.view.WindowStack;
 import com.google.common.collect.HashBasedTable;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.event.EventTarget;
 import javafx.geometry.Orientation;
@@ -668,13 +669,14 @@ public final class UIUtil
 
   public static void messageDialog(String msg, MessageDialogType mt, boolean wait)
   {
-    if (wait) messageDialogShowing = true;
+    if (mt  == null) throw new NullPointerException("messageDialog type");
+    if (msg == null) throw new NullPointerException("messageDialog msg" );
+
+    Object stopLight = new Object();
 
     runInFXThread(() ->
     {
-      Alert alert = null;
-
-      messageDialogShowing = true;
+      Alert alert;
 
       switch (mt)
       {
@@ -683,33 +685,28 @@ public final class UIUtil
           alert.setHeaderText("Warning");
           break;
 
-        case mtError :
-          alert = new Alert(AlertType.ERROR);
-          alert.setHeaderText("Error");
-          break;
-
         case mtInformation :
           alert = new Alert(AlertType.INFORMATION);
           alert.setHeaderText("Information");
           break;
 
-        default:
-
-          return;
+        default :
+          alert = new Alert(AlertType.ERROR);
+          alert.setHeaderText("Error");
+          break;
       }
 
       alert.setTitle(appTitle);
       alert.setContentText(msg);
 
       showAndWait(alert);
-      messageDialogShowing = false;
+
+      synchronized (stopLight) { stopLight.notifyAll(); }
     });
 
-    while (wait && messageDialogShowing)
-      sleepForMillis(50);
+    if (wait && (Platform.isFxApplicationThread() == false))
+      synchronized (stopLight) { try { stopLight.wait(); } catch (InterruptedException e) { noOp(); }}
   }
-
-  private static boolean messageDialogShowing = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -74,6 +74,7 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
+import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -346,12 +347,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     for (HDT_Work work : curPerson.works)
       if (work.canPreview())
       {
-        previewWindow.setPreview(pvsPersonTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+        previewWindow.setPreview(pvsPersonTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
         return;
       }
 
     HDT_Work work = curPerson.works.get(0);
-    previewWindow.setPreview(pvsPersonTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+    previewWindow.setPreview(pvsPersonTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
   }
 
 //---------------------------------------------------------------------------
@@ -454,7 +455,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if (FilePath.isEmpty(curPicture) == false)
     {
       Image picture = new Image(curPicture.toURI().toString());
-      if (!picture.isError())
+      if (picture.isError() == false)
       {
         ivPerson.setImage(picture);
         ivPerson.setViewport(viewPort);
@@ -531,7 +532,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   @Override public boolean saveToRecord()
   {
-    if (!saveSearchKey(curPerson, tfSearchKey)) return false;
+    if (saveSearchKey(curPerson, tfSearchKey) == false) return false;
 
     if (FilePath.isEmpty(curPicture))
       curPerson.getPath().clear();
@@ -638,7 +639,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(personName, new Author(curPerson), matchedAuthorsList, null);
 
-    if (!HyperTask.performTaskWithProgressDialog(task)) return false;
+    if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
 
     ArrayList<Author> matchedAuthors = matchedAuthorsList.get(0);
 
@@ -695,7 +696,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       else if (record.getType() == hdtWork)
       {
         HDT_Work work = (HDT_Work)record;
-        previewWindow.setPreview(pvsPersonTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+        previewWindow.setPreview(pvsPersonTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
       }
       else
         previewWindow.setPreview(pvsPersonTab, record.filePath(), record);

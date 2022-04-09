@@ -18,6 +18,7 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -43,6 +44,9 @@ public class TagItemPopulator extends Populator
   {
     this.recordType = recordType;
     tags = db.getTagsByRecordType(recordType, true);
+
+    removeAll(tags, tagDisplayRecord, tagKeyWork);
+
     choices = new ArrayList<>();
   }
 

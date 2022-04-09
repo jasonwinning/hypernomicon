@@ -23,9 +23,6 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import com.google.common.collect.ListMultimap;
-
-import static org.hypernomicon.query.GeneralQueries.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
 import java.io.IOException;
@@ -36,7 +33,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.bib.data.PDFBibData;
-import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -50,27 +46,19 @@ public final class WorkQueries
 
   private WorkQueries() { throw new UnsupportedOperationException(); }
 
-  private static final int QUERY_LIKELY_EDITED_VOLS        = QUERY_FIRST_NDX + 1,  // "likely edited volumes"
-                           QUERY_4_OR_MORE_AUTHORS         = QUERY_FIRST_NDX + 2,  // "with 4 or more authors"
-                           QUERY_ANALYZE_METADATA          = QUERY_FIRST_NDX + 3,  // "analyze pdf metadata"
-                           QUERY_WORK_NEEDING_PAGE_NUMBERS = QUERY_FIRST_NDX + 4;  // "in a PDF with one or more other works, missing page number(s)"
+  private static final int QUERY_LIKELY_EDITED_VOLS        = 2001,  // "likely edited volumes"
+                           QUERY_4_OR_MORE_AUTHORS         = 2002,  // "with 4 or more authors"
+                           QUERY_ANALYZE_METADATA          = 2003,  // "analyze pdf metadata"
+                           QUERY_WORK_NEEDING_PAGE_NUMBERS = 2004;  // "in a PDF with one or more other works, missing page number(s)"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addQuery(ListMultimap<QueryType, Query<?>> queryTypeToQueries, WorkQuery query)
+  public static void addQueries(List<Query<?>> allQueries)
   {
-    queryTypeToQueries.put(QueryType.qtWorks, query);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void addQueries(ListMultimap<QueryType, Query<?>> queryTypeToQueries)
-  {
-    addQuery(queryTypeToQueries, new WorkQuery(QUERY_LIKELY_EDITED_VOLS, "likely edited volumes")
+    allQueries.add(new WorkQuery(QUERY_LIKELY_EDITED_VOLS, "likely edited volumes")
     {
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
       {
         if (work.authorRecords.isEmpty()) return false;
         if (work.getWorkTypeEnum() == WorkTypeEnum.wtPaper) return false;
@@ -91,28 +79,28 @@ public final class WorkQueries
         return false;
       }
 
-      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
     });
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    addQuery(queryTypeToQueries, new WorkQuery(QUERY_4_OR_MORE_AUTHORS, "with 4 or more authors")
+    allQueries.add(new WorkQuery(QUERY_4_OR_MORE_AUTHORS, "with 4 or more authors")
     {
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
       {
         return work.authorRecords.size() >= 4;
       }
 
-      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
     });
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    addQuery(queryTypeToQueries, new WorkQuery(QUERY_WORK_NEEDING_PAGE_NUMBERS, "in a PDF with one or more other works, missing page number(s)")
+    allQueries.add(new WorkQuery(QUERY_WORK_NEEDING_PAGE_NUMBERS, "in a PDF with one or more other works, missing page number(s)")
     {
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
       {
         for (HDT_WorkFile workFile : work.workFiles)
           if ((workFile.works.size() > 1) && "pdf".equalsIgnoreCase(workFile.filePath().getExtensionOnly()))
@@ -124,17 +112,17 @@ public final class WorkQueries
         return false;
       }
 
-      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
     });
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    if (App.debugging()) addQuery(queryTypeToQueries, new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
+    if (App.debugging()) allQueries.add(new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
     {
       private List<String> csvFile;
 
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
       {
         if (firstCall)
         {
@@ -183,7 +171,7 @@ public final class WorkQueries
         return true;
       }
 
-      @Override public boolean hasOperand(int opNum, HyperTableCell prevOp) { return false; }
+      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
     });
   }
 

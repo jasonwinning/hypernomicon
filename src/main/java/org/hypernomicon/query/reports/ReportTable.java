@@ -89,7 +89,7 @@ public class ReportTable
       List<HyperTableRow> rows = reportEngine.getRows();
       tv.setItems(FXCollections.observableList(rows));
 
-      if (reportEngine.alwaysShowDescription() && (rows.size() > 0))
+      if (reportEngine.autoShowDescription() && (rows.size() > 0))
         tv.getSelectionModel().selectFirst();
     });
   }

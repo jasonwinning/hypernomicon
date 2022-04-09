@@ -29,13 +29,14 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.util.Util.*;
@@ -127,138 +128,136 @@ public final class FileDownloadUtility
   {
     assignSB(fileName, "");
 
-    ResponseHandler<Boolean> responseHndlr = response ->
-    {
-      MutableInt contentLength = new MutableInt(-1);
+    ResponseHandler<Boolean> responseHndlr = response -> handleResponse(response, fileURL, dirPath, fileNameStr, saveToBuffer, fileName,
+                                                                        assumeIsImage, httpClient, successHndlr, failHndlr);
 
-      int statusCode = response.getStatusLine().getStatusCode();
-      String reasonPhrase = response.getStatusLine().getReasonPhrase(),
-             contentType = "";
-
-      if (statusCode >= 400)
-      {
-        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, reasonPhrase)));
-        return false;
-      }
-
-      HttpEntity entity = response.getEntity();
-
-      for (Header header : response.getAllHeaders())
-      {
-        switch (HttpHeader.get(header))
-        {
-          case Content_Type : contentType = header.getValue(); break;
-          case Content_Length : contentLength.setValue(parseInt(header.getValue(), -1)); break;
-          case Content_Disposition :
-
-            if (fileName.length() == 0)
-            {
-              String disposition = header.getValue();
-              int index = disposition.indexOf("filename=");
-              if (index > 0)
-                assignSB(fileName, disposition.substring(index + 10, disposition.length() - 1));
-            }
-
-            break;
-
-          default : break;
-        }
-      }
-
-      if (fileName.length() == 0)
-      {
-        // extracts file name from URL
-
-        String origFileNameStr = fileURL.substring(fileURL.lastIndexOf('/') + 1);
-
-        if (origFileNameStr.indexOf('?') >= 0)
-          origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('?'));
-
-        if (origFileNameStr.indexOf('&') >= 0)
-          origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('&'));
-
-        if (origFileNameStr.indexOf(':') >= 0)
-          origFileNameStr = origFileNameStr.endsWith(":") ? "" : origFileNameStr.substring(origFileNameStr.lastIndexOf(':') + 1);
-
-        if (origFileNameStr.isEmpty())
-          origFileNameStr = (assumeIsImage ? "image" : "file") + ZoteroWrapper.generateWriteToken();
-
-        String ext = FilenameUtils.getExtension(origFileNameStr);
-
-        if (ext.isEmpty() && (contentType.length() > 0))
-        {
-          ext = getContentTypeExtension(contentType);
-
-          if (ext.length() > 0)
-            origFileNameStr = FilenameUtils.getBaseName(origFileNameStr) + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
-        }
-
-        if (assumeIsImage && ext.isEmpty())
-          origFileNameStr = FilenameUtils.getBaseName(origFileNameStr) + FilenameUtils.EXTENSION_SEPARATOR_STR + "jpg";
-
-        assignSB(fileName, origFileNameStr);
-      }
-
-      if (saveToBuffer)
-      {
-        try (Buffer buffer = new Buffer(entity.getContent()))
-        {
-          runInFXThread(() -> successHndlr.accept(buffer));
-        }
-        catch (Exception e)
-        {
-          runInFXThread(httpClient.wasCancelledByUser() ?
-            () -> failHndlr.accept(new TerminateTaskException())
-          :
-            () -> failHndlr.accept(e));
-
-          return false;
-        }
-      }
-      else
-      {
-        FilePath saveFilePath = dirPath.resolve(fileNameStr.isEmpty() ? fileName.toString() : fileNameStr);
-
-        // opens input stream from the HTTP connection
-        // opens an output stream to save into file
-
-        try (InputStream inputStream = entity.getContent();
-             OutputStream outputStream = Files.newOutputStream(saveFilePath.toPath()))
-        {
-          int bytesRead;
-          byte[] byteBuffer = new byte[BUFFER_SIZE];
-
-          while ((bytesRead = inputStream.read(byteBuffer)) != -1)
-            outputStream.write(byteBuffer, 0, bytesRead);
-
-          runInFXThread(() -> successHndlr.accept(null));
-        }
-        catch (Exception e)
-        {
-          runInFXThread(() -> failHndlr.accept(e));
-          return false;
-        }
-      }
-
-      return true;
-    };
-
-    HttpUriRequest request;
-
-    try
-    {
-      request = RequestBuilder.get()
-        .setUri(fileURL)
-        .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
-        .build();
-    }
-    catch (Exception e)
-    {
-      runInFXThread(() -> failHndlr.accept(e));
-      return;
-    }
+    HttpUriRequest request = RequestBuilder.get()
+      .setUri(fileURL)
+      .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
+      .build();
 
     httpClient.doRequest(request, responseHndlr, failHndlr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean handleResponse(HttpResponse response, String fileURL, FilePath dirPath, String fileNameStr, boolean saveToBuffer,
+                                        StringBuilder fileName, boolean assumeIsImage, AsyncHttpClient httpClient,
+                                        Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
+  {
+    MutableInt contentLength = new MutableInt(-1);
+
+    int statusCode = response.getStatusLine().getStatusCode();
+    String reasonPhrase = response.getStatusLine().getReasonPhrase(),
+           contentType = "";
+
+    if (statusCode >= 400)
+    {
+      runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, reasonPhrase)));
+      return false;
+    }
+
+    HttpEntity entity = response.getEntity();
+
+    for (Header header : response.getAllHeaders())
+    {
+      switch (HttpHeader.get(header))
+      {
+        case Content_Type : contentType = header.getValue(); break;
+        case Content_Length : contentLength.setValue(parseInt(header.getValue(), -1)); break;
+        case Content_Disposition :
+
+          if (fileName.length() == 0)
+          {
+            String disposition = header.getValue();
+            int index = disposition.indexOf("filename=");
+            if (index > 0)
+              assignSB(fileName, disposition.substring(index + 10, disposition.length() - 1));
+          }
+
+          break;
+
+        default : break;
+      }
+    }
+
+    if (fileName.length() == 0)
+    {
+      // extracts file name from URL
+
+      String origFileNameStr = fileURL.substring(fileURL.lastIndexOf('/') + 1);
+
+      if (origFileNameStr.indexOf('?') >= 0)
+        origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('?'));
+
+      if (origFileNameStr.indexOf('&') >= 0)
+        origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('&'));
+
+      if (origFileNameStr.indexOf(':') >= 0)
+        origFileNameStr = origFileNameStr.endsWith(":") ? "" : origFileNameStr.substring(origFileNameStr.lastIndexOf(':') + 1);
+
+      if (origFileNameStr.isEmpty())
+        origFileNameStr = (assumeIsImage ? "image" : "file") + ZoteroWrapper.generateWriteToken();
+
+      String ext = FilenameUtils.getExtension(origFileNameStr);
+
+      if (ext.isEmpty() && (contentType.length() > 0))
+      {
+        ext = getContentTypeExtension(contentType);
+
+        if (ext.length() > 0)
+          origFileNameStr = FilenameUtils.getBaseName(origFileNameStr) + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
+      }
+
+      if (assumeIsImage && ext.isEmpty())
+        origFileNameStr = FilenameUtils.getBaseName(origFileNameStr) + FilenameUtils.EXTENSION_SEPARATOR_STR + "jpg";
+
+      assignSB(fileName, origFileNameStr);
+    }
+
+    if (saveToBuffer)
+    {
+      try (Buffer buffer = new Buffer(entity.getContent()))
+      {
+        runInFXThread(() -> successHndlr.accept(buffer));
+      }
+      catch (IOException e)
+      {
+        runInFXThread(httpClient.wasCancelledByUser() ?
+          () -> failHndlr.accept(new CancelledTaskException())
+        :
+          () -> failHndlr.accept(e));
+
+        return false;
+      }
+    }
+    else
+    {
+      FilePath saveFilePath = dirPath.resolve(fileNameStr.isEmpty() ? fileName.toString() : fileNameStr);
+
+      // opens input stream from the HTTP connection
+      // opens an output stream to save into file
+
+      try (InputStream inputStream = entity.getContent();
+           OutputStream outputStream = Files.newOutputStream(saveFilePath.toPath()))
+      {
+        int bytesRead;
+        byte[] byteBuffer = new byte[BUFFER_SIZE];
+
+        while ((bytesRead = inputStream.read(byteBuffer)) != -1)
+          outputStream.write(byteBuffer, 0, bytesRead);
+
+        runInFXThread(() -> successHndlr.accept(null));
+      }
+      catch (IOException e)
+      {
+        runInFXThread(() -> failHndlr.accept(e));
+        return false;
+      }
+    }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

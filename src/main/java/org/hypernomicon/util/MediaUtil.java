@@ -90,7 +90,7 @@ public final class MediaUtil
 
       return "data:image/png;base64," + javax.xml.bind.DatatypeConverter.printBase64Binary(array);
     }
-    catch (Exception e)
+    catch (IOException e)
     {
       messageDialog("Error: " + e.getMessage(), mtError);
       return "";
@@ -142,7 +142,7 @@ public final class MediaUtil
     if (mimetype == null)
       mimetype = getMediaType(filePath);
 
-    String imageName = "", typeStr = mimetype.toString();
+    String imageName, typeStr = mimetype.toString();
 
     if (mimetype == MediaType.APPLICATION_XML)
       imageName = "document-code";

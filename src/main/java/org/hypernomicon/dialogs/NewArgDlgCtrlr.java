@@ -210,7 +210,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     tf.textProperty().addListener((ob, oldText, newText) ->
     {
-      if (!revising)
+      if (revising == false)
         rb.setSelected(true);
     });
   }

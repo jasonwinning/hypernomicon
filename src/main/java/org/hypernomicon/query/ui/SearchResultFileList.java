@@ -36,7 +36,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -112,8 +112,7 @@ class SearchResultFileList
 
     private static boolean hasAnnotations(PDDocument pdf) throws IOException
     {
-      int numPages = pdf.getNumberOfPages();
-      for (int curPageNdx = 0; curPageNdx < numPages; curPageNdx++)
+      for (int numPages = pdf.getNumberOfPages(), curPageNdx = 0; curPageNdx < numPages; curPageNdx++)
       {
         PDPage page = pdf.getPage(curPageNdx);
 
@@ -227,18 +226,19 @@ class SearchResultFileList
 
   private final List<SearchResultFile> list = new ArrayList<>();
   private final List<String> errList = new ArrayList<>();
-  private final boolean copyingEntirePDFs;
+  private final boolean copyingEntirePDFs, includeEdited;
   private final FilePathSet filePathSet = new FilePathSet();
 
-  SearchResultFileList(boolean copyingEntirePDFs)
+  SearchResultFileList(boolean copyingEntirePDFs, boolean includeEdited)
   {
     this.copyingEntirePDFs = copyingEntirePDFs;
+    this.includeEdited = includeEdited;
   }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  void addRecord(HDT_RecordWithPath record, boolean includeEdited)
+  void addRecord(HDT_RecordWithPath record)
   {
     switch (record.getType())
     {
@@ -252,9 +252,15 @@ class SearchResultFileList
         HDT_Work work = (HDT_Work)record;
         boolean isAuthored = work.getAuthors().stream().allMatch(author -> author.getIsEditor() || author.getIsTrans()) == false;
 
-        if (!isAuthored && !includeEdited) return;
+        if ((isAuthored == false) && (includeEdited == false)) return;
 
-        for (HDT_WorkFile workFile : work.workFiles)
+        if (work.workFiles.isEmpty())
+        {
+          FilePath filePath = work.filePathIncludeExt();
+          if (FilePath.isEmpty(filePath) == false)
+            addFile(filePath, work.getStartPageNum(), work.getEndPageNum());
+        }
+        else for (HDT_WorkFile workFile : work.workFiles)
         {
           int startPage = work.getStartPageNum(workFile),
               endPage   = work.getEndPageNum  (workFile);
@@ -276,8 +282,8 @@ class SearchResultFileList
           addFile(workFile.filePath(), startPage, endPage);
         }
 
-        work.subWorks .forEach(subWork  -> addRecord(subWork , includeEdited));
-        work.miscFiles.forEach(miscFile -> addRecord(miscFile, includeEdited));
+        work.subWorks .forEach(this::addRecord);
+        work.miscFiles.forEach(this::addRecord);
 
         break;
 
@@ -325,7 +331,7 @@ class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  void copyAll(boolean excludeAnnots, HyperTask task) throws TerminateTaskException
+  void copyAll(boolean excludeAnnots, HyperTask task) throws CancelledTaskException
   {
     int ndx = 0; for (SearchResultFile resultFile : list)
     {
@@ -333,7 +339,7 @@ class SearchResultFileList
       task.updateProgress(ndx++, list.size());
 
       if (task.isCancelled())
-        throw new TerminateTaskException();
+        throw new CancelledTaskException();
     }
   }
 

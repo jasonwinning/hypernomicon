@@ -64,7 +64,7 @@ import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.CryptoUtil;
@@ -127,14 +127,11 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl) throws IOException, UnsupportedOperationException, ParseException, TerminateTaskException
+  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
   {
-    JsonArray jsonArray = null;
-    MutableInt totalResults = new MutableInt(-1);
+    if (syncTask.isCancelled()) throw new CancelledTaskException();
 
     RequestBuilder rb;
-
-    if (syncTask.isCancelled()) throw new TerminateTaskException();
 
     switch (requestType)
     {
@@ -161,6 +158,8 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
                 .setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .build();
 
+    JsonArray jsonArray;
+
     try
     {
       jsonArray = jsonClient.requestArrayInThisThread(request);
@@ -170,12 +169,14 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       if (syncTask.isCancelled())
       {
         request = null;
-        throw new TerminateTaskException();
+        throw new CancelledTaskException();
       }
 
       request = null;
       throw e;
     }
+
+    MutableInt totalResults = new MutableInt(-1);
 
     nullSwitch(jsonClient.getHeaders(), headers -> headers.forEach(header ->
     {
@@ -197,7 +198,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     request = null;
 
-    if (syncTask.isCancelled()) throw new TerminateTaskException();
+    if (syncTask.isCancelled()) throw new CancelledTaskException();
 
     if (jsonClient.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
     {
@@ -233,7 +234,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       }
     }
 
-    if (syncTask.isCancelled()) throw new TerminateTaskException();
+    if (syncTask.isCancelled()) throw new CancelledTaskException();
 
     return jsonArray;
   }
@@ -241,7 +242,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private JsonArray createDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, TerminateTaskException
+  private JsonArray createDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
     String url       = "https://api.mendeley.com/documents",
            mediaType = "application/vnd.mendeley-document.1+json";
@@ -251,12 +252,8 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     JsonArray jsonArray = doHttpRequest(url, HttpRequestType.post, jsonObj.toString(), mediaType, null);
 
-    switch (jsonClient.getStatusCode())
-    {
-      case HttpStatus.SC_CREATED :
-
-        return jsonArray;
-    }
+    if (jsonClient.getStatusCode() == HttpStatus.SC_CREATED)
+      return jsonArray;
 
     throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
   }
@@ -264,7 +261,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private JsonArray updateDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, TerminateTaskException
+  private JsonArray updateDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
     String url       = "https://api.mendeley.com/documents/" + jsonObj.getStrSafe("id"),
            mediaType = "application/vnd.mendeley-document.1+json";
@@ -305,7 +302,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private JsonArray doReadCommand(MendeleyCmd command) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
+  private JsonArray doReadCommand(MendeleyCmd command) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.mendeley.com/", mediaType = "";
 
@@ -359,7 +356,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   @Override public SyncTask createNewSyncTask()
   {
-    return syncTask = new SyncTask() { @Override public Boolean call() throws TerminateTaskException, HyperDataException
+    return syncTask = new SyncTask() { @Override public void call() throws CancelledTaskException, HyperDataException
     {
     //---------------------------------------------------------------------------
 
@@ -568,8 +565,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
           keyToTrashEntry.put(entryKey, keyToAllEntry.get(entryKey));
           changed = true;
         });
-
-        return true;
       }
       catch (HttpResponseException e)
       {
@@ -603,13 +598,12 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     }
     catch (FileNotFoundException e) { noOp(); }
 
-    if (jMainObj != null)
-    {
-      String lastSyncTimeStr = db.prefs.get(PREF_KEY_BIB_LAST_SYNC_TIME, "");
-      lastSyncTime = lastSyncTimeStr.isBlank() ? Instant.EPOCH : parseIso8601(lastSyncTimeStr);
+    if (jMainObj == null) return;
 
-      loadFromJSON(jMainObj);
-    }
+    String lastSyncTimeStr = db.prefs.get(PREF_KEY_BIB_LAST_SYNC_TIME, "");
+    lastSyncTime = lastSyncTimeStr.isBlank() ? Instant.EPOCH : parseIso8601(lastSyncTimeStr);
+
+    loadFromJSON(jMainObj);
   }
 
 //---------------------------------------------------------------------------

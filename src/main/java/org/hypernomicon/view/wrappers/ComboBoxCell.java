@@ -168,7 +168,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
     cb.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (!cb.isFocused())
+      if (cb.isFocused() == false)
         commit();
     });
 

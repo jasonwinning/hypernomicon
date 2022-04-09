@@ -18,9 +18,8 @@
 package org.hypernomicon.dialogs;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.WorkAuthors;
@@ -71,7 +70,6 @@ public class NewPersonDlgCtrlr extends HyperDlg
   private Author origAuthor = null;
   private boolean alreadyChangingName = false, noTabUpdate = false;
   private HyperTask task;
-  private HyperThread thread;
   private ArrayList<Author> matchedAuthors = null;
   private final ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
 
@@ -263,8 +261,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
   {
     if ((task == null) || (task.isRunning() == false)) return;
 
-    task.cancel();
-    try { thread.join(); } catch (Exception e) { noOp(); }
+    task.cancelAndWait();
   }
 
 //---------------------------------------------------------------------------
@@ -350,7 +347,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, List<Author> matchedAuthors, HyperTask task, int ctr, int total) throws TerminateTaskException
+  public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, List<Author> matchedAuthors, HyperTask task, int ctr, int total) throws CancelledTaskException
   {
     if (person1.fullLCNameEngChar.isEmpty()) return;
 
@@ -393,7 +390,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
       if (isMatch)
         matchedAuthors.add(person2.author);
 
-      if (task.isCancelled()) throw new TerminateTaskException();
+      if (task.isCancelled()) throw new CancelledTaskException();
 
       if ((ctr % 10) == 0) task.updateProgress(ctr, total);
 
@@ -412,7 +409,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, ArrayList<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
   {
-    return new HyperTask("CheckForDupAuthors") { @Override protected Boolean call() throws Exception
+    return new HyperTask("CheckForDupAuthors") { @Override protected void call() throws CancelledTaskException
     {
       matchedAuthorsList.clear();
 
@@ -429,11 +426,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
         doDupCheck(person, list, matchedAuthors, this, ndx * list.size(), nameList.size() * list.size());
       }
 
-      succeeded();
-
       if (finishHndlr != null) runInFXThread(finishHndlr);
-
-      return true;
     }};
   }
 
@@ -454,9 +447,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     progressIndicator.progressProperty().bind(task.progressProperty());
 
-    thread = new HyperThread(task);
-    task.setThread(thread);
-    thread.start();
+    task.startWithNewThread();
   }
 
 //---------------------------------------------------------------------------

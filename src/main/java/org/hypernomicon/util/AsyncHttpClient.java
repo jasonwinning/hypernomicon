@@ -23,6 +23,9 @@ import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.*;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
@@ -44,10 +47,10 @@ public class AsyncHttpClient
 
   final class RequestThread extends HyperThread
   {
-    private final ResponseHandler<? extends Boolean> responseHandler;
+    private final ResponseHandler<Boolean> responseHandler;
     private final Consumer<Exception> failHndlr;
 
-    private RequestThread(ResponseHandler<? extends Boolean> responseHandler, Consumer<Exception> failHndlr)
+    private RequestThread(ResponseHandler<Boolean> responseHandler, Consumer<Exception> failHndlr)
     {
       super("HttpRequest");
 
@@ -67,7 +70,7 @@ public class AsyncHttpClient
       }
       catch (IOException e)
       {
-        runInFXThread(() -> failHndlr.accept(cancelledByUser ? new TerminateTaskException() : e));
+        runInFXThread(() -> failHndlr.accept(cancelledByUser ? new CancelledTaskException() : e));
       }
 
       stopped = true;
@@ -83,19 +86,19 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 
   private HttpUriRequest request;
-  private boolean stopped = true, cancelledByUser = false;
+  private volatile boolean stopped = true, cancelledByUser = false;
   private RequestThread requestThread;
   private String lastUrl = "";
 
   public boolean wasCancelledByUser() { return cancelledByUser; }
   public String lastUrl()             { return lastUrl; }
   public void clearLastUrl()          { lastUrl = ""; }
-  private boolean isRunning()         { return (stopped == false) && nullSwitch(requestThread, false, RequestThread::isAlive); }
+  private boolean isRunning()         { return (stopped == false) && HyperThread.isRunning(requestThread); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void doRequest(HttpUriRequest request, ResponseHandler<? extends Boolean> responseHandler, Consumer<Exception> failHndlr)
+  public void doRequest(HttpUriRequest request, ResponseHandler<Boolean> responseHandler, Consumer<Exception> failHndlr)
   {
     stop();
 
@@ -105,9 +108,11 @@ public class AsyncHttpClient
     {
       lastUrl = request.getURI().toURL().toString();
     }
-    catch (Exception e)
+    catch (IllegalArgumentException | MalformedURLException e)
     {
+      if (failHndlr != null) failHndlr.accept(e);
       lastUrl = "";
+      return;
     }
 
     (requestThread = new RequestThread(responseHandler, failHndlr)).start();
@@ -121,7 +126,7 @@ public class AsyncHttpClient
   {
     boolean wasRunning = isRunning();
 
-    if ((requestThread != null) && requestThread.isAlive())
+    if (HyperThread.isRunning(requestThread))
     {
       if (request != null)
       {
@@ -145,7 +150,7 @@ public class AsyncHttpClient
 
   static CloseableHttpClient createClient()
   {
-    SSLContext sc = null;
+    SSLContext sc;
 
     try
     {
@@ -160,7 +165,7 @@ public class AsyncHttpClient
 
       sc.init(null, new TrustManager[] { trustMgr }, new SecureRandom());
     }
-    catch (Exception e)
+    catch (NoSuchAlgorithmException | KeyManagementException e)
     {
       throw new RuntimeException("Error while creating SSLContext", e);
     }

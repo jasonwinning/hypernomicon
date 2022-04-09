@@ -17,43 +17,51 @@
 
 package org.hypernomicon.dialogs;
 
+import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.util.PopupDialog.DialogResult;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.PopupDialog.DialogResult.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import javafx.fxml.FXML;
+import java.net.UnknownHostException;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 public class InternetCheckDlgCtrlr extends HyperDlg
 {
-  private HyperTask task;
 
-  @Override protected boolean isValid() { return false; }
+//---------------------------------------------------------------------------
+
+  private Exception lastException = null;
+
+  @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static boolean check()
   {
-    return ((InternetCheckDlgCtrlr) create("InternetCheckDlg", appTitle, true)).checkInternet();
-  }
+    DialogResult result = mrRetry;
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    while (result == mrRetry)
+    {
+      InternetCheckDlgCtrlr ctrlr = create("InternetCheckDlg", appTitle, true);
 
-  @FXML private void btnSkip()
-  {
-    okClicked = true;
-    task.cancel();
-    dialogStage.close();
+      if (ctrlr.checkInternet())
+        return true;
+
+      String msg = "Warning: Internet connection check failed" + (ctrlr.lastException == null ? '.' : ": " + ctrlr.lastException.getMessage());
+      result = abortRetryIgnoreDialog(msg);
+    }
+
+    return result == mrIgnore;
   }
 
 //---------------------------------------------------------------------------
@@ -61,9 +69,7 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 
   private boolean checkInternet()
   {
-    okClicked = false;
-
-    task = new HyperTask("CheckForInternet") { @Override protected Boolean call()
+    HyperTask task = new HyperTask("CheckForInternet") { @Override protected void call()
     {
       try
       {
@@ -71,45 +77,19 @@ public class InternetCheckDlgCtrlr extends HyperDlg
         con.connect();
 
         if (con.getResponseCode() == HttpURLConnection.HTTP_OK)
-        {
-          succeeded();
           okClicked = true;
-          return true;
-        }
+        else
+          lastException = new HttpResponseException(con.getResponseCode(), con.getResponseMessage());
+      }
+      catch (UnknownHostException e) { noOp();            }
+      catch (IOException          e) { lastException = e; }
 
-      } catch (IOException e) { noOp(); }
-
-      failed();
-      return false;
+      runInFXThread(() -> getStage().close());
     }};
 
-    onShown = () ->
-    {
-      task.setOnSucceeded(event -> getStage().close());
+    onShown = task::startWithNewThread;
 
-      HyperThread thread = new HyperThread(task);
-      task.setThread(thread);
-      thread.start();
-    };
-
-    dialogStage.setOnHiding(event ->
-    {
-      if (task.isRunning())
-        task.cancel();
-    });
-
-    showModal();
-
-    return okClicked;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML @Override protected void btnCancelClick()
-  {
-    task.cancel();
-    super.btnCancelClick();
+    return showModal();
   }
 
 //---------------------------------------------------------------------------

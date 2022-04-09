@@ -63,7 +63,7 @@ import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 
@@ -107,7 +107,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray doWriteCommand(ZoteroCmd command, String jsonPostData) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
+  private JsonArray doWriteCommand(ZoteroCmd command, String jsonPostData) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.zotero.org/users/" + userID + '/';
 
@@ -138,7 +138,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray doReadCommand(ZoteroCmd command, String itemKey, String collectionKey) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
+  private JsonArray doReadCommand(ZoteroCmd command, String itemKey, String collectionKey) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.zotero.org/users/" + userID + '/';
 
@@ -229,23 +229,23 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String postJsonData) throws IOException, UnsupportedOperationException, ParseException, TerminateTaskException
+  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String postJsonData) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
   {
     if (retryTime != null)
     {
-      while ((retryTime.compareTo(Instant.now()) > 0) && (syncTask.isCancelled() == false))
+      while (retryTime.compareTo(Instant.now()) > 0)
       {
         sleepForMillis(30);
-        if (syncTask.isCancelled()) throw new TerminateTaskException();
+        if (syncTask.isCancelled()) throw new CancelledTaskException();
       }
     }
 
     if (backoffTime != null)
     {
-      while ((backoffTime.compareTo(Instant.now()) > 0) && (syncTask.isCancelled() == false))
+      while (backoffTime.compareTo(Instant.now()) > 0)
       {
         sleepForMillis(30);
-        if (syncTask.isCancelled()) throw new TerminateTaskException();
+        if (syncTask.isCancelled()) throw new CancelledTaskException();
       }
     }
 
@@ -273,21 +273,19 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       .setHeader(If_Unmodified_Since_Version.toString(), String.valueOf(offlineLibVersion))
       .build();
 
-    JsonArray jsonArray = null;
+    JsonArray jsonArray;
 
     try
     {
       jsonArray = jsonClient.requestArrayInThisThread(request);
     }
-    catch(SocketException e)
+    catch (SocketException e)
     {
-      if (syncTask.isCancelled())
-      {
-        request = null;
-        throw new TerminateTaskException();
-      }
-
       request = null;
+
+      if (syncTask.isCancelled())
+        throw new CancelledTaskException();
+
       throw e;
     }
 
@@ -325,7 +323,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     request = null;
 
-    if (syncTask.isCancelled()) throw new TerminateTaskException();
+    if (syncTask.isCancelled()) throw new CancelledTaskException();
 
     return jsonArray;
   }
@@ -361,7 +359,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       saveStringBuilderToFile(json, filePath);
     }
-    catch (UnsupportedOperationException | IOException | ParseException | TerminateTaskException e)
+    catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
     {
       e.printStackTrace();
     }
@@ -390,7 +388,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       saveStringBuilderToFile(json, filePath);
     }
-    catch (UnsupportedOperationException | IOException | ParseException | TerminateTaskException e)
+    catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
     {
       e.printStackTrace();
     }
@@ -399,7 +397,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private boolean syncChangedEntriesToServer() throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
+  private boolean syncChangedEntriesToServer() throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
   {
     List<ZoteroItem> uploadQueue; // implemented as array because indices are returned by server
     JsonArray jArr = new JsonArray();
@@ -483,7 +481,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
+  private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
   {
     JsonArray jArr = doReadCommand(versionsCmd, "", "");
 
@@ -572,7 +570,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   @Override public SyncTask createNewSyncTask()
   {
-    return syncTask = new SyncTask() { @Override public Boolean call() throws TerminateTaskException, HyperDataException
+    return syncTask = new SyncTask() { @Override public void call() throws CancelledTaskException, HyperDataException
     {
     //---------------------------------------------------------------------------
     // The algorithm for Zotero syncing is described here:
@@ -603,15 +601,15 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
         while (statusCode == HttpStatus.SC_PRECONDITION_FAILED)
         {
-          if (!getRemoteUpdates(ZoteroCmd.readChangedCollVersions, ZoteroCmd.readCollections, keyToColl)) return false;
+          if (!getRemoteUpdates(ZoteroCmd.readChangedCollVersions, ZoteroCmd.readCollections, keyToColl)) return;
 
           if (onlineLibVersion <= offlineLibVersion)
-            return true;
+            return;
 
           changed = true;
 
-          if (!getRemoteUpdates(ZoteroCmd.readChangedItemVersions, ZoteroCmd.readItems, keyToAllEntry  )) return false;
-          if (!getRemoteUpdates(ZoteroCmd.readTrashVersions,       ZoteroCmd.readTrash, keyToTrashEntry)) return false;
+          if (!getRemoteUpdates(ZoteroCmd.readChangedItemVersions, ZoteroCmd.readItems, keyToAllEntry  )) return;
+          if (!getRemoteUpdates(ZoteroCmd.readTrashVersions,       ZoteroCmd.readTrash, keyToTrashEntry)) return;
 
       /*********************************************/
       /*       Retrieve remote deletions           */
@@ -619,7 +617,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
           JsonArray jArr = doReadCommand(ZoteroCmd.readDeletions, "", "");
 
-          if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return false;
+          if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return;
 
           jArr.getObj(0).getArray("items").getStrs().forEach(key ->
           {
@@ -669,7 +667,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
             offlineLibVersion = onlineLibVersion;
           else
-            return false;
+            return;
 
       /*********************************************/
       /*      Try sending local updates again      */
@@ -683,8 +681,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
         if (App.debugging())
           System.out.println("libraryVersion: " + offlineLibVersion);
-
-        return true;
       }
       catch (HttpResponseException e)
       {

@@ -91,7 +91,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
     @Override public HDT_DT next()
     {
-      if (!hasNext()) throw new NoSuchElementException();
+      if (hasNext() == false) throw new NoSuchElementException();
 
       return byKey ? coreAccessor.getByKeyNdx(nextNdx++) : coreAccessor.getByIDNdx(nextNdx++);
     }
@@ -156,13 +156,13 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void bringAllRecordsOnline() throws RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException, TerminateTaskException
+  void bringAllRecordsOnline() throws RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException, CancelledTaskException
   {
     if (online) throw new HDB_InternalError(89842);
 
     for (HDT_DT record : getAccessor())
     {
-      if (db.task.isCancelled()) throw new TerminateTaskException();
+      if (db.task.isCancelled()) throw new CancelledTaskException();
 
       record.bringStoredCopyOnline(false);
       db.addToInitialNavList(record);
@@ -268,7 +268,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void writeToXML(StringBuilder xml) throws HDB_InternalError, TerminateTaskException
+  void writeToXML(StringBuilder xml) throws HDB_InternalError, CancelledTaskException
   {
     if (core.size() == 0) return;
 
@@ -292,7 +292,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
         db.task.updateProgress(db.curTaskCount + ndx, db.totalTaskCount);
       }
 
-      if (db.task.isCancelled()) throw new TerminateTaskException();
+      if (db.task.isCancelled()) throw new CancelledTaskException();
     }
 
     xml.append(System.lineSeparator()).append(System.lineSeparator()).append(System.lineSeparator());

@@ -18,6 +18,7 @@
 package org.hypernomicon.view.populators;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -46,6 +47,8 @@ public class RecordTypePopulator extends Populator
   }
 
   public RecordTypePopulator(Collection<RecordType> set) { setTypes(set); }
+
+  public RecordTypePopulator(RecordType... types)        { setTypes(Arrays.asList(types)); }
 
   public Set<RecordType> getTypes()                      { return types; }
 

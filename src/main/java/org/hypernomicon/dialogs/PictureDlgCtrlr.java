@@ -26,7 +26,8 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Person;
@@ -643,7 +644,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
   private void exceptionHappened(Exception e)
   {
-    if ((e instanceof TerminateTaskException) == false)
+    if ((e instanceof CancelledTaskException) == false)
       messageDialog("An error occurred while trying to display the picture: " + e.getMessage(), mtError);
 
     stopClicked();
@@ -745,7 +746,7 @@ public class PictureDlgCtrlr extends HyperDlg
       chkMove.setSelected(false);
     }
 
-    if (!picture.isError())
+    if (picture.isError() == false)
     {
       ivPicture.setImage(picture);
 
@@ -1003,10 +1004,10 @@ public class PictureDlgCtrlr extends HyperDlg
           {
             try
             {
-              if (!hyperPath.moveToFolder(destFolder.getID(), false, true, newFileDestName))
+              if (hyperPath.moveToFolder(destFolder.getID(), false, true, newFileDestName) == false)
                 return falseWithErrorMessage("Unable to move the file.");
             }
-            catch (IOException e)
+            catch (IOException | HDB_InternalError e)
             {
               return falseWithErrorMessage("An error occurred while moving the file: " + e.getMessage());
             }

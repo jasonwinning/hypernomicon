@@ -331,12 +331,9 @@ public final class MainTextWrapper
                                                   "openDivits");
     viewInfo.openDivits = new HashSet<>();
 
-    int len = (Integer) divits.getMember("length");
-    String divitID;
-
-    for (int ndx = 0; ndx < len; ndx++)
+    for (int len = (Integer) divits.getMember("length"), ndx = 0; ndx < len; ndx++)
     {
-      divitID = (String) divits.getSlot(ndx);
+      String divitID = (String) divits.getSlot(ndx);
 
       if (divitID.length() > 0)
         viewInfo.openDivits.add(divitID);

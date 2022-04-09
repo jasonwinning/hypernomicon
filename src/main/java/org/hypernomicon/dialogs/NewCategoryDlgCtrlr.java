@@ -22,8 +22,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
-import java.util.EnumSet;
-
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.populators.Populator;
@@ -57,7 +55,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
   private NewCategoryDlgCtrlr init(RecordType recordType, boolean canChangeType)
   {
-    hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, new RecordTypePopulator(EnumSet.of(hdtField, hdtCountry, hdtRank, hdtPersonStatus)));
+    hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, new RecordTypePopulator(hdtField, hdtCountry, hdtRank, hdtPersonStatus));
 
     hcbCompare = new HyperCB(cbCompare, ctDropDownList, new RecordByTypePopulator());
 
@@ -94,7 +92,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
     hcbRecordType.selectType(recordType);
 
-    cbRecordType.setDisable(!canChangeType);
+    cbRecordType.setDisable(canChangeType == false);
 
     return this;
   }

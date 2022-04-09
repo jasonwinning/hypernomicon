@@ -34,7 +34,7 @@ import java.util.Map;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.query.ui.QueryTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -59,13 +59,11 @@ public class DupAuthorsReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 
   @Override public List<HyperTableRow> getRows()     { return rows; }
-  @Override public String getHtml(HyperTableRow row) { return ""; }
-  @Override public boolean alwaysShowDescription()   { return false; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void generate(HyperTask task, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws TerminateTaskException
+  @Override public void generate(HyperTask task, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws CancelledTaskException
   {
     rows.clear();
     rowToMatch.clear();

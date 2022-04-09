@@ -18,7 +18,6 @@
 package org.hypernomicon.view.tabs;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
@@ -164,7 +163,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     htParents.addActionCol(ctGoBtn, 3);
     htParents.addActionCol(ctBrowseBtn, 3);
 
-    RecordTypePopulator rtp = new RecordTypePopulator(EnumSet.of(hdtDebate, hdtPosition));
+    RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
 
     htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -252,7 +251,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   @Override public boolean saveToRecord()
   {
-    if (!ctrlr.saveToRecord(curPosition)) return false;
+    if (ctrlr.saveToRecord(curPosition) == false) return false;
 
     curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition));
     curPosition.setLargerDebates  (htParents.saveToList(3, hdtDebate  ));

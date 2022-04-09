@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -93,9 +94,39 @@ public class QueryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static class QueryCell extends HyperTableCell
+  {
+    private final Query<?> query;
+
+    private QueryCell(Query<?> query, RecordType newType)
+    {
+      super(query.getID(), query.getDescription(), newType);
+      this.query = query;
+    }
+
+    public Query<?> getQuery() { return query; }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
     HyperTableCell cell = new HyperTableCell(id, text, getRecordType(row));
+
+    if (rowToChoices.containsKey(row) == false)
+      rowToChoices.put(row, new ArrayList<>());
+
+    rowToChoices.get(row).add(cell);
+    return cell;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public QueryCell addQuery(HyperTableRow row, Query<?> query)
+  {
+    QueryCell cell = new QueryCell(query, getRecordType(row));
 
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());

@@ -17,24 +17,19 @@
 
 package org.hypernomicon.dialogs;
 
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
+import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.HyperTask.HyperThread;
 
 public class ProgressDlgCtrlr extends HyperDlg
 {
-  private Task<Boolean> task;
-  private HyperThread thread;
-  private boolean alreadyDone = false, ownThread = true;
+  private HyperTask task;
+  private boolean ownThread = true;
   private long lastPercent = -200;
 
   @FXML private ProgressBar progressBar;
@@ -65,7 +60,9 @@ public class ProgressDlgCtrlr extends HyperDlg
 
     dialogStage.setOnHiding(event ->
     {
-      done();
+      if (task.isRunning() && ownThread)
+        task.cancelAndWait();
+
       lblTask.textProperty().unbind();
       progressBar.progressProperty().unbind();
     });
@@ -76,7 +73,7 @@ public class ProgressDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void performTask(HyperTask task)
+  public State performTask(HyperTask task)
   {
     this.task = task;
 
@@ -85,72 +82,32 @@ public class ProgressDlgCtrlr extends HyperDlg
     lblTask.textProperty().bind(task.messageProperty());
 
     progressBar.progressProperty().bind(task.progressProperty());
+
     task.progressProperty().addListener((ob, oldValue, newValue) ->
     {
-      long percent = java.lang.Math.round(newValue.doubleValue() * 100.0);
+      long percent = Math.round(newValue.doubleValue() * 100.0);
 
       if (percent == lastPercent)
         return;
 
       lastPercent = percent;
 
-      lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + java.lang.Math.round(newValue.doubleValue() * 100.0) + " %");
+      lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + Math.round(newValue.doubleValue() * 100.0) + " %");
     });
 
-    dialogStage.setOnShowing(event ->
-    {
-      EventHandler<WorkerStateEvent> successHndlr = task.getOnSucceeded(),
-                                     failHndlr    = task.getOnFailed(),
-                                     cancelHndlr  = task.getOnCancelled();
-      task.setOnSucceeded(e ->
-      {
-        if (successHndlr != null) successHndlr.handle(e);
-        done();
-      });
-
-      task.setOnFailed(e ->
-      {
-        if (failHndlr != null) failHndlr.handle(e);
-        done();
-      });
-
-      task.setOnCancelled(e ->
-      {
-        if (cancelHndlr != null) cancelHndlr.handle(e);
-        done();
-      });
-    });
+    task.runWhenFinalStateSet(() -> getStage().close());
 
     onShown = () ->
     {
-      ownThread = !task.isRunning();
+      ownThread = (task.isRunning() == false);
 
       if (ownThread)
-      {
-        thread = new HyperThread(task);
-        task.setThread(thread);
-        thread.start();
-      }
+        task.startWithNewThread();
     };
 
     showModal();
-  }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void done()
-  {
-    if (alreadyDone) return;
-
-    if (task.isRunning() && ownThread)
-    {
-      task.cancel(true);
-      try { thread.join(); } catch (Exception e) { noOp(); }
-    }
-
-    alreadyDone = true;
-    getStage().close();
+    return task.getState();
   }
 
 //---------------------------------------------------------------------------

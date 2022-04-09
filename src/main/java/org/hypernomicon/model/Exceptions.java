@@ -20,8 +20,6 @@ package org.hypernomicon.model;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 @SuppressWarnings("serial")
 public final class Exceptions
@@ -39,21 +37,9 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class TerminateTaskException extends Exception
+  public static class CancelledTaskException extends Exception
   {
-    public TerminateTaskException() { super("Task was terminated abnormally."); }
-
-    public TerminateTaskException(String msg)
-    {
-      super(msg);
-      messageDialog(msg, mtError, true);
-    }
-
-    public TerminateTaskException(String msg, Throwable cause)
-    {
-      super(msg, cause);
-      messageDialog(msg, mtError, true);
-    }
+    public CancelledTaskException() { super("Task was cancelled by user."); }
   }
 
 //---------------------------------------------------------------------------

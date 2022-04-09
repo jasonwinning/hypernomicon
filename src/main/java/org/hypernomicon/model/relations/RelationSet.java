@@ -436,13 +436,13 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public List<ObjectGroup> getObjectGroupList(HDT_Subj subj, Collection<Tag> tags)
   {
-    List<ObjectGroup> list = new ArrayList<>();
     Set<HDT_Obj> objSet = new LinkedHashSet<>();
 
     if (subjToObjList.containsKey(subj))
       objSet.addAll(subjToObjList.get(subj));
 
     Map<HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objToObjItems = objectGroups.row(subj);
+    List<ObjectGroup> list = new ArrayList<>();
 
     objToObjItems.forEach((primary, items) ->
     {

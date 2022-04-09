@@ -431,7 +431,7 @@ public class FileDlgCtrlr extends HyperDlg
       }
     }
 
-    if (!success) return false;
+    if (success == false) return false;
 
     if ((recordType == hdtWorkFile) && (curFileRecord == null))
     {

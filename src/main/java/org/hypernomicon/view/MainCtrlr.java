@@ -202,8 +202,8 @@ public final class MainCtrlr
   @FXML private void mnuOpenClick()           { openDB(null); }
   @FXML private void mnuAboutClick()          { AboutDlgCtrlr.build().showModal(); }
   @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.build().showModal(); }
-  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) SettingsDlgCtrlr.build().showModal(); }
-  @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord()) searchForMentions(activeRecord(), false); }
+  @FXML private void mnuSettingsClick()       { if (cantSaveRecord() == false) SettingsDlgCtrlr.build().showModal(); }
+  @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(activeRecord(), false); }
 
   public static PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }
   public static InstTabCtrlr   instHyperTab    () { return getHyperTab(instTabEnum    ); }
@@ -935,7 +935,7 @@ public final class MainCtrlr
 
     Platform.runLater(() ->
     {
-      List<ResultsRow> resultList = QueryTabCtrlr.results();
+      List<ResultsRow> resultList = results();
       int num = resultList.size();
 
       if (num == 1)
@@ -965,8 +965,6 @@ public final class MainCtrlr
 
   public void shutDown(boolean save, boolean savePrefs, boolean prompt)
   {
-    DialogResult result = mrRetry;
-
     if (db.isLoaded())
     {
       if (save)
@@ -975,16 +973,8 @@ public final class MainCtrlr
           if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?"))
             return;
 
-        if (appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
-        {
-          while ((result != mrIgnore) && (InternetCheckDlgCtrlr.check() == false))
-          {
-            result = abortRetryIgnoreDialog("Warning: Internet connection check failed.");
-
-            if (result == mrAbort)
-              return;
-          }
-        }
+        if (appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
+          return;
 
         if (saveAllToDisk(false, false, false) == false)
           return;
@@ -1089,12 +1079,14 @@ public final class MainCtrlr
 
     apStatus.setDisable(false);
 
+    mnuSaveReloadAll.setDisable(disabled || (debugging() == false));
+
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
-    enableAllIff(enabled, mnuCloseDatabase,    mnuImportWork,        mnuImportFile,         mnuExitNoSave, mnuChangeID,        mnuNewField,
-                          mnuNewCountry,       mnuImportBibFile,     mnuImportBibClipboard, mnuNewRank,    mnuNewPersonStatus, mnuSaveReloadAll,
-                          mnuRevertToDiskCopy, mnuAddToQueryResults, btnFileMgr,            btnBibMgr,     btnPreviewWindow,   btnMentions,
-                          btnAdvancedSearch,   btnSaveAll);
+    enableAllIff(enabled, mnuCloseDatabase,      mnuImportWork,  mnuImportFile, mnuExitNoSave,      mnuChangeID,      mnuNewField,
+                          mnuImportBibClipboard, mnuNewCountry,  mnuNewRank,    mnuNewPersonStatus, mnuImportBibFile, mnuRevertToDiskCopy,
+                          mnuAddToQueryResults,  btnFileMgr,     btnBibMgr,     btnPreviewWindow,   btnMentions,      btnAdvancedSearch,
+                          btnSaveAll);
     if (disabled)
       tree().clear();
 
@@ -1358,11 +1350,12 @@ public final class MainCtrlr
             if ("hdb".equals(filePath.getExtensionOnly()))
               srcFilePath = filePath;
 
-            int size;
             byte[] buffer = new byte[2048];
 
             try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(filePath.toPath()), buffer.length))
             {
+              int size;
+
               while ((size = zis.read(buffer, 0, buffer.length)) != -1)
                 bos.write(buffer, 0, size);
 
@@ -1391,7 +1384,7 @@ public final class MainCtrlr
   {
     if (btnSave.getText().equals(TREE_SELECT_BTN_CAPTION))
       treeSelector.select(tree().selectedRecord(), true);
-    else if (!cantSaveRecord())
+    else if (cantSaveRecord() == false)
       update();
   }
 
@@ -1588,7 +1581,7 @@ public final class MainCtrlr
     RecordState recordState = new RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
     T newRecord = null;
 
-    try { newRecord = db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
+    try { newRecord = db.createNewRecordFromState(recordState, true); } catch (HyperDataException e) { noOp(); }
 
     newRecord.setName(ctrlr.tfNewName.getText());
 
@@ -1968,16 +1961,10 @@ public final class MainCtrlr
 
     if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
     {
+      if (InternetCheckDlgCtrlr.check() == false)
+        return false;
+
       internetNotCheckedYet = false;
-
-      DialogResult result = mrRetry;
-      while ((result != mrIgnore) && (InternetCheckDlgCtrlr.check() == false))
-      {
-        result = abortRetryIgnoreDialog("Warning: Internet connection check failed.");
-
-        if (result == mrAbort)
-          return false;
-      }
     }
 
     String otherCompName = db.getLockOwner();
@@ -1990,7 +1977,7 @@ public final class MainCtrlr
         return false;
     }
 
-    boolean success = false;
+    boolean success;
 
     try { success = db.loadAllFromDisk(creatingNew, favorites); }
     catch (HDB_InternalError e)
@@ -2905,7 +2892,7 @@ public final class MainCtrlr
     if (work.getBibEntryKey().length() > 0)
       showNewEntry = false;
 
-    MergeWorksDlgCtrlr mwd = null;
+    MergeWorksDlgCtrlr mwd;
 
     try
     {

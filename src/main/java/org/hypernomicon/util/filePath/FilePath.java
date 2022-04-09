@@ -17,6 +17,9 @@
 
 package org.hypernomicon.util.filePath;
 
+import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.fileManager.FileManager;
+
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -49,7 +52,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.hypernomicon.fileManager.FileManager;
 
 public class FilePath implements Comparable<FilePath>
 {
@@ -149,7 +151,7 @@ public class FilePath implements Comparable<FilePath>
   private boolean deleteReturnsBoolean(boolean noExistOK, StringBuilder errorSB)
   {
     try { delete(noExistOK); }
-    catch (Exception e)
+    catch (IOException e)
     {
       if (errorSB != null) assignSB(errorSB, e.getMessage());
       return false;
@@ -203,7 +205,7 @@ public class FilePath implements Comparable<FilePath>
   private boolean moveOrCopy(FilePath destFilePath, boolean confirmOverwrite, boolean move) throws IOException
   {
     if (equals(destFilePath))
-      return falseWithErrorMessage("Source file is the same as the destination file.");
+      throw new IOException("Source file is the same as the destination file.");
 
     boolean startWatcher = folderTreeWatcher.stop();
 
@@ -260,7 +262,7 @@ public class FilePath implements Comparable<FilePath>
     {
       return true;
     }
-    catch (Exception e)
+    catch (IOException e)
     {
       return false;
     }
@@ -364,7 +366,7 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean addDirContentsToSet(FilePathSet set)
+  public void addDirContentsToSet(FilePathSet set) throws HyperDataException
   {
     try
     {
@@ -390,11 +392,8 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (IOException e)
     {
-      messageDialog(e.getMessage(), mtError, true);
-      return false;
+      throw new HyperDataException(e);
     }
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

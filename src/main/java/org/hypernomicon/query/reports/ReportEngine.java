@@ -17,12 +17,12 @@
 
 package org.hypernomicon.query.reports;
 
-import static org.hypernomicon.query.GeneralQueries.*;
-
 import java.util.List;
 
+import org.hypernomicon.App;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -32,17 +32,19 @@ import javafx.scene.control.TableView;
 
 public abstract class ReportEngine
 {
-  private static final int QUERY_DUPLICATE_AUTHORS  = QUERY_FIRST_NDX + 1;
-
-  public static final int QUERY_LICENSE_AND_NOTICE = QUERY_FIRST_NDX + 2;
+  private static final int QUERY_DUPLICATE_AUTHORS  = 10001;
+  public  static final int QUERY_LICENSE_AND_NOTICE = 10002;
+  private static final int QUERY_DANGLING_LABELS    = 10003;
 
   protected TableView<HyperTableRow> tv;
 
-  public abstract void generate(HyperTask task, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws TerminateTaskException;
+  public abstract void generate(HyperTask task, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException, CancelledTaskException;
   public abstract List<HyperTableRow> getRows();
   abstract HyperTable prepTable(TableView<HyperTableRow> tv);
-  abstract String getHtml(HyperTableRow row);
-  public abstract boolean alwaysShowDescription();
+
+  @SuppressWarnings("unused")
+  String getHtml(HyperTableRow row)    { return ""; }
+  public boolean autoShowDescription() { return false; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -51,6 +53,8 @@ public abstract class ReportEngine
   {
     pop.addEntry(row, QUERY_DUPLICATE_AUTHORS, "Duplicate authors");
     pop.addEntry(row, QUERY_LICENSE_AND_NOTICE, "Application license and notices");
+
+    if (App.debugging()) pop.addEntry(row, QUERY_DANGLING_LABELS, "Dangling labels united to records with parent/child relationship");
   }
 
 //---------------------------------------------------------------------------
@@ -62,6 +66,7 @@ public abstract class ReportEngine
     {
       case QUERY_DUPLICATE_AUTHORS  : return new DupAuthorsReportEngine();
       case QUERY_LICENSE_AND_NOTICE : return new LicenseReportEngine();
+      case QUERY_DANGLING_LABELS    : return new DanglingLabelsReportEngine();
     }
 
     return null;

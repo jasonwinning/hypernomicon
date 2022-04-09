@@ -145,7 +145,7 @@ public class ContentsWindow extends HyperDlg
 
       if (Boolean.TRUE.equals(newValue) == false) return;
 
-      if (!mouseAlreadyHere)
+      if (mouseAlreadyHere == false)
         update(previewWindow.curPage(), false);
 
       ui.windows.push(dialogStage);
@@ -296,7 +296,7 @@ public class ContentsWindow extends HyperDlg
       }
     });
 
-    if (!setFocus) return;
+    if (setFocus == false) return;
 
     if (rowToSelect.getValue() != null)
       htContents.selectRow(rowToSelect.getValue());

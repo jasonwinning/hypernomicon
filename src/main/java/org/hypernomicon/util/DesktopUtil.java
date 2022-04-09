@@ -88,7 +88,7 @@ public final class DesktopUtil
       Desktop.getDesktop().browse(new URI(url));
       return true;
     }
-    catch (Exception e)
+    catch (IOException | URISyntaxException e)
     {
       return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
     }
@@ -112,7 +112,7 @@ public final class DesktopUtil
       Desktop.getDesktop().open(filePath.toFile());
       return true;
     }
-    catch (Exception e)
+    catch (IOException e)
     {
       return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath + ". " + e.getMessage());
     }
@@ -134,7 +134,7 @@ public final class DesktopUtil
       Desktop.getDesktop().edit(filePath.toFile());
       return true;
     }
-    catch (Exception e)
+    catch (IOException e)
     {
       return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ". " + e.getMessage());
     }
@@ -293,7 +293,7 @@ public final class DesktopUtil
       else
         launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
     }
-    catch (Exception e)
+    catch (IOException | InterruptedException e)
     {
       messageDialog("An error occurred while trying to show the file: " + filePath + ". " + e.getMessage(), mtError);
     }

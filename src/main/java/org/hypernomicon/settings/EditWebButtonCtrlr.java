@@ -102,7 +102,7 @@ public class EditWebButtonCtrlr
         requiredFields.add(field);
     });
 
-    return new UrlPattern(requiredFields, tfPattern.getText());
+    return new UrlPattern(tfPattern.getText(), requiredFields);
   }
 
 //---------------------------------------------------------------------------

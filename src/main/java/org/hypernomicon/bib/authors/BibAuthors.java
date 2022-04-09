@@ -29,6 +29,8 @@ import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Iterators;
 
+import javafx.concurrent.Worker.State;
+
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
@@ -233,7 +235,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
                                                             matchedAuthorsList,
                                                             null);
 
-      if (!HyperTask.performTaskWithProgressDialog(task)) return;
+      if (task.runWithProgressDialog() != State.SUCCEEDED) return;
 
       int ndx;
 

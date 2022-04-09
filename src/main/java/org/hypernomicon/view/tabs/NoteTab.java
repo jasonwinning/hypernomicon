@@ -368,7 +368,7 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public boolean saveToRecord()
   {
-    if (!ctrlr.saveToRecord(curNote)) return false;
+    if (ctrlr.saveToRecord(curNote) == false) return false;
 
     curNote.setParentNotes(htParents.saveToList(2, hdtNote));
 

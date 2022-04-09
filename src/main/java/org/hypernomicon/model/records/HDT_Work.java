@@ -542,13 +542,13 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public boolean canPreview()
   {
-    return FilePath.isEmpty(previewFilePath()) == false;
+    return FilePath.isEmpty(filePathIncludeExt()) == false;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath previewFilePath()
+  public FilePath filePathIncludeExt()
   {
     return workFiles.isEmpty() ? db.resolveExtFilePath(getURL()) : filePath();
   }

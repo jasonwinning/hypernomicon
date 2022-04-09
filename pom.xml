@@ -22,7 +22,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mainClass>org.hypernomicon.Main</mainClass>
     <maven.compiler.release>11</maven.compiler.release>
-    <javafx.version>17.0.1</javafx.version>
+    <javafx.version>18</javafx.version>
   </properties>
   
   <build>
@@ -44,7 +44,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M3</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>enforce-maven</id>
@@ -54,7 +54,7 @@
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>3.1.0</version>
+                  <version>3.2.5</version>
                 </requireMavenVersion>
               </rules>    
             </configuration>
@@ -65,7 +65,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.8.1</version>
+        <version>2.10.0</version>
         <configuration>
           <generateBackupPoms>false</generateBackupPoms>
         </configuration>
@@ -74,7 +74,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.10.1</version>
         <configuration>
           <release>${maven.compiler.release}</release>
         </configuration>
@@ -99,7 +99,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.2</version>
         <configuration>
           <archive>
             <manifest>
@@ -195,12 +195,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>31.0.1-jre</version>
+      <version>31.1-jre</version>
     </dependency>
     <dependency>
       <groupId>org.jbibtex</groupId>
       <artifactId>jbibtex</artifactId>
-      <version>1.0.19</version>
+      <version>1.0.20</version>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>
@@ -210,7 +210,7 @@
     <dependency>
       <groupId>com.ibm.icu</groupId>
       <artifactId>icu4j</artifactId>
-      <version>70.1</version>
+      <version>71.1</version>
     </dependency>
     <dependency>
       <groupId>com.github.scribejava</groupId>
@@ -230,17 +230,17 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>2.0.24</version>
+      <version>2.0.25</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-core</artifactId>
-      <version>2.2.0</version>
+      <version>2.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>1.7.32</version>
+      <version>1.7.36</version>
     </dependency>
     <dependency>
       <groupId>org.controlsfx</groupId>
@@ -260,7 +260,7 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.17.1</version>
+      <version>2.17.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

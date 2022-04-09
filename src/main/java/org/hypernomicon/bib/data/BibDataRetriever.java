@@ -34,7 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.bib.authors.BibAuthors;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -132,8 +132,14 @@ public class BibDataRetriever
 
     if (e != null)
     {
-      if ((e instanceof ParseException) || (e instanceof TerminateTaskException))
+      if (e instanceof ParseException)
         noOp();
+      else if (e instanceof CancelledTaskException)
+      {
+        pdfBD = null;
+        queryBD = null;
+        messageShown = true;
+      }
       else if (e instanceof UnknownHostException)
       {
         messageDialog("Unable to connect to host: " + e.getMessage(), mtError);

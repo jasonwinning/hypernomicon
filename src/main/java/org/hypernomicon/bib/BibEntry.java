@@ -25,6 +25,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
@@ -178,13 +179,7 @@ public abstract class BibEntry extends BibData implements BibEntity
     if (getClass() != obj.getClass()) return false;
     BibEntry other = (BibEntry) obj;
 
-    if (getKey() == null)
-    {
-      if (other.getKey() != null) return false;
-    }
-    else if (!getKey().equals(other.getKey())) return false;
-
-    return thisIsBackup == other.thisIsBackup;
+    return Objects.equals(getKey(), other.getKey()) && (thisIsBackup == other.thisIsBackup);
   }
 
 //---------------------------------------------------------------------------

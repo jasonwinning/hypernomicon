@@ -202,21 +202,17 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
       if (editorText.equalsIgnoreCase(cellText))
       {
-        try
+        ListView<HyperTableCell> lv = getCBListView(cb);
+
+        if (lv.getItems().size() > ndx)
         {
-          ListView<HyperTableCell> lv = getCBListView(cb);
-
-          if (lv.getItems().size() > ndx)
-          {
-            lv.getSelectionModel().clearAndSelect(ndx);
-            lv.scrollTo(lv.getSelectionModel().getSelectedIndex());
-            return true;
-          }
-
-          lv.getSelectionModel().clearSelection();
-          return false;
+          lv.getSelectionModel().clearAndSelect(ndx);
+          lv.scrollTo(lv.getSelectionModel().getSelectedIndex());
+          return true;
         }
-        catch (Exception e) { noOp(); }
+
+        lv.getSelectionModel().clearSelection();
+        return false;
       }
     }
 

@@ -259,7 +259,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             case hdtWork :
 
               HDT_Work work = (HDT_Work)record;
-              previewWindow.setPreview(pvsTreeTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+              previewWindow.setPreview(pvsTreeTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
               clearPreview = false;
               break;
 

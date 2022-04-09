@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -887,7 +888,7 @@ public class WorkDlgCtrlr extends HyperDlg
       return;
     }
 
-    BibData pdfBD = null;
+    BibData pdfBD;
 
     try
     {
@@ -1388,7 +1389,7 @@ public class WorkDlgCtrlr extends HyperDlg
         if (success) curWork.addWorkFile(newWorkFile.getID());
       }
     }
-    catch (IOException e)
+    catch (IOException | HDB_InternalError e)
     {
       return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file. Reason: " + e.getMessage());
     }

@@ -300,16 +300,16 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean moveToFolder(int folderID, boolean confirm, boolean changeFilename, String newName) throws IOException
+  public boolean moveToFolder(int folderID, boolean confirm, boolean changeFilename, String newName) throws IOException, HDB_InternalError
   {
     if ((folderID == -1) || (db.folders.getByID(folderID) == null))
-      return falseWithErrorMessage("Internal error #77392");
+      throw new HDB_InternalError(77392);
 
     FilePath srcFilePath = filePath();
     HDT_Folder newFolder = db.folders.getByID(folderID);
 
     if (srcFilePath.isDirectory())
-      return falseWithErrorMessage("Internal error #77393");
+      throw new HDB_InternalError(77393);
 
     Set<HyperPath> set = getHyperPathSetForFilePath(srcFilePath);
 
@@ -452,7 +452,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean renameFile(FilePath filePath, String newNameStr) throws IOException
+  public static boolean renameFile(FilePath filePath, String newNameStr) throws IOException, HDB_InternalError
   {
     Set<HyperPath> set = getHyperPathSetForFilePath(filePath);
 

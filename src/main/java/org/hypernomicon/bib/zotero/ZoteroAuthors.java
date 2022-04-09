@@ -134,6 +134,7 @@ public class ZoteroAuthors extends BibAuthors
     // Now the new author should be inserted before the authors that don't map to a Hypernomicon author type
 
     int insertNdx = -1;
+
     for (int ndx = 0; ndx < creatorsArr.size(); ndx++)
     {
       if (getAuthorTypeForStr(creatorsArr.getObj(ndx).getStrSafe("creatorType")) == null)

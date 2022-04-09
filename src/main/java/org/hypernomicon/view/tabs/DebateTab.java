@@ -34,7 +34,6 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
-import java.util.EnumSet;
 
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
@@ -109,7 +108,7 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
     htParents.addActionCol(ctGoBtn, 3);
     htParents.addActionCol(ctBrowseBtn, 3);
 
-    RecordTypePopulator rtp = new RecordTypePopulator(EnumSet.of(hdtDebate, hdtPosition));
+    RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
 
     htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -159,7 +158,7 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
   @Override public boolean saveToRecord()
   {
-    if (!ctrlr.saveToRecord(curDebate)) return false;
+    if (ctrlr.saveToRecord(curDebate) == false) return false;
 
     curDebate.setLargerPositions(htParents.saveToList(3, hdtPosition));
     curDebate.setLargerDebates  (htParents.saveToList(3, hdtDebate  ));

@@ -48,7 +48,6 @@ import com.google.common.collect.Sets;
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
 
-import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.bib.data.BibDataRetriever;
@@ -229,7 +228,7 @@ public class BibManager extends HyperDlg
     entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canPreview, work ->
     {
       PreviewSource src = ui.determinePreviewContext();
-      previewWindow.setPreview(src, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+      previewWindow.setPreview(src, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
       ui.openPreviewWindow(src);
     });
 
@@ -428,10 +427,7 @@ public class BibManager extends HyperDlg
       ui.saveAllToDisk(true, true, true);
     });
 
-    HyperThread thread = new HyperThread(syncTask);
-    thread.setDaemon(true);
-    syncTask.setThread(thread);
-    thread.start();
+    syncTask.startWithNewThreadAsDaemon();
   }
 
 //---------------------------------------------------------------------------
@@ -490,7 +486,7 @@ public class BibManager extends HyperDlg
         return;
       }
 
-      MergeWorksDlgCtrlr mwd = null;
+      MergeWorksDlgCtrlr mwd;
 
       try
       {
@@ -763,7 +759,7 @@ public class BibManager extends HyperDlg
   {
     if ((work == null) || (entry == null)) return;
 
-    MergeWorksDlgCtrlr mwd = null;
+    MergeWorksDlgCtrlr mwd;
 
     try
     {

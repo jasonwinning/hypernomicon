@@ -167,7 +167,7 @@ public final class MainTextUtil
   {
     int recordID = -1;
     RecordType recordType = hdtNone;
-    JSObject jsToJava = null;
+    JSObject jsToJava;
 
     // It might seem strange to do this instead of passing an object to javascript with methods the script can call
     // but for some reason WebEngine.setMember doesn't seem to work while the mentions index thread is running.
@@ -211,7 +211,7 @@ public final class MainTextUtil
         if (recordType == hdtWork)
         {
           HDT_Work work = db.works.getByID(recordID);
-          previewWindow.setPreview(pvsOther, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+          previewWindow.setPreview(pvsOther, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
         }
         else
         {

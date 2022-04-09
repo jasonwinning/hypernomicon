@@ -128,7 +128,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
     boolean isDir = isDirectory();
 
-    if (!isDir)
+    if (isDir == false)
       determineType();
 
     return graphic = imgViewFromFilePath(hyperPath.filePath(), mimetype, isDir);

@@ -18,6 +18,7 @@
 package org.hypernomicon.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -65,6 +66,8 @@ public class WebButton
       key = "::::" + name();
       this.toolTip = toolTip;
     }
+
+    @Override public String toString() { return key; }
 
   //---------------------------------------------------------------------------
 
@@ -129,10 +132,15 @@ public class WebButton
     private final EnumSet<WebButtonField> requiredFields;
     public final String str;
 
-    public UrlPattern(EnumSet<WebButtonField> requiredFields, String str)
+    private UrlPattern(String str, WebButtonField... requiredFields)
     {
-      this.requiredFields = requiredFields;
+      this(str, EnumSet.copyOf(Arrays.asList(requiredFields)));
+    }
+
+    public UrlPattern(String str, EnumSet<WebButtonField> requiredFields)
+    {
       this.str = str;
+      this.requiredFields = requiredFields;
     }
 
     public EnumSet<WebButtonField> reqFields() { return EnumSet.copyOf(requiredFields); }
@@ -148,12 +156,15 @@ public class WebButton
 
   public WebButton(String name, String caption) { this.name = name; this.caption = caption; }
 
-  public void addPattern(UrlPattern pattern) { patterns.add(pattern); }
   public List<UrlPattern> getPatterns()      { return Collections.unmodifiableList(patterns); }
+  public void addPattern(UrlPattern pattern) { patterns.add(pattern); }
   public String getCaption()                 { return caption; }
   public void setCaption(String caption)     { this.caption = caption; }
   public String getName()                    { return name; }
   public void setName(String name)           { this.name = name; }
+
+  public void addPattern(String str, WebButtonField...       requiredFields) { patterns.add(new UrlPattern(str, requiredFields)); }
+  public void addPattern(String str, EnumSet<WebButtonField> requiredFields) { patterns.add(new UrlPattern(str, requiredFields)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -244,7 +244,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public boolean saveToRecord()
   {
-    if (!saveSearchKey(curMiscFile, tfSearchKey)) return false;
+    if (saveSearchKey(curMiscFile, tfSearchKey) == false) return false;
 
     int fileTypeID = hcbType.selectedID();
     if ((fileTypeID < 1) && hcbType.getText().isEmpty())

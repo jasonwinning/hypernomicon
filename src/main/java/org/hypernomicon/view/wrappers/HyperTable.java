@@ -91,7 +91,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   final private ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
   final private FilteredList<HyperTableRow> filteredRows;
   final private Map<Integer, HyperTableCell> colNdxToDefaultValue = new HashMap<>();
-  private final List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
   Consumer<? extends HDT_Record> dblClickHandler = null;
   Runnable onShowMore = null;
@@ -144,7 +143,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     @Override public HyperTableRow next()
     {
-      if (!hasNext()) throw new NoSuchElementException();
+      if (hasNext() == false) throw new NoSuchElementException();
       nextNdx++;
       return rowIt.next();
     }
@@ -248,9 +247,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public static <RowType, ColType extends TableColumnBase<RowType, ?>> void loadColWidthsForTable(List<ColType> columns, String prefID)
   {
-    int numCols = columns.size();
-
-    for (int ndx = 1; ndx <= numCols; ndx++)
+    for (int numCols = columns.size(), ndx = 1; ndx <= numCols; ndx++)
     {
       ColType col = columns.get(ndx - 1);
       double width = appPrefs.getDouble(prefID + "ColWidth" + ndx, -1.0);
@@ -306,8 +303,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     tv.setItems(sortedRows);
     tv.setPlaceholder(new Text(""));
 
-    tableCols.addAll(tv.getColumns());
-
     tv.setOnKeyPressed(event ->
     {
       if ((event.getCode() != KeyCode.ENTER) || cols.stream().map(HyperTableColumn::getCtrlType).anyMatch(editableCtrlTypes::contains))
@@ -326,7 +321,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       return row;
     });
 
-    preventMovingColumns(tv, tableCols);
+    preventMovingColumns(tv, List.copyOf(tv.getColumns()));
   }
 
 //---------------------------------------------------------------------------

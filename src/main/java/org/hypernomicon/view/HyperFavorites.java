@@ -166,9 +166,8 @@ public class HyperFavorites
     clear();
 
     Preferences node = db.prefs.node("favorites");
-    int count = node.getInt("count", 0);
 
-    for (int ndx = 0; ndx < count; ndx++)
+    for (int count = node.getInt("count", 0), ndx = 0; ndx < count; ndx++)
     {
       if ("record".equals(node.node("favTypes").get(String.valueOf(ndx), "")))
       {

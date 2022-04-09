@@ -67,16 +67,16 @@
            <MenuItem fx:id="mnuExitNoSave" mnemonicParsing="false" onAction="#mnuExitNoSaveClick" text="Exit Without Saving" />
          </Menu>
          <Menu mnemonicParsing="false" text="Tools">
-           <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick" text="Change record ID..." />
+           <MenuItem mnemonicParsing="false" onAction="#mnuSettingsClick" text="Settings" />
            <Menu mnemonicParsing="false" text="Create new category record...">
              <MenuItem fx:id="mnuNewField" mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Academic Field" />
              <MenuItem fx:id="mnuNewCountry" mnemonicParsing="false" onAction="#mnuNewCountryClick" text="Country" />
              <MenuItem fx:id="mnuNewRank" mnemonicParsing="false" onAction="#mnuNewRankClick" text="Academic Rank" />
              <MenuItem fx:id="mnuNewPersonStatus" mnemonicParsing="false" onAction="#mnuNewPersonStatusClick" text="Person Status" />
            </Menu>
-           <MenuItem mnemonicParsing="false" onAction="#mnuSettingsClick" text="Settings" />
            <CheckMenuItem fx:id="mnuAutoImport" mnemonicParsing="false" text="Automatically watch for and import PDF files added" />
            <MenuItem fx:id="mnuAddToQueryResults" mnemonicParsing="false" onAction="#mnuAddToQueryResultsClick" text="Add this record to query results" />
+           <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick" text="Change record ID..." />
            <MenuItem fx:id="mnuRevertToDiskCopy" mnemonicParsing="false" onAction="#mnuRevertToDiskCopyClick" text="Revert this record to XML version" />
            <MenuItem fx:id="mnuSaveReloadAll" mnemonicParsing="false" onAction="#mnuSaveReloadAllClick" text="Save/Reload All" />
          </Menu>
@@ -164,7 +164,7 @@
            </graphic>
          </ToggleButton>
          <Separator orientation="VERTICAL" prefHeight="200.0" />
-         <Button fx:id="btnMentions" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" onAction="#mnuFindMentionsClick" prefHeight="22.0" text="Mentions" />
+         <Button fx:id="btnMentions" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" onAction="#btnMentionsClick" prefHeight="22.0" text="Mentions" />
          <Button fx:id="btnAdvancedSearch" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" text="Adv Search" />
        </ToolBar>
      </HBox>

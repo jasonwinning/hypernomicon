@@ -36,17 +36,17 @@ public class CombinedUnfilteredQuerySource extends QuerySource
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CombinedUnfilteredQuerySource(Set<RecordType> types)
+  public CombinedUnfilteredQuerySource(Set<RecordType> newTypes)
   {
-    if (types == null)
-      this.types = EnumSet.noneOf(RecordType.class);
-    else if (types.contains(hdtNone))
+    if (newTypes == null)
+      types = EnumSet.noneOf(RecordType.class);
+    else if (newTypes.contains(hdtNone))
     {
-      this.types = EnumSet.allOf(RecordType.class);
-      this.types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
+      types = EnumSet.allOf(RecordType.class);
+      types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
     }
     else
-      this.types = types;
+      types = newTypes;
   }
 
 //---------------------------------------------------------------------------

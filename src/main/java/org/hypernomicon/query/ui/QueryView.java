@@ -52,15 +52,13 @@ import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.query.GeneralQueries;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
@@ -75,6 +73,7 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.QueryPopulator;
+import org.hypernomicon.view.populators.QueryPopulator.QueryCell;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -82,6 +81,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -135,7 +135,6 @@ public final class QueryView
   public boolean getSearchLinkedRecords() { return searchLinkedRecords; }
 
   private static QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(0)); }
-  private static Query<?> getQuery(HyperTableRow row)      { return QueryTabCtrlr.queryTable.get(QueryType.codeToVal(row.getID(0)), row.getID(1)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -186,39 +185,40 @@ public final class QueryView
 
 //---------------------------------------------------------------------------
 
+    // Query type column with change handler
+
     htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, queryTypePopulator, (row, cellVal, nextColNdx, nextPopulator) ->
     {
-      int queryID = row.getID(1);
-      QueryType qt = QueryType.codeToVal(getCellID(cellVal));
-
       boolean tempDASD = disableAutoShowDropdownList;
       disableAutoShowDropdownList = true;
 
-      if ((qt == qtReport) ||
-          ((queryID != QUERY_ANY_FIELD_CONTAINS) &&
-           (queryID != QUERY_WITH_NAME_CONTAINING) &&
-           (queryID != QUERY_LIST_ALL)))
-        row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
+      int queryID = row.getID(1);
+      QueryType queryType = QueryType.codeToVal(getCellID(cellVal));
 
-      ((QueryPopulator)nextPopulator).setQueryType(row, qt);
+      boolean clearQueryAndOperands = (queryType == qtReport) ||
+                                      ((queryID != QUERY_ANY_FIELD_CONTAINS) &&
+                                       (queryID != QUERY_WITH_NAME_CONTAINING) &&
+                                       (queryID != QUERY_LIST_ALL) &&
+                                       (queryID != QUERY_MATCHING_RECORD) &&
+                                       (queryID != QUERY_MATCHING_STRING));
 
-      switch (queryID)
-      {
-        case QUERY_WITH_NAME_CONTAINING : case QUERY_ANY_FIELD_CONTAINS :
-        case QUERY_LIST_ALL             : case QUERY_WHERE_FIELD        :
-          break;
+      if (clearQueryAndOperands)
+        row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row))); // Blank out the query
 
-        default :
-          clearOperands(row, 1);
-      }
+      ((QueryPopulator)nextPopulator).setQueryType(row, queryType);
+
+      if (clearQueryAndOperands)
+        clearOperands(row, 1); // Blank out the operands
 
       disableAutoShowDropdownList = tempDASD;
 
-      if (disableAutoShowDropdownList == false)
+      if ((clearQueryAndOperands || (queryID == QUERY_ANY_FIELD_CONTAINS)) && (disableAutoShowDropdownList == false))
         htFields.edit(row, 1);
     });
 
 //---------------------------------------------------------------------------
+
+    // Query select column with change handler
 
     htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new QueryPopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -240,6 +240,8 @@ public final class QueryView
 
 //---------------------------------------------------------------------------
 
+    // Operand 1 column with change handler
+
     htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       Query<?> query = getQuery(row);
@@ -250,25 +252,31 @@ public final class QueryView
         disableAutoShowDropdownList = true;
 
         row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
-        Populator pop = ((VariablePopulator) nextPopulator).getPopulator(row);
+        Populator nextPop = ((VariablePopulator) nextPopulator).getPopulator(row);
 
         disableAutoShowDropdownList = tempDASD;
 
-        if ((getCellID(cellVal) >= 0) && (pop.getValueType() == cvtOperand))
+        int op1ID = getCellID(cellVal); // This is the number corresponding to the Tag entered if this is a Tag column, or the number corresponding
+                                        // to the relation if this is a relation column
+
+        if ((op1ID >= 0) && (nextPop != null) && (nextPop.getValueType() == cvtOperand))
         {
-          row.setCellValue(nextColNdx, pop.getChoiceByID(null, QueryTabCtrlr.EQUAL_TO_OPERAND_ID));
-          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 3, cellVal))
+          HyperTableCell operandCell = nextPop.getChoiceByID(null, Query.EQUAL_TO_OPERAND_ID);
+          row.setCellValue(nextColNdx, operandCell);
+          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 3, cellVal, operandCell))
             htFields.edit(row, 4);
         }
         else
         {
-          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 2, cellVal))
+          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 2, cellVal, blankCell))
             htFields.edit(row, 3);
         }
       }
     });
 
 //---------------------------------------------------------------------------
+
+    // Operand 2 column with change handler
 
     htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -284,7 +292,7 @@ public final class QueryView
 
       if (disableAutoShowDropdownList) return;
 
-      if (queryHasOperand(query, getQueryType(row), 3, cellVal))
+      if (queryHasOperand(query, getQueryType(row), 3, row.getCell(2), cellVal))
         htFields.edit(row, 4);
     });
 
@@ -320,70 +328,92 @@ public final class QueryView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static Query<?> getQuery(HyperTableRow row)
+  {
+    HyperTableCell cell = row.getCell(1);
+    return cell instanceof QueryCell ? ((QueryCell)cell).getQuery() : null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void refreshView(boolean refreshTable)
   {
     if (inRecordMode)
       refreshView(tvResults.getSelectionModel().getSelectedIndex());
     else
     {
+      ui.updateBottomPanel(false);
+
       webView.getEngine().loadContent(reportTable.getHtmlForCurrentRow());
 
-      ui.updateBottomPanel(false);
+      setPreview();
     }
 
     if (refreshTable) tvResults.refresh();
     tabPane.requestLayout();
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void refreshView(int selRowNdx)
   {
-    if (resultsBackingList.size() > 0)
+    curResult = (resultsBackingList.isEmpty() || selRowNdx < 0) ? null : resultsBackingList.get(selRowNdx).getRecord();
+
+    ui.updateBottomPanel(false);
+
+    if (curResult == null)
     {
-      ui.updateBottomPanel(false);
-      curResult = selRowNdx > -1 ? resultsBackingList.get(selRowNdx).getRecord() : null;
-
-      if (curResult != null)
-      {
-        queryTabCtrlr.setTextToHilite(getTextToHilite());
-
-        String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
-
-        MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), getRecordToHilite());
-
-        if (curResult.getType() == hdtWork)
-        {
-          HDT_Work work = (HDT_Work) curResult;
-          previewWindow.setPreview(pvsQueryTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
-        }
-        else if (curResult.getType() == hdtMiscFile)
-        {
-          HDT_MiscFile miscFile = (HDT_MiscFile) curResult;
-          previewWindow.setPreview(pvsQueryTab, miscFile.filePath(), miscFile);
-        }
-        else if ((curResult.getType() == hdtWorkFile) || (curResult.getType() == hdtPerson))
-          previewWindow.setPreview(pvsQueryTab, ((HDT_RecordWithPath) curResult).filePath(), curResult);
-        else
-          previewWindow.clearPreview(pvsQueryTab);
-      }
-      else
-      {
-        webView.getEngine().loadContent("");
-        previewWindow.clearPreview(pvsQueryTab);
-      }
+      webView.getEngine().loadContent("");
     }
     else
     {
-      webView.getEngine().loadContent("");
+      queryTabCtrlr.setTextToHilite(getTextToHilite());
 
-      if (curResult == null)
-        ui.updateBottomPanel(false);
+      String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
+
+      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), getRecordToHilite());
     }
+
+    setPreview();
 
     queryTabCtrlr.setFavNameToggle(fav != null);
 
     programmaticFavNameChange = true;
     tfFavName.setText(fav == null ? "" : fav.name);
     programmaticFavNameChange = false;
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  private void setPreview()
+  {
+    if (inReportMode() || (curResult == null))
+    {
+      previewWindow.clearPreview(pvsQueryTab);
+      return;
+    }
+
+    switch (curResult.getType())
+    {
+      case hdtWork :
+
+        HDT_Work work = (HDT_Work) curResult;
+        previewWindow.setPreview(pvsQueryTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
+        break;
+
+      case hdtMiscFile : case hdtWorkFile : case hdtPerson :
+
+        previewWindow.setPreview(pvsQueryTab, ((HDT_RecordWithPath) curResult).filePath(), curResult);
+        break;
+
+      default :
+
+        previewWindow.clearPreview(pvsQueryTab);
+        break;
+    }
   }
 
   //---------------------------------------------------------------------------
@@ -401,7 +431,7 @@ public final class QueryView
 
   void setRecord(HDT_Record record)
   {
-    ResultsRow targetRow = record == null ? null :recordToRow.get(record);
+    ResultsRow targetRow = record == null ? null : recordToRow.get(record);
     if (targetRow == null) return;
 
     for (int ndx = 0, max = resultsBackingList.size(); ndx < max; ndx++)
@@ -586,9 +616,7 @@ public final class QueryView
     curResult = null;
 
     webView.getEngine().loadContent("");
-
     ui.updateBottomPanel(false);
-
     queryTabCtrlr.updateCB(this);
   }
 
@@ -603,6 +631,10 @@ public final class QueryView
     addToParent(tvResults, apResults);
 
     inRecordMode = true;
+
+    webView.getEngine().loadContent("");
+    ui.updateBottomPanel(false);
+    queryTabCtrlr.updateCB(this);
   }
 
   //---------------------------------------------------------------------------
@@ -625,21 +657,19 @@ public final class QueryView
 
     reportTable.format(reportEngine);
 
-    HyperTask task = new HyperTask("GenerateReport") { @Override protected Boolean call() throws Exception
+    HyperTask task = new HyperTask("GenerateReport") { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
       updateMessage("Generating report...");
       updateProgress(0, 1);
 
       reportEngine.generate(this, row.getCell(2), row.getCell(3), row.getCell(4));
-
-      return true;
     }};
 
-    if (!HyperTask.performTaskWithProgressDialog(task)) return;
+    if (task.runWithProgressDialog() != State.SUCCEEDED) return;
 
     reportTable.inject(reportEngine);
 
-    if (reportEngine.alwaysShowDescription() && (reportEngine.getRows().size() > 0))
+    if (reportEngine.autoShowDescription() && (reportEngine.getRows().size() > 0))
       queryTabCtrlr.chkShowDesc.setSelected(true);
   }
 
@@ -715,20 +745,14 @@ public final class QueryView
 
     for (HyperTableRow row : htFields.dataRows())
     {
-      int queryID = row.getID(1);
-      if (queryID < 0) continue;
-
-      if (queryID == QUERY_ANY_FIELD_CONTAINS)
-        showDesc = true;
+      if (row.getID(1) < 0) continue;
 
       QueryType type = getQueryType(row);
-      Query<?> query = QueryTabCtrlr.queryTable.get(type, queryID);
+      Query<?> query = getQuery(row);
       queries.put(row, query);
       sources.put(row, query.getSource(type, row));
 
-      if ((type == qtAllRecords) && ((queryID == GeneralQueries.QUERY_LINKING_TO_RECORD)    ||
-                                     (queryID == GeneralQueries.QUERY_MATCHING_RECORD  )    ||
-                                     (queryID == GeneralQueries.QUERY_MATCHING_STRING  )))
+      if (query.autoShowDescription())
         showDesc = true;
 
       if (query.needsMentionsIndex())
@@ -750,13 +774,15 @@ public final class QueryView
     searchLinkedRecords = combinedSource.recordType() != hdtNone;
     int total = combinedSource.size();
 
+    resultsTable.getTV().setItems(FXCollections.emptyObservableList());
+
     // Evaluate record queries
 
     HyperTask task = new HyperTask("Query")
     {
       //---------------------------------------------------------------------------
 
-      @Override protected Boolean call() throws HyperDataException, TerminateTaskException
+      @Override protected void call() throws CancelledTaskException, HyperDataException
       {
         boolean firstCall = true;
 
@@ -771,10 +797,7 @@ public final class QueryView
         for (int recordNdx = 0; recordIterator.hasNext(); recordNdx++)
         {
           if (isCancelled())
-          {
-            cleanup();
-            throw new TerminateTaskException();
-          }
+            throw new CancelledTaskException();
 
           if ((recordNdx % 50) == 0)
             updateProgress(recordNdx, total);
@@ -783,41 +806,29 @@ public final class QueryView
 
           boolean lastConnectiveWasOr = false, firstRow = true, add = false;
 
-          try
+          for (Entry<HyperTableRow, QuerySource> entry : sources.entrySet())
           {
-            for (Entry<HyperTableRow, QuerySource> entry : sources.entrySet())
+            HyperTableRow row = entry.getKey();
+            QuerySource source = entry.getValue();
+            Query<?> query = queries.get(row);
+
+            if (source.contains(record))
             {
-              HyperTableRow row = entry.getKey();
-              QuerySource source = entry.getValue();
-              Query<?> query = queries.get(row);
+              boolean result = evaluate(query, record, row, row.getCell(2), row.getCell(3), row.getCell(4), firstCall, recordNdx == (total - 1));
+              firstCall = false;
 
-              if (source.contains(record))
-              {
-                boolean result = evaluate(query, record, row, row.getCell(2), row.getCell(3), row.getCell(4), firstCall, recordNdx == (total - 1));
-                firstCall = false;
-
-                if      (firstRow)            add = result;
-                else if (lastConnectiveWasOr) add = add || result;
-                else                          add = add && result;
-              }
-
-              lastConnectiveWasOr = row.getID(5) == QueryTabCtrlr.OR_CONNECTIVE_ID;
-              firstRow = false;
+              if      (firstRow)            add = result;
+              else if (lastConnectiveWasOr) add = add || result;
+              else                          add = add && result;
             }
-          }
-          catch (HyperDataException e)
-          {
-            cleanup();
-            throw e;
+
+            lastConnectiveWasOr = row.getID(5) == QueryTabCtrlr.OR_CONNECTIVE_ID;
+            firstRow = false;
           }
 
           if (add)
             addRecord(record, false);
         }
-
-        cleanup();
-
-        return true;
       }
 
       //---------------------------------------------------------------------------
@@ -828,17 +839,19 @@ public final class QueryView
         return ((Query<HDT_T>)query).evaluate(record, row, op1, op2, op3, firstCall, lastCall);
       }
 
-      private void cleanup()
-      {
-        queries.values().forEach(Query::cleanup);
-      }
-
       //---------------------------------------------------------------------------
     };
 
-    if (!HyperTask.performTaskWithProgressDialog(task)) return false;
+    task.runWhenFinalStateSet(() -> queries.values().forEach(Query::cleanup));
+
+    boolean succeeded = task.runWithProgressDialog() == State.SUCCEEDED;
+
+    if (succeeded == false)
+      resultsBackingList.clear();
 
     Platform.runLater(() -> resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList)));
+
+    if (succeeded == false) return false;
 
     recordTypeToColumnGroup.forEach(this::addColumns);
 
@@ -928,12 +941,12 @@ public final class QueryView
 
   private static boolean queryHasOperand(Query<?> query, QueryType queryType, int opNum)
   {
-    return queryHasOperand(query, queryType, opNum, null);
+    return queryHasOperand(query, queryType, opNum, blankCell, blankCell);
   }
 
-  private static boolean queryHasOperand(Query<?> query, QueryType queryType, int opNum, HyperTableCell prevOp)
+  private static boolean queryHasOperand(Query<?> query, QueryType queryType, int opNum, HyperTableCell op1, HyperTableCell op2)
   {
-    return (queryType != qtReport) && query.hasOperand(opNum, prevOp);
+    return (queryType != qtReport) && query.hasOperand(opNum, op1, op2);
   }
 
 //---------------------------------------------------------------------------
@@ -947,7 +960,7 @@ public final class QueryView
       {
         switch (row.getID(1))
         {
-          case GeneralQueries.QUERY_LINKING_TO_RECORD : case GeneralQueries.QUERY_MATCHING_RECORD :
+          case QUERY_LINKING_TO_RECORD : case QUERY_MATCHING_RECORD :
 
             HDT_Record record = HyperTableCell.getRecord(row.getCell(3));
             if (record != null) return record;
@@ -1045,6 +1058,8 @@ public final class QueryView
   {
     if (clearingOperand || (db.isLoaded() == false)) return false;
 
+    if (getQueryType(row) == qtReport) return true;
+
     return query.op1Change(op1, row, htFields.getPopulator(2), htFields.getPopulator(3), htFields.getPopulator(4));
   }
 
@@ -1055,6 +1070,8 @@ public final class QueryView
   private boolean op2Change(Query<?> query, HyperTableCell op2, HyperTableRow row)
   {
     if (clearingOperand || (db.isLoaded() == false)) return false;
+
+    if (getQueryType(row) == qtReport) return true;
 
     HyperTableCell op1 = row.getCell(2);
 

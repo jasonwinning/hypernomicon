@@ -580,14 +580,14 @@ public class FolderTreeWatcher
   private final Map<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
   public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
   private static boolean alreadyImporting = false;
-  private boolean stopRequested = false,
-                  stopped = true,
-                  disabled = false;
+  private volatile boolean stopRequested = false,
+                           stopped = true,
+                           disabled = false;
 
   public void disable()       { stop(); disabled = true; }
   public void enable()        { disabled = false; }
   public boolean isDisabled() { return disabled; }
-  public boolean isRunning()  { return (stopped == false) && nullSwitch(watcherThread, false, WatcherThread::isAlive); }
+  public boolean isRunning()  { return (stopped == false) && HyperThread.isRunning(watcherThread); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -638,7 +638,7 @@ public class FolderTreeWatcher
   {
     boolean wasRunning = isRunning();
 
-    if ((watcherThread != null) && watcherThread.isAlive())
+    if (HyperThread.isRunning(watcherThread))
     {
       stopRequested = true;
       try { watcherThread.join(); } catch (InterruptedException e) { noOp(); }

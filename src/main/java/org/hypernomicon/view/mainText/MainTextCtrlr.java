@@ -159,12 +159,8 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void init()
+  public static EnumSet<RecordType> getDisplayedTypes()
   {
-    final WebView webview = getWebView();
-    GridPane.setHgrow(webview, Priority.ALWAYS);
-    GridPane.setVgrow(webview, Priority.ALWAYS);
-
     EnumSet<RecordType> typeSet = EnumSet.noneOf(RecordType.class);
 
     EnumSet.allOf(RecordType.class).forEach(type ->
@@ -173,7 +169,19 @@ public class MainTextCtrlr
         typeSet.add(type);
     });
 
-    RecordTypePopulator rtp = new RecordTypePopulator(typeSet);
+    return typeSet;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void init()
+  {
+    final WebView webview = getWebView();
+    GridPane.setHgrow(webview, Priority.ALWAYS);
+    GridPane.setVgrow(webview, Priority.ALWAYS);
+
+    RecordTypePopulator rtp = new RecordTypePopulator(getDisplayedTypes());
 
     hcbType = new HyperCB(cbType, ctDropDownList, rtp);
     hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator());
@@ -195,7 +203,7 @@ public class MainTextCtrlr
       }
     });
 
-    rtp = new RecordTypePopulator(EnumSet.of(hdtWork, hdtMiscFile));
+    rtp = new RecordTypePopulator(hdtWork, hdtMiscFile);
 
     hcbKeyType = new HyperCB(cbKeyType, ctDropDownList, rtp);
     hcbKeyName = new HyperCB(cbKeyName, ctDropDownList, new RecordByTypePopulator());

@@ -18,16 +18,23 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
+import static org.hypernomicon.query.QueryType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
+
+import java.util.LinkedHashSet;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.sources.AllQuerySource;
 import org.hypernomicon.query.sources.DatasetQuerySource;
+import org.hypernomicon.query.sources.FilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.ui.QueryView;
 import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.populators.RecordByTypePopulator;
+import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -53,7 +60,7 @@ public abstract class Query<HDT_T extends HDT_Record>
 
   public String getDescription() { return description; }
 
-  public QuerySource getSource(QueryType queryType, HyperTableRow row)
+  public final QuerySource getSource(QueryType queryType, HyperTableRow row)
   {
     RecordType recordType = queryType.getRecordType();
 
@@ -62,16 +69,27 @@ public abstract class Query<HDT_T extends HDT_Record>
     return getSource(origSource, row.getCell(2), row.getCell(3), row.getCell(4));
   }
 
+  /**
+   * Override this function to return whether this query should be shown as an
+   * option when the query type is set according to the {@code queryType} parameter.
+   * @param queryType The value set in the query type column.
+   * @param recordType The record type corresponding to the {@code queryType}.
+   */
+  public abstract boolean show(QueryType queryType, RecordType recordType);
+
   public abstract boolean evaluate(HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException;
 
-  public abstract QueryType getQueryType();
-
   @SuppressWarnings("unused")
-  public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return origSource; }
+  protected QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return origSource; }
 
   @SuppressWarnings("unused")  //returns true if subsequent cells need to be updated
   public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3) { return true; }   // queryChange
 
+  /**
+   * This function will be called after the query completes regardless of whether it
+   * completed successfully, it was cancelled by the user, or it was terminated
+   * abnormally due to an exception being thrown.
+   */
   public void cleanup() { }
 
   @SuppressWarnings("unused")  //returns true if subsequent cells need to be updated
@@ -84,8 +102,36 @@ public abstract class Query<HDT_T extends HDT_Record>
 
   public boolean needsMentionsIndex() { return false; }
 
+  public boolean autoShowDescription() { return false; }
+
+  /**
+   * This determines whether the cell corresponding to an operand number will automatically
+   * go into edit mode and the dropdown will be shown, after a value is committed by the
+   * user for the previous operand or query selection cell.
+   */
   @SuppressWarnings("unused")
-  public boolean hasOperand(int opNum, HyperTableCell prevOp) { return true; }
+  public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return true; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static boolean recordByTypeInit(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2)
+  {
+    vp1.setPopulator(row, new RecordTypePopulator(true));
+    vp2.setPopulator(row, new RecordByTypePopulator());
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static boolean recordByTypeOpChange(HyperTableCell op, HyperTableRow row, VariablePopulator nextPop)
+  {
+    RecordByTypePopulator rtp = nextPop.getPopulator(row);
+    rtp.setRecordType(row, HyperTableCell.getCellType(op));
+    rtp.populate(row, false);
+    return true;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -98,16 +144,55 @@ public abstract class Query<HDT_T extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final int EQUAL_TO_OPERAND_ID         = 1,
+                          NOT_EQUAL_TO_OPERAND_ID     = 2,
+                          CONTAINS_OPERAND_ID         = 3,
+                          DOES_NOT_CONTAIN_OPERAND_ID = 4,
+                          IS_EMPTY_OPERAND_ID         = 5,
+                          IS_NOT_EMPTY_OPERAND_ID     = 6;
+
   static Populator operandPopulator()
   {
     return Populator.create(cvtOperand,
 
-        new HyperTableCell(EQUAL_TO_OPERAND_ID        , "Is or includes record", hdtNone),
-        new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID    , "Excludes record"      , hdtNone),
-        new HyperTableCell(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
-        new HyperTableCell(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
-        new HyperTableCell(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
-        new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone));
+      new HyperTableCell(EQUAL_TO_OPERAND_ID        , "Is or includes record", hdtNone),
+      new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID    , "Excludes record"      , hdtNone),
+      new HyperTableCell(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
+      new HyperTableCell(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
+      new HyperTableCell(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
+      new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected abstract static class FilteredQuery<HDT_T1 extends HDT_Record> extends Query<HDT_T1>
+  {
+    protected final LinkedHashSet<HDT_Record> records = new LinkedHashSet<>();
+
+    FilteredQuery(int queryID, String description)
+    {
+      super(queryID, description);
+    }
+
+    protected abstract void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException;
+
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      records.clear();
+
+      try
+      {
+        runFilter(op1, op2, op3);
+      }
+      catch (HyperDataException e)
+      {
+        messageDialog(e.getMessage(), mtError);
+        records.clear();
+      }
+
+      return new FilteredQuerySource(origSource, records);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -117,7 +202,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     RecordQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtAllRecords; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtAllRecords; }
+
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredRecordQuery extends FilteredQuery<HDT_Record>
+  {
+    FilteredRecordQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtAllRecords; }
   }
 
 //---------------------------------------------------------------------------
@@ -127,9 +224,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public ArgumentQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtArguments; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtArguments; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtArgument); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredArgumentQuery extends FilteredQuery<HDT_Argument>
+  {
+    FilteredArgumentQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtArguments; }
   }
 
 //---------------------------------------------------------------------------
@@ -139,9 +246,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public ConceptQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtConcepts; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtConcepts; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtConcept); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredConceptQuery extends FilteredQuery<HDT_Concept>
+  {
+    FilteredConceptQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtConcepts; }
   }
 
 //---------------------------------------------------------------------------
@@ -151,9 +268,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public DebateQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtDebates; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtDebates; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtDebate); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredDebateQuery extends FilteredQuery<HDT_Debate>
+  {
+    FilteredDebateQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtDebates; }
   }
 
 //---------------------------------------------------------------------------
@@ -163,9 +290,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public MiscFileQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtFiles; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtFiles; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtMiscFile); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredMiscFileQuery extends FilteredQuery<HDT_MiscFile>
+  {
+    FilteredMiscFileQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtFiles; }
   }
 
 //---------------------------------------------------------------------------
@@ -175,9 +312,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public FolderQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtFolders; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtFolders; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtFolder); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredFolderQuery extends FilteredQuery<HDT_Folder>
+  {
+    FilteredFolderQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtFolders; }
   }
 
 //---------------------------------------------------------------------------
@@ -187,9 +334,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public InstitutionQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtInstitutions; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtInstitutions; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtInstitution); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredInstitutionQuery extends FilteredQuery<HDT_Institution>
+  {
+    FilteredInstitutionQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtInstitutions; }
   }
 
 //---------------------------------------------------------------------------
@@ -199,9 +356,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public InvestigationQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtInvestigations; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtInvestigations; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtInvestigation); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredInvestigationQuery extends FilteredQuery<HDT_Investigation>
+  {
+    FilteredInvestigationQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtInvestigations; }
   }
 
 //---------------------------------------------------------------------------
@@ -211,9 +378,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public NoteQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtNotes; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtNotes; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtNote); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredNoteQuery extends FilteredQuery<HDT_Note>
+  {
+    FilteredNoteQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtNotes; }
   }
 
 //---------------------------------------------------------------------------
@@ -223,9 +400,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public PersonQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtPersons; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtPersons; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtPerson); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredPersonQuery extends FilteredQuery<HDT_Person>
+  {
+    FilteredPersonQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtPersons; }
   }
 
 //---------------------------------------------------------------------------
@@ -235,9 +422,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public PositionQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtPositions; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtPositions; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtPosition); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredPositionQuery extends FilteredQuery<HDT_Position>
+  {
+    FilteredPositionQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtPositions; }
   }
 
 //---------------------------------------------------------------------------
@@ -247,9 +444,19 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     public WorkQuery(int queryID, String description) { super(queryID, description); }
 
-    @Override public QueryType getQueryType() { return QueryType.qtWorks; }
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtWorks; }
 
-    @Override public QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return new DatasetQuerySource(hdtWork); }
+    @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+    {
+      return super.getSource(origSource, op1, op2, op3);
+    }
+  }
+
+  public abstract static class FilteredWorkQuery extends FilteredQuery<HDT_Work>
+  {
+    FilteredWorkQuery(int queryID, String description) { super(queryID, description); }
+
+    @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtWorks; }
   }
 
 //---------------------------------------------------------------------------

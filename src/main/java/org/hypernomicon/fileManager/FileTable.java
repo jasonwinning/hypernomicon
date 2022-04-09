@@ -306,7 +306,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
     boolean copying = (result == mrCopy);
 
-    if (!dlg.moveCopy(draggingRows, copying, true)) return;
+    if (dlg.moveCopy(draggingRows, copying, true) == false) return;
 
     dlg.paste(targetRow, copying, true);
   }

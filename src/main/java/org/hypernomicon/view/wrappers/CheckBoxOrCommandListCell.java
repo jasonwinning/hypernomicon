@@ -105,7 +105,7 @@ public final class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
       CheckBoxOrCommand item = getItem();
 
       if (item.booleanProperty != null)
-        checkBox.setSelected(!booleanProperty.getValue());
+        checkBox.setSelected(booleanProperty.getValue() == false);
       else
         item.hndlr.run();
     });

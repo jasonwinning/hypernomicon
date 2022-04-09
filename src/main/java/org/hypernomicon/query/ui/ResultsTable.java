@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
 import org.hypernomicon.model.records.HDT_Record;
@@ -194,27 +195,36 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
     {
       @Override public void run()
       {
-        while (buttonAdded == false)
+        boolean buttonNotAdded;
+
+        synchronized (buttonAdded) { buttonNotAdded = buttonAdded.isFalse(); }
+
+        while (buttonNotAdded)
         {
           runInFXThread(() ->
           {
-            buttonAdded = buttonAdded || !nullSwitch(tv.getScene(), false, scene ->
-                                          nullSwitch(scene.getWindow(), false, Window::isShowing));
-            if (buttonAdded) return;
-
-            nullSwitch(tv.lookup(".show-hide-columns-button"), showHideColumnsButton ->
+            synchronized (buttonAdded)
             {
-              buttonAdded = true;
+              buttonAdded.setValue(buttonAdded.booleanValue() || !nullSwitch(tv.getScene(), false, scene ->
+                                                                  nullSwitch(scene.getWindow(), false, Window::isShowing)));
+              if (buttonAdded.isTrue()) return;
 
-              showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
+              nullSwitch(tv.lookup(".show-hide-columns-button"), showHideColumnsButton ->
               {
-                SelectColumnsDlgCtrlr.build().showModal();
-                event.consume();
+                buttonAdded.setTrue();
+
+                showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
+                {
+                  SelectColumnsDlgCtrlr.build().showModal();
+                  event.consume();
+                });
               });
-            });
+            }
           });
 
           sleepForMillis(50);
+
+          synchronized (buttonAdded) { buttonNotAdded = buttonAdded.isFalse(); }
         }
       }
     };
@@ -223,7 +233,8 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
     thread.start();
   }
 
-  private boolean buttonAdded = false, commencedAddingButton = false;
+  private MutableBoolean buttonAdded = new MutableBoolean(false);
+  private boolean commencedAddingButton = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

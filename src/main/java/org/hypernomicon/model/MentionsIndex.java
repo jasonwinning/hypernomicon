@@ -30,9 +30,11 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
@@ -59,10 +61,8 @@ class MentionsIndex
   private final EnumSet<RecordType> types;
   private final List<String> strList = new ArrayList<>();
 
-  private RebuildThread thread = null;
   private HyperTask task = null;
   private double ctr, total;
-  private boolean stopRequested = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -80,7 +80,7 @@ class MentionsIndex
 
   void removeRecord(HDT_Record record)
   {
-    if ((thread != null) && thread.isAlive())
+    if (isRebuilding())
     {
       startRebuild();
       return;
@@ -99,7 +99,7 @@ class MentionsIndex
     if (removedRecords.contains(record))
       return;
 
-    if ((thread != null) && thread.isAlive())
+    if (isRebuilding())
     {
       startRebuild();
       return;
@@ -186,14 +186,7 @@ class MentionsIndex
   {
     if (isRebuilding() == false) return true;
 
-    HyperTask.performTaskWithProgressDialog(task);
-
-    if (task.isDone() == false)
-      return false;
-
-    try { thread.join(); } catch (InterruptedException e) { noOp(); }
-
-    return true;
+    return task.runWithProgressDialog() == State.SUCCEEDED;
   }
 
 //---------------------------------------------------------------------------
@@ -201,7 +194,7 @@ class MentionsIndex
 
   boolean isRebuilding()
   {
-    return (thread != null) && thread.isAlive();
+    return (task != null) && task.threadIsAlive();
   }
 
 //---------------------------------------------------------------------------
@@ -213,7 +206,6 @@ class MentionsIndex
     {
       super(task);
       setDaemon(true);
-      task.setThread(this);
     }
   }
 
@@ -229,7 +221,8 @@ class MentionsIndex
       @Override protected void done()
       {
         Thread oldThread = getThread();
-        super.done();
+
+        updateProgress(total, total);
 
         Platform.runLater(() ->
         {
@@ -239,7 +232,7 @@ class MentionsIndex
         });
       }
 
-      @Override protected Boolean call()
+      @Override protected void call() throws CancelledTaskException
       {
         updateMessage("The requested operation will be performed after indexing has completed...");
 
@@ -254,29 +247,14 @@ class MentionsIndex
         {
           if ((((int)ctr++) % 50) == 0)
           {
-            if (stopRequested)
-            {
-              updateProgress(total, total);
-              stopRequested = false;
-              return true;
-            }
+            if (isCancelled())
+              throw new CancelledTaskException();
 
             updateProgress(ctr, total);
           }
 
-          try
-          {
-            reindexMentioner(record);
-          }
-          catch (Exception e)
-          {
-            e.printStackTrace();
-            throw(e);
-          }
+          reindexMentioner(record);
         }
-
-        updateProgress(total, total);
-        return true;
       }
     };
 
@@ -286,7 +264,7 @@ class MentionsIndex
       :
         () -> ui.updateProgress("Indexing:", ctr / total)));
 
-    (thread = new RebuildThread(task)).start();
+    new RebuildThread(task).start();
   }
 
 //---------------------------------------------------------------------------
@@ -297,8 +275,7 @@ class MentionsIndex
     if (isRebuilding() == false)
       return;
 
-    stopRequested = true;
-    try { thread.join(); } catch (InterruptedException e) { noOp(); }
+    task.cancelAndWait();
   }
 
 //---------------------------------------------------------------------------
@@ -311,7 +288,7 @@ class MentionsIndex
 
   Set<HDT_Record> getMentionerSet(HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait)
   {
-    choseNotToWait.setValue(!waitUntilRebuildIsDone());
+    choseNotToWait.setValue(waitUntilRebuildIsDone() == false);
     if (choseNotToWait.isTrue())
       return null;
 
@@ -329,7 +306,7 @@ class MentionsIndex
 
   boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait)
   {
-    choseNotToWait.setValue(!waitUntilRebuildIsDone());
+    choseNotToWait.setValue(waitUntilRebuildIsDone() == false);
     if (choseNotToWait.isTrue())
       return false;
 

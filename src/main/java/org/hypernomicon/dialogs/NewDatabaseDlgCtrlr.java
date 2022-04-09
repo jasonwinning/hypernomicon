@@ -82,7 +82,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
       return falseWithErrorMessage("Enter a unique name for each folder.");
 
     FilePath filePath = new FilePath(newPath);
-    boolean success = false;
+    boolean success;
 
     try
     {

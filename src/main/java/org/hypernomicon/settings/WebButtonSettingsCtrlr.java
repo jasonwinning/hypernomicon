@@ -19,17 +19,15 @@ package org.hypernomicon.settings;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsControl;
 import org.hypernomicon.util.WebButton;
-import org.hypernomicon.util.WebButton.UrlPattern;
-import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -88,53 +86,53 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     WebButton btn = new WebButton("Google", "Google");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.FirstName, WebButtonField.LastName),
-        "http://www.google.com/search?q=" + WebButtonField.FirstName.key + "%20" + WebButtonField.LastName.key + "%20" + WebButtonField.Field.key));
+    btn.addPattern("http://www.google.com/search?q=" + FirstName + "%20" + LastName + "%20" + Field,
+        FirstName, LastName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "http://www.google.com/search?q=" + WebButtonField.SingleName.key + "%20" + WebButtonField.Field.key));
+    btn.addPattern("http://www.google.com/search?q=" + SingleName + "%20" + Field,
+        SingleName);
 
     personSrchList.add(btn);
     personSrchDefaults.add(btn);
 
     btn = new WebButton("Scholar", "Scholar");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.QueryName, WebButtonField.LastName),
-        "https://scholar.google.com/scholar?q=author:%22" + WebButtonField.QueryName.key + "%20" + WebButtonField.LastName.key + "%22"));
+    btn.addPattern("https://scholar.google.com/scholar?q=author:%22" + QueryName + "%20" + LastName + "%22",
+        QueryName, LastName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "https://scholar.google.com/scholar?q=author:%22" + WebButtonField.SingleName.key + "%22"));
+    btn.addPattern("https://scholar.google.com/scholar?q=author:%22" + SingleName + "%22",
+        SingleName);
 
     personSrchList.add(btn);
     personSrchDefaults.add(btn);
 
     btn = new WebButton("PhilPapers", "PhilPapers");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.QueryName, WebButtonField.LastName),
-        "https://philpapers.org/s/@author%20" + WebButtonField.QueryName.key + "%20" + WebButtonField.LastName.key));
+    btn.addPattern("https://philpapers.org/s/@author%20" + QueryName + "%20" + LastName,
+        QueryName, LastName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "https://philpapers.org/s/@author%20" + WebButtonField.SingleName.key));
+    btn.addPattern("https://philpapers.org/s/@author%20" + SingleName,
+        SingleName);
 
     personSrchList.add(btn);
 
     btn = new WebButton("Bing", "Bing");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.FirstName, WebButtonField.LastName),
-        "https://www.bing.com/search?q=" + WebButtonField.FirstName.key + "%20" + WebButtonField.LastName.key + "%20" + WebButtonField.Field.key));
+    btn.addPattern("https://www.bing.com/search?q=" + FirstName + "%20" + LastName + "%20" + Field,
+        FirstName, LastName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "https://www.bing.com/search?q=" + WebButtonField.SingleName.key + "%20" + WebButtonField.Field.key));
+    btn.addPattern("https://www.bing.com/search?q=" + SingleName + "%20" + Field,
+        SingleName);
 
     personSrchList.add(btn);
 
     btn = new WebButton("DuckDuckGo", "DuckDuckGo");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.FirstName, WebButtonField.LastName),
-        "https://duckduckgo.com/?q=" + WebButtonField.FirstName.key + "%20" + WebButtonField.LastName.key + "%20" + WebButtonField.Field.key));
+    btn.addPattern("https://duckduckgo.com/?q=" + FirstName + "%20" + LastName + "%20" + Field,
+        FirstName, LastName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "https://duckduckgo.com/?q=" + WebButtonField.SingleName.key + "%20" + WebButtonField.Field.key));
+    btn.addPattern("https://duckduckgo.com/?q=" + SingleName + "%20" + Field,
+        SingleName);
 
     personSrchList.add(btn);
 
@@ -143,32 +141,32 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google Image Search", "Google");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.FirstName, WebButtonField.LastName),
-        "http://www.google.com/search?q=" + WebButtonField.FirstName.key + "%20" + WebButtonField.LastName.key + "%20" + WebButtonField.Field.key + "&tbm=isch"));
+    btn.addPattern("http://www.google.com/search?q=" + FirstName + "%20" + LastName + "%20" + Field + "&tbm=isch",
+        FirstName, LastName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "http://www.google.com/search?q=" + WebButtonField.SingleName.key + "%20" + WebButtonField.Field.key + "&tbm=isch"));
+    btn.addPattern("http://www.google.com/search?q=" + SingleName + "%20" + Field + "&tbm=isch",
+        SingleName);
 
     personImgSrchList.add(btn);
     ui.webButtonMap.put(PREF_KEY_PERSON_IMG_SRCH, btn);
 
     btn = new WebButton("Bing Image Search", "Bing");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.FirstName, WebButtonField.LastName),
-        "https://www.bing.com/images/search?q=" + WebButtonField.FirstName.key + "%20" + WebButtonField.LastName.key + "%20" + WebButtonField.Field.key));
+    btn.addPattern("https://www.bing.com/images/search?q=" + FirstName + "%20" + LastName + "%20" + Field,
+        FirstName, LastName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "https://www.bing.com/images/search?q=" + WebButtonField.SingleName.key + "%20" + WebButtonField.Field.key));
+    btn.addPattern("https://www.bing.com/images/search?q=" + SingleName + "%20" + Field,
+        SingleName);
 
     personImgSrchList.add(btn);
 
     btn = new WebButton("DuckDuckGo", "DuckDuckGo");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.FirstName, WebButtonField.LastName),
-        "https://duckduckgo.com/?q=" + WebButtonField.FirstName.key + "%20" + WebButtonField.LastName.key + "%20" + WebButtonField.Field.key + "&iar=images&iax=images&ia=images"));
+    btn.addPattern("https://duckduckgo.com/?q=" + FirstName + "%20" + LastName + "%20" + Field + "&iar=images&iax=images&ia=images",
+        FirstName, LastName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "https://duckduckgo.com/?q=" + WebButtonField.SingleName.key + "%20" + WebButtonField.Field.key + "&iar=images&iax=images&ia=images"));
+    btn.addPattern("https://duckduckgo.com/?q=" + SingleName + "%20" + Field + "&iar=images&iax=images&ia=images",
+        SingleName);
 
     personImgSrchList.add(btn);
 
@@ -177,32 +175,32 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google", "");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name, WebButtonField.DivisionName),
-        "http://www.google.com/search?q=" + WebButtonField.Name.key + "%20" + WebButtonField.DivisionName.key));
+    btn.addPattern("http://www.google.com/search?q=" + Name + "%20" + DivisionName,
+        Name, DivisionName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "http://www.google.com/search?q=" + WebButtonField.Name.key));
+    btn.addPattern("http://www.google.com/search?q=" + Name,
+        Name);
 
     instSrchList.add(btn);
     ui.webButtonMap.put(PREF_KEY_INST_SRCH, btn);
 
     btn = new WebButton("Bing", "");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name, WebButtonField.DivisionName),
-        "https://www.bing.com/search?q=" + WebButtonField.Name.key + "%20" + WebButtonField.DivisionName.key));
+    btn.addPattern("https://www.bing.com/search?q=" + Name + "%20" + DivisionName,
+        Name, DivisionName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://www.bing.com/search?q=" + WebButtonField.Name.key));
+    btn.addPattern("https://www.bing.com/search?q=" + Name,
+        Name);
 
     instSrchList.add(btn);
 
     btn = new WebButton("DuckDuckGo", "");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name, WebButtonField.DivisionName),
-        "https://duckduckgo.com/?q=" + WebButtonField.Name.key + "%20" + WebButtonField.DivisionName.key));
+    btn.addPattern("https://duckduckgo.com/?q=" + Name + "%20" + DivisionName,
+        Name, DivisionName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://duckduckgo.com/?q=" + WebButtonField.Name.key));
+    btn.addPattern("https://duckduckgo.com/?q=" + Name,
+        Name);
 
     instSrchList.add(btn);
 
@@ -212,29 +210,23 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google Maps", "Google Maps");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://maps.google.com/maps?q=" + WebButtonField.Name.key + ",+" +
-        WebButtonField.City.key + ",+" + WebButtonField.Region.key + ",+" +
-        WebButtonField.Country.key + "&hl=en"));
+    btn.addPattern("https://maps.google.com/maps?q=" + Name + ",+" + City + ",+" + Region + ",+" + Country + "&hl=en",
+        Name);
 
     instMapSrchList.add(btn);
     ui.webButtonMap.put(PREF_KEY_INST_MAP_SRCH, btn);
 
     btn = new WebButton("OpenStreetMap", "OpenStreet");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://www.openstreetmap.org/search?query=" + WebButtonField.Name.key + ",+" +
-        WebButtonField.City.key + ",+" + WebButtonField.Region.key + ",+" +
-        WebButtonField.Country.key));
+    btn.addPattern("https://www.openstreetmap.org/search?query=" + Name + ",+" + City + ",+" + Region + ",+" + Country,
+        Name);
 
     instMapSrchList.add(btn);
 
     btn = new WebButton("Bing Maps", "Bing Maps");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "http://www.bing.com/maps/default.aspx?where1=" + WebButtonField.Name.key + ',' +
-        WebButtonField.City.key + ',' + WebButtonField.Region.key + ',' +
-        WebButtonField.Country.key));
+    btn.addPattern("http://www.bing.com/maps/default.aspx?where1=" + Name + ',' + City + ',' + Region + ',' + Country,
+        Name);
 
     instMapSrchList.add(btn);
 
@@ -243,23 +235,23 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google", "Google");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.doi),
-        "http://www.google.com/search?q=doi%3A" + WebButtonField.doi.key));
+    btn.addPattern("http://www.google.com/search?q=doi%3A" + doi,
+        doi);
 
     doiSrchList.add(btn);
     ui.webButtonMap.put(PREF_KEY_DOI_SRCH, btn);
 
     btn = new WebButton("Bing", "Bing");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.doi),
-        "https://www.bing.com/search?q=doi%3A" + WebButtonField.doi.key));
+    btn.addPattern("https://www.bing.com/search?q=doi%3A" + doi,
+        doi);
 
     doiSrchList.add(btn);
 
     btn = new WebButton("DuckDuckGo", "DuckDuckGo");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.doi),
-        "https://duckduckgo.com/?q=doi%3A" + WebButtonField.doi.key));
+    btn.addPattern("https://duckduckgo.com/?q=doi%3A" + doi,
+        doi);
 
     doiSrchList.add(btn);
 
@@ -268,16 +260,16 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("WorldCat", "WorldCat");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.ISBN),
-        "http://www.worldcat.org/search?q=bn%3A" + WebButtonField.ISBN.key + "&qt=advanced"));
+    btn.addPattern("http://www.worldcat.org/search?q=bn%3A" + ISBN + "&qt=advanced",
+        ISBN);
 
     isbnSrchList.add(btn);
     ui.webButtonMap.put(PREF_KEY_ISBN_SRCH, btn);
 
     btn = new WebButton("Amazon", "Amazon");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.ISBN),
-        "https://www.amazon.com/s?&rh=p_66%3A" + WebButtonField.ISBN.key));
+    btn.addPattern("https://www.amazon.com/s?&rh=p_66%3A" + ISBN,
+        ISBN);
 
     isbnSrchList.add(btn);
 
@@ -286,48 +278,48 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("WorldCat", "WorldCat");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Title, WebButtonField.NumericYear, WebButtonField.SingleName),
-        "http://www.worldcat.org/search?q=au%3A" + WebButtonField.SingleName.key + "+ti%3A" + WebButtonField.Title.key + "&fq=yr%3A" + WebButtonField.NumericYear.key + ".." + WebButtonField.NumericYear.key + "&qt=advanced"));
+    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "+ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced",
+        Title, NumericYear, SingleName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Title, WebButtonField.SingleName),
-        "http://www.worldcat.org/search?q=au%3A" + WebButtonField.SingleName.key + "+ti%3A" + WebButtonField.Title.key + "&qt=advanced"));
+    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "+ti%3A" + Title + "&qt=advanced",
+        Title, SingleName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Title, WebButtonField.NumericYear),
-        "http://www.worldcat.org/search?q=ti%3A" + WebButtonField.Title.key + "&fq=yr%3A" + WebButtonField.NumericYear.key + ".." + WebButtonField.NumericYear.key + "&qt=advanced"));
+    btn.addPattern("http://www.worldcat.org/search?q=ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced",
+        Title, NumericYear);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Title),
-        "http://www.worldcat.org/search?q=ti%3A" + WebButtonField.Title.key + "&qt=advanced"));
+    btn.addPattern("http://www.worldcat.org/search?q=ti%3A" + Title + "&qt=advanced",
+        Title);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.NumericYear, WebButtonField.SingleName),
-        "http://www.worldcat.org/search?q=au%3A" + WebButtonField.SingleName.key + "&fq=yr%3A" + WebButtonField.NumericYear.key + ".." + WebButtonField.NumericYear.key + "&qt=advanced"));
+    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced",
+        NumericYear, SingleName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName),
-        "http://www.worldcat.org/search?q=au%3A" + WebButtonField.SingleName.key + "&qt=advanced"));
+    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "&qt=advanced",
+        SingleName);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.ISBN),
-        "http://www.worldcat.org/search?q=bn%3A" + WebButtonField.ISBN.key + "&qt=advanced"));
+    btn.addPattern("http://www.worldcat.org/search?q=bn%3A" + ISBN + "&qt=advanced",
+        ISBN);
 
     workSrchList.add(btn);
     workSrchDefaults.add(btn);
 
     btn = new WebButton("Google Scholar", "Scholar");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName, WebButtonField.QueryTitle),
-        "https://scholar.google.com/scholar?q=author%3A%22" + WebButtonField.SingleName.key + "%22%20intitle%3A%22" + WebButtonField.QueryTitle.key + "%22"));
+    btn.addPattern("https://scholar.google.com/scholar?q=author%3A%22" + SingleName + "%22%20intitle%3A%22" + QueryTitle + "%22",
+        SingleName, QueryTitle);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.QueryTitle),
-        "https://scholar.google.com/scholar?q=intitle%3A%22" + WebButtonField.QueryTitle.key + "%22"));
+    btn.addPattern("https://scholar.google.com/scholar?q=intitle%3A%22" + QueryTitle + "%22",
+        QueryTitle);
 
     workSrchList.add(btn);
     workSrchDefaults.add(btn);
 
     btn = new WebButton("PhilPapers", "PhilPapers");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.SingleName, WebButtonField.QueryTitle),
-        "https://philpapers.org/s/@author%20" + WebButtonField.SingleName.key + "%20@title%20%22" + WebButtonField.QueryTitle.key + "%22"));
+    btn.addPattern("https://philpapers.org/s/@author%20" + SingleName + "%20@title%20%22" + QueryTitle + "%22",
+        SingleName, QueryTitle);
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.QueryTitle),
-        "https://philpapers.org/s/@title%20%22" + WebButtonField.QueryTitle.key + "%22"));
+    btn.addPattern("https://philpapers.org/s/@title%20%22" + QueryTitle + "%22",
+        QueryTitle);
 
     workSrchList.add(btn);
 
@@ -336,61 +328,61 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google", "Google");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "http://www.google.com/search?q=" + WebButtonField.Name.key));
+    btn.addPattern("http://www.google.com/search?q=" + Name,
+        Name);
 
     genSrchList.add(btn);
     genSrchDefaults.add(btn);
 
     btn = new WebButton("Stanford Encyclopedia of Philosophy", "SEP");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "http://plato.stanford.edu/search/searcher.py?query=" + WebButtonField.Name.key));
+    btn.addPattern("http://plato.stanford.edu/search/searcher.py?query=" + Name,
+        Name);
 
     genSrchList.add(btn);
     genSrchDefaults.add(btn);
 
     btn = new WebButton("Internet Encyclopedia of Philosophy", "IEP");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://cse.google.com/cse?cx=001101905209118093242%3Arsrjvdp2op4&ie=UTF-8&q=" + WebButtonField.Name.key + "&sa=Search"));
+    btn.addPattern("https://cse.google.com/cse?cx=001101905209118093242%3Arsrjvdp2op4&ie=UTF-8&q=" + Name + "&sa=Search",
+        Name);
 
     genSrchList.add(btn);
     genSrchDefaults.add(btn);
 
     btn = new WebButton("Wikipedia", "Wikipedia");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "http://en.wikipedia.org/w/index.php?search=" + WebButtonField.Name.key));
+    btn.addPattern("http://en.wikipedia.org/w/index.php?search=" + Name,
+        Name);
 
     genSrchList.add(btn);
     genSrchDefaults.add(btn);
 
     btn = new WebButton("Routledge Encyclopedia of Philosophy", "Routledge");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://www.rep.routledge.com/search?searchString=" + WebButtonField.Name.key));
+    btn.addPattern("https://www.rep.routledge.com/search?searchString=" + Name,
+        Name);
 
     genSrchList.add(btn);
 
     btn = new WebButton("Bing", "Bing");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://www.bing.com/search?q=" + WebButtonField.Name.key));
+    btn.addPattern("https://www.bing.com/search?q=" + Name,
+        Name);
 
     genSrchList.add(btn);
 
     btn = new WebButton("DuckDuckGo", "DuckDuckGo");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://duckduckgo.com/?q=" + WebButtonField.Name.key));
+    btn.addPattern("https://duckduckgo.com/?q=" + Name,
+        Name);
 
     genSrchList.add(btn);
 
     btn = new WebButton("PhilPapers", "PhilPapers");
 
-    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
-        "https://philpapers.org/s/" + WebButtonField.Name.key));
+    btn.addPattern("https://philpapers.org/s/" + Name,
+        Name);
 
     genSrchList.add(btn);
   }

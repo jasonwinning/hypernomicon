@@ -21,10 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashBasedTable;
-
 import org.apache.commons.io.FileUtils;
 
 import javafx.application.Platform;
@@ -36,6 +32,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
+import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -83,12 +80,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int  EQUAL_TO_OPERAND_ID         = 1,           AND_CONNECITVE_ID = 1,
-                           NOT_EQUAL_TO_OPERAND_ID     = 2,           OR_CONNECTIVE_ID  = 2,
-                           CONTAINS_OPERAND_ID         = 3,           TRUE_ID  = 1,
-                           DOES_NOT_CONTAIN_OPERAND_ID = 4,           FALSE_ID = 2,
-                           IS_EMPTY_OPERAND_ID         = 5,           UNSET_ID = 3,
-                           IS_NOT_EMPTY_OPERAND_ID     = 6;
+  public static final int AND_CONNECITVE_ID = 1,
+                          OR_CONNECTIVE_ID  = 2,
+                          TRUE_ID  = 1,
+                          FALSE_ID = 2,
+                          UNSET_ID = 3;
+
 
   public static final HyperTableCell andCell = new HyperTableCell(AND_CONNECITVE_ID, "and", hdtNone),
                                      orCell  = new HyperTableCell(OR_CONNECTIVE_ID , "or" , hdtNone),
@@ -115,7 +112,6 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private ChangeListener<ResultsRow> cbListenerToRemove = null, tvListenerToRemove = null;
   private ComboBox<ResultsRow> cb;
   private boolean clearingViews = false;
-  private static boolean noScroll = false;
 
   private final BooleanProperty includeEdited = new SimpleBooleanProperty(),
                                 excludeAnnots = new SimpleBooleanProperty(),
@@ -123,15 +119,14 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private final List<QueryView> queryViews = new ArrayList<>();
 
-  private static final ListMultimap<QueryType, Query<?>> queryTypeToQueries = ArrayListMultimap.create();
-  static final HashBasedTable<QueryType, Integer, Query<?>> queryTable = HashBasedTable.create();
+  private static final List<Query<?>> allQueries = new ArrayList<>();
 
   public static List<ResultsRow> results()          { return (curQV == null) ? List.of() : curQV.results(); }
   public void setTextToHilite(String text)          { textToHilite = text; }
   public void refreshTables()                       { queryViews.forEach(qv -> qv.resultsTable.getTV().refresh()); }
   public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(curQV); }
-  public static void btnExecuteClick()              { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
-                                                                                       // will all be treated as unfiltered
+  public static void btnExecuteClick()              { curQV.btnExecuteClick(true); }
+
   @Override protected RecordType type()             { return hdtNone; }
   @Override public void update()                    { curQV.refreshView(true); }
   @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
@@ -162,12 +157,10 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @Override protected void init()
   {
-    GeneralQueries.addQueries(queryTypeToQueries);
-    FolderQueries .addQueries(queryTypeToQueries);
-    PersonQueries .addQueries(queryTypeToQueries);
-    WorkQueries   .addQueries(queryTypeToQueries);
-
-    queryTypeToQueries.forEach((queryType, query) -> queryTable.put(queryType, query.getID(), query));
+    GeneralQueries.addQueries(allQueries);
+    FolderQueries .addQueries(allQueries);
+    PersonQueries .addQueries(allQueries);
+    WorkQueries   .addQueries(allQueries);
 
   //---------------------------------------------------------------------------
 
@@ -364,7 +357,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       return;
     }
 
-    queryTypeToQueries.get(newType).forEach(query -> pop.addEntry(row, query.getID(), query.getDescription()));
+    allQueries.stream().filter(query -> query.show(newType, newType.getRecordType())).forEach(query -> pop.addQuery(row, query));
   }
 
 //---------------------------------------------------------------------------
@@ -401,11 +394,11 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private boolean copyFilesToFolder(boolean onlySelected)
   {
-    SearchResultFileList fileList = new SearchResultFileList(entirePDF.get());
+    SearchResultFileList fileList = new SearchResultFileList(entirePDF.get(), includeEdited.get());
 
     if ((db.isLoaded() == false) || (results().size() < 1)) return false;
 
-    HyperTask task = new HyperTask("BuildListOfFilesToCopy") { @Override protected Boolean call() throws Exception
+    HyperTask task = new HyperTask("BuildListOfFilesToCopy") { @Override protected void call() throws CancelledTaskException
     {
       updateMessage("Building list...");
 
@@ -417,33 +410,30 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       {
         HDT_Record record = row.getRecord();
         if (record instanceof HDT_RecordWithPath)
-          fileList.addRecord((HDT_RecordWithPath)record, includeEdited.getValue());
+          fileList.addRecord((HDT_RecordWithPath)record);
 
         if (isCancelled())
-          throw new TerminateTaskException();
+          throw new CancelledTaskException();
 
         updateProgress(ndx++, resultRowList.size());
       }
-
-      return true;
     }};
 
-    if (!HyperTask.performTaskWithProgressDialog(task))
+    if (task.runWithProgressDialog() != State.SUCCEEDED)
       return false;
 
     boolean startWatcher = folderTreeWatcher.stop();
 
-    task = new HyperTask("CopyingFiles") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("CopyingFiles") { @Override protected void call() throws CancelledTaskException
     {
       updateMessage("Copying files...");
 
       updateProgress(0, 1);
 
       fileList.copyAll(excludeAnnots.getValue(), this);
-      return true;
     }};
 
-    HyperTask.performTaskWithProgressDialog(task);
+    task.runWithProgressDialog();
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
@@ -515,8 +505,25 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     if ((cb == null) || (queryView == null)) return;
 
+    TableView<ResultsRow> tvResults = queryView.resultsTable.getTV();
+
     if (propToUnbind != null)
+    {
       cb.itemsProperty().unbindBidirectional(propToUnbind);
+      propToUnbind = null;
+    }
+
+    if (tvListenerToRemove != null)
+    {
+      tvResults.getSelectionModel().selectedItemProperty().removeListener(tvListenerToRemove);
+      tvListenerToRemove = null;
+    }
+
+    if (cbListenerToRemove != null)
+    {
+      cb.getSelectionModel().selectedItemProperty().removeListener(cbListenerToRemove);
+      cbListenerToRemove = null;
+    }
 
     if (queryView.inReportMode())
     {
@@ -524,40 +531,39 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       return;
     }
 
-    TableView<ResultsRow> tvResults = queryView.resultsTable.getTV();
-
-    cb.itemsProperty().bindBidirectional(tvResults.itemsProperty());
-
     propToUnbind = tvResults.itemsProperty();
-
-    if (cbListenerToRemove != null)
-      cb.getSelectionModel().selectedItemProperty().removeListener(cbListenerToRemove);
+    cb.itemsProperty().bindBidirectional(propToUnbind);
 
     cb.getSelectionModel().select(tvResults.getSelectionModel().getSelectedItem());
 
     cbListenerToRemove = (ob, oldValue, newValue) ->
     {
-      if ((newValue != null) && (newValue.getRecord() != null))
-      {
-        tvResults.getSelectionModel().select(newValue);
-        if (noScroll == false) HyperTable.scrollToSelection(tvResults, false);
-      }
+      if (alreadySettingSelection || (newValue == null) || (newValue.getRecord() == null)) return;
+
+      alreadySettingSelection = true;
+
+      tvResults.getSelectionModel().clearSelection();
+      tvResults.getSelectionModel().select(newValue);
+      HyperTable.scrollToSelection(tvResults, false);
+
+      alreadySettingSelection = false;
     };
 
     cb.getSelectionModel().selectedItemProperty().addListener(cbListenerToRemove);
 
-    if (tvListenerToRemove != null)
-      tvResults.getSelectionModel().selectedItemProperty().removeListener(tvListenerToRemove);
-
     tvListenerToRemove = (ob, oldValue, newValue) ->
     {
-      noScroll = true;
+      if (alreadySettingSelection) return;
+
+      alreadySettingSelection = true;
       cb.getSelectionModel().select(newValue);
-      noScroll = false;
+      alreadySettingSelection = false;
     };
 
     tvResults.getSelectionModel().selectedItemProperty().addListener(tvListenerToRemove);
   }
+
+  private boolean alreadySettingSelection = false;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -567,7 +573,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     btnToggleFavorite.setText(selected ? "Remove from favorites" : "Add to favorites");
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
 }

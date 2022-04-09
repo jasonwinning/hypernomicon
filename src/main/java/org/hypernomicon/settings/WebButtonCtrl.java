@@ -94,16 +94,14 @@ abstract class WebButtonCtrl
       String str = patternNode.get("str", "");
       EnumSet<WebButtonField> reqFields = EnumSet.noneOf(WebButtonField.class);
 
-      int fieldNum = patternNode.getInt("reqFieldCnt", 0);
-
-      for (int fieldNdx = 1; fieldNdx <= fieldNum; fieldNdx++)
+      for (int fieldCount = patternNode.getInt("reqFieldCnt", 0), fieldNdx = 1; fieldNdx <= fieldCount; fieldNdx++)
       {
         String fieldName = patternNode.get("reqField" + fieldNdx, "");
         if (fieldName.length() > 0)
           reqFields.add(WebButtonField.valueOf(fieldName));
       }
 
-      webBtn.addPattern(new UrlPattern(reqFields, str));
+      webBtn.addPattern(str, reqFields);
     }
 
     ui.webButtonMap.put(prefKey, webBtn);

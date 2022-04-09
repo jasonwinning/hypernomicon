@@ -97,6 +97,7 @@ import com.google.common.collect.Sets;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
@@ -288,7 +289,7 @@ public final class HyperDB
   public void updateNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag, HDT_Record target)
   { if (relSet(subj, obj).setNestedPointer(subj, obj, tag, target)) subj.modifyNow(); }
 
-  public <HDT_SubjType extends HDT_Record> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
+  public void resolvePointersByRelation(RelationType relType, HDT_Record subj) throws HDB_InternalError
   { relationSets.get(relType).resolvePointers(subj); }
 
   private HDT_Folder xmlFolder, booksFolder, papersFolder, miscFilesFolder, picturesFolder, resultsFolder, unenteredFolder, topicalFolder;
@@ -474,7 +475,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void writeDatasetToXML(List<StringBuilder> xmlList, RecordType type) throws HDB_InternalError, TerminateTaskException
+  private void writeDatasetToXML(List<StringBuilder> xmlList, RecordType type) throws HDB_InternalError, CancelledTaskException
   {
     StringBuilder xml = xmlList.get(xmlList.size() - 1);
 
@@ -525,7 +526,7 @@ public final class HyperDB
     if (bibLibraryIsLinked())
       bibLibrary.saveToDisk();
 
-    task = new HyperTask("SaveAllToDisk") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("SaveAllToDisk") { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
       updateMessage("Saving to XML files...");
 
@@ -583,12 +584,9 @@ public final class HyperDB
       {
         throw new HyperDataException("An error occurred while saving to XML files. " + e.getMessage(), e);
       }
-
-      succeeded();
-      return true;
     }};
 
-    if (!HyperTask.performTaskWithProgressDialog(task)) return false;
+    if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
 
     MessageDigest md = newMessageDigest();
 
@@ -678,21 +676,23 @@ public final class HyperDB
     alreadyShowedUpgradeMsg = false;
     MutableBoolean needToAddThesisWorkType = new MutableBoolean(); // Backwards compatibility with records XML version 1.3
 
-    task = new HyperTask("LoadDatabase") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("LoadDatabase") { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
       updateMessage("Loading database from folder " + rootFilePath + "...");
       updateProgress(0, 1);
 
       totalTaskCount = 0; curTaskCount = 0;
 
-      for (FilePath filePath : xmlFileList) totalTaskCount += filePath.size();
+      try
+      {
+        for (FilePath filePath : xmlFileList) totalTaskCount += filePath.size();
+      }
+      catch (IOException e) { throw new HyperDataException(e); }
 
       for (FilePath filePath : xmlFileList) loadFromXML(creatingNew, filePath, needToAddThesisWorkType);
-
-      return true;
     }};
 
-    if (!HyperTask.performTaskWithProgressDialog(task))
+    if (task.runWithProgressDialog() != State.SUCCEEDED)
     {
       close(null);
       return false;
@@ -702,7 +702,7 @@ public final class HyperDB
 
     accessors.values().forEach(coreAccessor -> totalTaskCount += coreAccessor.size());
 
-    task = new HyperTask("BringDatabaseOnline") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("BringDatabaseOnline") { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
       updateMessage("Starting database session...");
       updateProgress(0, 1);
@@ -713,11 +713,9 @@ public final class HyperDB
         dataset.assignIDs();
 
       bringAllRecordsOnline();
-
-      return true;
     }};
 
-    if (!HyperTask.performTaskWithProgressDialog(task))
+    if (task.runWithProgressDialog() != State.SUCCEEDED)
     {
       close(null);
       return false;
@@ -852,7 +850,7 @@ public final class HyperDB
         {
           createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", "", ""), true);
         }
-        catch (Exception e)
+        catch (HyperDataException e)
         {
           throw new HyperDataException("Internal error while creating thesis work type record: " + e.getMessage(), e);
         }
@@ -1161,7 +1159,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void bringAllRecordsOnline() throws HyperDataException, TerminateTaskException
+  private void bringAllRecordsOnline() throws HyperDataException, CancelledTaskException
   {
     try
     {
@@ -1401,7 +1399,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadFromXML(boolean creatingNew, FilePath filePath, MutableBoolean needToAddThesisWorkType) throws HyperDataException, TerminateTaskException
+  private void loadFromXML(boolean creatingNew, FilePath filePath, MutableBoolean needToAddThesisWorkType) throws HyperDataException, CancelledTaskException
   {
     MessageDigest md = newMessageDigest();
 
@@ -1431,7 +1429,7 @@ public final class HyperDB
 
         while (notDoneReadingRecord)
         {
-          if (task.isCancelled()) throw new TerminateTaskException();
+          if (task.isCancelled()) throw new CancelledTaskException();
 
           event = eventReader.nextEvent();
           switch (event.getEventType())
@@ -1567,7 +1565,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void readNestedItem(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relationType, HDX_Element hdxElement, XMLEventReader eventReader) throws XMLStreamException, HyperDataException, InvalidItemException
+  private void readNestedItem(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relationType, HDX_Element hdxElement, XMLEventReader eventReader) throws XMLStreamException, HyperDataException
   {
     boolean notDone = eventReader.hasNext();
     StringBuilder nodeText = new StringBuilder();

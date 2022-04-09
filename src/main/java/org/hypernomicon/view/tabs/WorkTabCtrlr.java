@@ -28,6 +28,7 @@ import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
@@ -395,7 +396,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       HDT_WorkFile workFile = newValue.getRecord();
       if (workFile == null)
-        previewWindow.setPreview(pvsWorkTab, curWork.previewFilePath(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
+        previewWindow.setPreview(pvsWorkTab, curWork.filePathIncludeExt(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
       else
         previewWindow.setPreview(pvsWorkTab, workFile.filePath(), getCurPageNum(curWork, workFile, true), getCurPageNum(curWork, workFile, false), curWork);
     });
@@ -405,7 +406,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if ((newValue == null) || (oldValue == newValue)) return;
 
       HDT_Work subWork = newValue.getRecord();
-      previewWindow.setPreview(pvsWorkTab, subWork.previewFilePath(), subWork.getStartPageNum(), subWork.getEndPageNum(), subWork);
+      previewWindow.setPreview(pvsWorkTab, subWork.filePathIncludeExt(), subWork.getStartPageNum(), subWork.getEndPageNum(), subWork);
     });
 
     htMiscFiles = new HyperTable(tvMiscFiles, 1, true, PREF_KEY_HT_WORK_MISC);
@@ -838,7 +839,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           if (curWork.authorRecords.get(0).getLastName().length() > 0)
             tfSearchKey.setText(makeWorkSearchKey(curWork.getAuthors(), curWork.getYear(), curWork));
 
-    FilePath filePath = curWork.previewFilePath();
+    FilePath filePath = curWork.filePathIncludeExt();
     boolean updatePreview = true;
 
     if (curWork == lastWork)
@@ -1113,7 +1114,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       for (HDT_WorkFile workFile : curWork.workFiles)
         if (workFile.getPath().moveToFolder(folderRecord.getID(), true, false, "") == false) break;
     }
-    catch (IOException e)
+    catch (IOException | HDB_InternalError e)
     {
       messageDialog("An error occurred while moving the files: " + e.getMessage(), mtError);
     }
@@ -1551,7 +1552,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
             }
     }
 
-    if (!saveSearchKey(curWork, tfSearchKey)) return false;
+    if (saveSearchKey(curWork, tfSearchKey) == false) return false;
 
     curWork.setName(tfTitle.getText());
     curWork.workType.setID(hcbType.selectedID());
@@ -1870,10 +1871,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         if (messageShown == false)
           messageDialog("Unable to find bibliographic information.", mtInformation);
+
         return;
       }
 
-      MergeWorksDlgCtrlr mwd = null;
+      MergeWorksDlgCtrlr mwd;
 
       try
       {
@@ -1909,7 +1911,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     if (ui.cantSaveRecord()) return;
 
-    MergeWorksDlgCtrlr mwd = null;
+    MergeWorksDlgCtrlr mwd;
     BibData workBibData = curWork.getBibData();
 
     try

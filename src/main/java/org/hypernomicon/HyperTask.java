@@ -24,11 +24,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hypernomicon.dialogs.ProgressDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.concurrent.Worker.State;
+import javafx.event.EventHandler;
 
-public abstract class HyperTask extends Task<Boolean>
+public abstract class HyperTask
 {
 
 //---------------------------------------------------------------------------
@@ -36,9 +43,14 @@ public abstract class HyperTask extends Task<Boolean>
 
   public static class HyperThread extends Thread
   {
-    public HyperThread(String name)                    { super(          newThreadName(name           )); }
-    public HyperThread(HyperTask task)                 { super(task,     newThreadName(task.threadName)); }
-    public HyperThread(Runnable runnable, String name) { super(runnable, newThreadName(name           )); }
+    protected HyperThread(                   String name) { super(          newThreadName(name)); }
+    public    HyperThread(Runnable runnable, String name) { super(runnable, newThreadName(name)); }
+
+    protected HyperThread(HyperTask task)
+    {
+      super(task.innerTask, newThreadName(task.threadName));
+      task.thread = this;
+    }
 
     private static final ConcurrentHashMap<String, Integer> threadNameBaseToNum = new ConcurrentHashMap<>();
 
@@ -50,6 +62,38 @@ public abstract class HyperTask extends Task<Boolean>
 
       return "Hypernomicon-" + base + '-' + num;
     }
+
+    public static boolean isRunning(HyperThread thread)
+    {
+      return thread == null ? false : thread.isAlive();
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private class InnerTask extends Task<Void>
+  {
+    @Override protected Void call() throws HyperDataException
+    {
+      try                              { HyperTask.this.call(); }
+      catch (CancelledTaskException e) { cancel();              }
+      return null;
+    }
+
+    @Override public void updateMessage(String msg)                { super.updateMessage(msg); } // Increase visibility
+    @Override public void updateProgress(double cur, double total) { super.updateProgress(cur, total); } // Increase visibility
+    @Override protected void done()                                { HyperTask.this.done(); }
+
+    @Override protected final void failed()
+    {
+      Throwable ex = getException();
+
+      if (ex instanceof HyperDataException)
+        Platform.runLater(() -> messageDialog(ex.getMessage(), mtError));
+      else if (ex != null)
+        ex.printStackTrace();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -59,49 +103,129 @@ public abstract class HyperTask extends Task<Boolean>
   {
     this.threadName = threadName;
 
-    setOnFailed   (workerStateEvent -> handleException());
-    setOnCancelled(workerStateEvent -> handleException());
+    innerTask = new InnerTask();
   }
 
-  private HyperThread thread;
+  private final InnerTask innerTask;
   private final String threadName;
+  private HyperThread thread;
 
-  @Override public void updateProgress(long   cur, long   total) { super.updateProgress((double)cur, (double)total); } // Increase visibility from protected
-  @Override public void updateProgress(double cur, double total) { super.updateProgress(cur, total); }                 // to public for both of these functions
+  protected abstract void call() throws HyperDataException, CancelledTaskException;
 
-  public void setThread(HyperThread thread) { this.thread = thread; }
-  protected HyperThread getThread()         { return thread; }
+  /**
+   * Protected method invoked when this task transitions to state
+   * {@code isDone} (whether normally or via cancellation). The
+   * default implementation does nothing.  Subclasses may override
+   * this method to invoke completion callbacks or perform
+   * bookkeeping. Note that you can query status inside the
+   * implementation of this method to determine whether this task
+   * has been cancelled.
+   */
+  protected void done() { }
+
+  /**
+   * Terminates execution of this Worker. Calling this method will either
+   * remove this Worker from the execution queue or stop execution.
+   *
+   * @return returns true if the cancel was successful
+   */
+  public boolean cancel() { return innerTask.cancel(); }
+
+  public Throwable getException() { return innerTask.getException(); }
+  public State getState()         { return innerTask.getState(); }
+
+  public ReadOnlyStringProperty  messageProperty () { return innerTask.messageProperty (); }
+  public ReadOnlyBooleanProperty runningProperty () { return innerTask.runningProperty (); }
+  public ReadOnlyDoubleProperty  progressProperty() { return innerTask.progressProperty(); }
+
+  public boolean threadIsAlive() { return HyperThread.isRunning(thread); }
+  public boolean isRunning()     { return innerTask.isRunning(); }
+  public boolean isCancelled()   { return innerTask.isCancelled(); }
+
+  protected void updateMessage(String msg)             { innerTask.updateMessage(msg); }
+  public void updateProgress(double cur, double total) { innerTask.updateProgress(cur, total); }
+
+  protected HyperThread getThread() { return thread; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void handleException()
+  public boolean cancelAndWait()
   {
-    Throwable ex = getException();
-
-    if ((ex == null) || (ex instanceof HyperDataException) || (ex instanceof TerminateTaskException)) return;
-
-    ex.printStackTrace();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean performTaskWithProgressDialog(HyperTask task)
-  {
-    ProgressDlgCtrlr.build().performTask(task);
-
-    if ((task.getState() == State.FAILED) || (task.getState() == State.CANCELLED))
-    {
-      Throwable ex = task.getException();
-
-      if (ex instanceof HyperDataException)
-        messageDialog(ex.getMessage(), mtError);
-
+    if (cancel() == false)
       return false;
-    }
+
+    try { thread.join(); } catch (InterruptedException e) { return false; }
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperThread startWithNewThreadAsDaemon()
+  {
+    if (getState() != State.READY)
+      throw new IllegalStateException("Can only start a task in the READY state. Was in state " + getState());
+
+    if (thread != null)
+      throw new IllegalStateException("Task already has thread.");
+
+    HyperThread newThread = new HyperThread(this);
+    newThread.setDaemon(true);
+    newThread.start();
+    return newThread;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperThread startWithNewThread()
+  {
+    if (getState() != State.READY)
+      throw new IllegalStateException("Can only start a task in the READY state. Was in state " + getState());
+
+    if (thread != null)
+      throw new IllegalStateException("Task already has thread.");
+
+    HyperThread newThread = new HyperThread(this);
+    newThread.start();
+    return newThread;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public State runWithProgressDialog()
+  {
+    return ProgressDlgCtrlr.build().performTask(this);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void runWhenFinalStateSet(Runnable runnable)
+  {
+    EventHandler<WorkerStateEvent> successHndlr = innerTask.getOnSucceeded(),
+                                   failHndlr    = innerTask.getOnFailed(),
+                                   cancelHndlr  = innerTask.getOnCancelled();
+    innerTask.setOnSucceeded(e ->
+    {
+      if (successHndlr != null) successHndlr.handle(e);
+      runnable.run();
+    });
+
+    innerTask.setOnFailed(e ->
+    {
+      if (failHndlr != null) failHndlr.handle(e);
+      runnable.run();
+    });
+
+    innerTask.setOnCancelled(e ->
+    {
+      if (cancelHndlr != null) cancelHndlr.handle(e);
+      runnable.run();
+    });
   }
 
 //---------------------------------------------------------------------------

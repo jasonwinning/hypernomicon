@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
-import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.model.Exceptions.HyperDataException;
@@ -34,26 +33,24 @@ public class SyncBibDlgCtrlr extends HyperDlg
 {
   @FXML private ProgressBar progressBar;
 
-  private SyncTask syncTask = null;
-
   @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static SyncBibDlgCtrlr build()
+  static void sync()
   {
-    return createUsingFullPath("settings/SyncBibDlg", "Link to " + db.getBibLibrary().type().getUserFriendlyName(), true);
+    ((SyncBibDlgCtrlr)createUsingFullPath("settings/SyncBibDlg", "Link to " + db.getBibLibrary().type().getUserFriendlyName(), true)).doSync();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean sync()
+  private void doSync()
   {
     onShown = () ->
     {
-      syncTask = db.getBibLibrary().createNewSyncTask();
+      SyncTask syncTask = db.getBibLibrary().createNewSyncTask();
 
       syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
       {
@@ -71,23 +68,12 @@ public class SyncBibDlgCtrlr extends HyperDlg
         }
       });
 
-      HyperThread thread = new HyperThread(syncTask);
-      thread.setDaemon(true);
-      syncTask.setThread(thread);
-      thread.start();
+      syncTask.startWithNewThreadAsDaemon();
     };
 
-    dialogStage.setOnHiding(event ->
-    {
-      if ((syncTask != null) && syncTask.isRunning())
-        syncTask.cancel();
-
-      db.getBibLibrary().stop();
-    });
+    dialogStage.setOnHiding(event -> db.getBibLibrary().stop());
 
     showModal();
-
-    return okClicked;
   }
 
 //---------------------------------------------------------------------------

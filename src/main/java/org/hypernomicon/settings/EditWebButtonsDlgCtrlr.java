@@ -66,7 +66,7 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
     this.prefKey = prefKey;
 
     if (webBtn == null)
-      addPattern(new UrlPattern(EnumSet.noneOf(WebButtonField.class), ""));
+      addEmptyPattern();
     else
     {
       for (UrlPattern urlPattern : webBtn.getPatterns())
@@ -77,7 +77,7 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
     {
       try
       {
-        addPattern(new UrlPattern(EnumSet.noneOf(WebButtonField.class), ""));
+        addEmptyPattern();
         unchanged = false;
       }
       catch (IOException e)
@@ -92,13 +92,18 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addPattern(UrlPattern urlPattern) throws IOException
+  private void addEmptyPattern() throws IOException
+  {
+    addPattern(new UrlPattern("", EnumSet.noneOf(WebButtonField.class)));
+  }
+
+  private void addPattern(UrlPattern pattern) throws IOException
   {
     FXMLLoader loader = new FXMLLoader(App.class.getResource("settings/EditWebButton.fxml"));
     AnchorPane ap = loader.load();
     EditWebButtonCtrlr ctrlr = loader.getController();
 
-    ctrlr.init(urlPattern, prefKey, this);
+    ctrlr.init(pattern, prefKey, this);
 
     GridPane.setRowIndex(ap, ctrlrList.size());
     addToParent(ap, gpMain);

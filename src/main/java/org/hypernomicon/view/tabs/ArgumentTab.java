@@ -38,7 +38,6 @@ import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +184,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
     verdictPopulator = new RecordByTypePopulator();
 
-    RecordTypePopulator rtp = new RecordTypePopulator(EnumSet.of(hdtPosition, hdtArgument));
+    RecordTypePopulator rtp = new RecordTypePopulator(hdtPosition, hdtArgument);
 
     htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -307,7 +306,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   @Override public boolean saveToRecord()
   {
-    if (!ctrlr.saveToRecord(curArgument)) return false;
+    if (ctrlr.saveToRecord(curArgument) == false) return false;
 
     boolean okToSave = true;
 

@@ -71,6 +71,7 @@ import org.hypernomicon.view.wrappers.MenuItemSchema;
 import org.hypernomicon.view.wrappers.ReadOnlyCell;
 
 import javafx.application.Platform;
+import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
@@ -331,16 +332,7 @@ public class FileManager extends HyperDlg
     {
       if ((newValue == null) || (newValue == oldValue)) return;
 
-      HDT_Folder folder;
-      try
-      {
-        folder = HyperPath.getFolderFromFilePath(newValue.getValue().getFilePath(), true);
-      }
-      catch (Exception e)
-      {
-        messageDialog("A file error occurred: " + e.getMessage(), mtError);
-        return;
-      }
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(newValue.getValue().getFilePath(), true);
 
       curFolder = folder;
       history.add(new HistoryItem(newValue.getValue(), null, null));
@@ -534,7 +526,7 @@ public class FileManager extends HyperDlg
     final FilePathSet srcSet = new FilePathSet(), destSet = new FilePathSet();
     srcPathToHilite = null;
 
-    task = new HyperTask("BuildFileList") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("BuildFileList") { @Override protected void call() throws HyperDataException
     {
       updateMessage("Building list of files...");
       updateProgress(-1, -1);
@@ -545,18 +537,15 @@ public class FileManager extends HyperDlg
           srcPathToHilite = rowInfo.row.getFilePath();
 
         if (rowInfo.row.isDirectory())
-          if (!rowInfo.row.getFilePath().addDirContentsToSet(srcSet))
-            throw new TerminateTaskException();
+          rowInfo.row.getFilePath().addDirContentsToSet(srcSet);
 
         srcSet.add(rowInfo.row.getFilePath());
       }
-
-      return true;
     }};
 
-    if (!HyperTask.performTaskWithProgressDialog(task)) return false;
+    if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
 
-    task = new HyperTask("PasteChecks") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("PasteChecks") { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
       updateMessage("Performing checks...");
       updateProgress(0, 1);
@@ -571,21 +560,21 @@ public class FileManager extends HyperDlg
         updateProgress(curTaskCount++, totalTaskCount);
 
         if (isCancelled())
-          throw new TerminateTaskException();
+          throw new CancelledTaskException();
 
         if (copying == false)
         {
           if (db.isProtectedFile(srcFilePath, true))
-            throw new TerminateTaskException("Unable to move path \"" + srcFilePath + "\".");
+            throw new HyperDataException("Unable to move path \"" + srcFilePath + "\".");
         }
 
         FilePath destFilePath = destRow.getFilePath().resolve(baseDir.relativize(srcFilePath));
 
         if (srcFilePath.equals(destFilePath))
-          throw new TerminateTaskException("Source and destination are the same.");
+          throw new HyperDataException("Source and destination are the same.");
 
         if ((copying == false) && srcFilePath.isDirectory() && srcFilePath.isSubpath(destFilePath))
-          throw new TerminateTaskException("The destination folder is a subfolder of the source folder.");
+          throw new HyperDataException("The destination folder is a subfolder of the source folder.");
 
         destSet.add(destFilePath);
         srcToDest.put(srcFilePath, destFilePath);
@@ -596,24 +585,22 @@ public class FileManager extends HyperDlg
         updateProgress(curTaskCount++, totalTaskCount);
 
         if (isCancelled())
-          throw new TerminateTaskException();
+          throw new CancelledTaskException();
 
         if (srcSet.contains(destFilePath))
-          throw new TerminateTaskException("Destination path \"" + destFilePath + "\" is also one of the source paths.");
+          throw new HyperDataException("Destination path \"" + destFilePath + "\" is also one of the source paths.");
 
         if (destFilePath.exists())
         {
           if (destFilePath.isDirectory())
-            throw new TerminateTaskException("A folder already exists at destination path \"" + destFilePath + "\".");
+            throw new HyperDataException("A folder already exists at destination path \"" + destFilePath + "\".");
           if (db.isProtectedFile(destFilePath, true))
-            throw new TerminateTaskException("Cannot overwrite destination path: \"" + destFilePath + "\".");
+            throw new HyperDataException("Cannot overwrite destination path: \"" + destFilePath + "\".");
         }
       }
-
-      return true;
     }};
 
-    if (!HyperTask.performTaskWithProgressDialog(task)) return false;
+    if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
 
     PasteAnswer paUnrelated = PasteAnswer.check,
                 paRelated   = PasteAnswer.check;
@@ -627,7 +614,7 @@ public class FileManager extends HyperDlg
       Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(entry.getValue());
       boolean isRelated = (set.isEmpty() == false) && set.stream().anyMatch(hyperPath -> hyperPath.getRecordType() != hdtNone);
 
-      if (!isRelated && entry.getValue().exists())
+      if ((isRelated == false) && entry.getValue().exists())
       {
         switch (paUnrelated)
         {
@@ -718,7 +705,7 @@ public class FileManager extends HyperDlg
 
     folderTreeWatcher.stop();
 
-    task = new HyperTask("ObtainLocks") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("ObtainLocks") { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
       updateMessage("Obtaining locks...");
       updateProgress(0, 1);
@@ -733,24 +720,22 @@ public class FileManager extends HyperDlg
           updateProgress(curTaskCount++, totalTaskCount);
 
           if (isCancelled())
-            throw new TerminateTaskException();
+            throw new CancelledTaskException();
 
           if ((copying == false) && (entry.getKey().canObtainLock() == false))
-            throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getKey() + '"');
+            throw new HyperDataException("Unable to obtain lock on path: \"" + entry.getKey() + '"');
 
           if (entry.getValue().canObtainLock() == false)
-            throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getValue() + '"');
+            throw new HyperDataException("Unable to obtain lock on path: \"" + entry.getValue() + '"');
         }
       }
       catch (IOException e)
       {
-        throw new TerminateTaskException("Unable to obtain lock: " + e.getMessage(), e);
+        throw new HyperDataException("Unable to obtain lock: " + e.getMessage(), e);
       }
-
-      return true;
     }};
 
-    return HyperTask.performTaskWithProgressDialog(task) && (srcToDest.isEmpty() == false);
+    return (task.runWithProgressDialog() == State.SUCCEEDED) && (srcToDest.isEmpty() == false);
   }
 
 //---------------------------------------------------------------------------
@@ -762,7 +747,7 @@ public class FileManager extends HyperDlg
 
     Map<FilePath, FilePath> srcToDest = new HashMap<>();
 
-    if (!doPasteChecks(destRow, srcToDest, copying, dragging))
+    if (doPasteChecks(destRow, srcToDest, copying, dragging) == false)
     {
       if (folderTreeWatcher.isRunning() == false)
         folderTreeWatcher.createNewWatcherAndStart();
@@ -771,7 +756,7 @@ public class FileManager extends HyperDlg
 
     folderTreeWatcher.stop();
 
-    task = new HyperTask("PasteOperation") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("PasteOperation") { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
       if (copying)
       {
@@ -800,7 +785,7 @@ public class FileManager extends HyperDlg
           updateProgress(curTaskCount++, totalTaskCount);
 
           if (isCancelled())
-            throw new TerminateTaskException();
+            throw new CancelledTaskException();
 
           FilePath srcFilePath  = entry.getKey(),
                    destFilePath = entry.getValue();
@@ -819,12 +804,12 @@ public class FileManager extends HyperDlg
             updateProgress(curTaskCount++, totalTaskCount);
 
             if (isCancelled())
-              throw new TerminateTaskException();
+              throw new CancelledTaskException();
 
             FilePath srcFilePath = entry.getKey();
 
-            if ((srcFilePath.isDirectory() == false) && !srcFilePath.copyTo(entry.getValue(), false))
-              throw new TerminateTaskException();
+            if (srcFilePath.isDirectory() == false)
+              srcFilePath.copyTo(entry.getValue(), false);
           }
         }
 
@@ -845,15 +830,13 @@ public class FileManager extends HyperDlg
 
             if (set.isEmpty())
             {
-              if (!srcFilePath.moveTo(destFilePath, false))
-                throw new TerminateTaskException();
+              srcFilePath.moveTo(destFilePath, false);
             }
             else
             {
               for (HyperPath hyperPath : set)
                 if (nullSwitch(hyperPath.getRecord(), hdtNone, HDT_Record::getType) != hdtFolder)
-                  if (!hyperPath.moveToFolder(folder.getID(), false, false, ""))
-                    throw new TerminateTaskException();
+                  hyperPath.moveToFolder(folder.getID(), false, false, "");
             }
           }
 
@@ -886,14 +869,13 @@ public class FileManager extends HyperDlg
       catch (IOException e)
       {
         suppressNeedRefresh = false;
-        throw new TerminateTaskException("An error occurred while trying to " + (copying ? "copy" : "move") + " the item(s): " + e.getMessage(), e);
+        throw new HyperDataException("An error occurred while trying to " + (copying ? "copy" : "move") + " the item(s): " + e.getMessage(), e);
       }
 
       suppressNeedRefresh = false;
-      return true;
     }};
 
-    boolean success = HyperTask.performTaskWithProgressDialog(task);
+    boolean success = task.runWithProgressDialog() == State.SUCCEEDED;
 
     suppressNeedRefresh = false;
 
@@ -1221,7 +1203,7 @@ public class FileManager extends HyperDlg
       else
         success = HyperPath.renameFile(fileRecord.filePath(), dlg.getNewName());
     }
-    catch (IOException e)
+    catch (IOException | HDB_InternalError e)
     {
       messageDialog("Unable to rename the " + noun.toLowerCase() + ": " + e.getMessage(), mtError);
       return;

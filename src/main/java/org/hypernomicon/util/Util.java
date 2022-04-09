@@ -707,7 +707,7 @@ public final class Util
     Class<App> theClass = App.class;
     String classPath = theClass.getResource(theClass.getSimpleName() + ".class").toString();
 
-    if (!classPath.startsWith("jar")) return "";   // Class not from JAR
+    if (classPath.startsWith("jar") == false) return "";   // Class not from JAR
 
     String manifestPath = classPath.substring(0, classPath.lastIndexOf('!') + 1) + "/META-INF/MANIFEST.MF";
 

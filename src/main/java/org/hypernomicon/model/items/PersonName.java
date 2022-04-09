@@ -180,13 +180,12 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   String getBibName()
   {
     List<String> initialList = new ArrayList<>();
-    String nameStr, firstName = removeAllParentheticals(getFirst());
 
-    SplitString splitStr = new SplitString(firstName, ' ');
+    SplitString splitStr = new SplitString(removeAllParentheticals(getFirst()), ' ');
 
     while (splitStr.hasNext())
     {
-      nameStr = splitStr.next();
+      String nameStr = splitStr.next();
       if (nameStr.isEmpty()) continue;
 
       if (nameStr.endsWith("."))

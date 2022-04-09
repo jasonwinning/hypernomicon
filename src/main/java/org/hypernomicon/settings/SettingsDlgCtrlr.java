@@ -449,7 +449,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       return;
     }
 
-    SyncBibDlgCtrlr.build().sync();
+    SyncBibDlgCtrlr.sync();
 
     setUnlinkMessage();
     tfVerificationCode.clear();
@@ -490,7 +490,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       return;
     }
 
-    SyncBibDlgCtrlr.build().sync();
+    SyncBibDlgCtrlr.sync();
 
     setUnlinkMessage();
     tfVerificationCode.clear();

@@ -89,7 +89,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
       noneVisible = false;
 
       MenuItem newItem = new MenuItem("Expand/Collapse");
-      newItem.setOnAction(event -> treeItem.setExpanded(!treeItem.isExpanded()));
+      newItem.setOnAction(event -> treeItem.setExpanded(treeItem.isExpanded() == false));
       rowMenu.getItems().add(newItem);
 
       newItem = new MenuItem("Expand All");
@@ -174,7 +174,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
                        work ->
                        {
                          PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+                         previewWindow.setPreview(src, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
                          ui.openPreviewWindow(src);
                        });
 

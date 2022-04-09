@@ -380,9 +380,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
     modStart();
 
-    int cnt = relSet.getObjectCount(subj);
-
-    for (int ndx = 0; ndx < cnt; ndx++)
+    for (int cnt = relSet.getObjectCount(subj), ndx = 0; ndx < cnt; ndx++)
     {
       if (c.contains(relSet.getObject(subj, ndx)) == false)
       {

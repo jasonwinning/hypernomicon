@@ -20,6 +20,7 @@ package org.hypernomicon.previewWindow;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -215,7 +216,7 @@ public class PDFJSWrapper
 
       jxBrowserInitialized  = true;
     }
-    catch (Exception e)
+    catch (IOException e)
     {
       String msg = safeStr(e.getMessage());
       messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError, true);
@@ -451,7 +452,7 @@ public class PDFJSWrapper
     {
       URLResponse response = new URLResponse();
       //response.getHeaders().setHeader("Access-Control-Allow-Origin", "*");
-      URL path = null;
+      URL path;
 
       try
       {
@@ -462,7 +463,7 @@ public class PDFJSWrapper
 
         path = new URL(pathStr);
       }
-      catch (Exception e) { return null; }
+      catch (MalformedURLException e) { return null; }
 
       try (InputStream inputStream = path.openStream(); DataInputStream stream = new DataInputStream(inputStream))
       {
@@ -473,7 +474,7 @@ public class PDFJSWrapper
         response.getHeaders().setHeader("Content-Type", mimeType);
         return response;
       }
-      catch (Exception e) { noOp(); }
+      catch (IOException e) { noOp(); }
 
       return null;
     });
@@ -603,7 +604,7 @@ public class PDFJSWrapper
 
   public void close()
   {
-    if (!opened)
+    if (opened == false)
     {
       if (doneHndlr != null) doneHndlr.handle(PDFJSCommand.pjsClose, false, "Unable to close because the viewer is already closed.");
       return;
@@ -645,13 +646,13 @@ public class PDFJSWrapper
       opened = false;
       boolean readyToOpen = false;
 
-      for (int ndx = 0; (ndx < 20) && !readyToOpen; ndx++)
+      for (int ndx = 0; (ndx < 20) && (readyToOpen == false); ndx++)
       {
         readyToOpen = browser.executeJavaScriptAndReturnValue("'openPdfFile' in window").getBooleanValue();
-        if (!readyToOpen) sleepForMillis(100);
+        if (readyToOpen == false) sleepForMillis(100);
       }
 
-      if (!readyToOpen)
+      if (readyToOpen == false)
       {
         messageDialog("An error occurred while trying to show PDF file preview.", mtError);
         return;
@@ -674,7 +675,7 @@ public class PDFJSWrapper
 
   void goToPage(int pageNum)
   {
-    if (!ready) return;
+    if (ready == false) return;
 
     browser.executeJavaScript("PDFViewerApplication.pdfViewer.currentPageNumber = " + pageNum + ';');
   }

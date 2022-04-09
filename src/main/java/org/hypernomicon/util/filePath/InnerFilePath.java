@@ -20,6 +20,7 @@ package org.hypernomicon.util.filePath;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,10 +92,10 @@ class InnerFilePath
     InnerFilePath otherFilePath = (InnerFilePath)other;
 
     try { return Files.isSameFile(getPath(), otherFilePath.getPath()); }
-    catch (Exception e) { noOp(); }
+    catch (IOException e) { noOp(); }
 
     try { return getFile().getCanonicalFile().equals(otherFilePath.getFile().getCanonicalFile()); }
-    catch (Exception e) { noOp(); }
+    catch (IOException e) { noOp(); }
 
     return getPath().normalize().equals(otherFilePath.getPath().normalize());
   }

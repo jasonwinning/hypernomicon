@@ -68,11 +68,12 @@ public class OmniFinder
   private String query = "";
   private Iterator<HDT_Record> source = null;
   private FinderThread finderThread = null;
-  private boolean stopRequested = false, showingMore = false;
+  private volatile boolean stopRequested = false;
+  private boolean showingMore = false;
   public Runnable doneHndlr = null;
 
   public boolean noResults()  { return collEmpty(records); }
-  private boolean isRunning() { return nullSwitch(finderThread, false, FinderThread::isAlive); }
+  private boolean isRunning() { return HyperThread.isRunning(finderThread); }
 
   protected enum TierEnum
   {
@@ -388,15 +389,12 @@ public class OmniFinder
 
     private boolean addRecord(HDT_Record record)
     {
-      buffer.add(record);
+      buffer .add(record);
       records.add(record);
 
-      if (showingMore == false)
-        if ((buffer.size() + rowNdx) >= ROWS_TO_SHOW) // rowNdx should be the number of rows currently in the
-          return true;                                // table if the buffer has already been purged at least once
-
-      return false;
-    }
+      return ((showingMore == false) &&
+              (buffer.size() + rowNdx) >= ROWS_TO_SHOW); // rowNdx should be the number of rows currently in the
+    }                                                    // table if the buffer has already been purged at least once
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -563,7 +561,7 @@ public class OmniFinder
         if ((query.equals(lastQuery) == false) || (showingMore != lastShowingMore))
           startOver();
 
-        if (!done)
+        if (done == false)
           record = nextRecord();
 
         if ((System.currentTimeMillis() - startTime) > nextInterval)
@@ -587,7 +585,7 @@ public class OmniFinder
           nextInterval = 100L;
         }
 
-        if ((!done) && isMatch(record))
+        if ((done == false) && isMatch(record))
           done = addRecord(record);
       }
     }
@@ -640,9 +638,12 @@ public class OmniFinder
     if (finderThread != null)
       stop();
 
-    this.query = "";
-    this.source = source;
-    this.showingMore = showingMore;
+    synchronized (this)
+    {
+      this.query = "";
+      this.source = source;
+      this.showingMore = showingMore;
+    }
 
     (finderThread = new FinderThread()).start();
   }
@@ -657,9 +658,12 @@ public class OmniFinder
     if ((finderThread != null) && newThread)
       stop();
 
-    this.query = query;
-    this.source = null;
-    this.showingMore = showingMore;
+    synchronized (this)
+    {
+      this.query = query;
+      this.source = null;
+      this.showingMore = showingMore;
+    }
 
     if (newThread)
       (finderThread = new FinderThread()).start();
