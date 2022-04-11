@@ -17,17 +17,15 @@
 
 package org.hypernomicon.model.items;
 
-import static org.hypernomicon.model.HyperDB.*;
-
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
-
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjList;
@@ -63,7 +61,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflinePointerSingle val, Tag tag) throws RelationCycleException
+  @Override public void setFromOfflineValue(HDI_OfflinePointerSingle val, Tag tag) throws RelationCycleException, HDB_InternalError
   {
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
     RecordType objType = db.getObjType(relType);
@@ -75,8 +73,14 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
     if (objList.contains(obj)) return;
 
     objList.clear();
-    objList.add(obj);
-    objList.throwLastException();
+
+    if ((val.ord > -1) && (db.isLoaded() == false)) // This should only be done when records are first being brought online during initial loading
+      objList.initObjWithSubjOrd(obj, val.ord);
+    else
+    {
+      objList.add(obj);
+      objList.throwLastException();
+    }
 
     if (val.tagToNestedItem != null)
     {
@@ -116,10 +120,13 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
     if (objList.isEmpty())
     {
       val.objID = -1;
+      val.ord = -1;
       return;
     }
 
-    val.objID = objList.get(0).getID();
+    HDT_Record obj = objList.get(0);
+    val.objID = obj.getID();
+    val.ord = db.getSubjectList(relType, obj).getOrd(record);
 
     if (db.relationHasNestedValues(relType) == false) return;
 

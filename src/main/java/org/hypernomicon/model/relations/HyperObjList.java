@@ -25,9 +25,11 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
 
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
 
 public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements List<HDT_ObjType>
@@ -150,6 +152,17 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
     modEnd();
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void initObjWithSubjOrd(HDT_ObjType obj, int subjOrd) throws RelationCycleException, HDB_InternalError
+  {
+    if (db.isLoaded())
+      throw new HDB_InternalError(71634);
+
+    relSet.setObject(subj, obj, -1, subjOrd, true);
   }
 
 //---------------------------------------------------------------------------

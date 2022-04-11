@@ -179,7 +179,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
       switch (schema.getCategory())
       {
-        case hdcMainTextAndHub : item = new HDI_OnlineMainTextAndHub(schema, (HDT_RecordWithMainText ) this); break;
+        case hdcMainTextAndHub : item = new HDI_OnlineMainTextAndHub(schema, (HDT_RecordWithMainText  ) this); break;
         case hdcPath           : item = new HDI_OnlinePath          (schema, (HDT_RecordWithPath      ) this); break;
         case hdcBibEntryKey    : item = new HDI_OnlineBibEntryKey   (schema, (HDT_Work                ) this); break;
         case hdcAuthors        : item = new HDI_OnlineAuthors       (schema, (HDT_RecordWithAuthors<?>) this); break;
@@ -272,7 +272,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
-  public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
+  public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
   {
     online = true;
 

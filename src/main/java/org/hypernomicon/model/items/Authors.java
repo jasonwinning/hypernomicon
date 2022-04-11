@@ -62,7 +62,7 @@ public abstract class Authors implements Iterable<Author>
   abstract Author get(int ndx);
   abstract void clearNoMod();
   abstract void clear();
-  abstract void addNoMod(HDT_Person person, Map<Tag, HDI_OfflineBase> tagToNestedItem) throws RelationCycleException;
+  abstract void addNoMod(HDT_Person person, Map<Tag, HDI_OfflineBase> tagToNestedItem) throws RelationCycleException, HDB_InternalError;
 
   public boolean isEmpty()                     { return size() == 0; }
   public Collection<Author> asCollection()     { return Sets.newLinkedHashSet(this); }

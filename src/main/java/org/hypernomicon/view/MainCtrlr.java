@@ -1861,7 +1861,7 @@ public final class MainCtrlr
 
       record.restoreTo(backupState, true);
     }
-    catch (RelationCycleException | SearchKeyException | RestoreException e) { noOp(); }
+    catch (RelationCycleException | SearchKeyException | HDB_InternalError | RestoreException e) { noOp(); }
 
     return false;
   }

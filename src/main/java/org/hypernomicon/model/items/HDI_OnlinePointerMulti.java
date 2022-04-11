@@ -70,7 +70,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflinePointerMulti val, Tag tag) throws RelationCycleException
+  @Override public void setFromOfflineValue(HDI_OfflinePointerMulti val, Tag tag) throws RelationCycleException, HDB_InternalError
   {
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
     List<HDT_Record> newList = new ArrayList<>();
@@ -78,6 +78,8 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
     RecordType objType = db.getObjType(relType);
 
     val.objIDs.forEach(objID -> nullSwitch((HDT_Record)db.records(objType).getByID(objID), newList::add));
+
+    boolean wasEmpty = objList.isEmpty();
 
     for (HDT_Record obj : newList)
     {
@@ -92,6 +94,8 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
         for (Entry<Tag, HDI_OfflineBase> entry : tagToNestedItem.entrySet())
           db.setNestedItemFromOfflineValue(record, obj, entry.getKey(), entry.getValue());
     }
+
+    if (wasEmpty) return;
 
     for (HDT_Record obj : objList)
       if (newList.contains(obj) == false)

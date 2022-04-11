@@ -84,7 +84,7 @@ public class WorkAuthors extends Authors
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  @Override void addNoMod(HDT_Person person, Map<Tag, HDI_OfflineBase> tagToNestedItem) throws RelationCycleException
+  @Override void addNoMod(HDT_Person person, Map<Tag, HDI_OfflineBase> tagToNestedItem) throws RelationCycleException, HDB_InternalError
   {
     objListNoMod.add(person);
     objListNoMod.throwLastException();

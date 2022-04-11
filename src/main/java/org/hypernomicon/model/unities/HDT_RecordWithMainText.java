@@ -209,7 +209,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
+  @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
   {
     int backupHubID = nullSwitch((HDI_OfflineMainTextAndHub)backupState.items.get(tagHub), -1, HDI_OfflineMainTextAndHub::getHubID);
 

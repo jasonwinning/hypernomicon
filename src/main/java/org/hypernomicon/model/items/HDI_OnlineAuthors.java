@@ -71,7 +71,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflineAuthors val, Tag tag) throws RelationCycleException
+  @Override public void setFromOfflineValue(HDI_OfflineAuthors val, Tag tag) throws RelationCycleException, HDB_InternalError
   {
     Authors authors = getAuthors();
 

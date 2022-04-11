@@ -22,9 +22,7 @@ import java.util.List;
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.Exceptions.RestoreException;
-import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.unities.MainText;
@@ -91,7 +89,7 @@ public final class SimpleRecordTypes
 
     @Override public String listName() { return name(); }
 
-    @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
+    @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
     {
       setNameInternal(backupState.simpleName, false);
 

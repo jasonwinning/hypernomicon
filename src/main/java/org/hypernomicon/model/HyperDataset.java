@@ -150,7 +150,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   {
     needIDs.clear();
     core.clear();
-    online = leaveOnline;
+    online = online && leaveOnline;
   }
 
 //---------------------------------------------------------------------------

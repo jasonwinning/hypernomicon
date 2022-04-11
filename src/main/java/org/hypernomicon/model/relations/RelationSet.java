@@ -159,7 +159,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     switch (relType)
     {
       case rtParentWorkOfWork         : return new RelationSet<>(relType, HDT_Work         .class, HDT_Work           .class);
-
       case rtParentGroupOfGroup       : return new RelationSet<>(relType, HDT_PersonGroup  .class, HDT_PersonGroup    .class, true );
       case rtParentLabelOfLabel       : return new RelationSet<>(relType, HDT_WorkLabel    .class, HDT_WorkLabel      .class, true );
       case rtCounterOfArgument        : return new RelationSet<>(relType, HDT_Argument     .class, HDT_Argument       .class,
@@ -195,7 +194,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       case rtTypeOfInst               : return new RelationSet<>(relType, HDT_Institution  .class, HDT_InstitutionType.class);
       case rtParentInstOfInst         : return new RelationSet<>(relType, HDT_Institution  .class, HDT_Institution    .class);
-
       case rtCountryOfRegion          : return new RelationSet<>(relType, HDT_Region       .class, HDT_Country        .class);
       case rtRegionOfInst             : return new RelationSet<>(relType, HDT_Institution  .class, HDT_Region         .class);
       case rtCountryOfInst            : return new RelationSet<>(relType, HDT_Institution  .class, HDT_Country        .class);
@@ -333,7 +331,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public <HDI_Offline extends HDI_OfflineBase> void setNestedItemFromOfflineValue(HDT_Subj subj, HDT_Obj obj, Tag tag, HDI_Offline value) throws RelationCycleException
+  public <HDI_Offline extends HDI_OfflineBase> void setNestedItemFromOfflineValue(HDT_Subj subj, HDT_Obj obj, Tag tag, HDI_Offline value) throws RelationCycleException, HDB_InternalError
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49221"); return; }
 
@@ -586,8 +584,13 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
   void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, boolean affirm) throws RelationCycleException
+  {
+    setObject(subj, obj, ndx, -1, affirm);
+  }
+
+  @SuppressWarnings("unchecked")
+  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, int subjOrd, boolean affirm) throws RelationCycleException
   {
     if ((subj == null) || (obj == null))
     {
@@ -610,7 +613,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       if (ndx == -1) objList.add(obj);
       else           objList.add(ndx, obj);
 
-      objToSubjList.put(obj, subj);
+      if (subjOrd > -1)
+        initOrderedSubject(obj, subj, subjOrd);
+      else
+        objToSubjList.put(obj, subj);
 
       orphans.remove(subj);
 
@@ -628,6 +634,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       if (objList.contains(obj) == false)
       {
         objToSubjList.remove(obj, subj);
+        subjOrdMap.remove(subj); // This map is only used for ordered pointer-single items so the subject will no longer have any objects
 
         if (HDT_Record.isEmpty(subj) == false) // skip if record is in the process of being deleted
         {
@@ -646,6 +653,27 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     if ((type == rtWorkFileOfWork) && (getSubjectCount(obj) == 0))
       if (obj.isExpired() == false) // The obj record may have just been deleted, and the pointers are still being resolved
         db.deleteRecord(obj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private final Map<HDT_Subj, Integer> subjOrdMap = new HashMap<>();
+
+  // This should only get called while database is first loading; that is the only time subject order values are valid.
+
+  private void initOrderedSubject(HDT_Obj obj, HDT_Subj subj, int subjOrd)
+  {
+    subjOrdMap.put(subj, subjOrd);
+    addToSortedList(objToSubjList.get(obj), subj, Comparator.comparing(subjOrdMap::get));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  int getSubjectOrd(HDT_Obj obj, HDT_Subj subj)
+  {
+    return subjOrdMap.containsKey(subj) ? (getSubjectNdx(obj, subj) + 1) : -1;
   }
 
 //---------------------------------------------------------------------------
@@ -729,6 +757,12 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     while (orphanIt.hasNext())
     {
       if (HDT_Record.isEmptyThrowsException(orphanIt.next())) orphanIt.remove();
+    }
+
+    Iterator<Entry<HDT_Subj, Integer>> subjOrdMapIt = subjOrdMap.entrySet().iterator();
+    while (subjOrdMapIt.hasNext())
+    {
+      if (HDT_Record.isEmptyThrowsException(subjOrdMapIt.next().getKey())) subjOrdMapIt.remove();
     }
 
     if (hasNestedItems == false) return;
@@ -885,25 +919,44 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void reorderObjects (HDT_Subj subj, List<HDT_Obj>  newObjList)  { reorderList(subj, newObjList,  subjToObjList); }
-  void reorderSubjects(HDT_Obj   obj, List<HDT_Subj> newSubjList) { reorderList(obj,  newSubjList, objToSubjList); }
+  void reorderObjects (HDT_Subj subj, List<HDT_Obj>  newObjList) { reorderList(subj, newObjList, subjToObjList); }
 
-  private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> void reorderList(HDT_Key key, List<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
+  void reorderSubjects(HDT_Obj obj, List<HDT_Subj> newSubjList)
+  {
+    if (reorderList(obj, newSubjList, objToSubjList) == false)
+      return;
+
+    subjOrdMap.clear();
+    for (int ndx = 0; ndx < newSubjList.size(); ndx++)
+      subjOrdMap.put(newSubjList.get(ndx), ndx + 1);
+  }
+
+  // Returns true if changed
+
+  private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> boolean reorderList(HDT_Key key, List<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
   {
     if (key == null) throw new NullPointerException();
 
-    if (map.containsKey(key) == false) return;
+    if (map.containsKey(key) == false) return false;
 
     List<HDT_Value> existingValueList = map.get(key);
 
-    if (existingValueList.size() != newValueList.size()) return;
+    if (existingValueList.size() != newValueList.size()) return false;
 
     if ((existingValueList.containsAll(newValueList     ) == false) ||
         (newValueList     .containsAll(existingValueList) == false))
-      return;
+      return false;
+
+    boolean changed = false;
 
     for (int ndx = 0; ndx < existingValueList.size(); ndx++)
-      existingValueList.set(ndx, newValueList.get(ndx));
+    {
+      HDT_Value newValue = newValueList.get(ndx);
+      if (newValue != existingValueList.set(ndx, newValue))
+        changed = true;
+    }
+
+    return changed;
   }
 
 //---------------------------------------------------------------------------

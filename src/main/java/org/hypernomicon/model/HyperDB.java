@@ -250,7 +250,7 @@ public final class HyperDB
   private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> relSet(RelationType relType)
   { return (RelationSet<HDT_SubjType, HDT_ObjType>) relationSets.get(relType); }
 
-  public void setNestedItemFromOfflineValue(HDT_Record subj, HDT_Record obj, Tag tag, HDI_OfflineBase value) throws RelationCycleException
+  public void setNestedItemFromOfflineValue(HDT_Record subj, HDT_Record obj, Tag tag, HDI_OfflineBase value) throws RelationCycleException, HDB_InternalError
   { relSet(subj, obj).setNestedItemFromOfflineValue(subj, obj, tag, value); }
 
   public void saveNestedValuesToOfflineMap(HDT_Record subj, HDT_Record obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, RecordState recordState)
@@ -689,7 +689,7 @@ public final class HyperDB
       }
       catch (IOException e) { throw new HyperDataException(e); }
 
-      for (FilePath filePath : xmlFileList) loadFromXML(creatingNew, filePath, needToAddThesisWorkType);
+      for (FilePath filePath : xmlFileList) loadFromXMLFile(creatingNew, filePath, needToAddThesisWorkType);
     }};
 
     if (task.runWithProgressDialog() != State.SUCCEEDED)
@@ -1305,7 +1305,7 @@ public final class HyperDB
   private final class HDX_Element
   {
     private final Tag tag;
-    private int objID;
+    private int objID, ord;
     private RecordType objType;
 
   //---------------------------------------------------------------------------
@@ -1319,6 +1319,7 @@ public final class HyperDB
 
       objType = tagToObjType.getOrDefault(tag, hdtNone);
       objID = -1;
+      ord = -1;
 
       startElement.getAttributes().forEachRemaining(attribute ->
       {
@@ -1333,6 +1334,10 @@ public final class HyperDB
             if (objType == hdtAuxiliary) // this represents that the object type is not given away by the
                                          // tag name, and should be obtained from the "type" attribute
               objType = typeToTagStr.inverse().getOrDefault(attribute.getValue(), hdtNone);
+            break;
+
+          case "ord" :
+            ord = parseInt(attribute.getValue(), -1);
             break;
 
           default:
@@ -1399,7 +1404,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadFromXML(boolean creatingNew, FilePath filePath, MutableBoolean needToAddThesisWorkType) throws HyperDataException, CancelledTaskException
+  private void loadFromXMLFile(boolean creatingNew, FilePath filePath, MutableBoolean needToAddThesisWorkType) throws HyperDataException, CancelledTaskException
   {
     MessageDigest md = newMessageDigest();
 
@@ -1425,7 +1430,7 @@ public final class HyperDB
         XMLEvent event = null;
         String nodeText = "";
         Tag tag = tagNone;
-        int objID = -1;
+        int objID = -1, ord = -1;
 
         while (notDoneReadingRecord)
         {
@@ -1448,6 +1453,7 @@ public final class HyperDB
               else
               {
                 objID = hdxElement.objID;
+                ord = hdxElement.ord;
                 objType = hdxElement.objType;
                 tag = hdxElement.tag;
                 nodeText = "";
@@ -1478,7 +1484,7 @@ public final class HyperDB
                       if ((tag == tagInvestigation) && (xmlRecord.type == hdtWork))
                         workIDtoInvIDs.put(xmlRecord.id, objID);
                       else
-                        xmlRecord.loadItemFromXML(tag, nodeText, objType, objID, nestedItems);
+                        xmlRecord.loadItemFromXML(tag, nodeText, objType, objID, ord, nestedItems);
                   }
                 }
                 catch (DateTimeParseException e)
@@ -1490,6 +1496,7 @@ public final class HyperDB
                 nodeText = "";
                 objType = hdtNone;
                 objID = -1;
+                ord = -1;
               }
 
               break;
@@ -1501,7 +1508,7 @@ public final class HyperDB
         }
 
         if (noInnerTags)
-          xmlRecord.loadItemFromXML(tagNone, nodeText, hdtNone, -1, null);
+          xmlRecord.loadItemFromXML(tagNone, nodeText, hdtNone, -1, -1, null);
 
         if ((xmlRecord.type == hdtWorkType) && versionNumber.isLessThanOrEqualTo(new VersionNumber(1, 3)))
           needToAddThesisWorkType.setTrue();

@@ -220,7 +220,7 @@ public class MainText
         else
           displayItems.add(new DisplayItem(srcItem.type));
 
-        setInternal(mainText.htmlText, extractTextFromHTML(mainText.htmlText).trim());
+        setInternal(mainText.htmlText);
       });
     }
   }
@@ -267,7 +267,7 @@ public class MainText
       }
     });
 
-    setInternal(newHtml, extractTextFromHTML(newHtml).trim());
+    setInternal(newHtml);
   }
 
 //---------------------------------------------------------------------------
@@ -286,7 +286,7 @@ public class MainText
       if (ultraTrim(convertToSingleLine(oldPlainText)).isEmpty())
         modify = false;
 
-    setInternal(newHtml, extractTextFromHTML(newHtml).trim());
+    setInternal(newHtml);
 
     if (modify)
       recordWMT.modifyMainText();
@@ -295,9 +295,9 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setInternal(String newHtmlText, String newPlainText)
+  void setInternal(String newHtmlText)
   {
-    plainText = safeStr(newPlainText);
+    plainText = extractTextFromHTML(newHtmlText);
 
     if (ultraTrim(convertToSingleLine(plainText)).isEmpty() && (newHtmlText.contains("&lt;" + EMBEDDED_FILE_TAG + ' ') == false))
     {

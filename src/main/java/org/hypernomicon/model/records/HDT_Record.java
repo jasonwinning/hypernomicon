@@ -46,7 +46,7 @@ public interface HDT_Record
   void bringStoredCopyOnline(boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError;
   boolean hasStoredState();
   RecordState getRecordStateBackup();
-  void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException;
+  void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError;
   void saveToStoredState() throws HDB_InternalError;
   void writeStoredStateToXML(StringBuilder xml);
 

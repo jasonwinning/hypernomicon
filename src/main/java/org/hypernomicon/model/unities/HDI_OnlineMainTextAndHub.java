@@ -33,7 +33,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub.DisplayItem;
-import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.model.items.HDI_OnlineBase;
 
 //---------------------------------------------------------------------------
@@ -153,9 +152,9 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
       default :
 
         if (val.htmlText.isEmpty())
-          mainText.setInternal("", "");
+          mainText.setInternal("");
         else
-          mainText.setInternal(val.htmlText, MainTextUtil.extractTextFromHTML(val.htmlText).trim());
+          mainText.setInternal(val.htmlText);
     }
   }
 

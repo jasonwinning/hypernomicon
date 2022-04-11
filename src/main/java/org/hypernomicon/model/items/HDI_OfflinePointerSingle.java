@@ -18,6 +18,7 @@
 package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
@@ -30,7 +31,7 @@ import static org.hypernomicon.model.HyperDB.*;
 
 public class HDI_OfflinePointerSingle extends HDI_OfflineBase
 {
-  int objID = -1;
+  int objID = -1, ord = -1;
   private final RecordType objType;
   Map<Tag, HDI_OfflineBase> tagToNestedItem;
 
@@ -51,7 +52,13 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
 
   @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
+    setFromXml(objID, -1, nestedItems);
+  }
+
+  public void setFromXml(int objID, int ord, Map<Tag, HDI_OfflineBase> nestedItems)
+  {
     this.objID = objID;
+    this.ord = ord;
 
     if (collEmpty(nestedItems) == false)
       tagToNestedItem = nestedItems;
@@ -67,7 +74,7 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
     if (tagToNestedItem != null)
       writePointerTagWithNestedPointers(xml, tag, objID, db.records(objType).getByID(objID).getXMLObjectName(), tagToNestedItem);
     else
-      writePointerTag(xml, tag, objID, hdtNone, db.records(objType).getByID(objID).getXMLObjectName());
+      writePointerTag(xml, tag, objID, hdtNone, ord, db.records(objType).getByID(objID).getXMLObjectName());
   }
 
 //---------------------------------------------------------------------------

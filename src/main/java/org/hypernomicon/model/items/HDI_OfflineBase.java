@@ -89,19 +89,30 @@ public abstract class HDI_OfflineBase extends HDI_Base
 
   protected static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, String value)
   {
-    writePointerTag(xml, tag, objID, objType, value, false);
+    writePointerTag(xml, tag, objID, objType, -1, value, false);
   }
 
-  static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, String value, boolean noIDOk)
+  protected static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, int ord, String value)
+  {
+    writePointerTag(xml, tag, objID, objType, ord, value, false);
+  }
+
+  protected static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, String value, boolean noIDOk)
+  {
+    writePointerTag(xml, tag, objID, objType, -1, value, noIDOk);
+  }
+
+  private static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, int ord, String value, boolean noIDOk)
   {
     if ((objID < 1) && (noIDOk == false)) return;
 
-    String idStr = "", typeStr = "";
+    String idStr = "", typeStr = "", ordStr = "";
 
     if (objID > 0)          idStr   = " id="   + QUOTE + objID                     + QUOTE;
     if (objType != hdtNone) typeStr = " type=" + QUOTE + db.getTypeTagStr(objType) + QUOTE;
+    if (ord > -1)           ordStr  = " ord="  + QUOTE + ord                       + QUOTE;
 
-    xml.append("  <").append(db.getTagStr(tag)).append(typeStr).append(idStr).append('>')
+    xml.append("  <").append(db.getTagStr(tag)).append(typeStr).append(idStr).append(ordStr).append('>')
        .append(xmlContentEscaper.escape(value))
        .append("</").append(db.getTagStr(tag)).append('>')
        .append(System.lineSeparator());

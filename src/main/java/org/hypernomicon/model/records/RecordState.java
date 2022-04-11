@@ -19,6 +19,7 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
@@ -30,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub;
@@ -130,7 +132,7 @@ public class RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadItemFromXML(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems) throws InvalidItemException
+  public void loadItemFromXML(Tag tag, String nodeText, RecordType objType, int objID, int ord, Map<Tag, HDI_OfflineBase> nestedItems) throws HyperDataException
   {
     if ((type == hdtHub) && (tag == tagName))
       return;
@@ -146,7 +148,15 @@ public class RecordState
     if (item == null)
       throw new InvalidItemException(id, type, db.getTagStr(tag));
 
-    item.setFromXml(tag, nodeText, objType, objID, nestedItems);
+    if (ord != -1)
+    {
+      if (item.getCategory() != hdcPointerSingle)
+        throw new HyperDataException("Invalid attribute: ord. Record type: " + db.getTypeTagStr(type) + " ID : " + id);
+
+      ((HDI_OfflinePointerSingle)item).setFromXml(objID, ord, nestedItems);
+    }
+    else
+      item.setFromXml(tag, nodeText, objType, objID, nestedItems);
   }
 
 //---------------------------------------------------------------------------
