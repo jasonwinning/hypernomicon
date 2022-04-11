@@ -91,12 +91,15 @@ public class MainText
 
   final List<DisplayItem> displayItems;
   final List<KeyWork> keyWorks = Collections.synchronizedList(new ArrayList<>());
-  private String plainText = "", htmlText = "";
+
   final private HDT_RecordWithMainText recordWMT;
 
-  public String getHtml()                         { return htmlText; }
+  private HtmlAndPlainText htmlAndPlainText = new HtmlAndPlainText("");
+
+  public String getHtml()                         { return htmlAndPlainText.getHtml(); }
+  public String getPlain()                        { return htmlAndPlainText.getPlainText(); }
+  void setInternal(String newHtml)                { htmlAndPlainText = new HtmlAndPlainText(newHtml); }
   public HDT_RecordWithMainText getRecord()       { return recordWMT; }
-  public String getPlain()                        { return plainText; }
   private boolean hasKeyWork(HDT_Record rec)      { return getKeyWork(rec) != null; }
   public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
   public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
@@ -129,7 +132,7 @@ public class MainText
   {
     String keyWorksStr = getRecord().getType() == hdtInvestigation ? "" : getKeyWorksString();
 
-    return ultraTrim(plainText + (keyWorksStr.isEmpty() ? "" : " Key works: " + keyWorksStr));
+    return ultraTrim(htmlAndPlainText.getPlainText() + (keyWorksStr.isEmpty() ? "" : " Key works: " + keyWorksStr));
   }
 
 //---------------------------------------------------------------------------
@@ -220,7 +223,7 @@ public class MainText
         else
           displayItems.add(new DisplayItem(srcItem.type));
 
-        setInternal(mainText.htmlText);
+        setInternal(mainText.getHtml());
       });
     }
   }
@@ -276,7 +279,7 @@ public class MainText
   public void setHtml(String newHtml)
   {
     boolean modify = true;
-    String oldPlainText = extractTextFromHTML(htmlText, true).trim(),
+    String oldPlainText = extractTextFromHTML(htmlAndPlainText.getHtml(), true).trim(),
            newPlainText = extractTextFromHTML(newHtml, true).trim();
 
     if (oldPlainText.replaceAll("\\h+", "").equalsIgnoreCase(newPlainText.replaceAll("\\h+", "")))  // Remove all horizontal whitespaces and then compare
@@ -290,22 +293,6 @@ public class MainText
 
     if (modify)
       recordWMT.modifyMainText();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void setInternal(String newHtmlText)
-  {
-    plainText = extractTextFromHTML(newHtmlText);
-
-    if (ultraTrim(convertToSingleLine(plainText)).isEmpty() && (newHtmlText.contains("&lt;" + EMBEDDED_FILE_TAG + ' ') == false))
-    {
-      htmlText = "";
-      plainText = "";
-    }
-    else
-      htmlText = safeStr(newHtmlText);
   }
 
 //---------------------------------------------------------------------------

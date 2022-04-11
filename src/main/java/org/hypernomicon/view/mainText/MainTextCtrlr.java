@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.sun.javafx.webkit.Accessor;
@@ -662,7 +661,7 @@ public class MainTextCtrlr
   {
     keyWorksArg.clear();
 
-    Document subDoc = Jsoup.parse(taKeyWorks.getText());
+    Document subDoc = jsoupParse(taKeyWorks.getText());
 
     subDoc.getElementsByTag("a").forEach(aElement ->
     {
@@ -679,7 +678,7 @@ public class MainTextCtrlr
     });
 
     Set<HDT_RecordWithPath> keyWorkRecords = new HashSet<>();
-    String kwText = extractTextFromHTML(subDoc.html());
+    String kwText = subDoc.text();
 
     KeywordLinkList.generate(kwText).forEach(link ->
     {

@@ -283,7 +283,7 @@ public final class MainTextUtil
 
   public static String makeLinksExternal(String s)
   {
-    return makeDocLinksExternal(Jsoup.parse(s)).html();
+    return makeDocLinksExternal(jsoupParse(s)).html();
   }
 
 //---------------------------------------------------------------------------
@@ -535,7 +535,7 @@ public final class MainTextUtil
   {
     MainText mainText = recordWMT.getMainText();
     List<KeyWork> keyWorks = mainText.getKeyWorksUnmod();
-    Document doc = Jsoup.parse(prepHtmlForDisplay(mainText.getHtml()));
+    Document doc = jsoupParse(prepHtmlForDisplay(mainText.getHtml()));
     String embeddedHtml = doc.body().html();
 
     if (collEmpty(keyWorks))
@@ -814,7 +814,7 @@ public final class MainTextUtil
         endNdx.add(4);
         String tag = Parser.unescapeEntities(str.substring(startNdx.getValue(), endNdx.getValue()), true);
 
-        Document doc = Jsoup.parse(tag);
+        Document doc = jsoupParse(tag);
 
         elementProp.set(doc.getElementsByTag(EMBEDDED_FILE_TAG).first());
 
@@ -839,7 +839,7 @@ public final class MainTextUtil
 
   public static String extractTextFromHTML(String html, boolean forComparison)
   {
-    return ultraTrim(Jsoup.parse(prepHtmlForDisplay(html, forComparison)).text());
+    return ultraTrim(jsoupParse(prepHtmlForDisplay(html, forComparison)).text());
   }
 
 //---------------------------------------------------------------------------
@@ -907,7 +907,7 @@ public final class MainTextUtil
 
   public static String getHtmlFromEditor(String editorHtml)
   {
-    Document doc = Jsoup.parse(editorHtml);
+    Document doc = jsoupParse(editorHtml);
 
     doc.getElementsByTag("script").forEach(Element::remove);
     doc.getElementsByAttributeValue("id", "key_works").forEach(Element::remove);
@@ -946,6 +946,14 @@ public final class MainTextUtil
   static String makeElementID(HDT_Record record)
   {
     return db.getTypeTagStr(record.getType()) + record.getID();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Document jsoupParse(String html)
+  {
+    return Jsoup.parse(html);
   }
 
 //---------------------------------------------------------------------------

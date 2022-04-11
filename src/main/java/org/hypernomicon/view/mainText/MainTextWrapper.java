@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.text.StringEscapeUtils;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.hypernomicon.App;
@@ -181,7 +180,7 @@ public final class MainTextWrapper
     if (viewInfo.scrollPos > 0)
       htmlToUse = htmlToUse.replace("<body", "<body onload='window.scrollTo(0," + viewInfo.scrollPos + ")'");
 
-    Document doc = makeDocLinksExternal(Jsoup.parse(htmlToUse.replace("contenteditable=\"true\"", "contenteditable=\"false\"")));
+    Document doc = makeDocLinksExternal(jsoupParse(htmlToUse.replace("contenteditable=\"true\"", "contenteditable=\"false\"")));
 
     addLinks(new HtmlTextNodeList(doc.body()), recordToHilite);
 
@@ -255,7 +254,7 @@ public final class MainTextWrapper
 
     int keyWorksSize = keyWorks == null ? 0 : getNestedKeyWorkCount(curRecord, keyWorks);
 
-    if (Jsoup.parse(html).text().trim().isEmpty() && (keyWorksSize == 0) && noDisplayRecords && canEdit())
+    if (jsoupParse(html).text().trim().isEmpty() && (keyWorksSize == 0) && noDisplayRecords && canEdit())
       beginEditing(false);
     else
       setReadOnlyHTML(completeHtml, we, viewInfo, null, true);
@@ -479,7 +478,7 @@ public final class MainTextWrapper
 
   private void renderCompleteHtml()
   {
-    Document doc = Jsoup.parse(prepHtmlForDisplay(html));
+    Document doc = jsoupParse(prepHtmlForDisplay(html));
 
     Element styleTag = doc.head().getElementsByTag("style").stream().findFirst().orElse(null);
     if ((styleTag != null) && (styleTag.outerHtml().contains("margin-right") == false))

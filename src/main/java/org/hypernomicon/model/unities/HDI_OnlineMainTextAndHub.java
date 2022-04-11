@@ -151,10 +151,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
       default :
 
-        if (val.htmlText.isEmpty())
-          mainText.setInternal("");
-        else
-          mainText.setInternal(val.htmlText);
+        mainText.setInternal(val.htmlText);
     }
   }
 
