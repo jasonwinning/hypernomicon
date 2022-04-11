@@ -17,15 +17,16 @@
 
 package org.hypernomicon.model;
 
-import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
@@ -38,24 +39,35 @@ public final class HDI_Schema
   private final List<Tag> tags;
   private final HyperDataCategory category;
   private final RelationType relType;
+  private final RecordType nestedTargetType;
 
 //---------------------------------------------------------------------------
 
   public List<Tag> getTags()              { return tags; }
   public HyperDataCategory getCategory()  { return category; }
   public RelationType getRelType()        { return relType; }
-  public RecordType getNestedTargetType() { return db.getNestedTargetType(relType, tags.get(0)); }
+  public RecordType getNestedTargetType() { return nestedTargetType; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HDI_Schema(HyperDataCategory category, Tag... tags) { this(category, rtNone, tags); }
+  HDI_Schema(HyperDataCategory category, Tag... tags) throws HDB_InternalError { this(category, rtNone, hdtNone, tags); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  public HDI_Schema(HyperDataCategory category, RelationType relType, Tag... tags) throws HDB_InternalError { this(category, relType, hdtNone, tags); }
 
-  public HDI_Schema(HyperDataCategory category, RelationType relType, Tag... tags)
+  public HDI_Schema(HyperDataCategory category, RelationType relType, RecordType nestedTargetType, Tag... tags) throws HDB_InternalError
   {
+    if (category == hdcNestedPointer)
+    {
+      if ((tags.length != 1) || nestedTargetType == hdtNone)
+        throw new HDB_InternalError(56814);
+    }
+    else
+    {
+      if (nestedTargetType != hdtNone)
+        throw new HDB_InternalError(56814);
+    }
+
     Builder<Tag> builder = ImmutableList.builder();
     builder.add(tags);
 
@@ -65,6 +77,7 @@ public final class HDI_Schema
     this.tags = builder.build();
     this.category = category;
     this.relType = relType;
+    this.nestedTargetType = nestedTargetType;
   }
 
 //---------------------------------------------------------------------------

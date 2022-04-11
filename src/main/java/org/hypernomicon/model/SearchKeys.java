@@ -80,7 +80,7 @@ public final class SearchKeys
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    @Override public String toString()  { return (startOnly ? '^' + text : text) + (endOnly ? "$" : ""); }
+    @Override public String toString()  { return (startOnly ? '^' + text : text) + (endOnly ? '$' : ""); }
     private String getPrefix()          { return text.substring(0, 3).toLowerCase(); }
     private HDT_Record getRecord()      { return record; }
 
@@ -234,13 +234,10 @@ public final class SearchKeys
 
   private void addKeyword(SearchKeyword keyword)
   {
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.computeIfAbsent(keyword.record, k -> Collections.synchronizedMap(new LinkedHashMap<>()));
+    String lcText = keyword.text.toLowerCase();
 
-    keywordStrToKeywordObj.put(keyword.text.toLowerCase(), keyword);
-
-    keywordStrToKeywordObj = prefixStrToKeywordStrToKeywordObj.computeIfAbsent(keyword.getPrefix(), k -> Collections.synchronizedMap(new LinkedHashMap<>()));
-
-    keywordStrToKeywordObj.put(keyword.text.toLowerCase(), keyword);
+    recordToKeywordStrToKeywordObj   .computeIfAbsent(keyword.record     , k -> Collections.synchronizedMap(new LinkedHashMap<>())).put(lcText, keyword);
+    prefixStrToKeywordStrToKeywordObj.computeIfAbsent(keyword.getPrefix(), k -> Collections.synchronizedMap(new LinkedHashMap<>())).put(lcText, keyword);
   }
 
 //---------------------------------------------------------------------------

@@ -136,7 +136,7 @@ public final class HyperDB
 
   final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(RecordType.class);
   final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(RecordType.class);
-  final private EnumMap<RelationType, RelationSet<HDT_Record, HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
+  final private EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
   final private EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
   final private EnumMap<Tag, RecordType> tagToObjType = new EnumMap<>(Tag.class);
   final private EnumMap<Tag, EnumSet<RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
@@ -268,14 +268,13 @@ public final class HyperDB
   public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType, HDT_ObjType obj)
   { return new HyperSubjPointer<>(relSet(relType), obj); }
 
-  RecordType getNestedTargetType(RelationType relType, Tag mainTag)
-  { return relationSets.get(relType).getTargetType(mainTag); }
+  @SuppressWarnings("unchecked")
+  public <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> List<ObjectGroup> getObjectGroupList(RelationType relType, HDT_SubjType subj, Collection<Tag> tags)
+  { return ((RelationSet<HDT_SubjType, HDT_ObjType>)relationSets.get(relType)).getObjectGroupList(subj, tags); }
 
-  public <HDT_SubjType extends HDT_Record> List<ObjectGroup> getObjectGroupList(RelationType relType, HDT_SubjType subj, Collection<Tag> tags)
-  { return relationSets.get(relType).getObjectGroupList(subj, tags); }
-
-  public <HDT_SubjType extends HDT_Record> void updateObjectGroups(RelationType relType, HDT_SubjType subj, List<ObjectGroup> groups)
-  { relationSets.get(relType).updateObjectGroups(subj, groups); subj.modifyNow(); }
+  @SuppressWarnings("unchecked")
+  public <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> void updateObjectGroups(RelationType relType, HDT_SubjType subj, List<ObjectGroup> groups)
+  { ((RelationSet<HDT_SubjType, HDT_ObjType>)relationSets.get(relType)).updateObjectGroups(subj, groups); subj.modifyNow(); }
 
   public void updateNestedString(HDT_Record subj, HDT_Record obj, Tag tag, String str)
   { if (relSet(subj, obj).setNestedString(subj, obj, tag, str)) subj.modifyNow(); }
@@ -289,8 +288,9 @@ public final class HyperDB
   public void updateNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag, HDT_Record target)
   { if (relSet(subj, obj).setNestedPointer(subj, obj, tag, target)) subj.modifyNow(); }
 
-  public void resolvePointersByRelation(RelationType relType, HDT_Record subj) throws HDB_InternalError
-  { relationSets.get(relType).resolvePointers(subj); }
+  @SuppressWarnings("unchecked")
+  public <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
+  { ((RelationSet<HDT_SubjType, HDT_ObjType>)relationSets.get(relType)).resolvePointers(subj); }
 
   private HDT_Folder xmlFolder, booksFolder, papersFolder, miscFilesFolder, picturesFolder, resultsFolder, unenteredFolder, topicalFolder;
 
@@ -2059,11 +2059,7 @@ public final class HyperDB
                          addTag("modified_date"     , tagModifiedDate   , "Date Modified");
                          addTag("view_date"         , tagViewDate       , "Date Last Viewed");
 
-      for (RelationType relType : RelationType.values())
-        if ((relType != rtUnited) && (relType != rtNone))
-          relationSets.put(relType, createSet(relType));
-
-      relationSets.values().forEach(RelationSet::initCycleGroup);
+      RelationSet.init(relationSets);
       MainText.init();
 
   /*****************************************************************************
@@ -2074,7 +2070,7 @@ public final class HyperDB
   * ************************************************************************** *
   *****************************************************************************/
 
-      // Nested items are defined in RelationSet.initTypes()
+      // Nested items are defined in RelationSet.createSet()
 
       addStringItem(hdtArgument, tagName);
       addPointerMulti(hdtArgument, rtWorkOfArgument, tagWork);

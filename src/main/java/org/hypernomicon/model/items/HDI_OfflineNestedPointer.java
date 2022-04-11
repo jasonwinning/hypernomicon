@@ -29,12 +29,10 @@ import org.hypernomicon.model.records.RecordType;
 public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 {
   int objID = -1;
-  private final RecordType targetType;
 
   public HDI_OfflineNestedPointer(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
-    targetType = schema.getNestedTargetType();
   }
 
   public int getObjID() { return objID; }
@@ -52,7 +50,7 @@ public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    writePointerTag(xml, tag, objID, hdtNone, db.records(targetType).getByID(objID).getXMLObjectName());
+    writePointerTag(xml, tag, objID, hdtNone, db.records(getSchema().getNestedTargetType()).getByID(objID).getXMLObjectName());
   }
 
   //---------------------------------------------------------------------------

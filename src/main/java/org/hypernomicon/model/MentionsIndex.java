@@ -50,7 +50,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
-import static org.hypernomicon.util.Util.*;
 
 class MentionsIndex
 {
@@ -220,13 +219,11 @@ class MentionsIndex
     {
       @Override protected void done()
       {
-        Thread oldThread = getThread();
-
         updateProgress(total, total);
 
         Platform.runLater(() ->
         {
-          try { oldThread.join(); } catch (InterruptedException e) { noOp(); }
+          waitUntilThreadDies();
 
           ndxCompleteHandlers.forEach(Runnable::run);
         });

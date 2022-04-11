@@ -104,11 +104,7 @@ public class FilePathSet implements Set<FilePath>
 
     if (contains(filePath)) return false;
 
-    String nameStr = filePath.getNameOnly().toString();
-
-    Set<FilePath> set = nameToPaths.computeIfAbsent(nameStr, k -> Sets.newConcurrentHashSet());
-
-    return set.add(filePath);
+    return nameToPaths.computeIfAbsent(filePath.getNameOnly().toString(), k -> Sets.newConcurrentHashSet()).add(filePath);
   }
 
 //---------------------------------------------------------------------------

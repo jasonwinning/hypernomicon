@@ -23,19 +23,16 @@ import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.RecordType;
 
 import static org.hypernomicon.util.Util.*;
 
 public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPointer>
 {
-  private final RecordType targetType;
   private HDT_Record target;
 
   public HDI_OnlineNestedPointer(HDI_Schema schema, HDT_Record record)
   {
     super(schema, record);
-    targetType = schema.getNestedTargetType();
     target = null;
   }
 
@@ -62,7 +59,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 
   @Override public void setFromOfflineValue(HDI_OfflineNestedPointer val, Tag tag)
   {
-    target = val.objID < 0 ? null : db.records(targetType).getByID(val.objID);
+    target = val.objID < 0 ? null : db.records(getSchema().getNestedTargetType()).getByID(val.objID);
   }
 
 //---------------------------------------------------------------------------

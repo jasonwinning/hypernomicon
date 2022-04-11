@@ -65,7 +65,7 @@ public abstract class HyperTask
 
     public static boolean isRunning(HyperThread thread)
     {
-      return thread == null ? false : thread.isAlive();
+      return (thread != null) && thread.isAlive();
     }
   }
 
@@ -81,9 +81,9 @@ public abstract class HyperTask
       return null;
     }
 
-    @Override public void updateMessage(String msg)                { super.updateMessage(msg); } // Increase visibility
-    @Override public void updateProgress(double cur, double total) { super.updateProgress(cur, total); } // Increase visibility
-    @Override protected void done()                                { HyperTask.this.done(); }
+    @Override protected void updateMessage(String msg)                { super.updateMessage(msg); } // Make visible to outer class
+    @Override protected void updateProgress(double cur, double total) { super.updateProgress(cur, total); } // Make visible to outer class
+    @Override protected void done()                                   { HyperTask.this.done(); }
 
     @Override protected final void failed()
     {
@@ -145,7 +145,19 @@ public abstract class HyperTask
   protected void updateMessage(String msg)             { innerTask.updateMessage(msg); }
   public void updateProgress(double cur, double total) { innerTask.updateProgress(cur, total); }
 
-  protected HyperThread getThread() { return thread; }
+  public State runWithProgressDialog() { return ProgressDlgCtrlr.performTask(this); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected synchronized boolean waitUntilThreadDies()
+  {
+    if (thread == null) return true;
+
+    try { thread.join(); } catch (InterruptedException e) { return false; }
+
+    return true;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -155,9 +167,7 @@ public abstract class HyperTask
     if (cancel() == false)
       return false;
 
-    try { thread.join(); } catch (InterruptedException e) { return false; }
-
-    return true;
+    return waitUntilThreadDies();
   }
 
 //---------------------------------------------------------------------------
@@ -191,14 +201,6 @@ public abstract class HyperTask
     HyperThread newThread = new HyperThread(this);
     newThread.start();
     return newThread;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public State runWithProgressDialog()
-  {
-    return ProgressDlgCtrlr.build().performTask(this);
   }
 
 //---------------------------------------------------------------------------

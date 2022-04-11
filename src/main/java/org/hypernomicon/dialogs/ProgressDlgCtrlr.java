@@ -28,7 +28,6 @@ import org.hypernomicon.HyperTask;
 
 public class ProgressDlgCtrlr extends HyperDlg
 {
-  private HyperTask task;
   private boolean ownThread = true;
   private long lastPercent = -200;
 
@@ -38,49 +37,23 @@ public class ProgressDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ProgressDlgCtrlr build()
+  public static State performTask(HyperTask task)
   {
-    return ((ProgressDlgCtrlr) create("ProgressDlg", appTitle, true)).init();
+    return ((ProgressDlgCtrlr) create("ProgressDlg", appTitle, true)).execute(task);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected boolean isValid() { return false; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ProgressDlgCtrlr init()
+  private State execute(HyperTask task)
   {
     lblTask.setText("");
     lblPercent.setText("Progress: 0 %");
-
     progressBar.setProgress(0.0);
-
-    dialogStage.setOnHiding(event ->
-    {
-      if (task.isRunning() && ownThread)
-        task.cancelAndWait();
-
-      lblTask.textProperty().unbind();
-      progressBar.progressProperty().unbind();
-    });
-
-    return this;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public State performTask(HyperTask task)
-  {
-    this.task = task;
 
     task.updateProgress(0, 1);
 
-    lblTask.textProperty().bind(task.messageProperty());
-
+    lblTask    .textProperty    ().bind(task.messageProperty ());
     progressBar.progressProperty().bind(task.progressProperty());
 
     task.progressProperty().addListener((ob, oldValue, newValue) ->
@@ -105,10 +78,24 @@ public class ProgressDlgCtrlr extends HyperDlg
         task.startWithNewThread();
     };
 
+    dialogStage.setOnHiding(event ->
+    {
+      if (task.isRunning() && ownThread)
+        task.cancelAndWait();
+
+      lblTask.textProperty().unbind();
+      progressBar.progressProperty().unbind();
+    });
+
     showModal();
 
     return task.getState();
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isValid() { return false; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
