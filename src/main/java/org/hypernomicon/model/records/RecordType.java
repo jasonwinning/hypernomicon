@@ -26,7 +26,6 @@ import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public enum RecordType
 {
@@ -68,6 +67,7 @@ public enum RecordType
 
   private final Class<? extends HDT_Record> klass;
   private final boolean simple, gotMainText, disregardDates;
+
   private final static Map<Class<? extends HDT_Record>, RecordType> classToType;
 
 //---------------------------------------------------------------------------

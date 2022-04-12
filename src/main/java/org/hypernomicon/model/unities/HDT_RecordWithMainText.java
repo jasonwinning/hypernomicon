@@ -19,12 +19,13 @@ package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HubChangedException;
 import org.hypernomicon.model.Exceptions.RelationCycleException;

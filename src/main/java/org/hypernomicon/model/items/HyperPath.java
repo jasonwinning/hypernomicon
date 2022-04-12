@@ -293,7 +293,7 @@ public class HyperPath
 
       default :
 
-        return "The file: " + filePath + " is already in use. Record type: " + db.getTypeName(existingRecord.getType()) + " ID: " + existingRecord.getID();
+        return "The file: " + filePath + " is already in use. Record type: " + getTypeName(existingRecord.getType()) + " ID: " + existingRecord.getID();
     }
   }
 
@@ -415,7 +415,7 @@ public class HyperPath
         if (hyperPath.getRecordType() != hdtPerson) return;
 
         if (val.length() > 0) val.append("; ");
-        val.append(db.getTypeName(hdtPerson)).append(": ").append(hyperPath.getRecord().listName());
+        val.append(getTypeName(hdtPerson)).append(": ").append(hyperPath.getRecord().listName());
       });
     }
 
@@ -427,7 +427,7 @@ public class HyperPath
       if (relative.getType() == hdtFolder) return;
 
       if (val.length() > 0) val.append("; ");
-      val.append(db.getTypeName(relative.getType())).append(": ").append(relative.listName());
+      val.append(getTypeName(relative.getType())).append(": ").append(relative.listName());
     });
 
     if ((val.length() == 0) && (getRecordType() == hdtFolder))

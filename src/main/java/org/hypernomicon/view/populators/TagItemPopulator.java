@@ -18,7 +18,7 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -66,7 +67,7 @@ public class TagItemPopulator extends Populator
 
     tags.forEach(tag ->
     {
-      HyperTableCell cell = new HyperTableCell(tag.getNum(), db.getTagHeader(tag), recordType);
+      HyperTableCell cell = new HyperTableCell(tag.num, tag.header, recordType);
       addToSortedList(choices, cell, Comparator.comparing(HyperTableCell::getText));
     });
 

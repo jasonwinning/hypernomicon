@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
@@ -45,7 +46,7 @@ import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;

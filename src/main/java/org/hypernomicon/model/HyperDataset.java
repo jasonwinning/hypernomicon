@@ -18,7 +18,7 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.util.Util.*;

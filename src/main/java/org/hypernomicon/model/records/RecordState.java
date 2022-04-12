@@ -18,7 +18,7 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
 import org.hypernomicon.model.items.*;
@@ -146,12 +147,12 @@ public class RecordState
     HDI_OfflineBase item = items.get(tag);
 
     if (item == null)
-      throw new InvalidItemException(id, type, db.getTagStr(tag));
+      throw new InvalidItemException(id, type, tag.name);
 
     if (ord != -1)
     {
       if (item.getCategory() != hdcPointerSingle)
-        throw new HyperDataException("Invalid attribute: ord. Record type: " + db.getTypeTagStr(type) + " ID : " + id);
+        throw new HyperDataException("Invalid attribute: ord. Record type: " + getTypeTagStr(type) + " ID : " + id);
 
       ((HDI_OfflinePointerSingle)item).setFromXml(objID, ord, nestedItems);
     }
@@ -187,7 +188,7 @@ public class RecordState
     String searchKeyAttr = "", sortKeyAttrXML = "";
 
     if (listNameAttr.length() > 0)
-      listNameAttr = ' ' + db.getTagStr(tagListName) + '=' + QUOTE + xmlAttributeEscaper.escape(listNameAttr) + QUOTE;
+      listNameAttr = ' ' + tagListName.name + '=' + QUOTE + xmlAttributeEscaper.escape(listNameAttr) + QUOTE;
 
     if (searchKey.length() > 0)
       searchKeyAttr = " search_key=" + QUOTE + xmlAttributeEscaper.escape(searchKey) + QUOTE;
@@ -195,7 +196,7 @@ public class RecordState
     if (sortKeyAttr.length() > 0)
       sortKeyAttrXML = " sort_key=" + QUOTE + xmlAttributeEscaper.escape(sortKeyAttr) + QUOTE;
 
-    xml.append("<record type=").append(QUOTE).append(db.getTypeTagStr(type)).append(QUOTE).append(" id=").append(QUOTE).append(id).append(QUOTE)
+    xml.append("<record type=").append(QUOTE).append(getTypeTagStr(type)).append(QUOTE).append(" id=").append(QUOTE).append(id).append(QUOTE)
        .append(sortKeyAttrXML).append(searchKeyAttr).append(listNameAttr).append('>').append(xmlContentEscaper.escape(nameToUse)).append("</record>")
        .append(System.lineSeparator());
   }
@@ -205,7 +206,7 @@ public class RecordState
 
   private void writeRecordOpenTag(StringBuilder xml)
   {
-    String searchKeyAttr = "", typeName = db.getTypeTagStr(type), sortKeyAttrXML = sortKeyAttr;
+    String searchKeyAttr = "", typeName = getTypeTagStr(type), sortKeyAttrXML = sortKeyAttr;
 
     if (type != hdtWorkLabel)
     {

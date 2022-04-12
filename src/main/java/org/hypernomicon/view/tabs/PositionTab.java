@@ -73,13 +73,13 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
     htParents.buildRows(curPosition.largerPositions, (row, otherPos) ->
     {
-      row.setCellValue(2, db.getTypeName(hdtPosition), hdtPosition);
+      row.setCellValue(2, getTypeName(hdtPosition), hdtPosition);
       row.setCellValue(3, otherPos, otherPos.listName());
     });
 
     htParents.buildRows(curPosition.largerDebates, (row, debate) ->
     {
-      row.setCellValue(2, db.getTypeName(hdtDebate), hdtDebate);
+      row.setCellValue(2, getTypeName(hdtDebate), hdtDebate);
       row.setCellValue(3, debate, debate.listName());
     });
 

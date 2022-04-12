@@ -19,7 +19,7 @@ package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -88,8 +88,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.json.simple.parser.ParseException;
 
-import com.google.common.collect.EnumBiMap;
-import com.google.common.collect.EnumHashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
@@ -138,9 +136,7 @@ public final class HyperDB
   final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(RecordType.class);
   final private EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
   final private EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
-  final private EnumMap<Tag, RecordType> tagToObjType = new EnumMap<>(Tag.class);
   final private EnumMap<Tag, EnumSet<RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
-  final private EnumMap<Tag, String> tagToHeader = new EnumMap<>(Tag.class);
 
   final private List<Consumer<HDT_Record>> recordDeleteHandlers          = new ArrayList<>();
   final private List<Runnable>             dbCloseHandlers               = new ArrayList<>(),
@@ -148,9 +144,6 @@ public final class HyperDB
                                            dbMentionsNdxCompleteHandlers = new ArrayList<>(),
                                            bibChangedHandlers            = new ArrayList<>();
 
-  final private EnumBiMap<RecordType, Tag> typeToTag = EnumBiMap.create(RecordType.class, Tag.class);
-  final private EnumHashBiMap<Tag, String> tagToStr = EnumHashBiMap.create(Tag.class);
-  final private EnumHashBiMap<RecordType, String> typeToTagStr = EnumHashBiMap.create(RecordType.class);
   final private SearchKeys searchKeys = new SearchKeys();
   final private MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
   final private List<HDT_Record> initialNavList = new ArrayList<>();
@@ -188,16 +181,12 @@ public final class HyperDB
   public int getNextID(RecordType type)                         { return datasets.get(type).getNextID(); }
   public boolean idAvailable(RecordType type, int id)           { return datasets.get(type).idAvailable(id); }
   public Tag mainTextTagForRecordType(RecordType type)          { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
-  public String getTypeTagStr(RecordType type)                  { return typeToTagStr.get(type); }
-  public RecordType parseTypeTagStr(String tag)                 { return typeToTagStr.inverse().getOrDefault(tag, hdtNone); }
   public boolean isLoaded()                                     { return loaded; }
   public boolean bibLibraryIsLinked()                           { return bibLibrary != null; }
   public Instant getCreationDate()                              { return dbCreationDate; }
   public RecordType getSubjType(RelationType relType)           { return relationSets.get(relType).getSubjType(); }
   public RecordType getObjType(RelationType relType)            { return relationSets.get(relType).getObjType(); }
   public boolean relationIsMulti(RelationType relType)          { return relTypeToIsMulti.get(relType); }
-  public String getTagStr(Tag tag)                              { return tagToStr.get(tag); }
-  public String getTagHeader(Tag tag)                           { return tagToHeader.getOrDefault(tag, ""); }
   public List<HDT_Record> getInitialNavList()                   { return unmodifiableList(initialNavList); }
   public String getSearchKey(HDT_Record record)                 { return searchKeys.getStringForRecord(record); }
   public SearchKeyword getKeyByKeyword(String keyword)          { return searchKeys.getKeywordObjByKeywordStr(keyword); }
@@ -1185,9 +1174,9 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final String recordsTag = "records", versionAttr = "version";
+  private static final String recordsTagName = "records", versionAttr = "version";
 
-  private VersionNumber getVersionNumberFromXML(XMLEventReader eventReader) throws XMLStreamException
+  private static VersionNumber getVersionNumberFromXML(XMLEventReader eventReader) throws XMLStreamException
   {
     while (eventReader.hasNext())
     {
@@ -1198,10 +1187,10 @@ public final class HyperDB
 
       StartElement startElement = event.asStartElement();
 
-      if (startElement.getName().getLocalPart().equals(tagToStr.get(tagRecord)))
+      if (startElement.getName().getLocalPart().equals(tagRecord.name))
         return null;
 
-      if (startElement.getName().getLocalPart().equals(recordsTag) == false)
+      if (startElement.getName().getLocalPart().equals(recordsTagName) == false)
         continue;
 
       Iterator<Attribute> attributes = startElement.getAttributes();
@@ -1221,7 +1210,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private RecordState getNextRecordFromXML(XMLEventReader eventReader) throws XMLStreamException, HyperDataException
+  private static RecordState getNextRecordFromXML(XMLEventReader eventReader) throws XMLStreamException, HyperDataException
   {
     while (eventReader.hasNext())
     {
@@ -1231,7 +1220,7 @@ public final class HyperDB
         continue;
 
       StartElement startElement = event.asStartElement();
-      if (startElement.getName().getLocalPart().equals(tagToStr.get(tagRecord)) == false)
+      if (startElement.getName().getLocalPart().equals(tagRecord.name) == false)
         continue;
 
       int id = -1;
@@ -1243,14 +1232,14 @@ public final class HyperDB
       while (attributes.hasNext())
       {
         Attribute attribute = attributes.next();
-        Tag tag = tagToStr.inverse().get(attribute.getName().toString());
+        Tag tag = getTag(attribute.getName().toString());
 
         switch (tag)
         {
           case tagID        : id = parseInt(attribute.getValue(), -1); break;
           case tagType      :
 
-            type = typeToTagStr.inverse().getOrDefault(attribute.getValue(), hdtNone);
+            type = parseTypeTagStr(attribute.getValue());
             if (type == hdtNone)
               throw new HyperDataException("Invalid record type: " + attribute.getValue());
 
@@ -1302,7 +1291,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final class HDX_Element
+  private static final class HDX_Element
   {
     private final Tag tag;
     private int objID, ord;
@@ -1312,12 +1301,12 @@ public final class HyperDB
 
     private HDX_Element(StartElement startElement, RecordState xmlRecord) throws InvalidItemException
     {
-      tag = tagToStr.inverse().getOrDefault(startElement.getName().getLocalPart(), tagNone);
+      tag = getTag(startElement.getName().getLocalPart());
 
       if (tag == tagNone)
         throw new InvalidItemException(xmlRecord.id, xmlRecord.type, startElement.getName().getLocalPart());
 
-      objType = tagToObjType.getOrDefault(tag, hdtNone);
+      objType = tag.objType;
       objID = -1;
       ord = -1;
 
@@ -1333,7 +1322,7 @@ public final class HyperDB
           case "type" :
             if (objType == hdtAuxiliary) // this represents that the object type is not given away by the
                                          // tag name, and should be obtained from the "type" attribute
-              objType = typeToTagStr.inverse().getOrDefault(attribute.getValue(), hdtNone);
+              objType = parseTypeTagStr(attribute.getValue());
             break;
 
           case "ord" :
@@ -1608,7 +1597,7 @@ public final class HyperDB
 
     HDI_OfflineBase item = nestedItems.get(hdxElement.tag);
 
-    if (item == null) throw new InvalidItemException(xmlRecord.id, xmlRecord.type, "(nested) " + getTagStr(hdxElement.tag));
+    if (item == null) throw new InvalidItemException(xmlRecord.id, xmlRecord.type, "(nested) " + hdxElement.tag.name);
 
     item.setFromXml(hdxElement.tag, nodeText.toString(), hdxElement.objType, hdxElement.objID, null);
   }
@@ -1932,34 +1921,9 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addTag(String tagStr, Tag tag, String tagHeader) throws HDB_InternalError
+  private <HDT_T extends HDT_Record> HyperDataset<HDT_T>.CoreAccessor getAccessor(Class<HDT_T> klass)
   {
-    addTag(tagStr, tag, tagHeader, (Class<HDT_Record>)null);
-  }
-
-  private void addTag(String tagStr, Tag tag, String tagHeader, RecordType type) throws HDB_InternalError
-  {
-    addTag(tagStr, tag, tagHeader, (Class<HDT_Record>)null);
-    tagToObjType.put(tag, type);
-  }
-
-  private <HDT_T extends HDT_Record> HyperDataset<HDT_T>.CoreAccessor addTag(String tagStr, Tag tag, String tagHeader, Class<HDT_T> klass) throws HDB_InternalError
-  {
-    int hashCode = Math.abs(stringHash(tagStr));
-    if (tagToNum.containsValue(hashCode))
-      throw new HDB_InternalError(99215, "Duplicate tag hash codes.");
-
-    tagToStr.put(tag, tagStr);
-    tagToNum.put(tag, hashCode);
-    tagToHeader.put(tag, tagHeader);
-
-    if (klass == null) return null;
-
     RecordType type = typeByRecordClass(klass);
-
-    typeToTagStr.put(type, tagStr);
-    typeToTag.put(type, tag);
-    tagToObjType.put(tag, type);
 
     HyperDataset<HDT_T> dataset = new HyperDataset<>(type);
     HyperDataset<HDT_T>.CoreAccessor accessor = dataset.getAccessor();
@@ -1981,90 +1945,34 @@ public final class HyperDB
 
     try
     {
-      persons          = addTag("person"            , tagPerson,          "Person"                   , HDT_Person         .class);
-      personStatuses   = addTag("person_status"     , tagPersonStatus,    "Status"                   , HDT_PersonStatus   .class);
-      institutions     = addTag("institution"       , tagInstitution,     "Institution"              , HDT_Institution    .class);
-      institutionTypes = addTag("institution_type"  , tagInstitutionType, "Institution Type"         , HDT_InstitutionType.class);
-      regions          = addTag("region"            , tagRegion,          "State/Region"             , HDT_Region         .class);
-      countries        = addTag("country"           , tagCountry,         "Country"                  , HDT_Country        .class);
-      ranks            = addTag("rank"              , tagRank,            "Rank"                     , HDT_Rank           .class);
-      investigations   = addTag("investigation"     , tagInvestigation,   "Investigation"            , HDT_Investigation  .class);
-      debates          = addTag("debate"            , tagDebate,          "Problem/Debate"           , HDT_Debate         .class);
-      arguments        = addTag("argument"          , tagArgument,        "Argument"                 , HDT_Argument       .class);
-      terms            = addTag("term"              , tagTerm,            "Term"                     , HDT_Term           .class);
-      concepts         = addTag("concept"           , tagConcept,         "Concept"                  , HDT_Concept        .class);
-      works            = addTag("work"              , tagWork,            "Work"                     , HDT_Work           .class);
-      workTypes        = addTag("work_type"         , tagWorkType,        "Type of Work"             , HDT_WorkType       .class);
-      workLabels       = addTag("work_label"        , tagWorkLabel,       "Work Label"               , HDT_WorkLabel      .class);
-      fields           = addTag("field"             , tagField,           "Field"                    , HDT_Field          .class);
-      subfields        = addTag("subfield"          , tagSubfield,        "Subfield"                 , HDT_Subfield       .class);
-      positions        = addTag("position"          , tagPosition,        "Position"                 , HDT_Position       .class);
-      positionVerdicts = addTag("position_verdict"  , tagPositionVerdict, "Conclusion about Position", HDT_PositionVerdict.class);
-      argumentVerdicts = addTag("argument_verdict"  , tagArgumentVerdict, "Conclusion about Argument", HDT_ArgumentVerdict.class);
-      miscFiles        = addTag("misc_file"         , tagMiscFile,        "Misc. File"               , HDT_MiscFile       .class);
-      workFiles        = addTag("work_file"         , tagWorkFile,        "Work File"                , HDT_WorkFile       .class);
-      folders          = addTag("folder"            , tagFolder,          "Folder"                   , HDT_Folder         .class);
-      notes            = addTag("note"              , tagNote,            "Note"                     , HDT_Note           .class);
-      glossaries       = addTag("glossary"          , tagGlossary,        "Glossary"                 , HDT_Glossary       .class);
-      hubs             = addTag("hub"               , tagHub,             "Record Hub"               , HDT_Hub            .class);
-      personGroups     = addTag("person_group"      , tagPersonGroup,     "Person Group"             , HDT_PersonGroup    .class);
-      fileTypes        = addTag("file_type"         , tagFileType,        "File Type"                , HDT_FileType       .class);
-
-                         addTag("author"            , tagAuthor         , "Author"                   , hdtPerson     );
-                         addTag("larger_debate"     , tagLargerDebate   , "Larger Debate"            , hdtDebate     );
-                         addTag("larger_position"   , tagLargerPosition , "Larger Position"          , hdtPosition   );
-                         addTag("parent_note"       , tagParentNote     , "Parent Note"              , hdtNote       );
-                         addTag("parent_glossary"   , tagParentGlossary , "Parent Glossary"          , hdtGlossary   );
-                         addTag("linked_record"     , tagLinkedRecord   , "Linked Record"            , hdtAuxiliary  );
-                         addTag("key_work"          , tagKeyWork        , "Key Works"                , hdtAuxiliary  );
-                         addTag("display_item"      , tagDisplayRecord  , "Displayed Records"        , hdtAuxiliary  );
-                         addTag("larger_work"       , tagLargerWork     , "Larger Work"              , hdtWork       );
-                         addTag("parent_label"      , tagParentLabel    , "Parent Label"             , hdtWorkLabel  );
-                         addTag("parent_group"      , tagParentGroup    , "Parent Group"             , hdtPersonGroup);
-                         addTag("counterargument"   , tagCounterargument, "Counterargument"          , hdtArgument   );
-                         addTag("parent_folder"     , tagParentFolder   , "Parent Folder"            , hdtFolder     );
-                         addTag("parent_institution", tagParentInst     , "Parent Institution"       , hdtInstitution);
-                         addTag("picture_folder"    , tagPictureFolder  , "Picture Folder"           , hdtFolder     );
-
-                         addTag("id"                , tagID             , "Record ID");
-                         addTag("type"              , tagType           , "Record Type");
-                         addTag("sort_key"          , tagSortKey        , "Sort Key");
-                         addTag("search_key"        , tagSearchKey      , "Search Key");
-                         addTag("record"            , tagRecord         , "Record");
-                         addTag("list_name"         , tagListName       , "List Name");
-                         addTag("first_name"        , tagFirstName      , "First Name");
-                         addTag("last_name"         , tagLastName       , "Last Name");
-                         addTag("link"              , tagWebURL         , "Web URL");
-                         addTag("orcid"             , tagORCID          , "ORCID");
-                         addTag("picture"           , tagPicture        , "Picture");
-                         addTag("picture_crop"      , tagPictureCrop    , "Picture Crop");
-                         addTag("why_famous"        , tagWhyFamous      , "Description");
-                         addTag("name"              , tagName           , "Name");
-                         addTag("city"              , tagCity           , "City");
-                         addTag("abbreviation"      , tagAbbreviation   , "Abbreviation");
-                         addTag("description"       , tagDescription    , "Description");
-                         addTag("main_text"         , tagMainText       , "Description");
-                         addTag("title"             , tagTitle          , "Title");
-                         addTag("file_name"         , tagFileName       , "Filename");
-                         addTag("year"              , tagYear           , "Year");
-                         addTag("bib_entry_key"     , tagBibEntryKey    , "Bibliography Entry Key");
-                         addTag("misc_bib"          , tagMiscBib        , "Misc. Bib. Info");
-                         addTag("doi"               , tagDOI            , "DOI");
-                         addTag("isbn"              , tagISBN           , "ISBN");
-                         addTag("in_filename"       , tagInFileName     , "Included in File Name");
-                         addTag("editor"            , tagEditor         , "Editor");
-                         addTag("translator"        , tagTranslator     , "Translator");
-                         addTag("start_page"        , tagStartPageNum   , "Starting Page Number");
-                         addTag("end_page"          , tagEndPageNum     , "Ending Page Number");
-                         addTag("annotated"         , tagAnnotated      , "Annotated");
-                         addTag("comments"          , tagComments       , "Description");
-                         addTag("definition"        , tagDefinition     , "Definition");
-                         addTag("text"              , tagText           , "Text");
-                         addTag("active"            , tagActive         , "Active");
-                         addTag("past"              , tagPast           , "Past");
-                         addTag("creation_date"     , tagCreationDate   , "Date Created");
-                         addTag("modified_date"     , tagModifiedDate   , "Date Modified");
-                         addTag("view_date"         , tagViewDate       , "Date Last Viewed");
+      persons          = getAccessor(HDT_Person         .class);
+      personStatuses   = getAccessor(HDT_PersonStatus   .class);
+      institutions     = getAccessor(HDT_Institution    .class);
+      institutionTypes = getAccessor(HDT_InstitutionType.class);
+      regions          = getAccessor(HDT_Region         .class);
+      countries        = getAccessor(HDT_Country        .class);
+      ranks            = getAccessor(HDT_Rank           .class);
+      investigations   = getAccessor(HDT_Investigation  .class);
+      debates          = getAccessor(HDT_Debate         .class);
+      arguments        = getAccessor(HDT_Argument       .class);
+      terms            = getAccessor(HDT_Term           .class);
+      concepts         = getAccessor(HDT_Concept        .class);
+      works            = getAccessor(HDT_Work           .class);
+      workTypes        = getAccessor(HDT_WorkType       .class);
+      workLabels       = getAccessor(HDT_WorkLabel      .class);
+      fields           = getAccessor(HDT_Field          .class);
+      subfields        = getAccessor(HDT_Subfield       .class);
+      positions        = getAccessor(HDT_Position       .class);
+      positionVerdicts = getAccessor(HDT_PositionVerdict.class);
+      argumentVerdicts = getAccessor(HDT_ArgumentVerdict.class);
+      miscFiles        = getAccessor(HDT_MiscFile       .class);
+      workFiles        = getAccessor(HDT_WorkFile       .class);
+      folders          = getAccessor(HDT_Folder         .class);
+      notes            = getAccessor(HDT_Note           .class);
+      glossaries       = getAccessor(HDT_Glossary       .class);
+      hubs             = getAccessor(HDT_Hub            .class);
+      personGroups     = getAccessor(HDT_PersonGroup    .class);
+      fileTypes        = getAccessor(HDT_FileType       .class);
 
       RelationSet.init(relationSets);
       MainText.init();
@@ -2299,32 +2207,14 @@ public final class HyperDB
     NOTE_FILE_NAME = "Notes.xml",
     HUB_FILE_NAME = "Hubs.xml";
 
-  public enum Tag
-  {
-    tagNone,           tagPerson,       tagPersonStatus, tagInstitution,     tagInstitutionType, tagRegion,         tagCountry,      tagRank,
-    tagInvestigation,  tagDebate,       tagArgument,     tagTerm,            tagConcept,         tagWork,           tagWorkType,     tagWorkLabel,
-    tagField,          tagSubfield,     tagPosition,     tagPositionVerdict, tagArgumentVerdict, tagMiscFile,       tagWorkFile,     tagNote,
-    tagGlossary,       tagPersonGroup,  tagFileType,     tagID,              tagType,            tagSortKey,        tagDOI,          tagISBN,
-    tagSearchKey,      tagRecord,       tagFirstName,    tagLastName,        tagWebURL,          tagORCID,          tagPicture,      tagPictureCrop,
-    tagWhyFamous,      tagName,         tagAbbreviation, tagCity,            tagDescription,     tagTitle,          tagFileName,     tagYear,
-    tagMiscBib,        tagAuthor,       tagInFileName,   tagEditor,          tagTranslator,      tagAnnotated,      tagStartPageNum, tagEndPageNum,
-    tagBibEntryKey,    tagComments,     tagLargerDebate, tagListName,        tagCounterargument, tagDefinition,     tagText,         tagActive,
-    tagLargerPosition, tagParentNote,   tagFolder,       tagLargerWork,      tagParentLabel,     tagParentGlossary, tagParentGroup,  tagParentFolder,
-    tagCreationDate,   tagModifiedDate, tagViewDate,     tagDisplayRecord,   tagKeyWork,         tagLinkedRecord,   tagParentInst,   tagHub,
-    tagPictureFolder,  tagPast,         tagMainText;
 
-    private final static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
-
-    public int getNum()                    { return tagToNum.get(this); }
-    public static Tag getTagByNum(int num) { return tagToNum.inverse().get(num); }
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getTypeName(RecordType type)
+  public static String getTypeName(RecordType type)
   {
-    return nullSwitch(typeToTag.get(type), type == hdtNone ? "All" : "Unknown", tagToHeader::get);
+    return nullSwitch(getTag(type), type == hdtNone ? "All" : "Unknown", tag -> tag.header);
   }
 
 //---------------------------------------------------------------------------

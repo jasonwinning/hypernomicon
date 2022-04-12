@@ -662,7 +662,7 @@ public class FileManager extends HyperDlg
             StringBuilder confirmMessage = new StringBuilder("The file \"" + entry.getValue() + "\" is assigned to the following record(s):\n\n");
 
             set.stream().filter(hyperPath -> hyperPath.getRecordType() != hdtNone).forEach(hyperPath ->
-              confirmMessage.append(db.getTypeName(hyperPath.getRecord().getType())).append(" ID ")
+              confirmMessage.append(getTypeName(hyperPath.getRecord().getType())).append(" ID ")
                             .append(hyperPath.getRecord().getID()).append(": ")
                             .append(hyperPath.getRecord().getCBText()).append('\n'));
 
@@ -1464,7 +1464,7 @@ public class FileManager extends HyperDlg
       hasMore = db.getRelatives(fileRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS);
 
       HyperTableRow row = recordTable.newDataRow();
-      row.setCellValue(0, fileRecord, db.getTypeName(fileRecord.getType()));
+      row.setCellValue(0, fileRecord, getTypeName(fileRecord.getType()));
       row.setCellValue(1, fileRecord, fileRecord.listName());
     }
 
@@ -1485,7 +1485,7 @@ public class FileManager extends HyperDlg
       if (relative.getType() != hdtFolder)
       {
         HyperTableRow row = recordTable.newDataRow();
-        row.setCellValue(0, relative, db.getTypeName(relative.getType()));
+        row.setCellValue(0, relative, getTypeName(relative.getType()));
         row.setCellValue(1, relative, relative.listName());
       }
     }

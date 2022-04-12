@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OnlineBase;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;

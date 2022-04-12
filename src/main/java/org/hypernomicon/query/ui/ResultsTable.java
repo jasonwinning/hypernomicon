@@ -26,6 +26,7 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -34,7 +35,7 @@ import org.hypernomicon.view.wrappers.HasRightClickableRows;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
@@ -233,7 +234,7 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
     thread.start();
   }
 
-  private MutableBoolean buttonAdded = new MutableBoolean(false);
+  private final MutableBoolean buttonAdded = new MutableBoolean(false);
   private boolean commencedAddingButton = false;
 
 //---------------------------------------------------------------------------
@@ -241,7 +242,7 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
   private void addDateColumn(Tag dateTag)
   {
-    ResultColumn<Instant> col = new ResultColumn<>(db.getTagHeader(dateTag));
+    ResultColumn<Instant> col = new ResultColumn<>(dateTag.header);
     col.setCellValueFactory(cellData -> cellData.getValue().getDateCellValue(dateTag).getObservable());
     generalGroup.add(new ColumnGroupItem(col, tv, firstNonGeneralColumnNdx()));
   }

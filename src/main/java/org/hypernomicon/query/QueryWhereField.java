@@ -18,7 +18,6 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -27,7 +26,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
@@ -92,7 +91,7 @@ public class QueryWhereField extends RecordQuery
     HyperDataCategory cat = hdcString;
     boolean catSet = false;
 
-    for (HDI_Schema schema : db.getSchemasByTag(getTagByNum(row.getID(2))))
+    for (HDI_Schema schema : db.getSchemasByTag(Tag.getTag(row.getID(2))))
     {
       RelationType relType = schema.getRelType();
 
@@ -146,7 +145,7 @@ public class QueryWhereField extends RecordQuery
 
   @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
   {
-    Tag tag = getTagByNum(getCellID(op1));
+    Tag tag = Tag.getTag(getCellID(op1));
     HDI_Schema schema = record.getSchema(tag);
 
     if (schema == null) return false;

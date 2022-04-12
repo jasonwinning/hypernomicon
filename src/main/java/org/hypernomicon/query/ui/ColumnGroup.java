@@ -17,8 +17,8 @@
 
 package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.query.ui.SelectColumnsDlgCtrlr.TypeCheckBox;
@@ -57,7 +57,7 @@ final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
   ColumnGroup(RecordType recordType, Set<Tag> tags)
   {
     this.recordType = recordType;
-    caption = db.getTypeName(recordType);
+    caption = getTypeName(recordType);
 
     tags.forEach(tag ->
     {

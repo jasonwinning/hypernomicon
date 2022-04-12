@@ -18,7 +18,7 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;

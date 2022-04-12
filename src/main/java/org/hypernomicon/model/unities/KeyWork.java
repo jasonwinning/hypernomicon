@@ -22,6 +22,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.RecordType;
@@ -247,7 +248,7 @@ public class KeyWork implements Comparable<KeyWork>
     return updateSearchKeyAndCheckIfActive() ?
       searchKey
     :
-      "<a id=\"" + recordPtr.getID() + "\" type=\"" + db.getTypeTagStr(recordPtr.getType()) + "\">" + searchKey + "</a>";
+      "<a id=\"" + recordPtr.getID() + "\" type=\"" + Tag.getTypeTagStr(recordPtr.getType()) + "\">" + searchKey + "</a>";
   }
 
   //---------------------------------------------------------------------------

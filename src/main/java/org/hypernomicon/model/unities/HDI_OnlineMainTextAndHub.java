@@ -21,14 +21,15 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;

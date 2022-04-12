@@ -30,8 +30,8 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.RestoreException;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.Tag;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

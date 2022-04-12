@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 
 public final class ObjectGroup

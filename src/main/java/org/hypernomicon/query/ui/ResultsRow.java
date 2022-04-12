@@ -17,6 +17,7 @@
 
 package org.hypernomicon.query.ui;
 
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.ui.ResultsTable.ResultCellValue;
@@ -54,7 +55,7 @@ public final class ResultsRow extends AbstractRow<HDT_Record, ResultsRow>
   String getRecordTypeStr()
   {
     RecordType type = getRecordType();
-    return type == hdtNone ? "" : db.getTypeName(type);
+    return type == hdtNone ? "" : getTypeName(type);
   }
 
 //---------------------------------------------------------------------------

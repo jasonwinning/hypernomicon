@@ -18,6 +18,7 @@
 package org.hypernomicon.model.relations;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.items.*;
@@ -51,12 +52,12 @@ import com.google.common.collect.Table.Cell;
 import javafx.application.Platform;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 //---------------------------------------------------------------------------
@@ -913,7 +914,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     public int getCode()                          { return code; }
     public String getTitle()                      { return title; }
     public Tag getSubjTag()                       { return subjTag; }
-    public String getSubjTitle()                  { return subjTag == tagNone ? subjTitle : db.getTagHeader(subjTag); }
+    public String getSubjTitle()                  { return subjTag == tagNone ? subjTitle : subjTag.header; }
   }
 
 //---------------------------------------------------------------------------

@@ -22,7 +22,7 @@ import java.util.List;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 
 public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extends HDI_Base

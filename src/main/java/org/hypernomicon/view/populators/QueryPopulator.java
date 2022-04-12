@@ -94,7 +94,7 @@ public class QueryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class QueryCell extends HyperTableCell
+  public static final class QueryCell extends HyperTableCell
   {
     private final Query<?> query;
 

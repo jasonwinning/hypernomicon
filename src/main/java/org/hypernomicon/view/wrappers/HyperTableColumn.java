@@ -18,8 +18,8 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -200,7 +200,7 @@ public class HyperTableColumn
               }
             }
 
-            setToolTip(this, db.getTypeName(type));
+            setToolTip(this, getTypeName(type));
           }
         });
 

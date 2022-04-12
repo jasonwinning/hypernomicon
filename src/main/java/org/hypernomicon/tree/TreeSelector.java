@@ -17,8 +17,8 @@
 
 package org.hypernomicon.tree;
 
-import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -28,7 +28,6 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Glossary;
@@ -133,7 +132,7 @@ public class TreeSelector
 
     for (int ndx = 0; ndx <= lastNdx; ndx++)
     {
-      msg += db.getTypeName(targetTypes.get(ndx).targetType);
+      msg += getTypeName(targetTypes.get(ndx).targetType);
 
       if      ((ndx == 0) && (lastNdx == 1)) msg += " or ";
       else if (ndx == (lastNdx - 1))         msg += ", or ";
@@ -243,22 +242,22 @@ public class TreeSelector
     if (record2.getType() == record1.getType())
       return falseWithErrMsgCond(showErrMsg, "You cannot unite records of the same type.");
 
-    if (HyperDB.isUnstoredRecord(record1.getID(), record1.getType()))
-      return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record cannot be united with another record.");
+    if (isUnstoredRecord(record1.getID(), record1.getType()))
+      return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record1.getType()) + " record cannot be united with another record.");
 
-    if (HyperDB.isUnstoredRecord(record2.getID(), record2.getType()))
-      return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record cannot be united with another record.");
+    if (isUnstoredRecord(record2.getID(), record2.getType()))
+      return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record2.getType()) + " record cannot be united with another record.");
 
     if (record2.hasHub())
     {
       if (record2.getHub().getSpoke(record1.getType()) != null)
-        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already united with a " + db.getTypeName(record1.getType()) + " record.");
+        return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(record1.getType()) + " record.");
 
       if ((record1.getType() == hdtDebate) && (record2.getHub().getSpoke(hdtPosition) != null))
-        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already united with a " + db.getTypeName(hdtPosition) + " record.");
+        return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(hdtPosition) + " record.");
 
       if ((record1.getType() == hdtPosition) && (record2.getHub().getSpoke(hdtDebate) != null))
-        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already united with a " + db.getTypeName(hdtDebate) + " record.");
+        return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(hdtDebate) + " record.");
 
       if (record1.hasHub())
         return falseWithErrMsgCond(showErrMsg, "Both records are already united with other records.");
@@ -267,13 +266,13 @@ public class TreeSelector
     if (record1.hasHub())
     {
       if (record1.getHub().getSpoke(record2.getType()) != null)
-        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already united with a " + db.getTypeName(record2.getType()) + " record.");
+        return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(record2.getType()) + " record.");
 
       if ((record2.getType() == hdtDebate) && (record1.getHub().getSpoke(hdtPosition) != null))
-        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already united with a " + db.getTypeName(hdtPosition) + " record.");
+        return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(hdtPosition) + " record.");
 
       if ((record2.getType() == hdtPosition) && (record1.getHub().getSpoke(hdtDebate) != null))
-        falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already united with a " + db.getTypeName(hdtDebate) + " record.");
+        falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(hdtDebate) + " record.");
     }
 
     ui.uniteRecords(record1, record2, showErrMsg == false);

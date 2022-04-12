@@ -121,7 +121,7 @@ public class MainText
   String getDisplayItemsString()
   {
     return displayItems.stream().filter(item -> item.type == diRecord)
-                                .map(item -> item.record.listName() + " (" + db.getTypeName(item.record.getType()) + ')')
+                                .map(item -> item.record.listName() + " (" + getTypeName(item.record.getType()) + ')')
                                 .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 

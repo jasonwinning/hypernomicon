@@ -19,7 +19,7 @@ package org.hypernomicon.view.mainText;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.KeywordLinkList.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
@@ -44,6 +44,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
@@ -427,7 +428,7 @@ public final class MainTextUtil
 
   private static String recordTooltip(HDT_Record record)
   {
-    String typeName = db.getTypeName(record.getType());
+    String typeName = getTypeName(record.getType());
 
     if (record.getType() == hdtWork)
     {
@@ -945,7 +946,7 @@ public final class MainTextUtil
 
   static String makeElementID(HDT_Record record)
   {
-    return db.getTypeTagStr(record.getType()) + record.getID();
+    return Tag.getTypeTagStr(record.getType()) + record.getID();
   }
 
 //---------------------------------------------------------------------------

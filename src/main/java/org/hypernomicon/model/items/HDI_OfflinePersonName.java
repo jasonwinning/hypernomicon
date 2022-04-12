@@ -18,12 +18,12 @@
 package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.HyperDB.Tag;
 
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import java.util.Map;
 

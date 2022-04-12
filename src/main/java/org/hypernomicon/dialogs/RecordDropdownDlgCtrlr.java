@@ -60,7 +60,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
   private void init(RecordType recordType, Predicate<Integer> idFilter)
   {
     hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, idFilter, false));
-    typeName = db.getTypeName(recordType);
+    typeName = getTypeName(recordType);
   }
 
 //---------------------------------------------------------------------------

@@ -19,7 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
@@ -37,6 +37,7 @@ import org.hypernomicon.dialogs.NewInstDlgCtrlr;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.PictureDlgCtrlr;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
@@ -848,7 +849,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     htArguments.addDefaultMenuItems();
 
     EnumSet.of(hdtArgument, hdtPosition, hdtDebate, hdtTerm, hdtNote, hdtWork, hdtMiscFile, hdtInvestigation, hdtPerson).forEach(type ->
-      htArguments.addContextMenuItem(db.getTypeName(type) + " Record...", type.getRecordClass(), record -> ui.goToRecord(record, true)));
+      htArguments.addContextMenuItem(getTypeName(type) + " Record...", type.getRecordClass(), record -> ui.goToRecord(record, true)));
   }
 
 //---------------------------------------------------------------------------

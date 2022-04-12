@@ -33,7 +33,7 @@ import com.google.common.collect.Sets;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 
 public abstract class Authors implements Iterable<Author>
 {

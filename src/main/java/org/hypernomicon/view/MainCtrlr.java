@@ -48,6 +48,7 @@ import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.fileManager.FileRow;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
@@ -491,7 +492,7 @@ public final class MainCtrlr
       RecordType type = getRecordTypeByTabEnum(getHyperTabByTab(tab).getTabEnum());
       if (type == hdtNone) return;
 
-      MenuItem menuItem = new MenuItem(db.getTypeName(type));
+      MenuItem menuItem = new MenuItem(getTypeName(type));
       menuItem.setOnAction(event -> createNew(type));
       createMenuItems.add(menuItem);
     });
@@ -943,7 +944,7 @@ public final class MainCtrlr
       else if (num == 0)
       {
         discardLastQuery(backClick);
-        lblStatus.setText("No results: searched " + db.getTypeName(type) + " records for \"" + query + '"');
+        lblStatus.setText("No results: searched " + getTypeName(type) + " records for \"" + query + '"');
       }
     });
   }
@@ -1185,7 +1186,7 @@ public final class MainCtrlr
       db.prefs.putInt(PREF_KEY_FILE_ID       , fileHyperTab    ().activeID());
       db.prefs.putInt(PREF_KEY_NOTE_ID       , noteHyperTab    ().activeID());
 
-      db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
+      db.prefs.put(PREF_KEY_RECORD_TYPE, Tag.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
 
       boolean watcherWasRunning = folderTreeWatcher.stop();
 
@@ -1456,7 +1457,7 @@ public final class MainCtrlr
       if (ultraTrim(name).isEmpty())
         name = activeTab().recordName();
 
-      if (confirmDialog("Type: " + db.getTypeName(type) + '\n' +
+      if (confirmDialog("Type: " + getTypeName(type) + '\n' +
                         "Name: " + name + '\n' +
                         "ID: " + record.getID() + "\n\n" + msg) == false) return false;
     }
@@ -1740,7 +1741,7 @@ public final class MainCtrlr
       if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.get(0).getRecord() != record)))
         return;
 
-      lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + record.listName() + '"');
+      lblStatus.setText("No mentioners: " + getTypeName(type).toLowerCase() + " \"" + record.listName() + '"');
     }
 
     discardLastQuery(backClick);
@@ -1828,7 +1829,7 @@ public final class MainCtrlr
   private static boolean revertToDiskCopy(HDT_Record record)
   {
     boolean success = true;
-    String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + '"';
+    String recordStr = getTypeName(record.getType()) + " \"" + record.getCBText() + '"';
 
     HDT_Hub hub = record.isUnitable() ? ((HDT_RecordWithMainText) record).getHub() : null;
     RecordState backupState = record.getRecordStateBackup(),
@@ -1908,7 +1909,7 @@ public final class MainCtrlr
 
     enableControls(db.isLoaded());
 
-    viewSequence.init(getTabEnumByRecordType(db.parseTypeTagStr(db.prefs.get(PREF_KEY_RECORD_TYPE, ""))));
+    viewSequence.init(getTabEnumByRecordType(Tag.parseTypeTagStr(db.prefs.get(PREF_KEY_RECORD_TYPE, ""))));
 
     if (db.bibLibraryIsLinked() || db.prefs.getBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true) == false)
       return;
@@ -2453,7 +2454,7 @@ public final class MainCtrlr
 //      btnRevert.setDisable(changed == false);
 
       btnCreateNew.setVisible(true);
-      setToolTip(btnCreateNew, "Create a new " + db.getTypeName(getRecordTypeByTabEnum(activeTabEnum)) + " record");
+      setToolTip(btnCreateNew, "Create a new " + getTypeName(getRecordTypeByTabEnum(activeTabEnum)) + " record");
 
       btnDecrement.setDisable((count == 0) || (ndx == 0));
       btnIncrement.setDisable((count == 0) || (ndx == (count - 1)));
@@ -2510,7 +2511,7 @@ public final class MainCtrlr
     {
       String text = HyperTableCell.getCellText(hcbGoTo.selectedHTC()).trim();
       if (text.length() > 0)
-        lblStatus.setText("No results: searched " + db.getTypeName(selectorType()) + " records for \"" + text + '"');
+        lblStatus.setText("No results: searched " + getTypeName(selectorType()) + " records for \"" + text + '"');
 
       return;
     }

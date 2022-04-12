@@ -51,8 +51,8 @@ public class ChangeParentDlgCtrlr extends HyperDlg
 
   private ChangeParentDlgCtrlr init(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
   {
-    label1.setText("The " + db.getTypeName(dragTargetEdge.child.getType()) + " record:");
-    label2.setText("will be attached under the " + db.getTypeName(dragTargetEdge.parent.getType()) + " record:");
+    label1.setText("The " + getTypeName(dragTargetEdge.child.getType()) + " record:");
+    label2.setText("will be attached under the " + getTypeName(dragTargetEdge.parent.getType()) + " record:");
 
     tfChild.setText(dragTargetEdge.child.name());
     tfNewParent.setText(dragTargetEdge.parent.name());

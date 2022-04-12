@@ -18,7 +18,7 @@
 package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -166,9 +166,9 @@ public class HDT_Hub extends HDT_RecordWithMainText
     if ((spoke1.isUnitable() == false) || (spoke2.isUnitable() == false))
       return falseWithErrorMessage("One or more of the records are not of a unitable type.");
     if (isUnstoredRecord(spoke1.getID(), spoke1.getType()))
-      return falseWithErrorMessage("That " + db.getTypeName(spoke1.getType()) + " record cannot be united to another record.");
+      return falseWithErrorMessage("That " + getTypeName(spoke1.getType()) + " record cannot be united to another record.");
     if (isUnstoredRecord(spoke2.getID(), spoke2.getType()))
-      return falseWithErrorMessage("That " + db.getTypeName(spoke2.getType()) + " record cannot be united to another record.");
+      return falseWithErrorMessage("That " + getTypeName(spoke2.getType()) + " record cannot be united to another record.");
 
     HDT_Hub hub;
 

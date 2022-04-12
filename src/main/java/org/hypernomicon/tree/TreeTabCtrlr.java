@@ -433,7 +433,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private static void renameRecord(HDT_Record record)
   {
-    String typeName = db.getTypeName(record.getType());
+    String typeName = getTypeName(record.getType());
 
     if (isUnstoredRecord(record.getID(), record.getType()))
     {

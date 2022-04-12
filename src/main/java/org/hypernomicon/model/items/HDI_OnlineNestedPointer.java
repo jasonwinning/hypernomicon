@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.util.Util.*;

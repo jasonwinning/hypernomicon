@@ -17,9 +17,10 @@
 
 package org.hypernomicon.model;
 
+import static org.hypernomicon.model.HyperDB.*;
+
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import static org.hypernomicon.model.HyperDB.*;
 
 @SuppressWarnings("serial")
 public final class Exceptions
@@ -30,7 +31,7 @@ public final class Exceptions
   {
     public InvalidItemException(int recordID, RecordType recordType, String itemName)
     {
-      super("Invalid item tag: \"" + itemName + "\". Record type: " + db.getTypeTagStr(recordType) + " ID : " + recordID);
+      super("Invalid item tag: \"" + itemName + "\". Record type: " + Tag.getTypeTagStr(recordType) + " ID : " + recordID);
     }
   }
 
@@ -49,7 +50,7 @@ public final class Exceptions
   {
     DuplicateRecordException(int id, RecordType type)
     {
-      super("Duplicate record: type = " + db.getTypeTagStr(type) + ", ID = " + id);
+      super("Duplicate record: type = " + Tag.getTypeTagStr(type) + ", ID = " + id);
     }
   }
 
@@ -62,8 +63,8 @@ public final class Exceptions
 
     SearchKeyException(boolean tooShort, HDT_Record record, String key)
     {
-      super(tooShort ? "Search key: \"" + key + "\" is too short. Record type: " + db.getTypeName(record.getType()) + " ID : " + record.getID() :
-                       "Duplicate search key: \"" + key + "\". Record type: " + db.getTypeName(record.getType()) + " ID : " + record.getID());
+      super(tooShort ? "Search key: \"" + key + "\" is too short. Record type: " + getTypeName(record.getType()) + " ID : " + record.getID() :
+                       "Duplicate search key: \"" + key + "\". Record type: " + getTypeName(record.getType()) + " ID : " + record.getID());
 
       this.tooShort = tooShort;
     }
@@ -100,8 +101,8 @@ public final class Exceptions
   {
     public RelationCycleException(HDT_Record child, HDT_Record parent)
     {
-      super("Unable to assign " + db.getTypeName(child.getType()) + " ID " + child.getID() + " as child of " +
-            db.getTypeName(parent.getType()) + " ID " + parent.getID() + ": A cycle would result.");
+      super("Unable to assign " + getTypeName(child.getType()) + " ID " + child.getID() + " as child of " +
+            getTypeName(parent.getType()) + " ID " + parent.getID() + ": A cycle would result.");
     }
   }
 

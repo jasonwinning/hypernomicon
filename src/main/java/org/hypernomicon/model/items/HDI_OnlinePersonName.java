@@ -17,12 +17,12 @@
 
 package org.hypernomicon.model.items;
 
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 
 import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Person;
 
 public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>

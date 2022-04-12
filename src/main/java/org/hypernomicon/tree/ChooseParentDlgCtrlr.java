@@ -101,7 +101,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     {
       RecordType type = it.next();
 
-      title += db.getTypeName(type);
+      title += getTypeName(type);
 
       if (ctr < types.size())
       {
@@ -138,8 +138,8 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     return edge.edgeToDetach() == null ?
       true
     :
-      falseWithErrorMessage("A " + db.getTypeName(child .getType()).toLowerCase() + " cannot have more than one parent " +
-                                   db.getTypeName(parent.getType()).toLowerCase() + " record.");
+      falseWithErrorMessage("A " + getTypeName(child .getType()).toLowerCase() + " cannot have more than one parent " +
+                                   getTypeName(parent.getType()).toLowerCase() + " record.");
   }
 
 //---------------------------------------------------------------------------

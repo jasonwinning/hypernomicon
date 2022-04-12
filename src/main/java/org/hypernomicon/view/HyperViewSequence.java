@@ -372,7 +372,7 @@ public class HyperViewSequence
         default           :                                break;
       }
 
-      String typeName = db.getTypeName(record.getType());
+      String typeName = getTypeName(record.getType());
 
       if (record.getType() == hdtWork)
       {

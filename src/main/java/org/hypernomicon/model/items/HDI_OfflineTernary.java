@@ -23,7 +23,7 @@ import static org.hypernomicon.model.items.HDI_OfflineTernary.Ternary.*;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 

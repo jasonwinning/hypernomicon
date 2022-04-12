@@ -17,18 +17,17 @@
 
 package org.hypernomicon.model;
 
-import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 
 import com.google.common.collect.ImmutableList;

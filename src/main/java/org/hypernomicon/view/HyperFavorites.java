@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view;
 
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -47,7 +48,7 @@ public class HyperFavorites
   {
     public FavMenuItem(HDT_Record record)
     {
-      super(db.getTypeName(record.getType()) + ": " + record.getCBText());
+      super(getTypeName(record.getType()) + ": " + record.getCBText());
       isQuery = false;
       favRecord = new HyperTableCell(record, record.getCBText());
       query = null;
@@ -126,7 +127,7 @@ public class HyperFavorites
       HyperTableCell cell = favItem.favRecord;
 
       node.node("ids").putInt(String.valueOf(favNdx), cell.getID());
-      node.node("types").put(String.valueOf(favNdx), db.getTypeTagStr(cell.getType()));
+      node.node("types").put(String.valueOf(favNdx), Tag.getTypeTagStr(cell.getType()));
     }
 
     for (int queryNdx = 0; queryNdx < queryList.size(); queryNdx++)
@@ -151,7 +152,7 @@ public class HyperFavorites
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).put("text", getCellText(cell));
 
           RecordType type = getCellType(cell);
-          String typeStr = type == hdtNone ? "all" : db.getTypeTagStr(type);
+          String typeStr = type == hdtNone ? "all" : Tag.getTypeTagStr(type);
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).put("type", typeStr);
         }
       }
@@ -172,7 +173,7 @@ public class HyperFavorites
       if ("record".equals(node.node("favTypes").get(String.valueOf(ndx), "")))
       {
         int id = node.node("ids").getInt(String.valueOf(ndx), -1);
-        RecordType type = db.parseTypeTagStr(node.node("types").get(String.valueOf(ndx), ""));
+        RecordType type = Tag.parseTypeTagStr(node.node("types").get(String.valueOf(ndx), ""));
 
         nullSwitch((HDT_Record)db.records(type).getByID(id), record -> mainList.add(new FavMenuItem(record)));
       }
@@ -194,7 +195,7 @@ public class HyperFavorites
             String text    = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("text", ""),
                    typeStr = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("type", "all");
 
-            row.cells[colNdx] = new HyperTableCell(id, text, "all".equals(typeStr) ? hdtNone : db.parseTypeTagStr(typeStr));
+            row.cells[colNdx] = new HyperTableCell(id, text, "all".equals(typeStr) ? hdtNone : Tag.parseTypeTagStr(typeStr));
           }
 
           query.rows.add(row);

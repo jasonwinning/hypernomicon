@@ -18,6 +18,7 @@
 package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;

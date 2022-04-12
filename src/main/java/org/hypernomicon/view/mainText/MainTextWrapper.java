@@ -539,7 +539,7 @@ public final class MainTextWrapper
           else
             innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, false)).append("<summary><b>");
 
-          innerHtml.append(db.getTypeName(item.record.getType())).append(": ")
+          innerHtml.append(getTypeName(item.record.getType())).append(": ")
                    .append(getKeywordLink(cbText, new KeywordLink(0, cbText.length(), new SearchKeyword(cbText, item.record)), "text-decoration: none;"))
                    .append("</b></summary><br><div style=\"margin-left: 3.5em;\">");
 

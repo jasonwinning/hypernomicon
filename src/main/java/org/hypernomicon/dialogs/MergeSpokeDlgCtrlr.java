@@ -53,8 +53,8 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
 
   private MergeSpokeDlgCtrlr init(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2)
   {
-    rbDesc1.setText(db.getTypeName(record1.getType()));
-    rbDesc2.setText(db.getTypeName(record2.getType()));
+    rbDesc1.setText(getTypeName(record1.getType()));
+    rbDesc2.setText(getTypeName(record2.getType()));
 
     mainText1 = record1.getMainText().getHtml();
     mainText2 = record2.getMainText().getHtml();

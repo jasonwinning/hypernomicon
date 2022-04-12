@@ -17,14 +17,13 @@
 
 package org.hypernomicon.model.items;
 
-import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
@@ -70,7 +69,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
     if (objID > 0)
       idStr = " id=" + QUOTE + objID + QUOTE;
 
-    xml.append("  <").append(db.getTagStr(tag)).append(idStr).append('>')
+    xml.append("  <").append(tag.name).append(idStr).append('>')
        .append(xmlContentEscaper.escape(value))
        .append(System.lineSeparator());
 
@@ -80,7 +79,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
       nestedItem.writeToXml(nestedTag, xml);
     });
 
-    xml.append("  </").append(db.getTagStr(tag)).append('>')
+    xml.append("  </").append(tag.name).append('>')
        .append(System.lineSeparator());
   }
 
@@ -108,13 +107,13 @@ public abstract class HDI_OfflineBase extends HDI_Base
 
     String idStr = "", typeStr = "", ordStr = "";
 
-    if (objID > 0)          idStr   = " id="   + QUOTE + objID                     + QUOTE;
-    if (objType != hdtNone) typeStr = " type=" + QUOTE + db.getTypeTagStr(objType) + QUOTE;
-    if (ord > -1)           ordStr  = " ord="  + QUOTE + ord                       + QUOTE;
+    if (objID > 0)          idStr   = " id="   + QUOTE + objID                      + QUOTE;
+    if (objType != hdtNone) typeStr = " type=" + QUOTE + Tag.getTypeTagStr(objType) + QUOTE;
+    if (ord > -1)           ordStr  = " ord="  + QUOTE + ord                        + QUOTE;
 
-    xml.append("  <").append(db.getTagStr(tag)).append(typeStr).append(idStr).append(ordStr).append('>')
+    xml.append("  <").append(tag.name).append(typeStr).append(idStr).append(ordStr).append('>')
        .append(xmlContentEscaper.escape(value))
-       .append("</").append(db.getTagStr(tag)).append('>')
+       .append("</").append(tag.name).append('>')
        .append(System.lineSeparator());
   }
 
@@ -124,9 +123,9 @@ public abstract class HDI_OfflineBase extends HDI_Base
   protected static void writeStringTag(StringBuilder xml, Tag tag, String tagText)
   {
     if (tagText.isEmpty()) return;
-    xml.append("  <").append(db.getTagStr(tag)).append('>')
+    xml.append("  <").append(tag.name).append('>')
        .append(xmlContentEscaper.escape(tagText))
-       .append("</").append(db.getTagStr(tag)).append('>')
+       .append("</").append(tag.name).append('>')
        .append(System.lineSeparator());
   }
 
@@ -135,9 +134,9 @@ public abstract class HDI_OfflineBase extends HDI_Base
 
   static void writeBooleanTag(StringBuilder xml, Tag tag, boolean tf)
   {
-    xml.append("  <").append(db.getTagStr(tag)).append('>')
+    xml.append("  <").append(tag.name).append('>')
        .append(tf ? "true" : "false")
-       .append("</").append(db.getTagStr(tag)).append('>')
+       .append("</").append(tag.name).append('>')
        .append(System.lineSeparator());
   }
 

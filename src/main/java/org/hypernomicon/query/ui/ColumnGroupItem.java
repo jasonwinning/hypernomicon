@@ -17,10 +17,9 @@
 
 package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 
-import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.ui.ResultsTable.ResultColumn;
 
@@ -64,7 +63,7 @@ final class ColumnGroupItem
   {
     this.tag = tag;
     relType = RelationType.rtNone;
-    caption = db.getTagHeader(tag);
+    caption = tag.header;
   }
 
   //---------------------------------------------------------------------------

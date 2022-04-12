@@ -19,7 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -30,6 +30,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -76,7 +77,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
     htParents.buildRows(curArgument.positions, (row, position) ->
     {
-      row.setCellValue(2, db.getTypeName(hdtPosition), hdtPosition);
+      row.setCellValue(2, getTypeName(hdtPosition), hdtPosition);
       row.setCellValue(3, position, position.listName());
 
       nullSwitch(curArgument.getPosVerdict(position), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
@@ -84,7 +85,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
     htParents.buildRows(curArgument.counteredArgs, (row, counteredArg) ->
     {
-      row.setCellValue(2, db.getTypeName(hdtArgument), hdtArgument);
+      row.setCellValue(2, getTypeName(hdtArgument), hdtArgument);
       row.setCellValue(3, counteredArg, counteredArg.listName());
 
       nullSwitch(curArgument.getArgVerdict(counteredArg), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));

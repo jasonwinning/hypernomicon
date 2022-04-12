@@ -45,6 +45,7 @@ import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
 import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.model.KeywordLinkList;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -194,7 +195,7 @@ public class MainTextCtrlr
 
       if (oldType != newType)
       {
-        appPrefs.put(PREF_KEY_DISPLAY_RECORD_TYPE, db.getTypeTagStr(newType));
+        appPrefs.put(PREF_KEY_DISPLAY_RECORD_TYPE, Tag.getTypeTagStr(newType));
 
         ((RecordByTypePopulator)hcbName.getPopulator()).setRecordType(dummyRow, newType);
         if (oldType != hdtNone)
@@ -259,7 +260,7 @@ public class MainTextCtrlr
         {
           case diDescription : setText("This record's description"); break;
           case diKeyWorks    : setText("Key works"); break;
-          case diRecord      : setText(db.getTypeName(item.record.getType()) + ": " + item.record.getCBText()); break;
+          case diRecord      : setText(getTypeName(item.record.getType()) + ": " + item.record.getCBText()); break;
           default            : setText(""); break;
         }
       }
@@ -666,7 +667,7 @@ public class MainTextCtrlr
     subDoc.getElementsByTag("a").forEach(aElement ->
     {
       int id = parseInt(aElement.attributes().get("id") , -1);
-      RecordType type = db.parseTypeTagStr(aElement.attributes().get("type"));
+      RecordType type = Tag.parseTypeTagStr(aElement.attributes().get("type"));
 
       if ((id > 0) && (type != hdtNone))
       {
@@ -774,7 +775,7 @@ public class MainTextCtrlr
 
     if (hcbType.selectedType() == hdtNone)
     {
-      RecordType type = db.parseTypeTagStr(appPrefs.get(PREF_KEY_DISPLAY_RECORD_TYPE, ""));
+      RecordType type = Tag.parseTypeTagStr(appPrefs.get(PREF_KEY_DISPLAY_RECORD_TYPE, ""));
 
       hcbType.selectType(type == hdtNone ? hdtConcept : type);
     }

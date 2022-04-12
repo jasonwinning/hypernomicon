@@ -19,7 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -29,6 +29,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.ObjectOrderDlgCtrlr;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;

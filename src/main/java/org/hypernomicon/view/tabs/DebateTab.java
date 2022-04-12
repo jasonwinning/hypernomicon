@@ -69,13 +69,13 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     htParents.buildRows(curDebate.largerDebates, (row, otherDebate) ->
     {
-      row.setCellValue(2, db.getTypeName(hdtDebate), hdtDebate);
+      row.setCellValue(2, getTypeName(hdtDebate), hdtDebate);
       row.setCellValue(3, otherDebate, otherDebate.listName());
     });
 
     htParents.buildRows(curDebate.largerPositions, (row, pos) ->
     {
-      row.setCellValue(2, db.getTypeName(hdtPosition), hdtPosition);
+      row.setCellValue(2, getTypeName(hdtPosition), hdtPosition);
       row.setCellValue(3, pos, pos.listName());
     });
 
