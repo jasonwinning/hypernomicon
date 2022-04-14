@@ -31,7 +31,7 @@ public final class Exceptions
   {
     public InvalidItemException(int recordID, RecordType recordType, String itemName)
     {
-      super("Invalid item tag: \"" + itemName + "\". Record type: " + Tag.getTypeTagStr(recordType) + " ID : " + recordID);
+      super("Invalid item tag: \"" + itemName + "\". Record type: " + Tag.getTypeTagStr(recordType) + " ID: " + recordID);
     }
   }
 

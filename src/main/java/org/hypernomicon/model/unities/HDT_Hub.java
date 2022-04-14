@@ -20,7 +20,6 @@ package org.hypernomicon.model.unities;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
@@ -228,7 +227,6 @@ public class HDT_Hub extends HDT_RecordWithMainText
       spoke.mainText = mainText;
     });
 
-    nullSwitch(hub.getLabel(), HDT_WorkLabel::refreshSubjects);
     hub.modifyNow();
 
     return true;

@@ -21,7 +21,9 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
+import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.MainCtrlr;
@@ -114,7 +116,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     cbWorkChange();
 
-    htLabels.buildRows(curMiscFile.labels, (row, label) -> row.setCellValue(2, label, label.extendedText()));
+    htLabels.buildRows(curMiscFile.labelStream(), (row, label) -> row.setCellValue(2, label, label.extendedText()));
 
     safeFocus(tfName);
   }
@@ -259,7 +261,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     else
       db.getObjectList(rtAuthorOfFile, curMiscFile, false).clear();
 
-    curMiscFile.setWorkLabels(htLabels.saveToList(2, hdtWorkLabel));
+    MainText.setKeyWorkMentioners(curMiscFile, htLabels.saveToList(2, hdtWorkLabel), HDT_WorkLabel.class);
 
   // Start file type
 

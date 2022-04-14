@@ -203,8 +203,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtConceptOfTerm            : return new RelationSet<>(relType, HDT_Term         .class, HDT_Concept        .class);
       case rtGlossaryOfConcept        : return new RelationSet<>(relType, HDT_Concept      .class, HDT_Glossary       .class);
       case rtParentGlossaryOfGlossary : return new RelationSet<>(relType, HDT_Glossary     .class, HDT_Glossary       .class, true);
-      case rtLabelOfWork              : return new RelationSet<>(relType, HDT_Work         .class, HDT_WorkLabel      .class);
-      case rtLabelOfFile              : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_WorkLabel      .class);
       case rtWorkOfMiscFile           : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Work           .class);
       case rtWorkFileOfWork           : return new RelationSet<>(relType, HDT_Work         .class, HDT_WorkFile       .class,
 
@@ -839,8 +837,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtWorkOfArgument          ( 7, tagArgument            , "Argument(s) having this work as source"),
 
     rtParentLabelOfLabel      (11, "Child Label(s)"       , "Label(s) under this parent label"),
-    rtLabelOfWork             (12, tagWork                , "Work(s) having this label"),
-    rtLabelOfFile             (13, tagMiscFile            , "Misc. File(s) having this label"),
     rtCounterOfArgument       (14, "Countered Argument(s)", "Argument(s) countered by this argument"),
     rtStatusOfPerson          (15, tagPerson              , "Person(s) having this status"),
     rtFieldOfPerson           (16, tagPerson              , "Person(s) having this field"),

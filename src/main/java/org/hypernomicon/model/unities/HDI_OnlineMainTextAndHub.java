@@ -128,10 +128,11 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
           {
             HDI_OfflineHubSpokes spokes = (HDI_OfflineHubSpokes) recordState.items.get(tagLinkedRecord);
 
-            if (spokes.debateID   > 0) db.handleKeyWork(db.debates  .getByID(spokes.debateID  ), keyWorkRecord, true);
-            if (spokes.positionID > 0) db.handleKeyWork(db.positions.getByID(spokes.positionID), keyWorkRecord, true);
-            if (spokes.noteID     > 0) db.handleKeyWork(db.notes    .getByID(spokes.noteID    ), keyWorkRecord, true);
-            if (spokes.conceptID  > 0) db.handleKeyWork(db.concepts .getByID(spokes.conceptID ), keyWorkRecord, true);
+            if (spokes.debateID   > 0) db.handleKeyWork(db.debates   .getByID(spokes.debateID  ), keyWorkRecord, true);
+            if (spokes.positionID > 0) db.handleKeyWork(db.positions .getByID(spokes.positionID), keyWorkRecord, true);
+            if (spokes.noteID     > 0) db.handleKeyWork(db.notes     .getByID(spokes.noteID    ), keyWorkRecord, true);
+            if (spokes.conceptID  > 0) db.handleKeyWork(db.concepts  .getByID(spokes.conceptID ), keyWorkRecord, true);
+            if (spokes.labelID    > 0) db.handleKeyWork(db.workLabels.getByID(spokes.labelID   ), keyWorkRecord, true);
           }
           else
             db.handleKeyWork(recordWMT, keyWorkRecord, true);

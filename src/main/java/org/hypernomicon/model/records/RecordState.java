@@ -147,7 +147,12 @@ public class RecordState
     HDI_OfflineBase item = items.get(tag);
 
     if (item == null)
+    {
+      if (((type == hdtWork) || (type == hdtMiscFile)) && (tag == tagWorkLabel)) // Backwards compatibility with records XML version 1.5. No conversion needed
+        return;                                                                  // because these relations were already redundant with Key Works.
+
       throw new InvalidItemException(id, type, tag.name);
+    }
 
     if (ord != -1)
     {

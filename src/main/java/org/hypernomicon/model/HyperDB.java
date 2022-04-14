@@ -887,7 +887,7 @@ public final class HyperDB
 
       invList.forEach(inv -> inv.getMainText().addKeyworksIfNotPresent());
 
-      works.getByID(entry.getKey()).setInvestigations(invList);
+      MainText.setKeyWorkMentioners(works.getByID(entry.getKey()), invList, HDT_Investigation.class);
     }
 
     runningConversion = false;
@@ -1975,7 +1975,6 @@ public final class HyperDB
       fileTypes        = getAccessor(HDT_FileType       .class);
 
       RelationSet.init(relationSets);
-      MainText.init();
 
   /*****************************************************************************
   * ************************************************************************** *
@@ -2001,7 +2000,6 @@ public final class HyperDB
       addStringItem(hdtMiscFile, tagName);
       addPointerSingle(hdtMiscFile, rtTypeOfFile, tagFileType);
       addPointerSingle(hdtMiscFile, rtWorkOfMiscFile, tagWork);
-      addPointerMulti(hdtMiscFile, rtLabelOfFile, tagWorkLabel);
       addPathItem(hdtMiscFile, rtFolderOfMiscFile, tagFolder, tagFileName);
       addAuthorsItem(hdtMiscFile, rtAuthorOfFile);
       addBooleanItem(hdtMiscFile, tagAnnotated);
@@ -2077,7 +2075,6 @@ public final class HyperDB
       addPointerSingle(hdtWork, rtParentWorkOfWork, tagLargerWork);
       addPointerMulti(hdtWork, rtWorkFileOfWork, tagWorkFile);
       addAuthorsItem(hdtWork, rtAuthorOfWork);
-      addPointerMulti(hdtWork, rtLabelOfWork, tagWorkLabel);
       addStringItem(hdtWork, tagWebURL);
       addStringItem(hdtWork, tagStartPageNum);
       addStringItem(hdtWork, tagEndPageNum);
@@ -2313,20 +2310,10 @@ public final class HyperDB
 
   public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithPath keyWorkRecord, boolean affirm)
   {
-    if (record.getType() != hdtWorkLabel)
-    {
-      Set<HDT_RecordWithMainText> set = keyWorkIndex.get(keyWorkRecord);
-
-      if (affirm)
-      {
-        if (set == null)
-          keyWorkIndex.put(keyWorkRecord, set = new HashSet<>());
-
-        set.add(record);
-      }
-      else if (set != null)
-        set.remove(record);
-    }
+    if (affirm)
+      keyWorkIndex.computeIfAbsent(keyWorkRecord, k -> new HashSet<>()).add(record);
+    else
+      nullSwitch(keyWorkIndex.get(keyWorkRecord), set -> set.remove(record));
 
     nullSwitch(keyWorkHandlers.get(record.getType()), handler -> runInFXThread(() -> handler.handle(keyWorkRecord, record, affirm)));
   }
@@ -2363,6 +2350,16 @@ public final class HyperDB
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),
                       set -> set.stream().map(HDT_RecordWithMainText::mainSpoke));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public <HDT_MT extends HDT_RecordWithMainText> Stream<HDT_MT> keyWorkMentionerStream(HDT_RecordWithPath record, Class<HDT_MT> klazz)
+  {
+    return nullSwitch(keyWorkIndex.get(record),
+                      Stream.empty(),
+                      set -> set.stream().filter(recordWMT -> recordWMT.getClass() == klazz).map(klazz::cast));
   }
 
 //---------------------------------------------------------------------------

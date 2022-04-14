@@ -17,23 +17,17 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.model.records.RecordType.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public class HDT_WorkLabel extends HDT_RecordWithMainText
 {
   public final List<HDT_WorkLabel> parentLabels, subLabels;
-  public final HyperSubjList<HDT_Work, HDT_WorkLabel> works;
-  public final HyperSubjList<HDT_MiscFile, HDT_WorkLabel> miscFiles;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -44,8 +38,6 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
 
     parentLabels = getObjList (rtParentLabelOfLabel);
     subLabels    = getSubjList(rtParentLabelOfLabel);
-    works        = getSubjList(rtLabelOfWork);
-    miscFiles    = getSubjList(rtLabelOfFile);
   }
 
 //---------------------------------------------------------------------------
@@ -69,39 +61,6 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
     }
 
     return name();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  // Changes subjects, leaves key works alone
-  public void refreshSubjects()
-  {
-    getMainText().getKeyWorksUnmod().forEach(keyWork ->
-    {
-      if (keyWork.getRecordType() == hdtWork)
-      {
-        if (works.contains(keyWork.getRecord()) == false)
-          db.getObjectList(rtLabelOfWork, keyWork.getRecord(), true).add(this);
-      }
-      else
-      {
-        if (miscFiles.contains(keyWork.getRecord()) == false)
-          db.getObjectList(rtLabelOfFile, keyWork.getRecord(), true).add(this);
-      }
-    });
-
-    new ArrayList<>(works).forEach(work ->
-    {
-      if (getMainText().getKeyWork(work) == null)
-        db.getObjectList(rtLabelOfWork, work, true).remove(this);
-    });
-
-    new ArrayList<>(miscFiles).forEach(file ->
-    {
-      if (getMainText().getKeyWork(file) == null)
-        db.getObjectList(rtLabelOfFile, file, true).remove(this);
-    });
   }
 
 //---------------------------------------------------------------------------

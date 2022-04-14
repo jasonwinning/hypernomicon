@@ -46,6 +46,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -367,8 +368,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         otherToAdd.add(label);
     };
 
-    if      (mentioned.getType() == hdtWork    ) ((HDT_Work    ) mentioned).labels.forEach(consumer);
-    else if (mentioned.getType() == hdtMiscFile) ((HDT_MiscFile) mentioned).labels.forEach(consumer);
+    if      (mentioned.getType() == hdtWork    ) ((HDT_Work    ) mentioned).labelStream().forEach(consumer);
+    else if (mentioned.getType() == hdtMiscFile) ((HDT_MiscFile) mentioned).labelStream().forEach(consumer);
 
     db.keyWorkMentionerStream(mentioned).forEachOrdered(mentioner ->
     {
@@ -903,7 +904,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       addInvView(inv);
     }
 
-    work.setInvestigations(investigations);
+    MainText.setKeyWorkMentioners(work, investigations, HDT_Investigation.class);
 
     HyperTableCell newValue = new HyperTableCell(investigations.isEmpty() ? -1 : investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
     row.setCellValue(3, newValue);

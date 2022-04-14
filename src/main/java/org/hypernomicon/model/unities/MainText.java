@@ -19,13 +19,13 @@ package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -138,43 +138,6 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void init() // called by DB constructor
-  {
-    RelationChangeHandler handler = (child, parent, affirm) ->
-    {
-      HDT_WorkLabel label = (HDT_WorkLabel) parent;
-      MainText mainText = label.getMainText();
-
-      HDT_RecordWithPath kwRecord = (HDT_RecordWithPath) child;
-      KeyWork keyWork = mainText.getKeyWork(kwRecord);
-
-      if (affirm)
-      {
-        if (keyWork == null)
-        {
-          mainText.keyWorks.add(new KeyWork(kwRecord));
-          mainText.runKeyWorkHandler(kwRecord, true);
-          db.updateMentioner(label);
-        }
-      }
-      else
-      {
-        if (keyWork != null)
-        {
-          mainText.keyWorks.remove(keyWork);
-          mainText.runKeyWorkHandler(kwRecord, false);
-          db.updateMentioner(label);
-        }
-      }
-    };
-
-    db.addRelationChangeHandler(rtLabelOfWork, handler);
-    db.addRelationChangeHandler(rtLabelOfFile, handler);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public KeyWork getKeyWork(HDT_Record child)
   {
     synchronized (keyWorks)
@@ -208,7 +171,6 @@ public class MainText
 
     if (recordWMT.getType() == hdtWorkLabel)
     {
-      ((HDT_WorkLabel) recordWMT).refreshSubjects();
       addDefaultItems();
     }
     else
@@ -412,6 +374,7 @@ public class MainText
     nullSwitch(hub.getPosition(), pos     -> db.handleKeyWork(pos    , keyWorkRecord, affirm));
     nullSwitch(hub.getNote    (), note    -> db.handleKeyWork(note   , keyWorkRecord, affirm));
     nullSwitch(hub.getConcept (), concept -> db.handleKeyWork(concept, keyWorkRecord, affirm));
+    nullSwitch(hub.getLabel   (), label   -> db.handleKeyWork(label  , keyWorkRecord, affirm));
   }
 
 //---------------------------------------------------------------------------
@@ -450,8 +413,36 @@ public class MainText
 
     if (modify)
       recordWMT.modifyMainText();
+  }
 
-    nullSwitch(recordWMT.getHub(), hub -> nullSwitch(hub.getLabel(), HDT_WorkLabel::refreshSubjects));
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithPath kwRecord, Collection<HDT_MT> newCol, Class<HDT_MT> klazz)
+  {
+    Stream<HDT_MT> oldCol = db.keyWorkMentionerStream(kwRecord, klazz);
+
+    oldCol.forEach(recordWMT ->
+    {
+      if (newCol.contains(recordWMT)) return;
+
+      MainText mainText = recordWMT.getMainText();
+      List<KeyWork> keyWorks = mainText.getKeyWorksCopy();
+
+      keyWorks.removeIf(keyWork -> keyWork.getRecord() == kwRecord);
+      mainText.setKeyWorksFromList(keyWorks);
+    });
+
+    newCol.forEach(recordWMT ->
+    {
+      if (newCol.contains(recordWMT)) return;
+
+      MainText mainText = recordWMT.getMainText();
+      List<KeyWork> keyWorks = mainText.getKeyWorksCopy();
+
+      keyWorks.add(new KeyWork(kwRecord));
+      mainText.setKeyWorksFromList(keyWorks);
+    });
   }
 
 //---------------------------------------------------------------------------

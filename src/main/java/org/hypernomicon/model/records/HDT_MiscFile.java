@@ -25,6 +25,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Author;
@@ -34,14 +35,12 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<Authors>
 {
   private final HyperPath path;
-  public final HyperObjList<HDT_MiscFile, HDT_WorkLabel> labels;
 
   public final HyperObjPointer<HDT_MiscFile, HDT_Work> work;
   public final HyperObjPointer<HDT_MiscFile, HDT_FileType> fileType;
@@ -53,8 +52,6 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
   {
     super(xmlState, dataset, tagName);
 
-    labels = getObjList(rtLabelOfFile);
-
     work = getObjPointer(rtWorkOfMiscFile);
     fileType = getObjPointer(rtTypeOfFile);
 
@@ -64,11 +61,11 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setAuthors(List<HDT_Person> list)       { updateObjectsFromList(rtAuthorOfFile, list); }
-  public void setWorkLabels(List<HDT_WorkLabel> list) { updateObjectsFromList(rtLabelOfFile, list); }
+  public void setAuthors(List<HDT_Person> list) { updateObjectsFromList(rtAuthorOfFile, list); }
 
-  public boolean getAnnotated()         { return getTagBoolean(tagAnnotated); }
-  public void setAnnotated(boolean val) { updateTagBoolean(tagAnnotated, val); }
+  public boolean getAnnotated()              { return getTagBoolean(tagAnnotated); }
+  public void setAnnotated(boolean val)      { updateTagBoolean(tagAnnotated, val); }
+  public Stream<HDT_WorkLabel> labelStream() { return db.keyWorkMentionerStream(this, HDT_WorkLabel.class); }
 
   @Override public HyperPath getPath()  { return path; }
   @Override public Authors getAuthors() { return nullSwitch(work.get(), new FileAuthors(getObjList(rtAuthorOfFile), this), HDT_Work::getAuthors); }

@@ -41,6 +41,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
@@ -763,7 +764,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Populate Labels
   // ------------------
 
-    htLabels.buildRows(curWork.labels, (row, label) -> row.setCellValue(2, label, label.extendedText()));
+    htLabels.buildRows(curWork.labelStream(), (row, label) -> row.setCellValue(2, label, label.extendedText()));
 
   // Populate works
   // ----------------------
@@ -941,7 +942,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     Set<HDT_RecordWithMainText> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
 
-    Stream<HDT_RecordWithMainText> stream = db.keyWorkMentionerStream(record);
+    Stream<HDT_RecordWithMainText> stream = db.keyWorkMentionerStream(record).filter(recordWMT -> recordWMT.getType() != hdtWorkLabel);
 
     if (record.hasMainText())
       stream = Stream.concat(stream, db.displayerStream((HDT_RecordWithMainText)record));
@@ -1603,7 +1604,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     mainText.save();
 
     curWork.setAuthors(getAuthorGroups());
-    curWork.setWorkLabels(htLabels.saveToList(2, hdtWorkLabel));
+    MainText.setKeyWorkMentioners(curWork, htLabels.saveToList(2, hdtWorkLabel), HDT_WorkLabel.class);
 
     return true;
   }

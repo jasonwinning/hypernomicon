@@ -28,7 +28,6 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -51,8 +50,6 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.model.unities.KeyWork;
-import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
@@ -61,7 +58,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   private final WorkAuthors authors;
 
   public final List<HDT_Person> authorRecords;
-  public final HyperObjList<HDT_Work, HDT_WorkLabel> labels;
   public final List<HDT_WorkFile> workFiles;
 
   public final HyperSubjList<HDT_Work    , HDT_Work> subWorks;
@@ -83,8 +79,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     authorRecords = Collections.unmodifiableList(getObjList(rtAuthorOfWork));
     workFiles     = Collections.unmodifiableList(getObjList(rtWorkFileOfWork));
 
-    labels = getObjList(rtLabelOfWork);
-
     subWorks  = getSubjList(rtParentWorkOfWork);
     miscFiles = getSubjList(rtWorkOfMiscFile);
     arguments = getSubjList(rtWorkOfArgument);
@@ -93,33 +87,35 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     largerWork = getObjPointer(rtParentWorkOfWork);
   }
 
-  public void setWorkLabels(List<HDT_WorkLabel> list)         { updateObjectsFromList(rtLabelOfWork, list); }
+//---------------------------------------------------------------------------
 
   public WorkTypeEnum getWorkTypeEnum()     { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
+  public String getYear()                   { return getTagString(tagYear); }
+  public String getBibEntryKey()            { return getBibEntryKeyString(); }
+  public String getMiscBib()                { return getTagString(tagMiscBib); }
+  public String getDOI()                    { return getTagString(tagDOI); }
+  public List<String> getISBNs()            { return matchISBN(getTagString(tagISBN)); }
+  public String getURL()                    { return getTagString(tagWebURL); }
+  public boolean canLaunch()                { return ! (getPath().isEmpty() && getURL().isEmpty()); }
+
   public void setWorkType(WorkTypeEnum val) { workType.set(HDT_WorkType.get(val)); }
+  public void setYear(String str)           { updateTagString(tagYear, str); }
+  public void setBibEntryKey(String str)    { updateBibEntryKey(str); }
+  public void setMiscBib(String str)        { updateTagString(tagMiscBib, str); }
+  public void setDOI(String str)            { updateTagString(tagDOI, matchDOI(str)); }
+  public void setURL(String str)            { updateTagString(tagWebURL, str); }
 
   @Override public String listName()        { return name(); }
   @Override public HyperPath getPath()      { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.get(0).getPath(); }
   @Override public WorkAuthors getAuthors() { return authors; }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  public String getYear()        { return getTagString(tagYear); }
-  public String getBibEntryKey() { return getBibEntryKeyString(); }
-  public String getMiscBib()     { return getTagString(tagMiscBib); }
-  public String getDOI()         { return getTagString(tagDOI); }
-  public List<String> getISBNs() { return matchISBN(getTagString(tagISBN)); }
-  public String getURL()         { return getTagString(tagWebURL); }
-  public boolean canLaunch()     { return ! (getPath().isEmpty() && getURL().isEmpty()); }
+  public Set<HDT_Investigation> investigationSet()       { return investigationStream().collect(Collectors.toSet()); }
 
-  public void setYear(String str)        { updateTagString(tagYear, str); }
-  public void setBibEntryKey(String str) { updateBibEntryKey(str); }
-  public void setMiscBib(String str)     { updateTagString(tagMiscBib, str); }
-  public void setDOI(String str)         { updateTagString(tagDOI, matchDOI(str)); }
-  public void setURL(String str)         { updateTagString(tagWebURL, str); }
+  public Stream<HDT_Investigation> investigationStream() { return db.keyWorkMentionerStream(this, HDT_Investigation.class); }
+  public Stream<HDT_WorkLabel    > labelStream        () { return db.keyWorkMentionerStream(this, HDT_WorkLabel    .class); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public Ternary personIsInFileName(HDT_Person person)                       { return db.getNestedTernary(this, person, tagInFileName); }
@@ -551,49 +547,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public FilePath filePathIncludeExt()
   {
     return workFiles.isEmpty() ? db.resolveExtFilePath(getURL()) : filePath();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public Set<HDT_Investigation> investigationSet()
-  {
-    return investigationStream().collect(Collectors.toSet());
-  }
-
-  public Stream<HDT_Investigation> investigationStream()
-  {
-    return db.keyWorkMentionerStream(this).filter(record -> record.getType() == hdtInvestigation).map(HDT_Investigation.class::cast);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setInvestigations(Collection<HDT_Investigation> newCol)
-  {
-    Collection<HDT_Investigation> oldCol = investigationSet();
-
-    oldCol.forEach(inv ->
-    {
-      if (newCol.contains(inv)) return;
-
-      MainText mainText = inv.getMainText();
-      List<KeyWork> keyWorks = mainText.getKeyWorksCopy();
-
-      keyWorks.removeIf(keyWork -> keyWork.getRecord() == this);
-      mainText.setKeyWorksFromList(keyWorks);
-    });
-
-    newCol.forEach(inv ->
-    {
-      if (oldCol.contains(inv)) return;
-
-      MainText mainText = inv.getMainText();
-      List<KeyWork> keyWorks = mainText.getKeyWorksCopy();
-
-      keyWorks.add(new KeyWork(this));
-      mainText.setKeyWorksFromList(keyWorks);
-    });
   }
 
 //---------------------------------------------------------------------------

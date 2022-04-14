@@ -307,33 +307,32 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                        labelTree  = tree.labelTree,
                        noteTree   = tree.noteTree;
 
-    noteTree.addKeyWorkRelation(hdtNote, true);
-    termTree.addKeyWorkRelation(hdtConcept, true);
-    debateTree.addKeyWorkRelation(hdtDebate, true);
-    debateTree.addKeyWorkRelation(hdtPosition, true);
+    noteTree  .addKeyWorkRelation(hdtNote     , true);
+    termTree  .addKeyWorkRelation(hdtConcept  , true);
+    debateTree.addKeyWorkRelation(hdtDebate   , true);
+    debateTree.addKeyWorkRelation(hdtPosition , true);
+    labelTree .addKeyWorkRelation(hdtWorkLabel, true);
 
     debateTree.addParentChildRelation(rtParentDebateOfDebate, true);
-    debateTree.addParentChildRelation(rtParentDebateOfPos, true);
-    debateTree.addParentChildRelation(rtParentPosOfDebate, true);
-    debateTree.addParentChildRelation(rtParentPosOfPos, true);
-    debateTree.addParentChildRelation(rtPositionOfArgument, true);
-    debateTree.addParentChildRelation(rtCounterOfArgument, true);
-    debateTree.addParentChildRelation(rtWorkOfArgument, false);
+    debateTree.addParentChildRelation(rtParentDebateOfPos   , true);
+    debateTree.addParentChildRelation(rtParentPosOfDebate   , true);
+    debateTree.addParentChildRelation(rtParentPosOfPos      , true);
+    debateTree.addParentChildRelation(rtPositionOfArgument  , true);
+    debateTree.addParentChildRelation(rtCounterOfArgument   , true);
+    debateTree.addParentChildRelation(rtWorkOfArgument      , false);
 
     noteTree.addParentChildRelation(rtParentNoteOfNote, true);
 
     labelTree.addParentChildRelation(rtParentLabelOfLabel, true);
-    labelTree.addParentChildRelation(rtLabelOfFile, true);
-    labelTree.addParentChildRelation(rtLabelOfWork, true);
-    labelTree.addParentChildRelation(rtWorkOfArgument, true);
+    labelTree.addParentChildRelation(rtWorkOfArgument    , true);
 
-    termTree.addParentChildRelation(rtGlossaryOfConcept, true);
+    termTree.addParentChildRelation(rtGlossaryOfConcept       , true);
     termTree.addParentChildRelation(rtParentGlossaryOfGlossary, true);
 
     List.of(debateTree, noteTree, labelTree, termTree).forEach(treeModel ->
     {
       treeModel.addParentChildRelation(rtParentWorkOfWork, true);
-      treeModel.addParentChildRelation(rtWorkOfMiscFile, true);
+      treeModel.addParentChildRelation(rtWorkOfMiscFile  , true);
     });
 
     db.addCloseDBHandler(tree::reset);
