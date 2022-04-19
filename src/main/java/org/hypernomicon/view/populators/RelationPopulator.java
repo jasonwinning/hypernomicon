@@ -50,9 +50,9 @@ public class RelationPopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     List<HyperTableCell> cells = new ArrayList<>();
-    EnumSet<RelationType> relTypes = objType == hdtNone ? EnumSet.allOf(RelationType.class) : getRelationsForObjType(objType);
+    EnumSet<RelationType> relTypes = objType == hdtNone ? EnumSet.allOf(RelationType.class) : getRelationsForObjType(objType, false);
 
-    removeAll(relTypes, rtNone, rtUnited);
+    removeAll(relTypes, rtNone, rtUnited, rtKeyWork);
 
     relTypes.forEach(relType ->
     {

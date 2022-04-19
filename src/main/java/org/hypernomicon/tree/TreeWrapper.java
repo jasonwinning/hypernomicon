@@ -365,7 +365,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
                target = nullSwitch(targetRow, null, TreeRow::getRecord);
 
     if ((source == null) || (target == null) || (source == target) ||
-        (source.getType() == target.getType()) && (source.getID() == target.getID())) return false;
+        ((source.getType() == target.getType()) && (source.getID() == target.getID()))) return false;
 
     if (nullSwitch(draggingRow.treeItem.getParent(), true, parent ->
         nullSwitch(parent.getValue(), true, value -> value.getRecord() == null)))
@@ -390,15 +390,21 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   Set<RecordType> getValidTargetTypes(RecordType sourceType)
   {
-    Set<RecordType> set = RelationSet.getRelationsForSubjType(sourceType).stream().map(db::getObjType).collect(Collectors.toSet());
+    Set<RecordType> set = RelationSet.getRelationsForSubjType(sourceType, false).stream().map(db::getObjType).collect(Collectors.toSet());
     if (sourceType == hdtWork)
       set.add(hdtArgument);
 
     if (recordTypesInTree.isEmpty())
       List.of(debateTree, termTree, labelTree, noteTree).forEach(treeModel -> recordTypesInTree.addAll(treeModel.getRecordTypes()));
 
+    if ((sourceType == hdtWork) || (sourceType == hdtMiscFile))
+    {
+      set.add(hdtInvestigation);
+      set.add(hdtWorkLabel);
+    }
+    
     set.retainAll(recordTypesInTree);
-
+    
     return set;
   }
 
@@ -407,42 +413,49 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   @Override public void dragDroppedOnto(TreeRow targetRow)
   {
-    dragReset();
-
-    RecordTreeEdge dragSourceEdge = new RecordTreeEdge(draggingRow.treeItem.getParent().getValue().getRecord(), draggingRow.getRecord()),
-                   dragTargetEdge = new RecordTreeEdge(targetRow.getRecord(), draggingRow.getRecord()),
-                   otherEdgeToDetach = dragTargetEdge.edgeToDetach();
-
-    if (dragSourceEdge.equals(otherEdgeToDetach))
-      otherEdgeToDetach = null;
-
-    if (dragTargetEdge.canAttach(true) == false)
-      return;
-
-    if (dragSourceEdge.equals(dragTargetEdge))
+    try
     {
-      messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
-      return;
+      dragReset();
+  
+      RecordTreeEdge dragSourceEdge = new RecordTreeEdge(draggingRow.treeItem.getParent().getValue().getRecord(), draggingRow.getRecord()),
+                     dragTargetEdge = new RecordTreeEdge(targetRow.getRecord(), draggingRow.getRecord()),
+                     otherEdgeToDetach = dragTargetEdge.edgeToDetach();
+  
+      if (dragSourceEdge.equals(otherEdgeToDetach))
+        otherEdgeToDetach = null;
+  
+      if (dragTargetEdge.canAttach(true) == false)
+        return;
+  
+      if (dragSourceEdge.equals(dragTargetEdge))
+      {
+        messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
+        return;
+      }
+  
+      if (dragTargetEdge.relType == rtNone)
+      {
+        messageDialog("Unable to copy or move source record: Internal error #33948.", mtError);
+        return;
+      }
+  
+      ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.build(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
+  
+      if (cpdc.showModal() == false)
+        return;
+  
+      dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null, true);
+  
+      Platform.runLater(() ->
+      {
+        sort();
+        ttv.getSelectionModel().select(getTreeItem(targetRow));
+      });
     }
-
-    if (dragTargetEdge.relType == rtNone)
+    catch (Throwable th)
     {
-      messageDialog("Unable to copy or move source record: Internal error #33948.", mtError);
-      return;
+      th.printStackTrace();
     }
-
-    ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.build(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
-
-    if (cpdc.showModal() == false)
-      return;
-
-    dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null, true);
-
-    Platform.runLater(() ->
-    {
-      sort();
-      ttv.getSelectionModel().select(getTreeItem(targetRow));
-    });
   }
 
 //---------------------------------------------------------------------------

@@ -67,7 +67,7 @@ final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
         items.add(new ColumnGroupItem(tag));
     });
 
-    RelationSet.getRelationsForObjType(recordType).forEach(relType -> items.add(new ColumnGroupItem(relType)));
+    RelationSet.getRelationsForObjType(recordType, false).forEach(relType -> items.add(new ColumnGroupItem(relType)));
   }
 
   //---------------------------------------------------------------------------

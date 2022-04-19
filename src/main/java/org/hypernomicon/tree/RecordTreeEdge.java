@@ -23,6 +23,9 @@ import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB;
@@ -30,7 +33,10 @@ import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjList;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.model.unities.MainText;
 
 class RecordTreeEdge
 {
@@ -50,7 +56,7 @@ class RecordTreeEdge
     this.parent = parent;
     this.child = child;
 
-    RelationType tempRelType = getRelation(child.getType(), parent.getType());
+    RelationType tempRelType = getRelation(child.getType(), parent.getType(), true);
 
     if (tempRelType != rtNone)
     {
@@ -59,7 +65,7 @@ class RecordTreeEdge
     }
     else
     {
-      tempRelType = getRelation(parent.getType(), child.getType());
+      tempRelType = getRelation(parent.getType(), child.getType(), true);
 
       if (tempRelType == rtNone)
       {
@@ -81,7 +87,7 @@ class RecordTreeEdge
 
   boolean mustDetachIfAttaching(RecordTreeEdge otherEdge)
   {
-    if (relType == rtNone)
+    if ((relType == rtNone) || (relType == rtKeyWork)) 
       return false;
 
     if (db.relationIsMulti(relType))
@@ -98,7 +104,7 @@ class RecordTreeEdge
 
   RecordTreeEdge edgeToDetach()
   {
-    if ((relType == rtNone) || db.relationIsMulti(relType))
+    if ((relType == rtNone) || (relType == rtKeyWork) || db.relationIsMulti(relType))
       return null;
 
     HDT_Record currentObj = db.getObjPointer(relType, subj).get();
@@ -134,6 +140,12 @@ class RecordTreeEdge
         else if (obj.getType() == hdtArgument)
           childArg.addCounteredArg((HDT_Argument)obj, vdc.hcbVerdict.selectedRecord());
       }
+      else if (relType == rtKeyWork)
+      {
+        Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream((HDT_RecordWithPath) subj, obj.getType()).collect(Collectors.toSet());
+        mentioners.add((HDT_RecordWithMainText) obj);
+        MainText.setKeyWorkMentioners((HDT_RecordWithPath)subj, mentioners, obj.getType());
+      }      
       else
       {
         HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, subj, true);
@@ -169,7 +181,12 @@ class RecordTreeEdge
     if ((obj.getID() == subj.getID()) && (obj.getType() == subj.getType()))
       return falseWithErrMsgCond(showErrMsg, "A record cannot be its own parent. Please select another record.");
 
-    if (db.getObjectList(relType, subj, true).contains(obj))
+    if (relType == rtKeyWork)
+    {
+      if (db.keyWorkMentionerStream((HDT_RecordWithPath) subj).anyMatch(mentioner -> mentioner == obj))
+        return falseWithErrMsgCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
+    }
+    else if (db.getObjectList(relType, subj, true).contains(obj))
       return falseWithErrMsgCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
 
     return true;
@@ -188,6 +205,14 @@ class RecordTreeEdge
 
   private void detach()
   {
+    if (relType == rtKeyWork)
+    {
+      Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream((HDT_RecordWithPath) subj, obj.getType()).collect(Collectors.toSet());
+      mentioners.remove(obj);
+      MainText.setKeyWorkMentioners((HDT_RecordWithPath)subj, mentioners, obj.getType());
+      return;  
+    }
+    
     db.getObjectList(relType, subj, true).remove(obj);
   }
 

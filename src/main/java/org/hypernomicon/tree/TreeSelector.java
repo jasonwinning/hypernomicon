@@ -80,7 +80,7 @@ public class TreeSelector
     RelationType relType = (base.getType() == hdtTerm) && (targetType == hdtGlossary) ?
       rtGlossaryOfConcept
     :
-      (baseIsSubj ? getRelation(base.getType(), targetType) : getRelation(targetType, base.getType()));
+      (baseIsSubj ? getRelation(base.getType(), targetType, true) : getRelation(targetType, base.getType(), true));
 
     targetTypes.add(new TreeTargetType(relType, targetType));
   }

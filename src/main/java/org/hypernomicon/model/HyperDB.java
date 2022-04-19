@@ -233,7 +233,7 @@ public final class HyperDB
 
   @SuppressWarnings("unchecked")
   private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> relSet(HDT_SubjType subj, HDT_ObjType obj)
-  { return (RelationSet<HDT_SubjType, HDT_ObjType>) relationSets.get(getRelation(subj.getType(), obj.getType())); }
+  { return (RelationSet<HDT_SubjType, HDT_ObjType>) relationSets.get(getRelation(subj.getType(), obj.getType(), false)); }
 
   @SuppressWarnings("unchecked")
   private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> relSet(RelationType relType)
@@ -1437,7 +1437,7 @@ public final class HyperDB
                 if (nestedItems == null)
                   nestedItems = new LinkedHashMap<>();
 
-                readNestedItem(xmlRecord, nestedItems, getRelation(xmlRecord.type, objType), hdxElement, eventReader);
+                readNestedItem(xmlRecord, nestedItems, getRelation(xmlRecord.type, objType, false), hdxElement, eventReader);
               }
               else
               {
@@ -2259,7 +2259,7 @@ public final class HyperDB
   {
     set.clear();
 
-    for (RelationType relType : getRelationsForSubjType(record.getType()))
+    for (RelationType relType : getRelationsForSubjType(record.getType(), false))
     {
       if (relType != rtParentFolderOfFolder)
       {
@@ -2275,7 +2275,7 @@ public final class HyperDB
       }
     }
 
-    for (RelationType relType : getRelationsForObjType(record.getType()))
+    for (RelationType relType : getRelationsForObjType(record.getType(), false))
     {
       if (relType != rtParentFolderOfFolder)
       {
@@ -2362,6 +2362,16 @@ public final class HyperDB
                       set -> set.stream().filter(recordWMT -> recordWMT.getClass() == klazz).map(klazz::cast));
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithPath record, RecordType mentionerType)
+  {
+    return nullSwitch(keyWorkIndex.get(record),
+                      Stream.empty(),
+                      set -> set.stream().filter(recordWMT -> recordWMT.getType() == mentionerType));
+  }
+ 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

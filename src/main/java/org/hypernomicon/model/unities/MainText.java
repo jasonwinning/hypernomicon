@@ -25,7 +25,6 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -417,11 +416,17 @@ public class MainText
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
+  
+  @SuppressWarnings("unchecked")
+  public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithPath kwRecord, Collection<HDT_MT> newCol, RecordType mentionerType)
+  {
+    setKeyWorkMentioners(kwRecord, newCol, (Class<HDT_MT>) mentionerType.getRecordClass());
+  }
+  
   public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithPath kwRecord, Collection<HDT_MT> newCol, Class<HDT_MT> klazz)
   {
-    Stream<HDT_MT> oldCol = db.keyWorkMentionerStream(kwRecord, klazz);
-
+    Collection<HDT_MT> oldCol = db.keyWorkMentionerStream(kwRecord, klazz).collect(Collectors.toSet());
+    
     oldCol.forEach(recordWMT ->
     {
       if (newCol.contains(recordWMT)) return;
@@ -435,7 +440,7 @@ public class MainText
 
     newCol.forEach(recordWMT ->
     {
-      if (newCol.contains(recordWMT)) return;
+      if (oldCol.contains(recordWMT)) return;
 
       MainText mainText = recordWMT.getMainText();
       List<KeyWork> keyWorks = mainText.getKeyWorksCopy();

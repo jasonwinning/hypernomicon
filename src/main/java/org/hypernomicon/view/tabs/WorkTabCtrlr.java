@@ -255,7 +255,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htLabels.addCol(hdtWorkLabel, ctDropDownList);
 
     htLabels.addRemoveMenuItem();
-    htLabels.addChangeOrderMenuItem(true);
 
     htSubworks = new HyperTable(tvSubworks, 1, false, PREF_KEY_HT_WORK_SUB);
 

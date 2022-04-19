@@ -25,6 +25,8 @@ import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.EnumBasedTable;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -74,7 +76,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   private static final EnumMap<RecordType, Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>>> orphanTypeToRelSets = new EnumMap<>(RecordType.class);
   private static final EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
-  private static final EnumBasedTable<RecordType, RecordType, RelationType> typeMappings = new EnumBasedTable<>(RecordType.class, RecordType.class);
+  private static final EnumBasedTable<RecordType, RecordType, RelationType> typeMappings            = new EnumBasedTable<>(RecordType.class, RecordType.class),
+                                                                            typeMappingsWithKeyWork = new EnumBasedTable<>(RecordType.class, RecordType.class);
 
   private final RelationType type;
   private final RecordType objType, subjType;
@@ -136,7 +139,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     this.hasNestedItems = (nestedSchemas.length > 0);
     this.trackOrphans = trackOrphans;
 
-    typeMappings.put(subjType, objType, type);
+    typeMappings           .put(subjType, objType, type);
+    typeMappingsWithKeyWork.put(subjType, objType, type);
 
     if (trackOrphans)
       orphanTypeToRelSets.computeIfAbsent(subjType, k -> new HashSet<>()).add(this);
@@ -225,11 +229,23 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   public static void init(Map<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> dbRelationSets) throws HDB_InternalError
   {
     for (RelationType relType : RelationType.values())
-      if ((relType != rtUnited) && (relType != rtNone))
+      if ((relType != rtUnited) && (relType != rtKeyWork) && (relType != rtNone))
         dbRelationSets.put(relType, createSet(relType));
 
     relationSets.putAll(dbRelationSets);
     relationSets.values().forEach(RelationSet::initCycleGroup);
+    
+    for (RecordType objType : RecordType.values())
+    {
+      Class<? extends HDT_Record> recordClass = objType.getRecordClass();
+      if (HDT_RecordWithMainText.class.isAssignableFrom(recordClass) && (objType != hdtHub) && MainText.typeHasKeyWorks(objType))
+      {
+        if (typeMappingsWithKeyWork.get(hdtWork, objType) == null)
+          typeMappingsWithKeyWork.put(hdtWork, objType, rtKeyWork);
+        if (typeMappingsWithKeyWork.get(hdtMiscFile, objType) == null)
+          typeMappingsWithKeyWork.put(hdtMiscFile, objType, rtKeyWork);         
+      }
+    }
   }
 
   //---------------------------------------------------------------------------
@@ -262,26 +278,26 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RelationType getRelation(RecordType subjType, RecordType objType)
+  public static RelationType getRelation(RecordType subjType, RecordType objType, boolean includeKeyWork)
   {
-    return nullSwitch(typeMappings.get(subjType, objType), rtNone);
+    return nullSwitch((includeKeyWork ? typeMappingsWithKeyWork : typeMappings).get(subjType, objType), rtNone);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EnumSet<RelationType> getRelationsForObjType(RecordType objType)
+  public static EnumSet<RelationType> getRelationsForObjType(RecordType objType, boolean includeKeyWork)
   {
-    Collection<RelationType> relTypes = typeMappings.getColumn(objType);
+    Collection<RelationType> relTypes = (includeKeyWork ? typeMappingsWithKeyWork : typeMappings).getColumn(objType);
     return collEmpty(relTypes) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EnumSet<RelationType> getRelationsForSubjType(RecordType subjType)
+  public static EnumSet<RelationType> getRelationsForSubjType(RecordType subjType, boolean includeKeyWork)
   {
-    Collection<RelationType> relTypes = typeMappings.getRow(subjType);
+    Collection<RelationType> relTypes = (includeKeyWork ? typeMappingsWithKeyWork : typeMappings).getRow(subjType);
     return collEmpty(relTypes) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);
   }
 
@@ -849,7 +865,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtParentDebateOfPos       (23, tagPosition            , "Position(s) under this debate"),
     rtParentPosOfPos          (24, "Sub-Position(s)"      , "Position(s) under this parent position"),
     rtPositionOfArgument      (25, tagArgument            , "Argument(s) concerning this position"),
-    rtParentPosOfDebate       (46, tagDebate              , "Debate(s) under this position"),
 
     rtPersonOfInv             (27, tagInvestigation       , "Investigation(s) by this person"),
     rtPictureFolderOfPerson   (28, tagPerson              , "Person(s) with pictures in this folder"),
@@ -869,7 +884,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtInstOfPerson            (41, tagPerson              , "Person(s) in this institution"),
     rtGlossaryOfConcept       (43, tagConcept             , "Concept(s) in this glossary"),
     rtParentGlossaryOfGlossary(44, "Sub-Glossary(ies)"    , "Sub-glossaries under this glossary"),
-    rtConceptOfTerm           (45, tagTerm                , "Term(s) associated with this concept");
+    rtConceptOfTerm           (45, tagTerm                , "Term(s) associated with this concept"),
+    rtParentPosOfDebate       (46, tagDebate              , "Debate(s) under this position"),
+    
+    rtKeyWork                 (47, ""                     , ""); // Like rtUnited, this is not a real relation type having its own RelationSet object.
 
     private final int code;
     private final String title, subjTitle;
