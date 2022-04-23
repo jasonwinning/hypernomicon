@@ -34,6 +34,7 @@ import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -727,7 +728,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       jMainObj = parseJsonObj(new InputStreamReader(in, UTF_8));
     }
-    catch (FileNotFoundException e) { noOp(); }
+    catch (FileNotFoundException | NoSuchFileException e) { noOp(); }
 
     if (jMainObj != null)
     {
