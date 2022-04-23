@@ -427,10 +427,13 @@ public class SettingsDlgCtrlr extends HyperDlg
     btnMendeleyAuthorize.setSelected(false);
 
     OAuth2AccessToken accessToken = null;
+    
+    String verificationCode = tfVerificationCode.getText();
+    tfVerificationCode.clear();
 
     try (OAuth20Service service = MendeleyOAuthApi.service())
     {
-      accessToken = service.getAccessToken(tfVerificationCode.getText());
+      accessToken = service.getAccessToken(verificationCode);
       success = true;
     }
     catch (UnknownHostException e)                                    { messageDialog("Unable to connect to host: " + e.getMessage(), mtError);  }
@@ -452,7 +455,6 @@ public class SettingsDlgCtrlr extends HyperDlg
     SyncBibDlgCtrlr.sync();
 
     setUnlinkMessage();
-    tfVerificationCode.clear();
     tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
   }
 
@@ -468,10 +470,13 @@ public class SettingsDlgCtrlr extends HyperDlg
     btnMendeleyAuthorize.setSelected(false);
 
     OAuth1AccessToken accessToken = null;
+    
+    String verificationCode = tfVerificationCode.getText();
+    tfVerificationCode.clear();
 
     try (OAuth10aService service = ZoteroOAuthApi.service())
     {
-      accessToken = service.getAccessToken(requestToken, tfVerificationCode.getText());
+      accessToken = service.getAccessToken(requestToken, verificationCode);
       success = true;
     }
     catch (UnknownHostException e)                                    { messageDialog("Unable to connect to host: " + e.getMessage(), mtError);  }
@@ -493,7 +498,6 @@ public class SettingsDlgCtrlr extends HyperDlg
     SyncBibDlgCtrlr.sync();
 
     setUnlinkMessage();
-    tfVerificationCode.clear();
     tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
   }
 
