@@ -404,8 +404,8 @@ public final class App extends Application
 
     double  x          = appPrefs.getDouble (PREF_KEY_WINDOW_X,          stage.getX()),
             y          = appPrefs.getDouble (PREF_KEY_WINDOW_Y,          stage.getY()),
-            width      = appPrefs.getDouble (PREF_KEY_WINDOW_WIDTH,      stage.getWidth()),
-            height     = appPrefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     stage.getHeight());
+            width      = appPrefs.getDouble (PREF_KEY_WINDOW_WIDTH,      rootNode.getPrefWidth()),  // stage.getWidth and stage.getHeight are not the
+            height     = appPrefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     rootNode.getPrefHeight()); // correct values in some Linux environments
     boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, stage.isFullScreen()),
             maximized  = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  stage.isMaximized());
 

@@ -49,6 +49,9 @@ public final class WindowStack
     Modality getModality();
     boolean isStage();
     Object getWrappedObj();
+
+    default void saveDimensions   () { }
+    default void restoreDimensions() { }
   }
 
 //---------------------------------------------------------------------------
@@ -69,12 +72,27 @@ public final class WindowStack
   private static final class StageWrapper implements WindowWrapper
   {
     private final Stage stage;
+    double height, width;
 
     private StageWrapper(Stage stage)       { this.stage = stage; }
 
     @Override public Modality getModality() { return stage.getModality(); }
     @Override public boolean isStage()      { return true; }
     @Override public Object getWrappedObj() { return stage; }
+
+    @Override public void saveDimensions()
+    {
+      height = stage.getHeight(); width = stage.getWidth();
+
+      if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage()))   // In some Linux environments, the main window inexplicably gets
+        runDelayedInFXThread(3, 100, () -> restoreDimensions()); // resized when a window it is the owner of is opened
+    }
+
+    @Override public void restoreDimensions()
+    {
+      if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage())) // In some Linux environments, the main window inexplicably gets
+        stage.setHeight(height); stage.setWidth(width);        // resized when a window it is the owner of is opened
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -126,6 +144,9 @@ public final class WindowStack
 
       windows.removeIf(curW -> curW.getWrappedObj() == window.getWrappedObj());
     }
+
+    if (windows.isEmpty() == false)
+      windows.getFirst().saveDimensions();
 
     windows.addFirst(window);
   }
@@ -188,6 +209,8 @@ public final class WindowStack
       itemsDisabled.forEach(MenuItem::setDisable);
 
     if (focusingWindow.isStage() == false) return;
+
+    focusingWindow.restoreDimensions();
 
     Stage stage = ((StageWrapper) focusingWindow).stage;
 
