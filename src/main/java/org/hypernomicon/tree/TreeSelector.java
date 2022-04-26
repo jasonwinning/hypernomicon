@@ -37,11 +37,13 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class TreeSelector
 {
   private HDT_Record base, target;
   private final List<TreeTargetType> targetTypes = new ArrayList<>();
+  private HyperTableRow tableRow;
   private boolean baseIsSubj = true;
 
   public TreeSelector()        { reset(); }
@@ -67,9 +69,15 @@ public class TreeSelector
 
   public void reset(HDT_Record base, boolean baseIsSubj)
   {
+    reset(base, baseIsSubj, null);
+  }
+
+  public void reset(HDT_Record base, boolean baseIsSubj, HyperTableRow tableRow)
+  {
     reset();
     this.base = base;
     this.baseIsSubj = baseIsSubj;
+    this.tableRow = tableRow;
   }
 
 //---------------------------------------------------------------------------
@@ -77,10 +85,14 @@ public class TreeSelector
 
   public void addTargetType(RecordType targetType)
   {
-    RelationType relType = (base.getType() == hdtTerm) && (targetType == hdtGlossary) ?
-      rtGlossaryOfConcept
-    :
-      (baseIsSubj ? getRelation(base.getType(), targetType, true) : getRelation(targetType, base.getType(), true));
+    RelationType relType;
+
+    if ((base.getType() == hdtTerm) && (targetType == hdtGlossary))
+      relType = rtGlossaryOfConcept;
+    else if ((base.getType() == hdtTerm) && (targetType == hdtConcept))
+      relType = rtParentConceptOfConcept;
+    else
+      relType = (baseIsSubj ? getRelation(base.getType(), targetType, true) : getRelation(targetType, base.getType(), true));
 
     targetTypes.add(new TreeTargetType(relType, targetType));
   }
@@ -184,13 +196,17 @@ public class TreeSelector
       if (glossaryChecks((HDT_Glossary) record, showErrMsg) == false)
         return false;
 
-      if (base.getType() == hdtTerm)
-      {
-        ui.goToRecord(base, false);
-        MainCtrlr.termHyperTab().addGlossary((HDT_Glossary) record);
-        ui.update();
-        return true;
-      }
+      MainCtrlr.termHyperTab().selectFromTree(tableRow, (HDT_Glossary) record, null);
+      ui.goToRecord(MainCtrlr.termHyperTab().viewRecord(), false);
+      return true;
+    }
+    else if (relType == rtParentConceptOfConcept)
+    {
+      HDT_Concept parentConcept = (HDT_Concept) record;
+
+      MainCtrlr.termHyperTab().selectFromTree(tableRow, parentConcept.glossary.get(), parentConcept);
+      ui.goToRecord(MainCtrlr.termHyperTab().viewRecord(), false);
+      return true;
     }
 
     RecordTreeEdge newEdge = baseIsSubj ? new RecordTreeEdge(record, base) : new RecordTreeEdge(base, record),

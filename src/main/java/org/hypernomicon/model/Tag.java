@@ -65,6 +65,7 @@ public enum Tag
   tagLargerPosition  ("larger_position"   , "Larger Position"          , hdtPosition),
   tagParentNote      ("parent_note"       , "Parent Note"              , hdtNote),
   tagParentGlossary  ("parent_glossary"   , "Parent Glossary"          , hdtGlossary),
+  tagParentConcept   ("parent_concept"    , "Parent Concept"           , hdtConcept),
   tagLinkedRecord    ("linked_record"     , "Linked Record"            , hdtAuxiliary),
   tagKeyWork         ("key_work"          , "Key Works"                , hdtAuxiliary),
   tagDisplayRecord   ("display_item"      , "Displayed Records"        , hdtAuxiliary),

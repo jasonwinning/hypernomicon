@@ -207,6 +207,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtConceptOfTerm            : return new RelationSet<>(relType, HDT_Term         .class, HDT_Concept        .class);
       case rtGlossaryOfConcept        : return new RelationSet<>(relType, HDT_Concept      .class, HDT_Glossary       .class);
       case rtParentGlossaryOfGlossary : return new RelationSet<>(relType, HDT_Glossary     .class, HDT_Glossary       .class, true);
+      case rtParentConceptOfConcept   : return new RelationSet<>(relType, HDT_Concept      .class, HDT_Concept        .class);
       case rtWorkOfMiscFile           : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Work           .class);
       case rtWorkFileOfWork           : return new RelationSet<>(relType, HDT_Work         .class, HDT_WorkFile       .class,
 
@@ -234,7 +235,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     relationSets.putAll(dbRelationSets);
     relationSets.values().forEach(RelationSet::initCycleGroup);
-    
+
     for (RecordType objType : RecordType.values())
     {
       Class<? extends HDT_Record> recordClass = objType.getRecordClass();
@@ -243,7 +244,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
         if (typeMappingsWithKeyWork.get(hdtWork, objType) == null)
           typeMappingsWithKeyWork.put(hdtWork, objType, rtKeyWork);
         if (typeMappingsWithKeyWork.get(hdtMiscFile, objType) == null)
-          typeMappingsWithKeyWork.put(hdtMiscFile, objType, rtKeyWork);         
+          typeMappingsWithKeyWork.put(hdtMiscFile, objType, rtKeyWork);
       }
     }
   }
@@ -886,8 +887,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtParentGlossaryOfGlossary(44, "Sub-Glossary(ies)"    , "Sub-glossaries under this glossary"),
     rtConceptOfTerm           (45, tagTerm                , "Term(s) associated with this concept"),
     rtParentPosOfDebate       (46, tagDebate              , "Debate(s) under this position"),
-    
-    rtKeyWork                 (47, ""                     , ""); // Like rtUnited, this is not a real relation type having its own RelationSet object.
+
+    rtKeyWork                 (47, ""                     , ""), // Like rtUnited, this is not a real relation type having its own RelationSet object.
+
+    rtParentConceptOfConcept  (48, "Child Concept(s)"     , "Child concept(s) under this concept");
 
     private final int code;
     private final String title, subjTitle;

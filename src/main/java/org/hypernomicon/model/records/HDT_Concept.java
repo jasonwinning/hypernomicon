@@ -21,17 +21,21 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public class HDT_Concept extends HDT_RecordWithMainText
 {
+  public final List<HDT_Concept> subConcepts, parentConcepts;
   public final HyperSubjPointer<HDT_Term, HDT_Concept> term;
   public final HyperObjPointer<HDT_Concept, HDT_Glossary> glossary;
 
@@ -44,6 +48,8 @@ public class HDT_Concept extends HDT_RecordWithMainText
 
     term = getSubjPointer(rtConceptOfTerm);
     glossary = getObjPointer(rtGlossaryOfConcept);
+    parentConcepts = Collections.unmodifiableList(getObjList(rtParentConceptOfConcept));
+    subConcepts = getSubjList(rtParentConceptOfConcept);
   }
 
 //---------------------------------------------------------------------------
@@ -98,6 +104,25 @@ public class HDT_Concept extends HDT_RecordWithMainText
   {
     if (term.isNotNull())
       term.get().setSearchKey(newKey, noMod, rebuildMentions);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void removeParent(HDT_Concept parentConcept)
+  {
+    HyperObjList<HDT_Concept, HDT_Concept> modifiableParents = getObjList(rtParentConceptOfConcept);
+    modifiableParents.remove(parentConcept);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void addParentConcept(HDT_Concept parentConcept) throws RelationCycleException
+  {
+    HyperObjList<HDT_Concept, HDT_Concept> modifiableParents = getObjList(rtParentConceptOfConcept);
+    if (modifiableParents.add(parentConcept) == false)
+      modifiableParents.throwLastException();
   }
 
 //---------------------------------------------------------------------------

@@ -386,7 +386,7 @@ public class WorkDlgCtrlr extends HyperDlg
     htAuthors.addCheckboxColWithUpdateHandler(handler);
     htAuthors.addCheckboxColWithUpdateHandler(handler);
 
-    Runnable removeHandler = () ->
+    Consumer<HyperTableRow> removeHandler = removedRow ->
     {
       if (htAuthors.dataRowCount() == 0) return;
 
@@ -409,7 +409,7 @@ public class WorkDlgCtrlr extends HyperDlg
     htAuthors.addContextMenuItem("Remove this row", row -> (row.getText(0).length() > 0) && (row.getID(0) < 1), row ->
     {
       htAuthors.removeRow(row);
-      removeHandler.run();
+      removeHandler.accept(row);
     });
 
     htAuthors.addChangeOrderMenuItem(true);

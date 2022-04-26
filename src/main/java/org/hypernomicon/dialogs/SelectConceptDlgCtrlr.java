@@ -48,6 +48,8 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   @FXML private TextField tfSearchKey;
 
   private HyperCB hcbTerm, hcbGlossary;
+  private HDT_Glossary glossary;
+  private HDT_Concept oldConcept;
   private boolean createNew, alreadyChanging = false;
   private HDT_Term term;
 
@@ -64,6 +66,8 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
   private SelectConceptDlgCtrlr init(HDT_Concept oldConcept)
   {
+    this.oldConcept = oldConcept;
+
     hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm));
 
     CustomPopulator pop = new CustomPopulator(hdtGlossary, (row, force) ->
@@ -128,7 +132,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
   public HDT_Term     getTerm()      { return term; }
   public boolean      getCreateNew() { return createNew; }
-  public HDT_Glossary getGlossary()  { return hcbGlossary.selectedRecord(); }
+  public HDT_Glossary getGlossary()  { return glossary != null ? glossary : hcbGlossary.selectedRecord(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -161,6 +165,8 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
       return;
     }
+
+    glossary = oldConcept.glossary.get();
 
     okClicked = true;
     createNew = true;

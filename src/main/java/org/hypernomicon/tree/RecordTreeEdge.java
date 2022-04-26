@@ -30,6 +30,8 @@ import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Argument;
+import org.hypernomicon.model.records.HDT_Concept;
+import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
@@ -87,7 +89,7 @@ class RecordTreeEdge
 
   boolean mustDetachIfAttaching(RecordTreeEdge otherEdge)
   {
-    if ((relType == rtNone) || (relType == rtKeyWork)) 
+    if ((relType == rtNone) || (relType == rtKeyWork))
       return false;
 
     if (db.relationIsMulti(relType))
@@ -145,7 +147,7 @@ class RecordTreeEdge
         Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream((HDT_RecordWithPath) subj, obj.getType()).collect(Collectors.toSet());
         mentioners.add((HDT_RecordWithMainText) obj);
         MainText.setKeyWorkMentioners((HDT_RecordWithPath)subj, mentioners, obj.getType());
-      }      
+      }
       else
       {
         HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, subj, true);
@@ -210,9 +212,17 @@ class RecordTreeEdge
       Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream((HDT_RecordWithPath) subj, obj.getType()).collect(Collectors.toSet());
       mentioners.remove(obj);
       MainText.setKeyWorkMentioners((HDT_RecordWithPath)subj, mentioners, obj.getType());
-      return;  
+      return;
     }
-    
+
+    if (relType == rtGlossaryOfConcept)
+    {
+      HDT_Glossary glossary = (HDT_Glossary) obj;
+      HDT_Concept concept = (HDT_Concept) subj;
+
+      concept.parentConcepts.removeIf(parentConcept -> parentConcept.glossary.get() == glossary);
+    }
+
     db.getObjectList(relType, subj, true).remove(obj);
   }
 

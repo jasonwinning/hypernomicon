@@ -326,8 +326,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     labelTree.addParentChildRelation(rtParentLabelOfLabel, true);
     labelTree.addParentChildRelation(rtWorkOfArgument    , true);
 
-    termTree.addParentChildRelation(rtGlossaryOfConcept       , true);
     termTree.addParentChildRelation(rtParentGlossaryOfGlossary, true);
+    termTree.addGlossaryOfConceptRelation();
+    termTree.addConceptParentChildRelation();
 
     List.of(debateTree, noteTree, labelTree, termTree).forEach(treeModel ->
     {

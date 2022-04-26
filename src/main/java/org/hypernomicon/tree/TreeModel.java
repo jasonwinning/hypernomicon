@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -38,6 +39,7 @@ import javafx.scene.control.TreeItem;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>>
 {
@@ -245,6 +247,57 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
         if (affirm) assignParent(parent, child);
         else        unassignParent(parent, child);
       });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void addGlossaryOfConceptRelation()
+  {
+    recordTypes.add(hdtGlossary);
+    recordTypes.add(hdtConcept);
+
+    db.addRelationChangeHandler(rtGlossaryOfConcept, (child, parent, affirm) ->
+    {
+      if (affirm == false)
+      {
+        unassignParent(child, parent);
+        return;
+      }
+
+      HDT_Concept concept = (HDT_Concept)child;
+
+      if (concept.parentConcepts.isEmpty())
+        assignParent(child, parent);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void addConceptParentChildRelation()
+  {
+    recordTypes.add(hdtConcept);
+
+    db.addRelationChangeHandler(rtParentConceptOfConcept, (child, parent, affirm) ->
+    {
+      HDT_Concept childConcept = (HDT_Concept)child;
+
+      if (affirm == false)
+      {
+        unassignParent(child, parent);
+
+        if (recordTypes.contains(hdtGlossary) && childConcept.parentConcepts.isEmpty() && childConcept.glossary.isNotNull())
+          assignParent(childConcept, childConcept.glossary.get());
+
+        return;
+      }
+
+      assignParent(child, parent);
+
+      if (recordTypes.contains(hdtGlossary) && childConcept.glossary.isNotNull())
+        unassignParent(childConcept, childConcept.glossary.get());
+    });
   }
 
 //---------------------------------------------------------------------------

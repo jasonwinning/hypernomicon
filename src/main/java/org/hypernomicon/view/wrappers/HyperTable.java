@@ -33,10 +33,8 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
-import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
@@ -590,15 +588,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     Populator pop = null;
     RecordTypePopulator rtp = null;
 
-    if (row.getRecordType() == hdtGlossary)
-    {
-      HDT_Term term = (HDT_Term) ui.activeRecord();
-      HDT_Concept concept = nullSwitch(row.getRecord(), null, term::getConcept);
-
-      ui.treeSelector.reset(concept == null ? term : concept, true);
-    }
-    else
-      ui.treeSelector.reset(ui.activeRecord(), true);
+    ui.treeSelector.reset(ui.activeRecord(), true);
 
     if (colNdx > 0)
     {
@@ -659,15 +649,16 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     });
   }
 
-  public void addRemoveMenuItem() { addRemoveMenuItem((Runnable)null); }
+  public void addRemoveMenuItem() { addRemoveMenuItem((Consumer<HyperTableRow>)null); }
 
-  public void addRemoveMenuItem(Runnable handler)
+  public void addRemoveMenuItem(Consumer<HyperTableRow> handler)
   {
     addContextMenuItem("Remove this row", cols.get(mainCol).getObjType().getRecordClass(), record -> canAddRows, record ->
     {
-      rows.remove(tv.getSelectionModel().getSelectedItem());
+      HyperTableRow row = tv.getSelectionModel().getSelectedItem();
+      rows.remove(row);
       doExternalRefresh();
-      if (handler != null) handler.run();
+      if (handler != null) handler.accept(row);
     });
   }
 
@@ -686,35 +677,40 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         return (onlyIfCanAddRows == false) || canAddRows;
       },
 
-      row ->
-      {
-        if (onlyIfCanAddRows && (canAddRows == false)) return;
+      row -> triggerChangeOrder(onlyIfCanAddRows, handler));
+  }
 
-        if (ui.windows.getOutermostModality() == Modality.NONE)
-          if (ui.cantSaveRecord()) return;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-        boolean couldAddRows = canAddRows;
+  public void triggerChangeOrder(boolean onlyIfCanAddRows, Runnable completeHndlr)
+  {
+    if (onlyIfCanAddRows && (canAddRows == false)) return;
 
-        canAddRows = false;
+    if (ui.windows.getOutermostModality() == Modality.NONE)
+      if (ui.cantSaveRecord()) return;
 
-        if (ui.windows.getOutermostModality() == Modality.NONE)
-          ui.update();
+    boolean couldAddRows = canAddRows;
 
-        ObjectOrderDlgCtrlr.build(this, rows).showModal();
+    canAddRows = false;
 
-        if (handler != null)
-          handler.run();
-        else
-        {
-          if (ui.windows.getOutermostModality() == Modality.NONE)
-            ui.cantSaveRecord();
-        }
+    if (ui.windows.getOutermostModality() == Modality.NONE)
+      ui.update();
 
-        canAddRows = couldAddRows;
+    ObjectOrderDlgCtrlr.build(this, rows).showModal();
 
-        if (ui.windows.getOutermostModality() == Modality.NONE)
-          ui.update();
-      });
+    if (completeHndlr != null)
+      completeHndlr.run();
+    else
+    {
+      if (ui.windows.getOutermostModality() == Modality.NONE)
+        ui.cantSaveRecord();
+    }
+
+    canAddRows = couldAddRows;
+
+    if (ui.windows.getOutermostModality() == Modality.NONE)
+      ui.update();
   }
 
 //---------------------------------------------------------------------------

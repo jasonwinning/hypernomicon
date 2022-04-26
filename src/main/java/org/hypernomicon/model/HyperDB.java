@@ -1069,7 +1069,8 @@ public final class HyperDB
       else
         mentionsIndex.removeRecord(record);
 
-      try { record.setSearchKey(""); } catch (SearchKeyException e) { noOp(); }
+      if (record.getType() != hdtConcept)
+        try { record.setSearchKey(""); } catch (SearchKeyException e) { noOp(); }
     }
 
     if (deletionInProgress)
@@ -2064,6 +2065,7 @@ public final class HyperDB
 
       addStringItem(hdtConcept, tagName);
       addPointerSingle(hdtConcept, rtGlossaryOfConcept, tagGlossary);
+      addPointerMulti(hdtConcept, rtParentConceptOfConcept, tagParentConcept);
       addMainTextItem(hdtConcept, tagHub, tagDefinition, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtGlossary, tagName);
