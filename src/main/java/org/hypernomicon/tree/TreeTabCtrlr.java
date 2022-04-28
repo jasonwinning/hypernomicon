@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -145,7 +146,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       record ->
       {
         if ((db.isLoaded() == false) || (record == null)) return false;
-        return record.getType() != hdtConcept;
+        return (record.getType() != hdtConcept) && (record.getType() != hdtGlossary);
       },
       TreeTabCtrlr::chooseParent);
 
@@ -200,6 +201,10 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     addCreateNewSchema(tree.addContextMenuItem("Create new glossary under this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
       this::createGlossary));
+
+    addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary under this term", HDT_Concept.class,
+      concept -> db.isLoaded(),
+      TreeTabCtrlr::createSubTerm));
 
     tree.addDefaultMenuItems();
 
@@ -390,6 +395,20 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     HDT_Term term = HDT_Term.create(glossary);
 
     ui.goToRecord(term, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void createSubTerm(HDT_Concept parentConcept)
+  {
+    HDT_Glossary glossary = parentConcept.glossary.get();
+    HDT_Term newTerm = HDT_Term.create(glossary);
+    HDT_Concept childConcept = newTerm.getConcept(glossary);
+
+    try { childConcept.addParentConcept(parentConcept); } catch (RelationCycleException e) { noOp(); }
+
+    ui.goToRecord(childConcept, false);
   }
 
 //---------------------------------------------------------------------------

@@ -31,7 +31,6 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
@@ -215,14 +214,6 @@ class RecordTreeEdge
       return;
     }
 
-    if (relType == rtGlossaryOfConcept)
-    {
-      HDT_Glossary glossary = (HDT_Glossary) obj;
-      HDT_Concept concept = (HDT_Concept) subj;
-
-      concept.parentConcepts.removeIf(parentConcept -> parentConcept.glossary.get() == glossary);
-    }
-
     db.getObjectList(relType, subj, true).remove(obj);
   }
 
@@ -282,6 +273,14 @@ class RecordTreeEdge
       return (other.parent == parent) && (other.child == child);
 
     return (other.obj == obj) && (other.subj == subj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean isConceptsInSameGlossary()
+  {
+    return (relType == rtParentConceptOfConcept) && (((HDT_Concept)parent).glossary.get() == ((HDT_Concept)child).glossary.get());
   }
 
 //---------------------------------------------------------------------------

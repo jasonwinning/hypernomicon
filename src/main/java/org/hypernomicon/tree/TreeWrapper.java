@@ -371,13 +371,14 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         nullSwitch(parent.getValue(), true, value -> value.getRecord() == null)))
       return false;
 
-    if ((source.getType() == hdtConcept) && (target.getType() == hdtGlossary))
+    if ((source.getType() == hdtConcept) && ((target.getType() == hdtGlossary) || (target.getType() == hdtConcept)))
     {
-      HDT_Concept concept = (HDT_Concept)source;
-      HDT_Glossary glossary = (HDT_Glossary)target;
+      HDT_Concept sourceConcept = (HDT_Concept) source;
+      HDT_Glossary targetGlossary = target.getType() == hdtGlossary ? (HDT_Glossary) target : ((HDT_Concept) target).glossary.get();
 
-      if (concept.term.get().getConcept(glossary) != null)
-        return false;
+      if (sourceConcept.term.get().getConcept(targetGlossary) != null)
+        if ((target.getType() == hdtGlossary) || (sourceConcept.glossary.get() != targetGlossary))
+          return false;
     }
 
     expand(treeItem);
@@ -402,9 +403,9 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       set.add(hdtInvestigation);
       set.add(hdtWorkLabel);
     }
-    
+
     set.retainAll(recordTypesInTree);
-    
+
     return set;
   }
 
@@ -416,36 +417,46 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     try
     {
       dragReset();
-  
+
       RecordTreeEdge dragSourceEdge = new RecordTreeEdge(draggingRow.treeItem.getParent().getValue().getRecord(), draggingRow.getRecord()),
                      dragTargetEdge = new RecordTreeEdge(targetRow.getRecord(), draggingRow.getRecord()),
                      otherEdgeToDetach = dragTargetEdge.edgeToDetach();
-  
+
       if (dragSourceEdge.equals(otherEdgeToDetach))
         otherEdgeToDetach = null;
-  
+
       if (dragTargetEdge.canAttach(true) == false)
         return;
-  
+
       if (dragSourceEdge.equals(dragTargetEdge))
       {
         messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
         return;
       }
-  
+
       if (dragTargetEdge.relType == rtNone)
       {
         messageDialog("Unable to copy or move source record: Internal error #33948.", mtError);
         return;
       }
-  
-      ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.build(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
-  
-      if (cpdc.showModal() == false)
-        return;
-  
-      dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null, true);
-  
+
+      if ((draggingRow.getRecord().getType() == hdtConcept) && (dragTargetEdge.isConceptsInSameGlossary() == false))
+      {
+        DragConceptDlgCtrlr dcdc = DragConceptDlgCtrlr.build(draggingRow.getRecord(), dragTargetEdge.parent);
+
+        if (dcdc.showModal() == false)
+          return;
+      }
+      else
+      {
+        ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.build(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
+
+        if (cpdc.showModal() == false)
+          return;
+
+        dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null, true);
+      }
+
       Platform.runLater(() ->
       {
         sort();

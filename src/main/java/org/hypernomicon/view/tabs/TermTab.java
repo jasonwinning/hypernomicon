@@ -604,7 +604,8 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     if (frmSelectConcept.showModal())
     {
-      if (concept.glossary.get() != frmSelectConcept.getGlossary())
+      if (concept.glossary.get() != frmSelectConcept.getGlossary() &&
+          ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false)))
       {
         if (confirmDialog("This will unassign any parent or child concepts for Term \"" + curTerm.name() + "\", Glossary \"" + concept.glossary.get().name() + "\". Proceed?") == false)
         {
@@ -645,8 +646,9 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     HDT_Concept concept = curTerm.getConcept(oldGlossary);
 
-    if (confirmDialog("This will unassign any parent or child concepts for Term \"" + curTerm.name() + "\", Glossary \"" + oldGlossary.name() + "\". Proceed?") == false)
-      return false;
+    if ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false))
+      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + curTerm.name() + "\", Glossary \"" + oldGlossary.name() + "\". Proceed?") == false)
+        return false;
 
     concept.glossary.set(newGlossary);
 

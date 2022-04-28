@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2022 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="300.0" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="450.0" prefHeight="300.0"
+            prefWidth="926.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.tree.DragConceptDlgCtrlr">
+  <Label layoutX="20.0" layoutY="25.0" text="Select whether to:" AnchorPane.leftAnchor="24.0"/>
+  <Label fx:id="lblMoveInfo" alignment="TOP_LEFT" layoutX="58.0" layoutY="80.0" prefHeight="61.0" prefWidth="686.0"
+         text="In this case, the Term ___ will no longer appear in the Glossary ___. Its definition in Glossary ___ will be the same as what it was in Glossary ___. Parent/Child relations for this Term in Glossary ___ will be lost."
+         wrapText="true" AnchorPane.leftAnchor="46.0" AnchorPane.rightAnchor="59.0" AnchorPane.topAnchor="80.0">
+    <graphic>
+      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+        <Image url="@../resources/images/information-italic.png"/>
+      </ImageView>
+    </graphic>
+  </Label>
+  <Label fx:id="lblAddInfo" alignment="TOP_LEFT" layoutX="45.0" layoutY="187.0" prefHeight="61.0"
+         text="In this case, the existing entry (Concept) in Glossary ___ and its definition will remain intact."
+         wrapText="true" AnchorPane.leftAnchor="46.0" AnchorPane.rightAnchor="59.0" AnchorPane.topAnchor="180.0">
+    <graphic>
+      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+        <Image url="@../resources/images/information-italic.png"/>
+      </ImageView>
+    </graphic>
+  </Label>
+  <Button layoutX="24.0" layoutY="49.0" maxWidth="56.0" minWidth="56.0" mnemonicParsing="false" onAction="#btnMoveClick"
+          prefWidth="56.0" text="Move" AnchorPane.leftAnchor="24.0" AnchorPane.topAnchor="50.0"/>
+  <Label fx:id="lblMove" layoutX="90.0" layoutY="54.0"
+         text="Move this definition (Concept) for Term ___ from Glossary ___ to Glossary ___"
+         AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="54.0"/>
+  <Button layoutX="21.0" layoutY="150.0" maxWidth="56.0" minWidth="56.0" mnemonicParsing="false" onAction="#btnAddClick"
+          prefWidth="56.0" text="Add" AnchorPane.leftAnchor="24.0" AnchorPane.topAnchor="150.0"/>
+  <Label fx:id="lblAdd" layoutX="90.0" layoutY="154.0" text="Add an entry (Concept) for Term ___ to Glossary ___"
+         AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="154.0"/>
+  <Button layoutX="21.0" layoutY="251.0" maxWidth="56.0" minWidth="56.0" mnemonicParsing="false"
+          onAction="#btnCancelClick" prefWidth="56.0" text="Cancel" AnchorPane.leftAnchor="24.0"
+          AnchorPane.topAnchor="250.0"/>
+</AnchorPane>

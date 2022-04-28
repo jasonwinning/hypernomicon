@@ -243,7 +243,7 @@
           <TableColumn prefWidth="189.0" text="Work Type"/>
           <TableColumn editable="false" maxWidth="41.0" minWidth="41.0" prefWidth="41.0" resizable="false"
                        text="Ed/Tr"/>
-          <TableColumn prefWidth="266.0" text="Investigation (click to edit)"/>
+          <TableColumn prefWidth="266.0" text="Investigation(s) (click to edit)"/>
           <TableColumn prefWidth="372.0" text="Title"/>
           <TableColumn prefWidth="141.0" text="Coauthor(s)"/>
         </columns>
