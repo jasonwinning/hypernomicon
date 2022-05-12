@@ -84,8 +84,8 @@ public final class WindowStack
     {
       height = stage.getHeight(); width = stage.getWidth();
 
-      if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage()))   // In some Linux environments, the main window inexplicably gets
-        runDelayedInFXThread(3, 100, () -> restoreDimensions()); // resized when a window it is the owner of is opened
+      if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage())) // In some Linux environments, the main window inexplicably gets
+        runDelayedInFXThread(3, 100, this::restoreDimensions); // resized when a window it is the owner of is opened
     }
 
     @Override public void restoreDimensions()

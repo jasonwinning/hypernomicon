@@ -394,7 +394,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     }
     else if (frmSelectConcept.getGlossary() != null)
     {
-      concept = term.getConcept(frmSelectConcept.getGlossary());
+      concept = term.getConcept(frmSelectConcept.getGlossary(), frmSelectConcept.getSense());
     }
     else
       return;

@@ -34,7 +34,6 @@ import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -196,7 +195,7 @@ public class TreeSelector
       if (glossaryChecks((HDT_Glossary) record, showErrMsg) == false)
         return false;
 
-      MainCtrlr.termHyperTab().selectFromTree(tableRow, (HDT_Glossary) record, null);
+      MainCtrlr.termHyperTab().selectFromTree(tableRow, (HDT_Glossary) record, ((HDT_Concept) base).sense.get(), null);
       ui.goToRecord(MainCtrlr.termHyperTab().viewRecord(), false);
       return true;
     }
@@ -204,7 +203,7 @@ public class TreeSelector
     {
       HDT_Concept parentConcept = (HDT_Concept) record;
 
-      MainCtrlr.termHyperTab().selectFromTree(tableRow, parentConcept.glossary.get(), parentConcept);
+      MainCtrlr.termHyperTab().selectFromTree(tableRow, parentConcept.glossary.get(), ((HDT_Concept) base).sense.get(), parentConcept);
       ui.goToRecord(MainCtrlr.termHyperTab().viewRecord(), false);
       return true;
     }
@@ -229,18 +228,9 @@ public class TreeSelector
 
   private boolean glossaryChecks(HDT_Glossary glossary, boolean showErrMsg)
   {
-    if (base.getType() == hdtTerm)
-    {
-      HDT_Term term = (HDT_Term) base;
-
-      if (term.getConcept(glossary) != null)
-        return falseWithErrMsgCond(showErrMsg, "The term is already in that glossary.");
-
-      return true;
-    }
 
     HDT_Concept concept = (HDT_Concept) base,
-                otherConcept = concept.term.get().getConcept(glossary);
+                otherConcept = concept.term.get().getConcept(glossary, concept.sense.get());
 
     if ((otherConcept != null) && (concept != otherConcept))
       return falseWithErrMsgCond(showErrMsg, "The term is already in that glossary.");

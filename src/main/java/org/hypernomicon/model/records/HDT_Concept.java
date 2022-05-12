@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.relations.HyperObjList;
@@ -38,6 +39,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
   public final List<HDT_Concept> subConcepts, parentConcepts;
   public final HyperSubjPointer<HDT_Term, HDT_Concept> term;
   public final HyperObjPointer<HDT_Concept, HDT_Glossary> glossary;
+  public final HyperObjPointer<HDT_Concept, HDT_ConceptSense> sense;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -48,6 +50,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
 
     term = getSubjPointer(rtConceptOfTerm);
     glossary = getObjPointer(rtGlossaryOfConcept);
+    sense = getObjPointer(rtSenseOfConcept);
     parentConcepts = Collections.unmodifiableList(getObjList(rtParentConceptOfConcept));
     subConcepts = getSubjList(rtParentConceptOfConcept);
   }
@@ -63,7 +66,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
   @Override public String getNameEngChar()             { return term.get().getNameEngChar(); }
   @Override public String firstActiveKeyWord()         { return term.get().firstActiveKeyWord(); }
   @Override public void setName(String str)            { term.get().setName(str); }
-  @Override public String listName()                   { return name(); }
+  @Override public String listName()                   { return sense.isNull() ? name() : (name() + " (" + sense.get().name() + ")"); }
   @Override public final boolean isUnitable()          { return true; }
 
 //---------------------------------------------------------------------------
@@ -82,10 +85,17 @@ public class HDT_Concept extends HDT_RecordWithMainText
 
   public String extendedName()
   {
-    return glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().concepts.size() == 1)) ?
-      name()
+    String glossaryText = glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().concepts.size() == 1)) ?
+      ""
     :
-      name() + " (" + glossary.get().name() + ')';
+      glossary.get().name();
+
+    String senseText = sense.isNull() ? "" : sense.get().name();
+
+    return glossaryText.isBlank() ?
+      (senseText.isBlank() ? name() : name() + " (" + senseText + ")")
+    :
+      (name() + " (" + glossaryText + (senseText.isBlank() ? ")" : (", " + senseText + ")")));
   }
 
 //---------------------------------------------------------------------------

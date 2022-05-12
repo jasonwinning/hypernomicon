@@ -52,6 +52,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -667,13 +668,13 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     htPersonInst.addActionCol(ctGoNewBtn, 2);
     htPersonInst.addCheckboxCol();
 
-    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, true), (row, cellVal, nextColNdx, nextPopulator) ->
+    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
       row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
     });
 
-    htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, true));
+    htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, DisplayKind.name));
 
     htPersonInst.addRemoveMenuItem();
     htPersonInst.addChangeOrderMenuItem(true);

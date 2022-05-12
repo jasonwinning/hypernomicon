@@ -19,6 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -126,7 +127,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     HyperTableColumn col = table.getColumn(colNdx);
     boolean isNotCheckBox = col.getCtrlType() != ctCheckbox;
 
-    if ((cell != null) && cell.equals(newCell))
+    if (Objects.equals(cell, newCell))
     {
       if (isNotCheckBox) table.refresh();
       return false;

@@ -556,6 +556,7 @@ public final class HyperDB
         writeDatasetToXML(xmlList, hdtArgument);        finalizeXMLFile(xmlList, filenameList, ARGUMENT_FILE_NAME);
         writeDatasetToXML(xmlList, hdtPosition);        finalizeXMLFile(xmlList, filenameList, POSITION_FILE_NAME);
         writeDatasetToXML(xmlList, hdtGlossary);
+        writeDatasetToXML(xmlList, hdtConceptSense);
         writeDatasetToXML(xmlList, hdtTerm);
         writeDatasetToXML(xmlList, hdtConcept);         finalizeXMLFile(xmlList, filenameList, TERM_FILE_NAME);
         writeDatasetToXML(xmlList, hdtFolder);
@@ -1905,6 +1906,7 @@ public final class HyperDB
   public HyperDataset<HDT_Subfield       >.CoreAccessor subfields;
   public HyperDataset<HDT_Term           >.CoreAccessor terms;
   public HyperDataset<HDT_Concept        >.CoreAccessor concepts;
+  public HyperDataset<HDT_ConceptSense   >.CoreAccessor conceptSenses;
   public HyperDataset<HDT_Work           >.CoreAccessor works;
   public HyperDataset<HDT_WorkType       >.CoreAccessor workTypes;
   public HyperDataset<HDT_WorkLabel      >.CoreAccessor workLabels;
@@ -1958,6 +1960,7 @@ public final class HyperDB
       arguments        = getAccessor(HDT_Argument       .class);
       terms            = getAccessor(HDT_Term           .class);
       concepts         = getAccessor(HDT_Concept        .class);
+      conceptSenses    = getAccessor(HDT_ConceptSense   .class);
       works            = getAccessor(HDT_Work           .class);
       workTypes        = getAccessor(HDT_WorkType       .class);
       workLabels       = getAccessor(HDT_WorkLabel      .class);
@@ -2065,6 +2068,7 @@ public final class HyperDB
 
       addStringItem(hdtConcept, tagName);
       addPointerSingle(hdtConcept, rtGlossaryOfConcept, tagGlossary);
+      addPointerSingle(hdtConcept, rtSenseOfConcept, tagSense);
       addPointerMulti(hdtConcept, rtParentConceptOfConcept, tagParentConcept);
       addMainTextItem(hdtConcept, tagHub, tagDefinition, tagDisplayRecord, tagKeyWork);
 
@@ -2205,8 +2209,6 @@ public final class HyperDB
     FILE_FILE_NAME = "Files.xml",
     NOTE_FILE_NAME = "Notes.xml",
     HUB_FILE_NAME = "Hubs.xml";
-
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2373,7 +2375,7 @@ public final class HyperDB
                       Stream.empty(),
                       set -> set.stream().filter(recordWMT -> recordWMT.getType() == mentionerType));
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

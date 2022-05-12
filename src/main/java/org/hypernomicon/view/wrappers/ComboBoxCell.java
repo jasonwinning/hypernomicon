@@ -106,6 +106,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     setGraphic(null);
 
     HyperTableRow row = getTableRow().getItem();
+    if (row == null) return;
 
     if (hcb.somethingWasTyped && (hcb.typedMatch != null))
       newValue = hcb.typedMatch;

@@ -60,6 +60,7 @@ public enum Tag
   tagHub             ("hub"               , "Record Hub"               , hdtHub            , true),
   tagPersonGroup     ("person_group"      , "Person Group"             , hdtPersonGroup    , true),
   tagFileType        ("file_type"         , "File Type"                , hdtFileType       , true),
+  tagSense           ("sense"             , "Concept Sense"            , hdtConceptSense   , true),
   tagAuthor          ("author"            , "Author"                   , hdtPerson),
   tagLargerDebate    ("larger_debate"     , "Larger Debate"            , hdtDebate),
   tagLargerPosition  ("larger_position"   , "Larger Position"          , hdtPosition),

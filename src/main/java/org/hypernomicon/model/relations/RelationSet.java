@@ -208,6 +208,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtGlossaryOfConcept        : return new RelationSet<>(relType, HDT_Concept      .class, HDT_Glossary       .class);
       case rtParentGlossaryOfGlossary : return new RelationSet<>(relType, HDT_Glossary     .class, HDT_Glossary       .class, true);
       case rtParentConceptOfConcept   : return new RelationSet<>(relType, HDT_Concept      .class, HDT_Concept        .class);
+      case rtSenseOfConcept           : return new RelationSet<>(relType, HDT_Concept      .class, HDT_ConceptSense   .class);
       case rtWorkOfMiscFile           : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Work           .class);
       case rtWorkFileOfWork           : return new RelationSet<>(relType, HDT_Work         .class, HDT_WorkFile       .class,
 
@@ -666,7 +667,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     if (hasNestedItems)
       objectGroups.remove(subj, obj);
 
-    if ((type == rtWorkFileOfWork) && (getSubjectCount(obj) == 0))
+    if (((type == rtSenseOfConcept) || (type == rtWorkFileOfWork)) && (getSubjectCount(obj) == 0))
       if (obj.isExpired() == false) // The obj record may have just been deleted, and the pointers are still being resolved
         db.deleteRecord(obj);
   }
@@ -890,7 +891,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     rtKeyWork                 (47, ""                     , ""), // Like rtUnited, this is not a real relation type having its own RelationSet object.
 
-    rtParentConceptOfConcept  (48, "Child Concept(s)"     , "Child concept(s) under this concept");
+    rtParentConceptOfConcept  (48, "Child Concept(s)"     , "Child concept(s) under this concept"),
+    rtSenseOfConcept          (49, tagConcept             , "Concept(s) having this kind of sense");
 
     private final int code;
     private final String title, subjTitle;

@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HDI_OfflinePointerMulti;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.unities.MainText;
@@ -85,6 +86,14 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public boolean hasMultipleSensesInGlossary(HDT_Glossary glossary)
+  {
+    return concepts.stream().filter(concept -> concept.glossary.get() == glossary).count() > 1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public Instant getModifiedDate()
   {
     return concepts.stream().map(HDT_Concept::getModifiedDate)
@@ -94,9 +103,9 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Concept getConcept(HDT_Glossary glossary)
+  public HDT_Concept getConcept(HDT_Glossary glossary, HDT_ConceptSense sense)
   {
-    return findFirst(concepts, concept -> concept.glossary.get() == glossary);
+    return findFirst(concepts, concept -> (concept.glossary.get() == glossary) && (concept.sense.get() == sense));
   }
 
 //---------------------------------------------------------------------------

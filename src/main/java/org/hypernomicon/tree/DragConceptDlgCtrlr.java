@@ -28,6 +28,7 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -69,15 +70,15 @@ public class DragConceptDlgCtrlr extends HyperDlg
       newGlossary = (HDT_Glossary) newParent;
     }
 
-    lblMove.setText("Move this definition (Concept) for Term \"" + childConcept.term.get().name() +
+    lblMove.setText("Move definition \"" + childConcept.listName() +
                     "\" from Glossary \"" + oldGlossary.name() + "\" to Glossary \"" + newGlossary.name() + "\"");
 
-    lblMoveInfo.setText("In this case, the Term \"" + childConcept.term.get().name() + "\" will no longer appear in the Glossary \"" +
+    lblMoveInfo.setText("In this case, the Concept \"" + childConcept.listName() + "\" will no longer appear in the Glossary \"" +
                         oldGlossary.name() + "\". Its definition in Glossary \"" + newGlossary.name() +
                         "\" will be the same as what it was in Glossary \"" + oldGlossary.name() +
-                        "\". Parent/Child relations for this Term in Glossary \"" + oldGlossary.name() + "\" will be lost.");
+                        "\". Parent/Child relations for this Concept in Glossary \"" + oldGlossary.name() + "\" will be lost.");
 
-    lblAdd.setText("Add an entry (Concept) for Term \"" + childConcept.term.get().name() + "\" to Glossary \"" + newGlossary.name() + "\"");
+    lblAdd.setText("Add an entry (Concept) for \"" + childConcept.listName() + "\" to Glossary \"" + newGlossary.name() + "\"");
 
     lblAddInfo.setText("In this case, the existing entry (Concept) in Glossary \"" + oldGlossary.name() +
                        "\" and its definition will remain intact. The definition for the new entry (Concept) in Glossary \"" + newGlossary.name() +
@@ -110,8 +111,14 @@ public class DragConceptDlgCtrlr extends HyperDlg
   {
     HDT_Concept targetChildConcept = db.createNewBlankRecord(hdtConcept);
 
+    HDT_ConceptSense sense = null;
+
+    if (sourceChildConcept.term.get().getGlossaries().contains(newGlossary))
+      sense = sourceChildConcept.sense.get();
+
     sourceChildConcept.term.get().concepts.add(targetChildConcept);
     targetChildConcept.glossary.set(newGlossary);
+    targetChildConcept.sense.set(sense);
 
     if (newParentConcept != null)
       try { targetChildConcept.addParentConcept(newParentConcept); } catch (RelationCycleException e) { noOp(); }

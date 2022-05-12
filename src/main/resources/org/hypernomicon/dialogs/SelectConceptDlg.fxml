@@ -26,45 +26,36 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="92.0" minHeight="92.0" minWidth="851.0" prefHeight="92.0" prefWidth="851.0"
-            xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.hypernomicon.dialogs.SelectConceptDlgCtrlr">
-  <GridPane layoutX="207.0" layoutY="94.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<AnchorPane maxHeight="92.0" minHeight="92.0" minWidth="851.0" prefHeight="92.0" prefWidth="1125.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.SelectConceptDlgCtrlr">
+  <GridPane layoutX="207.0" layoutY="94.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <columnConstraints>
-      <ColumnConstraints hgrow="NEVER" maxWidth="238.0" minWidth="238.0" prefWidth="238.0"/>
-      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="613.0" prefWidth="613.0"/>
+      <ColumnConstraints hgrow="NEVER" maxWidth="238.0" minWidth="238.0" prefWidth="238.0" />
+      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="613.0" prefWidth="613.0" />
     </columnConstraints>
     <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <AnchorPane prefHeight="200.0" prefWidth="200.0">
-      <Button fx:id="btnOk" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" prefWidth="165.0"
-              text="Use existing term:" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="2.0"
-              AnchorPane.topAnchor="4.0"/>
+      <Button fx:id="btnOk" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" prefWidth="165.0" text="Use existing term:" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="4.0" />
     </AnchorPane>
     <AnchorPane maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-      <ComboBox fx:id="cbTerm" layoutX="-290.0" layoutY="5.0" prefHeight="22.0" prefWidth="353.0"
-                AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="258.0" AnchorPane.topAnchor="4.0"/>
-      <Label layoutX="362.0" layoutY="8.0" text="Glossary:" AnchorPane.rightAnchor="206.0"/>
-      <ComboBox fx:id="cbGlossary" layoutX="413.0" layoutY="2.0" prefHeight="22.0" prefWidth="196.0"
-                AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0"/>
+      <ComboBox fx:id="cbTerm" layoutX="-290.0" layoutY="5.0" prefHeight="25.0" prefWidth="361.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="524.0" AnchorPane.topAnchor="4.0" />
+      <Label layoutX="382.0" layoutY="8.0" text="Glossary:" AnchorPane.rightAnchor="457.0" />
+      <ComboBox fx:id="cbGlossary" layoutX="436.0" layoutY="4.0" prefHeight="22.0" prefWidth="196.0" AnchorPane.rightAnchor="255.0" AnchorPane.topAnchor="4.0" />
+         <Label layoutX="646.0" layoutY="8.0" text="Sense:" AnchorPane.rightAnchor="207.0" />
+         <ComboBox fx:id="cbSense" layoutX="693.0" layoutY="5.0" prefHeight="22.0" prefWidth="196.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-      <Button fx:id="btnCreate" mnemonicParsing="false" prefHeight="22.0" prefWidth="207.0"
-              text="Create new term with this search key:" AnchorPane.leftAnchor="4.0"
-              AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="4.0"/>
+      <Button fx:id="btnCreate" mnemonicParsing="false" prefHeight="22.0" prefWidth="207.0" text="Create new term with this search key:" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="4.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-      <TextField fx:id="tfSearchKey" layoutX="14.0" layoutY="3.0" AnchorPane.leftAnchor="2.0"
-                 AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0"/>
+      <TextField fx:id="tfSearchKey" layoutX="14.0" layoutY="3.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" />
     </AnchorPane>
     <BorderPane prefHeight="75.0" prefWidth="851.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
       <center>
-        <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel"
-                BorderPane.alignment="CENTER"/>
+        <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" BorderPane.alignment="CENTER" />
       </center>
     </BorderPane>
   </GridPane>

@@ -72,6 +72,11 @@ public abstract class Populator
 
   public static final HyperTableRow dummyRow = new HyperTableRow(null, null);
 
+  public enum DisplayKind
+  {
+    name, listName, cbText
+  }
+
   public enum CellValueType
   {
     cvtVaries,       cvtQuery,       cvtQueryType,  cvtRecordType,

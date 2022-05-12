@@ -22,6 +22,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.WebButton.WebButtonField;
+import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -235,7 +236,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), true);
 
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), true);
-    hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution, parentPopFilter, true), true);
+    hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution, parentPopFilter, DisplayKind.name), true);
 
     hcbCountry.addListener((oldValue, newValue) ->
     {

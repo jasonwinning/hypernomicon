@@ -20,6 +20,7 @@ package org.hypernomicon.dialogs;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
@@ -59,7 +60,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 
   private void init(RecordType recordType, Predicate<Integer> idFilter)
   {
-    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, idFilter, false));
+    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, idFilter, DisplayKind.cbText));
     typeName = getTypeName(recordType);
   }
 

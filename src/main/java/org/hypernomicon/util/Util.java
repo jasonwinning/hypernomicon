@@ -902,19 +902,23 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <T> void addToSortedList(List<T> list, T item, Comparator<? super T> comp)
+  public static <T> int addToSortedList(List<T> list, T item, Comparator<? super T> comp)
   {
     int ndx = Collections.binarySearch(list, item, comp);
-    list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
+    ndx = ndx >= 0 ? ndx + 1 : ~ndx;
+    list.add(ndx, item);
+    return ndx;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <T extends Comparable<? super T>> void addToSortedList(List<T> list, T item)
+  public static <T extends Comparable<? super T>> int addToSortedList(List<T> list, T item)
   {
     int ndx = Collections.binarySearch(list, item);
-    list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
+    ndx = ndx >= 0 ? ndx + 1 : ~ndx;
+    list.add(ndx, item);
+    return ndx;
   }
 
 //---------------------------------------------------------------------------

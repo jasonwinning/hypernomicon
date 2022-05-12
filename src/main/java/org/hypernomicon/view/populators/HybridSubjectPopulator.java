@@ -58,7 +58,7 @@ public class HybridSubjectPopulator extends Populator
     rowToChanged = new HashMap<>();
     rowToPop = new HashMap<>();
 
-    standardPop = new StandardPopulator(db.getSubjType(relType), idFilter, false);
+    standardPop = new StandardPopulator(db.getSubjType(relType), idFilter, DisplayKind.cbText);
     subjPop = new SubjectPopulator(relType, true, idFilter);
 
     this.relType = relType;

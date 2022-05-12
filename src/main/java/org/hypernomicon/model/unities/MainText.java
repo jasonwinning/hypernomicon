@@ -109,6 +109,14 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public boolean isEmpty()
+  {
+    return getPlain().isBlank() && keyWorks.isEmpty() && displayItems.stream().noneMatch(displayItem -> displayItem.type == diRecord);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private String getKeyWorksString()
   {
     return keyWorks.stream().map(keyWork -> keyWork.getSearchKey(true)).reduce((s1, s2) -> s1 + ' ' + s2).orElse("");
@@ -416,17 +424,17 @@ public class MainText
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @SuppressWarnings("unchecked")
   public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithPath kwRecord, Collection<HDT_MT> newCol, RecordType mentionerType)
   {
     setKeyWorkMentioners(kwRecord, newCol, (Class<HDT_MT>) mentionerType.getRecordClass());
   }
-  
+
   public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithPath kwRecord, Collection<HDT_MT> newCol, Class<HDT_MT> klazz)
   {
     Collection<HDT_MT> oldCol = db.keyWorkMentionerStream(kwRecord, klazz).collect(Collectors.toSet());
-    
+
     oldCol.forEach(recordWMT ->
     {
       if (newCol.contains(recordWMT)) return;

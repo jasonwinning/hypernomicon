@@ -36,13 +36,13 @@ public class StandardPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public StandardPopulator(RecordType objType) { this(objType, null, false); }
+  public StandardPopulator(RecordType objType) { this(objType, null, DisplayKind.cbText); }
 
-  public StandardPopulator(RecordType objType, Predicate<Integer> filter, boolean nameOnly)
+  public StandardPopulator(RecordType objType, Predicate<Integer> filter, DisplayKind displayKind)
   {
     this.objType = objType;
 
-    rtp = new RecordByTypePopulator(filter, nameOnly);
+    rtp = new RecordByTypePopulator(filter, displayKind);
 
     rtp.setRecordType(dummyRow, objType);
   }

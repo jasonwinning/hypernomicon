@@ -28,7 +28,7 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-public class CustomPopulator extends Populator
+public class CustomPopulator extends RecordPopulator
 {
 
 //---------------------------------------------------------------------------
@@ -47,6 +47,8 @@ public class CustomPopulator extends Populator
 
   public CustomPopulator(CellValueType cellValueType, PopulateHandler handler)
   {
+    super(null, DisplayKind.cbText, true);
+
     this.recordType = RecordType.hdtNone;
     this.handler = handler;
     this.cellValueType = cellValueType;
@@ -54,8 +56,10 @@ public class CustomPopulator extends Populator
 
   public CustomPopulator(RecordType recordType, RecordPopulateHandler handler)
   {
+    super(null, DisplayKind.cbText, true);
+
     this.recordType = recordType;
-    this.handler = (row, force) -> handler.handle(row, force).map(record -> new HyperTableCell(record, record.getCBText()));
+    this.handler = (row, force) -> handler.handle(row, force).map(record -> getCell(record, recordType));
     this.cellValueType = cvtRecord;
   }
 

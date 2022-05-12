@@ -1811,13 +1811,18 @@ public final class MainCtrlr
     if (record.hasStoredState() == false)
       return falseWithErrorMessage("Unable to revert: the record may not have been previously saved to XML.");
 
+    HDT_Record viewRecordToRevert = viewRecord();
+
+    if ((viewRecordToRevert == record) || (activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum))
+      viewRecordToRevert = null;
+
+    if ((viewRecordToRevert != null) && (viewRecordToRevert.hasStoredState() == false))
+      return falseWithErrorMessage("Unable to revert: the record may not have been previously saved to XML.");
+
     if (confirmDialog("Are you sure you want to revert this record to the last version saved to XML?") == false) return false;
 
-    HDT_Record viewRecord = viewRecord();
-
-    if (revertToDiskCopy(record) && (viewRecord != null) && (viewRecord != record))
-      if ((activeTabEnum() != treeTabEnum) && (activeTabEnum() != queryTabEnum))
-        revertToDiskCopy(viewRecord);
+    if (revertToDiskCopy(record) && (viewRecordToRevert != null))
+      revertToDiskCopy(viewRecordToRevert);
 
     update();
     return true;

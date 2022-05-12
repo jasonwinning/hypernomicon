@@ -376,7 +376,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       HDT_Concept sourceConcept = (HDT_Concept) source;
       HDT_Glossary targetGlossary = target.getType() == hdtGlossary ? (HDT_Glossary) target : ((HDT_Concept) target).glossary.get();
 
-      if (sourceConcept.term.get().getConcept(targetGlossary) != null)
+      if (sourceConcept.term.get().getConcept(targetGlossary, sourceConcept.sense.get()) != null)
         if ((target.getType() == hdtGlossary) || (sourceConcept.glossary.get() != targetGlossary))
           return false;
     }

@@ -149,6 +149,20 @@ public final class SimpleRecordTypes
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final class HDT_ConceptSense extends HDT_SimpleRecord
+  {
+    public final List<HDT_Concept> concepts;
+
+    public HDT_ConceptSense(RecordState xmlState, HyperDataset<HDT_ConceptSense> dataset)
+    {
+      super(xmlState, dataset);
+      concepts = getSubjList(rtSenseOfConcept);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public enum WorkTypeEnum
   {
     wtNone, wtPaper, wtBook, wtWebPage, wtChapter, wtRecording, wtUnenteredSet, wtThesis

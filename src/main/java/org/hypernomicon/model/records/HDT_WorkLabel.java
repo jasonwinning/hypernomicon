@@ -57,7 +57,7 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
       if (parentLabels.get(0).getID() == 1) return name();
       String parentText = parentLabels.get(0).extendedText();
       if (parentText.length() > 0)
-        return parentText + '/' + name();
+        return parentText + " / " + name();
     }
 
     return name();

@@ -25,7 +25,7 @@ import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Institution;
-
+import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.tabs.InstTabCtrlr;
@@ -58,7 +58,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
   private NewInstDlgCtrlr init(HDT_Institution parent, String newName, boolean isParent)
   {
-    hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, true));
+    hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name));
     hcbExisting = new HyperCB(cbExisting, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, false), true);
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType));
 

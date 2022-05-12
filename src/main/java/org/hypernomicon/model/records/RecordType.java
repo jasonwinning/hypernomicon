@@ -58,6 +58,7 @@ public enum RecordType
   hdtFileType       (HDT_FileType       .class),
   hdtNote           (HDT_Note           .class),
   hdtGlossary       (HDT_Glossary       .class),
+  hdtConceptSense   (HDT_ConceptSense   .class),
 
   hdtAuxiliary      (HDT_Record         .class),
 

@@ -57,6 +57,7 @@ import org.hypernomicon.previewWindow.PreviewWrapper;
 
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -297,7 +298,7 @@ public class WorkDlgCtrlr extends HyperDlg
     lblAutoPopulated.setText("");
     tfOrigFile.setEditable(false);
 
-    StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet, false);
+    StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet, DisplayKind.cbText);
     hcbType = new HyperCB(cbType, ctDropDownList, pop);
 
     destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));

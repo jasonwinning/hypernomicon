@@ -17,10 +17,8 @@
 
 package org.hypernomicon.view.populators;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -29,32 +27,30 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
 
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
 
-public class RecordByTypePopulator extends Populator
+public class RecordByTypePopulator extends RecordPopulator
 {
   private final Map<HyperTableRow, RecordType> rowToRecordType = new HashMap<>();
   private final Map<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
   private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
-  private final boolean nameOnly;
-  private final Predicate<Integer> idFilter;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RecordByTypePopulator() { this(null, false); }
-
-  RecordByTypePopulator(Predicate<Integer> idFilter, boolean nameOnly)
+  public RecordByTypePopulator()
   {
-    this.idFilter = idFilter;
-    this.nameOnly = nameOnly;
+    super(null, DisplayKind.cbText, false);
+  }
+
+  public RecordByTypePopulator(Predicate<Integer> idFilter, DisplayKind displayKind)
+  {
+    super(idFilter, displayKind, false);
   }
 
   @Override public CellValueType getValueType() { return cvtRecord; }
@@ -68,90 +64,6 @@ public class RecordByTypePopulator extends Populator
 
     if (rowToRecordType.put(row, newType) != newType)
       rowToChanged.put(row, true);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private HDT_Record getNextRecord(Iterator<? extends HDT_Record> it)
-  {
-    while (it.hasNext())
-    {
-      HDT_Record record = it.next();
-
-      if ((idFilter == null) || idFilter.test(record.getID()))
-        if (isUnstoredRecord(record.getID(), record.getType()) == false)
-          return record;
-    }
-
-    return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  // If num = 5, returns a list of the 5 most recently viewed records
-
-  private List<Integer> getRecent(RecordType recordType, int num)
-  {
-    Instant[] dates = new Instant[num];
-    int[] ids = new int[num], pos = new int[num], revPos = new int[num];
-
-    for (int ndx = 0; ndx < num; ndx++)
-    {
-      dates[ndx] = Instant.MIN;
-      ids[ndx] = -1;
-      pos[ndx] = ndx;
-      revPos[ndx] = ndx;
-    }
-
-    Iterator<? extends HDT_Record> it = db.records(recordType).keyIterator();
-    HDT_Record record;
-
-    while ((record = getNextRecord(it)) != null)
-    {
-      Instant curDate = record.getViewDate();
-      int slotNdx = -1;
-
-      for (int ndx = num - 1; ndx >= 0; ndx--)
-      {
-        if (dates[revPos[ndx]].compareTo(curDate) >= 0)  // Most of the time this happens on the first iteration so
-          break;                                         // the containing loop moves quickly to its next iteration
-
-        slotNdx = revPos[ndx];
-      }
-
-      if (slotNdx > -1)
-      {
-        int insertPos = pos[slotNdx];
-
-        for (int ndx = 0; ndx < num; ndx++)
-        {
-          if (pos[ndx] == (num - 1))
-          {
-            pos[ndx] = insertPos;
-            ids[ndx] = record.getID();
-            dates[ndx] = curDate;
-          }
-
-          else if (pos[ndx] >= insertPos)
-            pos[ndx]++;
-
-          revPos[pos[ndx]] = ndx;
-        }
-      }
-    }
-
-    List<Integer> recent = new ArrayList<>();
-
-    for (int ndx = 0; ndx < num; ndx++)
-    {
-      int slotNdx = revPos[ndx];
-      if (ids[slotNdx] > 0)
-        recent.add(ids[slotNdx]);
-    }
-
-    return recent;
   }
 
 //---------------------------------------------------------------------------
@@ -174,79 +86,17 @@ public class RecordByTypePopulator extends Populator
 
     RecordType recordType = rowToRecordType.get(row);
     choices.clear();
-    choices.add(HyperTableCell.blankCell);
 
-    if ((recordType == hdtNone) || (db.isLoaded() == false)) return choices;
-
-    List<HyperTableCell> recentChoices = new ArrayList<>();
-    Map<Integer, Boolean> map = new HashMap<>();
-    boolean firstAdd = true;
-
-    if (recordType.getDisregardDates() == false)
+    if ((recordType == hdtNone) || (db.isLoaded() == false))
     {
-      for (Integer id : getRecent(recordType, 5))
-      {
-        HDT_Record record = db.records(recordType).getByID(id);
-
-        if (firstAdd)
-        {
-          choices.clear();
-          firstAdd = false;
-        }
-
-        recentChoices.add(new HyperTableCell(record, nameOnly ? record.name() : record.getCBText()));
-
-        map.put(id, true);
-      }
+      choices.add(HyperTableCell.blankCell);
+      return choices;
     }
 
-    for (HDT_Record record : db.records(recordType).keyIterable())
-    {
-      if (map.containsKey(record.getID()) == false)
-      {
-        HyperTableCell choice = getCell(record);
-
-        if (choice != null)
-        {
-          if (firstAdd)
-          {
-            choices.clear();
-            firstAdd = false;
-          }
-
-          addToSortedList(choices, choice);
-        }
-      }
-    }
-
-    if (db.records(recordType).size() == 0)
-      choices.clear();
-    else if (recentChoices.size() > 0)
-    {
-      for (int ndx = 0; ndx < recentChoices.size(); ndx++)
-        choices.add(ndx, recentChoices.get(ndx));
-    }
-
-    choices.add(HyperTableCell.blankCell);
+    populateRecordCells(choices, db.records(recordType).keyIterable(), recordType);
 
     rowToChanged.put(row, false);
     return choices;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private HyperTableCell getCell(HDT_Record record)
-  {
-    if ((record == null) || ((idFilter != null) && (idFilter.test(record.getID()) == false)))
-      return null;
-
-    if (nameOnly)
-      return new HyperTableCell(record, record.name());
-    else if (record.getType() == hdtWork)
-      return new HyperTableCell(record, record.getCBText(), smWork);
-    else
-      return new HyperTableCell(record, record.getCBText());
   }
 
 //---------------------------------------------------------------------------
@@ -268,7 +118,7 @@ public class RecordByTypePopulator extends Populator
     if (recordType != HyperTableCell.getCellType(cell))
       return null;
 
-    return getCell(cell.getRecord());
+    return getCell(cell.getRecord(), recordType);
   }
 
 //---------------------------------------------------------------------------
@@ -287,7 +137,7 @@ public class RecordByTypePopulator extends Populator
     return (recordType == hdtNone) || (id < 1) ?
       HyperTableCell.blankCell
     :
-      getCell(db.records(recordType).getByID(id));
+      getCell(db.records(recordType).getByID(id), recordType);
   }
 
 //---------------------------------------------------------------------------

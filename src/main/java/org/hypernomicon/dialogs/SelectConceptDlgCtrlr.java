@@ -20,16 +20,17 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Term;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.CustomPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -43,11 +44,11 @@ import javafx.scene.control.TextField;
 
 public class SelectConceptDlgCtrlr extends HyperDlg
 {
-  @FXML private ComboBox<HyperTableCell> cbTerm, cbGlossary;
+  @FXML private ComboBox<HyperTableCell> cbTerm, cbGlossary, cbSense;
   @FXML private Button btnCreate;
   @FXML private TextField tfSearchKey;
 
-  private HyperCB hcbTerm, hcbGlossary;
+  private HyperCB hcbTerm, hcbGlossary, hcbSense;
   private HDT_Glossary glossary;
   private HDT_Concept oldConcept;
   private boolean createNew, alreadyChanging = false;
@@ -70,20 +71,32 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm));
 
-    CustomPopulator pop = new CustomPopulator(hdtGlossary, (row, force) ->
+    CustomPopulator glossaryPop = new CustomPopulator(hdtGlossary, (row, force) ->
     {
       HDT_Term tempTerm = hcbTerm.selectedRecord();
       if (tempTerm == null) return Stream.empty();
 
-      if (oldConcept == null)
-        return tempTerm.concepts.stream().map(curConcept -> curConcept.glossary.get());
-
-      List<HDT_Glossary> termGlossaries = tempTerm.getGlossaries();
-
-      return db.glossaries.stream().filter(Predicate.not(termGlossaries::contains));
+      return tempTerm.concepts.stream().map(curConcept -> curConcept.glossary.get()).distinct();
     });
 
-    hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, pop);
+    hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, oldConcept == null ? glossaryPop : new StandardPopulator(hdtGlossary));
+
+    CustomPopulator sensePop = new CustomPopulator(hdtConceptSense, (row, force) ->
+    {
+      HDT_Term tempTerm = hcbTerm.selectedRecord();
+      if (tempTerm == null) return Stream.empty();
+
+      HDT_Glossary tempGlossary = hcbGlossary.selectedRecord();
+      if (tempGlossary == null) return Stream.empty();
+
+      if (oldConcept == null)
+        return tempTerm.concepts.stream().filter(curConcept -> curConcept.glossary.get() == tempGlossary)
+                                         .map(curConcept -> curConcept.sense.get());
+
+      return db.conceptSenses.stream().filter(curSense -> tempTerm.getConcept(tempGlossary, curSense) == null);
+    });
+
+    hcbSense = new HyperCB(cbSense, oldConcept == null ? ctDropDownList : ctDropDown, sensePop);
 
     hcbTerm.addBlankEntry();
 
@@ -130,9 +143,11 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     return this;
   }
 
-  public HDT_Term     getTerm()      { return term; }
-  public boolean      getCreateNew() { return createNew; }
-  public HDT_Glossary getGlossary()  { return glossary != null ? glossary : hcbGlossary.selectedRecord(); }
+  public HDT_Term         getTerm()      { return term; }
+  public boolean          getCreateNew() { return createNew; }
+  public HDT_Glossary     getGlossary()  { return glossary != null ? glossary : hcbGlossary.selectedRecord(); }
+  public HDT_ConceptSense getSense()     { return hcbSense.selectedRecord(); }
+  public String           getSenseText() { return ultraTrim(hcbSense.getText()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -181,10 +196,31 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     if (hcbTerm.selectedRecord() == null)
       return falseWithErrorMessage("You must select a term.", cbTerm);
 
-    if (hcbGlossary.selectedRecord() == null)
+    HDT_Glossary glossary = hcbGlossary.selectedRecord();
+
+    if (glossary == null)
       return falseWithErrorMessage("You must select a glossary.", cbGlossary);
 
     term = hcbTerm.selectedRecord();
+
+    if ((oldConcept != null) && (getSense() == null))
+    {
+      String senseText = getSenseText();
+
+      if (senseText.isBlank())
+      {
+        if (term.getConcept(glossary, null) != null)
+          return falseWithErrorMessage("The term already has a definition for that glossary and sense.", cbSense);
+      }
+      else
+      {
+        for (HDT_ConceptSense sense : db.conceptSenses)
+        {
+          if (sense.name().equalsIgnoreCase(senseText))
+            return falseWithErrorMessage("The term already has a definition for that glossary and sense.", cbSense);
+        }
+      }
+    }
 
     return true;
   }

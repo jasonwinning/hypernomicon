@@ -32,46 +32,45 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
 
 //---------------------------------------------------------------------------
 
-public class SubjectPopulator extends Populator
+public class SubjectPopulator extends RecordPopulator
 {
   private final Map<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
   private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
   private final Map<HyperTableRow, HDT_Record> rowToObj;
   private final RelationType relType;
-  private final boolean trackObjByRow, nameOnly;
-  private final Predicate<Integer> idFilter;
+  private final boolean trackObjByRow;
 
   private HDT_Record obj;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public SubjectPopulator(RelationType relType, boolean trackObjByRow, boolean nameOnly)
+  public SubjectPopulator(RelationType relType, boolean trackObjByRow, DisplayKind displayKind)
   {
-    this(relType, trackObjByRow, null, nameOnly);
+    this(relType, trackObjByRow, null, displayKind);
   }
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow, Predicate<Integer> idFilter)
   {
-    this(relType, trackObjByRow, idFilter, false);
+    this(relType, trackObjByRow, idFilter, DisplayKind.cbText);
   }
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow)
   {
-    this(relType, trackObjByRow, null, false);
+    this(relType, trackObjByRow, null, DisplayKind.cbText);
   }
 
-  public SubjectPopulator(RelationType relType, boolean trackObjByRow, Predicate<Integer> idFilter, boolean nameOnly)
+  public SubjectPopulator(RelationType relType, boolean trackObjByRow, Predicate<Integer> idFilter, DisplayKind displayKind)
   {
+    super(idFilter, displayKind, false);
+
     this.relType = relType;
     this.trackObjByRow = trackObjByRow;
-    this.nameOnly = nameOnly;
-    this.idFilter = idFilter;
 
     rowToObj = trackObjByRow ? new HashMap<>() : null;
   }
@@ -144,32 +143,7 @@ public class SubjectPopulator extends Populator
       curObj = obj;
     }
 
-    boolean noneYet = true;
-    for (HDT_Record subj : db.getSubjectList(relType, curObj))
-    {
-      if ((idFilter != null) && (idFilter.test(subj.getID()) == false))
-        continue;
-
-      if (noneYet)
-      {
-        choices.clear();
-        noneYet = false;
-      }
-
-      HyperTableCell choice;
-
-      if (nameOnly)
-        choice = new HyperTableCell(subj, subj.name());
-      else if (subj.getType() == hdtWork)
-        choice = new HyperTableCell(subj, subj.getCBText(), smWork);
-      else
-        choice = new HyperTableCell(subj, subj.getCBText());
-
-      addToSortedList(choices, choice);
-    }
-
-    if (noneYet) choices.clear();
-    choices.add(HyperTableCell.blankCell);
+    populateRecordCells(choices, db.getSubjectList(relType, curObj), db.getSubjType(relType));
 
     rowToChanged.put(row, false);
     return choices;

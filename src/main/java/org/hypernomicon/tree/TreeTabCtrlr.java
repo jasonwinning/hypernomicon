@@ -404,7 +404,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     HDT_Glossary glossary = parentConcept.glossary.get();
     HDT_Term newTerm = HDT_Term.create(glossary);
-    HDT_Concept childConcept = newTerm.getConcept(glossary);
+    HDT_Concept childConcept = newTerm.getConcept(glossary, null);
 
     try { childConcept.addParentConcept(parentConcept); } catch (RelationCycleException e) { noOp(); }
 
@@ -525,6 +525,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   public void selectRecord(HDT_Record record, boolean useViewInfo)
   {
+    if ((record != null) && HDT_Record.isEmpty(record)) return; // Record was probably just deleted; go with whatever is currently selected
+
     this.useViewInfo = useViewInfo;
     tree.selectRecord(record, record == null ? 0 : record.keyNdx(), false);
     this.useViewInfo = false;
