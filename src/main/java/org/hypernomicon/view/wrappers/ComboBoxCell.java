@@ -37,6 +37,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableCell;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 //---------------------------------------------------------------------------
 
@@ -173,7 +174,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
         commit();
     });
 
-    cb.setOnKeyPressed(event ->
+    cb.addEventHandler(KeyEvent.KEY_PRESSED, event ->
     {
       if (event.getCode() == KeyCode.ESCAPE)
       {

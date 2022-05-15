@@ -552,7 +552,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    ctfOmniGoTo.setOnKeyPressed(event ->
+    ctfOmniGoTo.addEventHandler(KeyEvent.KEY_PRESSED, event ->
     {
       switch (event.getCode())
       {

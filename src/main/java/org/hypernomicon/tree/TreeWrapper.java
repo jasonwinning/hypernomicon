@@ -21,6 +21,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
@@ -28,11 +29,15 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import org.controlsfx.control.BreadCrumbBar;
+import org.controlsfx.control.BreadCrumbBar.BreadCrumbButton;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Record;
@@ -60,9 +65,11 @@ import javafx.scene.control.TreeTableColumn.SortType;
 public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 {
   private final TreeTableView<TreeRow> ttv;
+  private final Map<TreeRow, Integer> breadCrumbRowToRecordNdx = new HashMap<>();
   private final Set<RecordType> recordTypesInTree = EnumSet.noneOf(RecordType.class);
   private final boolean hasTerms;
   private final TreeCB tcb;
+  private final BreadCrumbBar<TreeRow> bcbPath;
   private boolean searchingDown = true, searchingNameOnly = false;
   private TreeRow draggingRow = null;
   final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
@@ -70,12 +77,13 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  TreeWrapper(TreeTableView<TreeRow> ttv, boolean hasTerms, ComboBox<TreeRow> comboBox, boolean limitedControl)
+  TreeWrapper(TreeTableView<TreeRow> ttv, BreadCrumbBar<TreeRow> bcbPath, boolean hasTerms, ComboBox<TreeRow> comboBox, boolean limitedControl)
   {
     super(ttv);
 
     this.ttv = ttv;
     this.hasTerms = hasTerms;
+    this.bcbPath = bcbPath;
 
     tcb = new TreeCB(comboBox, this);
 
@@ -85,6 +93,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     labelTree  = new TreeModel<>(this, tcb);
 
     clear();
+
+  //---------------------------------------------------------------------------
 
     ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -103,6 +113,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       if (selectingFromCB == false)
         tcb.clearSelection();
     });
+
+  //---------------------------------------------------------------------------
 
     ttv.setRowFactory(tTV ->
     {
@@ -139,6 +151,30 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
       return row;
     });
+
+  //---------------------------------------------------------------------------
+
+    bcbPath.setCrumbFactory(crumb ->
+    {
+      TreeRow treeRow = crumb == null ? null : crumb.getValue();
+
+      if (treeRow == null) return new BreadCrumbButton("");
+
+      String caption = treeRow.getName();
+      if (caption.isBlank() == false) caption = " " + caption + "  ";
+
+      HDT_Record record = treeRow.getRecord();
+
+      return record == null ?
+        new BreadCrumbButton(caption)
+      :
+        new BreadCrumbButton(caption, imgViewForRecord(record));
+    });
+
+  //---------------------------------------------------------------------------
+
+    bcbPath.setOnCrumbAction(event ->
+      nullSwitch(event.getSelectedCrumb().getValue(), row -> selectRecord(row.getRecord(), breadCrumbRowToRecordNdx.get(row), false)));
   }
 
 //---------------------------------------------------------------------------
@@ -295,7 +331,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
           ((searchingNameOnly == false) && row.getDescString().toLowerCase().contains(text)))
       {
         MainCtrlr.treeHyperTab().textToHilite = text;
-        selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), true);
+        selectRow(row, true);
         return;
       }
 
@@ -544,6 +580,31 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       sb.setValue(scrollValue / (allRowsHeight - vpHeight));
     }
     else if (y1 < vpTop) sb.setValue(y1 / (allRowsHeight - vpHeight));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void setBreadCrumb(TreeItem<TreeRow> selItem)
+  {
+    TreeItem<TreeRow> curItem = selItem, head = null;
+    TreeRow lastRow = null;
+    breadCrumbRowToRecordNdx.clear();
+
+    while ((curItem != null) && (curItem.getValue() != null) && (curItem.getValue().getRecord() != null))
+    {
+      TreeRow newRow = new TreeRow(curItem.getValue().getRecord(), null);
+      breadCrumbRowToRecordNdx.put(newRow, getRowsForRecord(newRow.getRecord()).indexOf(curItem.getValue()));
+      if (lastRow != null)
+        newRow.treeItem.getChildren().add(lastRow.treeItem);
+
+      lastRow = newRow;
+      if (head == null) head = newRow.treeItem;
+
+      curItem = curItem.getParent();
+    }
+
+    bcbPath.setSelectedCrumb(head);
   }
 
 //---------------------------------------------------------------------------

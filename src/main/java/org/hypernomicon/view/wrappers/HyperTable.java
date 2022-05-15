@@ -77,6 +77,7 @@ import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 
@@ -302,7 +303,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     tv.setItems(sortedRows);
     tv.setPlaceholder(new Text(""));
 
-    tv.setOnKeyPressed(event ->
+    tv.addEventHandler(KeyEvent.KEY_PRESSED, event ->
     {
       if ((event.getCode() != KeyCode.ENTER) || cols.stream().map(HyperTableColumn::getCtrlType).anyMatch(editableCtrlTypes::contains))
         return;

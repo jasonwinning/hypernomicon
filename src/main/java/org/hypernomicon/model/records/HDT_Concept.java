@@ -85,7 +85,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
 
   public String extendedName()
   {
-    String glossaryText = glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().concepts.size() == 1)) ?
+    String glossaryText = glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().getGlossaries().size() == 1)) ?
       ""
     :
       glossary.get().name();

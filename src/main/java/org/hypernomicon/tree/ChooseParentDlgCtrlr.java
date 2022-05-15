@@ -23,6 +23,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.controlsfx.control.BreadCrumbBar;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.model.records.*;
 
@@ -30,15 +31,14 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import org.hypernomicon.view.MainCtrlr;
 
 public class ChooseParentDlgCtrlr extends HyperDlg
 {
+  @FXML private BreadCrumbBar<TreeRow> bcbPath;
   @FXML private TreeTableView<TreeRow> ttv;
-  @FXML private TextField tfPath;
   @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
   @FXML private TreeTableColumn<TreeRow, TreeRow> tcLinked;
   @FXML private TreeTableColumn<TreeRow, String> tcDesc;
@@ -63,7 +63,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
   private ChooseParentDlgCtrlr init(HDT_Record child)
   {
-    popupTree = new TreeWrapper(ttv, false, new ComboBox<>(), true);
+    popupTree = new TreeWrapper(ttv, bcbPath, false, new ComboBox<>(), true);
     this.child = child;
     parent = null;
 
@@ -83,13 +83,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     popupTree.sort();
     popupTree.expandMainBranches();
 
-    ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue != null)
-        tfPath.setText(TreeTabCtrlr.getTreePath(ttv, newValue));
-      else
-        tfPath.clear();
-    });
+    ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) -> popupTree.setBreadCrumb(newValue));
 
     types = tree.getValidTargetTypes(child.getType());
 

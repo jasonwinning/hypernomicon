@@ -26,6 +26,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
@@ -131,7 +132,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
       }));
     }
 
-    textField.setOnKeyPressed(event ->
+    textField.addEventHandler(KeyEvent.KEY_PRESSED, event ->
     {
       if (event.getCode() == KeyCode.ESCAPE)
       {

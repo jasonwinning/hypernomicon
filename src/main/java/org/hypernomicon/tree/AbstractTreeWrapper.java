@@ -115,6 +115,14 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public final void selectRow(TreeRow row, boolean fromCB)
+  {
+    selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), fromCB);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void showItem(TreeItem<RowType> item)
   {
     nullSwitch(item.getParent(), this::showItem);

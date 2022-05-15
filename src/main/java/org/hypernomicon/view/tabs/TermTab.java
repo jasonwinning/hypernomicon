@@ -558,8 +558,9 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     }
 
     HDT_ConceptSense sense = newCell.getRecord();
+    String newText = ultraTrim(newCell.getText());
 
-    if ((oldGlossaryRow.sense != null) && ((sense == oldGlossaryRow.sense) || editedRow.getText(3).equalsIgnoreCase(oldGlossaryRow.sense.name())))
+    if ((oldGlossaryRow.sense != null) && ((sense == oldGlossaryRow.sense) || newText.equalsIgnoreCase(oldGlossaryRow.sense.name())))
     {
       oldGlossaryRow.populateTableRow(editedRow);
       return;
@@ -570,7 +571,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       if (row != editedRow)
       {
         HDT_Concept otherConcept = curTerm.getConcept(row.getRecord(2), row.getRecord(3));
-        if ((concept != otherConcept) && (concept.glossary.get() == otherConcept.glossary.get()) && row.getText(3).equalsIgnoreCase(HyperTableCell.getCellText(newCell)))
+        if ((concept != otherConcept) && (concept.glossary.get() == otherConcept.glossary.get()) && row.getText(3).equalsIgnoreCase(newText))
         {
           messageDialog("This term already has a concept in the same glossary with the same sense.", mtError);
           oldGlossaryRow.populateTableRow(editedRow);
@@ -579,10 +580,10 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       }
     }
 
-    if ((sense == null) && (HyperTableCell.getCellText(newCell).length() > 0))
+    if ((sense == null) && (newText.length() > 0))
     {
       sense = db.createNewBlankRecord(hdtConceptSense);
-      sense.setName(HyperTableCell.getCellText(newCell));
+      sense.setName(newText);
     }
 
     for (Entry<HyperTableRow, GlossaryRow> entry : glossaryRows.entrySet())

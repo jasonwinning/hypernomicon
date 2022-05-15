@@ -56,6 +56,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
   private final HyperCB hcb;
   private final boolean limitToChoices;
   private HyperTableCell startValue;
+  private boolean gotKeyPressedYet = false;
 
 //---------------------------------------------------------------------------
 
@@ -87,8 +88,13 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     cb.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
+      gotKeyPressedYet = true;
+
       if ((event.getCode() == KeyCode.ENTER) && (hcb.somethingWasTyped == false))
+      {
         hcb.triggerOnAction();
+        event.consume();
+      }
     });
 
     cb.setOnAction(event ->
@@ -109,12 +115,16 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
   @Override public void handle(KeyEvent event)
   {
+    if (gotKeyPressedYet == false)
+      return;
+
     KeyCode keyCode = event.getCode();
 
     if (event.isControlDown()     || keyCode == KeyCode.BACK_SPACE ||
         keyCode == KeyCode.RIGHT  || keyCode == KeyCode.LEFT       ||
         keyCode == KeyCode.DELETE || keyCode == KeyCode.HOME       ||
-        keyCode == KeyCode.END    || keyCode == KeyCode.TAB)
+        keyCode == KeyCode.END    || keyCode == KeyCode.TAB        ||
+        keyCode == KeyCode.ESCAPE)
     {
       hcb.typedMatch = null;
       return;

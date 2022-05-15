@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.controlsfx.control.BreadCrumbBar;
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -56,7 +57,6 @@ import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
@@ -66,8 +66,8 @@ import javafx.scene.web.WebView;
 
 public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
+  @FXML private BreadCrumbBar<TreeRow> bcbPath;
   @FXML private TreeTableView<TreeRow> ttv;
-  @FXML private TextField tfPath;
   @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
   @FXML private TreeTableColumn<TreeRow, TreeRow> tcLinked;
   @FXML private TreeTableColumn<TreeRow, String> tcDesc;
@@ -79,7 +79,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private boolean useViewInfo = false;
   private String lastTextHilited = "";
-
   String textToHilite = "";
   private TreeWrapper tree;
 
@@ -124,7 +123,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @Override protected void init()
   {
-    tree = new TreeWrapper(ttv, true, ui.cbTreeGoTo, false);
+    tree = new TreeWrapper(ttv, bcbPath, true, ui.cbTreeGoTo, false);
 
     spMain.showDetailNodeProperty().bind(chkShowDesc.selectedProperty());
 
@@ -242,9 +241,10 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       boolean clearWV = true, clearPreview = true;
 
+      tree.setBreadCrumb(newValue);
+
       if (newValue != null)
       {
-        tfPath.setText(getTreePath(ttv, newValue));
         ui.updateBottomPanel(true);
 
         TreeRow row = newValue.getValue();
@@ -284,8 +284,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           clearWV = false;
         }
       }
-      else
-        tfPath.clear();
 
       if (clearWV && (ui.isShuttingDown() == false))
         webView.getEngine().loadContent("");
@@ -481,18 +479,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     new RecordTreeEdge(dlg.getParent(), child).attach(null, true);
 
     Platform.runLater(() -> ui.update());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static String getTreePath(TreeTableView<TreeRow> ttv2, TreeItem<TreeRow> newValue)
-  {
-    if (newValue == null) return "";
-
-    String caption = nullSwitch(newValue.getValue(), "", TreeRow::getName);
-
-    return newValue.getParent() == ttv2.getRoot() ? caption : (getTreePath(ttv2, newValue.getParent()) + " / " + caption);
   }
 
 //---------------------------------------------------------------------------
