@@ -29,9 +29,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.Sets;
 
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Record;
@@ -373,7 +372,7 @@ public class HyperPath
     if (FilePath.isEmpty(newFileName) == false)
     {
       newFileName = newFileName.getNameOnly();
-      Set<HyperPath> set = db.filenameMap.computeIfAbsent(newFileName.toString(), k -> Sets.newConcurrentHashSet());
+      Set<HyperPath> set = db.filenameMap.computeIfAbsent(newFileName.toString(), k -> ConcurrentHashMap.newKeySet());
 
       set.add(this);
     }

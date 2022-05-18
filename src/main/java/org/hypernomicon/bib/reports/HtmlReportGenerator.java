@@ -20,6 +20,7 @@ package org.hypernomicon.bib.reports;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.view.mainText.MainTextUtil;
@@ -54,9 +55,9 @@ public final class HtmlReportGenerator extends ReportGenerator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String makeRows(String fieldName, List<String> origList)
+  @Override public String makeRows(String fieldName, Stream<String> stream)
   {
-    List<String> list = origList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+    List<String> list = stream.filter(Objects::nonNull).collect(Collectors.toList());
 
     if (list.isEmpty()) return "";
 

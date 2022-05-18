@@ -70,7 +70,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   {
     return ctrl.lookupAll(".scroll-bar").stream().filter(child -> child instanceof ScrollBar)
                                                  .map(child -> (ScrollBar) child)
-                                                 .filter(sb -> sb.getOrientation().equals(Orientation.VERTICAL))
+                                                 .filter(sb -> sb.getOrientation() == Orientation.VERTICAL)
                                                  .findFirst().orElse(null);
   }
 

@@ -22,6 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
@@ -117,7 +118,7 @@ public abstract class ReportGenerator
 //---------------------------------------------------------------------------
 
   public abstract String makeRow(String fieldName, String value);
-  public abstract String makeRows(String fieldName, List<String> list);
+  public abstract String makeRows(String fieldName, Stream<String> stream);
   public abstract String getUrlContent(String url);
   public abstract String lineSeparator();
   abstract StringBuilder getStart();

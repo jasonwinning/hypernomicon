@@ -170,7 +170,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       senseText = sense == null ? "" : sense.name();
     }
 
-    public void populateTableRow(HyperTableRow row)
+    private void populateTableRow(HyperTableRow row)
     {
       boolean wasUpdatingGlossaries = updatingGlossaries;
       updatingGlossaries = true;
@@ -896,7 +896,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Concept addConceptInGlossary(HDT_Glossary glossary, HDT_ConceptSense sense)
+  private HDT_Concept addConceptInGlossary(HDT_Glossary glossary, HDT_ConceptSense sense)
   {
     HDT_Concept concept = db.createNewBlankRecord(hdtConcept);
 

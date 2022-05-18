@@ -199,7 +199,8 @@ public class TreeSelector
       ui.goToRecord(MainCtrlr.termHyperTab().viewRecord(), false);
       return true;
     }
-    else if (relType == rtParentConceptOfConcept)
+
+    if (relType == rtParentConceptOfConcept)
     {
       HDT_Concept parentConcept = (HDT_Concept) record;
 

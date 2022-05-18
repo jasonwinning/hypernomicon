@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 public class BidiOneToManyRecordMap
 {
@@ -108,7 +107,7 @@ public class BidiOneToManyRecordMap
   {
     if (map1.containsKey(record1)) return map1.get(record1);
 
-    Set<HDT_Record> set = Sets.newConcurrentHashSet();
+    Set<HDT_Record> set = ConcurrentHashMap.newKeySet();
 
     map1.put(record1, set);
     return set;

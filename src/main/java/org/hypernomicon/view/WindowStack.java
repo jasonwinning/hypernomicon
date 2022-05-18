@@ -72,7 +72,7 @@ public final class WindowStack
   private static final class StageWrapper implements WindowWrapper
   {
     private final Stage stage;
-    double height, width;
+    private double height, width;
 
     private StageWrapper(Stage stage)       { this.stage = stage; }
 

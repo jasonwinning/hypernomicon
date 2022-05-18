@@ -59,6 +59,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -91,7 +92,6 @@ import org.json.simple.parser.ParseException;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -1170,7 +1170,7 @@ public final class HyperDB
 
   private void addRootFolder()
   {
-    filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), k -> Sets.newConcurrentHashSet()).add(getRootFolder().getPath());
+    filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), k -> ConcurrentHashMap.newKeySet()).add(getRootFolder().getPath());
   }
 
 //---------------------------------------------------------------------------
@@ -1721,6 +1721,8 @@ public final class HyperDB
     }
 
     mentionsIndex.stopRebuild();
+    mentionsIndex.clear();
+
     loaded = false;
     InterProcClient.refresh(new FilePath(""));
     clearAllDataSets(datasetsToKeep);

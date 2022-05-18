@@ -222,7 +222,7 @@ public abstract class BibData
   private void addMultiStrToReport(BibFieldEnum bibFieldEnum, ReportGenerator report)
   {
     String fieldName = bibFieldEnum.getUserFriendlyName();
-    report.addField(fieldName, report.makeRows(fieldName, getMultiStr(bibFieldEnum)));
+    report.addField(fieldName, report.makeRows(fieldName, getMultiStr(bibFieldEnum).stream()));
   }
 
 //---------------------------------------------------------------------------

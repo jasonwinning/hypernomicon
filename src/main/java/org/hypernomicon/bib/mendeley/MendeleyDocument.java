@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hypernomicon.bib.BibEntry;
@@ -40,8 +39,6 @@ import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
-
-import com.google.common.collect.Lists;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
@@ -153,7 +150,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
     JsonArray collArray = jObj.getArray("folder_uuids");
 
     return (collArray != null) && ((mWrapper.getTrash().contains(this) == false) || deletedOK) ?
-      Lists.newArrayList((Iterable<String>)collArray.getStrs())
+      JsonArray.toStrArrayList(collArray)
     :
       new ArrayList<>();
   }
@@ -696,7 +693,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
         case STRING :
 
           report.addField(fieldName, "notes".equals(key) ?
-            report.makeRows(fieldName, document.getMultiStr(bfMisc))
+            report.makeRows(fieldName, document.getMultiStr(bfMisc).stream())
           :
             makeReportString(report, fieldName, jObj.getStrSafe(key)));
           break;
@@ -771,17 +768,17 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
   private static String makeReportArray(ReportGenerator report, String fieldName, JsonArray jArr)
   {
-    List<String> list;
+    Stream<String> stream;
 
     if ("websites".equalsIgnoreCase(fieldName))
     {
       fieldName = "URL";
-      list = StreamSupport.stream(jArr.getStrs().spliterator(), false).map(report::getUrlContent).collect(Collectors.toList());
+      stream = jArr.strStream().map(report::getUrlContent);
     }
     else
-      list = Lists.newArrayList((Iterable<String>)jArr.getStrs());
+      stream = jArr.strStream();
 
-    return report.makeRows(fieldName, list);
+    return report.makeRows(fieldName, stream);
   }
 
 //---------------------------------------------------------------------------

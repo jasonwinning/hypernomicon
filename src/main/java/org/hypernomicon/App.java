@@ -252,7 +252,7 @@ public final class App extends Application
     {
       VersionNumber updateNum =  app.version;
 
-      if (jsonArray.getObjs().hasNext() == false)
+      if (jsonArray.isEmpty())
       {
         failHndlr.run();
         return;

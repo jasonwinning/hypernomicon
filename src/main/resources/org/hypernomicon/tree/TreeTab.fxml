@@ -44,9 +44,9 @@
     </detailNode>
   </MasterDetailPane>
   <BreadCrumbBar fx:id="bcbPath" autoNavigationEnabled="false" layoutX="41.0" layoutY="675.0" prefHeight="25.0" prefWidth="1122.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="105.0" />
-   <AnchorPane layoutX="1110.0" layoutY="667.0" prefHeight="25.0" style="-fx-background-color: -fx-background;" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="0.0">
-      <children>
-        <CheckBox fx:id="chkShowDesc" layoutY="3.0" mnemonicParsing="false" text="Show description" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="3.0" />
-      </children>
-   </AnchorPane>
+  <AnchorPane layoutX="1110.0" layoutY="667.0" prefHeight="25.0" style="-fx-background-color: -fx-background;"
+              AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="0.0">
+    <CheckBox fx:id="chkShowDesc" layoutY="3.0" mnemonicParsing="false" text="Show description"
+              AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="3.0"/>
+  </AnchorPane>
 </AnchorPane>

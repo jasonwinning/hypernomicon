@@ -109,10 +109,10 @@ public abstract class RecordPopulator extends Populator
       default       : text = record.name();
     }
 
-    if ((record.getType() == hdtWork) && (displayKind != DisplayKind.name))
-      return new HyperTableCell(record, text, smWork);
-    else
-      return new HyperTableCell(record, text);
+    return (record.getType() == hdtWork) && (displayKind != DisplayKind.name) ?
+      new HyperTableCell(record, text, smWork)
+    :
+      new HyperTableCell(record, text);
   }
 
 //---------------------------------------------------------------------------

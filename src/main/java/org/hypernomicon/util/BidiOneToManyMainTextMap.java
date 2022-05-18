@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import com.google.common.collect.Sets;
 import org.hypernomicon.model.unities.MainText;
 
 public class BidiOneToManyMainTextMap
@@ -114,7 +113,7 @@ public class BidiOneToManyMainTextMap
   {
     if (map1.containsKey(mainText1)) return map1.get(mainText1);
 
-    Set<MainText> set = Sets.newConcurrentHashSet();
+    Set<MainText> set = ConcurrentHashMap.newKeySet();
 
     map1.put(mainText1, set);
     return set;

@@ -17,8 +17,8 @@
 
 package org.hypernomicon.bib.reports;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.BibData;
 
@@ -52,10 +52,10 @@ public final class PlainTextReportGenerator extends ReportGenerator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String makeRows(String fieldName, List<String> list)
+  @Override public String makeRows(String fieldName, Stream<String> stream)
   {
-    String line = list.stream().filter(Objects::nonNull)
-                               .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+    String line = stream.filter(Objects::nonNull)
+                        .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
 
     return makeRow(fieldName, line);
   }

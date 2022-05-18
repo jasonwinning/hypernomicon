@@ -449,6 +449,13 @@ public final class MainTextWrapper
 
     concepts.removeIf(this::displayerIsAlreadyShowing);
 
+    nullSwitch(hub.getConcept(), concept ->
+    {
+      concepts.removeAll(concept.parentConcepts);
+      concepts.removeAll(concept.subConcepts);
+      concepts.removeAll(concept.term.get().concepts);
+    });
+
     concepts.sort(Comparator.comparing(HDT_Record::getSortKey));
 
     return concepts;

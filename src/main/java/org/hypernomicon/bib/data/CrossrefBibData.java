@@ -25,7 +25,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -176,17 +176,17 @@ public final class CrossrefBibData extends BibDataStandalone
     setStr(bfVolume, jsonObj.getStrSafe("volume"));
     setStr(bfIssue , jsonObj.getStrSafe("issue"));
 
-    List<String> title    = JsonArray.toStrList(jsonObj.getArray("title")),
-                 subtitle = JsonArray.toStrList(jsonObj.getArray("subtitle"));
+    ArrayList<String> title    = JsonArray.toStrArrayList(jsonObj.getArray("title")),
+                      subtitle = JsonArray.toStrArrayList(jsonObj.getArray("subtitle"));
 
     if (strListsEqual(title, subtitle, true) == false)
       title.addAll(subtitle);
 
     setMultiStr(bfTitle, title);
 
-    setMultiStr(bfContainerTitle, JsonArray.toStrList(jsonObj.getArray("container-title")));
-    setMultiStr(bfISBNs         , JsonArray.toStrList(jsonObj.getArray("ISBN")));
-    setMultiStr(bfISSNs         , JsonArray.toStrList(jsonObj.getArray("ISSN")));
+    setMultiStr(bfContainerTitle, JsonArray.toStrArrayList(jsonObj.getArray("container-title")));
+    setMultiStr(bfISBNs         , JsonArray.toStrArrayList(jsonObj.getArray("ISBN")));
+    setMultiStr(bfISSNs         , JsonArray.toStrArrayList(jsonObj.getArray("ISSN")));
 
     addAuthorsFromJson(jsonObj.getArray("author"    ), AuthorType.author);
     addAuthorsFromJson(jsonObj.getArray("editor"    ), AuthorType.editor);

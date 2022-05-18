@@ -28,7 +28,7 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
  * @author  Jason Winning
  * @since   1.24
  */
-public class HtmlAndPlainText
+class HtmlAndPlainText
 {
 
 //---------------------------------------------------------------------------

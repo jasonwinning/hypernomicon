@@ -22,9 +22,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.google.common.collect.Sets;
-
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.hypernomicon.util.FilenameMap;
@@ -104,7 +103,7 @@ public class FilePathSet implements Set<FilePath>
 
     if (contains(filePath)) return false;
 
-    return nameToPaths.computeIfAbsent(filePath.getNameOnly().toString(), k -> Sets.newConcurrentHashSet()).add(filePath);
+    return nameToPaths.computeIfAbsent(filePath.getNameOnly().toString(), k -> ConcurrentHashMap.newKeySet()).add(filePath);
   }
 
 //---------------------------------------------------------------------------

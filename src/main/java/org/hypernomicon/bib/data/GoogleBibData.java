@@ -114,7 +114,8 @@ public final class GoogleBibData extends BibDataStandalone
     if (publishedDate.length() > 0)
       setYear(publishedDate.substring(0, 4), ytPublishedDate);
 
-    JsonArray.toStrList(jsonObj.getArray("authors")).forEach(authStr -> authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr))));
+    nullSwitch(jsonObj.getArray("authors"), authArray -> authArray.strStream().forEach(authStr ->
+      authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr)))));
 
     nullSwitch(jsonObj.getArray("industryIdentifiers"), iiArr -> iiArr.getObjs().forEach(iiObj ->
     {

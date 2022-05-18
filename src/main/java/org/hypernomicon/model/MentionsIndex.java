@@ -18,7 +18,6 @@
 package org.hypernomicon.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -55,7 +54,7 @@ class MentionsIndex
 {
   private final BidiOneToManyRecordMap mentionedInDescToMentioners   = new BidiOneToManyRecordMap(),
                                        mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
-  private final Set<HDT_Record> removedRecords = Collections.newSetFromMap(new ConcurrentHashMap<>());
+  private final Set<HDT_Record> removedRecords = ConcurrentHashMap.newKeySet();
   private final List<Runnable> ndxCompleteHandlers;
   private final EnumSet<RecordType> types;
   private final List<String> strList = new ArrayList<>();
@@ -72,6 +71,16 @@ class MentionsIndex
 
     types = EnumSet.allOf(RecordType.class);
     types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void clear()
+  {
+    mentionedInDescToMentioners.clear();
+    mentionedAnywhereToMentioners.clear();
+    removedRecords.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -233,9 +242,7 @@ class MentionsIndex
       {
         updateMessage("The requested operation will be performed after indexing has completed...");
 
-        mentionedInDescToMentioners.clear();
-        mentionedAnywhereToMentioners.clear();
-        removedRecords.clear();
+        clear();
 
         ctr = -1.0; total = 0.0;
         types.forEach(type -> total += db.records(type).size());

@@ -71,7 +71,7 @@ public class DragConceptDlgCtrlr extends HyperDlg
     }
 
     lblMove.setText("Move definition \"" + childConcept.listName() +
-                    "\" from Glossary \"" + oldGlossary.name() + "\" to Glossary \"" + newGlossary.name() + "\"");
+                    "\" from Glossary \"" + oldGlossary.name() + "\" to Glossary \"" + newGlossary.name() + '"');
 
     lblMoveInfo.setText("In this case, the Concept \"" + childConcept.listName() + "\" will no longer appear in the Glossary \"" +
                         oldGlossary.name() + "\". Its definition in Glossary \"" + newGlossary.name() +

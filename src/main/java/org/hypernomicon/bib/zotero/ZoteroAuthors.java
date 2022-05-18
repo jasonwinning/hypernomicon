@@ -170,7 +170,7 @@ public class ZoteroAuthors extends BibAuthors
   {
     if (authorType == null) return "";
 
-    return findFirst(creatorTypes.row(entryType).entrySet(), ent -> ent.getValue().equals(authorType), "", Entry::getKey);
+    return findFirst(creatorTypes.row(entryType).entrySet(), ent -> ent.getValue() == authorType, "", Entry::getKey);
   }
 
 //---------------------------------------------------------------------------

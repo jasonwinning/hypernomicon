@@ -39,8 +39,6 @@ import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonArray.JsonObjIterator;
 import org.hypernomicon.util.json.JsonObj;
 
-import com.google.common.collect.Lists;
-
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
@@ -152,7 +150,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     JsonArray collArray = jObj.getObj("data").getArray("collections");
 
     return (collArray != null) && ((zWrapper.getTrash().contains(this) == false) || deletedOK) ?
-      Lists.newArrayList((Iterable<String>)collArray.getStrs())
+      JsonArray.toStrArrayList(collArray)
     :
       new ArrayList<>();
   }
@@ -742,11 +740,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   private static String makeTagsReportContent(ReportGenerator report, JsonArray tagsArr)
   {
-    List<String> list = new ArrayList<>();
-
-    tagsArr.getObjs().forEach(node -> list.add(node.getStrSafe("tag")));
-
-    return report.makeRows("Tags", list);
+    return report.makeRows("Tags", tagsArr.objStream().map(node -> node.getStrSafe("tag")));
   }
 
 //---------------------------------------------------------------------------
@@ -792,7 +786,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   private static String makeReportArray(ReportGenerator report, String fieldName, JsonArray jArr)
   {
-    return report.makeRows(fieldName, Lists.newArrayList((Iterable<String>)jArr.getStrs()));
+    return report.makeRows(fieldName, jArr.strStream());
   }
 
 //---------------------------------------------------------------------------
