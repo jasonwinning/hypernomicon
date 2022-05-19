@@ -267,7 +267,7 @@ public final class Const
 
     EXT_1 = "ext1://";
 
-  public static final VersionNumber dbVersion = new VersionNumber(1, 23, 1); // 1.23.1
+  public static final VersionNumber dbVersion = new VersionNumber(1, 24); // 1.24
 
   // This is the minimum version that the application version is able to load
   public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
@@ -289,7 +289,8 @@ public final class Const
     .put(new VersionNumber(1, 20   ), new VersionNumber(1, 2))
     .put(new VersionNumber(1, 22, 1), new VersionNumber(1, 3))
     .put(new VersionNumber(1, 22, 2), new VersionNumber(1, 4))
-    .put(dbVersion, new VersionNumber(1, 5))
+    .put(new VersionNumber(1, 23, 1), new VersionNumber(1, 5))
+    .put(dbVersion, new VersionNumber(1, 6))
     .build();
 
   // This is the version that the application version will actually save to
@@ -298,6 +299,7 @@ public final class Const
     .put(new VersionNumber(1, 17, 5), new VersionNumber(1))
     .put(new VersionNumber(1, 19, 4), new VersionNumber(1, 1))
     .put(new VersionNumber(1, 22, 1), new VersionNumber(1, 2))
-    .put(dbVersion, new VersionNumber(1, 3))
+    .put(new VersionNumber(1, 23, 1), new VersionNumber(1, 3))
+    .put(dbVersion, new VersionNumber(1, 4))
     .build();
 }
