@@ -258,8 +258,7 @@ public class HyperViewSequence
 
   void init(TabEnum activeTabEnum)
   {
-    slots.clear();
-    curNdx = -1;
+    clear();
 
     db.getInitialNavList().forEach(record ->
     {
@@ -275,6 +274,15 @@ public class HyperViewSequence
     });
 
     saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(getHyperTab(activeTabEnum).getView());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void clear()
+  {
+    slots.clear();
+    curNdx = -1;
   }
 
 //---------------------------------------------------------------------------

@@ -206,7 +206,10 @@ public final class WindowStack
     if (focusingWindow == null) return;
 
     if ((closingWindow.getModality() != Modality.NONE) && (focusingWindow.getModality() == Modality.NONE))
+    {
       itemsDisabled.forEach(MenuItem::setDisable);
+      itemsDisabled.clear();
+    }
 
     if (focusingWindow.isStage() == false) return;
 

@@ -599,8 +599,6 @@ public class FolderTreeWatcher
 
     if (disabled || db.isLoaded() == false) return false;
 
-    watchKeyToDir.clear();
-
     try
     {
       watcher = FileSystems.getDefault().newWatchService();
@@ -662,6 +660,7 @@ public class FolderTreeWatcher
     }
 
     watcherThread = null;
+    watchKeyToDir.clear();
     return wasRunning;
   }
 

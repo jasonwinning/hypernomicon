@@ -1507,6 +1507,7 @@ public final class MainCtrlr
     tfRecord.setText("");
     tfID.setText("");
     hcbGoTo.clear();
+    viewSequence.clear();
 
     stage.setTitle(appTitle);
   }

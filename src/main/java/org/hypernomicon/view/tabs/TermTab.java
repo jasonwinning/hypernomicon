@@ -928,6 +928,8 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     htGlossaries .clear();
     htSubConcepts.clear();
     htDisplayers .clear();
+
+    glossaryRows.clear();
   }
 
 //---------------------------------------------------------------------------
