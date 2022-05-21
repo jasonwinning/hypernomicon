@@ -140,6 +140,7 @@ public final class HyperDB
 
   final private List<Consumer<HDT_Record>> recordDeleteHandlers          = new ArrayList<>();
   final private List<Runnable>             dbCloseHandlers               = new ArrayList<>(),
+                                           dbLoadedHandlers              = new ArrayList<>(),
                                            dbPreChangeHandlers           = new ArrayList<>(),
                                            dbMentionsNdxCompleteHandlers = new ArrayList<>(),
                                            bibChangedHandlers            = new ArrayList<>();
@@ -206,6 +207,7 @@ public final class HyperDB
   public void addKeyWorkHandler(RecordType recordType, RelationChangeHandler handler)       { keyWorkHandlers.put(recordType, handler); }
   public void addCloseDBHandler(Runnable handler)                                           { dbCloseHandlers.add(handler); }
   public void addPreDBChangeHandler(Runnable handler)                                       { dbPreChangeHandlers.add(handler); }
+  public void addDBLoadedHandler(Runnable handler)                                          { dbLoadedHandlers.add(handler); }
   public void addMentionsNdxCompleteHandler(Runnable handler)                               { dbMentionsNdxCompleteHandlers.add(handler); }
   public void addBibChangedHandler(Runnable handler)                                        { bibChangedHandlers.add(handler); }
   public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
@@ -868,6 +870,8 @@ public final class HyperDB
     getRootFolder().checkExists();
 
     loaded = true;
+    dbLoadedHandlers.forEach(Runnable::run);
+
     rebuildMentions();
 
     lock();

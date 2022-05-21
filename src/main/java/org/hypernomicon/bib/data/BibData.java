@@ -326,7 +326,7 @@ public abstract class BibData
 
     if (set1.equals(set2) == false) return false;
 
-    return findFirst(set1, field -> bd1.fieldsAreEqual(field, bd2, false) == false) == null;
+    return set1.stream().allMatch(field -> bd1.fieldsAreEqual(field, bd2, false));
   }
 
 //---------------------------------------------------------------------------

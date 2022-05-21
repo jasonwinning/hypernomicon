@@ -43,9 +43,7 @@ public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends Abst
   {
     HDT_T1 record = getRecord();
 
-    if (recordType == hdtNone) return record;
-
-    return (record == null) || (record.getType() != recordType) ? null : record;
+    return (recordType == hdtNone) || ((record != null) && (record.getType() == recordType)) ? record : null;
   }
 
 //---------------------------------------------------------------------------

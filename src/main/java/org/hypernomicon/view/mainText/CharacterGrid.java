@@ -87,8 +87,6 @@ class CharacterGrid
 
     private SymbolCtrl(String family, int col, int row)
     {
-      super();
-
       this.col = col;
       this.row = row;
       setFont(Font.font(family, 24.0));

@@ -27,15 +27,6 @@
 <AnchorPane prefHeight="689.0" prefWidth="1227.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.TreeTabCtrlr">
   <MasterDetailPane fx:id="spMain" detailSide="BOTTOM" dividerPosition="0.70" minHeight="0.0" showDetailNode="false" AnchorPane.bottomAnchor="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <masterNode>
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-        <TreeTableView fx:id="ttv" prefHeight="665.0" prefWidth="781.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-          <columns>
-            <TreeTableColumn fx:id="tcName" prefWidth="277.0" sortable="false" text="Name" />
-            <TreeTableColumn fx:id="tcLinked" minWidth="0.0" prefWidth="95.0" sortable="false" text="United" />
-            <TreeTableColumn fx:id="tcDesc" minWidth="0.0" prefWidth="730.0" sortable="false" text="Description" />
-          </columns>
-        </TreeTableView>
-      </AnchorPane>
     </masterNode>
     <detailNode>
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">

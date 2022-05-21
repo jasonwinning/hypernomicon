@@ -144,8 +144,6 @@ public final class CrossrefBibData extends BibDataStandalone
 
   private CrossrefBibData(JsonObj jsonObj, String queryDoi)
   {
-    super();
-
     setStr(bfDOI, jsonObj.getStrSafe("DOI"));
 
     EntryType entryType = parseCrossrefType(jsonObj.getStrSafe("type"));

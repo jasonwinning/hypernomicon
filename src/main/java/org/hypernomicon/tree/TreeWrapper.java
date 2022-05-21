@@ -44,7 +44,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.view.MainCtrlr;
-import org.hypernomicon.view.wrappers.HyperTable;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -64,7 +63,7 @@ import javafx.scene.control.TreeTableColumn.SortType;
 
 public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 {
-  private final TreeTableView<TreeRow> ttv;
+  private TreeTableView<TreeRow> ttv;
   private final Map<TreeRow, Integer> breadCrumbRowToRecordNdx = new HashMap<>();
   private final Set<RecordType> recordTypesInTree = EnumSet.noneOf(RecordType.class);
   private final boolean hasTerms;
@@ -77,11 +76,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  TreeWrapper(TreeTableView<TreeRow> ttv, BreadCrumbBar<TreeRow> bcbPath, boolean hasTerms, ComboBox<TreeRow> comboBox, boolean limitedControl)
+  TreeWrapper(BreadCrumbBar<TreeRow> bcbPath, boolean hasTerms, ComboBox<TreeRow> comboBox)
   {
-    super(ttv);
-
-    this.ttv = ttv;
     this.hasTerms = hasTerms;
     this.bcbPath = bcbPath;
 
@@ -91,66 +87,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     noteTree   = new TreeModel<>(this, tcb);
     termTree   = new TreeModel<>(this, tcb);
     labelTree  = new TreeModel<>(this, tcb);
-
-    clear();
-
-  //---------------------------------------------------------------------------
-
-    ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if ((newValue != null) && (newValue.getValue() != null))
-      {
-        TreeRow row = newValue.getValue();
-        if (row.getRecordType() != hdtNone)
-        {
-          if (selectingFromCB == false)
-            tcb.select(row.getRecord());
-
-          return;
-        }
-      }
-
-      if (selectingFromCB == false)
-        tcb.clearSelection();
-    });
-
-  //---------------------------------------------------------------------------
-
-    ttv.setRowFactory(tTV ->
-    {
-      TreeTableRow<TreeRow> row = new TreeTableRow<>();
-
-      if (limitedControl == false)
-      {
-        setupDragHandlers(row);
-
-        row.setOnMouseClicked(mouseEvent ->
-          nullSwitch(row.getItem(), treeRow -> nullSwitch(treeRow.treeItem, treeItem -> nullSwitch(treeRow.<HDT_Record>getRecord(), record ->
-          {
-            if (db.isLoaded() && mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2) && treeItem.isLeaf())
-              ui.goToRecord(record, false);
-          }))));
-      }
-
-      row.itemProperty().addListener((ob, ov, nv) ->
-      {
-        if (nv == null)
-          row.setGraphic(null);
-        else
-        {
-          nullSwitch(nv.treeItem, treeItem ->
-          {
-            treeItem.expandedProperty().addListener((ob1, ov1, nv1) -> ttv.refresh());
-            treeItem.setGraphic(nv.getGraphic());
-          });
-        }
-
-        if (limitedControl == false)
-          row.setContextMenu(createContextMenu(nv));
-      });
-
-      return row;
-    });
 
   //---------------------------------------------------------------------------
 
@@ -180,7 +116,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected TreeItem<TreeRow> getTreeItem(TreeRow treeRow)     { return treeRow.getTreeItem(); }
   @Override public TreeItem<TreeRow> getRoot()                           { return ttv.getRoot(); }
   @Override public Control getControl()                                  { return ttv; }
   @Override public SelectionModel<TreeItem<TreeRow>> getSelectionModel() { return ttv.getSelectionModel(); }
@@ -189,9 +124,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   @Override public TreeRow newRow(HDT_Record record, TreeModel<TreeRow> treeModel) { return new TreeRow(record, treeModel); }
 
   public boolean getHasTerms() { return hasTerms; }
-
-  public void saveColWidths(String prefID, boolean rescale) { HyperTable.saveColWidthsForTable(ttv.getColumns(), prefID, rescale); }
-  public void loadColWidths(String prefID)                  { HyperTable.loadColWidthsForTable(ttv.getColumns(), prefID); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -236,20 +168,19 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  public void clear()
   {
     ui.ttDates.setText(MainCtrlr.NO_DATES_TOOLTIP);
 
-    if (ttv.getRoot() != null)
+    if (ttv != null)
     {
-      ttv.getRoot().getChildren().clear();
-      ttv.setRoot(null);
+      if (ttv.getRoot() == null)
+        ttv.setRoot(new TreeItem<>(null));
+      else
+        ttv.getRoot().getChildren().clear();
     }
 
     tcb.clear();
-
-    ttv.setRoot(new TreeItem<>(null));
-    ttv.setShowRoot(false);
 
     debateTree.clear();
     noteTree  .clear();
@@ -260,9 +191,78 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void reset()
+  public void reset(TreeTableView<TreeRow> ttv, boolean limitedControl, boolean initializeTTV)
   {
-    super.reset();
+    if (initializeTTV)
+    {
+      clear();
+
+      this.ttv = ttv;
+
+      //---------------------------------------------------------------------------
+
+      ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+      {
+        if ((newValue != null) && (newValue.getValue() != null))
+        {
+          TreeRow row = newValue.getValue();
+          if (row.getRecordType() != hdtNone)
+          {
+            if (selectingFromCB == false)
+              tcb.select(row.getRecord());
+
+            return;
+          }
+        }
+
+        if (selectingFromCB == false)
+          tcb.clearSelection();
+      });
+
+    //---------------------------------------------------------------------------
+
+      ttv.setRowFactory(tTV ->
+      {
+        TreeTableRow<TreeRow> row = new TreeTableRow<>();
+
+        if (limitedControl == false)
+        {
+          setupDragHandlers(row);
+
+          row.setOnMouseClicked(mouseEvent ->
+            nullSwitch(row.getItem(), treeRow -> nullSwitch(treeRow.treeItem, treeItem -> nullSwitch(treeRow.<HDT_Record>getRecord(), record ->
+            {
+              if (db.isLoaded() && mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2) && treeItem.isLeaf())
+                ui.goToRecord(record, false);
+            }))));
+        }
+
+        row.itemProperty().addListener((ob, ov, nv) ->
+        {
+          if (nv == null)
+            row.setGraphic(null);
+          else
+          {
+            nullSwitch(nv.treeItem, treeItem ->
+            {
+              treeItem.expandedProperty().addListener((ob1, ov1, nv1) -> ttv.refresh());
+              treeItem.setGraphic(nv.getGraphic());
+            });
+          }
+
+          if (limitedControl == false)
+            row.setContextMenu(createContextMenu(nv));
+        });
+
+        return row;
+      });
+
+    //---------------------------------------------------------------------------
+
+      ttv.setShowRoot(false);
+    }
+
+    clear();
 
     debateTree.reset(db.debates   .getByID(1));
     noteTree  .reset(db.notes     .getByID(1));
@@ -584,6 +584,11 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  // In this method, new TreeItem objects need to be created for the BreadCrumb control because
+  // otherwise, it would always show a meaningless root node (parent node of the nodes representing
+  // "All Debates", "All Notes", etc.) that is normally kept invisible in the TreeTableView.
+  // The chain of TreeItems created for the BreadCrumb omits this root node.
 
   void setBreadCrumb(TreeItem<TreeRow> selItem)
   {

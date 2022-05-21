@@ -1027,7 +1027,6 @@ public final class MainCtrlr
         HyperDlg.saveBoundPrefs(contentsWindow.getStage(), PREF_KEY_CONTENTS_WINDOW_X, PREF_KEY_CONTENTS_WINDOW_Y, PREF_KEY_CONTENTS_WINDOW_WIDTH, PREF_KEY_CONTENTS_WINDOW_HEIGHT);
 
       HyperTable.saveColWidthsToPrefs();
-      tree().saveColWidths(PREF_KEY_HT_TREE, true);
     }
 
     InterProcClient.removeThisInstance();

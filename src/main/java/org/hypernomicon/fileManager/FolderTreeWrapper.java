@@ -60,7 +60,6 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   @Override public void expandMainBranches()                             { treeModel.expandMainBranch(); }
   @Override public SelectionModel<TreeItem<FileRow>> getSelectionModel() { return tv.getSelectionModel(); }
   @Override public void scrollToNdx(int ndx)                             { tv.scrollTo(ndx); }
-  @Override public TreeItem<FileRow> getTreeItem(FileRow treeRow)        { return treeRow.getTreeItem(); }
   @Override public List<FileRow> getRowsForRecord(HDT_Record record)     { return ImmutableList.copyOf(treeModel.getRowsForRecord(record)); }
 
 //---------------------------------------------------------------------------
@@ -68,8 +67,6 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
   FolderTreeWrapper(TreeView<FileRow> tv, FileTable fileTable)
   {
-    super(tv);
-
     this.tv = tv;
     this.fileTable = fileTable;
 
@@ -117,7 +114,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void clear()
+  protected void clear()
   {
     if (tv.getRoot() != null)
     {
@@ -134,9 +131,9 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void reset()
+  protected void reset()
   {
-    super.reset();
+    clear();
 
     treeModel.reset(db.getRootFolder());
   }

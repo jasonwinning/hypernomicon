@@ -408,7 +408,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public static boolean hasLaunchableWork(List<HDT_Work> works)
   {
-    return findFirst(works, HDT_Work::canLaunch) != null;
+    return works.stream().anyMatch(HDT_Work::canLaunch);
   }
 
 //---------------------------------------------------------------------------

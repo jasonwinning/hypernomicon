@@ -95,8 +95,6 @@ public final class GoogleBibData extends BibDataStandalone
 
   private GoogleBibData(JsonObj jsonObj, String queryIsbn)
   {
-    super();
-
     this.queryIsbn = queryIsbn;
 
     String title    = jsonObj.getStrSafe("title"),

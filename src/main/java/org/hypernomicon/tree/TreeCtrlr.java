@@ -15,28 +15,22 @@
  *
  */
 
-package org.hypernomicon.bib.data;
+package org.hypernomicon.tree;
 
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import javafx.fxml.FXML;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
 
-public class GUIBibData extends BibDataStandalone
+public class TreeCtrlr
 {
-  public static final BibData NoneFoundBD = new GUIBibData();
-
-  private HDT_WorkType workType;
-
-  public GUIBibData() { }
-
-  public GUIBibData(BibData bd)
-  {
-    copyAllFieldsFrom(bd, true, true);
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setWorkType(HDT_WorkType workType) { this.workType = workType; }
-  @Override public HDT_WorkType getWorkType()              { return workType; }
+  @FXML public TreeTableView<TreeRow> ttv;
+  @FXML public TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
+  @FXML public TreeTableColumn<TreeRow, TreeRow> tcLinked;
+  @FXML public TreeTableColumn<TreeRow, String> tcDesc;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

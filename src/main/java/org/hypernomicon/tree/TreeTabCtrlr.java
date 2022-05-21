@@ -19,10 +19,12 @@ package org.hypernomicon.tree;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.controlsfx.control.BreadCrumbBar;
 import org.controlsfx.control.MasterDetailPane;
+import org.hypernomicon.App;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.*;
@@ -34,6 +36,7 @@ import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.PositionTab;
+import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.MenuItemSchema;
 
 import com.google.common.collect.LinkedHashMultimap;
@@ -55,10 +58,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.web.WebView;
 
@@ -67,17 +70,14 @@ import javafx.scene.web.WebView;
 public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
   @FXML private BreadCrumbBar<TreeRow> bcbPath;
-  @FXML private TreeTableView<TreeRow> ttv;
-  @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
-  @FXML private TreeTableColumn<TreeRow, TreeRow> tcLinked;
-  @FXML private TreeTableColumn<TreeRow, String> tcDesc;
   @FXML private MasterDetailPane spMain;
   @FXML private CheckBox chkShowDesc;
   @FXML private WebView webView;
 
   final private SetMultimap<RecordType, MenuItemSchema<? extends HDT_Record, TreeRow>> recordTypeToSchemas = LinkedHashMultimap.create();
-
+  private TreeTableView<TreeRow> ttv;
   private boolean useViewInfo = false;
+  private boolean loaded = false;
   private String lastTextHilited = "";
   String textToHilite = "";
   private TreeWrapper tree;
@@ -123,15 +123,11 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @Override protected void init()
   {
-    tree = new TreeWrapper(ttv, bcbPath, true, ui.cbTreeGoTo, false);
+    tree = new TreeWrapper(bcbPath, true, ui.cbTreeGoTo);
+
+    initTTV();
 
     spMain.showDetailNodeProperty().bind(chkShowDesc.selectedProperty());
-
-    tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
-    tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
-
-    tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
-    tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
 
     tree.addContextMenuItem("Select", HDT_Record.class,
       record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isLoaded(),
@@ -237,6 +233,94 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     MainTextUtil.webViewAddZoom(webView, PREF_KEY_TREETAB_ZOOM);
 
+  //---------------------------------------------------------------------------
+  //
+  // Tree Update Handlers
+  //
+  //---------------------------------------------------------------------------
+
+  // NOTE: There is some code (like RecordTreeEdge constructor) that assumes that
+  //       if the subject and object type is the same, then the child record is the
+  //       subject record, so there could be bugs if a non-forward relation is added
+  //       where the subject and object type is the same
+
+    db.addDeleteHandler(tree::removeRecord);
+
+    TreeModel<TreeRow> debateTree = tree.debateTree,
+                       termTree   = tree.termTree,
+                       labelTree  = tree.labelTree,
+                       noteTree   = tree.noteTree;
+
+    noteTree  .addKeyWorkRelation(hdtNote     , true);
+    termTree  .addKeyWorkRelation(hdtConcept  , true);
+    debateTree.addKeyWorkRelation(hdtDebate   , true);
+    debateTree.addKeyWorkRelation(hdtPosition , true);
+    labelTree .addKeyWorkRelation(hdtWorkLabel, true);
+
+    debateTree.addParentChildRelation(rtParentDebateOfDebate, true);
+    debateTree.addParentChildRelation(rtParentDebateOfPos   , true);
+    debateTree.addParentChildRelation(rtParentPosOfDebate   , true);
+    debateTree.addParentChildRelation(rtParentPosOfPos      , true);
+    debateTree.addParentChildRelation(rtPositionOfArgument  , true);
+    debateTree.addParentChildRelation(rtCounterOfArgument   , true);
+    debateTree.addParentChildRelation(rtWorkOfArgument      , false);
+
+    noteTree.addParentChildRelation(rtParentNoteOfNote, true);
+
+    labelTree.addParentChildRelation(rtParentLabelOfLabel, true);
+    labelTree.addParentChildRelation(rtWorkOfArgument    , true);
+
+    termTree.addParentChildRelation(rtParentGlossaryOfGlossary, true);
+    termTree.addGlossaryOfConceptRelation();
+    termTree.addConceptParentChildRelation();
+
+    List.of(debateTree, noteTree, labelTree, termTree).forEach(treeModel ->
+    {
+      treeModel.addParentChildRelation(rtParentWorkOfWork, true);
+      treeModel.addParentChildRelation(rtWorkOfMiscFile  , true);
+    });
+
+    db.addCloseDBHandler(this::initTTV);
+    db.addDBLoadedHandler(() -> { loaded = true; });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initTTV()
+  {
+    if (ttv != null)
+    {
+      TreeItem<TreeRow> root = ttv.getRoot();
+
+      if ((loaded == false) && (root != null) && root.getChildren().stream().filter(Objects::nonNull).allMatch(TreeItem::isLeaf))
+      {
+        tree.reset(ttv, false, false);
+        return;
+      }
+
+      HyperTable.saveColWidthsForTable(ttv.getColumns(), PREF_KEY_HT_TREE, true);
+      removeFromParent(ttv.getParent());
+
+      loaded = false;
+    }
+
+    // There is a memory leak in TreeTableView such that it never releases references to values of TreeItems even if they are
+    // removed from the tree. So anytime the tree is cleared, we need to release the TTV reference and start from scratch with
+    // a new one.
+
+    FXMLLoader loader = new FXMLLoader(App.class.getResource("tree/Tree.fxml"));
+    try { spMain.setMasterNode(loader.load()); } catch (Exception e) { noOp(); }
+    TreeCtrlr treeCtrlr = (TreeCtrlr) loader.getController();
+
+    ttv = treeCtrlr.ttv;
+
+    treeCtrlr.tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
+    treeCtrlr.tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
+
+    treeCtrlr.tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
+    treeCtrlr.tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
+
     ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       boolean clearWV = true, clearPreview = true;
@@ -292,56 +376,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         previewWindow.clearPreview(pvsTreeTab);
     });
 
-  //---------------------------------------------------------------------------
-  //
-  // Tree Update Handlers
-  //
-  //---------------------------------------------------------------------------
+    HyperTable.loadColWidthsForTable(ttv.getColumns(), PREF_KEY_HT_TREE);
 
-  // NOTE: There is some code (like RecordTreeEdge constructor) that assumes that
-  //       if the subject and object type is the same, then the child record is the
-  //       subject record, so there could be bugs if a non-forward relation is added
-  //       where the subject and object type is the same
-
-    db.addDeleteHandler(tree::removeRecord);
-
-    TreeModel<TreeRow> debateTree = tree.debateTree,
-                       termTree   = tree.termTree,
-                       labelTree  = tree.labelTree,
-                       noteTree   = tree.noteTree;
-
-    noteTree  .addKeyWorkRelation(hdtNote     , true);
-    termTree  .addKeyWorkRelation(hdtConcept  , true);
-    debateTree.addKeyWorkRelation(hdtDebate   , true);
-    debateTree.addKeyWorkRelation(hdtPosition , true);
-    labelTree .addKeyWorkRelation(hdtWorkLabel, true);
-
-    debateTree.addParentChildRelation(rtParentDebateOfDebate, true);
-    debateTree.addParentChildRelation(rtParentDebateOfPos   , true);
-    debateTree.addParentChildRelation(rtParentPosOfDebate   , true);
-    debateTree.addParentChildRelation(rtParentPosOfPos      , true);
-    debateTree.addParentChildRelation(rtPositionOfArgument  , true);
-    debateTree.addParentChildRelation(rtCounterOfArgument   , true);
-    debateTree.addParentChildRelation(rtWorkOfArgument      , false);
-
-    noteTree.addParentChildRelation(rtParentNoteOfNote, true);
-
-    labelTree.addParentChildRelation(rtParentLabelOfLabel, true);
-    labelTree.addParentChildRelation(rtWorkOfArgument    , true);
-
-    termTree.addParentChildRelation(rtParentGlossaryOfGlossary, true);
-    termTree.addGlossaryOfConceptRelation();
-    termTree.addConceptParentChildRelation();
-
-    List.of(debateTree, noteTree, labelTree, termTree).forEach(treeModel ->
-    {
-      treeModel.addParentChildRelation(rtParentWorkOfWork, true);
-      treeModel.addParentChildRelation(rtWorkOfMiscFile  , true);
-    });
-
-    db.addCloseDBHandler(tree::reset);
-
-    tree.loadColWidths(PREF_KEY_HT_TREE);
+    tree.reset(ttv, false, true);
   }
 
 //---------------------------------------------------------------------------

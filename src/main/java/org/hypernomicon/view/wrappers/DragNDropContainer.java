@@ -44,14 +44,12 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   private long dragMilliCtr;
   private double lastDragX, lastDragY;
   private ScrollBar scrollBar = null;
-  private final Control ctrl;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected DragNDropContainer(Control ctrl)
+  protected DragNDropContainer()
   {
-    this.ctrl = ctrl;
     dragReset();
   }
 
@@ -62,16 +60,17 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   protected abstract void dragDone();
   protected abstract boolean isValidDragTarget(RowType item, DragEvent event, TreeItem<RowType> treeItem);
   protected abstract void dragDroppedOnto(RowType item);
+  protected abstract Control getControl();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private ScrollBar getScrollBar()
   {
-    return ctrl.lookupAll(".scroll-bar").stream().filter(child -> child instanceof ScrollBar)
-                                                 .map(child -> (ScrollBar) child)
-                                                 .filter(sb -> sb.getOrientation() == Orientation.VERTICAL)
-                                                 .findFirst().orElse(null);
+    return getControl().lookupAll(".scroll-bar").stream().filter(child -> child instanceof ScrollBar)
+                                                         .map(child -> (ScrollBar) child)
+                                                         .filter(sb -> sb.getOrientation() == Orientation.VERTICAL)
+                                                         .findFirst().orElse(null);
   }
 
 //---------------------------------------------------------------------------
@@ -97,6 +96,8 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       lastDragX = dragEvent.getSceneX();
       lastDragY = dragEvent.getSceneY();
     }
+
+    Control ctrl = getControl();
 
     if ((lastDragY - 35) < ctrl.localToScene(ctrl.getBoundsInLocal()).getMinY())
     {

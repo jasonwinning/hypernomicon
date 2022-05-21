@@ -65,7 +65,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
   private ChooseParentDlgCtrlr init(HDT_Record child)
   {
-    popupTree = new TreeWrapper(ttv, bcbPath, false, new ComboBox<>(), true);
+    popupTree = new TreeWrapper(bcbPath, false, new ComboBox<>());
     this.child = child;
     parent = null;
 
@@ -75,7 +75,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
     tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
 
-    popupTree.reset();
+    popupTree.reset(ttv, true, true);
 
     TreeWrapper tree = MainCtrlr.tree();
     tree.debateTree.copyTo(popupTree.debateTree);

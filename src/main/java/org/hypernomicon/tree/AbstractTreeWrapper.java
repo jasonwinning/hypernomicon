@@ -23,7 +23,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.view.wrappers.DragNDropContainer;
 
 import javafx.application.Platform;
-import javafx.scene.control.Control;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeItem;
 
@@ -35,30 +34,20 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
   boolean selectingFromCB = false;
 
   protected abstract RowType newRow(HDT_Record rootRecord, TreeModel<RowType> treeModel);
-  protected abstract TreeItem<RowType> getTreeItem(RowType treeRow);
   protected abstract TreeItem<RowType> getRoot();
   protected abstract SelectionModel<TreeItem<RowType>> getSelectionModel();
   protected abstract void scrollToNdx(int ndx);
-  protected abstract void clear();
   protected abstract List<RowType> getRowsForRecord(HDT_Record record); // should never return null
   protected abstract void expandMainBranches();
-  protected abstract Control getControl();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected AbstractTreeWrapper(Control ctrl)   { super(ctrl); }
-
-  protected void reset()                        { clear(); }
   public final TreeItem<RowType> selectedItem() { return getSelectionModel().getSelectedItem(); }
+  public final HDT_Record selectedRecord()      { return nullSwitch(selectedItem(), null, treeItem -> nullSwitch(treeItem.getValue(), null, RowType::getRecord)); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public final HDT_Record selectedRecord()
-  {
-    return nullSwitch(selectedItem(), null, treeItem -> nullSwitch(treeItem.getValue(), null, RowType::getRecord));
-  }
+  public final void selectRow(TreeRow row, boolean fromCB) { selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), fromCB); }
+  protected TreeItem<RowType> getTreeItem(RowType treeRow) { return treeRow.getTreeItem(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -110,14 +99,6 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 
       selectingFromCB = false;
     });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public final void selectRow(TreeRow row, boolean fromCB)
-  {
-    selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), fromCB);
   }
 
 //---------------------------------------------------------------------------

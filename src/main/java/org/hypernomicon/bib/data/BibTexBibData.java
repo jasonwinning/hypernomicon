@@ -65,8 +65,6 @@ public final class BibTexBibData extends BibDataStandalone
 
   private BibTexBibData(BibTeXEntry entry) throws ParseException
   {
-    super();
-
     LaTeXParser latexParser = new LaTeXParser();
     LaTeXPrinter latexPrinter = new LaTeXPrinter();
 

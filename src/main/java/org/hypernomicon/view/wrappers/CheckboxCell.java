@@ -32,8 +32,6 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
 
   CheckboxCell(HyperTable table)
   {
-    super();
-
     this.table = table;
     chk = new CheckBox();
 

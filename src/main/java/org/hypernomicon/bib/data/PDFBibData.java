@@ -383,8 +383,6 @@ public class PDFBibData extends BibDataStandalone
 
   public PDFBibData(FilePath filePath) throws IOException
   {
-    super();
-
     try (PDDocument pdfDoc = PDDocument.load(filePath.toFile()))
     {
       setDocInfo(pdfDoc.getDocumentInformation());

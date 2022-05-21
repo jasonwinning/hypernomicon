@@ -46,6 +46,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Control;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -108,6 +109,8 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   void clear() { rows.clear(); }
 
+  @Override protected Control getControl() { return fileTV; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -115,8 +118,6 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   @SuppressWarnings("unchecked") FileTable(TableView<FileRow> fileTV, FileManager dlg)
   {
-    super(fileTV);
-
     this.dlg = dlg;
     this.fileTV = fileTV;
     rows = FXCollections.observableArrayList();

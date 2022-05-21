@@ -44,8 +44,6 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 
   ReadOnlyCell(HyperTable table, boolean incremental, Function<HyperTableRow, Node> graphicProvider)
   {
-    super();
-
     this.incremental = incremental;
     this.table = table;
     this.graphicProvider = graphicProvider;

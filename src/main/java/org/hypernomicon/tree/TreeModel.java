@@ -125,9 +125,12 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
   {                                                      // build errors that are not really errors
     clear();
 
-    rootRow = treeWrapper.newRow(rootRecord, this);
-    treeWrapper.getRoot().getChildren().add(treeWrapper.getTreeItem(rootRow));
-    recordToRows.addRow(rootRow);
+    if (rootRecord != null)
+    {
+      rootRow = treeWrapper.newRow(rootRecord, this);
+      treeWrapper.getRoot().getChildren().add(treeWrapper.getTreeItem(rootRow));
+      recordToRows.addRow(rootRow);
+    }
   }
 
 //---------------------------------------------------------------------------
