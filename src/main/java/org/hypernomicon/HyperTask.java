@@ -141,6 +141,7 @@ public abstract class HyperTask
   public boolean threadIsAlive() { return HyperThread.isRunning(thread); }
   public boolean isRunning()     { return innerTask.isRunning(); }
   public boolean isCancelled()   { return innerTask.isCancelled(); }
+  public boolean isDone()        { return innerTask.isDone(); }
 
   protected void updateMessage(String msg)             { innerTask.updateMessage(msg); }
   public void updateProgress(double cur, double total) { innerTask.updateProgress(cur, total); }

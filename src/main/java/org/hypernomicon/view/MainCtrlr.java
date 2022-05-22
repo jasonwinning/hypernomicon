@@ -153,14 +153,14 @@ public final class MainCtrlr
   @FXML private ProgressBar progressBar;
   @FXML private SeparatorMenuItem mnuBibImportSeparator;
   @FXML private SplitMenuButton btnGoTo, btnCreateNew;
-  @FXML private Tab tabViewSelector;
+  @FXML private Tab tabViewSelector, tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML private TabPane selectorTabPane, tabPane;
   @FXML private TextField tfID, tfOmniGoTo, tfRecord;
   @FXML private ToggleButton btnPointerPreview;
   @FXML private ToolBar topToolBar;
+
   @FXML public Label lblStatus;
   @FXML public Menu mnuFavorites, mnuQueries;
-  @FXML private Tab tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML public ToggleButton btnPointerLaunch;
 
   public final WindowStack windows = new WindowStack();

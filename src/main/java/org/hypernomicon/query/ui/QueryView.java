@@ -738,7 +738,7 @@ public final class QueryView
 
     switchToRecordMode();
 
-    boolean needMentionsIndex = false, showDesc = false;
+    boolean showDesc = false;
 
     Map<HyperTableRow, Query<?>> queries = new LinkedHashMap<>();
     Map<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
@@ -749,18 +749,16 @@ public final class QueryView
 
       QueryType type = getQueryType(row);
       Query<?> query = getQuery(row);
+
+      if (query.needsMentionsIndex() && (db.waitUntilRebuildIsDone() == false))
+        return false;
+
       queries.put(row, query);
       sources.put(row, query.getSource(type, row));
 
       if (query.autoShowDescription())
         showDesc = true;
-
-      if (query.needsMentionsIndex())
-        needMentionsIndex = true;
     }
-
-    if (needMentionsIndex && (db.waitUntilRebuildIsDone() == false))
-      return false;
 
     resultsTable.reset();
     recordToRow.clear();

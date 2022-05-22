@@ -49,6 +49,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
+import static org.hypernomicon.util.Util.*;
 
 class MentionsIndex
 {
@@ -74,11 +75,17 @@ class MentionsIndex
   }
 
 //---------------------------------------------------------------------------
+
+  boolean waitUntilRebuildIsDone() { return isRebuilding() ? (task.runWithProgressDialog() == State.SUCCEEDED) : true; }
+  boolean isRebuilding()           { return (task != null) && task.threadIsAlive(); }
+  void stopRebuild()               { if (isRebuilding()) task.cancelAndWait(); }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void clear()
   {
-    mentionedInDescToMentioners.clear();
+    mentionedInDescToMentioners  .clear();
     mentionedAnywhereToMentioners.clear();
     removedRecords.clear();
   }
@@ -94,7 +101,7 @@ class MentionsIndex
       return;
     }
 
-    mentionedInDescToMentioners.removeRecord(record);
+    mentionedInDescToMentioners  .removeRecord(record);
     mentionedAnywhereToMentioners.removeRecord(record);
     removedRecords.add(record);
   }
@@ -138,7 +145,7 @@ class MentionsIndex
     record.getAllStrings(strList, true);
 
     mentionedAnywhereToMentioners.removeReverseKey(record);
-    mentionedInDescToMentioners.removeReverseKey(record);
+    mentionedInDescToMentioners  .removeReverseKey(record);
 
     strList.forEach(str ->
       KeywordLinkList.generate(str.toLowerCase()).forEach(link -> mentionedAnywhereToMentioners.addForward(link.key.record, record)));
@@ -155,7 +162,7 @@ class MentionsIndex
       while (miscFile != null)
       {
         mentionedAnywhereToMentioners.addForward(miscFile, record);
-        mentionedInDescToMentioners.addForward(miscFile, record);
+        mentionedInDescToMentioners  .addForward(miscFile, record);
 
         startNdx.add(1);
         miscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
@@ -171,7 +178,7 @@ class MentionsIndex
         if (displayItem.type == diRecord)
         {
           mentionedAnywhereToMentioners.addForward(displayItem.record, record);
-          mentionedInDescToMentioners.addForward(displayItem.record, record);
+          mentionedInDescToMentioners  .addForward(displayItem.record, record);
         }
         else if (displayItem.type == diKeyWorks)
         {
@@ -180,29 +187,11 @@ class MentionsIndex
             HDT_RecordWithPath keyWorkRecord = keyWork.getRecord();
 
             mentionedAnywhereToMentioners.addForward(keyWorkRecord, record);
-            mentionedInDescToMentioners.addForward(keyWorkRecord, record);
+            mentionedInDescToMentioners  .addForward(keyWorkRecord, record);
           });
         }
       });
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  boolean waitUntilRebuildIsDone()
-  {
-    if (isRebuilding() == false) return true;
-
-    return task.runWithProgressDialog() == State.SUCCEEDED;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  boolean isRebuilding()
-  {
-    return (task != null) && task.threadIsAlive();
   }
 
 //---------------------------------------------------------------------------
@@ -226,17 +215,14 @@ class MentionsIndex
 
     task = new HyperTask("MentionsIndex")
     {
-      @Override protected void done()
+      @Override protected void done() { Platform.runLater(() ->
       {
-        updateProgress(total, total);
+        waitUntilThreadDies();
 
-        Platform.runLater(() ->
-        {
-          waitUntilThreadDies();
+        ui.updateProgress("", -1.0);
 
-          ndxCompleteHandlers.forEach(Runnable::run);
-        });
-      }
+        ndxCompleteHandlers.forEach(Runnable::run);
+      }); }
 
       @Override protected void call() throws CancelledTaskException
       {
@@ -262,24 +248,13 @@ class MentionsIndex
       }
     };
 
-    task.progressProperty().addListener((ob, oldValue, newValue) ->
-      Platform.runLater(newValue.doubleValue() == 1.0 ?
-        () -> ui.updateProgress("", -1.0)
-      :
-        () -> ui.updateProgress("Indexing:", ctr / total)));
+    task.progressProperty().addListener((ob, oldValue, newValue) -> Platform.runLater(() ->
+    {
+      if (task.isDone() == false)
+        ui.updateProgress("Indexing:", ctr / total);
+    }));
 
     new RebuildThread(task).start();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void stopRebuild()
-  {
-    if (isRebuilding() == false)
-      return;
-
-    task.cancelAndWait();
   }
 
 //---------------------------------------------------------------------------
@@ -299,10 +274,7 @@ class MentionsIndex
     if (target.getType() == hdtConcept)
       target = ((HDT_Concept)target).term.get();
 
-    return descOnly ?
-      mentionedInDescToMentioners.getForwardSet(target)
-    :
-      mentionedAnywhereToMentioners.getForwardSet(target);
+    return (descOnly ? mentionedInDescToMentioners : mentionedAnywhereToMentioners).getForwardSet(target);
   }
 
 //---------------------------------------------------------------------------
@@ -310,17 +282,7 @@ class MentionsIndex
 
   boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait)
   {
-    choseNotToWait.setValue(waitUntilRebuildIsDone() == false);
-    if (choseNotToWait.isTrue())
-      return false;
-
-    if (target.getType() == hdtConcept)
-      target = ((HDT_Concept)target).term.get();
-
-    return descOnly ?
-      mentionedInDescToMentioners.getForwardSet(target).contains(mentioner)
-    :
-      mentionedAnywhereToMentioners.getForwardSet(target).contains(mentioner);
+    return nullSwitch(getMentionerSet(target, descOnly, choseNotToWait), false, set -> set.contains(mentioner));
   }
 
 //---------------------------------------------------------------------------

@@ -417,9 +417,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private static void createChild(HDT_Record parent, RelationType relType)
   {
-    HDT_Record child = db.createNewBlankRecord(db.getSubjType(relType));
-
-    ui.treeSelector.attach(child, parent);
+    ui.treeSelector.attach(db.createNewBlankRecord(db.getSubjType(relType)), parent);
   }
 
 //---------------------------------------------------------------------------
@@ -427,9 +425,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private static void createTerm(HDT_Glossary glossary)
   {
-    HDT_Term term = HDT_Term.create(glossary);
-
-    ui.goToRecord(term, false);
+    ui.goToRecord(HDT_Term.create(glossary), false);
   }
 
 //---------------------------------------------------------------------------
@@ -453,16 +449,15 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Glossary Name", ntRecord, "");
 
-    if (dlg.showModal())
-    {
-      HDT_Glossary newGlossary = db.createNewBlankRecord(hdtGlossary);
-      newGlossary.setActive(true);
-      newGlossary.setName(dlg.getNewName());
+    if (dlg.showModal() == false) return;
 
-      ui.treeSelector.attach(newGlossary, glossary);
+    HDT_Glossary newGlossary = db.createNewBlankRecord(hdtGlossary);
+    newGlossary.setActive(true);
+    newGlossary.setName(dlg.getNewName());
 
-      Platform.runLater(() -> { tree.sort(); tree.selectRecord(newGlossary, 0, false); });
-    }
+    ui.treeSelector.attach(newGlossary, glossary);
+
+    Platform.runLater(() -> { tree.sort(); tree.selectRecord(newGlossary, 0, false); });
   }
 
 //---------------------------------------------------------------------------
@@ -472,14 +467,13 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Label Name", ntRecord, "");
 
-    if (dlg.showModal())
-    {
-      HDT_WorkLabel newLabel = db.createNewBlankRecord(hdtWorkLabel);
-      newLabel.setName(dlg.getNewName());
-      newLabel.parentLabels.add(label);
+    if (dlg.showModal() == false) return;
 
-      Platform.runLater(() -> { tree.sort(); tree.selectRecord(newLabel, 0, false); });
-    }
+    HDT_WorkLabel newLabel = db.createNewBlankRecord(hdtWorkLabel);
+    newLabel.setName(dlg.getNewName());
+    newLabel.parentLabels.add(label);
+
+    Platform.runLater(() -> { tree.sort(); tree.selectRecord(newLabel, 0, false); });
   }
 
 //---------------------------------------------------------------------------
