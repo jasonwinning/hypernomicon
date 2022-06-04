@@ -66,7 +66,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
   @Override public String getNameEngChar()             { return term.get().getNameEngChar(); }
   @Override public String firstActiveKeyWord()         { return term.get().firstActiveKeyWord(); }
   @Override public void setName(String str)            { term.get().setName(str); }
-  @Override public String listName()                   { return sense.isNull() ? name() : (name() + " (" + sense.get().name() + ")"); }
+  @Override public String listName()                   { return sense.isNull() ? name() : (name() + " (" + sense.get().name() + ')'); }
   @Override public final boolean isUnitable()          { return true; }
 
 //---------------------------------------------------------------------------
@@ -93,9 +93,9 @@ public class HDT_Concept extends HDT_RecordWithMainText
     String senseText = sense.isNull() ? "" : sense.get().name();
 
     return glossaryText.isBlank() ?
-      (senseText.isBlank() ? name() : name() + " (" + senseText + ")")
+      (senseText.isBlank() ? name() : name() + " (" + senseText + ')')
     :
-      (name() + " (" + glossaryText + (senseText.isBlank() ? ")" : (", " + senseText + ")")));
+      (name() + " (" + glossaryText + (senseText.isBlank() ? ")" : (", " + senseText + ')')));
   }
 
 //---------------------------------------------------------------------------

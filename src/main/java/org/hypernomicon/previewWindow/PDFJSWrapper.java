@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -156,7 +155,7 @@ public class PDFJSWrapper
     FilePath filePath = DesktopUtil.tempDir().resolve(tempBrowserContextFolderName);
 
     if (create && (filePath.exists() == false))
-      Files.createDirectory(filePath.toPath());
+      filePath.createDirectory();
 
     return filePath;
   }
@@ -198,7 +197,7 @@ public class PDFJSWrapper
           catch (BrowserException e) // Exception means the default Chrome data folder is already in use. See https://jxbrowser.support.teamdev.com/support/solutions/articles/9000012878-creating-browser
           {
             FilePath filePath = tempContextFolder(true).resolve(InterProcClient.getInstanceID());
-            Files.createDirectory(filePath.toPath());
+            filePath.createDirectory();
 
             LoggerProvider.setLevel(SEVERE);
 
@@ -220,15 +219,13 @@ public class PDFJSWrapper
     {
       String msg = safeStr(e.getMessage());
       messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError, true);
-      closeWindows();
-      jxBrowserDisabled = true;
+      disable();
     }
     catch (ExceptionInInitializerError e)
     {
       String msg = safeStr(e.getCause().getMessage());
       messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError, true);
-      closeWindows();
-      jxBrowserDisabled = true;
+      disable();
     }
 
     return jxBrowserDisabled ? null : browser;
@@ -239,7 +236,7 @@ public class PDFJSWrapper
 
   // Similar to MainCtrlr.closeWindows
 
-  private static void closeWindows()
+  private static void disable()
   {
     Platform.runLater(() ->
     {
@@ -249,12 +246,14 @@ public class PDFJSWrapper
       if ((contentsWindow != null) && contentsWindow.getStage().isShowing())
         contentsWindow.getStage().close();
     });
+
+    jxBrowserDisabled = true;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean reloadBrowser(Runnable stuffToDoAfterLoadingViewerHtml)
+  void reloadBrowser(Runnable stuffToDoAfterLoadingViewerHtml)
   {
     if (browser != null)
     {
@@ -266,7 +265,7 @@ public class PDFJSWrapper
     if (browser == null)
     {
       dispose(oldBrowser, false);
-      return false;
+      return;
     }
 
     if (viewerHTMLStr == null)
@@ -276,9 +275,8 @@ public class PDFJSWrapper
       {
         messageDialog("Unable to initialize preview window: Unable to read HTML file", mtError);
         dispose(oldBrowser, false);
-        closeWindows();
-        jxBrowserDisabled = true;
-        return false;
+        disable();
+        return;
       }
     }
 
@@ -355,8 +353,6 @@ public class PDFJSWrapper
       loadViewerHtml(runnable);
     else
       runnable.run();
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

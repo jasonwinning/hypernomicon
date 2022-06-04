@@ -59,13 +59,7 @@ final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
     this.recordType = recordType;
     caption = getTypeName(recordType);
 
-    tags.forEach(tag ->
-    {
-      if (db.mainTextTagForRecordType(recordType) == tag)
-        items.add(new ColumnGroupItem(tagMainText));
-      else
-        items.add(new ColumnGroupItem(tag));
-    });
+    tags.forEach(tag -> items.add(new ColumnGroupItem(db.mainTextTagForRecordType(recordType) == tag ? tagMainText : tag)));
 
     RelationSet.getRelationsForObjType(recordType, false).forEach(relType -> items.add(new ColumnGroupItem(relType)));
   }

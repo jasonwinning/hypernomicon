@@ -1682,12 +1682,12 @@ public final class HyperDB
       List<String> s;
 
       try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
-      catch (IOException e) { return "whatevervolleyball"; }
+      catch (IOException e) { return "[Unknown]"; }
 
       if (s.get(0).equals(getComputerName()) == false)
         return s.get(0);
 
-      filePath.deleteReturnsBoolean(true);
+      filePath.deletePromptOnFail(true);
     }
 
     getRequestMessageFilePath (true).deletePromptOnFail(true);

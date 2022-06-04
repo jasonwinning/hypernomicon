@@ -671,7 +671,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
-      row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
+      row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row));
     });
 
     htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, DisplayKind.name));
@@ -907,8 +907,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     MainText.setKeyWorkMentioners(work, investigations, HDT_Investigation.class);
 
-    HyperTableCell newValue = new HyperTableCell(investigations.isEmpty() ? -1 : investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
-    row.setCellValue(3, newValue);
+    row.setCellValue(3, investigations.isEmpty() ? -1 : investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
   }
 
 //---------------------------------------------------------------------------

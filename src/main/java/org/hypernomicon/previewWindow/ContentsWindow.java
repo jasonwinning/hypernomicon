@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -245,11 +246,8 @@ public class ContentsWindow extends HyperDlg
     {
       String authStr = work.getShortAuthorsStr(true), title = work.name(), year = work.getYear();
       HDT_WorkType workType = work.workType.get();
-      int authorID = -1;
       WorkTabCtrlr wtc = null;
-
-      if (work.authorRecords.size() > 0)
-        authorID = work.authorRecords.get(0).getID();
+      int authorID = work.authorRecords.stream().map(HDT_Record::getID).findFirst().orElse(-1);
 
       if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
       {

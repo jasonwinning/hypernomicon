@@ -321,12 +321,12 @@ public class WorkAuthors extends Authors
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public Author setAuthorRecord(Author oldAuthor, HDT_Person person)
+  public void setAuthorRecord(Author oldAuthor, HDT_Person person)
   {
     if (oldAuthor.getPerson() != null)
     {
       messageDialog("Internal error #73222", mtError);
-      return oldAuthor;
+      return;
     }
 
     HDT_Person insertAfter = null;
@@ -338,10 +338,7 @@ public class WorkAuthors extends Authors
 
       if (author == oldAuthor)
       {
-        if (insertAfter == null)
-          objListNoMod.add(0, person);
-        else
-          objListNoMod.add(objListNoMod.indexOf(insertAfter) + 1, person);
+        objListNoMod.add(insertAfter == null ? 0 : objListNoMod.indexOf(insertAfter) + 1, person);
 
         work.setPersonIsEditor    (person, author.getIsEditor  ());
         work.setPersonIsTranslator(person, author.getIsTrans   ());
@@ -351,12 +348,11 @@ public class WorkAuthors extends Authors
 
         authorList.set(authorList.indexOf(oldAuthor), newAuthor);
 
-        return newAuthor;
+        return;
       }
     }
 
     messageDialog("Internal error #73223", mtError);
-    return oldAuthor;
   }
 
   //---------------------------------------------------------------------------

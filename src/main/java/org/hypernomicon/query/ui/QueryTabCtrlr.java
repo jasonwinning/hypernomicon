@@ -86,7 +86,6 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                           FALSE_ID = 2,
                           UNSET_ID = 3;
 
-
   public static final HyperTableCell andCell = new HyperTableCell(AND_CONNECITVE_ID, "and", hdtNone),
                                      orCell  = new HyperTableCell(OR_CONNECTIVE_ID , "or" , hdtNone),
 

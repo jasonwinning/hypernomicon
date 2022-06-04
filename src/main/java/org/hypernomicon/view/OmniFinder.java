@@ -65,11 +65,10 @@ public class OmniFinder
   private final RecordType typeFilter;
   private final boolean incremental;
 
-  private String query = "";
-  private Iterator<HDT_Record> source = null;
+  private volatile String query = "";
+  private volatile Iterator<HDT_Record> source = null;
   private FinderThread finderThread = null;
-  private volatile boolean stopRequested = false;
-  private boolean showingMore = false;
+  private volatile boolean stopRequested = false, showingMore = false;
   public Runnable doneHndlr = null;
 
   public boolean noResults()  { return collEmpty(records); }
@@ -404,17 +403,16 @@ public class OmniFinder
       if (buffer.isEmpty()) return;
 
       List<HyperTableRow> curRows = new ArrayList<>();
-      ObservableList<HyperTableCell> cells;
 
       for (HDT_Record record : buffer)
       {
-        if (showingMore)
-          cells = FXCollections.observableArrayList(new HyperTableCell("", hdtWork),
-                                                    new HyperTableCell("", hdtWork),
-                                                    new HyperTableCell("", hdtWork, smNumeric),
-                                                    new HyperTableCell("", hdtPerson, smTextSimple));
-        else
-          cells = cellLists.get(rowNdx);
+        ObservableList<HyperTableCell> cells = showingMore ?
+          FXCollections.observableArrayList(new HyperTableCell("", hdtWork),
+                                            new HyperTableCell("", hdtWork),
+                                            new HyperTableCell("", hdtWork, smNumeric),
+                                            new HyperTableCell("", hdtPerson, smTextSimple))
+        :
+          cellLists.get(rowNdx);
 
         cells.set(0, new HyperTableCell(record.getID(), "", record.getType()));
         cells.set(1, new HyperTableCell(record.getID(), record.listName(), record.getType()));
@@ -633,17 +631,14 @@ public class OmniFinder
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setSourceAndStart(Iterator<HDT_Record> source, boolean showingMore)
+  public synchronized void setSourceAndStart(Iterator<HDT_Record> source, boolean showingMore)
   {
     if (finderThread != null)
       stop();
 
-    synchronized (this)
-    {
-      this.query = "";
-      this.source = source;
-      this.showingMore = showingMore;
-    }
+    this.query = "";
+    this.source = source;
+    this.showingMore = showingMore;
 
     (finderThread = new FinderThread()).start();
   }
@@ -651,19 +646,16 @@ public class OmniFinder
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setQueryAndStart(String query, boolean showingMore)
+  public synchronized void setQueryAndStart(String query, boolean showingMore)
   {
     boolean newThread = isRunning() == false;
 
     if ((finderThread != null) && newThread)
       stop();
 
-    synchronized (this)
-    {
-      this.query = query;
-      this.source = null;
-      this.showingMore = showingMore;
-    }
+    this.query = query;
+    this.source = null;
+    this.showingMore = showingMore;
 
     if (newThread)
       (finderThread = new FinderThread()).start();
@@ -672,11 +664,9 @@ public class OmniFinder
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean stop()
+  synchronized void stop()
   {
-    boolean wasRunning = isRunning();
-
-    if (wasRunning)
+    if (isRunning())
     {
       stopRequested = true;
 
@@ -685,8 +675,6 @@ public class OmniFinder
 
     finderThread = null;
     runInFXThread(htFind::clear);
-
-    return wasRunning;
   }
 
 //---------------------------------------------------------------------------

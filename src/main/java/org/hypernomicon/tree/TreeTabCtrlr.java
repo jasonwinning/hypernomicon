@@ -281,7 +281,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     });
 
     db.addCloseDBHandler(this::initTTV);
-    db.addDBLoadedHandler(() -> { loaded = true; });
+    db.addDBLoadedHandler(() -> loaded = true);
   }
 
 //---------------------------------------------------------------------------
@@ -311,7 +311,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     FXMLLoader loader = new FXMLLoader(App.class.getResource("tree/Tree.fxml"));
     try { spMain.setMasterNode(loader.load()); } catch (Exception e) { noOp(); }
-    TreeCtrlr treeCtrlr = (TreeCtrlr) loader.getController();
+    TreeCtrlr treeCtrlr = loader.getController();
 
     ttv = treeCtrlr.ttv;
 

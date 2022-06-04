@@ -27,7 +27,6 @@ import static org.hypernomicon.model.Tag.*;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.List;
 
@@ -251,7 +250,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     try
     {
-      Files.createDirectory(childFilePath.toPath());
+      childFilePath.createDirectory();
       childFolder = HyperPath.getFolderFromFilePath(childFilePath, true);
     }
     catch (FileAlreadyExistsException e)

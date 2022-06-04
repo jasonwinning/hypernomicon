@@ -194,7 +194,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       RecordType parentType = cellVal.getType();
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
-      row.setCellValue(nextColNdx, new HyperTableCell("", parentType));
+      row.setCellValue(nextColNdx, "", parentType);
 
       if (parentType == hdtPosition)
         verdictPopulator.setRecordType(row, hdtPositionVerdict);
@@ -204,13 +204,13 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
         verdictPopulator.setRecordType(row, hdtNone);
 
       verdictPopulator.populate(row, true);
-      row.setCellValue(nextColNdx + 1, new HyperTableCell("", verdictPopulator.getRecordType(row)));
+      row.setCellValue(nextColNdx + 1, "", verdictPopulator.getRecordType(row));
     });
 
     htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new RecordByTypePopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       if (HyperTableCell.getCellID(cellVal) < 1)
-        row.setCellValue(nextColNdx, new HyperTableCell("", verdictPopulator.getRecordType(row)));
+        row.setCellValue(nextColNdx, "", verdictPopulator.getRecordType(row));
     });
 
     htParents.addColAltPopulator(hdtNone, ctDropDownList, verdictPopulator);
@@ -229,7 +229,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       if (hsPop.getObj(row) == obj) return;
 
       hsPop.setObj(row, obj);
-      row.setCellValue(nextColNdx, new HyperTableCell("", hsPop.getRecordType(row)));
+      row.setCellValue(nextColNdx, "", hsPop.getRecordType(row));
     });
 
     col.textHndlr = row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), work -> work.getLongAuthorsStr(true));
@@ -239,10 +239,10 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       if (HyperTableCell.getCellID(cellVal) > 0)
       {
         HDT_Work work = db.works.getByID(HyperTableCell.getCellID(cellVal));
-        row.setCellValue(nextColNdx, new HyperTableCell(work, work.getYear(), CellSortMethod.smNumeric));
+        row.setCellValue(nextColNdx, work, work.getYear(), CellSortMethod.smNumeric);
       }
       else
-        row.setCellValue(nextColNdx, new HyperTableCell("", hdtWork, CellSortMethod.smNumeric));
+        row.setCellValue(nextColNdx, "", hdtWork, CellSortMethod.smNumeric);
     });
 
     htWhereMade.addCol(hdtWork, ctNone);

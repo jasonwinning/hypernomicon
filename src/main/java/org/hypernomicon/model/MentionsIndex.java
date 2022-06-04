@@ -76,7 +76,7 @@ class MentionsIndex
 
 //---------------------------------------------------------------------------
 
-  boolean waitUntilRebuildIsDone() { return isRebuilding() ? (task.runWithProgressDialog() == State.SUCCEEDED) : true; }
+  boolean waitUntilRebuildIsDone() { return (isRebuilding() == false) || (task.runWithProgressDialog() == State.SUCCEEDED); }
   boolean isRebuilding()           { return (task != null) && task.threadIsAlive(); }
   void stopRebuild()               { if (isRebuilding()) task.cancelAndWait(); }
 

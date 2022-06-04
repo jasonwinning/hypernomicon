@@ -20,7 +20,6 @@ package org.hypernomicon.view.tabs;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.scene.control.Tab;
@@ -117,7 +116,7 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
       RecordType parentType = cellVal.getType();
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
-      row.setCellValue(nextColNdx, new HyperTableCell("", parentType));
+      row.setCellValue(nextColNdx, "", parentType);
     });
 
     htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());

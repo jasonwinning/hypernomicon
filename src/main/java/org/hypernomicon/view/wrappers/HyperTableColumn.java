@@ -138,10 +138,7 @@ public class HyperTableColumn
         htcCol.setCellFactory(tableCol -> new TextFieldCell(table, canEditIfEmpty, isNumeric));
 
         htcCol.setOnEditCommit(event ->
-        {
-          HyperTableCell newCell = event.getNewValue().getCopyWithID(event.getOldValue().getID()); // preserve ID value
-          event.getRowValue().setCellValue(colNdx, newCell);
-        });
+          event.getRowValue().setCellValue(colNdx, event.getNewValue().getCopyWithID(event.getOldValue().getID()))); // preserve ID value
 
         break;
 

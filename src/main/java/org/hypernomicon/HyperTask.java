@@ -81,7 +81,7 @@ public abstract class HyperTask
       return null;
     }
 
-    @Override protected void updateMessage(String msg)                { super.updateMessage(msg); } // Make visible to outer class
+    @Override protected void updateMessage(String msg)                { super.updateMessage(msg); }         // Make visible to outer class
     @Override protected void updateProgress(double cur, double total) { super.updateProgress(cur, total); } // Make visible to outer class
     @Override protected void done()                                   { HyperTask.this.done(); }
 
@@ -174,7 +174,7 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperThread startWithNewThreadAsDaemon()
+  public void startWithNewThreadAsDaemon()
   {
     if (getState() != State.READY)
       throw new IllegalStateException("Can only start a task in the READY state. Was in state " + getState());
@@ -185,13 +185,12 @@ public abstract class HyperTask
     HyperThread newThread = new HyperThread(this);
     newThread.setDaemon(true);
     newThread.start();
-    return newThread;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperThread startWithNewThread()
+  public void startWithNewThread()
   {
     if (getState() != State.READY)
       throw new IllegalStateException("Can only start a task in the READY state. Was in state " + getState());
@@ -199,9 +198,7 @@ public abstract class HyperTask
     if (thread != null)
       throw new IllegalStateException("Task already has thread.");
 
-    HyperThread newThread = new HyperThread(this);
-    newThread.start();
-    return newThread;
+    new HyperThread(this).start();
   }
 
 //---------------------------------------------------------------------------

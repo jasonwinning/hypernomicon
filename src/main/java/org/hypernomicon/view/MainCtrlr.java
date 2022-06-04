@@ -1254,11 +1254,7 @@ public final class MainCtrlr
       filePath = windows.showOpenDialog(fileChooser, stage);
     }
 
-    if (FilePath.isEmpty(filePath)) return;
-
-    mnuCloseClick();
-
-    if (db.isLoaded()) return;
+    if (FilePath.isEmpty(filePath) || (close(true) == false) || db.isLoaded()) return;
 
     appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
     appPrefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
@@ -1307,8 +1303,8 @@ public final class MainCtrlr
 
       if (result == mrCancel) return;
 
-      if (result == mrYes)
-        saveAllToDisk(false, false, false);
+      if ((result == mrYes) && (saveAllToDisk(false, false, false) == false))
+        return;
 
       NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.build(rootPath.toString());
 
@@ -1316,8 +1312,9 @@ public final class MainCtrlr
         return;
 
       closeWindows(false);
+      boolean success;
 
-      try { db.newDB(rootPath, dlg.getChoices(), dlg.getFolders()); }
+      try { success = db.newDB(rootPath, dlg.getChoices(), dlg.getFolders()); }
       catch (HDB_InternalError e)
       {
         messageDialog("Unable to create new database: " + e.getMessage(), mtError);
@@ -1325,9 +1322,19 @@ public final class MainCtrlr
         return;
       }
 
+      if (success == false)
+      {
+        close(false);
+        return;
+      }
+
       clearAllTabsAndViews();
 
-      saveAllToDisk(false, false, false);
+      if (saveAllToDisk(false, false, false) == false)
+      {
+        close(false);
+        return;
+      }
     }
     else
     {
@@ -1343,7 +1350,7 @@ public final class MainCtrlr
 
           if (entry.isDirectory())
           {
-            filePath.toFile().mkdirs();
+            filePath.createDirectories();
           }
           else
           {
@@ -1473,16 +1480,23 @@ public final class MainCtrlr
 
   @FXML private void mnuCloseClick()
   {
-    if (db.isLoaded())
+    close(true);
+  }
+
+  private boolean close(boolean needToSave)
+  {
+    if (db.isLoaded() && needToSave)
     {
       DialogResult result = yesNoCancelDialog("Save data to XML files before closing?");
 
-      if (result == mrCancel) return;
+      if (result == mrCancel) return false;
 
       if (result == mrYes)
       {
-        if (cantSaveRecord()) return;
-        saveAllToDisk(false, false, false);
+        if (cantSaveRecord()) return false;
+
+        if (saveAllToDisk(false, false, false) == false)
+          return false;
       }
     }
 
@@ -1497,7 +1511,7 @@ public final class MainCtrlr
     {
       messageDialog(e.getMessage(), mtError);
       shutDown(false, true, false); // An error in db.close is unrecoverable.
-      return;
+      return false;
     }
 
     enableControls(false);
@@ -1509,6 +1523,8 @@ public final class MainCtrlr
     viewSequence.clear();
 
     stage.setTitle(appTitle);
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

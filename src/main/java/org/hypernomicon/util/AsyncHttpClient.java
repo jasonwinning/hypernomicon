@@ -72,8 +72,6 @@ public class AsyncHttpClient
       {
         runInFXThread(() -> failHndlr.accept(cancelledByUser ? new CancelledTaskException() : e));
       }
-
-      stopped = true;
     }
   }
 
@@ -85,20 +83,20 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HttpUriRequest request;
-  private volatile boolean stopped = true, cancelledByUser = false;
+  private volatile HttpUriRequest request;
+  private volatile boolean cancelledByUser = false;
   private RequestThread requestThread;
   private String lastUrl = "";
 
-  public boolean wasCancelledByUser() { return cancelledByUser; }
-  public String lastUrl()             { return lastUrl; }
-  public void clearLastUrl()          { lastUrl = ""; }
-  private boolean isRunning()         { return (stopped == false) && HyperThread.isRunning(requestThread); }
+  public boolean wasCancelledByUser()     { return cancelledByUser; }
+
+  public synchronized String lastUrl()    { return lastUrl; }
+  public synchronized void clearLastUrl() { lastUrl = ""; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void doRequest(HttpUriRequest request, ResponseHandler<Boolean> responseHandler, Consumer<Exception> failHndlr)
+  public synchronized void doRequest(HttpUriRequest request, ResponseHandler<Boolean> responseHandler, Consumer<Exception> failHndlr)
   {
     stop();
 
@@ -116,16 +114,13 @@ public class AsyncHttpClient
     }
 
     (requestThread = new RequestThread(responseHandler, failHndlr)).start();
-    stopped = false;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean stop()
+  public synchronized void stop()
   {
-    boolean wasRunning = isRunning();
-
     if (HyperThread.isRunning(requestThread))
     {
       if (request != null)
@@ -140,9 +135,6 @@ public class AsyncHttpClient
     }
 
     requestThread = null;
-    stopped = true;
-
-    return wasRunning;
   }
 
 //---------------------------------------------------------------------------

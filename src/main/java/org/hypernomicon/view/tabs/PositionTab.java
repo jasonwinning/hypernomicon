@@ -172,7 +172,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       RecordType parentType = cellVal.getType();
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
-      row.setCellValue(nextColNdx, new HyperTableCell("", parentType));
+      row.setCellValue(nextColNdx, "", parentType);
     });
 
     htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());

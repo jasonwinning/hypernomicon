@@ -157,5 +157,5 @@
   <Label layoutX="14.0" layoutY="264.0" text="Maximum number of characters (usually 255):" />
   <TextField fx:id="tfMaxChar" layoutX="260.0" layoutY="260.0" text="255" />
   <Label fx:id="lblExample" layoutX="14.0" layoutY="288.0" text="Example:" />
-  <TextField fx:id="tfExample" layoutX="69.0" layoutY="284.0" prefHeight="25.0" prefWidth="957.0" AnchorPane.leftAnchor="69.0" AnchorPane.rightAnchor="4.0" />
+  <TextField fx:id="tfExample" editable="false" layoutX="69.0" layoutY="284.0" prefHeight="25.0" prefWidth="957.0" AnchorPane.leftAnchor="69.0" AnchorPane.rightAnchor="4.0" />
 </AnchorPane>

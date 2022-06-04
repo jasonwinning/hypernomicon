@@ -82,27 +82,26 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
       return falseWithErrorMessage("Enter a unique name for each folder.");
 
     FilePath filePath = new FilePath(newPath);
-    boolean success;
 
     try
     {
       saveStringBuilderToFile(new StringBuilder(DEFAULT_XML_PATH + '/' + SETTINGS_FILE_NAME), filePath.resolve(HDB_DEFAULT_FILENAME));
 
-                   success = filePath.resolve(DEFAULT_XML_PATH                   ).toFile().mkdirs();
-      if (success) success = filePath.resolve(ultraTrim(tfPictures    .getText())).toFile().mkdirs();
-      if (success) success = filePath.resolve(ultraTrim(tfBooks       .getText())).toFile().mkdirs();
-      if (success) success = filePath.resolve(ultraTrim(tfPapers      .getText())).toFile().mkdirs();
-      if (success) success = filePath.resolve(ultraTrim(tfUnentered   .getText())).toFile().mkdirs();
-      if (success) success = filePath.resolve(ultraTrim(tfMiscFiles   .getText())).toFile().mkdirs();
-      if (success) success = filePath.resolve(ultraTrim(tfResults     .getText())).toFile().mkdirs();
-      if (success) success = filePath.resolve(ultraTrim(tfTopicFolders.getText())).toFile().mkdirs();
+      filePath.resolve(DEFAULT_XML_PATH                   ).createDirectory();
+      filePath.resolve(ultraTrim(tfPictures    .getText())).createDirectory();
+      filePath.resolve(ultraTrim(tfBooks       .getText())).createDirectory();
+      filePath.resolve(ultraTrim(tfPapers      .getText())).createDirectory();
+      filePath.resolve(ultraTrim(tfUnentered   .getText())).createDirectory();
+      filePath.resolve(ultraTrim(tfMiscFiles   .getText())).createDirectory();
+      filePath.resolve(ultraTrim(tfResults     .getText())).createDirectory();
+      filePath.resolve(ultraTrim(tfTopicFolders.getText())).createDirectory();
     }
     catch(Exception e)
     {
       return falseWithErrorMessage("An error occurred while trying to create the directories: " + e.getMessage());
     }
 
-    return success || falseWithErrorMessage("An error occurred while trying to create the directories.");
+    return true;
   }
 
 //---------------------------------------------------------------------------

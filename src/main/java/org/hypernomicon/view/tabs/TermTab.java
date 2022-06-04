@@ -105,7 +105,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       if (senseName.isBlank())
         return glossaryName;
 
-      return senseName + " (" + glossaryName + ")";
+      return senseName + " (" + glossaryName + ')';
     }
   }
 

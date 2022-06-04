@@ -99,7 +99,7 @@ class WebButtonTable extends WebButtonCtrl
     {
       WebButton webBtn = ui.webButtonMap.get(prefKey + ndx);
 
-      ht.newDataRow().setCellValue(1, new HyperTableCell(webBtn.getName(), hdtNone));
+      ht.newDataRow().setCellValue(1, webBtn.getName(), hdtNone);
     }
   }
 

@@ -1095,9 +1095,9 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean addAuthorToTable(PersonName authorName, boolean editor, boolean trans, HDT_Person author, HyperTable htAuthors, boolean hasShowInFileCol)
+  private static void addAuthorToTable(PersonName authorName, boolean editor, boolean trans, HDT_Person author, HyperTable htAuthors, boolean hasShowInFileCol)
   {
-    if (authorName.isEmpty()) return false;
+    if (authorName.isEmpty()) return;
 
     HyperTableRow row = htAuthors.newDataRow();
 
@@ -1121,8 +1121,6 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (trans)
       row.setCheckboxValue(3 + addend, true);
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -42,8 +42,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
@@ -790,8 +788,8 @@ public class FileManager extends HyperDlg
           FilePath srcFilePath  = entry.getKey(),
                    destFilePath = entry.getValue();
 
-          if (srcFilePath.isDirectory() && (destFilePath.exists() == false))
-            FileUtils.forceMkdir(destFilePath.toFile());
+          if (srcFilePath.isDirectory())
+            destFilePath.createDirectories();
         }
 
       // if copying, copy files
@@ -1116,7 +1114,7 @@ public class FileManager extends HyperDlg
 
     try
     {
-      Files.createDirectory(parentFolder.filePath().resolve(dlg.getNewName()).toPath());
+      parentFolder.filePath().resolve(dlg.getNewName()).createDirectory();
     }
     catch (FileAlreadyExistsException e)
     {

@@ -22,6 +22,8 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.Objects;
+
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
 
@@ -52,7 +54,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   @SuppressWarnings("unchecked")
   public boolean setID(int newID) { return set(newID < 1 ? null : (HDT_ObjType) db.records(relSet.getObjType()).getByID(newID)); }
 
-  @Override public int hashCode()           { return super.hashCode(); }
+  @Override public int hashCode()           { return Objects.hash(get()); }
   @Override public boolean equals(Object o) { return (o instanceof HyperObjPointer<?, ?>) && (((HyperObjPointer<?, ?>) o).get() == get()); }
 
 //---------------------------------------------------------------------------

@@ -593,7 +593,7 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("resource")
-  public boolean createNewWatcherAndStart()
+  public synchronized boolean createNewWatcherAndStart()
   {
     stop();
 
@@ -632,7 +632,7 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean stop()
+  public synchronized boolean stop()
   {
     boolean wasRunning = isRunning();
 

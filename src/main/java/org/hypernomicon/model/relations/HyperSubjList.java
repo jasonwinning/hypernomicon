@@ -49,7 +49,6 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   @Override public Iterator<HDT_SubjType> iterator()                      { return new HyperSubjIterator<>(this); }
   @Override public ListIterator<HDT_SubjType> listIterator()              { return new HyperSubjListIterator<>(this, 0); }
   @Override public ListIterator<HDT_SubjType> listIterator(int index)     { return new HyperSubjListIterator<>(this, index); }
-  @Override public int hashCode()                                         { return super.hashCode(); }
 
   @Override public boolean add(HDT_SubjType subj)                                  { throw uoe(); }
   @Override public boolean remove(Object o)                                        { throw uoe(); }
@@ -142,6 +141,19 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
     if (((HDT_Record)o).getType() != relSet.getSubjType()) return -1;
 
     return relSet.getSubjectNdx(obj, (HDT_SubjType)o);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int hashCode()
+  {
+    int hashCode = 1;
+
+    for (HDT_SubjType subj : this)
+      hashCode = (31 * hashCode) + subj.hashCode();
+
+    return hashCode;
   }
 
 //---------------------------------------------------------------------------

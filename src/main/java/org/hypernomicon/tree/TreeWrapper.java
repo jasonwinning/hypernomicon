@@ -97,7 +97,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       if (treeRow == null) return new BreadCrumbButton("");
 
       String caption = treeRow.getName();
-      if (caption.isBlank() == false) caption = " " + caption + "  ";
+      if (caption.isBlank() == false) caption = ' ' + caption + "  ";
 
       HDT_Record record = treeRow.getRecord();
 

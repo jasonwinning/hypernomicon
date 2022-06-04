@@ -78,7 +78,7 @@ public class DragConceptDlgCtrlr extends HyperDlg
                         "\" will be the same as what it was in Glossary \"" + oldGlossary.name() +
                         "\". Parent/Child relations for this Concept in Glossary \"" + oldGlossary.name() + "\" will be lost.");
 
-    lblAdd.setText("Add an entry (Concept) for \"" + childConcept.listName() + "\" to Glossary \"" + newGlossary.name() + "\"");
+    lblAdd.setText("Add an entry (Concept) for \"" + childConcept.listName() + "\" to Glossary \"" + newGlossary.name() + '"');
 
     lblAddInfo.setText("In this case, the existing entry (Concept) in Glossary \"" + oldGlossary.name() +
                        "\" and its definition will remain intact. The definition for the new entry (Concept) in Glossary \"" + newGlossary.name() +

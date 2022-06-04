@@ -282,6 +282,29 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Creates a directory by creating all nonexistent parent directories first.
+   * Does not throw an exception if directory already exists.
+   */
+  public void createDirectories() throws IOException
+  {
+    Files.createDirectories(toPath());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Creates a new directory. Throws exception if directory already exists.
+   */
+  public void createDirectory() throws IOException
+  {
+    Files.createDirectory(toPath());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void deleteDirectory(boolean singleCall) throws IOException
   {
     FilePath filePath = getDirOnly();

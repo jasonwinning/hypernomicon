@@ -203,7 +203,7 @@ public final class QueryView
                                        (queryID != QUERY_MATCHING_STRING));
 
       if (clearQueryAndOperands)
-        row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row))); // Blank out the query
+        row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row)); // Blank out the query
 
       ((QueryPopulator)nextPopulator).setQueryType(row, queryType);
 
@@ -228,7 +228,7 @@ public final class QueryView
       Query<?> query = getQuery(row);
 
       if (queryChange(query, row))
-        row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
+        row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row));
 
       disableAutoShowDropdownList = tempDASD;
 
@@ -251,7 +251,7 @@ public final class QueryView
         boolean tempDASD = disableAutoShowDropdownList;
         disableAutoShowDropdownList = true;
 
-        row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
+        row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row));
         Populator nextPop = ((VariablePopulator) nextPopulator).getPopulator(row);
 
         disableAutoShowDropdownList = tempDASD;
@@ -286,7 +286,7 @@ public final class QueryView
       Query<?> query = getQuery(row);
 
       if (op2Change(query, cellVal, row))
-        row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
+        row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row));
 
       disableAutoShowDropdownList = tempDASD;
 

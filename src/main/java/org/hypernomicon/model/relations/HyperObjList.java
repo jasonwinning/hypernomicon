@@ -579,18 +579,23 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void throwLastException() throws RelationCycleException
+  @Override public int hashCode()
   {
-    if (lastException instanceof RelationCycleException)
-      throw (RelationCycleException) lastException;
+    int hashCode = 1;
+
+    for (HDT_ObjType obj : this)
+      hashCode = (31 * hashCode) + obj.hashCode();
+
+    return hashCode;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int hashCode()
+  public void throwLastException() throws RelationCycleException
   {
-    return super.hashCode();
+    if (lastException instanceof RelationCycleException)
+      throw (RelationCycleException) lastException;
   }
 
 //---------------------------------------------------------------------------

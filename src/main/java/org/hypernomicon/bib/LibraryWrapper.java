@@ -154,7 +154,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private Boolean fxThreadReturnValue = null;
+  private volatile Boolean fxThreadReturnValue = null;
 
   public boolean doMerge(BibEntry_T entry, JsonObj jObj)
   {

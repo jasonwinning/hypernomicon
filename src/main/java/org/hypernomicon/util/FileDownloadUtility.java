@@ -224,10 +224,7 @@ public final class FileDownloadUtility
       }
       catch (IOException e)
       {
-        runInFXThread(httpClient.wasCancelledByUser() ?
-          () -> failHndlr.accept(new CancelledTaskException())
-        :
-          () -> failHndlr.accept(e));
+        runInFXThread(() -> failHndlr.accept(httpClient.wasCancelledByUser() ? new CancelledTaskException() : e));
 
         return false;
       }

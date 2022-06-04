@@ -266,7 +266,7 @@ public final class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, String yearStr, BibAuthors authors, boolean engCharForAuthors, String doi)
+  private static String getQueryUrl(String title, String yearStr, Iterable<BibAuthor> authors, boolean engCharForAuthors, String doi)
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
