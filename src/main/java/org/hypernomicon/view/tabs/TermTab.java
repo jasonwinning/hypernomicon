@@ -943,13 +943,9 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     {
       case hdtConcept :
 
-        if (curConcept == null) return;
+        if (curConcept != null)
+          ui.goToRecord(curConcept.addNewSubConcept(), false);
 
-        HDT_Glossary glossary = curConcept.glossary.get();
-        HDT_Term term = HDT_Term.create(glossary);
-        term.getConcept(glossary, null).parentConcepts.add(curConcept);
-
-        ui.goToRecord(term, false);
         break;
 
       default:

@@ -26,7 +26,6 @@ import org.controlsfx.control.BreadCrumbBar;
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -191,7 +190,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
-      TreeTabCtrlr::createTerm));
+      glossary -> ui.goToRecord(HDT_Term.create(glossary), false)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new glossary under this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
@@ -199,7 +198,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary under this term", HDT_Concept.class,
       concept -> db.isLoaded(),
-      TreeTabCtrlr::createSubTerm));
+      concept -> ui.goToRecord(concept.addNewSubConcept(), false)));
 
     tree.addDefaultMenuItems();
 
@@ -418,28 +417,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private static void createChild(HDT_Record parent, RelationType relType)
   {
     ui.treeSelector.attach(db.createNewBlankRecord(db.getSubjType(relType)), parent);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void createTerm(HDT_Glossary glossary)
-  {
-    ui.goToRecord(HDT_Term.create(glossary), false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void createSubTerm(HDT_Concept parentConcept)
-  {
-    HDT_Glossary glossary = parentConcept.glossary.get();
-    HDT_Term newTerm = HDT_Term.create(glossary);
-    HDT_Concept childConcept = newTerm.getConcept(glossary, null);
-
-    try { childConcept.addParentConcept(parentConcept); } catch (RelationCycleException e) { noOp(); }
-
-    ui.goToRecord(childConcept, false);
   }
 
 //---------------------------------------------------------------------------
