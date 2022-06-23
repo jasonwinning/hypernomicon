@@ -97,7 +97,8 @@
   <AnchorPane fx:id="apLowerMid" GridPane.columnIndex="1" GridPane.rowIndex="1">
     <Label layoutX="4.0" layoutY="9.0" text="Year:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
     <TextField fx:id="tfYear" layoutX="38.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
-    <Button fx:id="btnLargerWork" layoutX="84.0" layoutY="5.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="84.0" AnchorPane.topAnchor="5.0" />
+    <Button fx:id="btnLargerWork" layoutX="84.0" layoutY="5.0" maxWidth="83.0" minWidth="83.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="84.0" AnchorPane.topAnchor="5.0" />
+      <SplitMenuButton fx:id="btnFolder" maxWidth="86.0" minWidth="86.0" mnemonicParsing="false" prefWidth="86.0" text="Folder:" visible="false" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="169.0" AnchorPane.topAnchor="5.0" />
     <ComboBox fx:id="cbLargerWork" layoutX="182.0" layoutY="5.0" prefHeight="25.0" prefWidth="413.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="169.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
   </AnchorPane>
   <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">

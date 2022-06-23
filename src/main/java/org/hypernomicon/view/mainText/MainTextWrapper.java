@@ -724,18 +724,20 @@ public final class MainTextWrapper
     if ((curRecord == null) || (edited == false))
       return;
 
+    MainText mainText = curRecord.getMainText();
+
     if (showing && editing)
     {
       keyWorks = new ArrayList<>();
-      curRecord.getMainText().setHtml(editCtrlr.getHtmlAndKeyWorks(keyWorks));
-      if (curRecord.getType() != hdtInvestigation) curRecord.getMainText().setKeyWorksFromList(keyWorks);
-      curRecord.getMainText().setDisplayItemsFromList(editCtrlr.getDisplayItems());
+      mainText.setHtml(editCtrlr.getHtmlAndKeyWorks(keyWorks));
+      if (curRecord.getType() != hdtInvestigation) mainText.setKeyWorksFromList(keyWorks);
+      mainText.setDisplayItemsFromList(editCtrlr.getDisplayItems());
     }
     else
     {
-      curRecord.getMainText().setHtml(html);
-      curRecord.getMainText().setDisplayItemsFromList(displayItems);
-      if (curRecord.getType() != hdtInvestigation) curRecord.getMainText().setKeyWorksFromList(keyWorks);
+      mainText.setHtml(html);
+      mainText.setDisplayItemsFromList(displayItems);
+      if (curRecord.getType() != hdtInvestigation) mainText.setKeyWorksFromList(keyWorks);
     }
   }
 

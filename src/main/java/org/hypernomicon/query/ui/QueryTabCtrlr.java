@@ -93,14 +93,14 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                                      falseCell = new HyperTableCell(FALSE_ID, "False", hdtNone),
                                      unsetCell = new HyperTableCell(UNSET_ID, "Unset", hdtNone);
 
-  @FXML private Button btnClear;
-  @FXML private CheckBox chkShowFields;
-  @FXML private Tab tabNew;
   @FXML private AnchorPane apOrigDescription;
+  @FXML private Button btnClear, btnToggleFavorite;
+  @FXML private CheckBox chkShowFields;
+  @FXML private ComboBox<CheckBoxOrCommand> cbFile;
+  @FXML private Tab tabNew;
   @FXML private TabPane tabPane;
-  @FXML private WebView webView;
   @FXML private TextField tfFavName;
-  @FXML private Button btnToggleFavorite;
+  @FXML private WebView webView;
 
   @FXML Button btnExecute;
   @FXML CheckBox chkShowDesc;
@@ -245,18 +245,15 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         new CheckBoxOrCommand("Clear Search Results Folder",                     () -> { mnuClearSearchFolderClick(); fileBtn.hide(); }),
         new CheckBoxOrCommand("Copy Selected to Search Results Folder",          () -> { mnuCopyToFolderClick     (); fileBtn.hide(); }),
         new CheckBoxOrCommand("Show Search Results Folder",                      () -> { mnuShowSearchFolderClick (); fileBtn.hide(); }));
+
+      cbFile.setVisible(false);
     }
 
     fileBtn = CheckBoxOrCommand.createComboBox(items, "Files");
 
-    fileBtn.setMaxSize (64.0, 24.0);
-    fileBtn.setMinSize (64.0, 24.0);
-    fileBtn.setPrefSize(64.0, 24.0);
+    copyRegionLayout(cbFile, fileBtn);
 
-    AnchorPane.setTopAnchor  (fileBtn, 2.0);
-    AnchorPane.setRightAnchor(fileBtn, 0.0);
-
-    children.add(children.indexOf(tabPane), fileBtn);
+    children.add(children.indexOf(cbFile), fileBtn);
 
     fileBtn.setOnHidden(event -> addFilesButton()); // This is necessary to deselect list item without making the button caption disappear
   }

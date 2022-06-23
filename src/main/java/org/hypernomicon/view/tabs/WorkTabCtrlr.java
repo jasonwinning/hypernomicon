@@ -129,7 +129,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private Label lblSearchKey, lblTitle;
   @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
   @FXML private ProgressBar progressBar;
-  @FXML private SplitMenuButton btnDOI, smbWebSrch1;
+  @FXML private SplitMenuButton btnDOI, smbWebSrch1, btnFolder;
   @FXML private SplitPane spHoriz1, spHoriz2, spVert, spMentioners;
   @FXML private Tab tabBibDetails, tabCrossref, tabGoogleBooks, tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
   @FXML private TabPane tabPane, tpBib;
@@ -143,9 +143,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private HyperCB hcbLargerWork;
   private MainTextWrapper mainText;
   private final Map<Tab, String> tabCaptions = new HashMap<>();
-  private boolean btnFolderAdded, inNormalMode = true, programmaticTypeChange = false;
+  private boolean inNormalMode = true, programmaticTypeChange = false;
   private double btnURLLeftAnchor, tfURLLeftAnchor, tfURLRightAnchor;
-  private SplitMenuButton btnFolder = null;
   private HDT_Work curWork, lastWork = null;
   private BibDataRetriever bibDataRetriever = null;
   private MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
@@ -553,10 +552,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     div1.positionProperty().bindBidirectional(div2.positionProperty());
 
-    btnFolderAdded = false;
-    btnFolder = new SplitMenuButton();
-    btnFolder.setText("Folder:");
-
     EventHandler<ActionEvent> handler = event ->
     {
       if ((tfURL.getText().length() > 0) && (tfURL.getText().charAt(0) != '('))
@@ -963,6 +958,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     if (inNormalMode) return;
 
+    btnTopAutofill.setVisible(true);
+
     tfYear.setDisable(false);
     btnNewChapter.setText("New Chapter");
     cbLargerWork.setDisable(false);
@@ -1001,6 +998,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     if (inNormalMode == false) return;
 
+    btnTopAutofill.setVisible(false);
+
     btnURLLeftAnchor = AnchorPane.getLeftAnchor(btnURL);
     tfURLLeftAnchor = AnchorPane.getLeftAnchor(tfURL);
     tfURLRightAnchor = AnchorPane.getRightAnchor(tfURL);
@@ -1012,12 +1011,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     GridPane.setColumnSpan(apLowerMid, GridPane.REMAINING);
     btnLargerWork.setText("Move All Files");
 
-    if (btnFolderAdded == false)
-    {
-      apLowerMid.getChildren().add(btnFolder);
-      btnFolderAdded = true;
-    }
-
     tfURL.setEditable(false);
 
     setAllVisible(false, cbLargerWork, apLowerRight, btnURL);
@@ -1027,14 +1020,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnFolder.setVisible(true);
 
-    Platform.runLater(() ->
-    {
-      AnchorPane.setLeftAnchor(btnFolder, btnLargerWork.getBoundsInParent().getMaxX() + 4.0);
-      AnchorPane.setLeftAnchor(tfURL, btnLargerWork.getBoundsInParent().getMaxX() + 4.0 + btnFolder.getWidth() + 4.0);
-      AnchorPane.setRightAnchor(tfURL, 2.0);
-      AnchorPane.setTopAnchor(btnFolder, AnchorPane.getTopAnchor(btnURL));
-      btnFolder.setPrefHeight(btnURL.getPrefHeight());
-    });
+    AnchorPane.setLeftAnchor(tfURL, btnFolder.getBoundsInParent().getMaxX() + 2.0);
+    AnchorPane.setRightAnchor(tfURL, 2.0);
 
     inNormalMode = false;
   }
@@ -1301,7 +1288,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     while (folderRecord == null)
     {
-      dirChooser.setTitle(moveOnly ? "Select location to move files" : "Select location to move or copy files");
+      dirChooser.setTitle(moveOnly ? "Select destination folder files will be moved into" : "Select destination folder files will be moved or copied into");
 
       if (destPath.isDirectory())
         dirChooser.setInitialDirectory(destPath.toFile());
