@@ -377,29 +377,18 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
     SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.build(null);
 
-    if (frmSelectConcept.showModal() == false) return;
+    if ((frmSelectConcept.showModal() == false) || (frmSelectConcept.getGlossary() == null)) return;
 
     HDT_RecordWithMainText source = (HDT_RecordWithMainText) ui.activeRecord();
     HDT_Term term = frmSelectConcept.getTerm();
-    HDT_Concept concept;
-
-    if (frmSelectConcept.getCreateNew())
-    {
-      concept = db.createNewBlankRecord(hdtConcept);
-
-      term.setName(source.listName());
-      term.concepts.add(concept);
-
-      concept.glossary.set(db.glossaries.getByID(1));
-    }
-    else if (frmSelectConcept.getGlossary() != null)
-    {
-      concept = term.getConcept(frmSelectConcept.getGlossary(), frmSelectConcept.getSense());
-    }
-    else
-      return;
+    HDT_Concept concept = term.getConcept(frmSelectConcept.getGlossary(), frmSelectConcept.getSense());
 
     ui.uniteRecords(source, concept, false);
+
+    if (frmSelectConcept.getCreateNew() == false) return;
+
+    term.setName(source.listName());
+    ui.goToRecord(concept, true);
   }
 
 //---------------------------------------------------------------------------

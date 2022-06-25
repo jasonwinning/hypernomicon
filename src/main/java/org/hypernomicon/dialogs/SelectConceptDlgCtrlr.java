@@ -160,7 +160,8 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       return;
     }
 
-    term = db.createNewBlankRecord(hdtTerm);
+    HDT_Glossary generalGlossary = db.glossaries.getByID(1);
+    term = HDT_Term.create(generalGlossary);
 
     try
     {
@@ -181,7 +182,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       return;
     }
 
-    glossary = oldConcept.glossary.get();
+    glossary = generalGlossary;
 
     okClicked = true;
     createNew = true;
