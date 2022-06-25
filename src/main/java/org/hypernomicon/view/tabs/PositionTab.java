@@ -109,7 +109,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
       HDT_PositionVerdict verdict = argument.getPosVerdict(curPosition);
       if (verdict != null)
-        row.setCellValue(2, argument, verdict.listName());
+        row.setCellValue(2, argument, verdict.listName(), CellSortMethod.smTextSimple);
 
       row.setCellValue(5, argument, argument.listName());
     });
