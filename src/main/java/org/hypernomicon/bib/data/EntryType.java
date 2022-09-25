@@ -83,6 +83,7 @@ public enum EntryType
   etInterview            ("Interview"),               etArchivalDocument     ("Archival Document"),
   etArchivalCollection   ("Archival Collection"),     etLetter               ("Letter"),
   etPamphlet             ("Pamphlet"),                etBrochure             ("Brochure"),
+  etPreprint             ("Preprint"),
 
   etOther                ("Other"),         // This means it is a type that does not fit into any of the above categories
   etUnentered            (""),              // This just means the field hasn't been populated yet

@@ -130,7 +130,9 @@ public class JsonHttpClient
     if (jsonArray == null)
     {
       jsonArray = new JsonArray();
-      jsonArray.add(jsonObj);
+
+      if (jsonObj != null)
+        jsonArray.add(jsonObj);
     }
 
     return jsonArray;

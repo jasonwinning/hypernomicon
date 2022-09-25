@@ -232,6 +232,10 @@ public class ZoteroAuthors extends BibAuthors
       .put(etJournalArticle, "editor", editor)
       .put(etJournalArticle, "translator", translator)
 
+      .put(etPreprint, "author", author)
+      .put(etPreprint, "editor", editor)
+      .put(etPreprint, "translator", translator)
+
       .put(etLetter, "author", author)
 
       .put(etMagazineArticle, "author", author)

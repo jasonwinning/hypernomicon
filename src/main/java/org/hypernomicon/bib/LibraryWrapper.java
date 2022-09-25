@@ -107,6 +107,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   public BibEntry_T getEntryByKey(String key)            { return keyToAllEntry.get(key); }
   public BibEntry_T getEntryByID(int id)                 { return keyToAllEntry.get(keyList.get(id - 1)); }
 
+  protected boolean syncTaskIsCancelled()                { return (syncTask != null) && syncTask.isCancelled(); }
+
   public final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { keyChangeHndlr = hndlr; }
 
   //---------------------------------------------------------------------------

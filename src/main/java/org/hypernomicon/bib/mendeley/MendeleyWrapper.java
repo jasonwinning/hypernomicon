@@ -130,7 +130,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
   {
-    if (syncTask.isCancelled()) throw new CancelledTaskException();
+    if (syncTaskIsCancelled()) throw new CancelledTaskException();
 
     RequestBuilder rb;
 
@@ -167,7 +167,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     }
     catch(SocketException e)
     {
-      if (syncTask.isCancelled())
+      if (syncTaskIsCancelled())
       {
         request = null;
         throw new CancelledTaskException();
@@ -199,7 +199,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     request = null;
 
-    if (syncTask.isCancelled()) throw new CancelledTaskException();
+    if (syncTaskIsCancelled()) throw new CancelledTaskException();
 
     if (jsonClient.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
     {
@@ -235,7 +235,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       }
     }
 
-    if (syncTask.isCancelled()) throw new CancelledTaskException();
+    if (syncTaskIsCancelled()) throw new CancelledTaskException();
 
     return jsonArray;
   }

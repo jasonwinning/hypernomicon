@@ -690,6 +690,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         case "relations" : case "collections" : case "key" :
         case "dateAdded" : case "accessDate"  : case "dateModified" : return;
 
+        case "archiveID" : fieldName = "Archive ID"; break;
+
         case "url"  : fieldName = "URL"; break;
 
         case "ISBN" : case "DOI" : case "ISSN" : break;

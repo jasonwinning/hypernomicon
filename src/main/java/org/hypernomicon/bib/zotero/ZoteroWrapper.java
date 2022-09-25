@@ -237,7 +237,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       while (retryTime.compareTo(Instant.now()) > 0)
       {
         sleepForMillis(30);
-        if (syncTask.isCancelled()) throw new CancelledTaskException();
+        if (syncTaskIsCancelled()) throw new CancelledTaskException();
       }
     }
 
@@ -246,7 +246,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       while (backoffTime.compareTo(Instant.now()) > 0)
       {
         sleepForMillis(30);
-        if (syncTask.isCancelled()) throw new CancelledTaskException();
+        if (syncTaskIsCancelled()) throw new CancelledTaskException();
       }
     }
 
@@ -284,7 +284,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       request = null;
 
-      if (syncTask.isCancelled())
+      if (syncTaskIsCancelled())
         throw new CancelledTaskException();
 
       throw e;
@@ -324,7 +324,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     request = null;
 
-    if (syncTask.isCancelled()) throw new CancelledTaskException();
+    if (syncTaskIsCancelled()) throw new CancelledTaskException();
 
     return jsonArray;
   }
@@ -349,7 +349,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       for (String zType : new String[]{"artwork", "audioRecording", "bill", "blogPost", "book", "bookSection", "case", "computerProgram",
         "conferencePaper", "dictionaryEntry", "document", "email", "encyclopediaArticle", "film", "forumPost", "hearing", "instantMessage",
         "interview", "journalArticle", "letter", "magazineArticle", "manuscript", "map", "newspaperArticle", "patent", "podcast",
-        "presentation", "radioBroadcast", "report", "statute", "tvBroadcast", "thesis", "videoRecording", "webpage"})
+        "preprint", "presentation", "radioBroadcast", "report", "statute", "tvBroadcast", "thesis", "videoRecording", "webpage"})
       {
         jObj.put(zType, doHttpRequest("https://api.zotero.org/itemTypeCreatorTypes?itemType=" + zType, HttpRequestType.get, null));
       }
@@ -378,7 +378,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       for (String zType : new String[]{"artwork", "audioRecording", "bill", "blogPost", "book", "bookSection", "case", "computerProgram",
         "conferencePaper", "dictionaryEntry", "document", "email", "encyclopediaArticle", "film", "forumPost", "hearing", "instantMessage",
         "interview", "journalArticle", "letter", "magazineArticle", "manuscript", "map", "newspaperArticle", "patent", "podcast",
-        "presentation", "radioBroadcast", "report", "statute", "tvBroadcast", "thesis", "videoRecording", "webpage"})
+        "preprint", "presentation", "radioBroadcast", "report", "statute", "tvBroadcast", "thesis", "videoRecording", "webpage"})
       {
         jArr.add(doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, HttpRequestType.get, null).getObj(0));
       }
@@ -409,7 +409,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     int statusCode = HttpStatus.SC_OK;
 
-    while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && (syncTask.isCancelled() == false))
+    while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && (syncTaskIsCancelled() == false))
     {
       jArr.clear();
 
@@ -782,6 +782,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     map.put(etNewspaperArticle, "newspaperArticle");
     map.put(etPatent, "patent");
     map.put(etPodcast, "podcast");
+    map.put(etPreprint, "preprint");
     map.put(etPresentation, "presentation");
     map.put(etRadioBroadcast, "radioBroadcast");
     map.put(etReport, "report");
