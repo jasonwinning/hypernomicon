@@ -17,23 +17,31 @@
 
 package org.hypernomicon.query.ui;
 
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.query.ui.ResultsTable.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
+import org.hypernomicon.query.ui.ResultsTable.ResultCellValue;
+import org.hypernomicon.query.ui.ResultsTable.ResultColumn;
 import org.hypernomicon.query.ui.SelectColumnsDlgCtrlr.TypeCheckBox;
 
 import com.google.common.collect.ForwardingCollection;
 
-final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
+class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
 {
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -46,10 +54,10 @@ final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  ColumnGroup()
+  ColumnGroup(String caption)
   {
     recordType = hdtNone;
-    caption = "General";
+    this.caption = caption;
   }
 
   //---------------------------------------------------------------------------
@@ -62,6 +70,72 @@ final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
     tags.forEach(tag -> items.add(new ColumnGroupItem(db.mainTextTagForRecordType(recordType) == tag ? tagMainText : tag)));
 
     RelationSet.getRelationsForObjType(recordType, false).forEach(relType -> items.add(new ColumnGroupItem(relType)));
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  void addColumnsToTable(ResultsTable resultsTable)
+  {
+    for (ColumnGroupItem item : this)
+    {
+      if (item.tag == tagName) continue;
+
+      ResultColumn<? extends Comparable<?>> col = null;
+      EnumMap<RecordType, ColumnGroupItem> map = new EnumMap<>(RecordType.class);
+      map.put(recordType, item);
+
+      for (ColumnGroup grp : colGroups) for (ColumnGroupItem otherItem : grp)
+        if ((item.tag != tagNone) && (item.tag == otherItem.tag))
+        {
+          map.put(grp.recordType, otherItem);
+
+          if (otherItem.col != null)
+          {
+            col = otherItem.col;
+
+            if (item.relType == rtNone)
+              col.setVisible(true);
+
+            col.map.putAll(map);
+            map = col.map;
+          }
+        }
+
+      if (col == null)
+        col = resultsTable.addNonGeneralColumn(map);
+
+      for (ColumnGroupItem otherItem : map.values())
+        otherItem.col = col;
+    }
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public static ColumnGroup newBibFieldsColumnGroup()
+  {
+    return new ColumnGroup("Reference Manager Fields")
+    {
+      @Override void addColumnsToTable(ResultsTable resultsTable)
+      {
+        List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition, bfVolume, bfIssue, bfLanguage, bfISSNs, bfPages).forEach(field ->
+        {
+          ResultColumn<String> strCol = new ResultColumn<>(field.getUserFriendlyName());
+
+          strCol.setCellValueFactory(cellData ->
+          {
+            HDT_Record record = cellData.getValue().getRecord();
+            String text = record.getType() == hdtWork ? ((HDT_Work)record).getBibData().getStr(field) : "";
+            return new ResultCellValue<>(text, text.trim().toLowerCase()).getObservable();
+          });
+
+          strCol.setVisible(false);
+
+          add(new ColumnGroupItem(strCol, resultsTable.getTV(), -1));
+        });
+      }
+    };
   }
 
   //---------------------------------------------------------------------------

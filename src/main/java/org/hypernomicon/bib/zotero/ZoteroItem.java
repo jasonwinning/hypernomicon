@@ -29,6 +29,7 @@ import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.reports.ReportGenerator;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -324,6 +325,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
       default:
         break;
     }
+
+    if (bibFieldEnum.getType() == BibFieldType.bftMultiString)
+      return getMultiStr(bibFieldEnum).stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");
 
     return "";
   }

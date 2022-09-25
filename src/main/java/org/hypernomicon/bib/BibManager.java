@@ -318,7 +318,7 @@ public class BibManager extends HyperDlg
   private void setupSearchField()
   {
     searchField = (CustomTextField) TextFields.createClearableTextField();
-    searchField.setPromptText("Title, Author, Year");
+    searchField.setPromptText("Title, Author, Year, Published In");
     ImageView imageView = imgViewFromRelPath("resources/images/magnifier.png");
     imageView.setFitHeight(16);
     imageView.setPreserveRatio(true);

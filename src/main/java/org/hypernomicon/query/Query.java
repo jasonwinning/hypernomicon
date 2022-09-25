@@ -153,10 +153,15 @@ public abstract class Query<HDT_T extends HDT_Record>
 
   static Populator operandPopulator()
   {
+    return operandPopulator(false);
+  }
+
+  static Populator operandPopulator(boolean excludeRecordOps)
+  {
     return Populator.create(cvtOperand,
 
-      new HyperTableCell(EQUAL_TO_OPERAND_ID        , "Is or includes record", hdtNone),
-      new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID    , "Excludes record"      , hdtNone),
+      new HyperTableCell(EQUAL_TO_OPERAND_ID        , excludeRecordOps ? "Is exactly" : "Is or includes record", hdtNone),
+      new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID    , excludeRecordOps ? "Is not"     : "Excludes record"      , hdtNone),
       new HyperTableCell(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
       new HyperTableCell(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
       new HyperTableCell(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),

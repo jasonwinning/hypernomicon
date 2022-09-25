@@ -21,6 +21,7 @@ import static org.hypernomicon.App.curQV;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
+import static org.hypernomicon.query.WorkQueries.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.getCellText;
 
 import java.util.ArrayList;
@@ -152,6 +153,8 @@ public final class GeneralQueries
   //---------------------------------------------------------------------------
 
     allQueries.add(new QueryWhereField(QUERY_WHERE_FIELD, "where field"));
+
+    allQueries.add(new QueryWhereBibField(QUERY_WHERE_BIB_FIELD, "where bibliographic field"));
 
     allQueries.add(new QueryWhereRelative(QUERY_WHERE_RELATIVE, "where set of records having this record as"));
 

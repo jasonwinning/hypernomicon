@@ -95,6 +95,8 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
       chkType.setSelected(true);
       innerPane.getChildren().add(chkType);
 
+  //---------------------------------------------------------------------------
+
       chkSelectAll.selectedProperty().addListener((ob, oldValue, newValue) ->
       {
         if (noListen) return;
@@ -119,6 +121,8 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
         noListen = false;
       });
+
+  //---------------------------------------------------------------------------
 
       chkSelectNone.selectedProperty().addListener((ob, oldValue, newValue) ->
       {
@@ -145,6 +149,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         noListen = false;
       });
 
+  //---------------------------------------------------------------------------
 
       chkType.selectedProperty().addListener((ob, oldValue, newValue) ->
       {
@@ -165,6 +170,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         noListen = false;
       });
 
+  //---------------------------------------------------------------------------
 
       for (ColumnGroupItem item : group)
       {

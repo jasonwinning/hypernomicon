@@ -50,6 +50,7 @@ public final class WorkQueries
                            QUERY_4_OR_MORE_AUTHORS         = 2002,  // "with 4 or more authors"
                            QUERY_ANALYZE_METADATA          = 2003,  // "analyze pdf metadata"
                            QUERY_WORK_NEEDING_PAGE_NUMBERS = 2004;  // "in a PDF with one or more other works, missing page number(s)"
+  public static final int  QUERY_WHERE_BIB_FIELD           = 2005;  // "where bibliographic field"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

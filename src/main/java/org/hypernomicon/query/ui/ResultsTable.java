@@ -67,7 +67,7 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
   static final class ResultColumn<Comp_T extends Comparable<Comp_T>> extends TableColumn<ResultsRow, ResultCellValue<Comp_T>>
   {
-    private ResultColumn(String caption) { super(caption); }
+    ResultColumn(String caption) { super(caption); }
 
     final EnumMap<RecordType, ColumnGroupItem> map = new EnumMap<>(RecordType.class);
   }
@@ -94,7 +94,7 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
       sortVal = null;
     }
 
-    private ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<>(this); }
+    ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<>(this); }
 
     @Override public String toString() { return text; }
 
@@ -159,7 +159,7 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     datesAdded = false;
 
-    colGroups.add(generalGroup = new ColumnGroup());
+    colGroups.add(generalGroup = new ColumnGroup("General"));
 
     ResultColumn<Integer> intCol = new ResultColumn<>("ID");
     intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordIDStr(), str -> parseInt(str, -1)));

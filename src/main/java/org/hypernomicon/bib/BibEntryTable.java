@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.util.BasicTextMatcher;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
 import org.hypernomicon.view.wrappers.HyperTable;
 
@@ -218,19 +219,15 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
       return;
     }
 
-    if (text.contains(" ") == false)
-    {
-      filteredRows.setPredicate(row -> row.getEntry().getCBText().toLowerCase().contains(text));
-      return;
-    }
-
-    String[] strArray = text.split("\\s+");
+    BasicTextMatcher matcher = new BasicTextMatcher(text, false);
 
     filteredRows.setPredicate(row ->
     {
-      String entryStr = row.getEntry().getCBText().toLowerCase();
+      BibEntry entry = row.getEntry();
 
-      return Arrays.stream(strArray).noneMatch(str -> entryStr.contains(str) == false);
+      String entryStr = entry.getCBText() + " " + entry.getStr(bfContainerTitle);
+
+      return matcher.isMatch(entryStr);
     });
   }
 

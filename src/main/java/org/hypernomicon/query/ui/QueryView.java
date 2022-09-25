@@ -22,7 +22,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.query.GeneralQueries.*;
 import static org.hypernomicon.query.QueryType.*;
@@ -37,7 +36,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -79,6 +77,9 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
@@ -115,7 +116,7 @@ public final class QueryView
   ResultsTable resultsTable;
 
   private final List<ResultsRow> resultsBackingList = new ArrayList<>();
-  private final Map<RecordType, ColumnGroup> recordTypeToColumnGroup = new LinkedHashMap<>();
+  private final Multimap<RecordType, ColumnGroup> recordTypeToColumnGroup = LinkedHashMultimap.create();
   private final Map<HDT_Record, ResultsRow> recordToRow = new HashMap<>();
 
   private boolean programmaticFavNameChange = false,
@@ -261,7 +262,11 @@ public final class QueryView
 
         if ((op1ID >= 0) && (nextPop != null) && (nextPop.getValueType() == cvtOperand))
         {
-          HyperTableCell operandCell = nextPop.getChoiceByID(null, Query.EQUAL_TO_OPERAND_ID);
+          HyperTableCell operandCell = row.getPopulator(2).getValueType(row) == cvtBibField ?
+            nextPop.getChoiceByID(null, Query.CONTAINS_OPERAND_ID)
+          :
+            nextPop.getChoiceByID(null, Query.EQUAL_TO_OPERAND_ID);
+
           row.setCellValue(nextColNdx, operandCell);
           if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 3, cellVal, operandCell))
             htFields.edit(row, 4);
@@ -851,51 +856,13 @@ public final class QueryView
 
     if (succeeded == false) return false;
 
-    recordTypeToColumnGroup.forEach(this::addColumns);
+    recordTypeToColumnGroup.forEach((recordType, colGroup) -> colGroup.addColumnsToTable(resultsTable));
 
     if (showDesc)
       queryTabCtrlr.chkShowDesc.setSelected(true);
 
     curQV.refreshView(false);
     return true;
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private void addColumns(RecordType recordType, ColumnGroup group)
-  {
-    for (ColumnGroupItem item : group)
-    {
-      if (item.tag == tagName) continue;
-
-      ResultColumn<? extends Comparable<?>> col = null;
-      EnumMap<RecordType, ColumnGroupItem> map = new EnumMap<>(RecordType.class);
-      map.put(recordType, item);
-
-      for (ColumnGroup grp : colGroups) for (ColumnGroupItem otherItem : grp)
-        if ((item.tag != tagNone) && (item.tag == otherItem.tag))
-        {
-          map.put(grp.recordType, otherItem);
-
-          if (otherItem.col != null)
-          {
-            col = otherItem.col;
-
-            if (item.relType == rtNone)
-              col.setVisible(true);
-
-            col.map.putAll(map);
-            map = col.map;
-          }
-        }
-
-      if (col == null)
-        col = resultsTable.addNonGeneralColumn(map);
-
-      for (ColumnGroupItem otherItem : map.values())
-        otherItem.col = col;
-    }
   }
 
   //---------------------------------------------------------------------------
@@ -917,9 +884,20 @@ public final class QueryView
       recordTypeToColumnGroup.put(recordType, colGroup);
 
       if (addToObsList)
-        addColumns(recordType, colGroup);
+        colGroup.addColumnsToTable(resultsTable);
 
       colGroups.add(colGroup);
+
+      if ((recordType == hdtWork) && db.bibLibraryIsLinked())
+      {
+        colGroup = ColumnGroup.newBibFieldsColumnGroup();
+        recordTypeToColumnGroup.put(recordType, colGroup);
+
+        if (addToObsList)
+          colGroup.addColumnsToTable(resultsTable);
+
+        colGroups.add(colGroup);
+      }
     }
 
     ResultsRow row = new ResultsRow(record);
