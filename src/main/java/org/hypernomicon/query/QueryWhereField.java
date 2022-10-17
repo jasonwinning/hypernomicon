@@ -143,7 +143,7 @@ public class QueryWhereField extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
     Tag tag = Tag.getTag(getCellID(op1));
     HDI_Schema schema = record.getSchema(tag);

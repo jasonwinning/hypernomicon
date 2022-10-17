@@ -39,6 +39,8 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import javafx.concurrent.Worker.State;
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -77,7 +79,7 @@ public abstract class Query<HDT_T extends HDT_Record>
    */
   public abstract boolean show(QueryType queryType, RecordType recordType);
 
-  public abstract boolean evaluate(HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException;
+  public abstract boolean evaluate(HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException;
 
   @SuppressWarnings("unused")
   protected QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return origSource; }
@@ -86,11 +88,25 @@ public abstract class Query<HDT_T extends HDT_Record>
   public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3) { return true; }   // queryChange
 
   /**
+   * This function is called when the query begins execution, immediately before the first
+   * record is evaluated. Any setup needed for the query to run should be performed here,
+   * and anything that needs to be undone as a result of this function should be performed
+   * in {@link Query#cleanup(State state) cleanup}.
+   * @param op1 First query operand
+   * @param op2 Second query operand
+   * @param op3 Third query operand
+   * @throws HyperDataException
+   */
+  public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException { }
+
+  /**
    * This function will be called after the query completes regardless of whether it
    * completed successfully, it was cancelled by the user, or it was terminated
    * abnormally due to an exception being thrown.
+   * @param state Indicates whether the query completed successfully, was cancelled by
+   * the user, or was terminated abnormally due to an exception being thrown.
    */
-  public void cleanup() { }
+  public void cleanup(State state) { }
 
   @SuppressWarnings("unused")  //returns true if subsequent cells need to be updated
   public boolean op1Change(HyperTableCell op1, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)

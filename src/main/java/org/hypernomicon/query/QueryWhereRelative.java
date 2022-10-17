@@ -99,7 +99,7 @@ public class QueryWhereRelative extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
     RelationType relType = RelationType.codeToVal(getCellID(op1));
     if (record.getType() != db.getObjType(relType)) return false;

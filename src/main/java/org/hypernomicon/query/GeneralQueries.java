@@ -45,6 +45,8 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import javafx.concurrent.Worker.State;
+
 public final class GeneralQueries
 {
 
@@ -84,7 +86,7 @@ public final class GeneralQueries
         return false;
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         String str = getCellText(op1);
         return (str.isEmpty() == false) && record.listName().toUpperCase().contains(str.toUpperCase());
@@ -108,7 +110,7 @@ public final class GeneralQueries
         return false;
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         String val1 = getCellText(op1);
         if (val1.isBlank())
@@ -139,7 +141,7 @@ public final class GeneralQueries
         return true;
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         return true;
       }
@@ -173,7 +175,7 @@ public final class GeneralQueries
         return true;
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         return record.getType() == HyperTableCell.getCellType(op1);
       }
@@ -196,7 +198,7 @@ public final class GeneralQueries
         return recordByTypeOpChange(op1, row, vp2);
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         return true;
       }
@@ -222,7 +224,7 @@ public final class GeneralQueries
         return true;
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         return true;
       }
@@ -254,7 +256,7 @@ public final class GeneralQueries
 
       private final MutableBoolean choseNotToWait = new MutableBoolean();
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
         HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord)) return false;
@@ -294,7 +296,7 @@ public final class GeneralQueries
         return recordByTypeOpChange(op1, row, vp2);
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         return true;
       }
@@ -339,17 +341,17 @@ public final class GeneralQueries
         return true;
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
-        if (firstCall)
-        {
-          dummySearchKeys.removeAll();
+        dummySearchKeys.removeAll();
 
-          searchDummy = db.createNewRecordFromState(new RecordState(hdtPerson, -1, "", "", "", "", true), true);
+        searchDummy = db.createNewRecordFromState(new RecordState(hdtPerson, -1, "", "", "", "", true), true);
 
-          dummySearchKeys.setSearchKey(searchDummy, getCellText(op1), true, false);
-        }
+        dummySearchKeys.setSearchKey(searchDummy, getCellText(op1), true, false);
+      }
 
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
+      {
         if (searchDummy == null) return false;
 
         List<String> list = new ArrayList<>();
@@ -363,7 +365,7 @@ public final class GeneralQueries
         return add;
       }
 
-      @Override public void cleanup()
+      @Override public void cleanup(State state)
       {
         if (searchDummy != null)
         {
@@ -397,7 +399,7 @@ public final class GeneralQueries
 
       private final MutableBoolean choseNotToWait = new MutableBoolean();
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
         HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord)) return false;

@@ -21,6 +21,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import org.hypernomicon.dialogs.ProgressDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
@@ -204,7 +205,7 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void runWhenFinalStateSet(Runnable runnable)
+  public void runWhenFinalStateSet(Consumer<State> hndlr)
   {
     EventHandler<WorkerStateEvent> successHndlr = innerTask.getOnSucceeded(),
                                    failHndlr    = innerTask.getOnFailed(),
@@ -212,19 +213,19 @@ public abstract class HyperTask
     innerTask.setOnSucceeded(e ->
     {
       if (successHndlr != null) successHndlr.handle(e);
-      runnable.run();
+      hndlr.accept(State.SUCCEEDED);
     });
 
     innerTask.setOnFailed(e ->
     {
       if (failHndlr != null) failHndlr.handle(e);
-      runnable.run();
+      hndlr.accept(State.FAILED);
     });
 
     innerTask.setOnCancelled(e ->
     {
       if (cancelHndlr != null) cancelHndlr.handle(e);
-      runnable.run();
+      hndlr.accept(State.CANCELLED);
     });
   }
 

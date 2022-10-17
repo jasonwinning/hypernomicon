@@ -104,7 +104,7 @@ public class QueryWhereBibField extends WorkQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Work record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+  @Override public boolean evaluate(HDT_Work record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
   {
     BibFieldEnum field = getEnumVal(getCellID(op1), BibFieldEnum.class);
     if (field == null)

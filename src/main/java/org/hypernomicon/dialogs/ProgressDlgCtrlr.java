@@ -68,7 +68,7 @@ public class ProgressDlgCtrlr extends HyperDlg
       lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + Math.round(newValue.doubleValue() * 100.0) + " %");
     });
 
-    task.runWhenFinalStateSet(() -> getStage().close());
+    task.runWhenFinalStateSet(state -> getStage().close());
 
     onShown = () ->
     {

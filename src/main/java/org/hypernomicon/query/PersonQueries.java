@@ -47,7 +47,7 @@ public final class PersonQueries
   {
     if (App.debugging()) allQueries.add(new PersonQuery(QUERY_SET_DECEASED_AS_PAST, "Set deceased people as past members of institutions")
     {
-      @Override public boolean evaluate(HDT_Person person, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Person person, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         if (person.status.getID() == 5)  // Deceased
         {
@@ -75,7 +75,7 @@ public final class PersonQueries
 
     allQueries.add(new PersonQuery(QUERY_MULTIPLE_INST, "with multiple affiliations")
     {
-      @Override public boolean evaluate(HDT_Person person, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Person person, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         return person.institutions.size() > 1;
       }

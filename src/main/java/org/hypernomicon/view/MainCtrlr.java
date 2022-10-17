@@ -1774,6 +1774,12 @@ public final class MainCtrlr
       return;
     }
 
+    if (curQV.inReportMode())
+    {
+      messageDialog("That menu option cannot be used to add a record to a report.", mtInformation);
+      return;
+    }
+
     HDT_Record record;
 
     if (activeTabEnum() == termTabEnum)

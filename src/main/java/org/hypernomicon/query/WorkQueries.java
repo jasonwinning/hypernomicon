@@ -23,6 +23,8 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import javafx.concurrent.Worker.State;
+
 import static org.hypernomicon.util.MediaUtil.*;
 
 import java.io.IOException;
@@ -59,7 +61,7 @@ public final class WorkQueries
   {
     allQueries.add(new WorkQuery(QUERY_LIKELY_EDITED_VOLS, "likely edited volumes")
     {
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         if (work.authorRecords.isEmpty()) return false;
         if (work.getWorkTypeEnum() == WorkTypeEnum.wtPaper) return false;
@@ -88,7 +90,7 @@ public final class WorkQueries
 
     allQueries.add(new WorkQuery(QUERY_4_OR_MORE_AUTHORS, "with 4 or more authors")
     {
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         return work.authorRecords.size() >= 4;
       }
@@ -101,7 +103,7 @@ public final class WorkQueries
 
     allQueries.add(new WorkQuery(QUERY_WORK_NEEDING_PAGE_NUMBERS, "in a PDF with one or more other works, missing page number(s)")
     {
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         for (HDT_WorkFile workFile : work.workFiles)
           if ((workFile.works.size() > 1) && "pdf".equalsIgnoreCase(workFile.filePath().getExtensionOnly()))
@@ -123,23 +125,23 @@ public final class WorkQueries
     {
       private List<String> csvFile;
 
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall)
+      @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        if (firstCall)
+        FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
+        if (filePath.exists()) try
         {
-          FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
-          if (filePath.exists()) try
-          {
-            Files.delete(filePath.toPath());
-          }
-          catch (IOException e)
-          {
-            e.printStackTrace();
-          }
-
-          csvFile = new ArrayList<>();
+          Files.delete(filePath.toPath());
+        }
+        catch (IOException e)
+        {
+          e.printStackTrace();
         }
 
+        csvFile = new ArrayList<>();
+      }
+
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
         work.workFiles.forEach(workFile ->
         {
           if (workFile.pathNotEmpty() && workFile.filePath().exists() && getMediaType(workFile.filePath()).toString().contains("pdf"))
@@ -155,21 +157,23 @@ public final class WorkQueries
           }
         });
 
-        if (lastCall)
-        {
-          FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
-
-          try
-          {
-            FileUtils.writeLines(filePath.toFile(), csvFile);
-          }
-          catch (IOException e)
-          {
-            e.printStackTrace();
-          }
-        }
-
         return true;
+      }
+
+      @Override public void cleanup(State state)
+      {
+        if (state != State.SUCCEEDED) return;
+
+        FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
+
+        try
+        {
+          FileUtils.writeLines(filePath.toFile(), csvFile);
+        }
+        catch (IOException e)
+        {
+          e.printStackTrace();
+        }
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }

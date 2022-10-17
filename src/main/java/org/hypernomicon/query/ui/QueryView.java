@@ -130,7 +130,7 @@ public final class QueryView
   public List<ResultsRow> results()       { return inReportMode() ? List.of() : Collections.unmodifiableList(resultsBackingList); }
   void saveColumnWidths()                 { HyperTable.saveColWidthsForTable(tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS, false); }
   void focusOnFields()                    { safeFocus(tvFields); }
-  boolean inReportMode()                  { return inRecordMode == false; }
+  public boolean inReportMode()           { return inRecordMode == false; }
   Tab getTab()                            { return tab; }
   HDT_Record getRecord()                  { return curResult; }
   public boolean getSearchLinkedRecords() { return searchLinkedRecords; }
@@ -787,13 +787,14 @@ public final class QueryView
 
       @Override protected void call() throws CancelledTaskException, HyperDataException
       {
-        boolean firstCall = true;
-
         recordTypeToColumnGroup.clear();
         resultsBackingList.clear();
 
         updateMessage("Running query...");
         updateProgress(0, 1);
+
+        for (HyperTableRow row : sources.keySet())
+          queries.get(row).init(row.getCell(2), row.getCell(3), row.getCell(4));
 
         Iterator<HDT_Record> recordIterator = combinedSource.iterator();
 
@@ -817,8 +818,7 @@ public final class QueryView
 
             if (source.contains(record))
             {
-              boolean result = evaluate(query, record, row, row.getCell(2), row.getCell(3), row.getCell(4), firstCall, recordNdx == (total - 1));
-              firstCall = false;
+              boolean result = evaluate(query, record, row, row.getCell(2), row.getCell(3), row.getCell(4));
 
               if      (firstRow)            add = result;
               else if (lastConnectiveWasOr) add = add || result;
@@ -837,15 +837,15 @@ public final class QueryView
       //---------------------------------------------------------------------------
 
       @SuppressWarnings("unchecked")
-      private <HDT_T extends HDT_Record> boolean evaluate(Query<?> query, HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3, boolean firstCall, boolean lastCall) throws HyperDataException
+      private <HDT_T extends HDT_Record> boolean evaluate(Query<?> query, HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
-        return ((Query<HDT_T>)query).evaluate(record, row, op1, op2, op3, firstCall, lastCall);
+        return ((Query<HDT_T>)query).evaluate(record, row, op1, op2, op3);
       }
 
       //---------------------------------------------------------------------------
     };
 
-    task.runWhenFinalStateSet(() -> queries.values().forEach(Query::cleanup));
+    task.runWhenFinalStateSet(state -> queries.values().forEach(query -> query.cleanup(state)));
 
     boolean succeeded = task.runWithProgressDialog() == State.SUCCEEDED;
 

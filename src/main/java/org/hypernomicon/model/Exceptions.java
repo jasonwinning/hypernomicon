@@ -63,8 +63,8 @@ public final class Exceptions
 
     SearchKeyException(boolean tooShort, HDT_Record record, String key)
     {
-      super(tooShort ? "Search key: \"" + key + "\" is too short. Record type: " + getTypeName(record.getType()) + " ID : " + record.getID() :
-                       "Duplicate search key: \"" + key + "\". Record type: " + getTypeName(record.getType()) + " ID : " + record.getID());
+      super(tooShort ? "Search key: \"" + key + "\" is too short. Record type: " + getTypeName(record.getType()) + " ID: " + record.getID() :
+                       "Duplicate search key: \"" + key + "\". Record type: " + getTypeName(record.getType()) + " ID: " + record.getID());
 
       this.tooShort = tooShort;
     }
