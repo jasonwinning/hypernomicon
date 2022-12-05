@@ -724,7 +724,7 @@ public final class QueryView
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
- // if any of the queries are unfiltered, they will all be treated as unfiltered
+ // If any of the queries are unfiltered, they will all be treated as unfiltered
 
   boolean btnExecuteClick(boolean setCaption)
   {
@@ -1015,6 +1015,7 @@ public final class QueryView
 //---------------------------------------------------------------------------
 
   //returns true if subsequent cells need to be updated
+
   private boolean queryChange(Query<?> query, HyperTableRow row)
   {
     if (db.isLoaded() == false) return false;
@@ -1030,6 +1031,7 @@ public final class QueryView
 //---------------------------------------------------------------------------
 
   //returns true if subsequent cells need to be updated
+
   private boolean op1Change(Query<?> query, HyperTableCell op1, HyperTableRow row)
   {
     if (clearingOperand || (db.isLoaded() == false)) return false;
@@ -1043,6 +1045,7 @@ public final class QueryView
 //---------------------------------------------------------------------------
 
   // returns true if subsequent cells need to be updated
+
   private boolean op2Change(Query<?> query, HyperTableCell op2, HyperTableRow row)
   {
     if (clearingOperand || (db.isLoaded() == false)) return false;

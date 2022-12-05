@@ -21,8 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.prefs.AbstractPreferences;
 
-import static org.hypernomicon.util.Util.*;
-
 class TransientPreferences extends AbstractPreferences
 {
 
@@ -41,7 +39,7 @@ class TransientPreferences extends AbstractPreferences
   @Override public boolean isUserNode()                     { return true; }
   @Override protected boolean isRemoved()                   { return super.isRemoved(); } // Increase visibility
   @Override protected void putSpi(String key, String value) { values.put(key, value); }
-  @Override protected String getSpi(String key)             { return safeStr(values.get(key)); }
+  @Override protected String getSpi(String key)             { return values.get(key); } // returning null is okay because that can trigger a default value being used instead
   @Override protected void removeSpi(String key)            { values.remove(key); }
 
   @Override protected void removeNodeSpi       () { values.clear(); }

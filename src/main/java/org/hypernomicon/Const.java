@@ -97,6 +97,8 @@ public final class Const
     PREF_KEY_LINUX_WORKAROUND = "linuxWindowResizabilityWorkaround",
     PREF_KEY_PDFJS_SIDEBAR_VIEW = "pdfjsSidebarView",
     PREF_KEY_FONT_SIZE = "fontSize",
+    PREF_KEY_DEF_DESC_FONT_SIZE = "defDescFontSize",
+    PREF_KEY_DEF_DESC_FONT_FAMILY = "defDescFontFamily",
 
     PREF_KEY_IMPORT_ACTION_MOVE = "move",
     PREF_KEY_IMPORT_ACTION_COPY = "copy",

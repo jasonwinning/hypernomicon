@@ -59,10 +59,18 @@ public class RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // This is only called when a new, blank record is being created as a result of
+  // user interaction with the UI, like clicking the Create New button
+
   public RecordState(RecordType type)
   {
     this(type, -1, "", "", "", "", false);
+
+    nullSwitch(db.getMainTextTemplate(type), this::setMainText);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public RecordState(RecordType type, int id)
   {
@@ -133,7 +141,7 @@ public class RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadItemFromXML(Tag tag, String nodeText, RecordType objType, int objID, int ord, Map<Tag, HDI_OfflineBase> nestedItems) throws HyperDataException
+  public void setItemFromXML(Tag tag, String nodeText, RecordType objType, int objID, int ord, Map<Tag, HDI_OfflineBase> nestedItems) throws HyperDataException
   {
     if ((type == hdtHub) && (tag == tagName))
       return;
@@ -163,6 +171,15 @@ public class RecordState
     }
     else
       item.setFromXml(tag, nodeText, objType, objID, nestedItems);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setMainText(String html)
+  {
+    Tag tag = db.mainTextTagForRecordType(type);
+    ((HDI_OfflineMainTextAndHub) items.get(tag)).setFromXml(tag, html, null, -1, null);
   }
 
 //---------------------------------------------------------------------------

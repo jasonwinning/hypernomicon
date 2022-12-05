@@ -784,19 +784,24 @@ public final class MainTextUtil
       input = input.replace("\n\n", "\n<br>\n");
 
     return "<html dir=\"ltr\"><head>" +
-           STYLE_TAG +
-           "</head><body contenteditable=\"true\"><p><font face=\"Arial\" size=\"2\">" +
-           input.replace("\n", "</font></p><p><font face=\"Arial\" size=\"2\">") +
-           "</font></p></body></html>";
+           styleTag() +
+           "</head><body contenteditable=\"true\"><p>" +
+           input.replace("\n", "</p><p>") +
+           "</p></body></html>";
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static final String MARGIN_STYLE = "margin-right: 20px;",
+  static final String MARGIN_STYLE = "margin-right: 20px;";
 
-                      STYLE_TAG = "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
-                                  "body { " + MARGIN_STYLE + " font-family: arial; font-size: 10pt; } </style>";
+  static String styleTag()
+  {
+    return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
+           "body { " + MARGIN_STYLE +
+           " font-family: \"" + db.prefs.get(PREF_KEY_DEF_DESC_FONT_FAMILY, "arial") + "\";" +
+           " font-size: " + db.prefs.get(PREF_KEY_DEF_DESC_FONT_SIZE, "10pt") + "; } </style>";
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

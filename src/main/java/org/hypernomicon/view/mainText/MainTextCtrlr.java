@@ -23,12 +23,14 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.view.populators.Populator.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -40,6 +42,7 @@ import java.util.Set;
 import org.jsoup.nodes.Document;
 
 import com.sun.javafx.webkit.Accessor;
+import com.sun.webkit.WebPage;
 
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
@@ -64,6 +67,7 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -350,8 +354,6 @@ public class MainTextCtrlr
       }
     });
 
-    ToolBar bar = (ToolBar) he.lookup(".top-toolbar");
-
     MenuItem menuItem0 = new MenuItem("Paste");
     menuItem0.setOnAction(event -> Accessor.getPageFor(getEngine()).executeCommand(Command.PASTE.getCommand(), null));
 
@@ -400,9 +402,11 @@ public class MainTextCtrlr
     setToolTip(btnSymbol, "Insert symbol at cursor");
     btnSymbol.setOnAction(event -> SymbolPickerDlgCtrlr.show());
 
-    bar.getItems().addAll(btnLink, btnPicture, btnClear, btnEditLayout, btnSubscript, btnSuperscript, btnSymbol, btnPaste);
+    ObservableList<Node> topBarItems = ((ToolBar) he.lookup(".top-toolbar")).getItems();
 
-    bar.getItems().addListener((Change<? extends Node> c) ->
+    topBarItems.addAll(btnLink, btnPicture, btnClear, btnEditLayout, btnSubscript, btnSuperscript, btnSymbol, btnPaste);
+
+    topBarItems.addListener((Change<? extends Node> c) ->
     {
       while (c.next()) c.getAddedSubList().forEach(node ->
       {
@@ -410,12 +414,91 @@ public class MainTextCtrlr
         {
           Button button = (Button)node;
           if (convertToSingleLine(strListToStr(button.getStyleClass(), false)).contains("paste"))
-            Platform.runLater(() -> bar.getItems().remove(button));
+            Platform.runLater(() -> topBarItems.remove(button));
         }
       });
     });
 
+    menuItem0 = new MenuItem("Make this font the default for this database");
+    menuItem0.setOnAction(event -> makeThisFontDefault());
+
+    menuItem1 = new MenuItem("Set/update template for this record type");
+    menuItem1.setOnAction(event -> updateTemplate());
+
+    MenuButton btnSettings = new MenuButton("", imgViewFromRelPath("resources/images/gear-wrench.png"), menuItem0, menuItem1);
+    setToolTip(btnSettings, "Settings");
+
+    ObservableList<Node> bottomBarItems = ((ToolBar) he.lookup(".bottom-toolbar")).getItems();
+
+    bottomBarItems.addListener((Change<? extends Node> ch) ->
+    {
+      if (ch.getList().size() == 3)
+        Platform.runLater(() -> bottomBarItems.add(3, btnSettings));
+    });
+
     he.setFocusTraversable(false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void makeThisFontDefault()
+  {
+    boolean familyNotSet = false, sizeNotSet = false;
+    WebPage webPage = Accessor.getPageFor(getEngine());
+
+    String family = safeStr(webPage.queryCommandValue(Command.FONT_FAMILY.getCommand()));
+    family = family.replace("'", "").replace("\"", "");
+
+    if (family.length() > 0)
+      db.prefs.put(PREF_KEY_DEF_DESC_FONT_FAMILY, family);
+    else
+      familyNotSet = true;
+
+    String size = safeStr(webPage.queryCommandValue(Command.FONT_SIZE.getCommand()));
+
+    if (size.length() > 0)
+    {
+      switch (size)
+      {
+        case "1" : size = "8pt" ; break;
+        case "2" : size = "10pt"; break;
+        case "3" : size = "12pt"; break;
+        case "4" : size = "14pt"; break;
+        case "5" : size = "18pt"; break;
+        case "6" : size = "24pt"; break;
+        case "7" : size = "36pt"; break;
+
+        default  :                break;
+      }
+
+      db.prefs.put(PREF_KEY_DEF_DESC_FONT_SIZE, size);
+    }
+    else
+      sizeNotSet = true;
+
+    if ((familyNotSet == false) && (sizeNotSet == false)) return;
+
+    String msg = "Unable to set default because font ";
+
+    msg = msg + (familyNotSet ? (sizeNotSet ? "family and size" : "family") : "size");
+
+    messageDialog(msg + " could not be determined", mtWarning);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateTemplate()
+  {
+    try
+    {
+      db.updateMainTextTemplate(curRecord.getType(), getHtmlAndKeyWorks(new ArrayList<>()));
+    }
+    catch (IOException e)
+    {
+      messageDialog("An error occurred while saving to the template file: " + e.getMessage(), mtError);
+    }
   }
 
 //---------------------------------------------------------------------------

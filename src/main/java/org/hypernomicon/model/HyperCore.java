@@ -50,7 +50,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
 
     @Override public int hashCode()
     {
-      return 31 * (31 + id) + (key == null ? 0 : key.hashCode());
+      return (31 * (31 + id)) + (key == null ? 0 : key.hashCode());
     }
 
 //---------------------------------------------------------------------------
@@ -77,7 +77,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
     @Override public int compareTo(KeyIDpair otherPair)
     {
       int result = key.compareTo(otherPair.key);
-      return result != 0 ? result : id - otherPair.id;
+      return result != 0 ? result : (id - otherPair.id);
     }
   }
 
@@ -135,7 +135,6 @@ final class HyperCore<HDT_DT extends HDT_Record>
     while (it.hasNext())
     {
       Entry<Integer, HDT_DT> entry = it.next();
-      int id = entry.getKey();
       HDT_DT record = entry.getValue();
 
       if (record.isExpired() == false)
@@ -151,6 +150,8 @@ final class HyperCore<HDT_DT extends HDT_Record>
 
       if (record.isExpired()) // See HDI_OnlineHubSpokes.resolvePointers
       {
+        int id = entry.getKey();
+
         it.remove();
 
         sortedIDs.remove(getIDNdxByID(id));

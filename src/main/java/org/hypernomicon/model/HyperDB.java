@@ -125,6 +125,7 @@ import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.prefs.XmlSupport;
 import org.hypernomicon.view.HyperFavorites;
+import org.hypernomicon.view.mainText.MainTextCtrlr;
 
 //---------------------------------------------------------------------------
 
@@ -134,6 +135,7 @@ public final class HyperDB
 
   final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(RecordType.class);
   final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(RecordType.class);
+  final private EnumMap<RecordType, String> mainTextTemplates = new EnumMap<>(RecordType.class);
   final private EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
   final private EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
   final private EnumMap<Tag, EnumSet<RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
@@ -856,6 +858,8 @@ public final class HyperDB
       return false;
     }
 
+    loadMainTextTemplates();
+
     List<HDT_Work> worksToUnlink = new ArrayList<>();
     bibEntryKeyToWork.forEach((bibEntryKey, work) ->
     {
@@ -1479,7 +1483,7 @@ public final class HyperDB
                       if ((tag == tagInvestigation) && (xmlRecord.type == hdtWork))
                         workIDtoInvIDs.put(xmlRecord.id, objID);
                       else
-                        xmlRecord.loadItemFromXML(tag, nodeText, objType, objID, ord, nestedItems);
+                        xmlRecord.setItemFromXML(tag, nodeText, objType, objID, ord, nestedItems);
                   }
                 }
                 catch (DateTimeParseException e)
@@ -1503,7 +1507,7 @@ public final class HyperDB
         }
 
         if (noInnerTags)
-          xmlRecord.loadItemFromXML(tagNone, nodeText, hdtNone, -1, -1, null);
+          xmlRecord.setItemFromXML(tagNone, nodeText, hdtNone, -1, -1, null);
 
         if ((xmlRecord.type == hdtWorkType) && versionNumber.isLessThanOrEqualTo(new VersionNumber(1, 3)))
           needToAddThesisWorkType.setTrue();
@@ -1734,6 +1738,7 @@ public final class HyperDB
 
     initialNavList   .clear();
     filenameMap      .clear();
+    mainTextTemplates.clear();
     keyWorkIndex     .clear();
     displayedAtIndex .clear();
     bibEntryKeyToWork.clear();
@@ -2188,6 +2193,7 @@ public final class HyperDB
     BIB_FILE_NAME = "Bib.json",
     ZOTERO_TEMPLATE_FILE_NAME = "ZoteroTemplates.json",
     ZOTERO_CREATOR_TYPES_FILE_NAME = "ZoteroCreatorTypes.json",
+    DESC_TEMPLATE_FOLDER_NAME = "Description templates",
     DEFAULT_XML_PATH = "XML",
     DEFAULT_PICTURES_PATH = "Pictures",
     DEFAULT_BOOKS_PATH = "Books",
@@ -2445,6 +2451,65 @@ public final class HyperDB
       extPath().resolve(FilenameUtils.separatorsToSystem(url.substring(7)))
     :
       null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void updateMainTextTemplate(RecordType recordType, String html) throws IOException
+  {
+    FilePath folderPath = xmlPath().resolve(DESC_TEMPLATE_FOLDER_NAME);
+
+    if (folderPath.exists() == false)
+      folderPath.createDirectory();
+
+    FileUtils.writeLines(mainTextTemplateFilePath(recordType).toFile(), convertMultiLineStrToStrList(html, false));
+    mainTextTemplates.put(recordType, html);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public String getMainTextTemplate(RecordType recordType)
+  {
+    return mainTextTemplates.get(recordType);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void loadMainTextTemplates()
+  {
+    mainTextTemplates.clear();
+
+    FilePath folderPath = xmlPath().resolve(DESC_TEMPLATE_FOLDER_NAME);
+
+    if (folderPath.exists() == false) return;
+
+    for (RecordType recordType : MainTextCtrlr.getDisplayedTypes())
+    {
+      FilePath filePath = mainTextTemplateFilePath(recordType);
+      if (filePath.exists() == false) continue;
+
+      List<String> s;
+
+      try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
+      catch (IOException e)
+      {
+        messageDialog("An error occurred while trying to read description template files: " + e.getMessage(), mtError);
+        return;
+      }
+
+      mainTextTemplates.put(recordType, strListToStr(s, true));
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private FilePath mainTextTemplateFilePath(RecordType recordType)
+  {
+    return xmlPath().resolve(DESC_TEMPLATE_FOLDER_NAME).resolve(Tag.getTag(recordType).header + ".html");
   }
 
 //---------------------------------------------------------------------------

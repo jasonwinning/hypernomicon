@@ -57,6 +57,8 @@ public abstract class BibEntry extends BibData implements BibEntity
 
   public BibEntry(boolean thisIsBackup)       { this.thisIsBackup = thisIsBackup; }
 
+  public int numericID()                      { return getLibrary().numericID(getKey()); }
+
   @Override public HDT_Work getWork()         { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getKey()); }
   @Override public boolean linkedToWork()     { return thisIsBackup ? false : getWork() != null; }
   @Override public HDT_WorkType getWorkType() { return linkedToWork() ? getWork().workType.get() : EntryType.toWorkType(getEntryType()); }
@@ -93,11 +95,6 @@ public abstract class BibEntry extends BibData implements BibEntity
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
-  public int numericID()
-  {
-    return getLibrary().numericID(getKey());
-  }
 
   public String getCBText()
   {
