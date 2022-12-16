@@ -31,7 +31,7 @@ import org.hypernomicon.query.sources.AllQuerySource;
 import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.FilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
-import org.hypernomicon.query.ui.QueryView;
+import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -154,7 +154,7 @@ public abstract class Query<HDT_T extends HDT_Record>
 
   static void clearOperands(HyperTableRow row, int startOpNum)
   {
-    QueryView.clearOperands(row, startOpNum);
+    QueryCtrlr.clearOperands(row, startOpNum);
   }
 
 //---------------------------------------------------------------------------

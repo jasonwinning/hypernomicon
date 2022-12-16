@@ -85,33 +85,39 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
 
-public final class QueryView
+public final class QueryCtrlr
 {
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  private final QueryTabCtrlr queryTabCtrlr;
+  @FXML private MasterDetailPane spMain, spLower;
+  @FXML private TableView<HyperTableRow> tvFields;
+  @FXML private TableView<ResultsRow> tvResults;
+  @FXML private AnchorPane apDescription, apResults;
+  @FXML private ToggleGroup tgLogic;
+  @FXML private TextField tfCustomLogic;
+
+  private final QueriesTabCtrlr queriesTabCtrlr;
   private final WebView webView;
   private final TabPane tabPane;
   private final TextField tfFavName;
-  private MasterDetailPane spMain, spLower;
-  private AnchorPane apDescription, apResults;
   private HyperTable htFields;
   private ReportTable reportTable;
   private Tab tab;
   private QueryFavorite fav = null;
   private HDT_Record curResult = null;
-  private TableView<ResultsRow> tvResults;
-  private TableView<HyperTableRow> tvFields;
 
   ResultsTable resultsTable;
 
@@ -140,20 +146,20 @@ public final class QueryView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  QueryView(QueryTabCtrlr queryTabCtrlr, WebView webView, TabPane tabPane, TextField tfFavName)
+  QueryCtrlr(QueriesTabCtrlr queriesTabCtrlr, WebView webView, TabPane tabPane, TextField tfFavName)
   {
-    this.queryTabCtrlr = queryTabCtrlr;
+    this.queriesTabCtrlr = queriesTabCtrlr;
     this.webView = webView;
     this.tabPane = tabPane;
     this.tfFavName = tfFavName;
 
     EventHandler<ActionEvent> onAction = event ->
     {
-      queryTabCtrlr.btnExecute.requestFocus();
+      queriesTabCtrlr.btnExecute.requestFocus();
       btnExecuteClick(true);
     };
 
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("query/QueryView.fxml"));
+    FXMLLoader loader = new FXMLLoader(App.class.getResource("query/Query.fxml"), null, null, klass -> this);
 
     try { tab = new Tab("New query", loader.load()); }
     catch (IOException e)
@@ -163,16 +169,13 @@ public final class QueryView
     }
 
     tabPane.getTabs().add(tabPane.getTabs().size() - 1, tab);
-    tab.setOnCloseRequest(event -> queryTabCtrlr.deleteView((Tab) event.getSource()));
+    tab.setOnCloseRequest(event -> queriesTabCtrlr.deleteView((Tab) event.getSource()));
 
-    QueryViewCtrlr ctrlr = loader.getController();
-
-    spMain        = ctrlr.spMain;
-    spLower       = ctrlr.spLower;
-    tvFields      = ctrlr.tvFields;
-    tvResults     = ctrlr.tvResults;
-    apDescription = ctrlr.apDescription;
-    apResults     = ctrlr.apResults;
+    tgLogic.selectedToggleProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (newValue == null)
+        oldValue.setSelected(true);
+    });
 
     htFields = new HyperTable(tvFields, 1, true, "");
 
@@ -304,7 +307,7 @@ public final class QueryView
 //---------------------------------------------------------------------------
 
     htFields.addColAltPopulatorWithActionHandler(hdtNone, ctDropDown, new VariablePopulator(), onAction);
-    htFields.addColAltPopulator(hdtNone, ctDropDownList, Populator.create(cvtConnective, QueryTabCtrlr.andCell, QueryTabCtrlr.orCell));
+    htFields.addColAltPopulator(hdtNone, ctDropDownList, Populator.create(cvtConnective, QueriesTabCtrlr.andCell, QueriesTabCtrlr.orCell));
 
     htFields.getColumns().forEach(col -> col.setDontCreateNewRecord(true));
 
@@ -374,7 +377,7 @@ public final class QueryView
     }
     else
     {
-      queryTabCtrlr.setTextToHilite(getTextToHilite());
+      queriesTabCtrlr.setTextToHilite(getTextToHilite());
 
       String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
 
@@ -383,7 +386,7 @@ public final class QueryView
 
     setPreview();
 
-    queryTabCtrlr.setFavNameToggle(fav != null);
+    queriesTabCtrlr.setFavNameToggle(fav != null);
 
     programmaticFavNameChange = true;
     tfFavName.setText(fav == null ? "" : fav.name);
@@ -397,7 +400,7 @@ public final class QueryView
   {
     if (inReportMode() || (curResult == null))
     {
-      previewWindow.clearPreview(pvsQueryTab);
+      previewWindow.clearPreview(pvsQueriesTab);
       return;
     }
 
@@ -406,17 +409,17 @@ public final class QueryView
       case hdtWork :
 
         HDT_Work work = (HDT_Work) curResult;
-        previewWindow.setPreview(pvsQueryTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
+        previewWindow.setPreview(pvsQueriesTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
         break;
 
       case hdtMiscFile : case hdtWorkFile : case hdtPerson :
 
-        previewWindow.setPreview(pvsQueryTab, ((HDT_RecordWithPath) curResult).filePath(), curResult);
+        previewWindow.setPreview(pvsQueriesTab, ((HDT_RecordWithPath) curResult).filePath(), curResult);
         break;
 
       default :
 
-        previewWindow.clearPreview(pvsQueryTab);
+        previewWindow.clearPreview(pvsQueriesTab);
         break;
     }
   }
@@ -428,7 +431,7 @@ public final class QueryView
   {
     if (programmaticFavNameChange) return;
     fav = null;
-    queryTabCtrlr.setFavNameToggle(false);
+    queriesTabCtrlr.setFavNameToggle(false);
   }
 
   //---------------------------------------------------------------------------
@@ -548,7 +551,7 @@ public final class QueryView
       tfFavName.setText(fav.name);
       programmaticFavNameChange = false;
 
-      queryTabCtrlr.setFavNameToggle(true);
+      queriesTabCtrlr.setFavNameToggle(true);
     }
 
     else
@@ -560,7 +563,7 @@ public final class QueryView
       tfFavName.setText("");
       programmaticFavNameChange = false;
 
-      queryTabCtrlr.setFavNameToggle(false);
+      queriesTabCtrlr.setFavNameToggle(false);
     }
 
     ui.updateFavorites();
@@ -622,7 +625,7 @@ public final class QueryView
 
     webView.getEngine().loadContent("");
     ui.updateBottomPanel(false);
-    queryTabCtrlr.updateCB(this);
+    queriesTabCtrlr.updateCB(this);
   }
 
   //---------------------------------------------------------------------------
@@ -639,7 +642,7 @@ public final class QueryView
 
     webView.getEngine().loadContent("");
     ui.updateBottomPanel(false);
-    queryTabCtrlr.updateCB(this);
+    queriesTabCtrlr.updateCB(this);
   }
 
   //---------------------------------------------------------------------------
@@ -675,7 +678,7 @@ public final class QueryView
     reportTable.inject(reportEngine);
 
     if (reportEngine.autoShowDescription() && (reportEngine.getRows().size() > 0))
-      queryTabCtrlr.chkShowDesc.setSelected(true);
+      queriesTabCtrlr.chkShowDesc.setSelected(true);
   }
 
   //---------------------------------------------------------------------------
@@ -825,7 +828,7 @@ public final class QueryView
               else                          add = add && result;
             }
 
-            lastConnectiveWasOr = row.getID(5) == QueryTabCtrlr.OR_CONNECTIVE_ID;
+            lastConnectiveWasOr = row.getID(5) == QueriesTabCtrlr.OR_CONNECTIVE_ID;
             firstRow = false;
           }
 
@@ -859,9 +862,9 @@ public final class QueryView
     recordTypeToColumnGroup.forEach((recordType, colGroup) -> colGroup.addColumnsToTable(resultsTable));
 
     if (showDesc)
-      queryTabCtrlr.chkShowDesc.setSelected(true);
+      queriesTabCtrlr.chkShowDesc.setSelected(true);
 
-    curQV.refreshView(false);
+    curQC.refreshView(false);
     return true;
   }
 

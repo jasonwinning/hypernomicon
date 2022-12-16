@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
+import static org.hypernomicon.query.ui.QueriesTabCtrlr.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.ArrayList;

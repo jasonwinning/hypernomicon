@@ -17,7 +17,7 @@
 
 package org.hypernomicon.query;
 
-import static org.hypernomicon.App.curQV;
+import static org.hypernomicon.App.curQC;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
@@ -117,7 +117,7 @@ public final class GeneralQueries
           return false;
 
         List<String> list = new ArrayList<>();
-        record.getAllStrings(list, curQV.getSearchLinkedRecords());
+        record.getAllStrings(list, curQC.getSearchLinkedRecords());
 
         String val1LC = val1.toLowerCase();
         return list.stream().anyMatch(str -> str.toLowerCase().contains(val1LC));

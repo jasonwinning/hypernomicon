@@ -21,7 +21,7 @@ import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.List;
 
-import org.hypernomicon.query.ui.QueryView;
+import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.util.UIUtil;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -35,12 +35,12 @@ public class ReportTable
 {
   private final TableView<HyperTableRow> tv;
   private ReportEngine reportEngine = null;
-  final private QueryView qv;
+  final private QueryCtrlr qc;
 
-  public ReportTable(QueryView queryView)
+  public ReportTable(QueryCtrlr queryCtrlr)
   {
     tv = new TableView<>();
-    qv = queryView;
+    qc = queryCtrlr;
 
     setAnchors(tv, 0.0, 0.0, 0.0, 0.0);
 
@@ -49,7 +49,7 @@ public class ReportTable
 
     tv.setPlaceholder(new Label("There are no query results to display."));
 
-    tv.getSelectionModel().selectedItemProperty().addListener((ob, oldRow, newRow) -> qv.refreshView(false));
+    tv.getSelectionModel().selectedItemProperty().addListener((ob, oldRow, newRow) -> qc.refreshView(false));
   }
 
   //---------------------------------------------------------------------------

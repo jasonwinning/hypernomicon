@@ -74,7 +74,7 @@ import static org.hypernomicon.util.DesktopUtil.*;
 
 //---------------------------------------------------------------------------
 
-public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
+public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
 
 //---------------------------------------------------------------------------
@@ -116,28 +116,28 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                                 excludeAnnots = new SimpleBooleanProperty(),
                                 entirePDF     = new SimpleBooleanProperty();
 
-  private final List<QueryView> queryViews = new ArrayList<>();
+  private final List<QueryCtrlr> queryCtrlrs = new ArrayList<>();
 
   private static final List<Query<?>> allQueries = new ArrayList<>();
 
-  public static List<ResultsRow> results()          { return (curQV == null) ? List.of() : curQV.results(); }
+  public static List<ResultsRow> results()          { return (curQC == null) ? List.of() : curQC.results(); }
   public void setTextToHilite(String text)          { textToHilite = text; }
-  public void refreshTables()                       { queryViews.forEach(qv -> qv.resultsTable.getTV().refresh()); }
-  public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(curQV); }
-  public static void btnExecuteClick()              { curQV.btnExecuteClick(true); }
+  public void refreshTables()                       { queryCtrlrs.forEach(qc -> qc.resultsTable.getTV().refresh()); }
+  public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(curQC); }
+  public static void btnExecuteClick()              { curQC.btnExecuteClick(true); }
 
   @Override protected RecordType type()             { return hdtNone; }
-  @Override public void update()                    { curQV.refreshView(true); }
-  @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
+  @Override public void update()                    { curQC.refreshView(true); }
+  @Override public void setRecord(HDT_Record rec)   { if (curQC != null) curQC.setRecord(rec); }
   @Override public int recordCount()                { return results().size(); }
   @Override public TextViewInfo mainTextInfo()      { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
   @Override public boolean saveToRecord()           { return false; }
-  @Override public HDT_Record activeRecord()        { return curQV == null ? null : curQV.getRecord(); }
+  @Override public HDT_Record activeRecord()        { return curQC == null ? null : curQC.getRecord(); }
   @Override public HDT_Record viewRecord()          { return activeRecord(); }
   @Override public String recordName()              { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
-  @Override public int recordNdx()                  { return recordCount() > 0 ? curQV.resultsTable.getTV().getSelectionModel().getSelectedIndex() : -1; }
+  @Override public int recordNdx()                  { return recordCount() > 0 ? curQC.resultsTable.getTV().getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
 
   @FXML private void mnuCopyToFolderClick()         { copyFilesToFolder(true); }
@@ -148,7 +148,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   public void removeRecord(HDT_Record record)
   {
-    queryViews.forEach(qv -> qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
+    queryCtrlrs.forEach(qc -> qc.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
   }
 
 //---------------------------------------------------------------------------
@@ -164,8 +164,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   //---------------------------------------------------------------------------
 
     btnExecute.setOnAction(event -> btnExecuteClick());
-    btnClear.setOnAction(event -> curQV.resetFields());
-    btnToggleFavorite.setOnAction(event -> curQV.btnFavoriteClick());
+    btnClear.setOnAction(event -> curQC.resetFields());
+    btnToggleFavorite.setOnAction(event -> curQC.btnFavoriteClick());
 
     tabPane.getTabs().addListener((Change<? extends Tab> c) -> Platform.runLater(tabPane::requestLayout));
 
@@ -177,16 +177,16 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (curQV.inReportMode())
+      if (curQC.inReportMode())
       {
         MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo());
         return;
       }
 
-      HDT_Record record = curQV.resultsTable.selectedRecord();
+      HDT_Record record = curQC.resultsTable.selectedRecord();
       if (record == null) return;
 
-      textToHilite = curQV.getTextToHilite();
+      textToHilite = curQC.getTextToHilite();
       String mainText = "";
 
       if (record.hasDesc())
@@ -212,9 +212,9 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tfFavName.textProperty().addListener((ob, oldValue, newValue) ->
     {
-      if ((newValue == null) || newValue.equals(safeStr(oldValue)) || (curQV == null)) return;
+      if ((newValue == null) || newValue.equals(safeStr(oldValue)) || (curQC == null)) return;
 
-      curQV.favNameChange();
+      curQC.favNameChange();
     });
 
     addFilesButton();
@@ -263,29 +263,29 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void tabPaneChange(Tab newValue)
   {
-    QueryView qV;
+    QueryCtrlr qC;
 
     if (newValue == tabNew)
     {
-      qV = addQueryView();
-      tabPane.getSelectionModel().select(qV.getTab());
-      qV.focusOnFields();
+      qC = addQueryCtrlr();
+      tabPane.getSelectionModel().select(qC.getTab());
+      qC.focusOnFields();
     }
     else
     {
-      qV = findFirst(queryViews, view -> view.getTab() == newValue);
-      if (qV == null) return;
+      qC = findFirst(queryCtrlrs, view -> view.getTab() == newValue);
+      if (qC == null) return;
     }
 
-    if (curQV != null)
-      curQV.deactivate();
+    if (curQC != null)
+      curQC.deactivate();
 
-    qV.activate(chkShowFields, chkShowDesc);
+    qC.activate(chkShowFields, chkShowDesc);
 
-    curQV = qV;
-    updateCB(curQV);
+    curQC = qC;
+    updateCB(curQC);
 
-    qV.refreshView(true);
+    qC.refreshView(true);
   }
 
 //---------------------------------------------------------------------------
@@ -293,21 +293,21 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   void deleteView(Tab tab)
   {
-    QueryView qV = findFirst(queryViews, view -> view.getTab() == tab);
-    if (qV == null) return;
+    QueryCtrlr qC = findFirst(queryCtrlrs, view -> view.getTab() == tab);
+    if (qC == null) return;
 
-    qV.saveColumnWidths();
-    queryViews.remove(qV);
+    qC.saveColumnWidths();
+    queryCtrlrs.remove(qC);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private QueryView addQueryView()
+  private QueryCtrlr addQueryCtrlr()
   {
-    QueryView newQV = new QueryView(this, webView, tabPane, tfFavName);
+    QueryCtrlr newQV = new QueryCtrlr(this, webView, tabPane, tfFavName);
 
-    queryViews.add(newQV);
+    queryCtrlrs.add(newQV);
     newQV.resetFields();
 
     return newQV;
@@ -320,16 +320,16 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     clearingViews = true;
 
-    if (curQV != null)
-      curQV.deactivate();
+    if (curQC != null)
+      curQC.deactivate();
 
     removeFromParent(webView);
     addToParent(webView, apOrigDescription);
 
-    queryViews.removeIf(queryView ->
+    queryCtrlrs.removeIf(queryCtrlr ->
     {
-      queryView.saveColumnWidths();
-      tabPane.getTabs().remove(queryView.getTab());
+      queryCtrlr.saveColumnWidths();
+      tabPane.getTabs().remove(queryCtrlr.getTab());
       return true;
     });
 
@@ -338,7 +338,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     if (ui.isShuttingDown() == false)
       webView.getEngine().loadContent("");
 
-    QueryView newQV = addQueryView();
+    QueryCtrlr newQV = addQueryCtrlr();
     tabPane.getSelectionModel().select(newQV.getTab());
   }
 
@@ -363,10 +363,10 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     if ((type != qtReport) && (db.isLoaded() == false)) return false;
 
-    QueryView qV = addQueryView();
-    tabPane.getSelectionModel().select(qV.getTab());
+    QueryCtrlr qC = addQueryCtrlr();
+    tabPane.getSelectionModel().select(qC.getTab());
 
-    return qV.showSearch(doSearch, type, query, fav, op1, op2, caption);
+    return qC.showSearch(doSearch, type, query, fav, op1, op2, caption);
   }
 
 //---------------------------------------------------------------------------
@@ -400,7 +400,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       updateProgress(0, 1);
 
-      List<ResultsRow> resultRowList = onlySelected ? curQV.resultsTable.getTV().getSelectionModel().getSelectedItems() : results();
+      List<ResultsRow> resultRowList = onlySelected ? curQC.resultsTable.getTV().getSelectionModel().getSelectedItems() : results();
 
       int ndx = 0; for (ResultsRow row : resultRowList)
       {
@@ -497,11 +497,11 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  void updateCB(QueryView queryView)
+  void updateCB(QueryCtrlr queryCtrlr)
   {
-    if ((cb == null) || (queryView == null)) return;
+    if ((cb == null) || (queryCtrlr == null)) return;
 
-    TableView<ResultsRow> tvResults = queryView.resultsTable.getTV();
+    TableView<ResultsRow> tvResults = queryCtrlr.resultsTable.getTV();
 
     if (propToUnbind != null)
     {
@@ -521,7 +521,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       cbListenerToRemove = null;
     }
 
-    if (queryView.inReportMode())
+    if (queryCtrlr.inReportMode())
     {
       cb.setItems(null);
       return;

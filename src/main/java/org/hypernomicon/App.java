@@ -34,7 +34,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.ContentsWindow;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWindow;
-import org.hypernomicon.query.ui.QueryView;
+import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.MediaUtil;
@@ -109,7 +109,7 @@ public final class App extends Application
   public static MainCtrlr ui;
   public static Preferences appPrefs;
   public static PreviewWindow previewWindow = null;
-  public static QueryView curQV;
+  public static QueryCtrlr curQC;
   public static boolean jxBrowserInitialized = false,
                         jxBrowserDisabled    = false;
   public static double displayScale;

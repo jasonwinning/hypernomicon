@@ -87,10 +87,10 @@ public final class Exceptions
 
   public static class HubChangedException extends RestoreException
   {
-    public HubChangedException(boolean formerlyUnlinked)
+    public HubChangedException(boolean formerlyDisunited)
     {
-      super(formerlyUnlinked ? "The record is now united with a record that it was not previously united with." :
-                               "The record has been disunited from a record it was previously united with.");
+      super(formerlyDisunited ? "The record is now united with a record that it was not previously united with." :
+                                "The record has been disunited from a record it was previously united with.");
     }
   }
 

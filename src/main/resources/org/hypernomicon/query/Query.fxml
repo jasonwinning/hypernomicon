@@ -16,43 +16,52 @@
    limitations under the License.
 -->
 
-<?import org.controlsfx.control.MasterDetailPane?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import org.controlsfx.control.HiddenSidesPane?>
+<?import org.controlsfx.control.MasterDetailPane?>
 
-<MasterDetailPane fx:id="spMain" dividerPosition="0.14361702127659576" detailSide="TOP" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueryViewCtrlr">
+<MasterDetailPane fx:id="spMain" detailSide="TOP" dividerPosition="0.35" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueryCtrlr">
    <detailNode>
      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-       <TableView fx:id="tvFields" editable="true" layoutX="466.0" layoutY="24.0" prefHeight="101.0" prefWidth="1057.0"
-                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                  AnchorPane.topAnchor="0.0">
+       <TableView fx:id="tvFields" editable="true" layoutX="-2.0" layoutY="-1.0" prefHeight="245.0" prefWidth="1057.0" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="-1.0">
          <columns>
-           <TableColumn prefWidth="96.0" text="Query Type"/>
-           <TableColumn prefWidth="212.0" text="Query"/>
-           <TableColumn prefWidth="220.0" text="Operand 1"/>
-           <TableColumn prefWidth="225.0" text="Operand 2"/>
-           <TableColumn prefWidth="209.0" text="Operand 3"/>
-           <TableColumn prefWidth="105.0" text="Logic"/>
+           <TableColumn prefWidth="96.0" text="Query Type" />
+           <TableColumn prefWidth="212.0" text="Query" />
+           <TableColumn prefWidth="220.0" text="Operand 1" />
+           <TableColumn prefWidth="225.0" text="Operand 2" />
+           <TableColumn prefWidth="209.0" text="Operand 3" />
+           <TableColumn prefWidth="105.0" text="Logic" />
          </columns>
        </TableView>
+         <ToggleButton layoutX="100.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" selected="true" text="And" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="100.0">
+            <toggleGroup>
+               <ToggleGroup fx:id="tgLogic" />
+            </toggleGroup>
+         </ToggleButton>
+         <Label layoutX="9.0" layoutY="253.0" text="Evaluation logic:" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="9.0" />
+         <ToggleButton layoutX="149.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" text="Or" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="149.0" />
+         <ToggleButton layoutX="198.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="72.0" text="Custom:" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="198.0" />
+         <TextField fx:id="tfCustomLogic" layoutX="276.0" layoutY="250.0" prefHeight="25.0" prefWidth="781.0" promptText="Example: 1 and not (2 or 3)" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="274.0" AnchorPane.rightAnchor="2.0" />
      </AnchorPane>
      </detailNode>
      <masterNode>
        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-         <MasterDetailPane fx:id="spLower" showDetailNode="false" dividerPosition="0.55" layoutX="476.0" layoutY="102.0"
-                           detailSide="BOTTOM" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0"
-                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <MasterDetailPane fx:id="spLower" detailSide="BOTTOM" dividerPosition="0.55" layoutX="476.0" layoutY="102.0" prefHeight="200.0" prefWidth="160.0" showDetailNode="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
            <masterNode>
              <AnchorPane fx:id="apResults" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-               <TableView fx:id="tvResults" layoutX="455.0" layoutY="4.0" prefHeight="200.0" prefWidth="200.0"
-                          tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <TableView fx:id="tvResults" layoutX="455.0" layoutY="96.0" prefHeight="382.0" prefWidth="1055.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                  <columns>
-                   <TableColumn prefWidth="75.0" text="ID"/>
-                   <TableColumn prefWidth="75.0" text="Name"/>
+                   <TableColumn prefWidth="75.0" text="ID" />
+                   <TableColumn prefWidth="75.0" text="Name" />
                  </columns>
                </TableView>
+                  <HiddenSidesPane />
              </AnchorPane>
            </masterNode>
            <detailNode>

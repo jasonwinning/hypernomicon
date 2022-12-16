@@ -36,7 +36,7 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Author;
-import org.hypernomicon.query.ui.QueryTabCtrlr;
+import org.hypernomicon.query.ui.QueriesTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -170,7 +170,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
       if (npdc.showModal() == false) return;
 
-      QueryTabCtrlr.btnExecuteClick();
+      QueriesTabCtrlr.btnExecuteClick();
     });
 
     ht.addCol(hdtNone, ctNone);

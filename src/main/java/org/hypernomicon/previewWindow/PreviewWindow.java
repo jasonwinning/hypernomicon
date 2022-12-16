@@ -80,7 +80,7 @@ public class PreviewWindow extends HyperDlg
   @FXML private TextField tfPath, tfPreviewPage;
   @FXML private ToggleButton btnLock, btnManager, btnOther, btnPerson, btnQueries, btnTree, btnWorks;
 
-  public enum PreviewSource { pvsPersonTab, pvsWorkTab, pvsQueryTab, pvsManager, pvsTreeTab, pvsOther }
+  public enum PreviewSource { pvsPersonTab, pvsWorkTab, pvsQueriesTab, pvsManager, pvsTreeTab, pvsOther }
 
   private static final String dialogTitle = "Work Viewer",
                               TEXT_TO_SHOW_IF_NONE = "(none)";
@@ -183,12 +183,12 @@ public class PreviewWindow extends HyperDlg
 
   private PreviewWindow init()
   {
-    addWrapper(pvsPersonTab, apPerson , tabPerson , btnPerson );
-    addWrapper(pvsWorkTab  , apWork   , tabWork   , btnWorks  );
-    addWrapper(pvsQueryTab , apQuery  , tabQuery  , btnQueries);
-    addWrapper(pvsManager  , apManager, tabManager, btnManager);
-    addWrapper(pvsOther    , apOther  , tabOther  , btnOther  );
-    addWrapper(pvsTreeTab  , apTree   , tabTree   , btnTree   );
+    addWrapper(pvsPersonTab , apPerson , tabPerson , btnPerson );
+    addWrapper(pvsWorkTab   , apWork   , tabWork   , btnWorks  );
+    addWrapper(pvsQueriesTab, apQuery  , tabQuery  , btnQueries);
+    addWrapper(pvsManager   , apManager, tabManager, btnManager);
+    addWrapper(pvsOther     , apOther  , tabOther  , btnOther  );
+    addWrapper(pvsTreeTab   , apTree   , tabTree   , btnTree   );
 
     btnPerson.getToggleGroup().selectedToggleProperty().addListener((ob, oldVal, newVal) ->
     {

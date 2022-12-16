@@ -24,7 +24,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.query.GeneralQueries.*;
 import static org.hypernomicon.query.QueryType.*;
-import static org.hypernomicon.query.ui.QueryTabCtrlr.*;
+import static org.hypernomicon.query.ui.QueriesTabCtrlr.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
@@ -57,7 +57,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryType;
-import org.hypernomicon.query.ui.QueryTabCtrlr;
+import org.hypernomicon.query.ui.QueriesTabCtrlr;
 import org.hypernomicon.query.ui.ResultsRow;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
@@ -206,17 +206,17 @@ public final class MainCtrlr
   @FXML private void mnuSettingsClick()       { if (cantSaveRecord() == false) SettingsDlgCtrlr.build().showModal(); }
   @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(activeRecord(), false); }
 
-  public static PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }
-  public static InstTabCtrlr   instHyperTab    () { return getHyperTab(instTabEnum    ); }
-  public static WorkTabCtrlr   workHyperTab    () { return getHyperTab(workTabEnum    ); }
-  public static FileTabCtrlr   fileHyperTab    () { return getHyperTab(fileTabEnum    ); }
-  public static DebateTab      debateHyperTab  () { return getHyperTab(debateTabEnum  ); }
-  public static PositionTab    positionHyperTab() { return getHyperTab(positionTabEnum); }
-  public static ArgumentTab    argumentHyperTab() { return getHyperTab(argumentTabEnum); }
-  public static NoteTab        noteHyperTab    () { return getHyperTab(noteTabEnum    ); }
-  public static TermTab        termHyperTab    () { return getHyperTab(termTabEnum    ); }
-  public static QueryTabCtrlr  queryHyperTab   () { return getHyperTab(queryTabEnum   ); }
-  public static TreeTabCtrlr   treeHyperTab    () { return getHyperTab(treeTabEnum    ); }
+  public static PersonTabCtrlr  personHyperTab  () { return getHyperTab(personTabEnum  ); }
+  public static InstTabCtrlr    instHyperTab    () { return getHyperTab(instTabEnum    ); }
+  public static WorkTabCtrlr    workHyperTab    () { return getHyperTab(workTabEnum    ); }
+  public static FileTabCtrlr    fileHyperTab    () { return getHyperTab(fileTabEnum    ); }
+  public static DebateTab       debateHyperTab  () { return getHyperTab(debateTabEnum  ); }
+  public static PositionTab     positionHyperTab() { return getHyperTab(positionTabEnum); }
+  public static ArgumentTab     argumentHyperTab() { return getHyperTab(argumentTabEnum); }
+  public static NoteTab         noteHyperTab    () { return getHyperTab(noteTabEnum    ); }
+  public static TermTab         termHyperTab    () { return getHyperTab(termTabEnum    ); }
+  public static QueriesTabCtrlr queryHyperTab   () { return getHyperTab(queryTabEnum   ); }
+  public static TreeTabCtrlr    treeHyperTab    () { return getHyperTab(treeTabEnum    ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -328,8 +328,8 @@ public final class MainCtrlr
     NoteTab    .create(tabNotes);
     TermTab    .create(tabTerms);
 
-    QueryTabCtrlr .addHyperTab(queryTabEnum , tabQueries, "query/QueryTab");
-    TreeTabCtrlr  .addHyperTab(treeTabEnum  , tabTree   , "tree/TreeTab");
+    QueriesTabCtrlr.addHyperTab(queryTabEnum , tabQueries, "query/QueriesTab");
+    TreeTabCtrlr   .addHyperTab(treeTabEnum  , tabTree   , "tree/TreeTab");
 
     addSelectorTab(omniTabEnum);
     addSelectorTab(listTabEnum);
@@ -773,7 +773,7 @@ public final class MainCtrlr
       {
         case personTabEnum : return pvsPersonTab;
         case workTabEnum   : return pvsWorkTab;
-        case queryTabEnum  : return pvsQueryTab;
+        case queryTabEnum  : return pvsQueriesTab;
         case treeTabEnum   : return pvsTreeTab;
         default            : return pvsOther;
       }
@@ -1752,7 +1752,7 @@ public final class MainCtrlr
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
                    new HyperTableCell("", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
     {
-      List<ResultsRow> resultRows = curQV.results();
+      List<ResultsRow> resultRows = curQC.results();
 
       if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.get(0).getRecord() != record)))
         return;
@@ -1774,7 +1774,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (curQV.inReportMode())
+    if (curQC.inReportMode())
     {
       messageDialog("That menu option cannot be used to add a record to a report.", mtInformation);
       return;
@@ -1811,10 +1811,10 @@ public final class MainCtrlr
       return;
     }
 
-    for (ResultsRow row : curQV.results())
+    for (ResultsRow row : curQC.results())
       if (row.getRecord() == record) return;
 
-    curQV.addRecord(record, true);
+    curQC.addRecord(record, true);
   }
 
 //---------------------------------------------------------------------------
