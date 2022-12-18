@@ -68,8 +68,8 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 
     htFind.addIconCol();
     htFind.addCol(hdtNone, ctIncremental);
-    htFind.addCol(hdtNone, ctNone);
-    htFind.addCol(hdtNone, ctNone);
+    htFind.addLabelCol(hdtNone);
+    htFind.addLabelCol(hdtNone);
 
     htFind.setDblClickHandler(HDT_Record.class, work -> btnOkClick());
 

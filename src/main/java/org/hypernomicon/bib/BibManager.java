@@ -26,7 +26,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static java.util.Objects.*;
@@ -236,9 +235,9 @@ public class BibManager extends HyperDlg
     tpRelated.heightProperty().addListener((ob, ov, nv) -> AnchorPane.setTopAnchor(webView, nv.doubleValue()));
 
     htRelatives = new HyperTable(tvRelatives, 2, false, "");
-    htRelatives.addCol(hdtWork, ctNone);
+    htRelatives.addLabelCol(hdtWork);
     htRelatives.addIconCol();
-    htRelatives.addCol(hdtWork, ctNone);
+    htRelatives.addLabelCol(hdtWork);
     htRelatives.setDblClickHandler(HDT_Work.class, this::goToWork);
 
     htRelatives.addDefaultMenuItems();

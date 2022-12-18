@@ -324,7 +324,7 @@ public class FileManager extends HyperDlg
     recordTable = new HyperTable(recordTV, 1, false, PREF_KEY_HT_FM_RECORDS, this);
 
     recordTable.addCol(hdtNone, ctIncremental);
-    recordTable.addCol(hdtNone, ctNone);
+    recordTable.addLabelCol(hdtNone);
 
     treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {

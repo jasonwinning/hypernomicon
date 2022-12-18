@@ -22,7 +22,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.function.Predicate;
 
@@ -57,8 +56,8 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
   private ChooseParentWorkFileDlgCtrlr init(HDT_Work work)
   {
     htFiles = new HyperTable(tvFiles, 0, false, "");
-    htFiles.addCol(hdtWorkFile, ctNone);
-    htFiles.addCol(hdtWorkFile, ctNone);
+    htFiles.addLabelCol(hdtWorkFile);
+    htFiles.addLabelCol(hdtWorkFile);
     htFiles.setDblClickHandler(HDT_WorkFile.class, workFile -> launchFile(workFile.filePath()));
 
     htFiles.buildRows(work.largerWork.get().workFiles.stream().filter(Predicate.not(work.workFiles::contains)), (row, workFile) ->

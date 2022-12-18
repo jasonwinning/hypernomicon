@@ -245,7 +245,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
         row.setCellValue(nextColNdx, "", hdtWork, CellSortMethod.smNumeric);
     });
 
-    htWhereMade.addCol(hdtWork, ctNone);
+    htWhereMade.addLabelCol(hdtWork);
 
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);
@@ -253,9 +253,9 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     htCounters = new HyperTable(lowerCtrlr.tvCounters, 3, true, PREF_KEY_HT_ARG_COUNTERS);
 
     htCounters.addActionCol(ctGoNewBtn, 3);
-    htCounters.addCol(hdtPerson, ctNone);
-    htCounters.addCol(hdtArgumentVerdict, ctNone);
-    htCounters.addCol(hdtArgument, ctNone);
+    htCounters.addLabelCol(hdtPerson);
+    htCounters.addLabelCol(hdtArgumentVerdict);
+    htCounters.addLabelCol(hdtArgument);
 
     htWhereMade.getTV().focusedProperty().addListener((ob, oldValue, newValue) -> updateArgCounts());
 

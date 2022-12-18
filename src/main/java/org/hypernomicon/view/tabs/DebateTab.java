@@ -129,13 +129,13 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
     htPositions = new HyperTable(ctrlr.tvLeftChildren, 2, true, PREF_KEY_HT_DEBATE_POS);
 
     htPositions.addActionCol(ctGoNewBtn, 2);
-    htPositions.addCol(hdtPerson, ctNone);
-    htPositions.addCol(hdtPosition, ctNone);
+    htPositions.addLabelCol(hdtPerson);
+    htPositions.addLabelCol(hdtPosition);
 
     htSubdebates = new HyperTable(ctrlr.tvRightChildren, 1, true, PREF_KEY_HT_DEBATE_SUB);
 
     htSubdebates.addActionCol(ctGoNewBtn, 1);
-    htSubdebates.addCol(hdtDebate, ctNone);
+    htSubdebates.addLabelCol(hdtDebate);
 
     ui.initPositionContextMenu(htPositions);
   }

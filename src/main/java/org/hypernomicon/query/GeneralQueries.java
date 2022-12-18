@@ -60,7 +60,7 @@ public final class GeneralQueries
                            QUERY_ANY_FIELD_CONTAINS      =  2,  // "where any field contains"
                            QUERY_LIST_ALL                =  3;  // "list all records"
   private static final int QUERY_WHERE_FIELD             =  4,  // "where field"
-                           QUERY_WHERE_RELATIVE          =  5,  // "where set of records having this record as"
+                           QUERY_WHERE_RELATIVE          =  5,  // "where set of records related by being"
                            QUERY_WHERE_KEY_WORKS         =  6,  // "where key works"
                            QUERY_RECORD_TYPE             =  7,  // "record type equals"
                            QUERY_RECORD_EQUALS           =  8,  // "show specified record"
@@ -158,7 +158,7 @@ public final class GeneralQueries
 
     allQueries.add(new QueryWhereBibField(QUERY_WHERE_BIB_FIELD, "where bibliographic field"));
 
-    allQueries.add(new QueryWhereRelative(QUERY_WHERE_RELATIVE, "where set of records having this record as"));
+    allQueries.add(new QueryWhereRelative(QUERY_WHERE_RELATIVE, "where set of records related by being"));
 
     allQueries.add(new QueryWhereKeyWorks(QUERY_WHERE_KEY_WORKS, "where key works"));
 

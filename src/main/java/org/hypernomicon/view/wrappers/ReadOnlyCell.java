@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -34,19 +35,22 @@ import javafx.scene.input.MouseButton;
 
 public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 {
-  private final boolean incremental;
   private final HyperTable table;
+  private final HyperTableColumn col;
   private final Function<HyperTableRow, Node> graphicProvider;
   public static final int INCREMENTAL_ROWS = 20;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ReadOnlyCell(HyperTable table, boolean incremental, Function<HyperTableRow, Node> graphicProvider)
+  ReadOnlyCell(HyperTable table, HyperTableColumn col, Function<HyperTableRow, Node> graphicProvider)
   {
-    this.incremental = incremental;
     this.table = table;
+    this.col = col;
     this.graphicProvider = graphicProvider;
+
+    if (col.alignment != null)
+      setAlignment(col.alignment);
 
     setOnMouseClicked(mouseEvent -> nullSwitch(getItem(), cellItem -> nullSwitch(cellItem.getRecord(), (HDT_Record record) ->
     {
@@ -84,7 +88,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
       return;
     }
 
-    if (incremental && (HyperTableCell.getCellType(cell) == hdtAuxiliary))
+    if ((col.getCtrlType() == HyperCtrlType.ctIncremental) && (HyperTableCell.getCellType(cell) == hdtAuxiliary))
     {
       setText("");
       setTooltip(null);

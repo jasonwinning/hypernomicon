@@ -681,12 +681,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
 
-    htWorks.addCol(hdtNone         , ctNone);
-    htWorks.addCol(hdtWorkType     , ctNone);
-    htWorks.addCol(hdtNone         , ctNone);
+    htWorks.addLabelCol(hdtNone);
+    htWorks.addLabelCol(hdtWorkType);
+    htWorks.addLabelCol(hdtNone);
     htWorks.addCol(hdtInvestigation, ctInvSelect);
-    htWorks.addCol(hdtWork         , ctNone);
-    htWorks.addCol(hdtPerson       , ctNone);
+    htWorks.addLabelCol(hdtWork);
+    htWorks.addLabelCol(hdtPerson);
 
     tvWorks.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -708,10 +708,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);
 
     htArguments.addIconCol();
-    htArguments.addCol(hdtNone    , ctNone);
-    htArguments.addCol(hdtPosition, ctNone);
-    htArguments.addCol(hdtNone    , ctNone);   // record type = hdtNone so that the column will sort purely based on the displayed text
-    htArguments.addCol(hdtArgument, ctNone);
+    htArguments.addLabelCol(hdtNone);
+    htArguments.addLabelCol(hdtPosition);
+    htArguments.addLabelCol(hdtNone);      // record type = hdtNone so that the column will sort purely based on the displayed text
+    htArguments.addLabelCol(hdtArgument);
 
     hcbRank     = new HyperCB(cbRank    , ctDropDownList, new StandardPopulator(hdtRank                 ), true);
     hcbStatus   = new HyperCB(cbStatus  , ctDropDownList, new StandardPopulator(hdtPersonStatus         ), true);

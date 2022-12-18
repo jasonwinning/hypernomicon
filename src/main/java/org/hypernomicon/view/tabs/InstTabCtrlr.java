@@ -226,11 +226,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     htPersons = new HyperTable(tvPersons, 0, false, PREF_KEY_HT_INST_PEOPLE);
 
-    htPersons.addCol(hdtPerson     , ctNone);
-    htPersons.addCol(hdtRank       , ctNone);
-    htPersons.addCol(hdtField      , ctNone);
-    htPersons.addCol(hdtInstitution, ctNone);
-    htPersons.addCol(hdtPerson     , ctNone);
+    htPersons.addLabelCol(hdtPerson     );
+    htPersons.addLabelCol(hdtRank       );
+    htPersons.addLabelCol(hdtField      );
+    htPersons.addLabelCol(hdtInstitution);
+    htPersons.addLabelCol(hdtPerson     );
 
     hcbCountry = new HyperCB(cbCountry, ctDropDownList, new StandardPopulator(hdtCountry), true);
     hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), true);

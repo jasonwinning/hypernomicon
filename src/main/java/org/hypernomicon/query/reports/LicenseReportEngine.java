@@ -21,7 +21,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -103,7 +102,7 @@ public class LicenseReportEngine extends ReportEngine
 
     ht = new HyperTable(tv, -1, false, "");
 
-    ht.addCol(hdtNone, ctNone);
+    ht.addLabelCol(hdtNone);
 
     return ht;
   }

@@ -70,6 +70,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableColumn;
@@ -410,6 +411,21 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       new StandardPopulator(objType)
     :
       Populator.create(cvtRecord));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableColumn addLabelCol(RecordType objType)
+  {
+    return addLabelCol(objType, null);
+  }
+
+  public HyperTableColumn addLabelCol(RecordType objType, Pos alignment)
+  {
+    HyperTableColumn col = addColAltPopulator(objType, ctNone, Populator.create(cvtRecord));
+    col.alignment = alignment;
+    return col;
   }
 
 //---------------------------------------------------------------------------

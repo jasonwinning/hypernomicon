@@ -68,7 +68,7 @@ public abstract class Query<HDT_T extends HDT_Record>
 
     QuerySource origSource = recordType == hdtNone ? new AllQuerySource() : new DatasetQuerySource(recordType);
 
-    return getSource(origSource, row.getCell(2), row.getCell(3), row.getCell(4));
+    return getSource(origSource, row.getCell(QueryCtrlr.OPERAND_1_COL_NDX), row.getCell(QueryCtrlr.OPERAND_2_COL_NDX), row.getCell(QueryCtrlr.OPERAND_3_COL_NDX));
   }
 
   /**

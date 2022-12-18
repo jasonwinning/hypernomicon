@@ -243,15 +243,15 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     htSubnotes = new HyperTable(ctrlr.tvLeftChildren, 2, true, PREF_KEY_HT_NOTE_SUB);
 
     htSubnotes.addActionCol(ctGoNewBtn, 2);
-    htSubnotes.addCol(hdtNote, ctNone);
-    htSubnotes.addCol(hdtNote, ctNone);
-    htSubnotes.addCol(hdtNote, ctNone);
+    htSubnotes.addLabelCol(hdtNote);
+    htSubnotes.addLabelCol(hdtNote);
+    htSubnotes.addLabelCol(hdtNote);
 
     htMentioners = new HyperTable(ctrlr.tvRightChildren, 1, false, PREF_KEY_HT_NOTE_MENTIONERS);
 
     htMentioners.addIconCol();
-    htMentioners.addCol(hdtNone, ctNone);
-    htMentioners.addCol(hdtNone, ctNone);
+    htMentioners.addLabelCol(hdtNone);
+    htMentioners.addLabelCol(hdtNone);
 
     db.addMentionsNdxCompleteHandler(this::updateMentioners);
 

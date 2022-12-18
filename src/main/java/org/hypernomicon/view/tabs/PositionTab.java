@@ -183,11 +183,11 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     htArguments = new HyperTable(ctrlr.tvLeftChildren, 3, true, PREF_KEY_HT_POS_ARG);
 
     htArguments.addActionCol(ctGoNewBtn, 3);
-    htArguments.addCol(hdtPerson         , ctNone);
-    htArguments.addCol(hdtPositionVerdict, ctNone);
-    htArguments.addCol(hdtArgument       , ctNone);
-    htArguments.addCol(hdtWork           , ctNone);
-    htArguments.addCol(hdtArgument       , ctNone);
+    htArguments.addLabelCol(hdtPerson         );
+    htArguments.addLabelCol(hdtPositionVerdict);
+    htArguments.addLabelCol(hdtArgument       );
+    htArguments.addLabelCol(hdtWork           );
+    htArguments.addLabelCol(hdtArgument       );
 
     TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>();
     ctrlr.tvRightChildren.getColumns().add(1, col);
@@ -211,7 +211,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       return new HBox(hLink1, hLink2);
     });
 
-    htRightChildren.addCol(hdtPerson  , ctNone);
+    htRightChildren.addLabelCol(hdtPerson);
 
     initArgContextMenu();
     ui.initPositionContextMenu(htRightChildren);

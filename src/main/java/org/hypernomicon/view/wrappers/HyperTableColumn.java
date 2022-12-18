@@ -42,6 +42,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
@@ -69,6 +70,8 @@ public class HyperTableColumn
                                dontCreateNewRecord = new MutableBoolean(false);
 
   public Function<HyperTableRow, String> textHndlr = null;
+
+  Pos alignment = null;  // This is currently only respected by ReadOnlyCell
 
 //---------------------------------------------------------------------------
 
@@ -163,7 +166,7 @@ public class HyperTableColumn
 
         htcCol.setEditable(false);
         htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, false, graphicProvider));
+        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, this, graphicProvider));
 
         break;
 
@@ -207,7 +210,7 @@ public class HyperTableColumn
 
         htcCol.setEditable(false);
         htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, true, graphicProvider));
+        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, this, graphicProvider));
 
         break;
 

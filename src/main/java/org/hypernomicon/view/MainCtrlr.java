@@ -359,8 +359,8 @@ public final class MainCtrlr
 
     htFind.addIconCol();
     htFind.addCol(hdtNone, ctIncremental);
-    htFind.addCol(hdtNone, ctNone);
-    htFind.addCol(hdtNone, ctNone);
+    htFind.addLabelCol(hdtNone);
+    htFind.addLabelCol(hdtNone);
 
     htFind.setOnShowMore(() -> tfOmniGoToChange(ctfOmniGoTo.getText(), true));
 

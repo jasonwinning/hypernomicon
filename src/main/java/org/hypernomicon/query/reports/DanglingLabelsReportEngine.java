@@ -3,7 +3,6 @@ package org.hypernomicon.query.reports;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,7 +119,7 @@ public class DanglingLabelsReportEngine extends ReportEngine
 
     ht = new HyperTable(tv, 0, false, "");
 
-    ht.addCol(hdtWorkLabel, ctNone);
+    ht.addLabelCol(hdtWorkLabel);
 
     return ht;
   }

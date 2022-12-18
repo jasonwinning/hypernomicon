@@ -257,9 +257,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htSubworks = new HyperTable(tvSubworks, 1, false, PREF_KEY_HT_WORK_SUB);
 
-    htSubworks.addCol(hdtPerson, ctNone);
-    htSubworks.addCol(hdtWork, ctNone);
-    htSubworks.addCol(hdtWork, ctNone);
+    htSubworks.addLabelCol(hdtPerson);
+    htSubworks.addLabelCol(hdtWork);
+    htSubworks.addLabelCol(hdtWork);
 
     htSubworks.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
@@ -274,17 +274,17 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, PREF_KEY_HT_WORK_MENTIONERS);
 
     htKeyMentioners.addIconCol();
-    htKeyMentioners.addCol(hdtNone, ctNone);
-    htKeyMentioners.addCol(hdtNone, ctNone);
+    htKeyMentioners.addLabelCol(hdtNone);
+    htKeyMentioners.addLabelCol(hdtNone);
 
     htKeyMentioners.addDefaultMenuItems();
 
     htArguments = new HyperTable(tvArguments, 3, false, PREF_KEY_HT_WORK_ARG);
 
     htArguments.addIconCol();
-    htArguments.addCol(hdtNone, ctNone);
-    htArguments.addCol(hdtNone, ctNone);      // record type = hdtNone so that the column will sort purely based on displayed text
-    htArguments.addCol(hdtArgument, ctNone);
+    htArguments.addLabelCol(hdtNone);
+    htArguments.addLabelCol(hdtNone);      // record type = hdtNone so that the column will sort purely based on displayed text
+    htArguments.addLabelCol(hdtArgument);
 
     htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
 
@@ -293,7 +293,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx)));
 
     htWorkFiles.addCheckboxCol();
-    htWorkFiles.addCol(hdtWorkFile, ctNone);
+    htWorkFiles.addLabelCol(hdtWorkFile);
     htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, true, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int startPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
@@ -411,7 +411,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htMiscFiles = new HyperTable(tvMiscFiles, 1, true, PREF_KEY_HT_WORK_MISC);
 
     htMiscFiles.addActionCol(ctGoNewBtn, 1);
-    htMiscFiles.addCol(hdtMiscFile, ctNone);
+    htMiscFiles.addLabelCol(hdtMiscFile);
 
     htMiscFiles.addDefaultMenuItems();
 

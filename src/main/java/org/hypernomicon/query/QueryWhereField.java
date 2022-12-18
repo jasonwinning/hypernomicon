@@ -32,6 +32,7 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.Query.RecordQuery;
+import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.TagItemPopulator;
@@ -63,10 +64,10 @@ public class QueryWhereField extends RecordQuery
   {
     CellValueType valueType = vp1.getValueType(row);
 
-    if ((valueType != cvtTagItem) || (vp1.getPopulator(row).getRecordType(null) != row.getRecordType(0)))
+    if ((valueType != cvtTagItem) || (vp1.getPopulator(row).getRecordType(null) != row.getRecordType(QueryCtrlr.QUERY_TYPE_COL_NDX)))
     {
       clearOperands(row, 1);
-      vp1.setPopulator(row, new TagItemPopulator(row.getRecordType(0)));
+      vp1.setPopulator(row, new TagItemPopulator(row.getRecordType(QueryCtrlr.QUERY_TYPE_COL_NDX)));
     }
 
     return true;
@@ -87,11 +88,11 @@ public class QueryWhereField extends RecordQuery
 
   @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
   {
-    RecordType recordType = row.getRecordType(0), objType = hdtNone;
+    RecordType recordType = row.getRecordType(QueryCtrlr.QUERY_TYPE_COL_NDX), objType = hdtNone;
     HyperDataCategory cat = hdcString;
     boolean catSet = false;
 
-    for (HDI_Schema schema : db.getSchemasByTag(Tag.getTag(row.getID(2))))
+    for (HDI_Schema schema : db.getSchemasByTag(Tag.getTag(getCellID(op1))))
     {
       RelationType relType = schema.getRelType();
 
@@ -125,7 +126,7 @@ public class QueryWhereField extends RecordQuery
       }
     }
 
-    if ((row.getID(3) != EQUAL_TO_OPERAND_ID) && (row.getID(3) != NOT_EQUAL_TO_OPERAND_ID))
+    if ((getCellID(op2) != EQUAL_TO_OPERAND_ID) && (getCellID(op2) != NOT_EQUAL_TO_OPERAND_ID))
       cat = hdcString;
 
     if ((cat == hdcString) || (cat == hdcPersonName) || (cat == hdcBibEntryKey) || (cat == hdcMainTextAndHub))
@@ -150,7 +151,7 @@ public class QueryWhereField extends RecordQuery
 
     if (schema == null) return false;
 
-    CellValueType valueType = row.getPopulator(4).getValueType(row);
+    CellValueType valueType = row.getPopulator(QueryCtrlr.OPERAND_3_COL_NDX).getValueType(row);
 
     switch (getCellID(op2))
     {

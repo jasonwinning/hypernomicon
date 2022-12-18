@@ -87,6 +87,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -130,6 +131,14 @@ public final class QueryCtrlr
                   inRecordMode = true,
                   searchLinkedRecords;
 
+  public static final int ROW_NUMBER_COL_NDX = 0,
+                          QUERY_TYPE_COL_NDX = 1,
+                          QUERY_COL_NDX      = 2,
+                          OPERAND_1_COL_NDX  = 3,
+                          OPERAND_2_COL_NDX  = 4,
+                          OPERAND_3_COL_NDX  = 5,
+                          LOGIC_COL_NDX      = 6;
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -141,7 +150,7 @@ public final class QueryCtrlr
   HDT_Record getRecord()                  { return curResult; }
   public boolean getSearchLinkedRecords() { return searchLinkedRecords; }
 
-  private static QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(0)); }
+  private static QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(QUERY_TYPE_COL_NDX)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -177,11 +186,13 @@ public final class QueryCtrlr
         oldValue.setSelected(true);
     });
 
-    htFields = new HyperTable(tvFields, 1, true, "");
+    htFields = new HyperTable(tvFields, QUERY_COL_NDX, true, "");
 
     HyperTable.loadColWidthsForTable(tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS);
 
     htFields.autoCommitListSelections = true;
+
+    htFields.addLabelCol(hdtNone, Pos.CENTER);
 
     Populator queryTypePopulator = Populator.create(cvtQueryType, EnumSet.allOf(QueryType.class).stream()
       .map(queryType -> new HyperTableCell(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
@@ -193,13 +204,16 @@ public final class QueryCtrlr
 
     htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, queryTypePopulator, (row, cellVal, nextColNdx, nextPopulator) ->
     {
+      row.setCellValue(ROW_NUMBER_COL_NDX, String.valueOf(tvFields.getItems().indexOf(row) + 1), hdtNone);
+
       boolean tempDASD = disableAutoShowDropdownList;
       disableAutoShowDropdownList = true;
 
-      int queryID = row.getID(1);
+      int queryID = row.getID(QUERY_COL_NDX);
       QueryType queryType = QueryType.codeToVal(getCellID(cellVal));
 
       boolean clearQueryAndOperands = (queryType == qtReport) ||
+                                      (queryType == null) ||
                                       ((queryID != QUERY_ANY_FIELD_CONTAINS) &&
                                        (queryID != QUERY_WITH_NAME_CONTAINING) &&
                                        (queryID != QUERY_LIST_ALL) &&
@@ -216,8 +230,8 @@ public final class QueryCtrlr
 
       disableAutoShowDropdownList = tempDASD;
 
-      if ((clearQueryAndOperands || (queryID == QUERY_ANY_FIELD_CONTAINS)) && (disableAutoShowDropdownList == false))
-        htFields.edit(row, 1);
+      if ((clearQueryAndOperands || (queryID == QUERY_ANY_FIELD_CONTAINS)) && (disableAutoShowDropdownList == false) && (queryType != null))
+        htFields.edit(row, QUERY_COL_NDX);
     });
 
 //---------------------------------------------------------------------------
@@ -236,10 +250,10 @@ public final class QueryCtrlr
 
       disableAutoShowDropdownList = tempDASD;
 
-      if (disableAutoShowDropdownList) return;
+      if (disableAutoShowDropdownList || (query == null)) return;
 
       if (queryHasOperand(query, getQueryType(row), 1))
-        htFields.edit(row, 2);
+        htFields.edit(row, OPERAND_1_COL_NDX);
     });
 
 //---------------------------------------------------------------------------
@@ -265,19 +279,19 @@ public final class QueryCtrlr
 
         if ((op1ID >= 0) && (nextPop != null) && (nextPop.getValueType() == cvtOperand))
         {
-          HyperTableCell operandCell = row.getPopulator(2).getValueType(row) == cvtBibField ?
+          HyperTableCell operandCell = row.getPopulator(OPERAND_1_COL_NDX).getValueType(row) == cvtBibField ?
             nextPop.getChoiceByID(null, Query.CONTAINS_OPERAND_ID)
           :
             nextPop.getChoiceByID(null, Query.EQUAL_TO_OPERAND_ID);
 
           row.setCellValue(nextColNdx, operandCell);
           if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 3, cellVal, operandCell))
-            htFields.edit(row, 4);
+            htFields.edit(row, OPERAND_3_COL_NDX);
         }
         else
         {
           if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 2, cellVal, blankCell))
-            htFields.edit(row, 3);
+            htFields.edit(row, OPERAND_2_COL_NDX);
         }
       }
     });
@@ -300,8 +314,8 @@ public final class QueryCtrlr
 
       if (disableAutoShowDropdownList) return;
 
-      if (queryHasOperand(query, getQueryType(row), 3, row.getCell(2), cellVal))
-        htFields.edit(row, 4);
+      if (queryHasOperand(query, getQueryType(row), 3, row.getCell(OPERAND_1_COL_NDX), cellVal))
+        htFields.edit(row, OPERAND_3_COL_NDX);
     });
 
 //---------------------------------------------------------------------------
@@ -338,7 +352,7 @@ public final class QueryCtrlr
 
   private static Query<?> getQuery(HyperTableRow row)
   {
-    HyperTableCell cell = row.getCell(1);
+    HyperTableCell cell = row.getCell(QUERY_COL_NDX);
     return cell instanceof QueryCell ? ((QueryCell)cell).getQuery() : null;
   }
 
@@ -479,30 +493,30 @@ public final class QueryCtrlr
       htFields.clear();
       HyperTableRow row = htFields.newDataRow();
 
-      htFields.selectID(0, row, type.getCode());
+      htFields.selectID(QUERY_TYPE_COL_NDX, row, type.getCode());
 
       if (query > -1)
       {
-        htFields.selectID(1, row, query);
+        htFields.selectID(QUERY_COL_NDX, row, query);
 
         if (op1 != null)
         {
           if (getCellID(op1) > 0)
-            htFields.selectID(2, row, getCellID(op1));
+            htFields.selectID(OPERAND_1_COL_NDX, row, getCellID(op1));
           else if (getCellText(op1).isEmpty())
-            htFields.selectType(2, row, getCellType(op1));
+            htFields.selectType(OPERAND_1_COL_NDX, row, getCellType(op1));
           else
-            row.setCellValue(2, op1.clone());
+            row.setCellValue(OPERAND_1_COL_NDX, op1.clone());
         }
 
         if (op2 != null)
         {
           if (getCellID(op2) > 0)
-            htFields.selectID(3, row, getCellID(op2));
+            htFields.selectID(OPERAND_2_COL_NDX, row, getCellID(op2));
           else if (getCellText(op2).isEmpty())
-            htFields.selectType(3, row, getCellType(op2));
+            htFields.selectType(OPERAND_2_COL_NDX, row, getCellType(op2));
           else
-            row.setCellValue(3, op2.clone());
+            row.setCellValue(OPERAND_2_COL_NDX, op2.clone());
         }
       }
 
@@ -539,7 +553,7 @@ public final class QueryCtrlr
       {
         QueryRow queryRow = new QueryRow();
 
-        for (int colNdx = 0; colNdx < 6; colNdx++)
+        for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= LOGIC_COL_NDX; colNdx++)
           queryRow.cells[colNdx] = row.getCell(colNdx).clone();
 
         fav.rows.add(queryRow);
@@ -584,7 +598,7 @@ public final class QueryCtrlr
 
     htFields.buildRows(fav.rows, (row, queryRow) ->
     {
-      for (int colNdx = 0; colNdx < 6; colNdx++)
+      for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= LOGIC_COL_NDX; colNdx++)
         row.setCellValue(colNdx, queryRow.cells[colNdx].clone());
     });
 
@@ -601,7 +615,7 @@ public final class QueryCtrlr
   {
     htFields.dataRows().forEach(row ->
     {
-      for (int colNdx = 1; colNdx <= 4; colNdx++)
+      for (int colNdx = QUERY_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
       {
         String text = row.getText(colNdx);
         if (text.length() > 0)
@@ -655,7 +669,7 @@ public final class QueryCtrlr
     if (setCaption)
       setCaption();
 
-    ReportEngine reportEngine = ReportEngine.createEngine(row.getID(1));
+    ReportEngine reportEngine = ReportEngine.createEngine(row.getID(QUERY_COL_NDX));
 
     if (reportEngine == null)
     {
@@ -670,7 +684,7 @@ public final class QueryCtrlr
       updateMessage("Generating report...");
       updateProgress(0, 1);
 
-      reportEngine.generate(this, row.getCell(2), row.getCell(3), row.getCell(4));
+      reportEngine.generate(this, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
     }};
 
     if (task.runWithProgressDialog() != State.SUCCEEDED) return;
@@ -733,7 +747,7 @@ public final class QueryCtrlr
   {
     for (HyperTableRow row : htFields.dataRows())
     {
-      if (QueryType.codeToVal(row.getID(0)) == qtReport)
+      if (QueryType.codeToVal(row.getID(QUERY_TYPE_COL_NDX)) == qtReport)
       {
         htFields.setDataRows(List.of(row));
 
@@ -753,7 +767,7 @@ public final class QueryCtrlr
 
     for (HyperTableRow row : htFields.dataRows())
     {
-      if (row.getID(1) < 0) continue;
+      if (row.getID(QUERY_COL_NDX) < 0) continue;
 
       QueryType type = getQueryType(row);
       Query<?> query = getQuery(row);
@@ -797,7 +811,7 @@ public final class QueryCtrlr
         updateProgress(0, 1);
 
         for (HyperTableRow row : sources.keySet())
-          queries.get(row).init(row.getCell(2), row.getCell(3), row.getCell(4));
+          queries.get(row).init(row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
 
         Iterator<HDT_Record> recordIterator = combinedSource.iterator();
 
@@ -821,14 +835,14 @@ public final class QueryCtrlr
 
             if (source.contains(record))
             {
-              boolean result = evaluate(query, record, row, row.getCell(2), row.getCell(3), row.getCell(4));
+              boolean result = evaluate(query, record, row, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
 
               if      (firstRow)            add = result;
               else if (lastConnectiveWasOr) add = add || result;
               else                          add = add && result;
             }
 
-            lastConnectiveWasOr = row.getID(5) == QueriesTabCtrlr.OR_CONNECTIVE_ID;
+            lastConnectiveWasOr = row.getID(LOGIC_COL_NDX) == QueriesTabCtrlr.OR_CONNECTIVE_ID;
             firstRow = false;
           }
 
@@ -935,13 +949,13 @@ public final class QueryCtrlr
   {
     for (HyperTableRow row : htFields.dataRows())
     {
-      if (row.getID(0) == qtAllRecords.getCode())
+      if (row.getID(QUERY_TYPE_COL_NDX) == qtAllRecords.getCode())
       {
-        switch (row.getID(1))
+        switch (row.getID(QUERY_COL_NDX))
         {
           case QUERY_LINKING_TO_RECORD : case QUERY_MATCHING_RECORD :
 
-            HDT_Record record = HyperTableCell.getRecord(row.getCell(3));
+            HDT_Record record = HyperTableCell.getRecord(row.getCell(OPERAND_2_COL_NDX));
             if (record != null) return record;
             break;
 
@@ -961,9 +975,9 @@ public final class QueryCtrlr
   {
     for (HyperTableRow row : htFields.dataRows())
     {
-      if (row.getID(1) > -1)
+      if (row.getID(QUERY_COL_NDX) > -1)
       {
-        for (int colNdx = 2; colNdx <= 4; colNdx++)
+        for (int colNdx = OPERAND_1_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
         {
           if (((VariablePopulator) htFields.getPopulator(colNdx)).getRestricted(row) == false)
           {
@@ -1007,10 +1021,10 @@ public final class QueryCtrlr
     boolean wasClearingOperand = clearingOperand;
     clearingOperand = true;
 
-    VariablePopulator vp = row.getPopulator(opNum + 1);
+    VariablePopulator vp = row.getPopulator(opNum + QUERY_COL_NDX);
     vp.setPopulator(row, null);
     vp.setRestricted(row, true);
-    row.setCellValue(opNum + 1, "", hdtNone);
+    row.setCellValue(opNum + QUERY_COL_NDX, "", hdtNone);
 
     clearingOperand = wasClearingOperand;
   }
@@ -1027,7 +1041,7 @@ public final class QueryCtrlr
 
     clearOperands(row, 1);
 
-    return (query == null) || query.initRow(row, htFields.getPopulator(2), htFields.getPopulator(3), htFields.getPopulator(4));
+    return (query == null) || query.initRow(row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX));
   }
 
 //---------------------------------------------------------------------------
@@ -1039,9 +1053,9 @@ public final class QueryCtrlr
   {
     if (clearingOperand || (db.isLoaded() == false)) return false;
 
-    if (getQueryType(row) == qtReport) return true;
+    if ((query == null) || (getQueryType(row) == qtReport)) return true;
 
-    return query.op1Change(op1, row, htFields.getPopulator(2), htFields.getPopulator(3), htFields.getPopulator(4));
+    return query.op1Change(op1, row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX));
   }
 
 //---------------------------------------------------------------------------
@@ -1053,11 +1067,11 @@ public final class QueryCtrlr
   {
     if (clearingOperand || (db.isLoaded() == false)) return false;
 
-    if (getQueryType(row) == qtReport) return true;
+    if ((query == null) || (getQueryType(row) == qtReport)) return true;
 
-    HyperTableCell op1 = row.getCell(2);
+    HyperTableCell op1 = row.getCell(OPERAND_1_COL_NDX);
 
-    return query.op2Change(op1, op2, row, htFields.getPopulator(2), htFields.getPopulator(3), htFields.getPopulator(4));
+    return query.op2Change(op1, op2, row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX));
   }
 
 //---------------------------------------------------------------------------
@@ -1070,8 +1084,8 @@ public final class QueryCtrlr
     htFields.clear();
 
     HyperTableRow row = htFields.newDataRow();
-    htFields.selectID(0, row, qtAllRecords.getCode());
-    htFields.selectID(1, row, QUERY_ANY_FIELD_CONTAINS);
+    htFields.selectID(QUERY_TYPE_COL_NDX, row, qtAllRecords.getCode());
+    htFields.selectID(QUERY_COL_NDX, row, QUERY_ANY_FIELD_CONTAINS);
     htFields.selectRow(row);
 
     disableAutoShowDropdownList = false;

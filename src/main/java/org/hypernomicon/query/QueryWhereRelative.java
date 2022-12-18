@@ -26,6 +26,7 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.Query.RecordQuery;
+import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.view.populators.RelationPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
@@ -56,10 +57,10 @@ public class QueryWhereRelative extends RecordQuery
   {
     CellValueType valueType = vp1.getValueType(row);
 
-    if ((valueType != cvtRelation) || (vp1.getPopulator(row).getRecordType(row) != row.getRecordType(0)))
+    if ((valueType != cvtRelation) || (vp1.getPopulator(row).getRecordType(row) != row.getRecordType(QueryCtrlr.QUERY_TYPE_COL_NDX)))
     {
       clearOperands(row, 1);
-      vp1.setPopulator(row, new RelationPopulator(row.getRecordType(0)));
+      vp1.setPopulator(row, new RelationPopulator(row.getRecordType(QueryCtrlr.QUERY_TYPE_COL_NDX)));
     }
 
     return true;
@@ -80,9 +81,9 @@ public class QueryWhereRelative extends RecordQuery
 
   @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
   {
-    RelationType relType = RelationType.codeToVal(row.getID(2));
+    RelationType relType = RelationType.codeToVal(getCellID(op1));
 
-    switch (row.getID(3))
+    switch (getCellID(op2))
     {
       case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
 

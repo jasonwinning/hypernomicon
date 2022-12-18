@@ -71,9 +71,16 @@ public class QueryPopulator extends Populator
 
   public void setQueryType(HyperTableRow row, QueryType newType)
   {
+    if (newType == null)
+    {
+      rowToQueryType.remove(row);
+      rowToChoices.remove(row);
+      return;
+    }
+
     QueryType oldType = rowToQueryType.put(row, newType);
 
-    if ((newType == null) || newType.equals(oldType)) return;
+    if (newType.equals(oldType)) return;
 
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());

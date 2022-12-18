@@ -22,7 +22,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
@@ -78,10 +77,10 @@ public class ContentsWindow extends HyperDlg
   {
     htContents = new HyperTable(tvContents, 2, false, PREF_KEY_HT_CONTENTS_DLG, this);
 
-    htContents.addCol(hdtPerson, ctNone);
-    htContents.addCol(hdtWorkType, ctNone);
-    htContents.addCol(hdtWork, ctNone);
-    htContents.addCol(hdtWork, ctNone);
+    htContents.addLabelCol(hdtPerson);
+    htContents.addLabelCol(hdtWorkType);
+    htContents.addLabelCol(hdtWork);
+    htContents.addLabelCol(hdtWork);
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, true, (row, cellVal, nextColNdx, nextPopulator) ->
     {

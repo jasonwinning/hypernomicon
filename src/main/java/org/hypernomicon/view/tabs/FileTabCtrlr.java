@@ -204,8 +204,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htKeyMentioners.addDefaultMenuItems();
 
     htKeyMentioners.addIconCol();
-    htKeyMentioners.addCol(hdtNone, ctNone);
-    htKeyMentioners.addCol(hdtNone, ctNone);
+    htKeyMentioners.addLabelCol(hdtNone);
+    htKeyMentioners.addLabelCol(hdtNone);
 
     hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), true);
     hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), true);

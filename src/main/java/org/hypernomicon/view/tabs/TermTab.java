@@ -448,8 +448,8 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
         tc.setText("Sense");
         tv.getColumns().add(tc);
 
-        ht.addCol(hdtGlossary, ctNone);
-        ht.addCol(hdtConceptSense, ctNone);
+        ht.addLabelCol(hdtGlossary);
+        ht.addLabelCol(hdtConceptSense);
 
         ht.buildRows(curTerm.concepts, (innerRow, concept) ->
         {
@@ -477,14 +477,14 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     htSubConcepts = new HyperTable(ctrlr.tvLeftChildren, 2, true, PREF_KEY_HT_CONCEPT_SUB);
 
     htSubConcepts.addActionCol(ctGoNewBtn, 2);
-    htSubConcepts.addCol(hdtConcept, ctNone);
-    htSubConcepts.addCol(hdtConcept, ctNone);
+    htSubConcepts.addLabelCol(hdtConcept);
+    htSubConcepts.addLabelCol(hdtConcept);
 
     htDisplayers = new HyperTable(ctrlr.tvRightChildren, 1, false, PREF_KEY_HT_TERM_DISPLAYERS);
 
     htDisplayers.addIconCol();
-    htDisplayers.addCol(hdtNone, ctNone);
-    htDisplayers.addCol(hdtNone, ctNone);
+    htDisplayers.addLabelCol(hdtNone);
+    htDisplayers.addLabelCol(hdtNone);
 
     htSubConcepts.addDefaultMenuItems();
     htDisplayers .addDefaultMenuItems();
