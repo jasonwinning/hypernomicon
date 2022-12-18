@@ -37,17 +37,16 @@
            <TableColumn prefWidth="220.0" text="Operand 1" />
            <TableColumn prefWidth="225.0" text="Operand 2" />
            <TableColumn prefWidth="209.0" text="Operand 3" />
-           <TableColumn prefWidth="105.0" text="Logic" />
          </columns>
        </TableView>
-         <ToggleButton layoutX="100.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" selected="true" text="And" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="100.0">
+         <ToggleButton fx:id="btnAnd" layoutX="100.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" selected="true" text="And" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="100.0">
             <toggleGroup>
                <ToggleGroup fx:id="tgLogic" />
             </toggleGroup>
          </ToggleButton>
          <Label layoutX="9.0" layoutY="253.0" text="Evaluation logic:" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="9.0" />
-         <ToggleButton layoutX="149.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" text="Or" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="149.0" />
-         <ToggleButton layoutX="198.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="72.0" text="Custom:" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="198.0" />
+         <ToggleButton fx:id="btnOr" layoutX="149.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" text="Or" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="149.0" />
+         <ToggleButton fx:id="btnCustom" layoutX="198.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="72.0" text="Custom:" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="198.0" />
          <TextField fx:id="tfCustomLogic" layoutX="276.0" layoutY="250.0" prefHeight="25.0" prefWidth="781.0" promptText="Example: 1 and not (2 or 3)" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="274.0" AnchorPane.rightAnchor="2.0" />
      </AnchorPane>
      </detailNode>

@@ -25,6 +25,7 @@ import static org.hypernomicon.query.WorkQueries.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.getCellText;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -203,7 +204,7 @@ public final class GeneralQueries
         return true;
       }
 
-      @Override protected void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord) == false)
@@ -229,7 +230,7 @@ public final class GeneralQueries
         return true;
       }
 
-      @Override protected void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         List<KeywordLink> linkList = KeywordLinkList.generate(getCellText(op1));
         if (linkList.size() > 0)
@@ -303,7 +304,7 @@ public final class GeneralQueries
 
       private final MutableBoolean choseNotToWait = new MutableBoolean();
 
-      @Override protected void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
+      @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
         HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord)) return;

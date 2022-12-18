@@ -189,22 +189,21 @@ public abstract class Query<HDT_T extends HDT_Record>
 
   protected abstract static class FilteredQuery<HDT_T1 extends HDT_Record> extends Query<HDT_T1>
   {
-    protected final LinkedHashSet<HDT_Record> records = new LinkedHashSet<>();
-
     FilteredQuery(int queryID, String description)
     {
       super(queryID, description);
     }
 
-    protected abstract void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException;
+    protected abstract void runFilter(LinkedHashSet<HDT_T1> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException;
 
+    @SuppressWarnings("unchecked")
     @Override protected final QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
     {
-      records.clear();
+      final LinkedHashSet<HDT_T1> records = new LinkedHashSet<>();
 
       try
       {
-        runFilter(op1, op2, op3);
+        runFilter(records, op1, op2, op3);
       }
       catch (HyperDataException e)
       {
@@ -212,7 +211,7 @@ public abstract class Query<HDT_T extends HDT_Record>
         records.clear();
       }
 
-      return new FilteredQuerySource(origSource, records);
+      return new FilteredQuerySource(origSource, (LinkedHashSet<HDT_Record>) records);
     }
   }
 

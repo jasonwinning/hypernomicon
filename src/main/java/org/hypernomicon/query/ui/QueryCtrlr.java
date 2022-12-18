@@ -34,6 +34,7 @@ import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -76,6 +77,8 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.util.boolEvaluator.BoolEvaluator;
+import org.hypernomicon.util.boolEvaluator.BoolExpression;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -93,6 +96,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
@@ -109,6 +113,7 @@ public final class QueryCtrlr
   @FXML private AnchorPane apDescription, apResults;
   @FXML private ToggleGroup tgLogic;
   @FXML private TextField tfCustomLogic;
+  @FXML private ToggleButton btnCustom, btnAnd, btnOr;
 
   private final QueriesTabCtrlr queriesTabCtrlr;
   private final WebView webView;
@@ -136,8 +141,7 @@ public final class QueryCtrlr
                           QUERY_COL_NDX      = 2,
                           OPERAND_1_COL_NDX  = 3,
                           OPERAND_2_COL_NDX  = 4,
-                          OPERAND_3_COL_NDX  = 5,
-                          LOGIC_COL_NDX      = 6;
+                          OPERAND_3_COL_NDX  = 5;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -321,7 +325,6 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 
     htFields.addColAltPopulatorWithActionHandler(hdtNone, ctDropDown, new VariablePopulator(), onAction);
-    htFields.addColAltPopulator(hdtNone, ctDropDownList, Populator.create(cvtConnective, QueriesTabCtrlr.andCell, QueriesTabCtrlr.orCell));
 
     htFields.getColumns().forEach(col -> col.setDontCreateNewRecord(true));
 
@@ -540,6 +543,8 @@ public final class QueryCtrlr
 
     if (fav == null)
     {
+      if (Boolean.TRUE.booleanValue()) return; // disable saving favorites for now
+
       NewQueryFavDlgCtrlr ctrlr = NewQueryFavDlgCtrlr.build(tfFavName.getText());
 
       if (ctrlr.showModal() == false) return;
@@ -553,7 +558,7 @@ public final class QueryCtrlr
       {
         QueryRow queryRow = new QueryRow();
 
-        for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= LOGIC_COL_NDX; colNdx++)
+        for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
           queryRow.cells[colNdx] = row.getCell(colNdx).clone();
 
         fav.rows.add(queryRow);
@@ -598,8 +603,8 @@ public final class QueryCtrlr
 
     htFields.buildRows(fav.rows, (row, queryRow) ->
     {
-      for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= LOGIC_COL_NDX; colNdx++)
-        row.setCellValue(colNdx, queryRow.cells[colNdx].clone());
+      for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
+        row.setCellValue(colNdx, queryRow.cells[colNdx - QUERY_TYPE_COL_NDX].clone());
     });
 
     refreshView(false);
@@ -760,7 +765,22 @@ public final class QueryCtrlr
 
     switchToRecordMode();
 
-    boolean showDesc = false;
+    boolean showDesc    = false,
+            customLogic = (tgLogic.getSelectedToggle() == btnCustom),
+            orLogic     = (tgLogic.getSelectedToggle() == btnOr    );
+
+    if (customLogic)
+    {
+      try
+      {
+        BoolExpression.create(tfCustomLogic.getText());
+      }
+      catch (ParseException e)
+      {
+        messageDialog("Error while parsing custom logic expression: " + e.getMessage(), mtError);
+        return false;
+      }
+    }
 
     Map<HyperTableRow, Query<?>> queries = new LinkedHashMap<>();
     Map<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
@@ -810,44 +830,64 @@ public final class QueryCtrlr
         updateMessage("Running query...");
         updateProgress(0, 1);
 
+        Map<HyperTableRow, Integer> rowNumbers = new HashMap<>(sources.size());
+        Map<Integer, Boolean> results = new HashMap<>(sources.size());
+
         for (HyperTableRow row : sources.keySet())
+        {
+          rowNumbers.put(row, tvFields.getItems().indexOf(row) + 1);
           queries.get(row).init(row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
+        }
 
         Iterator<HDT_Record> recordIterator = combinedSource.iterator();
 
-        for (int recordNdx = 0; recordIterator.hasNext(); recordNdx++)
+        try
         {
-          if (isCancelled())
-            throw new CancelledTaskException();
+          BoolExpression expr = BoolExpression.create(tfCustomLogic.getText());
 
-          if ((recordNdx % 50) == 0)
-            updateProgress(recordNdx, total);
-
-          HDT_Record record = recordIterator.next();
-
-          boolean lastConnectiveWasOr = false, firstRow = true, add = false;
-
-          for (Entry<HyperTableRow, QuerySource> entry : sources.entrySet())
+          for (int recordNdx = 0; recordIterator.hasNext(); recordNdx++)
           {
-            HyperTableRow row = entry.getKey();
-            QuerySource source = entry.getValue();
-            Query<?> query = queries.get(row);
+            if (isCancelled())
+              throw new CancelledTaskException();
 
-            if (source.contains(record))
+            if ((recordNdx % 50) == 0)
+              updateProgress(recordNdx, total);
+
+            HDT_Record record = recordIterator.next();
+
+            boolean firstRow = true, add = false;
+
+            for (Entry<HyperTableRow, QuerySource> entry : sources.entrySet())
             {
-              boolean result = evaluate(query, record, row, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
+              HyperTableRow row = entry.getKey();
+              QuerySource source = entry.getValue();
+              Query<?> query = queries.get(row);
 
-              if      (firstRow)            add = result;
-              else if (lastConnectiveWasOr) add = add || result;
+              boolean result = source.contains(record) ?
+                evaluate(query, record, row, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX))
+              :
+                false;
+
+              if (customLogic)              results.put(rowNumbers.get(row), result);
+              else if (firstRow)            add = result;
+              else if (orLogic)             add = add || result;
               else                          add = add && result;
+
+              firstRow = false;
             }
 
-            lastConnectiveWasOr = row.getID(LOGIC_COL_NDX) == QueriesTabCtrlr.OR_CONNECTIVE_ID;
-            firstRow = false;
+            if (customLogic)
+            {
+              if (BoolEvaluator.evaluate(expr, results))
+                addRecord(record, false);
+            }
+            else if (add)
+              addRecord(record, false);
           }
-
-          if (add)
-            addRecord(record, false);
+        }
+        catch (ParseException e)
+        {
+          throw new HyperDataException("Error while evaluating custom logic expression: " + e.getMessage(), e);
         }
       }
 

@@ -20,6 +20,7 @@ package org.hypernomicon.query;
 import static org.hypernomicon.model.HyperDB.db;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ public final class FolderQueries
         return true;
       }
 
-      @Override protected void runFilter(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      @Override protected void runFilter(LinkedHashSet<HDT_Folder> folders, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         Map<FilePath, HDT_Folder> map = new HashMap<>();
 
@@ -61,8 +62,8 @@ public final class FolderQueries
 
           if (map.containsKey(filePath))
           {
-            records.add(map.get(filePath));
-            records.add(folder);
+            folders.add(map.get(filePath));
+            folders.add(folder);
           }
           else
             map.put(filePath, folder);
