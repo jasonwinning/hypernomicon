@@ -159,7 +159,7 @@ public final class HyperDB
 
   final public FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
 
-  public Preferences prefs;
+  public Preferences prefs = null;
   private Preferences appPrefs;
   private LibraryWrapper<? extends BibEntry, ? extends BibCollection> bibLibrary = null;
   private FolderTreeWatcher folderTreeWatcher;
@@ -1749,13 +1749,15 @@ public final class HyperDB
     {
       bibLibrary = null;
       bibChangedHandlers.forEach(Runnable::run);
-
       prefs.remove(PREF_KEY_BIB_API_KEY);
       prefs.remove(PREF_KEY_BIB_USER_ID);
       prefs.remove(PREF_KEY_BIB_LIBRARY_VERSION);
       prefs.remove(PREF_KEY_BIB_LAST_SYNC_TIME);
       prefs.remove(PREF_KEY_BIB_LIBRARY_TYPE);
     }
+
+    if (datasetsToKeep == null)
+      prefs = null;
 
     try
     {

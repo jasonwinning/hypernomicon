@@ -27,6 +27,8 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +75,7 @@ public class HyperFavorites
 
   public static class QueryRow
   {
-    public final HyperTableCell[] cells = new HyperTableCell[6];
+    public final HyperTableCell[] cells = new HyperTableCell[QUERY_FAV_ROW_COLUMN_COUNT];
   }
 
 //---------------------------------------------------------------------------
@@ -81,8 +83,8 @@ public class HyperFavorites
   public static class QueryFavorite
   {
     public final List<QueryRow> rows = new ArrayList<>();
-    public String name;
-    public boolean autoexec;
+    public String name, customLogic;
+    public boolean autoexec, orLogic;
 
     public void removeFromList(List<MenuItem> items)
     {
@@ -95,6 +97,7 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 
   private final List<MenuItem> mainList, queryList;
+  private static final int QUERY_FAV_ROW_COLUMN_COUNT = 5;
   public static final int FIRST_FAV_MENU_ITEM_NDX = 4;
 
   HyperFavorites(Menu mnuFavorites, Menu mnuQueries)
@@ -140,12 +143,14 @@ public class HyperFavorites
       QueryFavorite query = favItem.query;
 
       node.node("queries").node("query" + favNdx).put("name", query.name);
+      node.node("queries").node("query" + favNdx).put("customLogic", query.customLogic);
       node.node("queries").node("query" + favNdx).putInt("rowCount", query.rows.size());
       node.node("queries").node("query" + favNdx).putBoolean("autoexec", query.autoexec);
+      node.node("queries").node("query" + favNdx).putBoolean("orLogic", query.orLogic);
 
       for (int rowNdx = 0; rowNdx < query.rows.size(); rowNdx++)
       {
-        for (int colNdx = 0; colNdx < 6; colNdx++)
+        for (int colNdx = 0; colNdx < QUERY_FAV_ROW_COLUMN_COUNT; colNdx++)
         {
           HyperTableCell cell = query.rows.get(rowNdx).cells[colNdx];
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).putInt("id", getCellID(cell));
@@ -166,6 +171,8 @@ public class HyperFavorites
   {
     clear();
 
+    boolean showedMessage = false;
+
     Preferences node = db.prefs.node("favorites");
 
     for (int count = node.getInt("count", 0), ndx = 0; ndx < count; ndx++)
@@ -182,14 +189,28 @@ public class HyperFavorites
         QueryFavorite query = new QueryFavorite();
 
         query.name = node.node("queries").node("query" + ndx).get("name", "query" + ndx);
+        query.customLogic = node.node("queries").node("query" + ndx).get("customLogic", "");
+
         int rowCount = node.node("queries").node("query" + ndx).getInt("rowCount", 0);
         query.autoexec = node.node("queries").node("query" + ndx).getBoolean("autoexec", false);
+        query.orLogic = node.node("queries").node("query" + ndx).getBoolean("orLogic", false);
 
         for (int rowNdx = 0; rowNdx < rowCount; rowNdx++)
         {
           QueryRow row = new QueryRow();
 
-          for (int colNdx = 0; colNdx < 6; colNdx++)
+          // This try block is for backwards compatibility (displaying a warning message at least) with v1.24.2
+          try
+          {
+            if ((rowCount > 1) && (showedMessage == false) && node.node("queries").node("query" + ndx).node("row" + rowNdx).nodeExists("col" + QUERY_FAV_ROW_COLUMN_COUNT))
+            {
+              messageDialog("You may need to review the logic settings for one or more query favorites. The logic settings may not have loaded properly because they were saved in an older format.", mtWarning);
+              showedMessage = true;
+            }
+          }
+          catch (BackingStoreException e) { noOp(); }
+
+          for (int colNdx = 0; colNdx < QUERY_FAV_ROW_COLUMN_COUNT; colNdx++)
           {
             int id = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).getInt("id", -1);
             String text    = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("text", ""),

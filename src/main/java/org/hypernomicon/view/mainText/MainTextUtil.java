@@ -799,8 +799,13 @@ public final class MainTextUtil
   {
     return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
            "body { " + MARGIN_STYLE +
-           " font-family: \"" + db.prefs.get(PREF_KEY_DEF_DESC_FONT_FAMILY, "arial") + "\";" +
-           " font-size: " + db.prefs.get(PREF_KEY_DEF_DESC_FONT_SIZE, "10pt") + "; } </style>";
+           " font-family: \"" + getDBStylePref(PREF_KEY_DEF_DESC_FONT_FAMILY, "arial") + "\";" +
+           " font-size: " + getDBStylePref(PREF_KEY_DEF_DESC_FONT_SIZE, "10pt") + "; } </style>";
+  }
+
+  private static String getDBStylePref(String key, String def)
+  {
+    return db.prefs == null ? def : db.prefs.get(key, def);
   }
 
 //---------------------------------------------------------------------------

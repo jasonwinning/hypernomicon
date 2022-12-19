@@ -300,12 +300,12 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private QueryCtrlr addQueryCtrlr()
   {
-    QueryCtrlr newQV = new QueryCtrlr(this, webView, tabPane, tfFavName);
+    QueryCtrlr newQC = new QueryCtrlr(this, webView, tabPane, tfFavName);
 
-    queryCtrlrs.add(newQV);
-    newQV.resetFields();
+    queryCtrlrs.add(newQC);
+    newQC.resetFields();
 
-    return newQV;
+    return newQC;
   }
 
 //---------------------------------------------------------------------------
@@ -333,8 +333,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     if (ui.isShuttingDown() == false)
       webView.getEngine().loadContent("");
 
-    QueryCtrlr newQV = addQueryCtrlr();
-    tabPane.getSelectionModel().select(newQV.getTab());
+    QueryCtrlr newQC = addQueryCtrlr();
+    tabPane.getSelectionModel().select(newQC.getTab());
   }
 
 //---------------------------------------------------------------------------

@@ -132,6 +132,7 @@ public final class QueryCtrlr
   private final Map<HDT_Record, ResultsRow> recordToRow = new HashMap<>();
 
   private boolean programmaticFavNameChange = false,
+                  programmaticCustomLogicChange = false,
                   disableAutoShowDropdownList = false,
                   inRecordMode = true,
                   searchLinkedRecords;
@@ -188,6 +189,13 @@ public final class QueryCtrlr
     {
       if (newValue == null)
         oldValue.setSelected(true);
+    });
+
+    tfCustomLogic.textProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (programmaticCustomLogicChange || (newValue == null) || ultraTrim(newValue).equals(ultraTrim(safeStr(oldValue)))) return;
+
+      tgLogic.selectToggle(btnCustom);
     });
 
     htFields = new HyperTable(tvFields, QUERY_COL_NDX, true, "");
@@ -543,8 +551,6 @@ public final class QueryCtrlr
 
     if (fav == null)
     {
-      if (Boolean.TRUE.booleanValue()) return; // disable saving favorites for now
-
       NewQueryFavDlgCtrlr ctrlr = NewQueryFavDlgCtrlr.build(tfFavName.getText());
 
       if (ctrlr.showModal() == false) return;
@@ -553,13 +559,22 @@ public final class QueryCtrlr
 
       fav.name = ctrlr.getNewName();
       fav.autoexec = ctrlr.getAutoExec();
+      fav.orLogic = false;
+
+      if (tgLogic.getSelectedToggle() == btnCustom)
+        fav.customLogic = ultraTrim(tfCustomLogic.getText());
+      else
+      {
+        fav.customLogic = "";
+        fav.orLogic = tgLogic.getSelectedToggle() == btnOr;
+      }
 
       htFields.dataRows().forEach(row ->
       {
         QueryRow queryRow = new QueryRow();
 
         for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
-          queryRow.cells[colNdx] = row.getCell(colNdx).clone();
+          queryRow.cells[colNdx - QUERY_TYPE_COL_NDX] = row.getCell(colNdx).clone();
 
         fav.rows.add(queryRow);
       });
@@ -606,6 +621,12 @@ public final class QueryCtrlr
       for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
         row.setCellValue(colNdx, queryRow.cells[colNdx - QUERY_TYPE_COL_NDX].clone());
     });
+
+    programmaticCustomLogicChange = true;
+    tfCustomLogic.setText(fav.customLogic);
+    programmaticCustomLogicChange = false;
+
+    tgLogic.selectToggle(fav.customLogic.isBlank() ? (fav.orLogic ? btnOr : btnAnd) : btnCustom);
 
     refreshView(false);
     htFields.selectRow(0);
@@ -918,7 +939,7 @@ public final class QueryCtrlr
     if (showDesc)
       queriesTabCtrlr.chkShowDesc.setSelected(true);
 
-    curQC.refreshView(false);
+    refreshView(false);
     return true;
   }
 
