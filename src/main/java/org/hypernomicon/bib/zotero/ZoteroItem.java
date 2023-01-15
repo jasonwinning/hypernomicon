@@ -69,7 +69,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
     jObj = new JsonObj();
     jData = ZoteroWrapper.getTemplate(newType).clone();
-    jData.put(getFieldKey(bfEntryType), ZoteroWrapper.entryTypeMap.getOrDefault(newType, ""));
+    jData.put(entryTypeKey, ZoteroWrapper.entryTypeMap.getOrDefault(newType, ""));
     jObj.put("data", jData);
     this.zWrapper = zWrapper;
 
@@ -84,7 +84,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   @Override public long getVersion()        { return jObj.getLong("version", 0); }
   @Override protected boolean isNewEntry()  { return jObj.containsKey("version") == false; }
   @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new ZoteroAuthors(jData.getArray("creators"), getEntryType()); }
-  @Override public EntryType getEntryType() { return parseZoteroType(jData.getStrSafe(getFieldKey(bfEntryType))); }
+  @Override public EntryType getEntryType() { return parseZoteroType(getEntryTypeStrFromSpecifiedJson(jData)); }
+
+  static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
 
   @Override public LibraryWrapper<?, ?> getLibrary() { return zWrapper; }
   static EntryType parseZoteroType(String zType)     { return ZoteroWrapper.entryTypeMap.inverse().getOrDefault(zType, etOther); }
@@ -226,6 +228,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final String entryTypeKey = "itemType";
+
   private static final List<String> titleKeyList = List.of(
 
       "publicationTitle", "bookTitle"   , "encyclopediaTitle", "proceedingsTitle", "dictionaryTitle",
@@ -235,7 +239,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   {
     switch (bibFieldEnum)
     {
-      case bfEntryType : return "itemType";
+      case bfEntryType : return entryTypeKey;
       case bfDOI       : return "DOI";
       case bfURL       : return "url";
       case bfVolume    : return "volume";

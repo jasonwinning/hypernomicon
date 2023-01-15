@@ -433,6 +433,33 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
           lastSyncTime = Instant.now();
 
+// If document that was assigned to a work now has unrecognized entry type, unassign it -----------------------------
+// ------------------------------------------------------------------------------------------------------------------
+
+          Set<String> dontMergeThese = new HashSet<>();
+
+          remoteChangeIDtoObj.forEach((entryKey, jObj) ->
+          {
+            MendeleyDocument document = keyToAllEntry.get(entryKey);
+
+            if (document == null)
+              return;
+
+            String entryTypeStr = MendeleyDocument.getEntryTypeStrFromSpecifiedJson(jObj);
+
+            if (MendeleyDocument.parseMendeleyType(entryTypeStr) == EntryType.etOther)
+            {
+              dontMergeThese.add(entryKey);
+
+              if (document.linkedToWork())
+              {
+                int workID = document.getWork().getID();
+                document.unassignWork();
+                messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning, true);
+              }
+            }
+          });
+
 // Build list of locally changed documents and documents to merge; merge local and remote changes -------------------
 // ------------------------------------------------------------------------------------------------------------------
 
@@ -445,7 +472,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
               localChanges.add(entry);
               String entryKey = entry.getKey();
 
-              if (remoteChangeIDtoObj.containsKey(entryKey))
+              if (remoteChangeIDtoObj.containsKey(entryKey) && (dontMergeThese.contains(entryKey) == false))
               {
                 doMerge(entry, remoteChangeIDtoObj.get(entryKey));
                 remoteChangeIDtoObj.remove(entryKey);

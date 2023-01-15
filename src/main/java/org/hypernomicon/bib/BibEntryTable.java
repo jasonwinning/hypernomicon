@@ -157,15 +157,17 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 
     entries.forEachOrdered(entry ->
     {
+      if (entry.getEntryType() == EntryType.etOther)
+        return;
+
       entriesToRemove.remove(entry);
 
-      if (entry.getEntryType() != EntryType.etOther)
-        if (keyToRow.containsKey(entry.getKey()) == false)
-        {
-          BibEntryRow row = new BibEntryRow(entry);
-          rows.add(row);
-          keyToRow.put(entry.getKey(), row);
-        }
+      if (keyToRow.containsKey(entry.getKey()) == false)
+      {
+        BibEntryRow row = new BibEntryRow(entry);
+        rows.add(row);
+        keyToRow.put(entry.getKey(), row);
+      }
     });
 
     if (entriesToRemove.isEmpty()) return;

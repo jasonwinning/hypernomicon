@@ -68,7 +68,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
     super(false);
 
     jObj = new JsonObj();
-    jObj.put(getFieldKey(bfEntryType), MendeleyWrapper.entryTypeMap.getOrDefault(newType, ""));
+    jObj.put(entryTypeKey, MendeleyWrapper.entryTypeMap.getOrDefault(newType, ""));
 
     this.mWrapper = mWrapper;
 
@@ -83,10 +83,12 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   @Override protected boolean isNewEntry()  { return jObj.containsKey("last_modified") == false; }
   @Override public String getEntryURL()     { return ""; }
   @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
-  @Override public EntryType getEntryType() { return parseMendeleyType(jObj.getStrSafe(getFieldKey(bfEntryType))); }
+  @Override public EntryType getEntryType() { return parseMendeleyType(getEntryTypeStrFromSpecifiedJson(jObj)); }
 
-  @Override public LibraryWrapper<?, ?> getLibrary()       { return mWrapper; }
-  private static EntryType parseMendeleyType(String mType) { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
+  static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
+
+  @Override public LibraryWrapper<?, ?> getLibrary() { return mWrapper; }
+  static EntryType parseMendeleyType(String mType)   { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -250,11 +252,13 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final String entryTypeKey = "type";
+
   private static String getFieldKey(BibFieldEnum bibFieldEnum)
   {
     switch (bibFieldEnum)
     {
-      case bfEntryType : return "type";
+      case bfEntryType : return entryTypeKey;
       case bfURL       : return "websites"; // array
       case bfVolume    : return "volume";
       case bfIssue     : return "issue";

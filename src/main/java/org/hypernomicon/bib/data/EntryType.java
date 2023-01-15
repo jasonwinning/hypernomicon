@@ -85,7 +85,7 @@ public enum EntryType
   etPamphlet             ("Pamphlet"),                etBrochure             ("Brochure"),
   etPreprint             ("Preprint"),
 
-  etOther                ("Other"),         // This means it is a type that does not fit into any of the above categories
+  etOther                ("Other"),         // This means it is a type that does not fit into any of the above categories and shouldn't be displayed
   etUnentered            (""),              // This just means the field hasn't been populated yet
   etNone                 ("");              // This means it should be treated as a non-entry
 

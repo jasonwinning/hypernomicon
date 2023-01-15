@@ -543,6 +543,26 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           }
           else
           {
+            boolean okToMerge = true;
+
+            if (readCmd == ZoteroCmd.readItems)
+            {
+              ZoteroItem zItem = (ZoteroItem)entity;
+              String entryTypeStr = ZoteroItem.getEntryTypeStrFromSpecifiedJson(jObj.getObj("data"));
+
+              if (ZoteroItem.parseZoteroType(entryTypeStr) == EntryType.etOther)
+              {
+                okToMerge = false;
+
+                if (zItem.linkedToWork())
+                {
+                  int workID = zItem.getWork().getID();
+                  zItem.unassignWork();
+                  messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning, true);
+                }
+              }
+            }
+
             if (entity.isSynced())
             {
               long onlineVersion = jObj.getLong("version", -1);
@@ -551,7 +571,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
             }
             else
             {
-              if (readCmd == ZoteroCmd.readItems)
+              if (okToMerge && (readCmd == ZoteroCmd.readItems))
                 doMerge((ZoteroItem)entity, jObj);
               else
                 entity.update(jObj, true, false);     // Conflict resolution is only implemented for items, not collections
