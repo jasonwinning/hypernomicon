@@ -17,8 +17,7 @@
 
 package org.hypernomicon.view.wrappers;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Objects;
 
 import javafx.collections.FXCollections;
@@ -40,7 +39,6 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 {
   final private ObservableList<HyperTableCell> cells;
   final private HyperTable table;
-  final private Map<Integer, Populator> populators = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
@@ -63,14 +61,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
   HyperTableRow(int colCount, HyperTable table)
   {
-    this.table = table;
-    cells = FXCollections.observableArrayList();
-
-    for (int colNdx = 0; colNdx < colCount; colNdx++)
-    {
-      cells.add(HyperTableCell.blankCell);
-      populators.put(colNdx, table.getPopulator(colNdx));
-    }
+    this(FXCollections.observableArrayList(Collections.nCopies(colCount, HyperTableCell.blankCell)), table);
   }
 
 //---------------------------------------------------------------------------
@@ -84,7 +75,11 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     if (cells == null) return;  // this occurs in the case of Populator.dummyRow
 
     for (int colNdx = 0; colNdx < cells.size(); colNdx++)
-      populators.put(colNdx, table.getPopulator(colNdx));
+    {
+      Populator populator = table.getPopulator(colNdx);
+      if (nullSwitch(populator, null, Populator::getValueType) == cvtVaries)
+        ((VariablePopulator)populator).initRow(this);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -165,7 +160,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       boolean isNotLastColumn = table.getColumns().size() > (colNdx + 1);
 
-      col.updateHandler.handle(this, newCell, colNdx + 1, isNotLastColumn ? populators.get(colNdx + 1) : null);
+      col.updateHandler.handle(this, newCell, colNdx + 1, isNotLastColumn ? table.getPopulator(colNdx + 1) : null);
 
       if (isNotLastColumn && isNotCheckBox)
         table.refresh();

@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.hypernomicon.util.boolEvaluator.BoolExpressionToken.TokenType;
 
-public class BoolEvaluator
+public final class BoolEvaluator
 {
   private final Map<Integer, Boolean> varVals;
   private final Iterator<BoolExpressionToken> it;
@@ -79,7 +79,7 @@ public class BoolEvaluator
 
       default :
 
-        throw new ParseException("Expected boolean expression, found " + tokenAtCursor.toString(), tokenAtCursor.offset);
+        throw new ParseException("Expected boolean expression, found " + tokenAtCursor, tokenAtCursor.offset);
     }
   }
 
@@ -113,7 +113,7 @@ public class BoolEvaluator
 
       default :
 
-        throw new ParseException("Expected operand, found " + tokenAtCursor.toString(), tokenAtCursor.offset);
+        throw new ParseException("Expected operand, found " + tokenAtCursor, tokenAtCursor.offset);
     }
   }
 
@@ -123,7 +123,7 @@ public class BoolEvaluator
   private void verifyTokenAtCursorAndAdvance(TokenType tokenType) throws ParseException
   {
     if (tokenAtCursor.type != tokenType)
-      throw new ParseException("Expected " + tokenType.str + ", found " + tokenAtCursor.toString(), tokenAtCursor.offset);
+      throw new ParseException("Expected " + tokenType.str + ", found " + tokenAtCursor, tokenAtCursor.offset);
 
     if (tokenType != TokenType.END)
       tokenAtCursor = it.next();

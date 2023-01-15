@@ -2511,7 +2511,7 @@ public final class HyperDB
 
   private FilePath mainTextTemplateFilePath(RecordType recordType)
   {
-    return xmlPath().resolve(DESC_TEMPLATE_FOLDER_NAME).resolve(Tag.getTag(recordType).header + ".html");
+    return xmlPath().resolve(DESC_TEMPLATE_FOLDER_NAME).resolve(getTag(recordType).header + ".html");
   }
 
 //---------------------------------------------------------------------------

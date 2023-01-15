@@ -71,5 +71,5 @@
                 AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0"/>
     </AnchorPane>
   </GridPane>
-  <Label fx:id="lbl" text=""/>
+  <Label fx:id="lbl"/>
 </AnchorPane>

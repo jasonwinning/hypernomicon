@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -36,9 +37,23 @@ public class VariablePopulator extends Populator
 {
   private final Map<HyperTableRow, Populator> rowToPop = new HashMap<>();
   private final Map<HyperTableRow, Boolean> rowToRestricted = new HashMap<>();
+  private final Supplier<Populator> defaultPop;
 
 //---------------------------------------------------------------------------
 
+  public VariablePopulator()
+  {
+    this(null);
+  }
+
+  public VariablePopulator(Supplier<Populator> defaultPop)
+  {
+    this.defaultPop = defaultPop;
+  }
+
+//---------------------------------------------------------------------------
+
+  public void initRow(HyperTableRow row)                           { if (defaultPop != null) setPopulator(row, defaultPop.get()); }
   public void setPopulator(HyperTableRow row, Populator populator) { rowToPop.put(row, populator); rowToRestricted.put(row, true); }
   public void setRestricted(HyperTableRow row, boolean restrict)   { rowToRestricted.put(row, restrict); }
   public boolean getRestricted(HyperTableRow row)                  { return rowToRestricted.getOrDefault(row, true); }

@@ -16,13 +16,9 @@
    limitations under the License.
 -->
 
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.TreeTableColumn?>
 <?import javafx.scene.control.TreeTableView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.web.WebView?>
-<?import org.controlsfx.control.BreadCrumbBar?>
-<?import org.controlsfx.control.MasterDetailPane?>
+<?import javafx.scene.layout.*?>
 
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.TreeCtrlr">
   <TreeTableView fx:id="ttv" prefHeight="665.0" prefWidth="781.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

@@ -206,9 +206,7 @@ public final class QueryCtrlr
 
     htFields.addLabelCol(hdtNone, Pos.CENTER);
 
-    Populator queryTypePopulator = Populator.create(cvtQueryType, EnumSet.allOf(QueryType.class).stream()
-      .map(queryType -> new HyperTableCell(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
-      .collect(Collectors.toList()));
+    VariablePopulator queryTypePopulator = new VariablePopulator(() -> createQueryTypePopulator(true, true));
 
 //---------------------------------------------------------------------------
 
@@ -216,13 +214,33 @@ public final class QueryCtrlr
 
     htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, queryTypePopulator, (row, cellVal, nextColNdx, nextPopulator) ->
     {
-      row.setCellValue(ROW_NUMBER_COL_NDX, String.valueOf(tvFields.getItems().indexOf(row) + 1), hdtNone);
+      int rowNdx = tvFields.getItems().indexOf(row);
+
+      row.setCellValue(ROW_NUMBER_COL_NDX, String.valueOf(rowNdx + 1), hdtNone);
 
       boolean tempDASD = disableAutoShowDropdownList;
       disableAutoShowDropdownList = true;
 
       int queryID = row.getID(QUERY_COL_NDX);
       QueryType queryType = QueryType.codeToVal(getCellID(cellVal));
+
+      if (queryType != null)
+      {
+        if (queryType == qtReport)
+        {
+          queryTypePopulator.setPopulator(tvFields.getItems().get(rowNdx + 1), createQueryTypePopulator(false, false));
+        }
+        else
+        {
+          if (rowNdx > 0)
+          {
+            queryTypePopulator.setPopulator(tvFields.getItems().get(rowNdx - 1), createQueryTypePopulator(false, true));
+            queryTypePopulator.setPopulator(tvFields.getItems().get(rowNdx), createQueryTypePopulator(false, true));
+          }
+
+          queryTypePopulator.setPopulator(tvFields.getItems().get(rowNdx + 1), createQueryTypePopulator(false, true));
+        }
+      }
 
       boolean clearQueryAndOperands = (queryType == qtReport) ||
                                       (queryType == null) ||
@@ -356,6 +374,20 @@ public final class QueryCtrlr
 
     scaleNodeForDPI(spMain);
     setFontSize(spMain);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static Populator createQueryTypePopulator(boolean includeReport, boolean includeRecordTypes)
+  {
+    EnumSet<QueryType> queryTypes = includeRecordTypes ? EnumSet.allOf(QueryType.class) : EnumSet.of(qtReport);
+
+    if (includeReport == false) queryTypes.remove(qtReport);
+
+    return Populator.create(cvtQueryType, queryTypes.stream()
+      .map(queryType -> new HyperTableCell(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
+      .collect(Collectors.toList()));
   }
 
 //---------------------------------------------------------------------------
@@ -775,8 +807,6 @@ public final class QueryCtrlr
     {
       if (QueryType.codeToVal(row.getID(QUERY_TYPE_COL_NDX)) == qtReport)
       {
-        htFields.setDataRows(List.of(row));
-
         executeReport(row, setCaption);
         return true;
       }
@@ -1067,7 +1097,7 @@ public final class QueryCtrlr
       return;
     }
 
-    if (startOpNum <= 1) clearOperand(row, 1);
+    if (startOpNum == 1) clearOperand(row, 1);
     if (startOpNum <= 2) clearOperand(row, 2);
     clearOperand(row, 3);
   }

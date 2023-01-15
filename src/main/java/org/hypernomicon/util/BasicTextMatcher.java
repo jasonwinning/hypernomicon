@@ -30,7 +30,7 @@ public class BasicTextMatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static enum TermModifier
+  private enum TermModifier
   {
     none,
     required,

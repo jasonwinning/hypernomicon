@@ -24,7 +24,7 @@ import java.util.Queue;
 
 import static org.hypernomicon.util.boolEvaluator.BoolExpressionToken.TokenType.*;
 
-public class BoolExpression implements Iterable<BoolExpressionToken>
+public final class BoolExpression implements Iterable<BoolExpressionToken>
 {
 
 //---------------------------------------------------------------------------
@@ -45,8 +45,8 @@ public class BoolExpression implements Iterable<BoolExpressionToken>
   {
     this.input = input.toLowerCase();
 
-    BoolExpressionToken token = null;
     tokens = new LinkedList<>();
+    BoolExpressionToken token;
 
     do
     {

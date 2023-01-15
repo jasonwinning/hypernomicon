@@ -61,7 +61,7 @@
         </RadioButton>
       </AnchorPane>
       <AnchorPane>
-        <Label fx:id="lbl" text="" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0"/>
+        <Label fx:id="lbl" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0"/>
       </AnchorPane>
     </GridPane>
     <GridPane GridPane.columnIndex="1">

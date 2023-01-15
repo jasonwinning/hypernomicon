@@ -35,8 +35,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
-import org.hypernomicon.query.ui.ResultsTable.ResultCellValue;
-import org.hypernomicon.query.ui.ResultsTable.ResultColumn;
 import org.hypernomicon.query.ui.SelectColumnsDlgCtrlr.TypeCheckBox;
 
 import com.google.common.collect.ForwardingCollection;
