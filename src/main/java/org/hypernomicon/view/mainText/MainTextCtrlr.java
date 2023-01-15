@@ -72,9 +72,7 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Side;
@@ -296,13 +294,13 @@ public class MainTextCtrlr
     btnAdd     .setOnAction(event -> btnAddClick     ());
     btnNew     .setOnAction(event -> btnNewClick     ());
 
-    webview.setOnContextMenuRequested(event ->
+    webview.setOnContextMenuRequested(contextMenuEvent ->
     {
       MenuItem menuItem1 = new MenuItem("Paste plain text");
-      menuItem1.setOnAction(getPlainTextAction(false));
+      menuItem1.setOnAction(actionEvent -> pastePlainText(false));
 
       MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks");
-      menuItem2.setOnAction(getPlainTextAction(true));
+      menuItem2.setOnAction(actionEvent -> pastePlainText(true));
 
       setHTMLContextMenu(menuItem1, menuItem2);
     });
@@ -354,14 +352,23 @@ public class MainTextCtrlr
       }
     });
 
+    he.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    {
+      if (event.isControlDown() && event.isShiftDown() && (event.getCode() == KeyCode.V))
+      {
+        pastePlainText(true);
+        event.consume();
+      }
+    });
+
     MenuItem menuItem0 = new MenuItem("Paste");
     menuItem0.setOnAction(event -> Accessor.getPageFor(getEngine()).executeCommand(Command.PASTE.getCommand(), null));
 
     MenuItem menuItem1 = new MenuItem("Paste plain text");
-    menuItem1.setOnAction(getPlainTextAction(false));
+    menuItem1.setOnAction(event -> pastePlainText(false));
 
     MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks");
-    menuItem2.setOnAction(getPlainTextAction(true));
+    menuItem2.setOnAction(event -> pastePlainText(true));
 
     MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
     setToolTip(btnPaste, "Paste");
@@ -718,24 +725,21 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private EventHandler<ActionEvent> getPlainTextAction(boolean noCarriageReturns)
+  private void pastePlainText(boolean noCarriageReturns)
   {
-    return event ->
+    String text = getClipboardText(noCarriageReturns);
+
+    if (text.isEmpty()) return;
+
+    text = htmlEscaper.escape(text);
+
+    if (noCarriageReturns == false)
     {
-      String text = getClipboardText(noCarriageReturns);
+      text = text.replaceAll("\\R", "<br>")
+                 .replaceAll("\\v", "<br>");
+    }
 
-      if (text.isEmpty()) return;
-
-      text = htmlEscaper.escape(text);
-
-      if (noCarriageReturns == false)
-      {
-        text = text.replaceAll("\\R", "<br>")
-                   .replaceAll("\\v", "<br>");
-      }
-
-      getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
-    };
+    getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
   }
 
 //---------------------------------------------------------------------------
