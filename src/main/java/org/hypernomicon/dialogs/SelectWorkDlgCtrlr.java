@@ -170,8 +170,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       btnLaunch.setOnAction(event -> launchFile(filePath));
     }
 
-    apPreview = new AnchorPane();
-    addPreview();
+    onShown = this::addPreview; // set anchors after dialog has been rescaled
 
     hcbAuthor = new HyperCB(cbAuthor, ctDropDownList, new StandardPopulator(hdtPerson));
     hcbAuthor.dontCreateNewRecord = true;
@@ -445,6 +444,8 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
   private void addPreview()
   {
+    apPreview = new AnchorPane();
+
     setAnchors(apPreview, apMain.getPrefHeight(), 0.0, 0.0, 0.0);
     setAnchors(apMain, 0.0, null, 0.0, 0.0);
 
@@ -508,6 +509,19 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     previewFilePath = filePath;
 
     PreviewWrapper.showFile(previewFilePath, 1, jsWrapper);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean showModal()
+  {
+    boolean rv = super.showModal();
+
+    if (previewInitialized)
+      jsWrapper.cleanup();
+
+    return rv;
   }
 
 //---------------------------------------------------------------------------

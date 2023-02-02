@@ -203,7 +203,7 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final void doOnShown()
+  final void doOnShown()
   {
     rescale();
 
@@ -241,26 +241,25 @@ public abstract class HyperDlg
     if (val > 0)
       dialogStage.setMinWidth(val + diff);
 
-    if (shownAlready == false)
-    {
-      if (initWidth <= 0)
-      {
-        val = stagePane.getPrefWidth();
-        if (val > 0)
-          dialogStage.setWidth(val + diff);
-      }
-      else
-        dialogStage.setWidth(initWidth);
+    if (shownAlready) return;
 
-      if (initHeight <= 0)
-      {
-        val = stagePane.getPrefHeight();
-        if (val > 0)
-          dialogStage.setHeight(val + diff);
-      }
-      else
-        dialogStage.setHeight(initHeight);
+    if (initWidth <= 0)
+    {
+      val = stagePane.getPrefWidth();
+      if (val > 0)
+        dialogStage.setWidth(val + diff);
     }
+    else
+      dialogStage.setWidth(initWidth);
+
+    if (initHeight <= 0)
+    {
+      val = stagePane.getPrefHeight();
+      if (val > 0)
+        dialogStage.setHeight(val + diff);
+    }
+    else
+      dialogStage.setHeight(initHeight);
   }
 
 //---------------------------------------------------------------------------
