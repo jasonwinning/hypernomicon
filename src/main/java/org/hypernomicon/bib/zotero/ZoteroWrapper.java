@@ -77,7 +77,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   private long offlineLibVersion = -1, onlineLibVersion = -1;
   private Instant backoffTime = null, retryTime = null;
 
-  static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
+  private static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
   private static EnumMap<EntryType, JsonObj> templates = null;
 
@@ -224,7 +224,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     static { EnumSet.allOf(ZoteroHeader.class).forEach(header -> headerMap.put(header.name.toLowerCase(), header)); }
 
-    static ZoteroHeader getHeaderEnum(Header header) { return headerMap.getOrDefault(header.getName().toLowerCase(), None); }
+    private static ZoteroHeader get(Header header) { return headerMap.getOrDefault(header.getName().toLowerCase(), None); }
   }
 
 //---------------------------------------------------------------------------
@@ -297,7 +297,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       int sec;
 
-      switch (getHeaderEnum(header))
+      switch (ZoteroHeader.get(header))
       {
         case Zotero_API_Version    : assignSB(apiVersion, header.getValue()); break;
         case Total_Results         : totalResults.setValue(parseInt(header.getValue(), -1)); break;
@@ -395,203 +395,12 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     }
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private boolean syncChangedEntriesToServer() throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
-  {
-    List<ZoteroItem> uploadQueue; // implemented as array because indices are returned by server
-    JsonArray jArr = new JsonArray();
-
-    uploadQueue = getAllEntries().stream().filter(entry -> entry.isSynced() == false).collect(Collectors.toList());
-
-    if (uploadQueue.isEmpty()) return false;
-
-    int statusCode = HttpStatus.SC_OK;
-
-    while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && (syncTaskIsCancelled() == false))
-    {
-      jArr.clear();
-
-      int uploadCount = Math.min(uploadQueue.size(), 50);
-      for (int ndx = 0; ndx < uploadCount; ndx++)
-        jArr.add(uploadQueue.get(ndx).exportJsonObjForUploadToServer(false));
-
-      jArr = doWriteCommand(ZoteroCmd.writeItems, jArr.toString());
-
-      statusCode = jsonClient.getStatusCode();
-
-      if (statusCode == HttpStatus.SC_OK)
-      {
-        JsonObj jSuccess   = jArr.getObj(0).getObj("successful"),
-                jUnchanged = jArr.getObj(0).getObj("unchanged"),
-                jFailed    = jArr.getObj(0).getObj("failed");
-
-        if ((jUnchanged.keySet().isEmpty() == false) || (jFailed.keySet().isEmpty() == false))
-          showWriteErrorMessages(jUnchanged, jFailed, uploadQueue);
-
-        jSuccess.keySet().forEach(queueNdx ->
-        {
-          JsonObj jObj = jSuccess.getObj(queueNdx);
-          ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1)); // here we take advantage of the fact that the upload "queue" is an array
-
-          String oldKey = item.getKey();
-          boolean newEntry = item.isNewEntry();
-
-          item.update(jObj, false, false);
-
-          if (newEntry)
-            updateKey(oldKey, item.getKey());
-
-          keyToAllEntry.putIfAbsent(item.getKey(), item);
-
-          if (item.getVersion() > onlineLibVersion)
-            onlineLibVersion = item.getVersion();
-        });
-
-        uploadQueue.subList(0, uploadCount).clear();
-      }
-    }
-
-    return true;
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private static void showWriteErrorMessages(JsonObj jUnchanged, JsonObj jFailed, List<ZoteroItem> uploadQueue)
-  {
-    List<String> errMsgList = Lists.newArrayList("Attempt(s) to upload changes to server failed:");
-
-    String unchanged = jUnchanged.keySet().stream().map(jUnchanged::getStr).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
-
-    if (unchanged.length() > 0)
-      errMsgList.add("Unchanged: " + unchanged);
-
-    jFailed.keySet().forEach(queueNdx ->
-    {
-      ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1));
-      JsonObj jError = jFailed.getObj(queueNdx);
-      errMsgList.add(item.getKey() + " code: " + jError.getLong("code", -1) + ' ' + jError.getStr("message"));
-    });
-
-    messageDialog(strListToStr(errMsgList, false), mtError, true);
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
-  {
-    JsonArray jArr = doReadCommand(versionsCmd, "", "");
-
-    if ((jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED))
-      if (onlineLibVersion <= offlineLibVersion)
-        return true;
-
-    List<String> downloadQueue = new ArrayList<>();
-
-    if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
-    {
-      JsonObj jObj = jArr.getObj(0);
-
-      jObj.keySet().forEach(key ->
-      {
-        ZEntity entity = keyToEntity.get(key);
-
-        if (entity == null)
-          downloadQueue.add(key);
-        else
-        {
-          long onlineVersion = jObj.getLong(key, -1);
-          if (entity.getVersion() < onlineVersion)
-            downloadQueue.add(key);
-        }
-      });
-
-      if (versionsCmd == ZoteroCmd.readTrashVersions) // This if block is necessary to determine if an item in the trash was remotely restored
-        keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
-    }
-
-    while ((downloadQueue.size() > 0) && (jsonClient.getStatusCode() == HttpStatus.SC_OK))
-    {
-      String keys = "";
-
-      int downloadCount = Math.min(downloadQueue.size(), 50);
-      for (int ndx = 0; ndx < downloadCount; ndx++)
-        keys = keys + (keys.isEmpty() ? downloadQueue.get(ndx) : ',' + downloadQueue.get(ndx));
-
-      jArr = readCmd == ZoteroCmd.readCollections ?
-        doReadCommand(ZoteroCmd.readCollections, "", keys)
-      :
-        doReadCommand(readCmd, keys, "");
-
-      if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
-      {
-        jArr.getObjs().forEach(jObj ->
-        {
-          String key = jObj.getStrSafe("key");
-          ZEntity entity = keyToEntity.get(key);
-
-          if (entity == null)
-          {
-            entity = (ZEntity) ZoteroEntity.create(this, jObj);
-
-            if (entity != null)
-              keyToEntity.put(key, entity);
-          }
-          else
-          {
-            boolean okToMerge = true;
-
-            if (readCmd == ZoteroCmd.readItems)
-            {
-              ZoteroItem zItem = (ZoteroItem)entity;
-              String entryTypeStr = ZoteroItem.getEntryTypeStrFromSpecifiedJson(jObj.getObj("data"));
-
-              if (ZoteroItem.parseZoteroType(entryTypeStr) == EntryType.etOther)
-              {
-                okToMerge = false;
-
-                if (zItem.linkedToWork())
-                {
-                  int workID = zItem.getWork().getID();
-                  zItem.unassignWork();
-                  messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning, true);
-                }
-              }
-            }
-
-            if (entity.isSynced())
-            {
-              long onlineVersion = jObj.getLong("version", -1);
-              if (entity.getVersion() < onlineVersion)
-                entity.update(jObj, true, false);
-            }
-            else
-            {
-              if (okToMerge && (readCmd == ZoteroCmd.readItems))
-                doMerge((ZoteroItem)entity, jObj);
-              else
-                entity.update(jObj, true, false);     // Conflict resolution is only implemented for items, not collections
-            }
-          }
-
-          downloadQueue.remove(key);
-        });
-      }
-    }
-
-    return (jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED);
-  }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public SyncTask createNewSyncTask()
+  @Override public SyncTask createNewSyncTask() { return syncTask = new SyncTask()
   {
-    return syncTask = new SyncTask() { @Override public void call() throws CancelledTaskException, HyperDataException
+    @Override public void call() throws CancelledTaskException, HyperDataException
     {
     //---------------------------------------------------------------------------
     // The algorithm for Zotero syncing is described here:
@@ -693,6 +502,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       /*********************************************/
       /*      Try sending local updates again      */
       /*********************************************/
+
           syncChangedEntriesToServer();
 
           statusCode = jsonClient.getStatusCode();
@@ -718,7 +528,199 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         String msg = "An error occurred while syncing: " + e.getMessage();
         throw new HyperDataException(msg, e);
       }
-    }};
+    }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+    private boolean syncChangedEntriesToServer() throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
+    {
+      List<ZoteroItem> uploadQueue; // implemented as array because indices are returned by server
+      JsonArray jArr = new JsonArray();
+
+      uploadQueue = getAllEntries().stream().filter(entry -> entry.isSynced() == false).collect(Collectors.toList());
+
+      if (uploadQueue.isEmpty()) return false;
+
+      int statusCode = HttpStatus.SC_OK;
+
+      while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && (syncTaskIsCancelled() == false))
+      {
+        jArr.clear();
+
+        int uploadCount = Math.min(uploadQueue.size(), 50);
+        for (int ndx = 0; ndx < uploadCount; ndx++)
+          jArr.add(uploadQueue.get(ndx).exportJsonObjForUploadToServer(false));
+
+        jArr = doWriteCommand(ZoteroCmd.writeItems, jArr.toString());
+
+        statusCode = jsonClient.getStatusCode();
+
+        if (statusCode == HttpStatus.SC_OK)
+        {
+          JsonObj jSuccess   = jArr.getObj(0).getObj("successful"),
+                  jUnchanged = jArr.getObj(0).getObj("unchanged"),
+                  jFailed    = jArr.getObj(0).getObj("failed");
+
+          if ((jUnchanged.keySet().isEmpty() == false) || (jFailed.keySet().isEmpty() == false))
+            showWriteErrorMessages(jUnchanged, jFailed, uploadQueue);
+
+          jSuccess.keySet().forEach(queueNdx ->
+          {
+            JsonObj jObj = jSuccess.getObj(queueNdx);
+            ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1)); // here we take advantage of the fact that the upload "queue" is an array
+
+            String oldKey = item.getKey();
+            boolean newEntry = item.isNewEntry();
+
+            item.update(jObj, false, false);
+
+            if (newEntry)
+              updateKey(oldKey, item.getKey());
+
+            keyToAllEntry.putIfAbsent(item.getKey(), item);
+
+            if (item.getVersion() > onlineLibVersion)
+              onlineLibVersion = item.getVersion();
+          });
+
+          uploadQueue.subList(0, uploadCount).clear();
+        }
+      }
+
+      return true;
+    }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
+    {
+      JsonArray jArr = doReadCommand(versionsCmd, "", "");
+
+      if ((jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED))
+        if (onlineLibVersion <= offlineLibVersion)
+          return true;
+
+      List<String> downloadQueue = new ArrayList<>();
+
+      if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
+      {
+        JsonObj jObj = jArr.getObj(0);
+
+        jObj.keySet().forEach(key ->
+        {
+          ZEntity entity = keyToEntity.get(key);
+
+          if (entity == null)
+            downloadQueue.add(key);
+          else
+          {
+            long onlineVersion = jObj.getLong(key, -1);
+            if (entity.getVersion() < onlineVersion)
+              downloadQueue.add(key);
+          }
+        });
+
+        if (versionsCmd == ZoteroCmd.readTrashVersions) // This if block is necessary to determine if an item in the trash was remotely restored
+          keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
+      }
+
+      while ((downloadQueue.size() > 0) && (jsonClient.getStatusCode() == HttpStatus.SC_OK))
+      {
+        String keys = "";
+
+        int downloadCount = Math.min(downloadQueue.size(), 50);
+        for (int ndx = 0; ndx < downloadCount; ndx++)
+          keys = keys + (keys.isEmpty() ? downloadQueue.get(ndx) : ',' + downloadQueue.get(ndx));
+
+        jArr = readCmd == ZoteroCmd.readCollections ?
+          doReadCommand(ZoteroCmd.readCollections, "", keys)
+        :
+          doReadCommand(readCmd, keys, "");
+
+        if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
+        {
+          jArr.getObjs().forEach(jObj ->
+          {
+            String key = jObj.getStrSafe("key");
+            ZEntity entity = keyToEntity.get(key);
+
+            if (entity == null)
+            {
+              entity = (ZEntity) ZoteroEntity.create(ZoteroWrapper.this, jObj);
+
+              if (entity != null)
+                keyToEntity.put(key, entity);
+            }
+            else
+            {
+              boolean okToMerge = true;
+
+              if (readCmd == ZoteroCmd.readItems)
+              {
+                ZoteroItem zItem = (ZoteroItem)entity;
+                String entryTypeStr = ZoteroItem.getEntryTypeStrFromSpecifiedJson(jObj.getObj("data"));
+
+                if (parseEntryType(entryTypeStr) == etOther)
+                {
+                  okToMerge = false;
+
+                  if (zItem.linkedToWork())
+                  {
+                    int workID = zItem.getWork().getID();
+                    zItem.unassignWork();
+                    messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning, true);
+                  }
+                }
+              }
+
+              if (entity.isSynced())
+              {
+                long onlineVersion = jObj.getLong("version", -1);
+                if (entity.getVersion() < onlineVersion)
+                  entity.update(jObj, true, false);
+              }
+              else
+              {
+                if (okToMerge && (readCmd == ZoteroCmd.readItems))
+                  doMerge((ZoteroItem)entity, jObj);
+                else
+                  entity.update(jObj, true, false);     // Conflict resolution is only implemented for items, not collections
+              }
+            }
+
+            downloadQueue.remove(key);
+          });
+        }
+      }
+
+      return (jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED);
+    }
+
+  }; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void showWriteErrorMessages(JsonObj jUnchanged, JsonObj jFailed, List<ZoteroItem> uploadQueue)
+  {
+    List<String> errMsgList = Lists.newArrayList("Attempt(s) to upload changes to server failed:");
+
+    String unchanged = jUnchanged.keySet().stream().map(jUnchanged::getStr).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+
+    if (unchanged.length() > 0)
+      errMsgList.add("Unchanged: " + unchanged);
+
+    jFailed.keySet().forEach(queueNdx ->
+    {
+      ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1));
+      JsonObj jError = jFailed.getObj(queueNdx);
+      errMsgList.add(item.getKey() + " code: " + jError.getLong("code", -1) + ' ' + jError.getStr("message"));
+    });
+
+    messageDialog(strListToStr(errMsgList, false), mtError, true);
   }
 
 //---------------------------------------------------------------------------
@@ -765,7 +767,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       {
         templates = new EnumMap<>(EntryType.class);
 
-        jArr.getObjs().forEach(jObj -> templates.put(ZoteroItem.parseZoteroType(jObj.getStrSafe("itemType")), jObj));
+        jArr.getObjs().forEach(jObj -> templates.put(entryTypeMap.inverse().getOrDefault(jObj.getStrSafe("itemType"), etOther), jObj));
       }
     }
   }

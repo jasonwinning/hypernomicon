@@ -78,7 +78,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   private String accessToken, refreshToken;
   private Instant lastSyncTime = Instant.EPOCH;
 
-  static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
+  private static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
   private enum MendeleyCmd
   {
@@ -240,124 +240,12 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     return jsonArray;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  private JsonArray createDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
+  @Override public SyncTask createNewSyncTask() { return syncTask = new SyncTask()
   {
-    String url       = "https://api.mendeley.com/documents",
-           mediaType = "application/vnd.mendeley-document.1+json";
-
-    if (jsonObj.getStrSafe("title").isEmpty())
-      jsonObj.put("title", " ");
-
-    JsonArray jsonArray = doHttpRequest(url, HttpRequestType.post, jsonObj.toString(), mediaType, null);
-
-    if (jsonClient.getStatusCode() == HttpStatus.SC_CREATED)
-      return jsonArray;
-
-    throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private JsonArray updateDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
-  {
-    String url       = "https://api.mendeley.com/documents/" + jsonObj.getStrSafe("id"),
-           mediaType = "application/vnd.mendeley-document.1+json";
-
-    if (jsonObj.getStrSafe("title").isEmpty())
-      jsonObj.put("title", " ");
-
-    jsonObj.remove("created");
-    jsonObj.remove("last_modified");
-    jsonObj.remove("profile_id");
-    jsonObj.remove("id");
-    jsonObj.remove("group_id");
-    jsonObj.remove("accessed");
-
-    JsonArray jsonArray = doHttpRequest(url, HttpRequestType.patch, jsonObj.toString(), mediaType, null);
-
-    switch (jsonClient.getStatusCode())
-    {
-      case HttpStatus.SC_OK :
-      case HttpStatus.SC_NOT_MODIFIED :
-      case HttpStatus.SC_PRECONDITION_FAILED :
-
-        return jsonArray;
-    }
-
-    String errMsg = jsonClient.getReasonPhrase();
-
-    if (jsonArray != null)
-    {
-      String jsonMsg = nullSwitch(jsonArray.getObj(0), "", jObj -> jObj.getStrSafe("message"));
-      if (jsonMsg.isBlank() == false)
-        errMsg = jsonMsg;
-    }
-
-    throw new HttpResponseException(jsonClient.getStatusCode(), errMsg);
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private JsonArray doReadCommand(MendeleyCmd command) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
-  {
-    String url = "https://api.mendeley.com/", mediaType = "";
-
-    switch (command)
-    {
-      case readFolders :
-        url += "folders";
-        mediaType = "application/vnd.mendeley-folder.1+json";
-        break;
-
-      case readDocuments :
-        url += "documents?modified_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50&view=all";
-        mediaType = "application/vnd.mendeley-document.1+json";
-        break;
-
-      case readDeletedDocuments :
-        url += "documents?deleted_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50";
-        mediaType = "application/vnd.mendeley-document.1+json";
-        break;
-
-      case readTrash :
-        url += "trash?modified_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50&view=all";
-        mediaType = "application/vnd.mendeley-document.1+json";
-        break;
-    }
-
-    StringBuilder nextUrl = new StringBuilder();
-    JsonArray jsonArray = doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl);
-
-    while (nextUrl.length() > 0)
-    {
-      url = nextUrl.toString();
-      assignSB(nextUrl, "");
-      doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl).getObjs().forEach(jsonArray::add);
-    }
-
-    switch (jsonClient.getStatusCode())
-    {
-      case HttpStatus.SC_OK :
-      case HttpStatus.SC_NOT_MODIFIED :
-      case HttpStatus.SC_PRECONDITION_FAILED :
-
-        return jsonArray;
-    }
-
-    throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  @Override public SyncTask createNewSyncTask()
-  {
-    return syncTask = new SyncTask() { @Override public void call() throws CancelledTaskException, HyperDataException
+    @Override public void call() throws CancelledTaskException, HyperDataException
     {
     //---------------------------------------------------------------------------
 
@@ -447,7 +335,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
             String entryTypeStr = MendeleyDocument.getEntryTypeStrFromSpecifiedJson(jObj);
 
-            if (MendeleyDocument.parseMendeleyType(entryTypeStr) == EntryType.etOther)
+            if (parseEntryType(entryTypeStr) == etOther)
             {
               dontMergeThese.add(entryKey);
 
@@ -609,8 +497,121 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
         String msg = "An error occurred while syncing: " + e.getMessage();
         throw new HyperDataException(msg, e);
       }
-    }};
-  }
+    }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+    private JsonArray doReadCommand(MendeleyCmd command) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
+    {
+      String url = "https://api.mendeley.com/", mediaType = "";
+
+      switch (command)
+      {
+        case readFolders :
+          url += "folders";
+          mediaType = "application/vnd.mendeley-folder.1+json";
+          break;
+
+        case readDocuments :
+          url += "documents?modified_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50&view=all";
+          mediaType = "application/vnd.mendeley-document.1+json";
+          break;
+
+        case readDeletedDocuments :
+          url += "documents?deleted_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50";
+          mediaType = "application/vnd.mendeley-document.1+json";
+          break;
+
+        case readTrash :
+          url += "trash?modified_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50&view=all";
+          mediaType = "application/vnd.mendeley-document.1+json";
+          break;
+      }
+
+      StringBuilder nextUrl = new StringBuilder();
+      JsonArray jsonArray = doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl);
+
+      while (nextUrl.length() > 0)
+      {
+        url = nextUrl.toString();
+        assignSB(nextUrl, "");
+        doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl).getObjs().forEach(jsonArray::add);
+      }
+
+      switch (jsonClient.getStatusCode())
+      {
+        case HttpStatus.SC_OK :
+        case HttpStatus.SC_NOT_MODIFIED :
+        case HttpStatus.SC_PRECONDITION_FAILED :
+
+          return jsonArray;
+      }
+
+      throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+    }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+    private JsonArray createDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
+    {
+      String url       = "https://api.mendeley.com/documents",
+             mediaType = "application/vnd.mendeley-document.1+json";
+
+      if (jsonObj.getStrSafe("title").isEmpty())
+        jsonObj.put("title", " ");
+
+      JsonArray jsonArray = doHttpRequest(url, HttpRequestType.post, jsonObj.toString(), mediaType, null);
+
+      if (jsonClient.getStatusCode() == HttpStatus.SC_CREATED)
+        return jsonArray;
+
+      throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+    }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+    private JsonArray updateDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
+    {
+      String url       = "https://api.mendeley.com/documents/" + jsonObj.getStrSafe("id"),
+             mediaType = "application/vnd.mendeley-document.1+json";
+
+      if (jsonObj.getStrSafe("title").isEmpty())
+        jsonObj.put("title", " ");
+
+      jsonObj.remove("created");
+      jsonObj.remove("last_modified");
+      jsonObj.remove("profile_id");
+      jsonObj.remove("id");
+      jsonObj.remove("group_id");
+      jsonObj.remove("accessed");
+
+      JsonArray jsonArray = doHttpRequest(url, HttpRequestType.patch, jsonObj.toString(), mediaType, null);
+
+      switch (jsonClient.getStatusCode())
+      {
+        case HttpStatus.SC_OK :
+        case HttpStatus.SC_NOT_MODIFIED :
+        case HttpStatus.SC_PRECONDITION_FAILED :
+
+          return jsonArray;
+      }
+
+      String errMsg = jsonClient.getReasonPhrase();
+
+      if (jsonArray != null)
+      {
+        String jsonMsg = nullSwitch(jsonArray.getObj(0), "", jObj -> jObj.getStrSafe("message"));
+        if (jsonMsg.isBlank() == false)
+          errMsg = jsonMsg;
+      }
+
+      throw new HttpResponseException(jsonClient.getStatusCode(), errMsg);
+    }
+
+  }; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

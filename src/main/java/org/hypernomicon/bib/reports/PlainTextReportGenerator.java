@@ -20,26 +20,9 @@ package org.hypernomicon.bib.reports;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.hypernomicon.bib.data.BibData;
-
 public final class PlainTextReportGenerator extends ReportGenerator
 {
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private PlainTextReportGenerator(BibData bd)
-  {
-    super(bd);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String generate(BibData bd)
-  {
-    return bd == null ? "" : new PlainTextReportGenerator(bd).generate();
-  }
+  PlainTextReportGenerator() { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

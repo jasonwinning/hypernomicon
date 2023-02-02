@@ -149,11 +149,11 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void refresh(Stream<? extends BibEntry> entries)
+  void refresh(Stream<? extends BibEntry<?, ?>> entries)
   {
     if (noRefresh) return;
 
-    Set<BibEntry> entriesToRemove = rows.stream().map(BibEntryRow::getEntry).collect(Collectors.toSet());
+    Set<BibEntry<?, ?>> entriesToRemove = rows.stream().map(BibEntryRow::getEntry).collect(Collectors.toSet());
 
     entries.forEachOrdered(entry ->
     {
@@ -185,7 +185,7 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void update(Stream<? extends BibEntry> entries)
+  void update(Stream<? extends BibEntry<?, ?>> entries)
   {
     clear();
 
@@ -225,9 +225,9 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 
     filteredRows.setPredicate(row ->
     {
-      BibEntry entry = row.getEntry();
+      BibEntry<?, ?> entry = row.getEntry();
 
-      String entryStr = entry.getCBText() + " " + entry.getStr(bfContainerTitle);
+      String entryStr = entry.getCBText() + ' ' + entry.getStr(bfContainerTitle);
 
       return matcher.isMatch(entryStr);
     });

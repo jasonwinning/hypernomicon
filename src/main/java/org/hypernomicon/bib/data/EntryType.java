@@ -85,7 +85,9 @@ public enum EntryType
   etPamphlet             ("Pamphlet"),                etBrochure             ("Brochure"),
   etPreprint             ("Preprint"),
 
-  etOther                ("Other"),         // This means it is a type that does not fit into any of the above categories and shouldn't be displayed
+  etOther                ("Other"),         // This means it is a type that does not fit into any of the
+                                            // above categories and shouldn't be displayed in the Bib. Manager
+                                            // because there's no JSON template defining its fields
   etUnentered            (""),              // This just means the field hasn't been populated yet
   etNone                 ("");              // This means it should be treated as a non-entry
 
@@ -121,7 +123,7 @@ public enum EntryType
 
       case etAbstract : case etArchivalDocument : case etCommentary : case etConferencePaper :
       case etEncyclopediaArticle : case etJournalArticle : case etLetter : case etLetterToTheEditor :
-      case etMagazineArticle : case etNewsletterArticle : case etNewspaperArticle : case etInPress : case etUnpublishedWork :
+      case etMagazineArticle : case etNewsletterArticle : case etNewspaperArticle : case etUnpublishedWork :
       case etReport : case etTechnicalReport : case etWorkingPaper : case etElectronicArticle : case etGovernmentDocument :
 
         return HDT_WorkType.get(WorkTypeEnum.wtPaper);

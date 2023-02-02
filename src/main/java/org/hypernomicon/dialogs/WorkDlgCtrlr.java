@@ -32,6 +32,7 @@ import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
+import org.hypernomicon.bib.data.BibDataStandalone;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.bib.data.CrossrefBibData;
@@ -138,7 +139,7 @@ public class WorkDlgCtrlr extends HyperDlg
   private HDT_WorkFile oldWorkFile = null, newWorkFile = null;
   private PDFJSWrapper jsWrapper = null;
   private FilePath previewFilePath = null, origFilePath = null;
-  private BibData curBD = null, origBDtoUse = null;
+  private GUIBibData origBDtoUse = null, curBD = null;
   private HDT_Work curWork;
   private final ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
   private BibDataRetriever bibDataRetriever = null;
@@ -813,7 +814,7 @@ public class WorkDlgCtrlr extends HyperDlg
     tfOrigFile.setText(origFilePath.toString());
 
     if (bdToUse != null)
-      populateFieldsFromWebBD(bdToUse);
+      populateFieldsFromBibData(bdToUse, true, true);
     else if (tfTitle.getText().isEmpty() && tfYear.getText().isEmpty())
       extractDataFromPdf(appPrefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
   }
@@ -875,11 +876,10 @@ public class WorkDlgCtrlr extends HyperDlg
         if (doMerge)
           doMerge(pdfBD, queryBD);
         else if ((queryBD instanceof CrossrefBibData) || (queryBD instanceof GoogleBibData))
-          populateFieldsFromWebBD(queryBD);
+          populateFieldsFromBibData(queryBD, true, true);
         else
         {
-          lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
-          populateFieldsFromBibData(pdfBD, true);
+          populateFieldsFromBibData(pdfBD, true, true);
 
           if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
             mdp.setShowDetailNode(true);
@@ -889,7 +889,7 @@ public class WorkDlgCtrlr extends HyperDlg
       return;
     }
 
-    BibData pdfBD;
+    PDFBibData pdfBD;
 
     try
     {
@@ -923,30 +923,8 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     else
     {
-      lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
-      populateFieldsFromBibData(pdfBD, true);
+      populateFieldsFromBibData(pdfBD, true, true);
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void populateFieldsFromWebBD(BibData queryBD)
-  {
-    if (queryBD instanceof CrossrefBibData)
-    {
-      lblAutoPopulated.setText("Fields auto-populated from Crossref, doi: " + queryBD.getStr(bfDOI));
-    }
-    else if (queryBD instanceof GoogleBibData)
-    {
-      String isbn = ((GoogleBibData) queryBD).getQueryIsbn();
-      lblAutoPopulated.setText(isbn.isBlank() ?
-        "Fields have been auto-populated from Google Books"
-      :
-        "Fields auto-populated from Google Books, isbn: " + isbn);
-    }
-
-    populateFieldsFromBibData(queryBD, true);
   }
 
 //---------------------------------------------------------------------------
@@ -1064,7 +1042,7 @@ public class WorkDlgCtrlr extends HyperDlg
     lblAutoPopulated.setText("");
     changeToStopButton();
 
-    Consumer<BibData> doneHndlr = queryBD ->
+    Consumer<BibDataStandalone> doneHndlr = queryBD ->
     {
       changeToClearButton();
 
@@ -1079,7 +1057,7 @@ public class WorkDlgCtrlr extends HyperDlg
       doMerge(queryBD, null);
     };
 
-    BibData bd = new GUIBibData();
+    GUIBibData bd = new GUIBibData();
     if (crossref)
     {
       bd.setStr(bfDOI, doi);
@@ -1149,7 +1127,7 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibData getBibDataFromGUI()
+  public GUIBibData getBibDataFromGUI()
   {
     curBD.setStr(bfYear, tfYear.getText());
     curBD.setStr(bfDOI, matchDOI(tfDOI.getText()));
@@ -1166,11 +1144,45 @@ public class WorkDlgCtrlr extends HyperDlg
     return curBD;
   }
 
+////---------------------------------------------------------------------------
+////---------------------------------------------------------------------------
+//
+//  private void populateFieldsFromWebBD(BibData bdToUse)
+//  {
+//
+//    populateFieldsFromBibData(bdToUse, true);
+//  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void populateFieldsFromBibData(BibData bd, boolean populateAuthors)
   {
+    populateFieldsFromBibData(bd, populateAuthors, false);
+  }
+
+  private void populateFieldsFromBibData(BibData bd, boolean populateAuthors, boolean setAutopopulatedLabel)
+  {
+    if (setAutopopulatedLabel)
+    {
+      if (bd instanceof CrossrefBibData)
+      {
+        lblAutoPopulated.setText("Fields auto-populated from Crossref, doi: " + bd.getStr(bfDOI));
+      }
+      else if (bd instanceof GoogleBibData)
+      {
+        String isbn = ((GoogleBibData) bd).getQueryIsbn();
+        lblAutoPopulated.setText(isbn.isBlank() ?
+          "Fields have been auto-populated from Google Books"
+        :
+          "Fields auto-populated from Google Books, isbn: " + isbn);
+      }
+      else if (bd instanceof PDFBibData)
+      {
+        lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
+      }
+    }
+
     if (bd != curBD)
       curBD.copyAllFieldsFrom(bd, populateAuthors, true);
 
@@ -1210,7 +1222,7 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static Ternary promptToCreateBibEntry(BibData bd, CheckBox chkCreateBibEntry, Ternary choice, BibData origBD)
+  public static Ternary promptToCreateBibEntry(GUIBibData bd, CheckBox chkCreateBibEntry, Ternary choice, GUIBibData origBD)
   {
     if (chkCreateBibEntry.isSelected())
     {
@@ -1218,7 +1230,7 @@ public class WorkDlgCtrlr extends HyperDlg
       return Ternary.True;
     }
 
-    if (choice.isFalse() && ((origBD == null) || BibData.externalFieldsAreSame(bd, origBD)))
+    if (choice.isFalse() && ((origBD == null) || GUIBibData.externalFieldsAreSame(bd, origBD)))
       return Ternary.False;
 
     EnumSet<BibFieldEnum> extFields = bd.fieldsWithExternalData();

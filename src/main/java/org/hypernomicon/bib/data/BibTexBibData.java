@@ -114,7 +114,7 @@ public final class BibTexBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibData create(List<String> lines) throws TokenMgrException, ParseException
+  public static BibTexBibData create(List<String> lines) throws TokenMgrException, ParseException
   {
     BibTeXParser parser = new BibTeXParser();
 

@@ -24,7 +24,6 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
@@ -42,36 +41,36 @@ import org.hypernomicon.util.json.JsonObj;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
-import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
-public class ZoteroItem extends BibEntry implements ZoteroEntity
+public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implements ZoteroEntity
 {
-  private final ZoteroWrapper zWrapper;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private JsonObj jData;
+
+//---------------------------------------------------------------------------
 
   public ZoteroItem(ZoteroWrapper zWrapper, JsonObj jObj, boolean thisIsBackup)
   {
-    super(thisIsBackup);
+    super(zWrapper, thisIsBackup);
 
     update(jObj, false, false);
-    this.zWrapper = zWrapper;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public ZoteroItem(ZoteroWrapper zWrapper, EntryType newType)
   {
-    super(false);
+    super(zWrapper, false);
 
-    jObj = new JsonObj();
     jData = ZoteroWrapper.getTemplate(newType).clone();
-    jData.put(entryTypeKey, ZoteroWrapper.entryTypeMap.getOrDefault(newType, ""));
+    jData.put(entryTypeKey, zWrapper.getEntryTypeMap().getOrDefault(newType, ""));
     jObj.put("data", jData);
-    this.zWrapper = zWrapper;
 
     jObj.put("key", "_!_" + randomAlphanumericStr(12));
   }
@@ -79,96 +78,16 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String toString()        { return jObj.toString(); }
-  @Override public String getKey()          { return jObj.getStr("key"); }
-  @Override public long getVersion()        { return jObj.getLong("version", 0); }
-  @Override protected boolean isNewEntry()  { return jObj.containsKey("version") == false; }
-  @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new ZoteroAuthors(jData.getArray("creators"), getEntryType()); }
-  @Override public EntryType getEntryType() { return parseZoteroType(getEntryTypeStrFromSpecifiedJson(jData)); }
+  @Override public String toString()                   { return jObj.toString(); }
+  @Override public String getKey()                     { return jObj.getStr("key"); }
+  @Override public long getVersion()                   { return jObj.getLong("version", 0); }
+  @Override protected boolean isNewEntry()             { return jObj.containsKey("version") == false; }
+  @Override protected void updateJsonObj(JsonObj jObj) { this.jObj = jObj; jData = jObj.getObj("data"); }
+  @Override protected JsonArray getCollJsonArray()     { return jObj.getObj("data").getArray("collections"); }
+  @Override public BibAuthors getAuthors()             { return linkedToWork() ? new WorkBibAuthors(getWork()) : new ZoteroAuthors(jData.getArray("creators"), getEntryType()); }
+  @Override public EntryType getEntryType()            { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jData)); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
-
-  @Override public LibraryWrapper<?, ?> getLibrary() { return zWrapper; }
-  static EntryType parseZoteroType(String zType)     { return ZoteroWrapper.entryTypeMap.inverse().getOrDefault(zType, etOther); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public String getEntryURL()
-  {
-    return isNewEntry() ? "" : nullSwitch(jObj.getObj("links"), "", links ->
-                               nullSwitch(links.getObj("alternate"), "", alt -> alt.getStrSafe("href")));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
-  {
-    this.jObj = jObj;
-    jData = jObj.getObj("data");
-
-    if (thisIsBackup)
-    {
-      jObj.remove("backupItem");
-      return;
-    }
-
-    JsonObj jBackupObj;
-
-    if (jObj.containsKey("backupItem"))
-    {
-      jBackupObj = jObj.getObj("backupItem");
-      jObj.remove("backupItem");
-    }
-    else
-      jBackupObj = jObj.clone();
-
-    backupItem = new ZoteroItem(zWrapper, jBackupObj, true);
-
-    if ((updatingExistingDataFromServer == false) || (linkedToWork() == false)) return;
-
-    setMultiStr(bfTitle, backupItem.getMultiStr(bfTitle));
-    setMultiStr(bfISBNs, backupItem.getMultiStr(bfISBNs));
-    setMultiStr(bfMisc, backupItem.getMultiStr(bfMisc));
-    setStr(bfDOI, backupItem.getStr(bfDOI));
-    setStr(bfYear, backupItem.getStr(bfYear));
-
-    String url = getStr(bfURL);
-    if (url.startsWith(EXT_1) == false)
-      setStr(bfURL, backupItem.getStr(bfURL));
-
-    if (preMerge) return; // authors always get updated during merge
-
-    if (authorsChanged() == false) return;
-
-    zWrapper.doMerge(this, jBackupObj);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected List<String> getCollKeys(boolean deletedOK)
-  {
-    JsonArray collArray = jObj.getObj("data").getArray("collections");
-
-    return (collArray != null) && ((zWrapper.getTrash().contains(this) == false) || deletedOK) ?
-      JsonArray.toStrArrayList(collArray)
-    :
-      new ArrayList<>();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected void setEntryType(EntryType entryType)
-  {
-    if (entryType == getEntryType()) return;
-
-    // jData.put("itemType", ZoteroWrapper.entryTypeMap.getOrDefault(entryType, ""));
-
-    throw new UnsupportedOperationException("change Zotero entry type");
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -429,7 +348,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean authorsChanged()
+  @Override protected boolean authorsChanged()
   {
     List<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
                     editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
@@ -532,7 +451,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
     if (linkedToWork())
     {
-      ZoteroItem serverItem = new ZoteroItem(zWrapper, jServerObj, true);
+      ZoteroItem serverItem = new ZoteroItem(getLibrary(), jServerObj, true);
 
       if (missingKeysOK || thisTypeHasFieldKey(bfDOI  )) serverItem.setStr(bfDOI, getStr(bfDOI));
       if (missingKeysOK || thisTypeHasFieldKey(bfYear )) serverItem.setStr(bfYear, getStr(bfYear));
@@ -675,13 +594,15 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void createReport(ReportGenerator report)
+  @Override public String createReport(boolean html)
   {
-    createReport(this, report);
+    return createReport(this, html);
   }
 
-  private static void createReport(ZoteroItem item, ReportGenerator report)
+  private static String createReport(ZoteroItem item, boolean html)
   {
+    ReportGenerator report = ReportGenerator.create(html);
+
     JsonObj jObj  = item.exportJsonObjForUploadToServer(true),
             jData = nullSwitch(jObj.getObj("data"), jObj);
 
@@ -727,6 +648,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
           break;
       }
     });
+
+    return report.render(item.getReportFieldOrder());
   }
 
 //---------------------------------------------------------------------------
@@ -818,6 +741,15 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
       "Pages",
       "Place",
       "Publisher");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public String getEntryURL()
+  {
+    return isNewEntry() ? "" : nullSwitch(jObj.getObj("links"), "", links ->
+                               nullSwitch(links.getObj("alternate"), "", alt -> alt.getStrSafe("href")));
   }
 
 //---------------------------------------------------------------------------

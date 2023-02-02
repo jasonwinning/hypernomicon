@@ -43,7 +43,9 @@ import org.json.simple.parser.ParseException;
 
 public class BibDataRetriever
 {
-  private BibData workBD = null, pdfBD = null, queryBD = null;
+  private BibData workBD = null;
+  private BibDataStandalone queryBD = null;
+  private PDFBibData pdfBD = null;
   private boolean stopped = false, searchedCrossref = false;
 
   private final AsyncHttpClient httpClient;
@@ -54,7 +56,7 @@ public class BibDataRetriever
   private final Set<String> alreadyCheckedIDs = new HashSet<>();
 
   @FunctionalInterface
-  public interface RetrieveHandler { void handle(BibData pdfBD, BibData queryBD, boolean messageShown); }
+  public interface RetrieveHandler { void handle(PDFBibData pdfBD, BibDataStandalone queryBD, boolean messageShown); }
 
   public BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, List<FilePath> pdfFiles, RetrieveHandler doneHndlr)
   {
@@ -98,7 +100,7 @@ public class BibDataRetriever
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibDataRetriever forCrossref(AsyncHttpClient httpClient, BibData workBD, Consumer<BibData> doneHndlr)
+  public static BibDataRetriever forCrossref(AsyncHttpClient httpClient, BibData workBD, Consumer<BibDataStandalone> doneHndlr)
   {
     return new BibDataRetriever(httpClient, workBD, null, true, false, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
   }
@@ -106,7 +108,7 @@ public class BibDataRetriever
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibDataRetriever forGoogleBooks(AsyncHttpClient httpClient, BibData workBD, Consumer<BibData> doneHndlr)
+  public static BibDataRetriever forGoogleBooks(AsyncHttpClient httpClient, BibData workBD, Consumer<BibDataStandalone> doneHndlr)
   {
     return new BibDataRetriever(httpClient, workBD, null, false, true, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
   }

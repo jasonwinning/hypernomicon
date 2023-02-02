@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-import org.hypernomicon.bib.reports.PlainTextReportGenerator;
 import org.hypernomicon.bib.reports.ReportGenerator;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -38,6 +37,12 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
 
+/**
+ * <p>{@code BibData} is the superclass for all objects that represent the bibliographic
+ * data for a single work. This superclass abstracts away from the details of implementation
+ * and differences between various formats and allows for interoperability between them.
+ * </p>
+ */
 public abstract class BibData
 {
 
@@ -92,7 +97,6 @@ public abstract class BibData
   public abstract String getStr(BibFieldEnum bibFieldEnum);
   public abstract BibAuthors getAuthors();
   public abstract HDT_Work getWork();
-  public abstract boolean linkedToWork();
   public abstract HDT_WorkType getWorkType();
   public abstract void setWorkType(HDT_WorkType workType);
 
@@ -239,14 +243,13 @@ public abstract class BibData
 
   public String createReport()
   {
-    return PlainTextReportGenerator.generate(this);
+    return createReport(false);
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void createReport(ReportGenerator report)
+  public String createReport(boolean html)
   {
+    ReportGenerator report = ReportGenerator.create(html);
+
     BibAuthors authors = getAuthors();
 
     addStrToReport     (bfEntryType     , report);
@@ -270,6 +273,8 @@ public abstract class BibData
     addMultiStrToReport(bfISBNs         , report);
     addStrToReport     (bfMisc          , report);
     addMultiStrToReport(bfISSNs         , report);
+
+    return report.render(null);
   }
 
 //---------------------------------------------------------------------------
@@ -291,42 +296,6 @@ public abstract class BibData
     BibAuthors authors = getAuthors();
     authors.clear();
     bd.getAuthors().forEach(authors::add);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public EnumSet<BibFieldEnum> fieldsWithExternalData()
-  {
-    EnumSet<BibFieldEnum> set = EnumSet.allOf(BibFieldEnum.class);
-
-    set.removeIf(bibFieldEnum -> { switch (bibFieldEnum)
-    {
-      case bfAuthors   : case bfEditors  : case bfTranslators : case bfTitle:
-      case bfDOI       : case bfISBNs    : case bfMisc        : case bfYear:
-      case bfEntryType : case bfWorkType : case bfURL         :
-
-        return true;
-
-      default:
-
-        return fieldNotEmpty(bibFieldEnum) == false;
-    }});
-
-    return set;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean externalFieldsAreSame(BibData bd1, BibData bd2)
-  {
-    EnumSet<BibFieldEnum> set1 = bd1.fieldsWithExternalData(),
-                          set2 = bd2.fieldsWithExternalData();
-
-    if (set1.equals(set2) == false) return false;
-
-    return set1.stream().allMatch(field -> bd1.fieldsAreEqual(field, bd2, false));
   }
 
 //---------------------------------------------------------------------------

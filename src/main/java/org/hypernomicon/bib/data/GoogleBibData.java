@@ -190,13 +190,13 @@ public final class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 
   static void doHttpRequest(AsyncHttpClient httpClient, Iterator<String> isbnIt, Set<String> alreadyCheckedIDs,
-                            Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+                            Consumer<GoogleBibData> successHndlr, Consumer<Exception> failHndlr)
   {
     doHttpRequest(httpClient, null, null, isbnIt, alreadyCheckedIDs, successHndlr, failHndlr);
   }
 
   static void doHttpRequest(AsyncHttpClient httpClient, String title, BibAuthors authors, Iterator<String> isbnIt,
-                            Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+                            Set<String> alreadyCheckedIDs, Consumer<GoogleBibData> successHndlr, Consumer<Exception> failHndlr)
   {
     String isbn = "";
     if (isbnIt != null)
@@ -220,7 +220,7 @@ public final class GoogleBibData extends BibDataStandalone
 
     JsonHttpClient.getObjAsync(getQueryUrl(title, authors, isbn), httpClient, jsonObj ->
     {
-      BibData bd = createFromJSON(jsonObj, title, finalIsbn);
+      GoogleBibData bd = createFromJSON(jsonObj, title, finalIsbn);
 
       if ((bd == null) && (isbnIt != null) && isbnIt.hasNext())
       {

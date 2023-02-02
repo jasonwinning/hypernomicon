@@ -44,12 +44,13 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
+import static org.hypernomicon.bib.data.EntryType.etOther;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
-public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_T extends BibCollection>
+public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, BibCollection_T>, BibCollection_T extends BibCollection>
 {
   //---------------------------------------------------------------------------
 
@@ -103,6 +104,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   public final Set<BibEntry_T> getTrash()                { return new LinkedHashSet<>(keyToTrashEntry.values()); }
   public final Set<BibEntry_T> getAllEntries()           { return new LinkedHashSet<>(keyToAllEntry.values()); }
   public final Map<String, BibCollection> getKeyToColl() { return Collections.unmodifiableMap(keyToColl); }
+
+  public EntryType parseEntryType(String typeStr)        { return getEntryTypeMap().inverse().getOrDefault(typeStr, etOther); }
 
   public BibEntry_T getEntryByKey(String key)            { return keyToAllEntry.get(key); }
   public BibEntry_T getEntryByID(int id)                 { return keyToAllEntry.get(keyList.get(id - 1)); }
@@ -168,7 +171,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
       try
       {
-        mwd = MergeWorksDlgCtrlr.build("Merge Remote Changes with Local Changes", entry, BibEntry.create(type(), this, jObj, true),
+        mwd = MergeWorksDlgCtrlr.build("Merge Remote Changes with Local Changes", entry, BibEntry.create(this, jObj, true),
                                        null, null, entry.getWork(), false, false, Ternary.False);
       }
       catch (IOException e)
@@ -198,7 +201,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   public BibEntry_T addEntry(EntryType newType)
   {
-    BibEntry_T item = BibEntry.create(type(), this, newType);
+    BibEntry_T item = BibEntry.create(this, newType);
 
     keyToAllEntry.put(item.getKey(), item);
 
@@ -242,7 +245,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   {
     jObj.getArray(entryFileNode()).getObjs().forEach(itemJsonObj ->
     {
-      BibEntry_T entry = BibEntry.create(type(), this, itemJsonObj, false);
+      BibEntry_T entry = BibEntry.create(this, itemJsonObj, false);
 
       if (entry != null)
         keyToAllEntry.put(entry.getKey(), entry);
@@ -250,7 +253,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
     nullSwitch(jObj.getArray("trash"), jArr -> jArr.getObjs().forEach(itemJsonObj ->
     {
-      BibEntry_T entry = BibEntry.create(type(), this, itemJsonObj, false);
+      BibEntry_T entry = BibEntry.create(this, itemJsonObj, false);
 
       if (entry == null) return;
 

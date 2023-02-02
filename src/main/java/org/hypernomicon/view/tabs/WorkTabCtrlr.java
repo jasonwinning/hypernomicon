@@ -20,8 +20,11 @@ package org.hypernomicon.view.tabs;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
+import org.hypernomicon.bib.data.BibDataStandalone;
+import org.hypernomicon.bib.data.CrossrefBibData;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
+import org.hypernomicon.bib.data.GoogleBibData;
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.dialogs.ChooseParentWorkFileDlgCtrlr;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
@@ -149,9 +152,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private BibDataRetriever bibDataRetriever = null;
   private MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
-  private final ObjectProperty<BibData> crossrefBDprop = new SimpleObjectProperty<>(),
-                                        pdfBDprop      = new SimpleObjectProperty<>(),
-                                        googleBDprop   = new SimpleObjectProperty<>();
+  private final ObjectProperty<CrossrefBibData> crossrefBDprop = new SimpleObjectProperty<>();
+  private final ObjectProperty<PDFBibData>      pdfBDprop      = new SimpleObjectProperty<>();
+  private final ObjectProperty<GoogleBibData>   googleBDprop   = new SimpleObjectProperty<>();
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
   private static final String TOOLTIP_PREFIX = "Search for this work in ";
@@ -1700,7 +1703,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private BibData getBibDataFromBibTab()
+  private BibDataStandalone getBibDataFromBibTab()
   {
     Tab curTab = tpBib.getSelectionModel().getSelectedItem();
 
@@ -1772,12 +1775,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tabPane.requestLayout();
     httpClient.clearLastUrl();
 
-    Consumer<BibData> doneHndlr = queryBD ->
+    Consumer<BibDataStandalone> doneHndlr = queryBD ->
     {
       setAllVisible(false, btnStop, progressBar);
 
-      if (crossref) crossrefBDprop.set(queryBD);
-      else          googleBDprop  .set(queryBD);
+      if (crossref) crossrefBDprop.set((CrossrefBibData) queryBD);
+      else          googleBDprop  .set((GoogleBibData  ) queryBD);
 
       ta.setText("Query URL: " + httpClient.lastUrl() + System.lineSeparator());
 
@@ -1790,7 +1793,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       ta.appendText(queryBD.createReport());
     };
 
-    BibData bd = new GUIBibData();
+    GUIBibData bd = new GUIBibData();
     bd.getAuthors().setAllFromTable(getAuthorGroups());
 
     if (crossref)
@@ -1880,7 +1883,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       if (mwd.creatingNewEntry().isTrue())
       {
-        BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
+        BibEntry<?, ?> entry = db.getBibLibrary().addEntry(mwd.getEntryType());
         curWork.setBibEntryKey(entry.getKey());
         destBD = entry;
       }
@@ -1916,7 +1919,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (mwd.creatingNewEntry().isTrue())
     {
-      BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
+      BibEntry<?, ?> entry = db.getBibLibrary().addEntry(mwd.getEntryType());
       curWork.setBibEntryKey(entry.getKey());
       workBibData = entry;
     }
@@ -1951,7 +1954,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void getBibDataFromGUI(BibData bd)
+  public void getBibDataFromGUI(GUIBibData bd)
   {
     List<String> isbns = htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList());
 

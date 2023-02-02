@@ -86,13 +86,13 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   private HyperCB hcbAuthor, hcbWork, hcbBibEntry;
   private HDT_Work work = null;
   private HDT_Person author = null;
-  private BibEntry bibEntry = null;
+  private BibEntry<?, ?> bibEntry = null;
   private boolean createNewClicked = false, previewInitialized = false, bibEntryIsConstant;
 
-  public HDT_Work getWork()     { return work; }
-  public BibEntry getBibEntry() { return HDT_Work.isUnenteredSet(work) ? null : bibEntry; }
-  public BibData getBibData()   { return bd; }
-  public HDT_Person getAuthor() { return author; }
+  public HDT_Work getWork()           { return work; }
+  public BibEntry<?, ?> getBibEntry() { return HDT_Work.isUnenteredSet(work) ? null : bibEntry; }
+  public BibData getBibData()         { return bd; }
+  public HDT_Person getAuthor()       { return author; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -102,7 +102,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     return ((SelectWorkDlgCtrlr) create("SelectWorkDlg", "Select a Work Record", true)).init(null, authorToUse, filePathToUse, true, null, false);
   }
 
-  public static SelectWorkDlgCtrlr build(HDT_Work workToUse, BibEntry bibEntryToUse)
+  public static SelectWorkDlgCtrlr build(HDT_Work workToUse, BibEntry<?, ?> bibEntryToUse)
   {
     return ((SelectWorkDlgCtrlr) create("SelectWorkDlg", "Select a Work Record", true)).init(workToUse, null, null, false, bibEntryToUse, true);
   }
@@ -110,8 +110,8 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SelectWorkDlgCtrlr init(HDT_Work workToUse, HDT_Person authorToUse, FilePath filePathToUse, boolean filePathIsConstant,
-                                                                              BibEntry bibEntryToUse, boolean bibEntryIsConstant)
+  private SelectWorkDlgCtrlr init(HDT_Work workToUse, HDT_Person authorToUse, FilePath       filePathToUse, boolean filePathIsConstant,
+                                                                              BibEntry<?, ?> bibEntryToUse, boolean bibEntryIsConstant)
   {
     bibEntry = bibEntryToUse;
     work = workToUse;

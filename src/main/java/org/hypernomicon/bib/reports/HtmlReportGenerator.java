@@ -22,27 +22,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.view.mainText.MainTextUtil;
 
 public final class HtmlReportGenerator extends ReportGenerator
 {
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private HtmlReportGenerator(BibData bd)
-  {
-    super(bd);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String generate(BibData bd)
-  {
-    return bd == null ? "" : new HtmlReportGenerator(bd).generate();
-  }
+  HtmlReportGenerator() { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -51,7 +51,6 @@ import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.reports.HtmlReportGenerator;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
@@ -124,7 +123,7 @@ public class BibManager extends HyperDlg
   private HyperTable htRelatives;
   private BibEntryTable entryTable;
   private CollectionTree collTree;
-  private LibraryWrapper<? extends BibEntry, ? extends BibCollection> libraryWrapper = null;
+  private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper = null;
   private SyncTask syncTask = null;
   private String assignCaption, unassignCaption;
   private ImageView assignImg, unassignImg;
@@ -139,9 +138,9 @@ public class BibManager extends HyperDlg
 
   @Override protected boolean isValid()  { return true; }
 
-  private void hideBottomControls()             { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
-  private void viewOnWeb()                      { viewOnWeb(tableView.getSelectionModel().getSelectedItem().getEntry()); }
-  private static void viewOnWeb(BibEntry entry) { DesktopUtil.openWebLink(entry.getEntryURL()); }
+  private void hideBottomControls()                   { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
+  private void viewOnWeb()                            { viewOnWeb(tableView.getSelectionModel().getSelectedItem().getEntry()); }
+  private static void viewOnWeb(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getEntryURL()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -341,7 +340,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setLibrary(LibraryWrapper<? extends BibEntry, ? extends BibCollection> libraryWrapper)
+  public void setLibrary(LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper)
   {
     this.libraryWrapper = libraryWrapper;
 
@@ -458,7 +457,7 @@ public class BibManager extends HyperDlg
     toolBar.getItems().add(progressBar);
     btnSync.setDisable(true);
 
-    BibEntry entry = tableView.getSelectionModel().getSelectedItem().getEntry();
+    BibEntry<?, ?> entry = tableView.getSelectionModel().getSelectedItem().getEntry();
 
     List<FilePath> pdfFilePaths;
 
@@ -541,9 +540,9 @@ public class BibManager extends HyperDlg
   public static final class RelatedBibEntry
   {
     public final BibEntryRelation relation;
-    public final BibEntry entry;
+    public final BibEntry<?, ?> entry;
 
-    private RelatedBibEntry(BibEntryRelation relation, BibEntry entry)
+    private RelatedBibEntry(BibEntryRelation relation, BibEntry<?, ?> entry)
     {
       this.relation = relation;
       this.entry = entry;
@@ -563,7 +562,7 @@ public class BibManager extends HyperDlg
     else
     {
       curRow = tableView.getSelectionModel().getSelectedItem();
-      webView.getEngine().loadContent(HtmlReportGenerator.generate(nullSwitch(curRow, null, BibEntryRow::getEntry)));
+      webView.getEngine().loadContent(nullSwitch(nullSwitch(curRow, null, BibEntryRow::getEntry), "", entry -> entry.createReport(true)));
     }
 
     List<RelatedBibEntry> list = getRelativesForRow(curRow);
@@ -598,7 +597,7 @@ public class BibManager extends HyperDlg
 
     if (list.isEmpty()) return;
 
-    BibEntry entry = curRow.getEntry();
+    BibEntry<?, ?> entry = curRow.getEntry();
 
     list.forEach(relative -> updateRelative(relative, entry));
 
@@ -609,7 +608,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void updateRelative(RelatedBibEntry relative, BibEntry entry)
+  private static void updateRelative(RelatedBibEntry relative, BibEntry<?, ?> entry)
   {
     relative.entry.setStr(bfVolume   , entry.getStr(bfVolume   ));
     relative.entry.setStr(bfPublisher, entry.getStr(bfPublisher));
@@ -649,14 +648,14 @@ public class BibManager extends HyperDlg
     if ((libraryWrapper == null) || (work == null))
       return list;
 
-    BibEntry entry = row.getEntry();
+    BibEntry<?, ?> entry = row.getEntry();
 
     if (childTypes.contains(entry.getEntryType()) && work.largerWork.isNotNull())
     {
       HDT_Work parentWork = work.largerWork.get();
       if (parentWork.getBibEntryKey().isBlank() == false)
       {
-        BibEntry parentEntry = libraryWrapper.getEntryByKey(parentWork.getBibEntryKey());
+        BibEntry<?, ?> parentEntry = libraryWrapper.getEntryByKey(parentWork.getBibEntryKey());
         if (parentTypes.contains(parentEntry.getEntryType()))
         {
           list.add(new RelatedBibEntry(BibEntryRelation.Parent, parentEntry));
@@ -681,7 +680,7 @@ public class BibManager extends HyperDlg
     {
       if ((childWork == self) || childWork.getBibEntryKey().isBlank()) return;
 
-      BibEntry childEntry = libraryWrapper.getEntryByKey(childWork.getBibEntryKey());
+      BibEntry<?, ?> childEntry = libraryWrapper.getEntryByKey(childWork.getBibEntryKey());
       if (childTypes.contains(childEntry.getEntryType()))
         list.add(new RelatedBibEntry(relation, childEntry));
     });
@@ -702,13 +701,13 @@ public class BibManager extends HyperDlg
     if (ui.cantSaveRecord()) return;
 
     HDT_Work work = workRecordToAssign.get();
-    BibEntry entry = libraryWrapper.addEntry(et);
+    BibEntry<?, ?> entry = libraryWrapper.addEntry(et);
 
     work.setBibEntryKey(entry.getKey());
 
     if (childTypes.contains(et) && work.largerWork.isNotNull() && (work.largerWork.get().getBibEntryKey().isBlank() == false))
     {
-      BibEntry parentEntry = libraryWrapper.getEntryByKey(work.largerWork.get().getBibEntryKey());
+      BibEntry<?, ?> parentEntry = libraryWrapper.getEntryByKey(work.largerWork.get().getBibEntryKey());
 
       if (parentTypes.contains(parentEntry.getEntryType()))
         updateRelative(new RelatedBibEntry(BibEntryRelation.Child, entry), parentEntry);
@@ -754,7 +753,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assignToExisting(HDT_Work work, BibEntry entry)
+  private void assignToExisting(HDT_Work work, BibEntry<?, ?> entry)
   {
     if ((work == null) || (entry == null)) return;
 
@@ -784,7 +783,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Stream<? extends BibEntry> getViewForTreeItem(TreeItem<BibCollectionRow> item)
+  private Stream<? extends BibEntry<?, ?>> getViewForTreeItem(TreeItem<BibCollectionRow> item)
   {
     BibCollectionRow row = nullSwitch(item, null, TreeItem::getValue);
     BibCollectionType type = nullSwitch(row, null, BibCollectionRow::getType);

@@ -39,6 +39,7 @@ import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibDataStandalone;
 import org.hypernomicon.bib.data.BibTexBibData;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
@@ -2695,7 +2696,7 @@ public final class MainCtrlr
 
     HDT_Work work = null;
     BibData bdToUse = null;
-    BibEntry bibEntry = null;
+    BibEntry<?, ?> bibEntry = null;
     Ternary newEntryChoice = Ternary.Unset;
     EntryType newEntryType = EntryType.etUnentered;
 
@@ -2884,22 +2885,22 @@ public final class MainCtrlr
 
     String pathStr = FilePath.isEmpty(filePath) ? "" : (" " + filePath);
 
-    BibData bd = null;
+    BibDataStandalone fileBibData = null;
     Exception ex = null;
 
     try
     {
-      bd = BibTexBibData.create(lines);
+      fileBibData = BibTexBibData.create(lines);
     }
     catch (TokenMgrException | ParseException e)
     {
       ex = e;
     }
 
-    if (bd == null)
-      bd = RISBibData.create(lines);
+    if (fileBibData == null)
+      fileBibData = RISBibData.create(lines);
 
-    if (bd == null)
+    if (fileBibData == null)
     {
       falseWithErrorMessage(ex == null ?
         "Unable to parse bibliographic information."
@@ -2925,7 +2926,7 @@ public final class MainCtrlr
     try
     {
       mwd = MergeWorksDlgCtrlr.build("Import Into " + (creatingNewWork ? "New" : "Existing") + " Work Record",
-                                     workBibData, bd, null, null, work, creatingNewWork, showNewEntry, newEntryChecked ? Ternary.True : Ternary.Unset);
+                                     workBibData, fileBibData, null, null, work, creatingNewWork, showNewEntry, newEntryChecked ? Ternary.True : Ternary.Unset);
     }
     catch (IOException e)
     {
@@ -2941,7 +2942,7 @@ public final class MainCtrlr
 
     if (mwd.creatingNewEntry().isTrue())
     {
-      BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
+      BibEntry<?, ?> entry = db.getBibLibrary().addEntry(mwd.getEntryType());
       work.setBibEntryKey(entry.getKey());
       workBibData = entry;
     }

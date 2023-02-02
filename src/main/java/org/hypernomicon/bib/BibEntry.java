@@ -17,6 +17,7 @@
 
 package org.hypernomicon.bib;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
@@ -28,7 +29,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
-import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
@@ -42,25 +42,39 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-public abstract class BibEntry extends BibData implements BibEntity
+public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollection_T>, BibCollection_T extends BibCollection> extends BibData implements BibEntity
 {
   protected final boolean thisIsBackup;
   protected JsonObj jObj;
-  protected BibEntry backupItem = null;
+  protected BibEntry<BibEntry_T, BibCollection_T> backupItem = null;
+  private final LibraryWrapper<BibEntry_T, BibCollection_T> libWrapper;
+  private final BibEntry_T thisEntry;
 
   protected abstract void syncBookAuthorsTo(RelatedBibEntry relative);
-  protected abstract List<String> getCollKeys(boolean deletedOK);
+  protected abstract JsonArray getCollJsonArray();
   protected abstract boolean isNewEntry();
+  protected abstract boolean authorsChanged();
+  protected abstract void updateJsonObj(JsonObj jObj);
   public abstract String getEntryURL();
-  protected abstract LibraryWrapper<?, ?> getLibrary();
   public abstract List<String> getReportFieldOrder();
 
-  public BibEntry(boolean thisIsBackup)       { this.thisIsBackup = thisIsBackup; }
+  @SuppressWarnings("unchecked")
+  public BibEntry(LibraryWrapper<BibEntry_T, BibCollection_T> libWrapper, boolean thisIsBackup)
+  {
+    this.libWrapper = libWrapper;
+    this.thisIsBackup = thisIsBackup;
+
+    jObj = new JsonObj();
+    thisEntry = (BibEntry_T)this;
+  }
 
   public int numericID()                      { return getLibrary().numericID(getKey()); }
+  public boolean linkedToWork()               { return thisIsBackup ? false : getWork() != null; }
+
+  @SuppressWarnings("unchecked")
+  protected final <T extends LibraryWrapper<BibEntry_T, BibCollection_T>> T getLibrary() { return (T)libWrapper; }
 
   @Override public HDT_Work getWork()         { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getKey()); }
-  @Override public boolean linkedToWork()     { return thisIsBackup ? false : getWork() != null; }
   @Override public HDT_WorkType getWorkType() { return linkedToWork() ? getWork().workType.get() : EntryType.toWorkType(getEntryType()); }
 
   @Override public void setWorkType(HDT_WorkType workType) { if (linkedToWork()) getWork().workType.set(workType); }
@@ -69,12 +83,12 @@ public abstract class BibEntry extends BibData implements BibEntity
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public static <Entry_T extends BibEntry, Collection_T extends BibCollection> Entry_T create(LibraryType lType, LibraryWrapper<Entry_T, Collection_T> wrapper, JsonObj jObj, boolean thisIsBackup)
+  public static <Entry_T extends BibEntry<Entry_T, Collection_T>, Collection_T extends BibCollection> Entry_T create(LibraryWrapper<Entry_T, Collection_T> libWrapper, JsonObj jObj, boolean thisIsBackup)
   {
-    switch (lType)
+    switch (libWrapper.type())
     {
-      case ltMendeley : return (Entry_T) new MendeleyDocument((MendeleyWrapper) wrapper, jObj, thisIsBackup);
-      case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) wrapper, jObj, thisIsBackup);
+      case ltMendeley : return (Entry_T) new MendeleyDocument((MendeleyWrapper) libWrapper, jObj, thisIsBackup);
+      case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) libWrapper, jObj, thisIsBackup);
       default         : return null;
     }
   }
@@ -83,14 +97,71 @@ public abstract class BibEntry extends BibData implements BibEntity
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public static <Entry_T extends BibEntry, Collection_T extends BibCollection> Entry_T create(LibraryType lType, LibraryWrapper<Entry_T, Collection_T> wrapper, EntryType entryType)
+  public static <Entry_T extends BibEntry<Entry_T, Collection_T>, Collection_T extends BibCollection> Entry_T create(LibraryWrapper<Entry_T, Collection_T> libWrapper, EntryType entryType)
   {
-    switch (lType)
+    switch (libWrapper.type())
     {
-      case ltMendeley : return (Entry_T) new MendeleyDocument((MendeleyWrapper) wrapper, entryType);
-      case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) wrapper, entryType);
+      case ltMendeley : return (Entry_T) new MendeleyDocument((MendeleyWrapper) libWrapper, entryType);
+      case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) libWrapper, entryType);
       default         : return null;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public final void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
+  {
+    updateJsonObj(jObj);
+
+    if (thisIsBackup)
+    {
+      jObj.remove("backupItem");
+      return;
+    }
+
+    JsonObj jBackupObj;
+
+    if (jObj.containsKey("backupItem"))
+    {
+      jBackupObj = jObj.getObj("backupItem");
+      jObj.remove("backupItem");
+    }
+    else
+      jBackupObj = jObj.clone();
+
+    backupItem = create(libWrapper, jBackupObj, true);
+
+    if ((updatingExistingDataFromServer == false) || (linkedToWork() == false)) return;
+
+    setMultiStr(bfTitle, backupItem.getMultiStr(bfTitle));
+    setMultiStr(bfISBNs, backupItem.getMultiStr(bfISBNs));
+    setMultiStr(bfMisc, backupItem.getMultiStr(bfMisc));
+    setStr(bfDOI, backupItem.getStr(bfDOI));
+    setStr(bfYear, backupItem.getStr(bfYear));
+
+    String url = getStr(bfURL);
+    if (url.startsWith(EXT_1) == false)
+      setStr(bfURL, backupItem.getStr(bfURL));
+
+    if (preMerge) return; // authors always get updated during merge
+
+    if (authorsChanged() == false) return;
+
+    libWrapper.doMerge(thisEntry, jBackupObj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  List<String> getCollKeys(boolean deletedOK)
+  {
+    JsonArray collArray = getCollJsonArray();
+
+    return (collArray != null) && ((getLibrary().getTrash().contains(this) == false) || deletedOK) ?
+      JsonArray.toStrArrayList(collArray)
+    :
+      new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------
@@ -128,6 +199,16 @@ public abstract class BibEntry extends BibData implements BibEntity
       jDiskObj.put("backupItem", backupItem.jObj);
 
     jArr.add(jDiskObj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected final void setEntryType(EntryType entryType)
+  {
+    if (entryType == getEntryType()) return;
+
+    throw new UnsupportedOperationException("change bibliographic entry type");
   }
 
 //---------------------------------------------------------------------------
@@ -174,7 +255,7 @@ public abstract class BibEntry extends BibData implements BibEntity
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    BibEntry other = (BibEntry) obj;
+    BibEntry<?, ?> other = (BibEntry<?, ?>) obj;
 
     return Objects.equals(getKey(), other.getKey()) && (thisIsBackup == other.thisIsBackup);
   }
@@ -182,7 +263,7 @@ public abstract class BibEntry extends BibData implements BibEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static Comparator<BibEntry> comparator()
+  public static Comparator<BibEntry<?, ?>> comparator()
   {
     return (e1, e2) ->
     {

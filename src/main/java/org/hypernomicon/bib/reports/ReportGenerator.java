@@ -24,19 +24,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.bib.data.BibData;
-
 public abstract class ReportGenerator
 {
-  private final BibData bd;
-  private final List<ReportField> fieldList;
+  ReportGenerator() { }
 
-  ReportGenerator(BibData bd)
+  public static ReportGenerator create(boolean html)
   {
-    this.bd = bd;
-    fieldList = new ArrayList<>();
+    return html ? new HtmlReportGenerator() : new PlainTextReportGenerator();
   }
+
+  private final List<ReportField> fieldList = new ArrayList<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -65,20 +62,14 @@ public abstract class ReportGenerator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String generate()
+  public String render(List<String> fieldOrder)
   {
-    fieldList.clear();
-    bd.createReport(this);
-
     StringBuilder report = getStart();
 
     boolean foundAny = false;
 
-    if (bd instanceof BibEntry)
+    if (fieldOrder != null)
     {
-      BibEntry bibEntry = (BibEntry)bd;
-      List<String> fieldOrder = bibEntry.getReportFieldOrder();
-
       for (String fieldName : fieldOrder)
       {
         Iterator<ReportField> it = fieldList.iterator();

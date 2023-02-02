@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
-import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -43,34 +42,30 @@ import org.hypernomicon.util.json.JsonObj;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
-import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
-public class MendeleyDocument extends BibEntry implements MendeleyEntity
+public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder> implements MendeleyEntity
 {
-  private final MendeleyWrapper mWrapper;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public MendeleyDocument(MendeleyWrapper mWrapper, JsonObj jObj, boolean thisIsBackup)
   {
-    super(thisIsBackup);
+    super(mWrapper, thisIsBackup);
 
     update(jObj, false, false);
-    this.mWrapper = mWrapper;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public MendeleyDocument(MendeleyWrapper mWrapper, EntryType newType)
   {
-    super(false);
+    super(mWrapper, false);
 
-    jObj = new JsonObj();
-    jObj.put(entryTypeKey, MendeleyWrapper.entryTypeMap.getOrDefault(newType, ""));
-
-    this.mWrapper = mWrapper;
+    jObj.put(entryTypeKey, mWrapper.getEntryTypeMap().getOrDefault(newType, ""));
 
     jObj.put("id", "_!_" + randomAlphanumericStr(12));
   }
@@ -78,97 +73,16 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String toString()        { return jObj.toString(); }
-  @Override public String getKey()          { return jObj.getStr("id"); }
-  @Override protected boolean isNewEntry()  { return jObj.containsKey("last_modified") == false; }
-  @Override public String getEntryURL()     { return ""; }
-  @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
-  @Override public EntryType getEntryType() { return parseMendeleyType(getEntryTypeStrFromSpecifiedJson(jObj)); }
+  @Override public String toString()                   { return jObj.toString(); }
+  @Override public String getKey()                     { return jObj.getStr("id"); }
+  @Override protected boolean isNewEntry()             { return jObj.containsKey("last_modified") == false; }
+  @Override protected void updateJsonObj(JsonObj jObj) { this.jObj = jObj; }
+  @Override protected JsonArray getCollJsonArray()     { return jObj.getArray("folder_uuids"); }
+  @Override public String getEntryURL()                { return ""; }
+  @Override public BibAuthors getAuthors()             { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
+  @Override public EntryType getEntryType()            { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jObj)); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
-
-  @Override public LibraryWrapper<?, ?> getLibrary() { return mWrapper; }
-  static EntryType parseMendeleyType(String mType)   { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Instant lastModified()
-  {
-    String str = jObj.getStrSafe("last_modified");
-
-    return str.isBlank() ? Instant.now()      // If it does not yet exist in Mendeley, then for Mendeley's purposes it should be considered brand-new
-                         : parseIso8601(str);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
-  {
-    this.jObj = jObj;
-
-    if (thisIsBackup)
-    {
-      jObj.remove("backupItem");
-      return;
-    }
-
-    JsonObj jBackupObj;
-
-    if (jObj.containsKey("backupItem"))
-    {
-      jBackupObj = jObj.getObj("backupItem");
-      jObj.remove("backupItem");
-    }
-    else
-      jBackupObj = jObj.clone();
-
-    backupItem = new MendeleyDocument(mWrapper, jBackupObj, true);
-
-    if ((updatingExistingDataFromServer == false) || (linkedToWork() == false)) return;
-
-    setMultiStr(bfTitle, backupItem.getMultiStr(bfTitle));
-    setMultiStr(bfISBNs, backupItem.getMultiStr(bfISBNs));
-    setMultiStr(bfMisc, backupItem.getMultiStr(bfMisc));
-    setStr(bfDOI, backupItem.getStr(bfDOI));
-    setStr(bfYear, backupItem.getStr(bfYear));
-
-    String url = getStr(bfURL);
-    if (url.startsWith(EXT_1) == false)
-      setStr(bfURL, backupItem.getStr(bfURL));
-
-    if (preMerge) return; // authors always get updated during merge
-
-    if (authorsChanged() == false) return;
-
-    mWrapper.doMerge(this, jBackupObj);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected List<String> getCollKeys(boolean deletedOK)
-  {
-    JsonArray collArray = jObj.getArray("folder_uuids");
-
-    return (collArray != null) && ((mWrapper.getTrash().contains(this) == false) || deletedOK) ?
-      JsonArray.toStrArrayList(collArray)
-    :
-      new ArrayList<>();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected void setEntryType(EntryType entryType)
-  {
-    if (entryType == getEntryType()) return;
-
-    // jObj.put("type", MendeleyWrapper.entryTypeMap.getOrDefault(entryType, ""));
-
-    throw new UnsupportedOperationException("change Mendeley entry type");
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -483,7 +397,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean authorsChanged()
+  @Override protected boolean authorsChanged()
   {
     List<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
                     editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
@@ -513,7 +427,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
           JsonObj ed1 = jArr1.getObj(ndx),
                   ed2 = jArr2.getObj(ndx);
 
-          if ((ed1 == null) != (ed2 == null)) return true;
+          if (((ed1 == null) != (ed2 == null)) || (ed1 == null)) return true;
 
           if (ed1.getStrSafe("first_name").equals(ed2.getStrSafe("first_name")) == false) return true;
           if (ed1.getStrSafe("last_name" ).equals(ed2.getStrSafe("last_name" )) == false) return true;
@@ -545,7 +459,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
     if (linkedToWork())
     {
-      MendeleyDocument serverItem = new MendeleyDocument(mWrapper, jServerObj, true);
+      MendeleyDocument serverItem = new MendeleyDocument(getLibrary(), jServerObj, true);
 
       serverItem.setStr(bfDOI, getStr(bfDOI));
       serverItem.setStr(bfYear, getStr(bfYear));
@@ -581,8 +495,8 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         BibAuthors authors = getAuthors();
 
-        List<BibAuthor> authorList = new ArrayList<>(),
-                        editorList = new ArrayList<>(),
+        List<BibAuthor> authorList     = new ArrayList<>(),
+                        editorList     = new ArrayList<>(),
                         translatorList = new ArrayList<>();
 
         authors.getLists(authorList, editorList, translatorList);
@@ -627,16 +541,18 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void createReport(ReportGenerator report)
+  @Override public String createReport(boolean html)
   {
-    createReport(this, report);
+    return createReport(this, html);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void createReport(MendeleyDocument document, ReportGenerator report)
+  private static String createReport(MendeleyDocument document, boolean html)
   {
+    ReportGenerator report = ReportGenerator.create(html);
+
     JsonObj jObj  = document.exportJsonObjForUploadToServer();
 
     jObj.keySet().forEach(key ->
@@ -715,6 +631,8 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
           break;
       }
     });
+
+    return report.render(document.getReportFieldOrder());
   }
 
 //---------------------------------------------------------------------------
@@ -809,6 +727,17 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
       "Pages",
       "City",
       "Publisher");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Instant lastModified()
+  {
+    String str = jObj.getStrSafe("last_modified");
+
+    return str.isBlank() ? Instant.now()      // If it does not yet exist in Mendeley, then for Mendeley's purposes it should be considered brand-new
+                         : parseIso8601(str);
   }
 
 //---------------------------------------------------------------------------

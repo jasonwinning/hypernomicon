@@ -161,7 +161,7 @@ public final class HyperDB
 
   public Preferences prefs = null;
   private Preferences appPrefs;
-  private LibraryWrapper<? extends BibEntry, ? extends BibCollection> bibLibrary = null;
+  private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bibLibrary = null;
   private FolderTreeWatcher folderTreeWatcher;
   private DialogResult deleteFileAnswer;
   HyperTask task;
@@ -198,12 +198,12 @@ public final class HyperDB
   public List<SearchKeyword> getKeysByRecord(HDT_Record record) { return searchKeys.getKeysByRecord(record); }
   public HDT_Work getWorkByBibEntryKey(String key)              { return bibEntryKeyToWork.get(key); }
   public boolean reindexingMentioners()                         { return mentionsIndex.isRebuilding(); }
-  public BibEntry getBibEntryByKey(String key)                  { return bibLibrary.getEntryByKey(key); }
+  public BibEntry<?, ?> getBibEntryByKey(String key)            { return bibLibrary.getEntryByKey(key); }
 
   public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
   { searchKeys.setSearchKey(record, newKey, noMod, rebuildMentions); }
 
-  public LibraryWrapper<? extends BibEntry, ? extends BibCollection> getBibLibrary()        { return bibLibrary; }
+  public LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> getBibLibrary()  { return bibLibrary; }
   public List<Consumer<HDT_Record>> getRecordDeleteHandlers()                               { return unmodifiableList(recordDeleteHandlers); }
   public void addRelationChangeHandler(RelationType relType, RelationChangeHandler handler) { relationSets.get(relType).addChangeHandler(handler); }
   public void addKeyWorkHandler(RecordType recordType, RelationChangeHandler handler)       { keyWorkHandlers.put(recordType, handler); }
@@ -979,7 +979,7 @@ public final class HyperDB
            bibAccessToken  = bibEncAccessToken .isBlank() ? "" : CryptoUtil.decrypt("", bibEncAccessToken ),
            bibRefreshToken = bibEncRefreshToken.isBlank() ? "" : CryptoUtil.decrypt("", bibEncRefreshToken);
 
-    LibraryWrapper<? extends BibEntry, ? extends BibCollection> bLibrary;
+    LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bLibrary;
 
     switch (libType)
     {

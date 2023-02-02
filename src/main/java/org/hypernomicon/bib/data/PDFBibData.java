@@ -244,7 +244,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private void extractDOIandISBNs(BibData bd)
+    private void extractDOIandISBNs(PDFBibData bd)
     {
       if (nameIsNotExcluded(name))
         bd.extractDOIandISBNs(value);
@@ -261,7 +261,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private void extractBibData(BibDataStandalone bd)
+    private void extractBibData(PDFBibData bd)
     {
       if (elements.isEmpty() == false)
       {
@@ -375,8 +375,6 @@ public class PDFBibData extends BibDataStandalone
 
   private PDDocumentInformation docInfo = null;
   private XMPNode xmpRoot = null;
-
-  public PDDocumentInformation getDocInfo() { return docInfo; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -510,7 +508,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static BibData createFromFiles(List<FilePath> filePaths) throws IOException
+  public static PDFBibData createFromFiles(List<FilePath> filePaths) throws IOException
   {
     List<FilePath> pdfFilePaths = new ArrayList<>(filePaths);
 

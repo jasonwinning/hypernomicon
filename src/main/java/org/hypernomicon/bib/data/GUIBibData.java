@@ -17,11 +17,14 @@
 
 package org.hypernomicon.bib.data;
 
+import java.util.EnumSet;
+
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
 public class GUIBibData extends BibDataStandalone
 {
-  public static final BibData NoneFoundBD = new GUIBibData();
+  public static final GUIBibData NoneFoundBD = new GUIBibData();
 
   private HDT_WorkType workType;
 
@@ -37,6 +40,42 @@ public class GUIBibData extends BibDataStandalone
 
   @Override public void setWorkType(HDT_WorkType workType) { this.workType = workType; }
   @Override public HDT_WorkType getWorkType()              { return workType; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean externalFieldsAreSame(GUIBibData bd1, GUIBibData bd2)
+  {
+    EnumSet<BibFieldEnum> set1 = bd1.fieldsWithExternalData(),
+                          set2 = bd2.fieldsWithExternalData();
+
+    if (set1.equals(set2) == false) return false;
+
+    return set1.stream().allMatch(field -> bd1.fieldsAreEqual(field, bd2, false));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public EnumSet<BibFieldEnum> fieldsWithExternalData()
+  {
+    EnumSet<BibFieldEnum> set = EnumSet.allOf(BibFieldEnum.class);
+
+    set.removeIf(bibFieldEnum -> { switch (bibFieldEnum)
+    {
+      case bfAuthors   : case bfEditors  : case bfTranslators : case bfTitle:
+      case bfDOI       : case bfISBNs    : case bfMisc        : case bfYear:
+      case bfEntryType : case bfWorkType : case bfURL         :
+
+        return true;
+
+      default:
+
+        return fieldNotEmpty(bibFieldEnum) == false;
+    }});
+
+    return set;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

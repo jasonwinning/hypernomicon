@@ -43,7 +43,6 @@ public class WorkBibData extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean linkedToWork()            { return true; }
   @Override public HDT_Work getWork()                { return work; }
   @Override public HDT_WorkType getWorkType()        { return work.workType.get(); }
   @Override public void setWorkType(HDT_WorkType wt) { work.workType.set(wt); }
@@ -52,7 +51,7 @@ public class WorkBibData extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private BibEntry getBibEntry()
+  private BibEntry<?, ?> getBibEntry()
   {
     String entryKey = work.getBibEntryKey();
 
@@ -64,7 +63,7 @@ public class WorkBibData extends BibData
 
   @Override public EntryType getEntryType()
   {
-    BibEntry bibEntry = getBibEntry();
+    BibEntry<?, ?> bibEntry = getBibEntry();
     if (bibEntry != null) return bibEntry.getEntryType();
 
     EntryType entryType = EntryType.fromWorkType(work.getWorkTypeEnum());
@@ -97,7 +96,7 @@ public class WorkBibData extends BibData
 
   @Override public void setEntryType(EntryType entryType)
   {
-    nullSwitch(getBibEntry(), bibEntry -> bibEntry.setEntryType(entryType));
+    nullSwitch((BibData)getBibEntry(), bibEntry -> bibEntry.setEntryType(entryType));
   }
 
 //---------------------------------------------------------------------------

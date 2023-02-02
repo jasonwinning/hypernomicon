@@ -22,12 +22,12 @@ import org.hypernomicon.view.wrappers.AbstractRow;
 
 public class BibEntryRow extends AbstractRow<HDT_Work, BibEntryRow>
 {
-  private final BibEntry entry;
+  private final BibEntry<?, ?> entry;
 
-  public BibEntryRow(BibEntry entry) { this.entry = entry; }
-  public BibEntry getEntry()         { return entry; }
-  public HDT_Work getWork()          { return entry.getWork(); }
-  public String getURL()             { return entry.getEntryURL(); }
+  public BibEntryRow(BibEntry<?, ?> entry) { this.entry = entry; }
+  public BibEntry<?, ?> getEntry()         { return entry; }
+  public HDT_Work getWork()                { return entry.getWork(); }
+  public String getURL()                   { return entry.getEntryURL(); }
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_Work> HDT_T getRecord() { return (HDT_T) getWork(); }

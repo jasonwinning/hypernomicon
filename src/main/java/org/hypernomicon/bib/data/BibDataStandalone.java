@@ -36,6 +36,13 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
+/**
+ * <p>{@code BibDataStandalone} objects, like all {@code BibData} objects, represent bibliographic data
+ * about a work. Unlike other other classes that extend {@code BibData}, however, they are not
+ * dependent on a separate object like a reference manager (e.g., Zotero) library entry JSON
+ * object or a Hypernomicon work record to be what actually holds that data in memory.
+ * </p>
+ */
 public abstract class BibDataStandalone extends BibData
 {
   private EntryType entryType;
@@ -45,10 +52,9 @@ public abstract class BibDataStandalone extends BibData
 
   private static final EnumSet<BibFieldType> stringBibFieldTypes = EnumSet.of(bftString, bftMultiString);
 
-  public BibDataStandalone()
+  BibDataStandalone()
   {
     entryType = EntryType.etUnentered;
-    setWorkType(null);
 
     EnumSet.allOf(BibFieldEnum.class).stream().filter(bibFieldEnum -> stringBibFieldTypes.contains(bibFieldEnum.getType())).forEach(bibFieldEnum ->
       bibFieldEnumToBibField.put(bibFieldEnum, new BibField(bibFieldEnum)));
@@ -57,14 +63,13 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean linkedToWork()                                { return false; }
-  @Override public HDT_Work getWork()                                    { return null; }
-  @Override public BibAuthors getAuthors()                               { return authors; }
-  @Override public EntryType getEntryType()                              { return entryType; }
-  @Override public void setMultiStr(BibFieldEnum bfe, List<String> list) { bibFieldEnumToBibField.get(bfe).setAll(list); }
-  @Override protected void setEntryType(EntryType entryType)             { this.entryType = entryType; }
-  @Override public HDT_WorkType getWorkType()                            { return EntryType.toWorkType(getEntryType()); }
-  @Override public void setWorkType(HDT_WorkType workType)               { return; }
+  @Override public final HDT_Work getWork()                                    { return null; }
+  @Override public final BibAuthors getAuthors()                               { return authors; }
+  @Override public final EntryType getEntryType()                              { return entryType; }
+  @Override public final void setMultiStr(BibFieldEnum bfe, List<String> list) { bibFieldEnumToBibField.get(bfe).setAll(list); }
+  @Override protected final void setEntryType(EntryType entryType)             { this.entryType = entryType; }
+  @Override public HDT_WorkType getWorkType()                                  { return EntryType.toWorkType(getEntryType()); }
+  @Override public void setWorkType(HDT_WorkType workType)                     { return; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

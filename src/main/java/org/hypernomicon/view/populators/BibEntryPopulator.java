@@ -33,7 +33,7 @@ public class BibEntryPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public interface PopulateHandler { List<? extends BibEntry> handle(HyperTableRow row, boolean force); }
+  @FunctionalInterface public interface PopulateHandler { List<? extends BibEntry<?, ?>> handle(HyperTableRow row, boolean force); }
 
 //---------------------------------------------------------------------------
 

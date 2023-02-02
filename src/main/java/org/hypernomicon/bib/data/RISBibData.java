@@ -183,7 +183,7 @@ public final class RISBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibData create(List<String> lines)
+  public static RISBibData create(List<String> lines)
   {
     try { return new RISBibData(lines); }
     catch (RISException e) { return null; }

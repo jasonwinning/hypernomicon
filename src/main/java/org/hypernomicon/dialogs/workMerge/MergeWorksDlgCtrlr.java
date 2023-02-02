@@ -387,7 +387,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
     if (chkNewEntry.isVisible())
     {
-      BibData mergedBD = new GUIBibData();
+      GUIBibData mergedBD = new GUIBibData();
 
       mergeInto(mergedBD);
 

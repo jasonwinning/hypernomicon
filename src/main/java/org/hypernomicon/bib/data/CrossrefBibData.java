@@ -330,19 +330,19 @@ public final class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 
   static void doHttpRequest(AsyncHttpClient httpClient, String doi, Set<String> alreadyCheckedIDs,
-                            Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+                            Consumer<CrossrefBibData> successHndlr, Consumer<Exception> failHndlr)
   {
     doHttpRequest(httpClient, null, null, false, null, doi, alreadyCheckedIDs, successHndlr, failHndlr);
   }
 
   static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, BibAuthors authors,
-                            String doi, Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+                            String doi, Set<String> alreadyCheckedIDs, Consumer<CrossrefBibData> successHndlr, Consumer<Exception> failHndlr)
   {
     doHttpRequest(httpClient, title, yearStr, isPaper, authors, true, doi, alreadyCheckedIDs, successHndlr, failHndlr);
   }
 
   private static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, BibAuthors authors, boolean engCharForAuthors,
-                            String doi, Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+                                    String doi, Set<String> alreadyCheckedIDs, Consumer<CrossrefBibData> successHndlr, Consumer<Exception> failHndlr)
   {
     if ((doi.length() > 0) && alreadyCheckedIDs.contains(doi.toLowerCase()))
     {
@@ -354,7 +354,7 @@ public final class CrossrefBibData extends BibDataStandalone
 
     JsonHttpClient.getObjAsync(getQueryUrl(title, yearStr, authors, engCharForAuthors, doi), httpClient, jsonObj ->
     {
-      BibData bd = createFromJSON(jsonObj, title, yearStr, isPaper, doi);
+      CrossrefBibData bd = createFromJSON(jsonObj, title, yearStr, isPaper, doi);
 
       if ((bd == null) && engCharForAuthors && (authors != null) && authors.notAllEngCharLastNames())
       {
