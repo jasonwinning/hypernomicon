@@ -66,6 +66,7 @@ On the project's root, run:
 
 It will create an executable jar under `target/hypernomicon-$version.jar`.
 
+If you have trouble downloading the JxBrowser jar files to your local Maven repository, you can download them [from here](https://sourceforge.net/projects/hypernomicon/files/misc/jxbrowser-6.24.3.zip/download).
 
 ## Change Log/Release Notes
 

@@ -28,7 +28,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.RecordSelectDlgCtrlr;
 import org.hypernomicon.dialogs.ValueSelectDlgCtrlr;
-import org.hypernomicon.model.KeywordLink;
+import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;

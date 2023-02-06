@@ -56,16 +56,9 @@ public final class HDI_Schema
 
   public HDI_Schema(HyperDataCategory category, RelationType relType, RecordType nestedTargetType, Tag... tags) throws HDB_InternalError
   {
-    if (category == hdcNestedPointer)
-    {
-      if ((tags.length != 1) || nestedTargetType == hdtNone)
-        throw new HDB_InternalError(56814);
-    }
-    else
-    {
-      if (nestedTargetType != hdtNone)
-        throw new HDB_InternalError(56814);
-    }
+    if (((category == hdcNestedPointer) && ((tags.length != 1) || nestedTargetType == hdtNone)) ||
+        ((category != hdcNestedPointer) && (nestedTargetType != hdtNone)))
+      throw new HDB_InternalError(56814);
 
     Builder<Tag> builder = ImmutableList.builder();
     builder.add(tags);

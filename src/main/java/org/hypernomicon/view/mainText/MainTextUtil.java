@@ -42,12 +42,12 @@ import static org.apache.commons.text.StringEscapeUtils.*;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.model.KeywordLinkList;
-import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
+import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
@@ -239,7 +239,10 @@ public final class MainTextUtil
           launchFile(file.filePath());
         }
         else if (recordType == hdtNote)
-          launchFile(db.notes.getByID(recordID).getPath().filePath());
+        {
+          HDT_Note note = db.notes.getByID(recordID); // If these two lines are combined into one, for some unknown reason
+          launchFile(note.getPath().filePath());      // there will be "The type HDT_Note is not visible" build errors
+        }
         else
           db.works.getByID(recordID).launch(-1);
 

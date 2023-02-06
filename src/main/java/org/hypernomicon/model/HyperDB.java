@@ -179,26 +179,26 @@ public final class HyperDB
   @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Record subject, HDT_Record object, boolean affirm); }
 //---------------------------------------------------------------------------
 
-  public boolean isDeletionInProgress()                         { return deletionInProgress; }
-  public boolean resolvingPointers()                            { return pointerResolutionInProgress; }
-  public int getNextID(RecordType type)                         { return datasets.get(type).getNextID(); }
-  public boolean idAvailable(RecordType type, int id)           { return datasets.get(type).idAvailable(id); }
-  public Tag mainTextTagForRecordType(RecordType type)          { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
-  public boolean isLoaded()                                     { return loaded; }
-  public boolean bibLibraryIsLinked()                           { return bibLibrary != null; }
-  public Instant getCreationDate()                              { return dbCreationDate; }
-  public RecordType getSubjType(RelationType relType)           { return relationSets.get(relType).getSubjType(); }
-  public RecordType getObjType(RelationType relType)            { return relationSets.get(relType).getObjType(); }
-  public boolean relationIsMulti(RelationType relType)          { return relTypeToIsMulti.get(relType); }
-  public List<HDT_Record> getInitialNavList()                   { return unmodifiableList(initialNavList); }
-  public String getSearchKey(HDT_Record record)                 { return searchKeys.getStringForRecord(record); }
-  public SearchKeyword getKeyByKeyword(String keyword)          { return searchKeys.getKeywordObjByKeywordStr(keyword); }
-  public String firstActiveKeyWord(HDT_Record record)           { return searchKeys.firstActiveKeyword(record); }
-  public List<SearchKeyword> getKeysByPrefix(String prefix)     { return searchKeys.getKeywordsByPrefix(prefix); }
-  public List<SearchKeyword> getKeysByRecord(HDT_Record record) { return searchKeys.getKeysByRecord(record); }
-  public HDT_Work getWorkByBibEntryKey(String key)              { return bibEntryKeyToWork.get(key); }
-  public boolean reindexingMentioners()                         { return mentionsIndex.isRebuilding(); }
-  public BibEntry<?, ?> getBibEntryByKey(String key)            { return bibLibrary.getEntryByKey(key); }
+  public boolean isDeletionInProgress()                             { return deletionInProgress; }
+  public boolean resolvingPointers()                                { return pointerResolutionInProgress; }
+  public int getNextID(RecordType type)                             { return datasets.get(type).getNextID(); }
+  public boolean idAvailable(RecordType type, int id)               { return datasets.get(type).idAvailable(id); }
+  public Tag mainTextTagForRecordType(RecordType type)              { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
+  public boolean isLoaded()                                         { return loaded; }
+  public boolean bibLibraryIsLinked()                               { return bibLibrary != null; }
+  public Instant getCreationDate()                                  { return dbCreationDate; }
+  public RecordType getSubjType(RelationType relType)               { return relationSets.get(relType).getSubjType(); }
+  public RecordType getObjType(RelationType relType)                { return relationSets.get(relType).getObjType(); }
+  public boolean relationIsMulti(RelationType relType)              { return relTypeToIsMulti.get(relType); }
+  public List<HDT_Record> getInitialNavList()                       { return unmodifiableList(initialNavList); }
+  public String getSearchKey(HDT_Record record)                     { return searchKeys.getStringForRecord(record); }
+  public SearchKeyword getKeyByKeyword(String keyword)              { return searchKeys.getKeywordObjByKeywordStr(keyword); }
+  public String firstActiveKeyWord(HDT_Record record)               { return searchKeys.firstActiveKeyword(record); }
+  public Iterable<SearchKeyword> getKeysByPrefix(String prefix)     { return searchKeys.getKeywordsByPrefix(prefix); }
+  public Iterable<SearchKeyword> getKeysByRecord(HDT_Record record) { return searchKeys.getKeysByRecord(record); }
+  public HDT_Work getWorkByBibEntryKey(String key)                  { return bibEntryKeyToWork.get(key); }
+  public boolean reindexingMentioners()                             { return mentionsIndex.isRebuilding(); }
+  public BibEntry<?, ?> getBibEntryByKey(String key)                { return bibLibrary.getEntryByKey(key); }
 
   public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
   { searchKeys.setSearchKey(record, newKey, noMod, rebuildMentions); }

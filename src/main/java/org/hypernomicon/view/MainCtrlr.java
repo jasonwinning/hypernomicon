@@ -2364,7 +2364,7 @@ public final class MainCtrlr
 
         if (count > 0)
         {
-          HDT_Record record = nullSwitch(hyperTab, null, HyperTab::activeRecord);  // Save to variable to avoid Maven compile errors
+          HDT_Record record = nullSwitch(hyperTab, null, HyperTab::activeRecord);  // Save to variable to avoid Maven build errors
           hcbGoTo.addAndSelectEntryOrBlank(record, HDT_Record::listName);
         }
 

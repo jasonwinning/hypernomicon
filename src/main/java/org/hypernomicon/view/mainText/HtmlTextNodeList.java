@@ -79,9 +79,6 @@ class HtmlTextNodeList
   private final List<HtmlTextNode> nodes = new ArrayList<>();
   private final StringBuilder plainText;
 
-  @Override public String toString() { return plainText.toString(); }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   HtmlTextNodeList(Element element)
@@ -90,6 +87,10 @@ class HtmlTextNodeList
 
     addNodes(element, new MutableInt(0), false);
   }
+
+//---------------------------------------------------------------------------
+
+  @Override public String toString() { return plainText.toString(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

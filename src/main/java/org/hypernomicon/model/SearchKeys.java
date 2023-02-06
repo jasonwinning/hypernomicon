@@ -19,7 +19,6 @@ package org.hypernomicon.model;
 
 import static org.hypernomicon.model.HyperDB.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -89,7 +88,7 @@ public final class SearchKeys
 
   }
 
-  private final Map<String, Map<String, SearchKeyword>> prefixStrToKeywordStrToKeywordObj;
+  private final Map<String    , Map<String, SearchKeyword>> prefixStrToKeywordStrToKeywordObj;
   private final Map<HDT_Record, Map<String, SearchKeyword>> recordToKeywordStrToKeywordObj;
 
 //---------------------------------------------------------------------------
@@ -98,7 +97,7 @@ public final class SearchKeys
   public SearchKeys()
   {
     prefixStrToKeywordStrToKeywordObj = Collections.synchronizedMap(new LinkedHashMap<>());
-    recordToKeywordStrToKeywordObj = Collections.synchronizedMap(new LinkedHashMap<>());
+    recordToKeywordStrToKeywordObj    = Collections.synchronizedMap(new LinkedHashMap<>());
   }
 
 //---------------------------------------------------------------------------
@@ -107,15 +106,23 @@ public final class SearchKeys
   public void removeAll()
   {
     prefixStrToKeywordStrToKeywordObj.clear();
-    recordToKeywordStrToKeywordObj.clear();
+    recordToKeywordStrToKeywordObj   .clear();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<SearchKeyword> getKeywordsByPrefix(String prefix)
+  public Iterable<SearchKeyword> getKeywordsByPrefix(String prefix)
   {
-    return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), new ArrayList<>(), map -> new ArrayList<>(map.values()));
+    return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), Collections.emptyList(), map -> List.copyOf(map.values()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  Iterable<SearchKeyword> getKeysByRecord(HDT_Record record)
+  {
+    return nullSwitch(recordToKeywordStrToKeywordObj.get(record), Collections.emptyList(), map -> List.copyOf(map.values()));
   }
 
 //---------------------------------------------------------------------------
@@ -178,14 +185,6 @@ public final class SearchKeys
 
     if (rebuildMentions)
       db.rebuildMentions();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  List<SearchKeyword> getKeysByRecord(HDT_Record record)
-  {
-    return nullSwitch(recordToKeywordStrToKeywordObj.get(record), new ArrayList<>(), map -> new ArrayList<>(map.values()));
   }
 
 //---------------------------------------------------------------------------

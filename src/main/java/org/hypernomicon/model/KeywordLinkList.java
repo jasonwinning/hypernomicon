@@ -19,6 +19,7 @@ package org.hypernomicon.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
@@ -31,13 +32,34 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final class KeywordLink
+  {
+    public final int offset, length;
+    public final SearchKeyword key;
+
+  //---------------------------------------------------------------------------
+
+    public KeywordLink(int offset, int length, SearchKeyword key)
+    {
+      this.offset = offset;
+      this.length = length;
+      this.key = key;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private KeywordLinkList() { throw new UnsupportedOperationException(); }
 
 //---------------------------------------------------------------------------
 
-  public static List<KeywordLink> generate(String text)   { return generate(text, false, null); }
+  public static List<KeywordLink> generate(String text)
+  {
+    return generate(text, db::getKeysByPrefix);
+  }
 
-  public static List<KeywordLink> generate(String text, boolean overrideSet, SearchKeys searchKeysToUse)
+  public static List<KeywordLink> generate(String text, Function<String, Iterable<SearchKeyword>> prefixToKeys)
   {
     List<KeywordLink> keywordLinks = new ArrayList<>();
 
@@ -87,7 +109,7 @@ public final class KeywordLinkList
       SearchKeyword curKey = null;
       int curMatchLen = 0;
 
-      for (SearchKeyword key : (overrideSet ? searchKeysToUse.getKeywordsByPrefix(prefix) : db.getKeysByPrefix(prefix)))
+      for (SearchKeyword key : prefixToKeys.apply(prefix))
       {
         int matchLen;
         String focusStr = safeSubstring(text, ndx, ndx + key.text.length());

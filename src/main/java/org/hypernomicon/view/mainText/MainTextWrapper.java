@@ -30,7 +30,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.hypernomicon.App;
-import org.hypernomicon.model.KeywordLink;
+import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -497,11 +497,14 @@ public final class MainTextWrapper
     if (styleTag == null)
       doc.head().prepend(styleTag());
 
-    MutableBoolean firstOpen = new MutableBoolean(doc.body().text().trim().isEmpty());
+    MutableBoolean firstOpen = new MutableBoolean(doc.body().text().trim().isEmpty()),
+                   haventRenderedKeyWorkDisplayOptionsYet = new MutableBoolean(true);
     StringBuilder innerHtml = new StringBuilder();
     MutableInt tagNdx = new MutableInt(0);
     HDT_WorkLabel curLabel = getLabelOfRecord(curRecord);
     int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
+
+    boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
 
     displayItems.forEach(item ->
     {
@@ -518,7 +521,7 @@ public final class MainTextWrapper
           {
             if (keyWorksSize > 0)
             {
-              renderKeyWorks(innerHtml, tagNdx, curLabel);
+              renderKeyWorks(innerHtml, tagNdx, curLabel, sortByName, haventRenderedKeyWorkDisplayOptionsYet);
             }
             else
             {
@@ -533,8 +536,7 @@ public final class MainTextWrapper
 
         case diRecord:
 
-          if (innerHtml.length() > 0)
-            innerHtml.append("<br>");
+          if (innerHtml.length() > 0) innerHtml.append("<br>");
 
           String cbText = item.record.getCBText();
 
@@ -548,7 +550,11 @@ public final class MainTextWrapper
 
           innerHtml.append(getTypeName(item.record.getType())).append(": ")
                    .append(getKeywordLink(cbText, new KeywordLink(0, cbText.length(), new SearchKeyword(cbText, item.record)), "text-decoration: none;"))
-                   .append("</b></summary><br><div style=\"margin-left: 3.5em;\">");
+                   .append("</b>&nbsp;");
+
+          renderKeyWorkDisplayOptions(innerHtml, sortByName, haventRenderedKeyWorkDisplayOptionsYet);
+
+          innerHtml.append("</summary><br><div style=\"margin-left: 3.5em;\">");
 
           String secondaryHtml = getSecondaryDisplayHtml(item.record, tagNdx, viewInfo);
 
@@ -611,19 +617,35 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void renderKeyWorks(final StringBuilder innerHtml, final MutableInt tagNdx, final HDT_WorkLabel curLabel)
+  private static void renderKeyWorkDisplayOptions(final StringBuilder html, boolean sortByName, MutableBoolean haventRenderedKeyWorkDisplayOptionsYet)
   {
+    if (haventRenderedKeyWorkDisplayOptionsYet.isFalse())
+      return;
 
-    boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
+    html.append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(").append(JS_EVENT_DETAILED_KEY_WORKS).append("); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/key-work-details.png")).append("\"></img></a>")
+        .append("<span style=\"display: ").append(sortByName ? "inline" : "none"  ).append(";\" class=\"").append(ALPHA_SORTED_OUTER_CLASS  ).append("\"><a hypncon=\"true\" title=\"Sort key works by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/sort_19.png")).append("\"></img></a></span>")
+        .append("<span style=\"display: ").append(sortByName ? "none"   : "inline").append(";\" class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\"><a hypncon=\"true\" title=\"Sort key works alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/sort_az.png")).append("\"></img></a></span>");
 
-    if (innerHtml.length() > 0)
-      innerHtml.append("<br>");
+    haventRenderedKeyWorkDisplayOptionsYet.setFalse();
+  }
 
-    innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true)).append("<summary><b>Key Works</b>&nbsp;")
-             .append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(").append(JS_EVENT_DETAILED_KEY_WORKS).append("); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/key-work-details.png")).append("\"></img></a>")
-             .append("<span style=\"display: ").append(sortByName ? "inline" : "none").append(";\" class=\"").append(ALPHA_SORTED_OUTER_CLASS).append("\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/sort_19.png")).append("\"></img></a></span>")
-             .append("<span style=\"display: ").append(sortByName ? "none" : "inline").append(";\" class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/sort_az.png")).append("\"></img></a></span>")
-             .append("</summary><br><div class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\" style=\"margin-left: 3.5em; display: ").append(sortByName ? "none" : "block").append(";\">");
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void renderKeyWorks(final StringBuilder innerHtml, final MutableInt tagNdx, final HDT_WorkLabel curLabel, boolean sortByName, MutableBoolean haventRenderedKeyWorkDisplayOptionsYet)
+  {
+    if (innerHtml.length() > 0) innerHtml.append("<br>");
+
+    innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true)).append("<summary><b>Key Works</b>&nbsp;");
+
+    renderKeyWorkDisplayOptions(innerHtml, sortByName, haventRenderedKeyWorkDisplayOptionsYet);
+
+    innerHtml.append("</summary>");
+
+    if (keyWorks.size() > 0) innerHtml.append("<br>");
+
+    innerHtml.append("<div class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\" style=\"margin-left: 3.5em; display: ").append(sortByName ? "none" : "block").append(";\">");
+
     appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, viewInfo);
 
     if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))

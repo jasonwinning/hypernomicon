@@ -120,8 +120,7 @@ public final class InterProcClient
     if (daemon != null)
       return;
 
-    daemon = new InterProcDaemon();
-    daemon.start();
+    (daemon = new InterProcDaemon()).start();
   }
 
 //---------------------------------------------------------------------------

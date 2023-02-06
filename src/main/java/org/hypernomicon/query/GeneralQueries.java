@@ -31,7 +31,7 @@ import java.util.List;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.KeywordLink;
+import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.records.HDT_Record;
@@ -360,7 +360,7 @@ public final class GeneralQueries
         boolean add = false;
 
         for (String str : list)
-          if (KeywordLinkList.generate(str.toLowerCase(), true, dummySearchKeys).size() > 0)
+          if (KeywordLinkList.generate(str.toLowerCase(), dummySearchKeys::getKeywordsByPrefix).size() > 0)
             add = true;
 
         return add;

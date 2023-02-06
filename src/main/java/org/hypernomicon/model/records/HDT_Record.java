@@ -87,7 +87,7 @@ public interface HDT_Record
 
   void resolvePointers() throws HDB_InternalError;
   void updateSortKey();
-  List<SearchKeyword> getSearchKeys();
+  Iterable<SearchKeyword> getSearchKeys();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

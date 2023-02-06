@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
-import org.hypernomicon.model.KeywordLink;
+import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.PersonName;
@@ -229,9 +229,7 @@ public class OmniFinder
 
           if (curTier == tierKeywordStart)
           {
-            List<SearchKeyword> keys = db.getKeysByPrefix(safeSubstring(query, 0, 3).toLowerCase());
-
-            for (SearchKeyword key : keys)
+            for (SearchKeyword key : db.getKeysByPrefix(safeSubstring(query, 0, 3).toLowerCase()))
             {
               if (key.endOnly)
               {
@@ -391,8 +389,8 @@ public class OmniFinder
       buffer .add(record);
       records.add(record);
 
-      return ((showingMore == false) &&
-              (buffer.size() + rowNdx) >= ROWS_TO_SHOW); // rowNdx should be the number of rows currently in the
+      return (showingMore == false) &&
+             ((buffer.size() + rowNdx) >= ROWS_TO_SHOW); // rowNdx should be the number of rows currently in the
     }                                                    // table if the buffer has already been purged at least once
 
     //---------------------------------------------------------------------------
@@ -414,7 +412,7 @@ public class OmniFinder
         :
           cellLists.get(rowNdx);
 
-        cells.set(0, new HyperTableCell(record.getID(), "", record.getType()));
+        cells.set(0, new HyperTableCell(record.getID(), ""               , record.getType()));
         cells.set(1, new HyperTableCell(record.getID(), record.listName(), record.getType()));
 
         switch (record.getType())

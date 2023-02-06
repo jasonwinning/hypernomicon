@@ -59,16 +59,16 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String name()                       { return term.isNull() ? "" : term.get().name(); }
-  @Override public String getSearchKey()               { return term.get().getSearchKey(); }
-  @Override public List<SearchKeyword> getSearchKeys() { return db.getKeysByRecord(term.get()); }
-  @Override public String getCBText()                  { return extendedName(); }
-  @Override public String getXMLObjectName()           { return extendedName(); }
-  @Override public String getNameEngChar()             { return term.get().getNameEngChar(); }
-  @Override public String firstActiveKeyWord()         { return term.get().firstActiveKeyWord(); }
-  @Override public void setName(String str)            { term.get().setName(str); }
-  @Override public String listName()                   { return sense.isNull() ? name() : (name() + " (" + sense.get().name() + ')'); }
-  @Override public final boolean isUnitable()          { return true; }
+  @Override public String name()                           { return term.isNull() ? "" : term.get().name(); }
+  @Override public String getSearchKey()                   { return term.get().getSearchKey(); }
+  @Override public Iterable<SearchKeyword> getSearchKeys() { return db.getKeysByRecord(term.get()); }
+  @Override public String getCBText()                      { return extendedName(); }
+  @Override public String getXMLObjectName()               { return extendedName(); }
+  @Override public String getNameEngChar()                 { return term.get().getNameEngChar(); }
+  @Override public String firstActiveKeyWord()             { return term.get().firstActiveKeyWord(); }
+  @Override public void setName(String str)                { term.get().setName(str); }
+  @Override public String listName()                       { return sense.isNull() ? name() : (name() + " (" + sense.get().name() + ')'); }
+  @Override public final boolean isUnitable()              { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
