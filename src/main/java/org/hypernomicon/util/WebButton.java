@@ -30,7 +30,6 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hypernomicon.util.PopupDialog.DialogResult;
 
 public class WebButton
 {
@@ -245,16 +244,14 @@ public class WebButton
 
             String last = values.get(WebButtonField.LastName);
 
-            DialogResult result = new PopupDialog("How should the name be phrased? Initials often works well with Google Scholar.")
+            switch (new PopupDialog("How should the name be phrased? Initials often works well with Google Scholar.")
 
               .addButton(first1 + ' ' + last, mrYes)
               .addButton(first2 + ' ' + last, mrNo)
               .addButton(first3 + ' ' + last, mrOk)
               .addButton("Cancel", mrCancel)
 
-              .showModal();
-
-            switch (result)
+              .showModal())
             {
               case mrYes : value = first1; break;
               case mrNo  : value = first2; break;

@@ -101,7 +101,6 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
   * [Guava](https://github.com/google/guava)
   * [PDF.js](https://mozilla.github.io/pdf.js/)
   * [jsoup](https://jsoup.org/)
-  * [jQuery](https://jquery.com/)
   * [ICU4J](http://site.icu-project.org/home)
   * [ControlsFX](http://fxexperience.com/controlsfx/)
   * [JSON.simple](https://code.google.com/archive/p/json-simple/)
@@ -109,4 +108,4 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
   * [XMP Toolkit for Java](https://www.adobe.com/devnet/xmp.html)
   * [Mammoth .docx to HTML converter](https://github.com/mwilliamson/java-mammoth)
   * [JBibTex](https://github.com/jbibtex/jbibtex)
-  * [highlight](http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html)
+  * [mark.js](https://markjs.io/)

@@ -97,7 +97,6 @@ public class AboutDlgCtrlr extends HyperDlg
         "<li>" + anchorTag("JxBrowser", "https://www.teamdev.com/jxbrowser") + "</li>" +
         "<li>" + anchorTag("PDF.js", "https://mozilla.github.io/pdf.js/") + "</li>" +
         "<li>" + anchorTag("jsoup", "https://jsoup.org/") + "</li>" +
-        "<li>" + anchorTag("jQuery", "https://jquery.com/") + "</li>" +
         "<li>" + anchorTag("ICU4J", "http://site.icu-project.org/home") + "</li>" +
         "<li>" + anchorTag("ControlsFX", "http://fxexperience.com/controlsfx/") + "</li>" +
         "<li>" + anchorTag("JSON.simple", "https://code.google.com/archive/p/json-simple/") + "</li>" +
@@ -105,7 +104,7 @@ public class AboutDlgCtrlr extends HyperDlg
         "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
         "<li>" + anchorTag("Mammoth .docx to HTML converter", "https://github.com/mwilliamson/java-mammoth") + "</li>" +
         "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +
-        "<li>" + anchorTag("highlight", "http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html") +
+        "<li>" + anchorTag("mark.js", "https://markjs.io/") +
 
         "</li></ul>Icons:<br><ul>" +
 

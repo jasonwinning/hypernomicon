@@ -1046,7 +1046,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Similar to PDFJSWrapper.closeWindows
+  // Similar to PDFJSWrapper.disable
 
   private void closeWindows(boolean exitingApp)
   {
@@ -1942,22 +1942,21 @@ public final class MainCtrlr
     if (db.bibLibraryIsLinked() || db.prefs.getBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true) == false)
       return;
 
-    DialogResult result = new PopupDialog("This database is not currently integrated with a reference manager account (like Mendeley or Zotero). Add one now?")
+    switch (new PopupDialog("This database is not currently integrated with a reference manager account (like Mendeley or Zotero). Add one now?")
 
       .addButton("Yes", mrYes)
-      .addButton("Remind me later" , mrNo)
+      .addButton("Remind me later", mrNo)
       .addButton("Do not ask again for this database", mrIgnore)
 
-      .showModal();
+      .showModal())
+    {
+      case mrYes    : SettingsDlgCtrlr.build(SettingsPage.BibMgr).showModal();     break;
 
-    if (result == mrNo)
-      db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true);
+      case mrNo     : db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true ); break;
+      case mrIgnore : db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, false); break;
 
-    else if (result == mrIgnore)
-      db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, false);
-
-    if (result == mrYes)
-      SettingsDlgCtrlr.build(SettingsPage.BibMgr).showModal();
+      default       : break;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -2850,16 +2849,14 @@ public final class MainCtrlr
       return;
     }
 
-    DialogResult result = new PopupDialog("What should the file be imported as?")
+    switch (new PopupDialog("What should the file be imported as?")
 
       .addButton("Work", mrYes)
       .addButton("Misc. file", mrNo)
       .addButton("Bibliographic details", mrOk)
       .addButton("Cancel", mrCancel)
 
-      .showModal();
-
-    switch (result)
+      .showModal())
     {
       case mrYes : importWorkFile(null, filePath, true); return;
       case mrNo  : importMiscFile(null, filePath      ); return;

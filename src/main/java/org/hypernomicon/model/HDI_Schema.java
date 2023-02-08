@@ -56,7 +56,7 @@ public final class HDI_Schema
 
   public HDI_Schema(HyperDataCategory category, RelationType relType, RecordType nestedTargetType, Tag... tags) throws HDB_InternalError
   {
-    if (((category == hdcNestedPointer) && ((tags.length != 1) || nestedTargetType == hdtNone)) ||
+    if (((category == hdcNestedPointer) && ((tags.length != 1) || (nestedTargetType == hdtNone))) ||
         ((category != hdcNestedPointer) && (nestedTargetType != hdtNone)))
       throw new HDB_InternalError(56814);
 

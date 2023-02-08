@@ -420,9 +420,7 @@ public final class HyperDB
 
     if (deleteFileAnswer == mrNone)
     {
-      DialogResult result = seriesConfirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be deleted?");
-
-      switch (result)
+      switch (seriesConfirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be deleted?"))
       {
         case mrYes      : break;
         case mrNoToAll  : deleteFileAnswer = mrNoToAll;  break;

@@ -152,7 +152,7 @@ public final class MainTextUtil
     headContent = new StringBuilder(scriptContent)
 
       .append("<style type=\"text/css\">\n")
-      .append("  .highlight { background-color: pink; }\n")
+      .append("  .hypernomiconHilite { background-color: pink; }\n")
       .append("  details summary { outline: none; }\n")
       .append("  a:link {color:#0000FF; } a:visited {color:#0000FF; }\n")
       .append("</style></head>")

@@ -73,8 +73,7 @@ public final class MainTextWrapper
   private static String textToHilite = "",
                         lastTextToHilite = "";
 
-  private static final StringBuilder jQueryContents  = new StringBuilder(),
-                                     jHiliteContents = new StringBuilder();
+  private static final StringBuilder markJSContents  = new StringBuilder();
 
   private final AnchorPane parentPane;
   private HDT_RecordWithMainText curRecord;
@@ -135,8 +134,7 @@ public final class MainTextWrapper
 
     try
     {
-      readResourceTextFile("resources/jquery.min.js", jQueryContents, false);
-      readResourceTextFile("resources/jquery.highlight-4.closure.js", jHiliteContents, false);
+      readResourceTextFile("resources/mark.es6.min.js", markJSContents, false);
     }
     catch (IOException e)
     {
@@ -299,9 +297,14 @@ public final class MainTextWrapper
   {
     string = StringEscapeUtils.escapeEcmaScript(string);
 
-    weToUse.executeScript(jQueryContents + System.lineSeparator() + jHiliteContents);
-    weToUse.executeScript("$('body').removeHighlight().highlight('" + string + "')");
-    weToUse.executeScript("var els = document.getElementsByClassName('highlight'); if (typeof(els[0]) != 'undefined') els[0].scrollIntoView();");
+    if (! (boolean) weToUse.executeScript("'markInstance' in window"))
+    {
+      weToUse.executeScript(markJSContents.toString());
+      weToUse.executeScript("var markInstance = new Mark(\"body\");");
+    }
+
+    weToUse.executeScript("markInstance.unmark({done: function(){markInstance.mark(\"" + string + "\",{ \"className\":\"hypernomiconHilite\",\"iframes\":true,\"ignoreJoiners\":true,\"separateWordSearch\":false,\"acrossElements\":true});}});");
+    weToUse.executeScript("var els = document.getElementsByClassName('hypernomiconHilite'); if (typeof(els[0]) != 'undefined') els[0].scrollIntoView();");
   }
 
 //---------------------------------------------------------------------------

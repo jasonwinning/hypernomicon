@@ -815,7 +815,7 @@ public final class Util
   {
     assignSB(strBuilder, "");
 
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(App.class.getResourceAsStream(relPath))))
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(App.class.getResourceAsStream(relPath), UTF_8)))
     {
       String line;
 
