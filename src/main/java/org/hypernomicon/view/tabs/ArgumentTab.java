@@ -325,7 +325,8 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     saveObjectGroups(tagPositionVerdict, rtPositionOfArgument);
     saveObjectGroups(tagArgumentVerdict, rtCounterOfArgument);
 
-    curArgument.setWorks(htWhereMade.saveToList(2, hdtWork));
+    if (curArgument.setWorks(htWhereMade.saveToList(2, hdtWork)) == false)
+      return false;
 
     return true;
   }

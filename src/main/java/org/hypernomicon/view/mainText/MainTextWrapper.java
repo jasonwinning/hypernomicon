@@ -95,6 +95,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 
   boolean isEditing()                { return showing && editing; }
+  private boolean canEdit()          { return (curRecord != null) && (isUnstoredRecord(curRecord.getID(), curRecord.getType()) == false); }
   static WebEngine getEditorEngine() { return editCtrlr == null ? null : editCtrlr.getEngine(); }
 
 //---------------------------------------------------------------------------
@@ -264,14 +265,6 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean canEdit()
-  {
-    return (curRecord != null) && (isUnstoredRecord(curRecord.getID(), curRecord.getType()) == false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void hilite(String string)
   {
     if (editing)
@@ -305,6 +298,22 @@ public final class MainTextWrapper
 
     weToUse.executeScript("markInstance.unmark({done: function(){markInstance.mark(\"" + string + "\",{ \"className\":\"hypernomiconHilite\",\"iframes\":true,\"ignoreJoiners\":true,\"separateWordSearch\":false,\"acrossElements\":true});}});");
     weToUse.executeScript("var els = document.getElementsByClassName('hypernomiconHilite'); if (typeof(els[0]) != 'undefined') els[0].scrollIntoView();");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void nextSearchResult()
+  {
+
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void previousSearchResult()
+  {
+
   }
 
 //---------------------------------------------------------------------------

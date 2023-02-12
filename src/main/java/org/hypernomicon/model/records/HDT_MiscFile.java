@@ -61,7 +61,7 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setAuthors(List<HDT_Person> list) { updateObjectsFromList(rtAuthorOfFile, list); }
+  public boolean setAuthors(List<HDT_Person> list) { return updateObjectsFromList(rtAuthorOfFile, list); }
 
   public boolean getAnnotated()              { return getTagBoolean(tagAnnotated); }
   public void setAnnotated(boolean val)      { updateTagBoolean(tagAnnotated, val); }

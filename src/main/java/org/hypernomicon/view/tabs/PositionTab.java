@@ -253,8 +253,9 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   {
     if (ctrlr.saveToRecord(curPosition) == false) return false;
 
-    curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition));
-    curPosition.setLargerDebates  (htParents.saveToList(3, hdtDebate  ));
+    if ((curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition)) == false) ||
+        (curPosition.setLargerDebates  (htParents.saveToList(3, hdtDebate  )) == false))
+      return false;
 
     db.attachOrphansToRoots();
 

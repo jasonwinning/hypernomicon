@@ -257,7 +257,10 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     curMiscFile.work.setID(hcbWork.selectedID());
 
     if (curMiscFile.work.isNull())
-      curMiscFile.setAuthors(htAuthors.saveToList(1, hdtPerson));
+    {
+      if (curMiscFile.setAuthors(htAuthors.saveToList(1, hdtPerson)) == false)
+        return false;
+    }
     else
       db.getObjectList(rtAuthorOfFile, curMiscFile, false).clear();
 

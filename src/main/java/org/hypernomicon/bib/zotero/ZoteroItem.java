@@ -613,15 +613,28 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       switch (fieldName)
       {
         case "relations" : case "collections" : case "key" :
-        case "dateAdded" : case "accessDate"  : case "dateModified" : return;
+        case "dateAdded" : case "accessDate"  : case "dateModified" :
 
-        case "archiveID" : fieldName = "Archive ID"; break;
+          return;
 
-        case "url"  : fieldName = "URL"; break;
+        case "archiveID" :
 
-        case "ISBN" : case "DOI" : case "ISSN" : break;
+          fieldName = "Archive ID";
+          break;
 
-        default : fieldName = camelToTitle(fieldName); break;
+        case "url"  :
+
+          fieldName = "URL";
+          break;
+
+        case "ISBN" : case "DOI" : case "ISSN" :
+
+          break;
+
+        default :
+
+          fieldName = camelToTitle(fieldName);
+          break;
       }
 
       switch (jData.getType(key))
@@ -725,23 +738,21 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public List<String> getReportFieldOrder()
-  {
-    return List.of(
-
-      "Title",
-      "Item Type",
-      "Date",
-      "Creators",
-      "Publication Title",
-      "Book Title",
-      "Edition",
-      "Volume",
-      "Issue",
-      "Pages",
-      "Place",
-      "Publisher");
-  }
+  @Override public List<String> getReportFieldOrder() { return List.of
+  (
+    "Title",
+    "Item Type",
+    "Date",
+    "Creators",
+    "Publication Title",
+    "Book Title",
+    "Edition",
+    "Volume",
+    "Issue",
+    "Pages",
+    "Place",
+    "Publisher"
+  ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

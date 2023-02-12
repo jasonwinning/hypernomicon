@@ -159,8 +159,9 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   {
     if (ctrlr.saveToRecord(curDebate) == false) return false;
 
-    curDebate.setLargerPositions(htParents.saveToList(3, hdtPosition));
-    curDebate.setLargerDebates  (htParents.saveToList(3, hdtDebate  ));
+    if ((curDebate.setLargerPositions(htParents.saveToList(3, hdtPosition)) == false) ||
+        (curDebate.setLargerDebates  (htParents.saveToList(3, hdtDebate  )) == false))
+      return false;
 
     db.attachOrphansToRoots();
 

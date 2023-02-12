@@ -24,6 +24,7 @@ import java.util.Map;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Record;
 
 import javafx.application.Platform;
@@ -172,7 +173,8 @@ class TreeCB
   {
     sorted = false;
 
-    nullSwitch(nullSwitch(tree.selectedRecord(), db.debates.getByID(1)), this::select);
+    HDT_Debate rootDebate = db.debates.getByID(1);                           // If these two lines are combined into one, there will be
+    nullSwitch(nullSwitch(tree.selectedRecord(), rootDebate), this::select); // build errors that aren't really errors
   }
 
 //---------------------------------------------------------------------------

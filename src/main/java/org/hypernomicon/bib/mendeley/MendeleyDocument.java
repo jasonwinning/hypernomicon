@@ -710,24 +710,22 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public List<String> getReportFieldOrder()
-  {
-    return List.of(
-
-      "Type",
-      "Title",
-      "Year",
-      "Author",
-      "Editor",
-      "Translator",
-      "Source",
-      "Edition",
-      "Volume",
-      "Issue",
-      "Pages",
-      "City",
-      "Publisher");
-  }
+  @Override public List<String> getReportFieldOrder() { return List.of
+  (
+    "Type",
+    "Title",
+    "Year",
+    "Author",
+    "Editor",
+    "Translator",
+    "Source",
+    "Edition",
+    "Volume",
+    "Issue",
+    "Pages",
+    "City",
+    "Publisher"
+  ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

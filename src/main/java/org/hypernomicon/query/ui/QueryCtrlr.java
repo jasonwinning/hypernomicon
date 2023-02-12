@@ -408,7 +408,7 @@ public final class QueryCtrlr
       refreshView(tvResults.getSelectionModel().getSelectedIndex());
     else
     {
-      ui.updateBottomPanel(false);
+      ui.updateBottomPanel(false, false);
 
       webView.getEngine().loadContent(reportTable.getHtmlForCurrentRow());
 
@@ -426,7 +426,7 @@ public final class QueryCtrlr
   {
     curResult = (resultsBackingList.isEmpty() || selRowNdx < 0) ? null : resultsBackingList.get(selRowNdx).getRecord();
 
-    ui.updateBottomPanel(false);
+    ui.updateBottomPanel(false, false);
 
     if (curResult == null)
     {
@@ -434,8 +434,6 @@ public final class QueryCtrlr
     }
     else
     {
-      queriesTabCtrlr.setTextToHilite(getTextToHilite());
-
       String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
 
       MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), getRecordToHilite());
@@ -696,7 +694,7 @@ public final class QueryCtrlr
     curResult = null;
 
     webView.getEngine().loadContent("");
-    ui.updateBottomPanel(false);
+    ui.updateBottomPanel(false, true);
     queriesTabCtrlr.updateCB(this);
   }
 
@@ -713,7 +711,7 @@ public final class QueryCtrlr
     inRecordMode = true;
 
     webView.getEngine().loadContent("");
-    ui.updateBottomPanel(false);
+    ui.updateBottomPanel(false, false);
     queriesTabCtrlr.updateCB(this);
   }
 
@@ -970,6 +968,11 @@ public final class QueryCtrlr
       queriesTabCtrlr.chkShowDesc.setSelected(true);
 
     refreshView(false);
+
+    String textToHilite = curQC.getTextToHilite();
+    if (textToHilite.isBlank() == false)
+      ui.findInDescription(textToHilite);
+
     return true;
   }
 

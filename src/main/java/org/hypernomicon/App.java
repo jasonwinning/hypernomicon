@@ -343,18 +343,40 @@ public final class App extends Application
 
     scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
-    KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
+    KeyCombination findRecordsKeyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN),
+                   findInDescKeyComb  = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN),
+                   nextResultComb1    = new KeyCodeCombination(KeyCode.F3),
+                   nextResultComb2    = new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN),
+                   previousResultComb1 = new KeyCodeCombination(KeyCode.F3, KeyCombination.SHIFT_DOWN),
+                   previousResultComb2 = new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
+
     scene.addEventHandler(KeyEvent.KEY_PRESSED, event ->
     {
-      if (keyComb.match(event))
+      if (db.isLoaded() == false)
+        return;
+
+      if (findRecordsKeyComb.match(event))
       {
-        ui.omniFocus();
+        ui.omniFocus(true);
+        event.consume();
+      }
+      else if (findInDescKeyComb.match(event))
+      {
+        ui.omniFocus(false);
         event.consume();
       }
       else if (event.getCode() == KeyCode.ESCAPE)
       {
         ui.hideFindTable();
         event.consume();
+      }
+      else if (nextResultComb1.match(event) || nextResultComb2.match(event))
+      {
+        ui.activeTab().nextSearchResult();
+      }
+      else if (previousResultComb1.match(event) || previousResultComb2.match(event))
+      {
+        ui.activeTab().previousSearchResult();
       }
     });
 

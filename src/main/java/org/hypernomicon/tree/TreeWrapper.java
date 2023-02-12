@@ -39,8 +39,11 @@ import java.util.stream.Collectors;
 import org.controlsfx.control.BreadCrumbBar;
 import org.controlsfx.control.BreadCrumbBar.BreadCrumbButton;
 import org.hypernomicon.model.records.HDT_Concept;
+import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Glossary;
+import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.view.MainCtrlr;
@@ -71,6 +74,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   private final BreadCrumbBar<TreeRow> bcbPath;
   private boolean searchingDown = true, searchingNameOnly = false;
   private TreeRow draggingRow = null;
+  private String lastSearchTerm = "";
   final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
 
 //---------------------------------------------------------------------------
@@ -170,6 +174,10 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   public void clear()
   {
+    searchingDown = true;
+    searchingNameOnly = false;
+    lastSearchTerm = "";
+
     ui.ttDates.setText(MainCtrlr.NO_DATES_TOOLTIP);
 
     if (ttv != null)
@@ -264,9 +272,14 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     clear();
 
-    debateTree.reset(db.debates   .getByID(1));
-    noteTree  .reset(db.notes     .getByID(1));
-    labelTree .reset(db.workLabels.getByID(1));
+    HDT_Debate rootDebate = db.debates.getByID(1);      // If these two lines are combined into one, there will be
+    debateTree.reset(rootDebate);                       // build errors that aren't really errors
+
+    HDT_Note rootNote = db.notes.getByID(1);            // Same as above
+    noteTree.reset(rootNote);
+
+    HDT_WorkLabel rootLabel = db.workLabels.getByID(1); // Same as above
+    labelTree.reset(rootLabel);
 
     if (hasTerms)
       termTree.reset(db.glossaries.getByID(1));
@@ -315,8 +328,11 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   public void find(String text, boolean forward, boolean nameOnly)
   {
     text = text.toLowerCase();
+    lastSearchTerm = text;
     searchingDown = forward;
     searchingNameOnly = nameOnly;
+
+    if (text.isBlank()) return;
 
     TreeItem<TreeRow> firstItem = nullSwitch(selectedItem(), ttv.getSelectionModel().getModelItem(0)),
                       item = firstItem;
@@ -377,9 +393,14 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void findAgain(String text)
+  public void findAgain()
   {
-    find(text, searchingDown, searchingNameOnly);
+    findAgain(searchingDown);
+  }
+
+  public void findAgain(boolean down)
+  {
+    find(lastSearchTerm, down, searchingNameOnly);
   }
 
 //---------------------------------------------------------------------------

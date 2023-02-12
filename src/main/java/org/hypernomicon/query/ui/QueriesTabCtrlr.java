@@ -101,7 +101,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML CheckBox chkShowDesc;
 
   private ComboBox<CheckBoxOrCommand> fileBtn = null;
-  private String textToHilite = "";
   private ObjectProperty<ObservableList<ResultsRow>> propToUnbind = null;
   private ChangeListener<ResultsRow> cbListenerToRemove = null, tvListenerToRemove = null;
   private ComboBox<ResultsRow> cb;
@@ -116,7 +115,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private static final List<Query<?>> allQueries = new ArrayList<>();
 
   public static List<ResultsRow> results()          { return (curQC == null) ? List.of() : curQC.results(); }
-  public void setTextToHilite(String text)          { textToHilite = text; }
   public void refreshTables()                       { queryCtrlrs.forEach(qc -> qc.resultsTable.getTV().refresh()); }
   public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(curQC); }
   public static void btnExecuteClick()              { curQC.btnExecuteClick(true); }
@@ -181,7 +179,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       HDT_Record record = curQC.resultsTable.selectedRecord();
       if (record == null) return;
 
-      textToHilite = curQC.getTextToHilite();
       String mainText = "";
 
       if (record.hasDesc())
@@ -196,10 +193,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (newState == Worker.State.SUCCEEDED)
       {
+        String textToHilite = ui.currentFindInDescriptionText();
         if (textToHilite.length() > 0)
           MainTextWrapper.hiliteText(textToHilite, webView.getEngine());
-
-        textToHilite = "";
       }
     });
 

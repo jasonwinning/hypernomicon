@@ -427,18 +427,26 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final <HDT_T extends HDT_RecordBase> void updateObjectsFromList(RelationType relType, List<HDT_T> list)
+  @SuppressWarnings("unchecked")
+  protected final <HDT_T extends HDT_RecordBase> boolean updateObjectsFromList(RelationType relType, List<HDT_T> list)
   {
     HyperObjList<HDT_Record, HDT_Record> objList = getObjList(relType);
-    if (objList.equals(list)) return;
+    if (objList.equals(list)) return true;
+
+    try
+    {
+      objList.cycleCheck((List<HDT_Record>) list);
+    }
+    catch (RelationCycleException e)
+    {
+      messageDialog(e.getMessage(), mtError);
+      return false;
+    }
 
     objList.clear();
 
-    list.forEach(obj -> { if (objList.add(obj) == false)
-    {
-      try                              { objList.throwLastException(); }
-      catch (RelationCycleException e) { messageDialog(e.getMessage(), mtError); }
-    }});
+    list.forEach(objList::add);
+    return true;
   }
 
 //---------------------------------------------------------------------------

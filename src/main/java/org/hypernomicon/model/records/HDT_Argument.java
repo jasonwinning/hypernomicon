@@ -58,9 +58,9 @@ public class HDT_Argument extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()        { return name(); }
+  @Override public String listName()           { return name(); }
 
-  public void setWorks(List<HDT_Work> list) { updateObjectsFromList(rtWorkOfArgument, list); }
+  public boolean setWorks(List<HDT_Work> list) { return updateObjectsFromList(rtWorkOfArgument, list); }
 
   public static final int truePositionVerdictID  = 1,
                           falsePositionVerdictID = 2,

@@ -129,14 +129,30 @@ public class QueryWhereField extends RecordQuery
     if ((getCellID(op2) != EQUAL_TO_OPERAND_ID) && (getCellID(op2) != NOT_EQUAL_TO_OPERAND_ID))
       cat = hdcString;
 
-    if ((cat == hdcString) || (cat == hdcPersonName) || (cat == hdcBibEntryKey) || (cat == hdcMainTextAndHub))
+    switch (cat)
     {
-      clearOperands(row, 3);
-      vp3.setRestricted(row, false);
+      case hdcString : case hdcPersonName : case hdcBibEntryKey : case hdcMainTextAndHub :
+
+        clearOperands(row, 3);
+        vp3.setRestricted(row, false);
+        break;
+
+      case hdcBoolean :
+
+        vp3.setPopulator(row, Populator.create(cvtBoolean, trueCell, falseCell));
+        break;
+
+      case hdcTernary :
+
+        vp3.setPopulator(row, Populator.create(cvtTernary, unsetCell, trueCell, falseCell));
+        break;
+
+      case hdcPath          : case hdcAuthors       : case hdcHubSpokes     :
+      case hdcPointerSingle : case hdcPointerMulti  : case hdcNestedPointer :
+
+        vp3.setPopulator(row, new StandardPopulator(objType));
+        break;
     }
-    else if (cat == hdcBoolean) vp3.setPopulator(row, Populator.create(cvtBoolean, trueCell, falseCell));
-    else if (cat == hdcTernary) vp3.setPopulator(row, Populator.create(cvtTernary, unsetCell, trueCell, falseCell));
-    else                        vp3.setPopulator(row, new StandardPopulator(objType));
 
     return true;
   }

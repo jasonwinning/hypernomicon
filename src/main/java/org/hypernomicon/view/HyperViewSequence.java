@@ -240,10 +240,10 @@ public class HyperViewSequence
       if (activeRecord.getType() == hdtPerson)
       {
         if (((HDT_Person)activeRecord).getLastName().length() > 0)
-          ui.omniFocus();
+          ui.omniFocus(true);
       }
       else if (activeRecord.name().length() > 0)
-        ui.omniFocus();
+        ui.omniFocus(true);
     });
 
     if (curHyperTab.getTabEnum() != workTabEnum)

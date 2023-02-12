@@ -601,4 +601,16 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void cycleCheck(List<HDT_ObjType> list) throws RelationCycleException
+  {
+    for (HDT_ObjType obj : list)
+    {
+      if (contains(obj) == false)
+        relSet.cycleCheck(subj, obj);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

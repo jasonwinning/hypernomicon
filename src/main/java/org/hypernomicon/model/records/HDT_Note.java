@@ -53,7 +53,7 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public String getFolderStr()          { return nullSwitch(filePath(), "", FilePath::toString); }
   public HDT_Folder getDefaultFolder()  { return folder.isNotNull() ? folder.get() : findFirstHaving(parentNotes, HDT_Note::getDefaultFolder); }
 
-  public void setParentNotes(List<HDT_Note> list) { updateObjectsFromList(rtParentNoteOfNote, list); }
+  public boolean setParentNotes(List<HDT_Note> list) { return updateObjectsFromList(rtParentNoteOfNote, list); }
 
   @Override public HyperPath getPath()        { return folder.isNull() ? null : folder.get().getPath(); }
   @Override public String listName()          { return name(); }

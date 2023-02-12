@@ -95,6 +95,9 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public void enable(boolean enabled)      { getTab().getContent().setDisable(enabled == false); }
   void updateWebButtons(Preferences node)  { return; }
 
+  public void nextSearchResult()           { nullSwitch(mainTextWrapper(), MainTextWrapper::nextSearchResult); }
+  public void previousSearchResult()       { nullSwitch(mainTextWrapper(), MainTextWrapper::previousSearchResult); }
+
   public void newClick(RecordType objType, HyperTableRow row) { }
 
   public static void forEachHyperTab(Consumer<HyperTab<? extends HDT_Record, ? extends HDT_Record>> a) { enumToHyperTab.values().forEach(a); }

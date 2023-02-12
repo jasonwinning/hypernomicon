@@ -264,13 +264,13 @@
          </TextField>
        </AnchorPane>
        <AnchorPane GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.valignment="TOP">
-         <Button fx:id="btnTextSearch" layoutY="4.0" mnemonicParsing="false" onAction="#btnTextSearchClick" prefHeight="24.0" prefWidth="24.0" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="5.0">
+         <ToggleButton fx:id="btnTextSearch" layoutY="5.0" maxWidth="32.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="5.0">
            <graphic>
              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                <Image url="@../resources/images/text-search2.png" />
              </ImageView>
            </graphic>
-         </Button>
+         </ToggleButton>
          <SplitMenuButton fx:id="btnGoTo" layoutX="1.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="55.0" AnchorPane.leftAnchor="35.0" AnchorPane.topAnchor="5.0">
            <items>
              <MenuItem fx:id="mnuRecordSelect" mnemonicParsing="false" text="Go to Record" />

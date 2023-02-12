@@ -137,7 +137,7 @@ public final class MainCtrlr
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
   @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
-                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll, btnTextSearch;
+                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll;
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpBottom;
@@ -157,7 +157,7 @@ public final class MainCtrlr
   @FXML private Tab tabViewSelector, tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML private TabPane selectorTabPane, tabPane;
   @FXML private TextField tfID, tfOmniGoTo, tfRecord;
-  @FXML private ToggleButton btnPointerPreview;
+  @FXML private ToggleButton btnPointerPreview, btnTextSearch;
   @FXML private ToolBar topToolBar;
 
   @FXML public Label lblStatus;
@@ -181,7 +181,7 @@ public final class MainCtrlr
   public final TreeSelector treeSelector = new TreeSelector();
 
   public Tooltip ttDates;
-  private boolean selectorTabChangeIsProgrammatic = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
+  private boolean selectorTabChangeIsProgrammatic = false, dontShowOmniTable = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
   private long lastImportTime = 0L;
   private FilePath lastImportFilePath = null;
@@ -426,7 +426,7 @@ public final class MainCtrlr
     btnIncrement.setOnAction(event -> incDecClick(true));
     btnDecrement.setOnAction(event -> incDecClick(false));
 
-    setToolTip(btnTextSearch    , "Search within description of record currently showing");
+    setToolTip(btnTextSearch    , "Search within description of record currently showing (" + (SystemUtils.IS_OS_MAC ? "Cmd" : "Ctrl") + " + Shift + F)");
     setToolTip(btnAdvancedSearch, "Start a new search in Queries tab");
     setToolTip(btnPreviewWindow , "Open Preview Window");
     setToolTip(btnBibMgr        , "Open Bibliography Manager Window");
@@ -533,13 +533,34 @@ public final class MainCtrlr
       if (selectorTabChangeIsProgrammatic) return;
 
       updateSelectorTab(true);
+      btnTextSearch.setSelected(false);
+    });
+
+//---------------------------------------------------------------------------
+
+    btnTextSearch.selectedProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (Boolean.TRUE.equals(newValue))
+      {
+        String searchText = tfSelector.getText();
+        setSelectorTab(tabOmniSelector);
+        updateSelectorTab(false);
+        hideFindTable();
+        ctfOmniGoTo.setText(searchText);
+        activeTab().findWithinDesc(searchText);
+      }
+      else
+      {
+        clearOmniFinder();
+        tfOmniGoToChange(ctfOmniGoTo.getText(), false);
+      }
     });
 
 //---------------------------------------------------------------------------
 
     ctfOmniGoTo.setOnMouseClicked(event ->
     {
-      if (htFind.dataRowCount() > 0)
+      if ((btnTextSearch.isSelected() == false) && (htFind.dataRowCount() > 0))
         showFindTable();
     });
 
@@ -559,9 +580,13 @@ public final class MainCtrlr
       {
         case DOWN : case UP : case PAGE_DOWN : case PAGE_UP :
 
-          showFindTable();
-          tvFind.fireEvent(event.copyFor(tvFind, tvFind));
-          event.consume();
+          if (btnTextSearch.isSelected() == false)
+          {
+            showFindTable();
+            tvFind.fireEvent(event.copyFor(tvFind, tvFind));
+            event.consume();
+          }
+
           break;
 
         default : break;
@@ -583,7 +608,7 @@ public final class MainCtrlr
       if (Boolean.TRUE.equals(newValue))
         tfRecord.setText("");
       else
-        updateBottomPanel(true);
+        updateBottomPanel(true, false);
     });
 
 //---------------------------------------------------------------------------
@@ -717,6 +742,23 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void findInDescription(String text)
+  {
+    btnTextSearch.setSelected(true);
+    ctfOmniGoTo.setText(text);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public String currentFindInDescriptionText()
+  {
+    return btnTextSearch.isSelected() ? ctfOmniGoTo.getText() : "";
   }
 
 //---------------------------------------------------------------------------
@@ -877,18 +919,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void btnTextSearchClick()
-  {
-    if (db.isLoaded() == false) return;
-
-    hideFindTable();
-
-    activeTab().findWithinDesc(tfSelector.getText());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void btnGoToClick(boolean fromMenu)
   {
     if (selectorTabEnum() != listTabEnum)
@@ -910,9 +940,7 @@ public final class MainCtrlr
       return;
     }
 
-    String text = cbTreeGoTo.getEditor().getText();
-    if (text.length() > 0)
-      tree().findAgain(text);
+    tree().findAgain();
   }
 
 //---------------------------------------------------------------------------
@@ -1501,6 +1529,8 @@ public final class MainCtrlr
       }
     }
 
+    btnTextSearch.setSelected(false);
+
     clearAllTabsAndViews();
     lblStatus.setText("");
 
@@ -1517,7 +1547,7 @@ public final class MainCtrlr
 
     enableControls(false);
 
-    updateBottomPanel(true);
+    updateBottomPanel(true, true);
     tfRecord.setText("");
     tfID.setText("");
     hcbGoTo.clear();
@@ -2239,7 +2269,7 @@ public final class MainCtrlr
     {
       case queryTabEnum : case treeTabEnum :
         tab.update();
-        updateBottomPanel(true);
+        updateBottomPanel(true, true);
         return;
 
       default :
@@ -2273,7 +2303,7 @@ public final class MainCtrlr
     else
       viewSequence.saveViewToCurrentSlotAndTab(new HyperView<>(tabEnum, null));
 
-    updateBottomPanel(true);
+    updateBottomPanel(true, true);
     tab.clear();
 
     if (HDT_Record.isEmpty(record))
@@ -2382,7 +2412,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void updateBottomPanel(boolean refreshDropDown)
+  public void updateBottomPanel(boolean refreshDropDown, boolean switchToRecordSearch)
   {
     ttDates.setText(NO_DATES_TOOLTIP);
     if (db.isLoaded() == false) return;
@@ -2501,6 +2531,19 @@ public final class MainCtrlr
       updateSelectorTab(false);
     else
       hideFindTable();
+
+    if (switchToRecordSearch)
+      switchToRecordSearch();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void switchToRecordSearch()
+  {
+    dontShowOmniTable = true;
+    btnTextSearch.setSelected(false);
+    dontShowOmniTable = false;
   }
 
 //---------------------------------------------------------------------------
@@ -2606,7 +2649,13 @@ public final class MainCtrlr
 
   private void tfOmniGoToChange(String newValue, boolean showingMore)
   {
-    if (newValue.length() > 0)
+    if (btnTextSearch.isSelected())
+    {
+      activeTab().findWithinDesc(tfSelector.getText());
+      return;
+    }
+
+    if ((dontShowOmniTable == false) && (newValue.length() > 0) && (selectorTabEnum() == omniTabEnum))
       showFindTable();
 
     if (newValue.isEmpty())
@@ -2631,9 +2680,14 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void omniFocus()
+  public void omniFocus(boolean recordSearch)
   {
+    btnTextSearch.setSelected(recordSearch == false);
     setSelectorTab(tabOmniSelector);
+
+    if (recordSearch == false)
+      ctfOmniGoTo.selectAll();
+
     safeFocus(ctfOmniGoTo);
   }
 

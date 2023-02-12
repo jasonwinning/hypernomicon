@@ -433,47 +433,52 @@ public final class MainTextUtil
   {
     String typeName = getTypeName(record.getType());
 
-    if (record.getType() == hdtWork)
+    switch (record.getType())
     {
-      HDT_Work work = (HDT_Work) record;
+      case hdtWork :
 
-      if (work.workType.isNotNull())
-        typeName = work.workType.get().listName();
+        HDT_Work work = (HDT_Work) record;
 
-      StringBuilder tooltip = new StringBuilder("(").append(typeName).append(')');
+        if (work.workType.isNotNull())
+          typeName = work.workType.get().listName();
 
-      if (work.getAuthors().size() == 1)
-        tooltip.append(' ').append(work.getAuthors().get(0).singleName());
-      else if (work.getAuthors().size() == 2)
-        tooltip.append(' ').append(work.getAuthors().get(0).singleName()).append(" & ").append(work.getAuthors().get(1).singleName());
-      else if (work.getAuthors().size() > 2)
-      {
-        for (int ndx = 0; ndx < (work.getAuthors().size() - 1); ndx++)
-          tooltip.append(' ').append(work.getAuthors().get(ndx).singleName()).append(',');
+        StringBuilder tooltip = new StringBuilder("(").append(typeName).append(')');
 
-        tooltip.append(" & ").append(work.getAuthors().get(work.getAuthors().size() - 1).singleName());
-      }
+        if (work.getAuthors().size() == 1)
+          tooltip.append(' ').append(work.getAuthors().get(0).singleName());
+        else if (work.getAuthors().size() == 2)
+          tooltip.append(' ').append(work.getAuthors().get(0).singleName()).append(" & ").append(work.getAuthors().get(1).singleName());
+        else if (work.getAuthors().size() > 2)
+        {
+          for (int ndx = 0; ndx < (work.getAuthors().size() - 1); ndx++)
+            tooltip.append(' ').append(work.getAuthors().get(ndx).singleName()).append(',');
 
-      if (work.getYear().length() > 0)
-        tooltip.append(" (").append(work.getYear()).append(')');
+          tooltip.append(" & ").append(work.getAuthors().get(work.getAuthors().size() - 1).singleName());
+        }
 
-      tooltip.append(' ').append(work.name());
+        if (work.getYear().length() > 0)
+          tooltip.append(" (").append(work.getYear()).append(')');
 
-      return htmlEscaper.escape(tooltip.toString());
+        tooltip.append(' ').append(work.name());
+
+        return htmlEscaper.escape(tooltip.toString());
+
+      case hdtMiscFile :
+
+        HDT_MiscFile miscFile = (HDT_MiscFile) record;
+
+        if (miscFile.fileType.isNotNull())
+          typeName = typeName + " - " + miscFile.fileType.get().listName();
+
+        if (miscFile.pathNotEmpty())
+          return htmlEscaper.escape('(' + typeName + ") " + miscFile.getPath().getNameStr());
+
+        // fall through
+
+      default :
+
+        return htmlEscaper.escape('(' + typeName + ") " + record.getCBText());
     }
-
-    if (record.getType() == hdtMiscFile)
-    {
-      HDT_MiscFile miscFile = (HDT_MiscFile) record;
-
-      if (miscFile.fileType.isNotNull())
-        typeName = typeName + " - " + miscFile.fileType.get().listName();
-
-      if (miscFile.pathNotEmpty())
-        return htmlEscaper.escape('(' + typeName + ") " + miscFile.getPath().getNameStr());
-    }
-
-    return htmlEscaper.escape('(' + typeName + ") " + record.getCBText());
   }
 
 //---------------------------------------------------------------------------

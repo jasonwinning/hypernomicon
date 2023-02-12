@@ -115,16 +115,27 @@ public class MendeleyAuthors extends BibAuthors
 
     switch (bibAuthor.getType())
     {
-      case author     : aTypeStr = "authors"    ; break;
-      case translator : aTypeStr = "translators"; break;
+      case author :
+
+        aTypeStr = "authors";
+        break;
+
+      case translator :
+
+        aTypeStr = "translators";
+        break;
 
       case editor     :
 
-        if (ignoreEditors()) return;
+        if (ignoreEditors())
+          return;
 
-        aTypeStr = "editors"    ; break;
+        aTypeStr = "editors";
+        break;
 
-      default         : return;
+      default :
+
+        return;
     }
 
     JsonObj personObj = new JsonObj();

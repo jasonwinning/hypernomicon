@@ -606,7 +606,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     setObject(subj, obj, ndx, -1, affirm);
   }
 
-  @SuppressWarnings("unchecked")
   void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, int subjOrd, boolean affirm) throws RelationCycleException
   {
     if ((subj == null) || (obj == null))
@@ -622,10 +621,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       // Add the object to the object list if not already there
       if (objList.contains(obj)) return;
 
-      if (cycleGroup != null)
-        groupCycleCheck(subj, obj, obj);
-      else if (obj.getType() == subj.getType())
-        cycleCheck(subj, (HDT_Subj) obj, obj);
+      cycleCheck(subj, obj);
 
       if (ndx == -1) objList.add(obj);
       else           objList.add(ndx, obj);
@@ -696,21 +692,32 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
-  private void cycleCheck(HDT_Subj origSubj, HDT_Subj curSubj, HDT_Obj origObj) throws RelationCycleException
+  @SuppressWarnings("unchecked") void cycleCheck(HDT_Subj subj, HDT_Obj obj) throws RelationCycleException
   {
-    if (origSubj == curSubj)
-      throw new RelationCycleException(origSubj, origObj);
-
-    for (HDT_Obj nextObj : subjToObjList.get(curSubj))
-      cycleCheck(origSubj, (HDT_Subj) nextObj, origObj);
+    if (cycleGroup != null)
+      groupCycleCheckCase(subj, obj, obj);
+    else if (obj.getType() == subj.getType())
+      cycleCheckCase(subj, (HDT_Subj) obj, obj);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private void groupCycleCheck(HDT_Record origSubj, HDT_Obj curSubj, HDT_Record origObj) throws RelationCycleException
+  private void cycleCheckCase(HDT_Subj origSubj, HDT_Subj curSubj, HDT_Obj origObj) throws RelationCycleException
+  {
+    if (origSubj == curSubj)
+      throw new RelationCycleException(origSubj, origObj);
+
+    for (HDT_Obj nextObj : subjToObjList.get(curSubj))
+      cycleCheckCase(origSubj, (HDT_Subj) nextObj, origObj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  private void groupCycleCheckCase(HDT_Record origSubj, HDT_Obj curSubj, HDT_Record origObj) throws RelationCycleException
   {
     if (origSubj == curSubj)
       throw new RelationCycleException(origSubj, origObj);
@@ -718,14 +725,14 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     for (RelationType relType : cycleGroup)
     {
       RelationSet<HDT_Obj, ? extends HDT_Record> relSet = (RelationSet<HDT_Obj, ? extends HDT_Record>) relationSets.get(relType);
-      relSet.groupParentCycleCheck(origSubj, curSubj, origObj);
+      relSet.groupParentCycleCheckCase(origSubj, curSubj, origObj);
     }
   }
 
-  private void groupParentCycleCheck(HDT_Record origSubj, HDT_Subj curSubj, HDT_Record origObj) throws RelationCycleException
+  private void groupParentCycleCheckCase(HDT_Record origSubj, HDT_Subj curSubj, HDT_Record origObj) throws RelationCycleException
   {
     for (HDT_Obj nextObj : subjToObjList.get(curSubj))
-      groupCycleCheck(origSubj, nextObj, origObj);
+      groupCycleCheckCase(origSubj, nextObj, origObj);
   }
 
 //---------------------------------------------------------------------------

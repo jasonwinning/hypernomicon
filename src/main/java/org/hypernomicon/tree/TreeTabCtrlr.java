@@ -222,6 +222,13 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (newState == Worker.State.SUCCEEDED)
       {
+        String text = ui.currentFindInDescriptionText();
+        if (text.length() > 0)
+        {
+          MainTextWrapper.hiliteText(text, webView.getEngine());
+          return;
+        }
+
         if (textToHilite.length() > 0)
           MainTextWrapper.hiliteText(textToHilite, webView.getEngine());
 
@@ -328,7 +335,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (newValue != null)
       {
-        ui.updateBottomPanel(true);
+        ui.updateBottomPanel(true, false);
 
         TreeRow row = newValue.getValue();
 
@@ -496,6 +503,38 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     if (tree.selectedRecord() != null)
       MainTextWrapper.hiliteText(text, webView.getEngine());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void previousSearchResult()
+  {
+    String text = ui.currentFindInDescriptionText();
+    if (text.length() > 0)
+    {
+      // Find previous result
+
+      return;
+    }
+
+    tree.findAgain(false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void nextSearchResult()
+  {
+    String text = ui.currentFindInDescriptionText();
+    if (text.length() > 0)
+    {
+      // Find next result
+
+      return;
+    }
+
+    tree.findAgain(true);
   }
 
 //---------------------------------------------------------------------------
