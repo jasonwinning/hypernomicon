@@ -260,7 +260,7 @@ public class HyperViewSequence
   {
     clear();
 
-    db.getInitialNavList().forEach(record ->
+    db.initialNavHistory().forEach(record ->
     {
       if (record.getType() == hdtInvestigation)
         record = ((HDT_Investigation)record).person.get();

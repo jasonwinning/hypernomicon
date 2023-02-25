@@ -190,7 +190,7 @@ public final class HyperDB
   public RecordType getSubjType(RelationType relType)               { return relationSets.get(relType).getSubjType(); }
   public RecordType getObjType(RelationType relType)                { return relationSets.get(relType).getObjType(); }
   public boolean relationIsMulti(RelationType relType)              { return relTypeToIsMulti.get(relType); }
-  public List<HDT_Record> getInitialNavList()                       { return unmodifiableList(initialNavList); }
+  public Stream<HDT_Record> initialNavHistory()                     { return initialNavList.stream(); }
   public String getSearchKey(HDT_Record record)                     { return searchKeys.getStringForRecord(record); }
   public SearchKeyword getKeyByKeyword(String keyword)              { return searchKeys.getKeywordObjByKeywordStr(keyword); }
   public String firstActiveKeyWord(HDT_Record record)               { return searchKeys.firstActiveKeyword(record); }
@@ -204,7 +204,7 @@ public final class HyperDB
   { searchKeys.setSearchKey(record, newKey, noMod, rebuildMentions); }
 
   public LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> getBibLibrary()  { return bibLibrary; }
-  public List<Consumer<HDT_Record>> getRecordDeleteHandlers()                               { return unmodifiableList(recordDeleteHandlers); }
+  public Stream<Consumer<HDT_Record>> getRecordDeleteHandlers()                             { return recordDeleteHandlers.stream(); }
   public void addRelationChangeHandler(RelationType relType, RelationChangeHandler handler) { relationSets.get(relType).addChangeHandler(handler); }
   public void addKeyWorkHandler(RecordType recordType, RelationChangeHandler handler)       { keyWorkHandlers.put(recordType, handler); }
   public void addCloseDBHandler(Runnable handler)                                           { dbCloseHandlers.add(handler); }

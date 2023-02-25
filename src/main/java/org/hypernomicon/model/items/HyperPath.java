@@ -407,15 +407,25 @@ public class HyperPath
 
     StringBuilder val = new StringBuilder();
 
-    if (getRecordType() == hdtPerson)
-    {
-      getHyperPathSetForFilePath(filePath()).forEach(hyperPath ->
-      {
-        if (hyperPath.getRecordType() != hdtPerson) return;
+    RecordType recordType = getRecordType();
 
-        if (val.length() > 0) val.append("; ");
-        val.append(getTypeName(hdtPerson)).append(": ").append(hyperPath.getRecord().listName());
-      });
+    switch (recordType)
+    {
+      case hdtPerson : case hdtMiscFile :
+
+        getHyperPathSetForFilePath(filePath()).forEach(hyperPath ->
+        {
+          if (hyperPath.getRecordType() != recordType) return;
+
+          if (val.length() > 0) val.append("; ");
+          val.append(getTypeName(recordType)).append(": ").append(hyperPath.getRecord().listName());
+        });
+
+        break;
+
+      default :
+
+        break;
     }
 
     LinkedHashSet<HDT_Record> set = new LinkedHashSet<>();
