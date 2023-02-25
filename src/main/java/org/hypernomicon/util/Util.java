@@ -74,10 +74,12 @@ import javafx.application.Platform;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
+import javafx.scene.input.KeyEvent;
 import javafx.util.Duration;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.escape.Escaper;
@@ -626,6 +628,11 @@ public final class Util
     sb.replace(0, sb.length(), s);
   }
 
+  public static void assignSB(StringBuffer sb, String s)
+  {
+    sb.replace(0, sb.length(), s);
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1127,6 +1134,22 @@ public final class Util
   public static String byteBufferToString(byte[] buf)
   {
     return new String(buf, detectCharset(buf));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean shortcutKeyIsDown(KeyEvent keyEvent)
+  {
+    return SystemUtils.IS_OS_MAC ? keyEvent.isMetaDown() : keyEvent.isControlDown();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String underlinedChar(char c)
+  {
+    return c + "\u0332";
   }
 
 //---------------------------------------------------------------------------

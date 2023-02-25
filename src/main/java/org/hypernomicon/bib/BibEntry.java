@@ -57,6 +57,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   protected abstract void updateJsonObj(JsonObj jObj);
   public abstract String getEntryURL();
   public abstract List<String> getReportFieldOrder();
+  protected abstract String getUserName();
 
   @SuppressWarnings("unchecked")
   public BibEntry(LibraryWrapper<BibEntry_T, BibCollection_T> libWrapper, boolean thisIsBackup)

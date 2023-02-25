@@ -90,6 +90,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   protected SyncTask syncTask = null;
   protected HttpUriRequest request = null;
   private BiConsumer<String, String> keyChangeHndlr;
+  private String userName = "";
 
   protected boolean didMergeDuringSync = false;
 
@@ -104,6 +105,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   public final Set<BibEntry_T> getTrash()                { return new LinkedHashSet<>(keyToTrashEntry.values()); }
   public final Set<BibEntry_T> getAllEntries()           { return new LinkedHashSet<>(keyToAllEntry.values()); }
   public final Map<String, BibCollection> getKeyToColl() { return Collections.unmodifiableMap(keyToColl); }
+
+  public String getUserName()                            { return userName; }
 
   public EntryType parseEntryType(String typeStr)        { return getEntryTypeMap().inverse().getOrDefault(typeStr, etOther); }
 
@@ -123,6 +126,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     keyToTrashEntry.clear();
     keyToColl      .clear();
     keyList        .clear();
+
+    userName = "";
   }
 
   //---------------------------------------------------------------------------
@@ -248,7 +253,11 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       BibEntry_T entry = BibEntry.create(this, itemJsonObj, false);
 
       if (entry != null)
+      {
         keyToAllEntry.put(entry.getKey(), entry);
+        if (userName.isBlank())
+          userName = entry.getUserName();
+      }
     });
 
     nullSwitch(jObj.getArray("trash"), jArr -> jArr.getObjs().forEach(itemJsonObj ->

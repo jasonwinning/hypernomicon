@@ -118,6 +118,12 @@ class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public HDT_Record selectedRecord() { return nullSwitch(cb.getSelectionModel().getSelectedItem(), null, TreeRow::getRecord); }
+  public String getText()            { return cb.getEditor().getText(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   void clear()
   {
     changeIsProgrammatic = true;

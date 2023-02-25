@@ -44,6 +44,7 @@ import org.jsoup.nodes.Document;
 import com.sun.javafx.webkit.Accessor;
 import com.sun.webkit.WebPage;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
 import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
@@ -294,12 +295,24 @@ public class MainTextCtrlr
     btnAdd     .setOnAction(event -> btnAddClick     ());
     btnNew     .setOnAction(event -> btnNewClick     ());
 
+    String shortcutKey, altKey;
+    if (SystemUtils.IS_OS_MAC)
+    {
+      shortcutKey = "Command";
+      altKey = "Option/Alt";
+    }
+    else
+    {
+      shortcutKey = "Ctrl";
+      altKey = "Alt";
+    }
+
     webview.setOnContextMenuRequested(contextMenuEvent ->
     {
-      MenuItem menuItem1 = new MenuItem("Paste plain text");
+      MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
       menuItem1.setOnAction(actionEvent -> pastePlainText(false));
 
-      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks");
+      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + shortcutKey + "-" + altKey + "-V)");
       menuItem2.setOnAction(actionEvent -> pastePlainText(true));
 
       setHTMLContextMenu(menuItem1, menuItem2);
@@ -313,7 +326,7 @@ public class MainTextCtrlr
 
     he.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
-      if (event.isControlDown() || event.isMetaDown())
+      if (shortcutKeyIsDown(event))
       {
         if ((event.getCode() == KeyCode.B) ||
             (event.getCode() == KeyCode.I) ||
@@ -339,7 +352,7 @@ public class MainTextCtrlr
 
     he.addEventFilter(KeyEvent.KEY_RELEASED, event ->
     {
-      if (event.isControlDown() || event.isMetaDown())
+      if (shortcutKeyIsDown(event))
       {
         if ((event.getCode() == KeyCode.B) ||
             (event.getCode() == KeyCode.I) ||
@@ -354,20 +367,20 @@ public class MainTextCtrlr
 
     he.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
-      if (event.isControlDown() && event.isShiftDown() && (event.getCode() == KeyCode.V))
+      if (shortcutKeyIsDown(event) && event.isAltDown() && (event.getCode() == KeyCode.V))
       {
         pastePlainText(true);
         event.consume();
       }
     });
 
-    MenuItem menuItem0 = new MenuItem("Paste");
+    MenuItem menuItem0 = new MenuItem("Paste (" + shortcutKey + "-V)");
     menuItem0.setOnAction(event -> Accessor.getPageFor(getEngine()).executeCommand(Command.PASTE.getCommand(), null));
 
-    MenuItem menuItem1 = new MenuItem("Paste plain text");
+    MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
     menuItem1.setOnAction(event -> pastePlainText(false));
 
-    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks");
+    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + shortcutKey + "-" + altKey + "-V)");
     menuItem2.setOnAction(event -> pastePlainText(true));
 
     MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);

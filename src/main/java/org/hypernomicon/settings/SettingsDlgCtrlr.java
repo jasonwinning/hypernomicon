@@ -33,8 +33,12 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
+import org.hypernomicon.bib.BibCollection;
+import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.mendeley.MendeleyOAuthApi;
+import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.util.CryptoUtil;
@@ -427,7 +431,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     btnMendeleyAuthorize.setSelected(false);
 
     OAuth2AccessToken accessToken = null;
-    
+
     String verificationCode = tfVerificationCode.getText();
     tfVerificationCode.clear();
 
@@ -470,7 +474,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     btnMendeleyAuthorize.setSelected(false);
 
     OAuth1AccessToken accessToken = null;
-    
+
     String verificationCode = tfVerificationCode.getText();
     tfVerificationCode.clear();
 
@@ -504,9 +508,44 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void setLinkedMessage(String additionalInfo)
+  {
+    String message = "This database is currently linked to a " + db.getBibLibrary().type().getUserFriendlyName() + " library.";
+
+    if (additionalInfo.length() > 0)
+      message = message + " " + additionalInfo;
+
+    lblCurrentlyLinked.setText(message);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void setUnlinkMessage()
   {
-    lblCurrentlyLinked.setText("This database is currently linked to a " + db.getBibLibrary().type().getUserFriendlyName() + " library.");
+    LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> library = db.getBibLibrary();
+
+    String userName = library.getUserName();
+
+    if (userName.length() > 0)
+      userName = "Username: " + userName;
+
+    if ((userName.length() > 0) || (library.type() != LibraryType.ltMendeley))
+    {
+      setLinkedMessage(userName);
+      return;
+    }
+
+    setLinkedMessage("Getting username from server...");
+
+    ((MendeleyWrapper)library).getUserNameFromServer(emailAddress ->
+    {
+      setLinkedMessage("Username: " + emailAddress.toString());
+    },
+    ex ->
+    {
+      setLinkedMessage("Unable to retrieve username from " + library.type().getUserFriendlyName() + " server.");
+    });
   }
 
 //---------------------------------------------------------------------------

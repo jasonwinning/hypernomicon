@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hypernomicon.bib.BibEntry;
@@ -35,9 +36,12 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.util.SplitString;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonArray.JsonObjIterator;
 import org.hypernomicon.util.json.JsonObj;
+
+import com.google.common.collect.ImmutableList;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
@@ -761,6 +765,29 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   {
     return isNewEntry() ? "" : nullSwitch(jObj.getObj("links"), "", links ->
                                nullSwitch(links.getObj("alternate"), "", alt -> alt.getStrSafe("href")));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected String getUserName()
+  {
+    String url = isNewEntry() ? "" : nullSwitch(jObj.getObj("library"), "", library ->
+                                     nullSwitch(library.getObj("links"), "", links ->
+                                     nullSwitch(links.getObj("alternate"), "", alt -> alt.getStrSafe("href"))));
+
+    if (url.isBlank()) return "";
+
+    List<String> list = ImmutableList.copyOf((Iterator<String>)new SplitString(url, '/'));
+
+    for (int ndx = list.size() - 1; ndx > 0; ndx--)
+    {
+      String str = list.get(ndx);
+      if (str.length() > 0)
+        return str;
+    }
+
+    return "";
   }
 
 //---------------------------------------------------------------------------

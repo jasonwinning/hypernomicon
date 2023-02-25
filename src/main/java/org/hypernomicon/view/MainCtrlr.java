@@ -149,7 +149,8 @@ public final class MainCtrlr
   @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
                          mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
                          mnuImportBibFile, mnuNewCountry, mnuNewDatabase, mnuNewField, mnuNewPersonStatus, mnuNewRank, mnuVideos,
-                         mnuRecordSelect, mnuRevertToDiskCopy, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile;
+                         mnuRecordSelect, mnuRevertToDiskCopy, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile,
+                         mnuShortcuts;
   @FXML private MenuButton mbCreateNew;
   @FXML private ProgressBar progressBar;
   @FXML private SeparatorMenuItem mnuBibImportSeparator;
@@ -348,6 +349,16 @@ public final class MainCtrlr
 
     tabViewSelector.disableProperty().bind(BooleanExpression.booleanExpression(tabQueries.selectedProperty().or(tabTree.selectedProperty())).not());
 
+    tabViewSelector.tooltipProperty().bind(tabPane.getSelectionModel().selectedItemProperty().map(tab ->
+    {
+      switch (getHyperTabByTab(tab).getTabEnum())
+      {
+        case queryTabEnum : return new Tooltip("Populate dropdown with query results");
+        case treeTabEnum  : return new Tooltip("Search within Tree (additional actions become available in magnifying glass button dropdown menu)");
+        default           : return null;
+      }
+    }));
+
     setSelectorTab(selectorTabPane.getTabs().get(selectorTabPane.getTabs().size() - 1));
 
     ctfOmniGoTo = (CustomTextField) TextFields.createClearableTextField();
@@ -385,10 +396,10 @@ public final class MainCtrlr
 
     mnuVideos            .setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));
 
-    mnuFindNextAll       .setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), true,  false));
-    mnuFindPreviousAll   .setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), false, false));
-    mnuFindNextInName    .setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), true,  true ));
-    mnuFindPreviousInName.setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), false, true ));
+    mnuFindNextAll       .setOnAction(event -> tree().find(true,  false));
+    mnuFindPreviousAll   .setOnAction(event -> tree().find(false, false));
+    mnuFindNextInName    .setOnAction(event -> tree().find(true,  true ));
+    mnuFindPreviousInName.setOnAction(event -> tree().find(false, true ));
 
     btnSaveAll.       setOnAction(event -> saveAllToDisk(true, true, false));
     btnDelete.        setOnAction(event -> deleteCurrentRecord(true));
@@ -426,12 +437,16 @@ public final class MainCtrlr
     btnIncrement.setOnAction(event -> incDecClick(true));
     btnDecrement.setOnAction(event -> incDecClick(false));
 
-    setToolTip(btnTextSearch    , "Search within description of record currently showing (" + (SystemUtils.IS_OS_MAC ? "Cmd" : "Ctrl") + " + Shift + F)");
+    setToolTip(btnTextSearch    , "Search within description of record currently showing (" + (SystemUtils.IS_OS_MAC ? "Cmd" : "Ctrl") + "-Shift-F)");
     setToolTip(btnAdvancedSearch, "Start a new search in Queries tab");
     setToolTip(btnPreviewWindow , "Open Preview Window");
     setToolTip(btnBibMgr        , "Open Bibliography Manager Window");
     setToolTip(btnFileMgr       , "Open File Manager Window");
-    setToolTip(btnSaveAll       , "Save all records to XML files");
+    setToolTip(btnSaveAll       , "Save all records to XML files (" + (SystemUtils.IS_OS_MAC ? "Cmd" : "Ctrl") + "-S)");
+
+    btnSaveAll.setText(underlinedChar('S') + "ave to XML");
+
+    mnuShortcuts.setAccelerator(new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN));
 
     apFindBackground.setOnMousePressed(event -> hideFindTable());
 
@@ -446,6 +461,8 @@ public final class MainCtrlr
 
     favorites = new HyperFavorites(mnuFavorites, mnuQueries);
 
+    setToolTip(tabOmniSelector, "Search all records");
+
     forEachHyperTab(hyperTab ->
     {
       TabEnum hyperTabEnum = hyperTab.getTabEnum();
@@ -455,7 +472,11 @@ public final class MainCtrlr
       {
         hyperTab.getTab().setGraphic(graphic);
 
-        nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab -> selectorTab.setGraphic(imgViewForRecordType(recordType)));
+        nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab ->
+        {
+          selectorTab.setGraphic(imgViewForRecordType(recordType));
+          setToolTip(selectorTab, "Search " + getTypeName(recordType) + " records");
+        });
       });
     });
 
@@ -507,15 +528,6 @@ public final class MainCtrlr
       else                                               return;
 
       event.consume();
-    });
-
-//---------------------------------------------------------------------------
-
-    KeyCombination keyComb = new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN);
-    stage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
-    {
-      if (keyComb.match(event) && db.isLoaded())
-        saveAllToDisk(true, true, false);
     });
 
 //---------------------------------------------------------------------------
@@ -759,6 +771,14 @@ public final class MainCtrlr
   public String currentFindInDescriptionText()
   {
     return btnTextSearch.isSelected() ? ctfOmniGoTo.getText() : "";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML public void mnuShortcutsClick()
+  {
+    HelpDlgCtrlr.build().showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -2568,7 +2588,13 @@ public final class MainCtrlr
   {
     if (selectorTabEnum() == omniTabEnum)
     {
-      htFind.doRowAction();
+      HDT_Record selectedRecord = tvFind.isVisible() ? htFind.selectedRecord() : null;
+
+      if (selectedRecord != null)
+        htFind.doRowAction();
+      else if (ctfOmniGoTo.getText().isBlank() == false)
+        mnuFindWithinAnyField.fire();
+
       return;
     }
 

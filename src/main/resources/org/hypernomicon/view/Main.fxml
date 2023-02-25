@@ -47,7 +47,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
+<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
    <top>
      <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
        <MenuBar fx:id="menuBar" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
@@ -112,6 +112,7 @@
            <MenuItem mnemonicParsing="false" onAction="#showWelcomeWindow" text="Show Welcome Window" />
            <SeparatorMenuItem mnemonicParsing="false" />
            <MenuItem fx:id="mnuVideos" mnemonicParsing="false" text="Tutorial Videos" />
+           <MenuItem fx:id="mnuShortcuts" mnemonicParsing="false" onAction="#mnuShortcutsClick" text="Keyboard Shortcuts" />
            <SeparatorMenuItem mnemonicParsing="false" />
            <MenuItem mnemonicParsing="false" onAction="#mnuAboutClick" text="About" />
          </Menu>

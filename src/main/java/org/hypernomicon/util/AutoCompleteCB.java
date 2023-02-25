@@ -120,7 +120,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     KeyCode keyCode = event.getCode();
 
-    if (event.isControlDown()     || keyCode == KeyCode.BACK_SPACE ||
+    if (shortcutKeyIsDown(event)  || keyCode == KeyCode.BACK_SPACE ||
         keyCode == KeyCode.RIGHT  || keyCode == KeyCode.LEFT       ||
         keyCode == KeyCode.DELETE || keyCode == KeyCode.HOME       ||
         keyCode == KeyCode.END    || keyCode == KeyCode.TAB        ||

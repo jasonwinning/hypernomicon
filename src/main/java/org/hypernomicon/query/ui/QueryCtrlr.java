@@ -969,9 +969,12 @@ public final class QueryCtrlr
 
     refreshView(false);
 
-    String textToHilite = curQC.getTextToHilite();
-    if (textToHilite.isBlank() == false)
-      ui.findInDescription(textToHilite);
+    if (resultsBackingList.isEmpty() == false)
+    {
+      String textToHilite = curQC.getTextToHilite();
+      if (textToHilite.isBlank() == false)
+        ui.findInDescription(textToHilite);
+    }
 
     return true;
   }

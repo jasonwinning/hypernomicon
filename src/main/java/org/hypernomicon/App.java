@@ -53,6 +53,7 @@ import static java.lang.management.ManagementFactory.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -60,6 +61,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -82,7 +84,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 
 //---------------------------------------------------------------------------
@@ -343,42 +344,24 @@ public final class App extends Application
 
     scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
-    KeyCombination findRecordsKeyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN),
-                   findInDescKeyComb  = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN),
-                   nextResultComb1    = new KeyCodeCombination(KeyCode.F3),
-                   nextResultComb2    = new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN),
-                   previousResultComb1 = new KeyCodeCombination(KeyCode.F3, KeyCombination.SHIFT_DOWN),
-                   previousResultComb2 = new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
+    scene.getAccelerators().putAll(Map.of
+    (
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) ui.saveAllToDisk(true, true, false);   },
+      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { if (db.isLoaded()) ui.hideFindTable();                    },
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) ui.omniFocus(true);                    },
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) ui.omniFocus(false);                   }
+    ));
 
-    scene.addEventHandler(KeyEvent.KEY_PRESSED, event ->
-    {
-      if (db.isLoaded() == false)
-        return;
-
-      if (findRecordsKeyComb.match(event))
-      {
-        ui.omniFocus(true);
-        event.consume();
-      }
-      else if (findInDescKeyComb.match(event))
-      {
-        ui.omniFocus(false);
-        event.consume();
-      }
-      else if (event.getCode() == KeyCode.ESCAPE)
-      {
-        ui.hideFindTable();
-        event.consume();
-      }
-      else if (nextResultComb1.match(event) || nextResultComb2.match(event))
-      {
-        ui.activeTab().nextSearchResult();
-      }
-      else if (previousResultComb1.match(event) || previousResultComb2.match(event))
-      {
-        ui.activeTab().previousSearchResult();
-      }
-    });
+    scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
+    (
+      new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) ui.activeTab().nextSearchResult();     },
+      new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) ui.activeTab().previousSearchResult(); }
+    )
+    : Map.of
+    (
+      new KeyCodeCombination(KeyCode.F3                                                        ), () -> { if (db.isLoaded()) ui.activeTab().nextSearchResult();     },
+      new KeyCodeCombination(KeyCode.F3, KeyCombination.SHIFT_DOWN                             ), () -> { if (db.isLoaded()) ui.activeTab().previousSearchResult(); }
+    ));
 
     scene.addEventFilter(DragEvent.DRAG_OVER, event ->
     {

@@ -427,7 +427,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
   protected final <HDT_T extends HDT_RecordBase> boolean updateObjectsFromList(RelationType relType, List<HDT_T> list)
   {
     HyperObjList<HDT_Record, HDT_Record> objList = getObjList(relType);
@@ -435,7 +434,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     try
     {
-      objList.cycleCheck((List<HDT_Record>) list);
+      objList.cycleCheck(list);
     }
     catch (RelationCycleException e)
     {

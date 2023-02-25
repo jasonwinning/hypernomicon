@@ -171,6 +171,11 @@ public final class UIUtil
     ctrl.setTooltip(safeStr(str).isBlank() ? null : new Tooltip(str));
   }
 
+  public static void setToolTip(Tab ctrl, String str)
+  {
+    ctrl.setTooltip(safeStr(str).isBlank() ? null : new Tooltip(str));
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

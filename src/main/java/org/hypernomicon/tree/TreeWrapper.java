@@ -42,6 +42,7 @@ import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Note;
+import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.model.records.RecordType;
@@ -325,6 +326,29 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void find(boolean forward, boolean nameOnly)
+  {
+    HDT_Record record = tcb.selectedRecord();
+    String text;
+
+    if (record != null)
+    {
+      if (record.getType() == hdtPerson)
+        text = ((HDT_Person)record).getFullName(true);
+      else
+        text = record.name();
+
+      text = removeAllParentheticals(text);
+    }
+    else
+      text = tcb.getText();
+
+    find(text, forward, nameOnly);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void find(String text, boolean forward, boolean nameOnly)
   {
     text = text.toLowerCase();
@@ -395,6 +419,12 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   public void findAgain()
   {
+    if (lastSearchTerm.isBlank())
+    {
+      ui.goToRecord(tcb.selectedRecord(), false);
+      return;
+    }
+
     findAgain(searchingDown);
   }
 
