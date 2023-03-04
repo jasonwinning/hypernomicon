@@ -46,9 +46,10 @@ public class ClickHoldButton
 
 //---------------------------------------------------------------------------
 
-  public void setDisable(boolean disable)                  { btn.setDisable(disable); }
-  public void setOnAction(EventHandler<ActionEvent> hndlr) { this.hndlr = hndlr; }
+  public void setDisable(boolean disable)                  { btn.setDisable(disable);   }
+  public void setOnAction(EventHandler<ActionEvent> hndlr) { this.hndlr = hndlr;        }
   public List<MenuItem> getMenu()                          { return btnMenu.getItems(); }
+  public void showMenu()                                   { btnMenu.show();            }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

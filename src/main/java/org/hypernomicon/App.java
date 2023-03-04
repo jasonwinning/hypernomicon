@@ -46,14 +46,12 @@ import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
 
-import java.io.File;
 import java.io.IOException;
 
 import static java.lang.management.ManagementFactory.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -61,7 +59,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -79,12 +76,6 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.TransferMode;
 
 //---------------------------------------------------------------------------
 
@@ -344,63 +335,9 @@ public final class App extends Application
 
     scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
-    scene.getAccelerators().putAll(Map.of
-    (
-      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) ui.saveAllToDisk(true, true, false);   },
-      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { if (db.isLoaded()) ui.hideFindTable();                    },
-      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) ui.omniFocus(true);                    },
-      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) ui.omniFocus(false);                   }
-    ));
-
-    scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
-    (
-      new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) ui.activeTab().nextSearchResult();     },
-      new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) ui.activeTab().previousSearchResult(); }
-    )
-    : Map.of
-    (
-      new KeyCodeCombination(KeyCode.F3                                                        ), () -> { if (db.isLoaded()) ui.activeTab().nextSearchResult();     },
-      new KeyCodeCombination(KeyCode.F3, KeyCombination.SHIFT_DOWN                             ), () -> { if (db.isLoaded()) ui.activeTab().previousSearchResult(); }
-    ));
-
-    scene.addEventFilter(DragEvent.DRAG_OVER, event ->
-    {
-      if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
-        return;
-
-      if (event.getDragboard().hasFiles())
-        event.acceptTransferModes(TransferMode.MOVE);
-
-      event.consume();
-    });
-
-    scene.addEventFilter(DragEvent.DRAG_DROPPED, event ->
-    {
-      Dragboard board = event.getDragboard();
-
-      if (board.hasContent(HYPERNOMICON_DATA_FORMAT))
-        return;
-
-      if (board.hasImage() && isDebugging)
-        System.out.println("has image");
-
-      if (board.hasFiles())
-      {
-        if (MainCtrlr.workHyperTab().processDragEvent(event))
-        {
-          event.setDropCompleted(true);
-          return;
-        }
-
-        List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
-        Platform.runLater(() -> ui.handleArgs(args));
-        event.setDropCompleted(true);
-      }
-
-      event.consume();
-    });
-
     stage.setScene(scene);
+
+    ui.initInputHandlers();
 
     stage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
                                   .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))

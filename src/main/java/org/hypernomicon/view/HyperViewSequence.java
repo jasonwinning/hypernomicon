@@ -227,11 +227,11 @@ public class HyperViewSequence
 
     ui.setSelectorTab(ui.tabOmniSelector);
 
-    chbBack.setDisable(curNdx < 1);
+    chbBack   .setDisable(curNdx < 1);
     chbForward.setDisable(curNdx >= (slots.size() - 1));
 
-    rebuildNavMenu(chbBack.getMenu(), false);
-    rebuildNavMenu(chbForward.getMenu(), true);
+    rebuildNavMenu(chbBack   .getMenu(), false);
+    rebuildNavMenu(chbForward.getMenu(), true );
 
     ui.update();
 

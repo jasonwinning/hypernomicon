@@ -95,6 +95,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -105,12 +106,16 @@ import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 import com.google.common.collect.EnumHashBiMap;
 
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
+
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Platform;
@@ -119,6 +124,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -137,7 +143,7 @@ public final class MainCtrlr
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
   @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
-                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll;
+                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll, btnPrevResult, btnNextResult;
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpBottom;
@@ -173,6 +179,7 @@ public final class MainCtrlr
   private HyperFavorites favorites;
   private OmniFinder omniFinder;
   private CustomTextField ctfOmniGoTo;
+  private ClickHoldButton chbBack, chbForward;
   private HyperCB hcbGoTo;
   private HyperTable htFind;
   public final ComboBox<TreeRow> cbTreeGoTo = new ComboBox<>();
@@ -336,8 +343,8 @@ public final class MainCtrlr
     addSelectorTab(omniTabEnum);
     addSelectorTab(listTabEnum);
 
-    ClickHoldButton chbBack    = new ClickHoldButton(btnBack   , Side.TOP),
-                    chbForward = new ClickHoldButton(btnForward, Side.TOP);
+    chbBack    = new ClickHoldButton(btnBack   , Side.TOP);
+    chbForward = new ClickHoldButton(btnForward, Side.TOP);
 
     setToolTip(btnBack   , "Click to go back, hold to see history"   );
     setToolTip(btnForward, "Click to go forward, hold to see history");
@@ -401,10 +408,17 @@ public final class MainCtrlr
     mnuFindNextInName    .setOnAction(event -> tree().find(true,  true ));
     mnuFindPreviousInName.setOnAction(event -> tree().find(false, true ));
 
-    btnSaveAll.       setOnAction(event -> saveAllToDisk(true, true, false));
-    btnDelete.        setOnAction(event -> deleteCurrentRecord(true));
-    btnRevert.        setOnAction(event -> update());
-    btnAdvancedSearch.setOnAction(event -> showSearch(false, null, -1, null, null, null, ""));
+    btnSaveAll           .setOnAction(event -> saveAllToDisk(true, true, false));
+    btnDelete            .setOnAction(event -> deleteCurrentRecord(true));
+    btnRevert            .setOnAction(event -> update());
+    btnAdvancedSearch    .setOnAction(event -> showSearch(false, null, -1, null, null, null, ""));
+
+    btnPrevResult        .setOnAction(event -> activeTab().previousSearchResult());
+    btnNextResult        .setOnAction(event -> activeTab().nextSearchResult    ());
+
+    btnGoTo      .visibleProperty().bind(btnTextSearch.selectedProperty().not());
+    btnPrevResult.visibleProperty().bind(btnTextSearch.selectedProperty()      );
+    btnNextResult.visibleProperty().bind(btnTextSearch.selectedProperty()      );
 
     if (appPrefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
       btnPointerLaunch.setSelected(true);
@@ -517,17 +531,6 @@ public final class MainCtrlr
       MenuItem menuItem = new MenuItem(getTypeName(type));
       menuItem.setOnAction(event -> createNew(type));
       createMenuItems.add(menuItem);
-    });
-
-//---------------------------------------------------------------------------
-
-    stage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
-    {
-      if      (event.getButton() == MouseButton.BACK   ) Platform.runLater(this::btnBackClick   );
-      else if (event.getButton() == MouseButton.FORWARD) Platform.runLater(this::btnForwardClick);
-      else                                               return;
-
-      event.consume();
     });
 
 //---------------------------------------------------------------------------
@@ -754,6 +757,102 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void initInputHandlers()
+  {
+    Scene scene = stage.getScene();
+
+    scene.getAccelerators().putAll(Map.of
+    (
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                               ), () -> { if (db.isLoaded()) saveAllToDisk(true, true, false);   },
+      new KeyCodeCombination(KeyCode.ESCAPE                                                        ), () -> { if (db.isLoaded()) hideFindTable();                    },
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN                               ), () -> { if (db.isLoaded()) omniFocus(true);                    },
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN    ), () -> { if (db.isLoaded()) omniFocus(false);                   }
+    ));
+
+    scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
+    (
+      new KeyCodeCombination(KeyCode.G    , KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) activeTab().nextSearchResult();     },
+      new KeyCodeCombination(KeyCode.G    , KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) activeTab().previousSearchResult(); },
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN                           ), () -> { Platform.runLater(this::btnBackClick);                 },
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN                           ), () -> { Platform.runLater(this::btnForwardClick);              }
+    )
+    : Map.of
+    (
+      new KeyCodeCombination(KeyCode.F3                                                            ), () -> { if (db.isLoaded()) activeTab().nextSearchResult();     },
+      new KeyCodeCombination(KeyCode.F3   , KeyCombination.SHIFT_DOWN                              ), () -> { if (db.isLoaded()) activeTab().previousSearchResult(); },
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN                                ), () -> { Platform.runLater(this::btnBackClick);                 },
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN                                ), () -> { Platform.runLater(this::btnForwardClick);              }
+    ));
+
+//---------------------------------------------------------------------------
+
+    // Override CTRL-H for textfields and text areas, which for some reason is mapped to act like Backspace
+
+    stage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    {
+      if ((event.getCode() == KeyCode.H) && shortcutKeyIsDown(event))
+      {
+        if (db.isLoaded()) chbBack.showMenu();
+        event.consume();
+      }
+    });
+
+//---------------------------------------------------------------------------
+
+    stage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
+    {
+      if      (event.getButton() == MouseButton.BACK   ) Platform.runLater(this::btnBackClick   );
+      else if (event.getButton() == MouseButton.FORWARD) Platform.runLater(this::btnForwardClick);
+      else                                               return;
+
+      event.consume();
+    });
+
+//---------------------------------------------------------------------------
+
+    stage.addEventFilter(DragEvent.DRAG_OVER, event ->
+    {
+      if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
+        return;
+
+      if (event.getDragboard().hasFiles())
+        event.acceptTransferModes(TransferMode.MOVE);
+
+      event.consume();
+    });
+
+//---------------------------------------------------------------------------
+
+    stage.addEventFilter(DragEvent.DRAG_DROPPED, event ->
+    {
+      Dragboard board = event.getDragboard();
+
+      if (board.hasContent(HYPERNOMICON_DATA_FORMAT))
+        return;
+
+      if (board.hasImage() && debugging())
+        System.out.println("has image");
+
+      if (board.hasFiles())
+      {
+        if (workHyperTab().processDragEvent(event))
+        {
+          event.setDropCompleted(true);
+          return;
+        }
+
+        List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
+        Platform.runLater(() -> handleArgs(args));
+        event.setDropCompleted(true);
+      }
+
+      event.consume();
+    });
   }
 
 //---------------------------------------------------------------------------

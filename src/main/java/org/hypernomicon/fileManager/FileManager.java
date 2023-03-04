@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
@@ -71,11 +72,15 @@ import org.hypernomicon.view.wrappers.ReadOnlyCell;
 import javafx.application.Platform;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebView;
@@ -293,6 +298,19 @@ public class FileManager extends HyperDlg
 
       event.consume();
     });
+
+    Scene scene = dialogStage.getScene();
+
+    scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
+    (
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN), () -> { Platform.runLater(this::btnBackClick);    },
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN), () -> { Platform.runLater(this::btnForwardClick); }
+    )
+    : Map.of
+    (
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN     ), () -> { Platform.runLater(this::btnBackClick);    },
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN     ), () -> { Platform.runLater(this::btnForwardClick); }
+    ));
 
     recordTable.addDefaultMenuItems();
 
