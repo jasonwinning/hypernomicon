@@ -451,6 +451,8 @@ public final class MainCtrlr
     btnIncrement.setOnAction(event -> incDecClick(true));
     btnDecrement.setOnAction(event -> incDecClick(false));
 
+    setToolTip(btnPrevResult    , "Previous match");
+    setToolTip(btnNextResult    , "Next match");
     setToolTip(btnTextSearch    , "Search within description of record currently showing (" + (SystemUtils.IS_OS_MAC ? "Cmd" : "Ctrl") + "-Shift-F)");
     setToolTip(btnAdvancedSearch, "Start a new search in Queries tab");
     setToolTip(btnPreviewWindow , "Open Preview Window");
@@ -2658,7 +2660,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void switchToRecordSearch()
+  public void switchToRecordSearch()
   {
     dontShowOmniTable = true;
     btnTextSearch.setSelected(false);

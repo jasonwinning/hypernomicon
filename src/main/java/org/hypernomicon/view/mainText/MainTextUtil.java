@@ -152,7 +152,8 @@ public final class MainTextUtil
     headContent = new StringBuilder(scriptContent)
 
       .append("<style type=\"text/css\">\n")
-      .append("  .hypernomiconHilite { background-color: pink; }\n")
+      .append("  .hypernomiconHilite { background-color: yellow; }\n")
+      .append("  .hypernomiconHilite.hypernomiconHiliteCurrent { background-color: orange; }\n")
       .append("  details summary { outline: none; }\n")
       .append("  a:link {color:#0000FF; } a:visited {color:#0000FF; }\n")
       .append("</style></head>")
@@ -333,9 +334,9 @@ public final class MainTextUtil
           }
           else
           {
-            String style = keywordLink.key.record.equals(recordToHilite) ? "background-color: pink;" : "";
+            String klass = keywordLink.key.record.equals(recordToHilite) ? "hypernomiconHilite" : "";
 
-            textNode.before(getKeywordLink(displayText, keywordLink, style));  // 4. Insert anchor
+            textNode.before(getKeywordLink(displayText, keywordLink, "", klass));  // 4. Insert anchor
           }
 
           int offset = displayText.length();
@@ -371,7 +372,17 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static String getKeywordLink(String text, KeywordLink link)
+  {
+    return getKeywordLink(text, link, "", "");
+  }
+
   static String getKeywordLink(String text, KeywordLink link, String style)
+  {
+    return getKeywordLink(text, link, style, "");
+  }
+
+  private static String getKeywordLink(String text, KeywordLink link, String style, String klass)
   {
     HDT_Record record = link.key.record;
 
@@ -390,11 +401,13 @@ public final class MainTextUtil
 
     if (style.length() > 0) style = " style=\"" + style + '"';
 
+    if (klass.length() > 0) klass = " class=\"" + klass + '"';
+
     if (record.getType() == hdtMiscFile)
-      return getGoToRecordAnchor(record, style, text) + "&nbsp;" +
+      return getGoToRecordAnchor(record, style + klass, text) + "&nbsp;" +
         "<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(record) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/view-form.png") + "\"></img></a>";
 
-    return getGoToRecordAnchor(record, style, text);
+    return getGoToRecordAnchor(record, style + klass, text);
   }
 
 //---------------------------------------------------------------------------
@@ -408,10 +421,10 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static String getGoToRecordAnchor(HDT_Record record, String style, String content)
+  static String getGoToRecordAnchor(HDT_Record record, String extraAttribs, String content)
   {
     String parms = getOpenRecordParms(record),
-           anchor = "<a title=\"" + recordTooltip(record) + '"' + style + " hypncon=\"true\" ";
+           anchor = "<a title=\"" + recordTooltip(record) + '"' + extraAttribs + " hypncon=\"true\" ";
 
     switch (record.getType())
     {
@@ -771,7 +784,7 @@ public final class MainTextUtil
     {
       String searchKey = keyWork.getSearchKey(true).replace(" ", "&nbsp;");
 
-      linkMap.put(searchKey, getKeywordLink(searchKey, new KeywordLink(0, searchKey.length(), new SearchKeyword(searchKey, keyWork.getRecord())), ""));
+      linkMap.put(searchKey, getKeywordLink(searchKey, new KeywordLink(0, searchKey.length(), new SearchKeyword(searchKey, keyWork.getRecord()))));
       keyToKeyWork.put(searchKey, keyWork);
       sortedKeys.add(searchKey);
     });

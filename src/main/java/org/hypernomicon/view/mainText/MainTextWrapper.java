@@ -70,10 +70,10 @@ public final class MainTextWrapper
   private static WebView view;
   private static WebEngine we;
   private static MainTextWrapper curWrapper;
-  private static String textToHilite = "",
-                        lastTextToHilite = "";
+  private static String textToHilite = "";
 
-  private static final StringBuilder markJSContents  = new StringBuilder();
+  private static final StringBuilder markJSContents      = new StringBuilder(),
+                                     matchJumpJSContents = new StringBuilder();
 
   private final AnchorPane parentPane;
   private HDT_RecordWithMainText curRecord;
@@ -122,10 +122,7 @@ public final class MainTextWrapper
       if (newState == Worker.State.SUCCEEDED)
       {
         if (textToHilite.length() > 0)
-          lastTextToHilite = textToHilite;
-
-        if (lastTextToHilite.length() > 0)
-          hiliteText(textToHilite, we);
+          hilite(textToHilite, we);
 
         textToHilite = "";
       }
@@ -136,6 +133,7 @@ public final class MainTextWrapper
     try
     {
       readResourceTextFile("resources/mark.es6.min.js", markJSContents, false);
+      readResourceTextFile("resources/match-jump.js", matchJumpJSContents, false);
     }
     catch (IOException e)
     {
@@ -172,9 +170,6 @@ public final class MainTextWrapper
   {
     if (alreadyPrepped == false)
       htmlToUse = prepHtmlForDisplay(htmlToUse);
-
-    if (textToHilite.isEmpty())
-      lastTextToHilite = "";
 
     if (viewInfo.scrollPos > 0)
       htmlToUse = htmlToUse.replace("<body", "<body onload='window.scrollTo(0," + viewInfo.scrollPos + ")'");
@@ -278,26 +273,39 @@ public final class MainTextWrapper
     }
     else
     {
-      textToHilite = string;
-      hiliteText(string, we);
+      hilite(string, we);
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void hiliteText(String string, WebEngine weToUse)
+  public static void hilite(String string, WebEngine weToUse)
+  {
+    hilite(string, weToUse, false);
+  }
+
+  public static void hilite(WebEngine weToUse)
+  {
+    hilite("", weToUse, true);
+  }
+
+  private static void hilite(String string, WebEngine weToUse, boolean matchesAlreadyTagged)
   {
     string = StringEscapeUtils.escapeEcmaScript(string);
 
     if (! (boolean) weToUse.executeScript("'markInstance' in window"))
     {
       weToUse.executeScript(markJSContents.toString());
-      weToUse.executeScript("var markInstance = new Mark(\"body\");");
+      weToUse.executeScript("var markInstance = new Mark(\"body\"), results, lastNdx = -1, currentNdx = 0;");
+
+      weToUse.executeScript(matchJumpJSContents.toString());
     }
 
-    weToUse.executeScript("markInstance.unmark({done: function(){markInstance.mark(\"" + string + "\",{ \"className\":\"hypernomiconHilite\",\"iframes\":true,\"ignoreJoiners\":true,\"separateWordSearch\":false,\"acrossElements\":true});}});");
-    weToUse.executeScript("var els = document.getElementsByClassName('hypernomiconHilite'); if (typeof(els[0]) != 'undefined') els[0].scrollIntoView();");
+    if (matchesAlreadyTagged)
+      weToUse.executeScript("clearCurrent(); lastNdx=-1; results=document.getElementsByClassName('hypernomiconHilite'); currentNdx=0; jumpTo();");
+    else
+      weToUse.executeScript("clearAll(); lastNdx=-1; markInstance.unmark({done: function(){markInstance.mark(\"" + string + "\",{ className:\"hypernomiconHilite\",iframes:true,ignoreJoiners:true,separateWordSearch:false,acrossElements:true,done: function(){results=document.getElementsByClassName('hypernomiconHilite'); currentNdx=0; jumpTo();}});}});");
   }
 
 //---------------------------------------------------------------------------
@@ -305,7 +313,12 @@ public final class MainTextWrapper
 
   public void nextSearchResult()
   {
+    nextSearchResult(we);
+  }
 
+  public static void nextSearchResult(WebEngine weToUse)
+  {
+    weToUse.executeScript("if ('markInstance' in window) nextResult();");
   }
 
 //---------------------------------------------------------------------------
@@ -313,7 +326,12 @@ public final class MainTextWrapper
 
   public void previousSearchResult()
   {
+    previousSearchResult(we);
+  }
 
+  public static void previousSearchResult(WebEngine weToUse)
+  {
+    weToUse.executeScript("if ('markInstance' in window) previousResult();");
   }
 
 //---------------------------------------------------------------------------

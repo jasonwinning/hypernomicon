@@ -436,7 +436,7 @@ public final class QueryCtrlr
     {
       String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
 
-      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), getRecordToHilite());
+      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
     }
 
     setPreview();
@@ -967,14 +967,25 @@ public final class QueryCtrlr
     if (showDesc)
       queriesTabCtrlr.chkShowDesc.setSelected(true);
 
-    refreshView(false);
-
     if (resultsBackingList.isEmpty() == false)
     {
-      String textToHilite = curQC.getTextToHilite();
-      if (textToHilite.isBlank() == false)
-        ui.findInDescription(textToHilite);
+      if (getRecordToHilite() != null)
+      {
+        ui.switchToRecordSearch();
+
+        refreshView(false);
+      }
+      else
+      {
+        refreshView(false);
+
+        String textToHilite = curQC.getTextToHilite();
+        if (textToHilite.isBlank() == false)
+          ui.findInDescription(textToHilite);
+      }
     }
+    else
+      refreshView(false);
 
     return true;
   }
@@ -1042,7 +1053,7 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_Record getRecordToHilite()
+  HDT_Record getRecordToHilite()
   {
     for (HyperTableRow row : htFields.dataRows())
     {

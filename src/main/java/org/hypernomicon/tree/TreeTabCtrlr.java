@@ -225,12 +225,12 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         String text = ui.currentFindInDescriptionText();
         if (text.length() > 0)
         {
-          MainTextWrapper.hiliteText(text, webView.getEngine());
+          MainTextWrapper.hilite(text, webView.getEngine());
           return;
         }
 
         if (textToHilite.length() > 0)
-          MainTextWrapper.hiliteText(textToHilite, webView.getEngine());
+          MainTextWrapper.hilite(textToHilite, webView.getEngine());
 
         lastTextHilited = textToHilite;
         textToHilite = "";
@@ -502,7 +502,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void findWithinDesc(String text)
   {
     if (tree.selectedRecord() != null)
-      MainTextWrapper.hiliteText(text, webView.getEngine());
+      MainTextWrapper.hilite(text, webView.getEngine());
   }
 
 //---------------------------------------------------------------------------
@@ -513,7 +513,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     String text = ui.currentFindInDescriptionText();
     if (text.length() > 0)
     {
-      // Find previous result
+      MainTextWrapper.previousSearchResult(webView.getEngine());
 
       return;
     }
@@ -529,7 +529,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     String text = ui.currentFindInDescriptionText();
     if (text.length() > 0)
     {
-      // Find next result
+      MainTextWrapper.nextSearchResult(webView.getEngine());
 
       return;
     }

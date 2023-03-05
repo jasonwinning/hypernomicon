@@ -131,7 +131,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public HDT_Record viewRecord()          { return activeRecord(); }
   @Override public String recordName()              { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public int recordNdx()                  { return recordCount() > 0 ? curQC.resultsTable.getTV().getSelectionModel().getSelectedIndex() : -1; }
-  @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
+  @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hilite(text, webView.getEngine()); }
+  @Override public void nextSearchResult()          { MainTextWrapper.nextSearchResult(webView.getEngine()); }
+  @Override public void previousSearchResult()      { MainTextWrapper.previousSearchResult(webView.getEngine()); }
 
   @FXML private void mnuCopyToFolderClick()         { copyFilesToFolder(true); }
   @FXML private void mnuShowSearchFolderClick()     { if (db.isLoaded()) launchFile(db.resultsPath()); }
@@ -193,9 +195,16 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (newState == Worker.State.SUCCEEDED)
       {
-        String textToHilite = ui.currentFindInDescriptionText();
-        if (textToHilite.length() > 0)
-          MainTextWrapper.hiliteText(textToHilite, webView.getEngine());
+        if ((curQC.getRecordToHilite() != null) && ui.currentFindInDescriptionText().isBlank())
+        {
+          MainTextWrapper.hilite(webView.getEngine());
+        }
+        else
+        {
+          String textToHilite = ui.currentFindInDescriptionText();
+          if (textToHilite.length() > 0)
+            MainTextWrapper.hilite(textToHilite, webView.getEngine());
+        }
       }
     });
 

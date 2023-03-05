@@ -21,9 +21,9 @@ limitations under the License.
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="400.0" prefHeight="700.0" prefWidth="970.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.HelpDlgCtrlr">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="400.0" prefHeight="732.0" prefWidth="1020.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.HelpDlgCtrlr">
    <children>
-      <WebView fx:id="webView" layoutX="273.0" layoutY="237.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <WebView fx:id="webView" layoutX="273.0" layoutY="237.0" prefHeight="200.0" prefWidth="1043.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
       <HBox alignment="CENTER" layoutX="170.0" layoutY="984.0" maxHeight="30.0" minHeight="30.0" prefHeight="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
             <Button defaultButton="true" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="80.0" text="OK" />
