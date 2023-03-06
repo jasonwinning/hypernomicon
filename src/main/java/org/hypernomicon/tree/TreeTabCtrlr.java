@@ -17,6 +17,7 @@
 
 package org.hypernomicon.tree;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -60,6 +61,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.web.WebView;
@@ -73,55 +75,20 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML private CheckBox chkShowDesc;
   @FXML private WebView webView;
 
-  final private SetMultimap<RecordType, MenuItemSchema<? extends HDT_Record, TreeRow>> recordTypeToSchemas = LinkedHashMultimap.create();
+  private final SetMultimap<RecordType, MenuItemSchema<? extends HDT_Record, TreeRow>> recordTypeToSchemas = LinkedHashMultimap.create();
   private TreeTableView<TreeRow> ttv;
   private boolean useViewInfo = false;
   private boolean loaded = false;
   private String lastTextHilited = "";
   String textToHilite = "";
-  private TreeWrapper tree;
-
-  @Override protected RecordType type()           { return hdtNone; }
-  @Override public void clear()                   { tree.clear(); }
-  @Override public boolean saveToRecord()         { return true; }
-  @Override public void setRecord(HDT_Record rec) { return; }
-  @Override public HDT_Record activeRecord()      { return tree.selectedRecord(); }
-  @Override public HDT_Record viewRecord()        { return activeRecord(); }
-  @Override public String recordName()            { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
-  @Override public TextViewInfo mainTextInfo()    { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
-  @Override public void setDividerPositions()     { return; }
-  @Override public void getDividerPositions()     { return; }
-
-  public TreeWrapper getTree() { return tree; }
+  private final TreeWrapper tree;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  @Override public void update()
+  public TreeTabCtrlr(Tab tab) throws IOException
   {
-    if (db.isLoaded() == false)
-    {
-      tree.clear();
-      return;
-    }
+    super(TabEnum.treeTabEnum, tab, "tree/TreeTab");
 
-    ttv.getColumns().forEach(col ->
-    {
-      if (col.isVisible() == false)
-        return;
-
-      col.setVisible(false);
-      col.setVisible(true);
-    });
-
-    tree.sort();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected void init()
-  {
     tree = new TreeWrapper(bcbPath, true, ui.cbTreeGoTo);
 
     initTTV();
@@ -288,6 +255,45 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     db.addCloseDBHandler(this::initTTV);
     db.addDBLoadedHandler(() -> loaded = true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected RecordType type()           { return hdtNone; }
+  @Override public void clear()                   { tree.clear(); }
+  @Override public boolean saveToRecord()         { return true; }
+  @Override public void setRecord(HDT_Record rec) { return; }
+  @Override public HDT_Record activeRecord()      { return tree.selectedRecord(); }
+  @Override public HDT_Record viewRecord()        { return activeRecord(); }
+  @Override public String recordName()            { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
+  @Override public TextViewInfo mainTextInfo()    { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
+  @Override public void setDividerPositions()     { return; }
+  @Override public void getDividerPositions()     { return; }
+
+  public TreeWrapper getTree() { return tree; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void update()
+  {
+    if (db.isLoaded() == false)
+    {
+      tree.clear();
+      return;
+    }
+
+    ttv.getColumns().forEach(col ->
+    {
+      if (col.isVisible() == false)
+        return;
+
+      col.setVisible(false);
+      col.setVisible(true);
+    });
+
+    tree.sort();
   }
 
 //---------------------------------------------------------------------------

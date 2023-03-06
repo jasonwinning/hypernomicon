@@ -326,19 +326,7 @@ public final class MainCtrlr
     ttDates = new Tooltip(NO_DATES_TOOLTIP);
     ttDates.setStyle("-fx-font-size: 14px;");
 
-    PersonTabCtrlr.addHyperTab(personTabEnum, tabPersons, "view/tabs/PersonTab");
-    InstTabCtrlr  .addHyperTab(instTabEnum  , tabInst   , "view/tabs/InstTab");
-    WorkTabCtrlr  .addHyperTab(workTabEnum  , tabWorks  , "view/tabs/WorkTab");
-    FileTabCtrlr  .addHyperTab(fileTabEnum  , tabFiles  , "view/tabs/FileTab");
-
-    DebateTab  .create(tabDebates);
-    PositionTab.create(tabPositions);
-    ArgumentTab.create(tabArguments);
-    NoteTab    .create(tabNotes);
-    TermTab    .create(tabTerms);
-
-    QueriesTabCtrlr.addHyperTab(queryTabEnum , tabQueries, "query/QueriesTab");
-    TreeTabCtrlr   .addHyperTab(treeTabEnum  , tabTree   , "tree/TreeTab");
+    initHyperTabs();
 
     addSelectorTab(omniTabEnum);
     addSelectorTab(listTabEnum);
@@ -413,8 +401,8 @@ public final class MainCtrlr
     btnRevert            .setOnAction(event -> update());
     btnAdvancedSearch    .setOnAction(event -> showSearch(false, null, -1, null, null, null, ""));
 
-    btnPrevResult        .setOnAction(event -> activeTab().previousSearchResult());
-    btnNextResult        .setOnAction(event -> activeTab().nextSearchResult    ());
+    btnPrevResult        .setOnAction(event -> previousSearchResult());
+    btnNextResult        .setOnAction(event -> nextSearchResult    ());
 
     btnGoTo      .visibleProperty().bind(btnTextSearch.selectedProperty().not());
     btnPrevResult.visibleProperty().bind(btnTextSearch.selectedProperty()      );
@@ -564,7 +552,8 @@ public final class MainCtrlr
         updateSelectorTab(false);
         hideFindTable();
         ctfOmniGoTo.setText(searchText);
-        activeTab().findWithinDesc(searchText);
+        HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
+        if (hyperTab != null) hyperTab.findWithinDesc(searchText);
       }
       else
       {
@@ -778,17 +767,17 @@ public final class MainCtrlr
 
     scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
     (
-      new KeyCodeCombination(KeyCode.G    , KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) activeTab().nextSearchResult();     },
-      new KeyCodeCombination(KeyCode.G    , KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) activeTab().previousSearchResult(); },
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN                           ), () -> { Platform.runLater(this::btnBackClick);                 },
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN                           ), () -> { Platform.runLater(this::btnForwardClick);              }
+      new KeyCodeCombination(KeyCode.G    , KeyCombination.SHORTCUT_DOWN                           ), this::nextSearchResult,
+      new KeyCodeCombination(KeyCode.G    , KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), this::previousSearchResult,
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnBackClick),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnForwardClick)
     )
     : Map.of
     (
-      new KeyCodeCombination(KeyCode.F3                                                            ), () -> { if (db.isLoaded()) activeTab().nextSearchResult();     },
-      new KeyCodeCombination(KeyCode.F3   , KeyCombination.SHIFT_DOWN                              ), () -> { if (db.isLoaded()) activeTab().previousSearchResult(); },
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN                                ), () -> { Platform.runLater(this::btnBackClick);                 },
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN                                ), () -> { Platform.runLater(this::btnForwardClick);              }
+      new KeyCodeCombination(KeyCode.F3                                                            ), this::nextSearchResult,
+      new KeyCodeCombination(KeyCode.F3   , KeyCombination.SHIFT_DOWN                              ), this::previousSearchResult,
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN                                ), () -> Platform.runLater(this::btnBackClick),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN                                ), () -> Platform.runLater(this::btnForwardClick)
     ));
 
 //---------------------------------------------------------------------------
@@ -855,6 +844,49 @@ public final class MainCtrlr
 
       event.consume();
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void previousSearchResult()
+  {
+    if (db.isLoaded() == false) return;
+
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
+
+    if (hyperTab != null) hyperTab.previousSearchResult();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void nextSearchResult()
+  {
+    if (db.isLoaded() == false) return;
+
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
+
+    if (hyperTab != null) hyperTab.nextSearchResult();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unused")
+  private void initHyperTabs() throws IOException
+  {
+    new PersonTabCtrlr (tabPersons  );
+    new InstTabCtrlr   (tabInst     );
+    new WorkTabCtrlr   (tabWorks    );
+    new FileTabCtrlr   (tabFiles    );
+    new DebateTab      (tabDebates  );
+    new PositionTab    (tabPositions);
+    new ArgumentTab    (tabArguments);
+    new NoteTab        (tabNotes    );
+    new TermTab        (tabTerms    );
+    new QueriesTabCtrlr(tabQueries  );
+    new TreeTabCtrlr   (tabTree     );
   }
 
 //---------------------------------------------------------------------------
@@ -2778,7 +2810,8 @@ public final class MainCtrlr
   {
     if (btnTextSearch.isSelected())
     {
-      activeTab().findWithinDesc(tfSelector.getText());
+      HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
+      if (hyperTab != null) hyperTab.findWithinDesc(tfSelector.getText());
       return;
     }
 

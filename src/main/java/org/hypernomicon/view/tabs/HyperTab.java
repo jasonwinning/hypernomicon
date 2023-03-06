@@ -64,13 +64,32 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   private static final EnumMap<TabEnum, HyperTab<? extends HDT_Record, ? extends HDT_Record>> enumToHyperTab = new EnumMap<>(TabEnum.class);
   private static final Map<Tab, HyperTab<? extends HDT_Record, ? extends HDT_Record>> tabToHyperTab = new HashMap<>();
-  private Tab tab;
+
+  private final Tab tab;
+  private final TabEnum tabEnum;
+
   private HyperView<HDT_CT> view = null;
-  private TabEnum tabEnum;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected HyperTab(TabEnum tabEnum, Tab tab, String ctrlrFilename) throws IOException
+  {
+    FXMLLoader loader = new FXMLLoader(App.class.getResource(ctrlrFilename + ".fxml"), null, null, klass -> this);
+    tab.setContent(loader.load());
+
+    this.tab = tab;
+    this.tabEnum = tabEnum;
+
+    enumToHyperTab.put(tabEnum, this);
+    tabToHyperTab.put(tab, this);
+
+    if ((tabEnum != treeTabEnum) && (tabEnum != queryTabEnum))
+      ui.addSelectorTab(tabEnum);
+  }
 
 //---------------------------------------------------------------------------
 
-  protected abstract void init();
   protected abstract RecordType type();
 
   public abstract String recordName();
@@ -80,7 +99,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
   public abstract void setRecord(HDT_CT record);
-  public abstract void findWithinDesc(String text);
 
   public TextViewInfo mainTextInfo()       { return new TextViewInfo(); }
   public MainTextWrapper mainTextWrapper() { return null; }
@@ -98,35 +116,11 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public void nextSearchResult    ()       { nullSwitch(mainTextWrapper(), MainTextWrapper::nextSearchResult    ); }
   public void previousSearchResult()       { nullSwitch(mainTextWrapper(), MainTextWrapper::previousSearchResult); }
 
+  public void findWithinDesc(String text)  { mainTextWrapper().hilite(text); }
+
   public void newClick(RecordType objType, HyperTableRow row) { }
 
   public static void forEachHyperTab(Consumer<HyperTab<? extends HDT_Record, ? extends HDT_Record>> a) { enumToHyperTab.values().forEach(a); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void addHyperTab(TabEnum tabEnum, Tab tab, String ctrlrFilename) throws IOException
-  {
-    FXMLLoader loader = new FXMLLoader(App.class.getResource(ctrlrFilename + ".fxml"));
-    tab.setContent(loader.load());
-    ((HyperTab<?, ?>) loader.getController()).baseInit(tabEnum, tab);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  final void baseInit(TabEnum tabEnum, Tab tab)
-  {
-    this.tab = tab;
-    this.tabEnum = tabEnum;
-    init();
-
-    enumToHyperTab.put(tabEnum, this);
-    tabToHyperTab.put(tab, this);
-
-    if ((tabEnum != treeTabEnum) && (tabEnum != queryTabEnum))
-      ui.addSelectorTab(tabEnum);
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

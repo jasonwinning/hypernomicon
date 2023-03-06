@@ -303,13 +303,13 @@ public class FileManager extends HyperDlg
 
     scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
     (
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN), () -> { Platform.runLater(this::btnBackClick);    },
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN), () -> { Platform.runLater(this::btnForwardClick); }
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::btnBackClick),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::btnForwardClick)
     )
     : Map.of
     (
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN     ), () -> { Platform.runLater(this::btnBackClick);    },
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN     ), () -> { Platform.runLater(this::btnForwardClick); }
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::btnBackClick),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::btnForwardClick)
     ));
 
     recordTable.addDefaultMenuItems();

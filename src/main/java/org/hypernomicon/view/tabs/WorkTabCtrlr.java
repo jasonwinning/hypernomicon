@@ -73,6 +73,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.MainCtrlr.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.workTabEnum;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.File;
@@ -140,17 +141,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
                                          tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
   @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
   @FXML private TextField tfDOI, tfURL, tfSearchKey, tfTitle;
+
   @FXML public TextField tfYear;
 
-  private HyperTable htLabels, htSubworks, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
-  private HyperCB hcbLargerWork;
-  private MainTextWrapper mainText;
+  private final HyperTable htLabels, htSubworks, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
+  private final HyperCB hcbLargerWork;
+  private final MainTextWrapper mainText;
   private final Map<Tab, String> tabCaptions = new HashMap<>();
-  private boolean inNormalMode = true, programmaticTypeChange = false;
-  private double btnURLLeftAnchor, tfURLLeftAnchor, tfURLRightAnchor;
-  private HDT_Work curWork, lastWork = null;
-  private BibDataRetriever bibDataRetriever = null;
-  private MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
+  private final MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
   private final ObjectProperty<CrossrefBibData> crossrefBDprop = new SimpleObjectProperty<>();
   private final ObjectProperty<PDFBibData>      pdfBDprop      = new SimpleObjectProperty<>();
@@ -164,34 +162,24 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   public HyperTable htAuthors;
   public HyperCB hcbType;
 
-  @Override public String recordName()               { return tfTitle.getText(); }
-  @Override protected RecordType type()              { return hdtWork; }
-  @Override public void findWithinDesc(String text)  { mainText.hilite(text); }
-  @Override public TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
-  @Override public void setRecord(HDT_Work work)     { curWork = work; }
-  @Override public MainTextWrapper mainTextWrapper() { return mainText; }
-
-  private List<Author> getAuthorsFromUI()      { return WorkAuthors.getListFromObjectGroups(getAuthorGroups(), curWork); }
-  public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI().stream(), false, true, true); }
-  private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
-  private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }
-  public String getTitle()                     { return tfTitle.getText(); }
-  private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ')'); }
-  private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList())); }
-  private void useDOIClick()                   { tfDOI.setText(getDoiFromBibTab()); }
-  private void useISBNClick()                  { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, isbn, hdtNone)); }
+  private BibDataRetriever bibDataRetriever = null;
+  private HDT_Work curWork, lastWork = null;
+  private double btnURLLeftAnchor, tfURLLeftAnchor, tfURLRightAnchor;
+  private boolean inNormalMode = true, programmaticTypeChange = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init()
+  public WorkTabCtrlr(Tab tab) throws IOException
   {
+    super(workTabEnum, tab, "view/tabs/WorkTab");
+
     mainText = new MainTextWrapper(apDescription);
 
     tabPane.setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
     tpBib  .setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
 
-    tabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
+    tabPane.getTabs().forEach(subTab -> tabCaptions.put(subTab, subTab.getText()));
 
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
@@ -608,6 +596,25 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tabPane.addEventFilter(InputEvent.ANY, event -> tabPane.requestLayout()); // Fix for https://sourceforge.net/p/hypernomicon/tickets/18/
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public String recordName()               { return tfTitle.getText(); }
+  @Override protected RecordType type()              { return hdtWork; }
+  @Override public TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
+  @Override public void setRecord(HDT_Work work)     { curWork = work; }
+  @Override public MainTextWrapper mainTextWrapper() { return mainText; }
+
+  private List<Author> getAuthorsFromUI()      { return WorkAuthors.getListFromObjectGroups(getAuthorGroups(), curWork); }
+  public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI().stream(), false, true, true); }
+  private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
+  private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }
+  public String getTitle()                     { return tfTitle.getText(); }
+  private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ')'); }
+  private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList())); }
+  private void useDOIClick()                   { tfDOI.setText(getDoiFromBibTab()); }
+  private void useISBNClick()                  { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, isbn, hdtNone)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

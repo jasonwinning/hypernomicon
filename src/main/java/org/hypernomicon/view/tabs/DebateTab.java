@@ -45,14 +45,59 @@ import org.hypernomicon.model.records.HDT_Position.PositionSource;
 
 public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 {
-  private HyperTable htParents, htSubdebates, htPositions;
+  private final HyperTable htParents, htSubdebates, htPositions;
+
   private HDT_Debate curDebate;
+
+//---------------------------------------------------------------------------
+
+  public DebateTab(Tab tab) throws IOException
+  {
+    super(debateTabEnum, tab);
+
+    htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_DEBATE_PARENTS);
+
+    htParents.addActionCol(ctGoBtn, 3);
+    htParents.addActionCol(ctBrowseBtn, 3);
+
+    RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
+
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
+
+      RecordType parentType = cellVal.getType();
+      rbtp.setRecordType(row, parentType);
+      rbtp.setChanged(row);
+      row.setCellValue(nextColNdx, "", parentType);
+    });
+
+    htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());
+
+    htParents.addRemoveMenuItem();
+    htParents.addChangeOrderMenuItem(true);
+
+    htParents.setDefaultValue(2, rtp.getChoiceByType(null, hdtDebate));
+
+    htPositions = new HyperTable(tvLeftChildren, 2, true, PREF_KEY_HT_DEBATE_POS);
+
+    htPositions.addActionCol(ctGoNewBtn, 2);
+    htPositions.addLabelCol(hdtPerson);
+    htPositions.addLabelCol(hdtPosition);
+
+    htSubdebates = new HyperTable(tvRightChildren, 1, true, PREF_KEY_HT_DEBATE_SUB);
+
+    htSubdebates.addActionCol(ctGoNewBtn, 1);
+    htSubdebates.addLabelCol(hdtDebate);
+
+    ui.initPositionContextMenu(htPositions);
+  }
+
+//---------------------------------------------------------------------------
 
   @Override protected RecordType type()           { return hdtDebate; }
   @Override public void setRecord(HDT_Debate deb) { curDebate = deb; }
-
-  private DebateTab(Tab tab) throws IOException         { super(tab); }
-  public static void create(Tab tab) throws IOException { new DebateTab(tab).baseInit(debateTabEnum, tab); }
+  @Override protected HDT_Debate getNodeRecord()  { return curDebate; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -61,7 +106,7 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   {
     curDebate.addParentDisplayRecord();
 
-    ctrlr.update(curDebate);
+    super.update();
 
  // Populate parent records
  // -----------------------
@@ -98,54 +143,9 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init()
-  {
-    ctrlr.init(hdtDebate, this);
-
-    htParents = new HyperTable(ctrlr.tvParents, 3, true, PREF_KEY_HT_DEBATE_PARENTS);
-
-    htParents.addActionCol(ctGoBtn, 3);
-    htParents.addActionCol(ctBrowseBtn, 3);
-
-    RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
-
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
-
-      RecordType parentType = cellVal.getType();
-      rbtp.setRecordType(row, parentType);
-      rbtp.setChanged(row);
-      row.setCellValue(nextColNdx, "", parentType);
-    });
-
-    htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());
-
-    htParents.addRemoveMenuItem();
-    htParents.addChangeOrderMenuItem(true);
-
-    htParents.setDefaultValue(2, rtp.getChoiceByType(null, hdtDebate));
-
-    htPositions = new HyperTable(ctrlr.tvLeftChildren, 2, true, PREF_KEY_HT_DEBATE_POS);
-
-    htPositions.addActionCol(ctGoNewBtn, 2);
-    htPositions.addLabelCol(hdtPerson);
-    htPositions.addLabelCol(hdtPosition);
-
-    htSubdebates = new HyperTable(ctrlr.tvRightChildren, 1, true, PREF_KEY_HT_DEBATE_SUB);
-
-    htSubdebates.addActionCol(ctGoNewBtn, 1);
-    htSubdebates.addLabelCol(hdtDebate);
-
-    ui.initPositionContextMenu(htPositions);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void clear()
   {
-    ctrlr.clear();
+    super.clear();
 
     htParents.clear();
     htPositions.clear();
@@ -157,7 +157,8 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
   @Override public boolean saveToRecord()
   {
-    if (ctrlr.saveToRecord(curDebate) == false) return false;
+    if (super.saveToRecord() == false)
+      return false;
 
     if ((curDebate.setLargerPositions(htParents.saveToList(3, hdtPosition)) == false) ||
         (curDebate.setLargerDebates  (htParents.saveToList(3, hdtDebate  )) == false))
@@ -201,9 +202,9 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(ctrlr.spMain, PREF_KEY_DEBATE_TOP_VERT, 0);
-    setDividerPosition(ctrlr.spMain, PREF_KEY_DEBATE_BOTTOM_VERT, 1);
-    setDividerPosition(ctrlr.spChildren, PREF_KEY_DEBATE_BOTTOM_HORIZ, 0);
+    setDividerPosition(spMain, PREF_KEY_DEBATE_TOP_VERT, 0);
+    setDividerPosition(spMain, PREF_KEY_DEBATE_BOTTOM_VERT, 1);
+    setDividerPosition(spChildren, PREF_KEY_DEBATE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -211,9 +212,9 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(ctrlr.spMain, PREF_KEY_DEBATE_TOP_VERT, 0);
-    getDividerPosition(ctrlr.spMain, PREF_KEY_DEBATE_BOTTOM_VERT, 1);
-    getDividerPosition(ctrlr.spChildren, PREF_KEY_DEBATE_BOTTOM_HORIZ, 0);
+    getDividerPosition(spMain, PREF_KEY_DEBATE_TOP_VERT, 0);
+    getDividerPosition(spMain, PREF_KEY_DEBATE_BOTTOM_VERT, 1);
+    getDividerPosition(spChildren, PREF_KEY_DEBATE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

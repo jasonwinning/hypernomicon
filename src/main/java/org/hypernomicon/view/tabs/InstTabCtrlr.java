@@ -37,9 +37,11 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.instTabEnum;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,6 +57,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
@@ -62,16 +65,122 @@ import javafx.scene.control.TextField;
 
 public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 {
-  private HyperTable htSubInst, htPersons;
-  private HyperCB hcbRegion, hcbCountry, hcbType, hcbParentInst;
-  private HDT_Institution curInst;
-
   @FXML private TextField tfCity, tfName, tfURL;
   @FXML private Button btnURL, btnParent, btnNewRegion, btnNewCountry;
   @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbRegion, cbCountry;
   @FXML private TableView<HyperTableRow> tvSubInstitutions, tvPersons;
   @FXML private SplitPane spHoriz;
   @FXML private Hyperlink hlMaps;
+
+  private final HyperTable htSubInst, htPersons;
+  private final HyperCB hcbRegion, hcbCountry, hcbType, hcbParentInst;
+
+  private HDT_Institution curInst;
+
+//---------------------------------------------------------------------------
+
+  public InstTabCtrlr(Tab tab) throws IOException
+  {
+    super(instTabEnum, tab, "view/tabs/InstTab");
+
+    htSubInst = new HyperTable(tvSubInstitutions, 0, true, PREF_KEY_HT_INST_SUB);
+
+    htSubInst.addTextEditCol(hdtInstitution, true, false);
+    htSubInst.addCol(hdtInstitutionType, ctDropDownList);
+
+    htSubInst.addActionColWithButtonHandler(ctUrlBtn, 3, (row, colNdx) ->
+    {
+      String link = row.getText(colNdx);
+
+      if (link.isBlank())
+      {
+        ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText())
+                                               .next (WebButtonField.DivisionName, row.getText(0))
+                                               .go();
+      }
+      else
+        DesktopUtil.openWebLink(row.getText(colNdx));
+    });
+
+    htSubInst.addTextEditCol(hdtInstitution, true, false);
+
+    htSubInst.addContextMenuItem("Go to this record", HDT_Institution.class, inst -> ui.goToRecord(inst, true));
+
+    htSubInst.addContextMenuItem("Delete this institution record", HDT_Institution.class, inst ->
+    {
+      if (ui.cantSaveRecord()) return;
+      if (confirmDialog("Are you sure you want to delete this record?") == false) return;
+      db.deleteRecord(inst);
+      ui.update();
+    });
+
+    htSubInst.addChangeOrderMenuItem(true, () -> curInst.subInstitutions.reorder(htSubInst.saveToList(0, hdtInstitution), true));
+
+    htPersons = new HyperTable(tvPersons, 0, false, PREF_KEY_HT_INST_PEOPLE);
+
+    htPersons.addLabelCol(hdtPerson     );
+    htPersons.addLabelCol(hdtRank       );
+    htPersons.addLabelCol(hdtField      );
+    htPersons.addLabelCol(hdtInstitution);
+    htPersons.addLabelCol(hdtPerson     );
+
+    hcbCountry = new HyperCB(cbCountry, ctDropDownList, new StandardPopulator(hdtCountry), true);
+    hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), true);
+
+    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), true);
+    hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution, parentPopFilter, DisplayKind.name), true);
+
+    hcbCountry.addListener((oldValue, newValue) ->
+    {
+      if (newValue == null) return;
+
+      if (getCellID(oldValue) != getCellID(newValue))
+      {
+        ((SubjectPopulator)hcbRegion.getPopulator()).setObj(null, getRecord(newValue));
+        if (getCellID(oldValue) > 0)
+          hcbRegion.selectID(-1);
+      }
+    });
+
+    btnNewCountry.setOnAction(event ->
+    {
+      HDT_Country country = ui.mnuNewCategoryClick(hdtCountry, false, false);
+      if (country == null) return;
+
+      hcbCountry.populate(true);
+      hcbCountry.selectID(country.getID());
+    });
+
+    btnNewRegion.setOnAction(event ->
+    {
+      HDT_Country country = hcbCountry.selectedRecord();
+
+      if (country == null)
+      {
+        messageDialog("Select a country.", mtWarning);
+        safeFocus(cbCountry);
+        return;
+      }
+
+      NewRegionDlgCtrlr nrdc = NewRegionDlgCtrlr.build(country);
+      if (nrdc.showModal() == false) return;
+
+      hcbRegion.populate(true);
+      hcbRegion.selectID(nrdc.getRegion().getID());
+    });
+
+    btnParent.setOnAction(event -> ui.goToRecord(getRecord(hcbParentInst.selectedHTC()), true));
+
+    btnURL.setOnAction(event ->
+    {
+      if (tfURL.getText().isBlank() == false)
+        DesktopUtil.openWebLink(tfURL.getText());
+      else
+        ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText()).go();
+    });
+  }
+
+//---------------------------------------------------------------------------
 
   @Override public String recordName()                 { return tfName.getText(); }
   @Override protected RecordType type()                { return hdtInstitution; }
@@ -185,108 +294,6 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     return inst.parentInst.isNull() || (inst.subInstitutions.size() > 0);
   };
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected void init()
-  {
-    htSubInst = new HyperTable(tvSubInstitutions, 0, true, PREF_KEY_HT_INST_SUB);
-
-    htSubInst.addTextEditCol(hdtInstitution, true, false);
-    htSubInst.addCol(hdtInstitutionType, ctDropDownList);
-
-    htSubInst.addActionColWithButtonHandler(ctUrlBtn, 3, (row, colNdx) ->
-    {
-      String link = row.getText(colNdx);
-
-      if (link.isBlank())
-      {
-        ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText())
-                                               .next (WebButtonField.DivisionName, row.getText(0))
-                                               .go();
-      }
-      else
-        DesktopUtil.openWebLink(row.getText(colNdx));
-    });
-
-    htSubInst.addTextEditCol(hdtInstitution, true, false);
-
-    htSubInst.addContextMenuItem("Go to this record", HDT_Institution.class, inst -> ui.goToRecord(inst, true));
-
-    htSubInst.addContextMenuItem("Delete this institution record", HDT_Institution.class, inst ->
-    {
-      if (ui.cantSaveRecord()) return;
-      if (confirmDialog("Are you sure you want to delete this record?") == false) return;
-      db.deleteRecord(inst);
-      ui.update();
-    });
-
-    htSubInst.addChangeOrderMenuItem(true, () -> curInst.subInstitutions.reorder(htSubInst.saveToList(0, hdtInstitution), true));
-
-    htPersons = new HyperTable(tvPersons, 0, false, PREF_KEY_HT_INST_PEOPLE);
-
-    htPersons.addLabelCol(hdtPerson     );
-    htPersons.addLabelCol(hdtRank       );
-    htPersons.addLabelCol(hdtField      );
-    htPersons.addLabelCol(hdtInstitution);
-    htPersons.addLabelCol(hdtPerson     );
-
-    hcbCountry = new HyperCB(cbCountry, ctDropDownList, new StandardPopulator(hdtCountry), true);
-    hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), true);
-
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), true);
-    hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution, parentPopFilter, DisplayKind.name), true);
-
-    hcbCountry.addListener((oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-
-      if (getCellID(oldValue) != getCellID(newValue))
-      {
-        ((SubjectPopulator)hcbRegion.getPopulator()).setObj(null, getRecord(newValue));
-        if (getCellID(oldValue) > 0)
-          hcbRegion.selectID(-1);
-      }
-    });
-
-    btnNewCountry.setOnAction(event ->
-    {
-      HDT_Country country = ui.mnuNewCategoryClick(hdtCountry, false, false);
-      if (country == null) return;
-
-      hcbCountry.populate(true);
-      hcbCountry.selectID(country.getID());
-    });
-
-    btnNewRegion.setOnAction(event ->
-    {
-      HDT_Country country = hcbCountry.selectedRecord();
-
-      if (country == null)
-      {
-        messageDialog("Select a country.", mtWarning);
-        safeFocus(cbCountry);
-        return;
-      }
-
-      NewRegionDlgCtrlr nrdc = NewRegionDlgCtrlr.build(country);
-      if (nrdc.showModal() == false) return;
-
-      hcbRegion.populate(true);
-      hcbRegion.selectID(nrdc.getRegion().getID());
-    });
-
-    btnParent.setOnAction(event -> ui.goToRecord(getRecord(hcbParentInst.selectedHTC()), true));
-
-    btnURL.setOnAction(event ->
-    {
-      if (tfURL.getText().isBlank() == false)
-        DesktopUtil.openWebLink(tfURL.getText());
-      else
-        ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText()).go();
-    });
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

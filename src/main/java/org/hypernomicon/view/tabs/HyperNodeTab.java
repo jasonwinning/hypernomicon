@@ -17,24 +17,32 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
-import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.util.WebButton.WebButtonField;
-import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.MainCtrlr;
-import org.hypernomicon.view.controls.WebTooltip;
-import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.wrappers.HyperTableRow;
-
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
+import java.io.IOException;
 import java.util.prefs.Preferences;
+
+import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
+import org.hypernomicon.model.records.HDT_Concept;
+import org.hypernomicon.model.records.HDT_Debate;
+import org.hypernomicon.model.records.HDT_Note;
+import org.hypernomicon.model.records.HDT_Position;
+import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_Term;
+import org.hypernomicon.model.records.HDT_WorkLabel;
+import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.util.WebButton.WebButtonField;
+import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.controls.WebTooltip;
+import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -46,6 +54,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
@@ -54,50 +63,43 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 
-public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWithMainText>
+public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWithMainText> extends HyperTab<HDT_RT, HDT_CT>
 {
+  @FXML private Button btnWebSrch1, btnWebSrch2, btnWebSrch3, btnWebSrch4, btnTree;
+  @FXML private Label lblGoTo1, lblGoTo2, lblGoTo3, lblMergeTerms;
+  @FXML private SplitMenuButton smbWebSrch1;
+  @FXML private TextField tfName, tfSearchKey;
+  @FXML private ToolBar tbLinks, tbButtons;
+
   @FXML AnchorPane apDescription, apLowerPane;
   @FXML GridPane gpToolBar;
   @FXML Label lblParentCaption;
-  @FXML SplitMenuButton smbWebSrch1;
   @FXML SplitPane spChildren, spMain;
   @FXML TableView<HyperTableRow> tvLeftChildren, tvParents, tvRightChildren;
-  @FXML ToolBar tbLinks, tbButtons;
-  @FXML private Button btnWebSrch1, btnWebSrch2, btnWebSrch3, btnWebSrch4, btnTree;
-  @FXML private Label lblGoTo1, lblGoTo2, lblGoTo3, lblMergeTerms;
-  @FXML private TextField tfName, tfSearchKey;
 
-  private Label debateLink, noteLink, labelLink, conceptLink;
-  private RecordType recordType;
-  private MainTextWrapper mainText;
-  private HyperNodeTab<HDT_RT, HDT_CT> hyperTab;
+  private final RecordType nodeRecordType; // This is not always the same as what is returned by type(). If type() == hdtTerm, nodeRecordType will be hdtConcept
+  private final MainTextWrapper mainText;
+  private final Label debateLink, noteLink, labelLink, conceptLink;
 
   private static final String TOOLTIP_PREFIX = "Search record name using ";
 
 //---------------------------------------------------------------------------
 
-  TextField nameCtrl()              { return tfName; }
-  void hilite(String text)          { mainText.hilite(text); }
-  TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
-  MainTextWrapper mainTextWrapper() { return mainText; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void init(RecordType recordType, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
+  HyperNodeTab(TabEnum tabEnum, Tab tab) throws IOException
   {
-    this.recordType = recordType;
-    this.hyperTab = hyperTab;
+    super(tabEnum, tab, "view/tabs/NodeTab");
+
+    nodeRecordType = type() == hdtTerm ? hdtConcept : type();
 
     mainText = new MainTextWrapper(apDescription);
 
-    if (recordType != hdtConcept)
+    if (nodeRecordType != hdtConcept)
     {
       lblGoTo3.setPadding(new Insets(0.0, 0.0, 0.0, 0.0));
       tbLinks.getItems().remove(lblMergeTerms);
     }
 
-    switch (recordType)
+    switch (nodeRecordType)
     {
       case hdtDebate : case hdtPosition :
 
@@ -157,6 +159,17 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  protected abstract HDT_CT getNodeRecord();
+
+  @Override public final MainTextWrapper mainTextWrapper() { return mainText; }
+  @Override public TextViewInfo mainTextInfo()             { return mainText.getViewInfo(); }
+  @Override public String recordName()                     { return tfName.getText(); }
+
+  TextField nameCtrl()                                     { return tfName; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static MenuItem makeMenuItem(HDT_RecordWithMainText record)
   {
     MenuItem miUnlink = new MenuItem();
@@ -179,7 +192,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   {
     MenuItem miMove = new MenuItem();
     miMove.setText("Move this definition to a different term");
-    miMove.setOnAction(event -> ((TermTab) hyperTab).moveConcept());
+    miMove.setOnAction(event -> ((TermTab) this).moveConcept());
 
     return miMove;
   }
@@ -206,14 +219,14 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         note     = record.getHub().getNote();
       }
 
-      if (record.getType() != recordType)
+      if (record.getType() != nodeRecordType)
       {
         messageDialog("Internal Error #28788", mtError);
         return;
       }
     }
 
-    if ((recordType != hdtDebate) && (recordType != hdtPosition))
+    if ((nodeRecordType != hdtDebate) && (nodeRecordType != hdtPosition))
     {
       if ((debate != null) || (position != null))
       {
@@ -244,7 +257,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       }
     }
 
-    if (recordType != hdtConcept)
+    if (nodeRecordType != hdtConcept)
     {
       if (concept != null)
       {
@@ -268,7 +281,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       }
     }
 
-    if (recordType != hdtNote)
+    if (nodeRecordType != hdtNote)
     {
       if (note != null)
       {
@@ -288,7 +301,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       }
     }
 
-    if (recordType != hdtWorkLabel)
+    if (nodeRecordType != hdtWorkLabel)
     {
       if (label != null)
       {
@@ -312,14 +325,14 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       }
     }
 
-    if (recordType == hdtConcept)
+    if (nodeRecordType == hdtConcept)
     {
       setToolTip(lblMergeTerms, "Use right/secondary button to move this definition to a different term");
       lblMergeTerms.setContextMenu(new ContextMenu(makeMoveConceptItem()));
       lblMergeTerms.setOnMouseClicked(mouseEvent ->
       {
         if (mouseEvent.getButton() == MouseButton.PRIMARY)
-          ((TermTab) hyperTab).merge();
+          ((TermTab) this).merge();
       });
     }
 
@@ -421,7 +434,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void clear()
+  @Override public void clear()
   {
     if (btnWebSrch1.isVisible())
     {
@@ -439,16 +452,18 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
     mainText.clear(true);
 
-    if (recordType != hdtArgument)
+    if (nodeRecordType != hdtArgument)
       updateLinkLabels(null);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean saveToRecord(HDT_CT record)
+  @Override public boolean saveToRecord()
   {
-    if (record.getType() == hdtConcept)
+    HDT_CT nodeRecord = getNodeRecord();
+
+    if (nodeRecord.getType() == hdtConcept)
     {
       if (tfSearchKey.getText().isEmpty())
         return falseWithErrorMessage("Unable to modify record: search key of term cannot be zero-length.", tfSearchKey);
@@ -457,9 +472,9 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         return falseWithErrorMessage("Unable to modify record: term cannot be zero-length.", tfName);
     }
 
-    if (HyperTab.saveSearchKey(record, tfSearchKey) == false) return false;
+    if (HyperTab.saveSearchKey(nodeRecord, tfSearchKey) == false) return false;
 
-    record.setName(tfName.getText());
+    nodeRecord.setName(tfName.getText());
 
     mainText.save();
 
@@ -469,17 +484,19 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void update(HDT_CT record)
+  @Override public void update()
   {
-    tfName.setText(record.name());
-    tfSearchKey.setText(record.getSearchKey());
+    HDT_CT nodeRecord = getNodeRecord();
 
-    mainText.loadFromRecord(record, true, hyperTab.getView().getTextInfo());
+    tfName.setText(nodeRecord.name());
+    tfSearchKey.setText(nodeRecord.getSearchKey());
 
-    if (record.isUnitable())
-      updateLinkLabels(record);
+    mainText.loadFromRecord(nodeRecord, true, getView().getTextInfo());
 
-    record.viewNow();
+    if (nodeRecord.isUnitable())
+      updateLinkLabels(nodeRecord);
+
+    nodeRecord.viewNow();
 
     safeFocus(tfName);
   }
@@ -487,7 +504,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void updateWebButtons(Preferences node)
+  @Override void updateWebButtons(Preferences node)
   {
     HyperTab.updateWebButtons(node, PREF_KEY_GEN_SRCH, 4, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
 

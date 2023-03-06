@@ -27,6 +27,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.personTabEnum;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -62,6 +63,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static java.util.Collections.*;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -118,24 +120,200 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   @FXML private TabPane tpPerson;
   @FXML private TableView<HyperTableRow> tvArguments, tvPersonDept, tvWorks;
   @FXML private TextField tfORCID, tfWebsite, tfSearchKey;
+
   @FXML public ComboBox<HyperTableCell> cbField;
   @FXML public TextField tfFirst, tfLast;
 
-  final private List<InvestigationView> invViews = new ArrayList<>();
+  private final List<InvestigationView> invViews = new ArrayList<>();
+  private final HyperTable htPersonInst, htWorks, htArguments;
+  private final HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
+  private final MainTextWrapper mainText;
+
 
   private static final String TOOLTIP_PREFIX = "Search for this person using ";
 
-  private HyperTable htPersonInst, htWorks, htArguments;
-  private MainTextWrapper mainText;
   private FilePath curPicture = null;
   private Rectangle2D viewPort = null;
-  private HDT_Person lastPerson = null;
-
-  private HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
-
-  private HDT_Person curPerson;
+  private HDT_Person curPerson, lastPerson = null;
   private long lastArrowKey = 0L;
   private boolean alreadyChangingName = false, alreadyChangingTab = false;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public PersonTabCtrlr(Tab tab) throws IOException
+  {
+    super(personTabEnum, tab, "view/tabs/PersonTab");
+
+    mainText = new MainTextWrapper(apOverview);
+
+    btnNewWork.setOnAction(event -> ui.importWorkFile(curPerson, null, false));
+    setToolTip(btnNewWork, "Create new work record with this person as author");
+
+    htPersonInst = new HyperTable(tvPersonDept, 3, true, PREF_KEY_HT_PERSON_INST);
+
+    htPersonInst.addActionCol(ctGoNewBtn, 2);
+    htPersonInst.addCheckboxCol();
+
+    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
+      row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row));
+    });
+
+    htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, DisplayKind.name));
+
+    htPersonInst.addRemoveMenuItem();
+    htPersonInst.addChangeOrderMenuItem(true);
+
+    htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
+
+    htWorks.addLabelCol(hdtNone);
+    htWorks.addLabelCol(hdtWorkType);
+    htWorks.addLabelCol(hdtNone);
+    htWorks.addCol(hdtInvestigation, ctInvSelect);
+    htWorks.addLabelCol(hdtWork);
+    htWorks.addLabelCol(hdtPerson);
+
+    tvWorks.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if ((newValue == null) || (oldValue == newValue)) return;
+
+      HDT_RecordWithPath record = newValue.getRecord();
+
+      if (record == null)
+        setDefaultWorkPreview();
+      else if (record.getType() == hdtWork)
+      {
+        HDT_Work work = (HDT_Work)record;
+        previewWindow.setPreview(pvsPersonTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
+      }
+      else
+        previewWindow.setPreview(pvsPersonTab, record.filePath(), record);
+    });
+
+    htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);
+
+    htArguments.addIconCol();
+    htArguments.addLabelCol(hdtNone);
+    htArguments.addLabelCol(hdtPosition);
+    htArguments.addLabelCol(hdtNone);      // record type = hdtNone so that the column will sort purely based on the displayed text
+    htArguments.addLabelCol(hdtArgument);
+
+    hcbRank     = new HyperCB(cbRank    , ctDropDownList, new StandardPopulator(hdtRank                 ), true);
+    hcbStatus   = new HyperCB(cbStatus  , ctDropDownList, new StandardPopulator(hdtPersonStatus         ), true);
+    hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField                ), true);
+    hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), true);
+
+    setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "Google");
+    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
+
+    setToolTip(tfFirst, "To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\"");
+
+    tfFirst.textProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (alreadyChangingName) return;
+      updateSearchKey(new PersonName(newValue, tfLast.getText()), false);
+    });
+
+    tfLast.setTextFormatter(new TextFormatter<>(change ->
+    {
+      if (alreadyChangingName) return change;
+
+      if (change.getText().length() > 1)
+      {
+        if (tfFirst.getText().isEmpty() && change.getControlText().isEmpty())
+        {
+          alreadyChangingName = true;
+          String newText = change.getControlNewText();
+
+          PersonName personName = new PersonName(newText);
+
+          tfFirst.setText(personName.getFirst());
+
+          change.setRange(0, change.getControlText().length());
+          change.setText(personName.getLast());
+
+          alreadyChangingName = false;
+          updateSearchKey(personName, false);
+          return change;
+        }
+      }
+
+      if (change.isContentChange())
+        updateSearchKey(new PersonName(tfFirst.getText(), change.getControlNewText()), false);
+
+      return change;
+    }));
+
+    hcbField.addListener((oldValue, newValue) ->
+    {
+      if (newValue == null) return;
+
+      if (getCellID(oldValue) != getCellID(newValue))
+      {
+        ((SubjectPopulator)hcbSubfield.getPopulator()).setObj(null, getRecord(newValue));
+        if (getCellID(oldValue) > 0)
+          hcbSubfield.selectID(-1);
+      }
+    });
+
+    setToolTip(lblSearchKey, "Regenerate search key");
+
+    lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
+
+    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
+
+    lblWebsite.setOnMouseClicked(event -> openWebLink(tfWebsite.getText()));
+
+    tpPerson.addEventFilter(KeyEvent.ANY, event ->
+    {
+      if (event.getCode().isArrowKey())
+        lastArrowKey = Instant.now().toEpochMilli();
+    });
+
+    tpPerson.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
+    {
+      if (alreadyChangingTab) return;
+
+      if ((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) // Ignore arrow keys
+      {
+        alreadyChangingTab = true;
+        tpPerson.getSelectionModel().select(oldTab);
+        alreadyChangingTab = false;
+
+        return;
+      }
+
+      tpPersonChange(oldTab, newTab);
+    });
+
+    lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
+
+    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
+    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
+    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '2'));
+
+    ivPerson.setOnMouseClicked(event ->
+    {
+      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.build(viewPort);
+
+      if (ctrlr.showModal())
+        viewPort = ctrlr.getViewPort();
+
+      PictureDlgCtrlr.httpClient.stop();
+      refreshPicture();
+    });
+
+    btnPaste.setOnAction(event -> tfWebsite.setText(getClipboardText(true)));
+    setToolTip(btnPaste, "Paste text from clipboard");
+
+    initWorkContextMenu();
+    initArgContextMenu();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public FilePath getCurPicture() { return curPicture; }
 
@@ -651,178 +829,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     curPerson.setName(personName);
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected void init()
-  {
-    mainText = new MainTextWrapper(apOverview);
-
-    btnNewWork.setOnAction(event -> ui.importWorkFile(curPerson, null, false));
-    setToolTip(btnNewWork, "Create new work record with this person as author");
-
-    htPersonInst = new HyperTable(tvPersonDept, 3, true, PREF_KEY_HT_PERSON_INST);
-
-    htPersonInst.addActionCol(ctGoNewBtn, 2);
-    htPersonInst.addCheckboxCol();
-
-    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
-      row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row));
-    });
-
-    htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, DisplayKind.name));
-
-    htPersonInst.addRemoveMenuItem();
-    htPersonInst.addChangeOrderMenuItem(true);
-
-    htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
-
-    htWorks.addLabelCol(hdtNone);
-    htWorks.addLabelCol(hdtWorkType);
-    htWorks.addLabelCol(hdtNone);
-    htWorks.addCol(hdtInvestigation, ctInvSelect);
-    htWorks.addLabelCol(hdtWork);
-    htWorks.addLabelCol(hdtPerson);
-
-    tvWorks.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if ((newValue == null) || (oldValue == newValue)) return;
-
-      HDT_RecordWithPath record = newValue.getRecord();
-
-      if (record == null)
-        setDefaultWorkPreview();
-      else if (record.getType() == hdtWork)
-      {
-        HDT_Work work = (HDT_Work)record;
-        previewWindow.setPreview(pvsPersonTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
-      }
-      else
-        previewWindow.setPreview(pvsPersonTab, record.filePath(), record);
-    });
-
-    htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);
-
-    htArguments.addIconCol();
-    htArguments.addLabelCol(hdtNone);
-    htArguments.addLabelCol(hdtPosition);
-    htArguments.addLabelCol(hdtNone);      // record type = hdtNone so that the column will sort purely based on the displayed text
-    htArguments.addLabelCol(hdtArgument);
-
-    hcbRank     = new HyperCB(cbRank    , ctDropDownList, new StandardPopulator(hdtRank                 ), true);
-    hcbStatus   = new HyperCB(cbStatus  , ctDropDownList, new StandardPopulator(hdtPersonStatus         ), true);
-    hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField                ), true);
-    hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), true);
-
-    setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "Google");
-    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
-
-    setToolTip(tfFirst, "To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\"");
-
-    tfFirst.textProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (alreadyChangingName) return;
-      updateSearchKey(new PersonName(newValue, tfLast.getText()), false);
-    });
-
-    tfLast.setTextFormatter(new TextFormatter<>(change ->
-    {
-      if (alreadyChangingName) return change;
-
-      if (change.getText().length() > 1)
-      {
-        if (tfFirst.getText().isEmpty() && change.getControlText().isEmpty())
-        {
-          alreadyChangingName = true;
-          String newText = change.getControlNewText();
-
-          PersonName personName = new PersonName(newText);
-
-          tfFirst.setText(personName.getFirst());
-
-          change.setRange(0, change.getControlText().length());
-          change.setText(personName.getLast());
-
-          alreadyChangingName = false;
-          updateSearchKey(personName, false);
-          return change;
-        }
-      }
-
-      if (change.isContentChange())
-        updateSearchKey(new PersonName(tfFirst.getText(), change.getControlNewText()), false);
-
-      return change;
-    }));
-
-    hcbField.addListener((oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-
-      if (getCellID(oldValue) != getCellID(newValue))
-      {
-        ((SubjectPopulator)hcbSubfield.getPopulator()).setObj(null, getRecord(newValue));
-        if (getCellID(oldValue) > 0)
-          hcbSubfield.selectID(-1);
-      }
-    });
-
-    setToolTip(lblSearchKey, "Regenerate search key");
-
-    lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
-
-    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
-
-    lblWebsite.setOnMouseClicked(event -> openWebLink(tfWebsite.getText()));
-
-    tpPerson.addEventFilter(KeyEvent.ANY, event ->
-    {
-      if (event.getCode().isArrowKey())
-        lastArrowKey = Instant.now().toEpochMilli();
-    });
-
-    tpPerson.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
-    {
-      if (alreadyChangingTab) return;
-
-      if ((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) // Ignore arrow keys
-      {
-        alreadyChangingTab = true;
-        tpPerson.getSelectionModel().select(oldTab);
-        alreadyChangingTab = false;
-
-        return;
-      }
-
-      tpPersonChange(oldTab, newTab);
-    });
-
-    lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
-
-    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
-    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
-    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '2'));
-
-    ivPerson.setOnMouseClicked(event ->
-    {
-      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.build(viewPort);
-
-      if (ctrlr.showModal())
-        viewPort = ctrlr.getViewPort();
-
-      PictureDlgCtrlr.httpClient.stop();
-      refreshPicture();
-    });
-
-    btnPaste.setOnAction(event -> tfWebsite.setText(getClipboardText(true)));
-    setToolTip(btnPaste, "Paste text from clipboard");
-
-    initWorkContextMenu();
-    initArgContextMenu();
   }
 
 //---------------------------------------------------------------------------

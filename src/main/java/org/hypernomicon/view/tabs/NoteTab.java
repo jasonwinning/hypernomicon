@@ -66,26 +66,118 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 {
-  final private SplitMenuButton btnFolder = new SplitMenuButton();
-  final private Button btnBrowse = new Button("..."), btnCreateFolder = new Button("Create Folder");
-  final private TextField tfFolder = new TextField();
-  private BorderPane bp;
-  private HyperTable htParents, htSubnotes, htMentioners;
+  private final SplitMenuButton btnFolder = new SplitMenuButton();
+  private final Button btnBrowse = new Button("..."), btnCreateFolder = new Button("Create Folder");
+  private final TextField tfFolder = new TextField();
+  private final BorderPane bp;
+  private final HyperTable htParents, htSubnotes, htMentioners;
+
   private FilePath folderPath;
   private HDT_Note curNote;
 
+//---------------------------------------------------------------------------
+
+  public NoteTab(Tab tab) throws IOException
+  {
+    super(noteTabEnum, tab);
+
+    tvParents.getColumns().remove(2);
+
+    tvLeftChildren .setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+    tvRightChildren.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+
+    tvLeftChildren.getColumns().get(1).setText("Sub-Notes Under This Note");
+    tvLeftChildren.getColumns().get(2).setText("Text");
+    tvLeftChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Folder"));
+
+    tvRightChildren.getColumns().get(0).setText("Type");
+    tvRightChildren.getColumns().get(1).setText("Name of Record Linking to This Note");
+    tvRightChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Description"));
+
+    spMain.setDividerPosition(1, 0.8);
+
+    btnFolder.setText("Folder:");
+    addFolderMenuItem("Show in system explorer", event -> launchFile(folderPath));
+    addFolderMenuItem("Show in file manager"   , event -> ui.goToFileInManager(folderPath));
+    addFolderMenuItem("Copy path to clipboard" , event -> copyToClipboard(folderPath.toString()));
+    addFolderMenuItem("Unassign folder"        , event ->
+    {
+      if (ui.cantSaveRecord()) return;
+      curNote.folder.set(null);
+      ui.update();
+    });
+
+    setToolTip(btnFolder, "Show folder in system explorer");
+    setToolTip(btnCreateFolder, "Create a new folder and assign it to this note");
+
+    BorderPane.setMargin(btnBrowse, new Insets(0, 2, 0, 0));
+    BorderPane.setMargin(tfFolder , new Insets(0, 4, 0, 4));
+
+    bp = new BorderPane();
+    bp.setLeft(btnFolder);
+    bp.setCenter(tfFolder);
+    bp.setRight(btnBrowse);
+
+    tfFolder.setEditable(false);
+
+    GridPane.setColumnIndex(bp, 1);
+    gpToolBar.getColumnConstraints().get(0).setMinWidth(510.0);
+    gpToolBar.getColumnConstraints().get(0).setMaxWidth(510.0);
+    gpToolBar.getColumnConstraints().get(0).setHgrow(javafx.scene.layout.Priority.NEVER);
+
+    gpToolBar.getColumnConstraints().get(1).setMinWidth(Control.USE_COMPUTED_SIZE);
+    gpToolBar.getColumnConstraints().get(1).setMaxWidth(Control.USE_COMPUTED_SIZE);
+    gpToolBar.getColumnConstraints().get(1).setPrefWidth(Control.USE_COMPUTED_SIZE);
+    gpToolBar.getColumnConstraints().get(1).setHgrow(javafx.scene.layout.Priority.ALWAYS);
+    gpToolBar.getChildren().set(1, bp);
+
+    htParents = new HyperTable(tvParents, 2, true, PREF_KEY_HT_NOTE_PARENTS);
+
+    htParents.addActionCol(ctGoBtn, 2);
+    htParents.addActionCol(ctBrowseBtn, 2);
+    htParents.addCol(hdtNote, ctDropDownList);
+
+    htParents.addRemoveMenuItem();
+    htParents.addChangeOrderMenuItem(true);
+
+    htSubnotes = new HyperTable(tvLeftChildren, 2, true, PREF_KEY_HT_NOTE_SUB);
+
+    htSubnotes.addActionCol(ctGoNewBtn, 2);
+    htSubnotes.addLabelCol(hdtNote);
+    htSubnotes.addLabelCol(hdtNote);
+    htSubnotes.addLabelCol(hdtNote);
+
+    htMentioners = new HyperTable(tvRightChildren, 1, false, PREF_KEY_HT_NOTE_MENTIONERS);
+
+    htMentioners.addIconCol();
+    htMentioners.addLabelCol(hdtNone);
+    htMentioners.addLabelCol(hdtNone);
+
+    db.addMentionsNdxCompleteHandler(this::updateMentioners);
+
+    btnFolder      .setOnAction(event -> launchFile(folderPath));
+    btnCreateFolder.setOnAction(event -> createFolder());
+    btnBrowse      .setOnAction(event -> browseClick());
+
+    htMentioners.addDefaultMenuItems();
+    htSubnotes.addDefaultMenuItems();
+
+    htSubnotes.addContextMenuItem("Go to subnote", HDT_Note.class,
+      note -> ui.goToRecord(note, true));
+  }
+
+//---------------------------------------------------------------------------
+
   @Override protected RecordType type()          { return hdtNote; }
   @Override public void setRecord(HDT_Note note) { curNote = note; }
-
-  private NoteTab(Tab tab) throws IOException           { super(tab); }
-  public static void create(Tab tab) throws IOException { new NoteTab(tab).baseInit(noteTabEnum, tab); }
+  @Override protected HDT_Note getNodeRecord()   { return curNote; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void update()
   {
-    ctrlr.update(curNote);
+    super.update();
 
     tfFolder.setText(curNote.getFolderStr());
 
@@ -178,97 +270,6 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init()
-  {
-    ctrlr.init(hdtNote, this);
-    ctrlr.tvParents.getColumns().remove(2);
-
-    ctrlr.tvLeftChildren .setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-    ctrlr.tvRightChildren.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-
-    ctrlr.tvLeftChildren.getColumns().get(1).setText("Sub-Notes Under This Note");
-    ctrlr.tvLeftChildren.getColumns().get(2).setText("Text");
-    ctrlr.tvLeftChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Folder"));
-
-    ctrlr.tvRightChildren.getColumns().get(0).setText("Type");
-    ctrlr.tvRightChildren.getColumns().get(1).setText("Name of Record Linking to This Note");
-    ctrlr.tvRightChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Description"));
-
-    ctrlr.spMain.setDividerPosition(1, 0.8);
-
-    btnFolder.setText("Folder:");
-    addFolderMenuItem("Show in system explorer", event -> launchFile(folderPath));
-    addFolderMenuItem("Show in file manager"   , event -> ui.goToFileInManager(folderPath));
-    addFolderMenuItem("Copy path to clipboard" , event -> copyToClipboard(folderPath.toString()));
-    addFolderMenuItem("Unassign folder"        , event ->
-    {
-      if (ui.cantSaveRecord()) return;
-      curNote.folder.set(null);
-      ui.update();
-    });
-
-    setToolTip(btnFolder, "Show folder in system explorer");
-    setToolTip(btnCreateFolder, "Create a new folder and assign it to this note");
-
-    BorderPane.setMargin(btnBrowse, new Insets(0, 2, 0, 0));
-    BorderPane.setMargin(tfFolder , new Insets(0, 4, 0, 4));
-
-    bp = new BorderPane();
-    bp.setLeft(btnFolder);
-    bp.setCenter(tfFolder);
-    bp.setRight(btnBrowse);
-
-    tfFolder.setEditable(false);
-
-    GridPane.setColumnIndex(bp, 1);
-    ctrlr.gpToolBar.getColumnConstraints().get(0).setMinWidth(510.0);
-    ctrlr.gpToolBar.getColumnConstraints().get(0).setMaxWidth(510.0);
-    ctrlr.gpToolBar.getColumnConstraints().get(0).setHgrow(javafx.scene.layout.Priority.NEVER);
-
-    ctrlr.gpToolBar.getColumnConstraints().get(1).setMinWidth(Control.USE_COMPUTED_SIZE);
-    ctrlr.gpToolBar.getColumnConstraints().get(1).setMaxWidth(Control.USE_COMPUTED_SIZE);
-    ctrlr.gpToolBar.getColumnConstraints().get(1).setPrefWidth(Control.USE_COMPUTED_SIZE);
-    ctrlr.gpToolBar.getColumnConstraints().get(1).setHgrow(javafx.scene.layout.Priority.ALWAYS);
-    ctrlr.gpToolBar.getChildren().set(1, bp);
-
-    htParents = new HyperTable(ctrlr.tvParents, 2, true, PREF_KEY_HT_NOTE_PARENTS);
-
-    htParents.addActionCol(ctGoBtn, 2);
-    htParents.addActionCol(ctBrowseBtn, 2);
-    htParents.addCol(hdtNote, ctDropDownList);
-
-    htParents.addRemoveMenuItem();
-    htParents.addChangeOrderMenuItem(true);
-
-    htSubnotes = new HyperTable(ctrlr.tvLeftChildren, 2, true, PREF_KEY_HT_NOTE_SUB);
-
-    htSubnotes.addActionCol(ctGoNewBtn, 2);
-    htSubnotes.addLabelCol(hdtNote);
-    htSubnotes.addLabelCol(hdtNote);
-    htSubnotes.addLabelCol(hdtNote);
-
-    htMentioners = new HyperTable(ctrlr.tvRightChildren, 1, false, PREF_KEY_HT_NOTE_MENTIONERS);
-
-    htMentioners.addIconCol();
-    htMentioners.addLabelCol(hdtNone);
-    htMentioners.addLabelCol(hdtNone);
-
-    db.addMentionsNdxCompleteHandler(this::updateMentioners);
-
-    btnFolder      .setOnAction(event -> launchFile(folderPath));
-    btnCreateFolder.setOnAction(event -> createFolder());
-    btnBrowse      .setOnAction(event -> browseClick());
-
-    htMentioners.addDefaultMenuItems();
-    htSubnotes.addDefaultMenuItems();
-
-    htSubnotes.addContextMenuItem("Go to subnote", HDT_Note.class,
-      note -> ui.goToRecord(note, true));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void createFolder()
   {
     HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
@@ -339,8 +340,8 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     ui.update();
 
-    if (noOtherNotes && (folder != db.getTopicalFolder()) && ctrlr.nameCtrl().getText().isBlank())
-      ctrlr.nameCtrl().setText(folder.getPath().getNameStr());
+    if (noOtherNotes && (folder != db.getTopicalFolder()) && nameCtrl().getText().isBlank())
+      nameCtrl().setText(folder.getPath().getNameStr());
   }
 
 //---------------------------------------------------------------------------
@@ -353,7 +354,7 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     setHeights(btnCreateFolder, 25.0 * displayScale);
     setHeights(btnBrowse      , 25.0 * displayScale);
 
-    ctrlr       .clear();
+    super       .clear();
     htParents   .clear();
     htSubnotes  .clear();
     htMentioners.clear();
@@ -368,7 +369,7 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public boolean saveToRecord()
   {
-    if (ctrlr.saveToRecord(curNote) == false)
+    if (super.saveToRecord() == false)
       return false;
 
     if (curNote.setParentNotes(htParents.saveToList(2, hdtNote)) == false)
@@ -405,9 +406,9 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT        , 0);
-    setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_BOTTOM_VERT     , 1);
-    setDividerPosition(ctrlr.spChildren, PREF_KEY_NOTE_BOTTOM_HORIZ, 0);
+    setDividerPosition(spMain, PREF_KEY_NOTE_TOP_VERT        , 0);
+    setDividerPosition(spMain, PREF_KEY_NOTE_BOTTOM_VERT     , 1);
+    setDividerPosition(spChildren, PREF_KEY_NOTE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -415,9 +416,9 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT        , 0);
-    getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_BOTTOM_VERT     , 1);
-    getDividerPosition(ctrlr.spChildren, PREF_KEY_NOTE_BOTTOM_HORIZ, 0);
+    getDividerPosition(spMain, PREF_KEY_NOTE_TOP_VERT        , 0);
+    getDividerPosition(spMain, PREF_KEY_NOTE_BOTTOM_VERT     , 1);
+    getDividerPosition(spChildren, PREF_KEY_NOTE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

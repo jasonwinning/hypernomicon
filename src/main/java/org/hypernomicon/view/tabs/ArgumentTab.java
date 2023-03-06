@@ -52,16 +52,124 @@ import javafx.scene.layout.AnchorPane;
 
 public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 {
-  private ArgumentLowerPaneCtrlr lowerCtrlr;
-  private HyperTable htParents, htWhereMade, htCounters;
-  private RecordByTypePopulator verdictPopulator;
+  private final ArgumentLowerPaneCtrlr lowerCtrlr;
+  private final HyperTable htParents, htWhereMade, htCounters;
+
   private HDT_Argument curArgument;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public ArgumentTab(Tab tab) throws IOException
+  {
+    super(argumentTabEnum, tab);
+
+    AnchorPane aP = new AnchorPane();
+
+    lblParentCaption.setText("Responds to:");
+
+    gpToolBar.getChildren().set(0, aP);
+
+    TableColumn<HyperTableRow, HyperTableCell> verdictCol = new TableColumn<>("Argues that");
+    verdictCol.setPrefWidth(250.0);
+    tvParents.getColumns().add(verdictCol);
+
+    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/ArgumentLowerPane.fxml"));
+
+    try { spMain.getItems().set(2, loader.load()); } catch (IOException e) { noOp(); }
+
+    lowerCtrlr = loader.getController();
+
+    htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_ARG_PARENTS);
+
+    htParents.addActionCol(ctGoBtn, 3);
+    htParents.addActionCol(ctBrowseBtn, 3);
+
+    RecordByTypePopulator verdictPopulator = new RecordByTypePopulator();
+
+    RecordTypePopulator rtp = new RecordTypePopulator(hdtPosition, hdtArgument);
+
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
+
+      RecordType parentType = cellVal.getType();
+      rbtp.setRecordType(row, parentType);
+      rbtp.setChanged(row);
+      row.setCellValue(nextColNdx, "", parentType);
+
+      if (parentType == hdtPosition)
+        verdictPopulator.setRecordType(row, hdtPositionVerdict);
+      else if (parentType == hdtArgument)
+        verdictPopulator.setRecordType(row, hdtArgumentVerdict);
+      else
+        verdictPopulator.setRecordType(row, hdtNone);
+
+      verdictPopulator.populate(row, true);
+      row.setCellValue(nextColNdx + 1, "", verdictPopulator.getRecordType(row));
+    });
+
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new RecordByTypePopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      if (HyperTableCell.getCellID(cellVal) < 1)
+        row.setCellValue(nextColNdx, "", verdictPopulator.getRecordType(row));
+    });
+
+    htParents.addColAltPopulator(hdtNone, ctDropDownList, verdictPopulator);
+
+    htParents.addRemoveMenuItem();
+    htParents.addChangeOrderMenuItem(true);
+
+    htWhereMade = new HyperTable(lowerCtrlr.tvWhereMade, 2, true, PREF_KEY_HT_ARG_SRC);
+
+    htWhereMade.addActionCol(ctGoNewBtn, 2);
+    HyperTableColumn col = htWhereMade.addColWithUpdateHandler(hdtPerson, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      HDT_Record obj = HyperTableCell.getRecord(cellVal);
+      HybridSubjectPopulator hsPop = (HybridSubjectPopulator)nextPopulator;
+
+      if (hsPop.getObj(row) == obj) return;
+
+      hsPop.setObj(row, obj);
+      row.setCellValue(nextColNdx, "", hsPop.getRecordType(row));
+    });
+
+    col.textHndlr = row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), work -> work.getLongAuthorsStr(true));
+
+    htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      if (HyperTableCell.getCellID(cellVal) > 0)
+      {
+        HDT_Work work = db.works.getByID(HyperTableCell.getCellID(cellVal));
+        row.setCellValue(nextColNdx, work, work.getYear(), CellSortMethod.smNumeric);
+      }
+      else
+        row.setCellValue(nextColNdx, "", hdtWork, CellSortMethod.smNumeric);
+    });
+
+    htWhereMade.addLabelCol(hdtWork);
+
+    htWhereMade.addRemoveMenuItem();
+    htWhereMade.addChangeOrderMenuItem(true);
+
+    htCounters = new HyperTable(lowerCtrlr.tvCounters, 3, true, PREF_KEY_HT_ARG_COUNTERS);
+
+    htCounters.addActionCol(ctGoNewBtn, 3);
+    htCounters.addLabelCol(hdtPerson);
+    htCounters.addLabelCol(hdtArgumentVerdict);
+    htCounters.addLabelCol(hdtArgument);
+
+    htWhereMade.getTV().focusedProperty().addListener((ob, oldValue, newValue) -> updateArgCounts());
+
+    initContextMenus();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected RecordType type()             { return hdtArgument; }
   @Override public void setRecord(HDT_Argument arg) { curArgument = arg; }
-
-  private ArgumentTab(Tab tab) throws IOException       { super(tab); }
-  public static void create(Tab tab) throws IOException { new ArgumentTab(tab).baseInit(argumentTabEnum, tab); }
+  @Override protected HDT_Argument getNodeRecord()  { return curArgument; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -70,7 +178,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   {
     curArgument.addParentDisplayRecord();
 
-    ctrlr.update(curArgument);
+    super.update();
 
     // Select parent records in ComboBoxes
     // -----------------------------------
@@ -158,113 +266,6 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init()
-  {
-    ctrlr.init(hdtArgument, this);
-
-    AnchorPane aP = new AnchorPane();
-
-    ctrlr.lblParentCaption.setText("Responds to:");
-
-    ctrlr.gpToolBar.getChildren().set(0, aP);
-
-    TableColumn<HyperTableRow, HyperTableCell> verdictCol = new TableColumn<>("Argues that");
-    verdictCol.setPrefWidth(250.0);
-    ctrlr.tvParents.getColumns().add(verdictCol);
-
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/ArgumentLowerPane.fxml"));
-
-    try { ctrlr.spMain.getItems().set(2, loader.load()); } catch (IOException e) { noOp(); }
-
-    lowerCtrlr = loader.getController();
-
-    htParents = new HyperTable(ctrlr.tvParents, 3, true, PREF_KEY_HT_ARG_PARENTS);
-
-    htParents.addActionCol(ctGoBtn, 3);
-    htParents.addActionCol(ctBrowseBtn, 3);
-
-    verdictPopulator = new RecordByTypePopulator();
-
-    RecordTypePopulator rtp = new RecordTypePopulator(hdtPosition, hdtArgument);
-
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
-
-      RecordType parentType = cellVal.getType();
-      rbtp.setRecordType(row, parentType);
-      rbtp.setChanged(row);
-      row.setCellValue(nextColNdx, "", parentType);
-
-      if (parentType == hdtPosition)
-        verdictPopulator.setRecordType(row, hdtPositionVerdict);
-      else if (parentType == hdtArgument)
-        verdictPopulator.setRecordType(row, hdtArgumentVerdict);
-      else
-        verdictPopulator.setRecordType(row, hdtNone);
-
-      verdictPopulator.populate(row, true);
-      row.setCellValue(nextColNdx + 1, "", verdictPopulator.getRecordType(row));
-    });
-
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new RecordByTypePopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      if (HyperTableCell.getCellID(cellVal) < 1)
-        row.setCellValue(nextColNdx, "", verdictPopulator.getRecordType(row));
-    });
-
-    htParents.addColAltPopulator(hdtNone, ctDropDownList, verdictPopulator);
-
-    htParents.addRemoveMenuItem();
-    htParents.addChangeOrderMenuItem(true);
-
-    htWhereMade = new HyperTable(lowerCtrlr.tvWhereMade, 2, true, PREF_KEY_HT_ARG_SRC);
-
-    htWhereMade.addActionCol(ctGoNewBtn, 2);
-    HyperTableColumn col = htWhereMade.addColWithUpdateHandler(hdtPerson, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      HDT_Record obj = HyperTableCell.getRecord(cellVal);
-      HybridSubjectPopulator hsPop = (HybridSubjectPopulator)nextPopulator;
-
-      if (hsPop.getObj(row) == obj) return;
-
-      hsPop.setObj(row, obj);
-      row.setCellValue(nextColNdx, "", hsPop.getRecordType(row));
-    });
-
-    col.textHndlr = row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), work -> work.getLongAuthorsStr(true));
-
-    htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      if (HyperTableCell.getCellID(cellVal) > 0)
-      {
-        HDT_Work work = db.works.getByID(HyperTableCell.getCellID(cellVal));
-        row.setCellValue(nextColNdx, work, work.getYear(), CellSortMethod.smNumeric);
-      }
-      else
-        row.setCellValue(nextColNdx, "", hdtWork, CellSortMethod.smNumeric);
-    });
-
-    htWhereMade.addLabelCol(hdtWork);
-
-    htWhereMade.addRemoveMenuItem();
-    htWhereMade.addChangeOrderMenuItem(true);
-
-    htCounters = new HyperTable(lowerCtrlr.tvCounters, 3, true, PREF_KEY_HT_ARG_COUNTERS);
-
-    htCounters.addActionCol(ctGoNewBtn, 3);
-    htCounters.addLabelCol(hdtPerson);
-    htCounters.addLabelCol(hdtArgumentVerdict);
-    htCounters.addLabelCol(hdtArgument);
-
-    htWhereMade.getTV().focusedProperty().addListener((ob, oldValue, newValue) -> updateArgCounts());
-
-    initContextMenus();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void initContextMenus()
   {
     htWhereMade.addDefaultMenuItems();
@@ -295,7 +296,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   @Override public void clear()
   {
-    ctrlr.clear();
+    super.clear();
 
     htParents.clear();
     htWhereMade.clear();
@@ -307,7 +308,8 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   @Override public boolean saveToRecord()
   {
-    if (ctrlr.saveToRecord(curArgument) == false) return false;
+    if (super.saveToRecord() == false)
+      return false;
 
     boolean okToSave = true;
 
@@ -325,10 +327,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     saveObjectGroups(tagPositionVerdict, rtPositionOfArgument);
     saveObjectGroups(tagArgumentVerdict, rtCounterOfArgument);
 
-    if (curArgument.setWorks(htWhereMade.saveToList(2, hdtWork)) == false)
-      return false;
-
-    return true;
+    return curArgument.setWorks(htWhereMade.saveToList(2, hdtWork));
   }
 
 //---------------------------------------------------------------------------
@@ -389,8 +388,8 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(ctrlr.spMain, PREF_KEY_ARG_TOP_VERT, 0);
-    setDividerPosition(ctrlr.spMain, PREF_KEY_ARG_BOTTOM_VERT, 1);
+    setDividerPosition(spMain, PREF_KEY_ARG_TOP_VERT, 0);
+    setDividerPosition(spMain, PREF_KEY_ARG_BOTTOM_VERT, 1);
   }
 
 //---------------------------------------------------------------------------
@@ -398,8 +397,8 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(ctrlr.spMain, PREF_KEY_ARG_TOP_VERT, 0);
-    getDividerPosition(ctrlr.spMain, PREF_KEY_ARG_BOTTOM_VERT, 1);
+    getDividerPosition(spMain, PREF_KEY_ARG_TOP_VERT, 0);
+    getDividerPosition(spMain, PREF_KEY_ARG_BOTTOM_VERT, 1);
   }
 
 //---------------------------------------------------------------------------

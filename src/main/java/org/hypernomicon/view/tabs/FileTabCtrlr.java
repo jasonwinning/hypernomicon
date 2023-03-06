@@ -42,7 +42,10 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.fileTabEnum;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
+import java.io.IOException;
 
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 
@@ -55,6 +58,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
@@ -72,15 +76,79 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @FXML private TableView<HyperTableRow> tvAuthors, tvKeyMentions, tvLabels;
   @FXML private TextField tfFileName, tfName, tfSearchKey;
 
-  private MainTextWrapper mainText;
-  private HyperTable htLabels, htAuthors, htKeyMentioners;
-  private HyperCB hcbWork, hcbType;
+  private final MainTextWrapper mainText;
+  private final HyperTable htLabels, htAuthors, htKeyMentioners;
+  private final HyperCB hcbWork, hcbType;
+
   public FileDlgCtrlr fdc = null;
   private HDT_MiscFile curMiscFile;
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public FileTabCtrlr(Tab tab) throws IOException
+  {
+    super(fileTabEnum, tab, "view/tabs/FileTab");
+
+    mainText = new MainTextWrapper(apDescription);
+    tfFileName.setEditable(false);
+
+    addShowMenuItem("Show in system explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
+    addShowMenuItem("Show in file manager"   , event -> { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.filePath()); });
+    addShowMenuItem("Copy path to clipboard" , event -> { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
+
+    addShowMenuItem("Unassign file", event ->
+    {
+      if (ui.cantSaveRecord()) return;
+      curMiscFile.getPath().clear();
+      ui.update();
+    });
+
+    htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_FILE_AUTHORS);
+
+    htAuthors.addActionCol(ctGoBtn, 1);
+    htAuthors.addCol(hdtPerson, ctDropDownList);
+
+    htAuthors.addRemoveMenuItem();
+    htAuthors.addChangeOrderMenuItem(true);
+
+    htLabels = new HyperTable(tvLabels, 2, true, PREF_KEY_HT_FILE_LABELS);
+
+    htLabels.addActionCol(ctGoBtn, 2);
+    htLabels.addActionCol(ctBrowseBtn, 2);
+    htLabels.addCol(hdtWorkLabel, ctDropDownList);
+
+    htLabels.addRemoveMenuItem();
+    htLabels.addChangeOrderMenuItem(true);
+
+    htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, PREF_KEY_HT_FILE_MENTIONERS);
+
+    htKeyMentioners.addDefaultMenuItems();
+
+    htKeyMentioners.addIconCol();
+    htKeyMentioners.addLabelCol(hdtNone);
+    htKeyMentioners.addLabelCol(hdtNone);
+
+    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), true);
+    hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), true);
+
+    hcbWork.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) -> cbWorkChange());
+
+    btnWork  .setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
+    btnTree  .setOnAction(event -> ui.goToTreeRecord(curMiscFile));
+    btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.filePath()); });
+    btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
+
+    setToolTip(btnManage, "Update or rename file");
+
+    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public String recordName()                 { return tfName.getText(); }
   @Override protected RecordType type()                { return hdtMiscFile; }
-  @Override public void findWithinDesc(String text)    { mainText.hilite(text); }
   @Override public TextViewInfo mainTextInfo()         { return mainText.getViewInfo(); }
   @Override public MainTextWrapper mainTextWrapper()   { return mainText; }
   @Override public void setRecord(HDT_MiscFile record) { curMiscFile = record; }
@@ -161,65 +229,6 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     MenuItem menuItem = new MenuItem(text);
     menuItem.setOnAction(handler);
     btnShow.getItems().add(menuItem);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void init()
-  {
-    mainText = new MainTextWrapper(apDescription);
-    tfFileName.setEditable(false);
-
-    addShowMenuItem("Show in system explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
-    addShowMenuItem("Show in file manager"   , event -> { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.filePath()); });
-    addShowMenuItem("Copy path to clipboard" , event -> { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
-
-    addShowMenuItem("Unassign file", event ->
-    {
-      if (ui.cantSaveRecord()) return;
-      curMiscFile.getPath().clear();
-      ui.update();
-    });
-
-    htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_FILE_AUTHORS);
-
-    htAuthors.addActionCol(ctGoBtn, 1);
-    htAuthors.addCol(hdtPerson, ctDropDownList);
-
-    htAuthors.addRemoveMenuItem();
-    htAuthors.addChangeOrderMenuItem(true);
-
-    htLabels = new HyperTable(tvLabels, 2, true, PREF_KEY_HT_FILE_LABELS);
-
-    htLabels.addActionCol(ctGoBtn, 2);
-    htLabels.addActionCol(ctBrowseBtn, 2);
-    htLabels.addCol(hdtWorkLabel, ctDropDownList);
-
-    htLabels.addRemoveMenuItem();
-    htLabels.addChangeOrderMenuItem(true);
-
-    htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, PREF_KEY_HT_FILE_MENTIONERS);
-
-    htKeyMentioners.addDefaultMenuItems();
-
-    htKeyMentioners.addIconCol();
-    htKeyMentioners.addLabelCol(hdtNone);
-    htKeyMentioners.addLabelCol(hdtNone);
-
-    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), true);
-    hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), true);
-
-    hcbWork.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) -> cbWorkChange());
-
-    btnWork  .setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
-    btnTree  .setOnAction(event -> ui.goToTreeRecord(curMiscFile));
-    btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.filePath()); });
-    btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
-
-    setToolTip(btnManage, "Update or rename file");
-
-    MainCtrlr.setSearchKeyToolTip(tfSearchKey);
   }
 
 //---------------------------------------------------------------------------

@@ -50,14 +50,94 @@ import javafx.scene.layout.HBox;
 
 public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 {
-  private HyperTable htParents, htArguments, htRightChildren;
+  private final HyperTable htParents, htArguments, htRightChildren;
+
   private HDT_Position curPosition;
+
+//---------------------------------------------------------------------------
+
+  public PositionTab(Tab tab) throws IOException
+  {
+    super(positionTabEnum, tab);
+
+    List<TableColumn<HyperTableRow, ?>> cols = tvLeftChildren.getColumns();
+
+    cols.get(2).setText("Title of Work");
+    cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Year"));
+    cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Verdict"));
+    cols.add(new TableColumn<HyperTableRow, HyperTableCell>("Arg. Name"));
+
+    spChildren.setDividerPositions(0.6);
+
+    cols = tvRightChildren.getColumns();
+
+    cols.add(1, new TableColumn<HyperTableRow, HyperTableCell>("Sub-Position/Debate Name"));
+    cols.get(2).setText("Person");
+
+    htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_POS_PARENTS);
+
+    htParents.addActionCol(ctGoBtn, 3);
+    htParents.addActionCol(ctBrowseBtn, 3);
+
+    RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
+
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
+
+      RecordType parentType = cellVal.getType();
+      rbtp.setRecordType(row, parentType);
+      rbtp.setChanged(row);
+      row.setCellValue(nextColNdx, "", parentType);
+    });
+
+    htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());
+
+    htParents.addRemoveMenuItem();
+    htParents.addChangeOrderMenuItem(true);
+
+    htArguments = new HyperTable(tvLeftChildren, 3, true, PREF_KEY_HT_POS_ARG);
+
+    htArguments.addActionCol(ctGoNewBtn, 3);
+    htArguments.addLabelCol(hdtPerson         );
+    htArguments.addLabelCol(hdtPositionVerdict);
+    htArguments.addLabelCol(hdtArgument       );
+    htArguments.addLabelCol(hdtWork           );
+    htArguments.addLabelCol(hdtArgument       );
+
+    TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>();
+    tvRightChildren.getColumns().add(1, col);
+    col.setMinWidth(25.0);
+    col.setPrefWidth(45.0);
+    col.setMaxWidth(45.0);
+
+    htRightChildren = new HyperTable(tvRightChildren, 2, true, PREF_KEY_HT_POS_SUB);
+
+    htRightChildren.addActionCol(ctGoBtn, 2);
+    htRightChildren.addIconCol();
+    htRightChildren.addReadOnlyColWithCustomGraphic(hdtNone, row ->
+    {
+      Hyperlink hLink1 = new Hyperlink("Add new position");
+      hLink1.setVisited(true);
+      hLink1.setOnAction(event -> newClick(hdtPosition, row));
+      Hyperlink hLink2 = new Hyperlink("Add new debate");
+      hLink2.setVisited(true);
+      hLink2.setOnAction(event -> newClick(hdtDebate, row));
+
+      return new HBox(hLink1, hLink2);
+    });
+
+    htRightChildren.addLabelCol(hdtPerson);
+
+    initArgContextMenu();
+    ui.initPositionContextMenu(htRightChildren);
+  }
+
+//---------------------------------------------------------------------------
 
   @Override protected RecordType type()             { return hdtPosition; }
   @Override public void setRecord(HDT_Position pos) { curPosition = pos; }
-
-  private PositionTab(Tab tab) throws IOException       { super(tab); }
-  public static void create(Tab tab) throws IOException { new PositionTab(tab).baseInit(positionTabEnum, tab); }
+  @Override protected HDT_Position getNodeRecord()  { return curPosition; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -66,7 +146,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   {
     curPosition.addParentDisplayRecord();
 
-    ctrlr.update(curPosition);
+    super.update();
 
  // Populate parent records
  // -----------------------
@@ -140,86 +220,6 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init()
-  {
-    ctrlr.init(hdtPosition, this);
-
-    List<TableColumn<HyperTableRow, ?>> cols = ctrlr.tvLeftChildren.getColumns();
-
-    cols.get(2).setText("Title of Work");
-    cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Year"));
-    cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Verdict"));
-    cols.add(new TableColumn<HyperTableRow, HyperTableCell>("Arg. Name"));
-
-    ctrlr.spChildren.setDividerPositions(0.6);
-
-    cols = ctrlr.tvRightChildren.getColumns();
-
-    cols.add(1, new TableColumn<HyperTableRow, HyperTableCell>("Sub-Position/Debate Name"));
-    cols.get(2).setText("Person");
-
-    htParents = new HyperTable(ctrlr.tvParents, 3, true, PREF_KEY_HT_POS_PARENTS);
-
-    htParents.addActionCol(ctGoBtn, 3);
-    htParents.addActionCol(ctBrowseBtn, 3);
-
-    RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
-
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
-
-      RecordType parentType = cellVal.getType();
-      rbtp.setRecordType(row, parentType);
-      rbtp.setChanged(row);
-      row.setCellValue(nextColNdx, "", parentType);
-    });
-
-    htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());
-
-    htParents.addRemoveMenuItem();
-    htParents.addChangeOrderMenuItem(true);
-
-    htArguments = new HyperTable(ctrlr.tvLeftChildren, 3, true, PREF_KEY_HT_POS_ARG);
-
-    htArguments.addActionCol(ctGoNewBtn, 3);
-    htArguments.addLabelCol(hdtPerson         );
-    htArguments.addLabelCol(hdtPositionVerdict);
-    htArguments.addLabelCol(hdtArgument       );
-    htArguments.addLabelCol(hdtWork           );
-    htArguments.addLabelCol(hdtArgument       );
-
-    TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>();
-    ctrlr.tvRightChildren.getColumns().add(1, col);
-    col.setMinWidth(25.0);
-    col.setPrefWidth(45.0);
-    col.setMaxWidth(45.0);
-
-    htRightChildren = new HyperTable(ctrlr.tvRightChildren, 2, true, PREF_KEY_HT_POS_SUB);
-
-    htRightChildren.addActionCol(ctGoBtn, 2);
-    htRightChildren.addIconCol();
-    htRightChildren.addReadOnlyColWithCustomGraphic(hdtNone, row ->
-    {
-      Hyperlink hLink1 = new Hyperlink("Add new position");
-      hLink1.setVisited(true);
-      hLink1.setOnAction(event -> newClick(hdtPosition, row));
-      Hyperlink hLink2 = new Hyperlink("Add new debate");
-      hLink2.setVisited(true);
-      hLink2.setOnAction(event -> newClick(hdtDebate, row));
-
-      return new HBox(hLink1, hLink2);
-    });
-
-    htRightChildren.addLabelCol(hdtPerson);
-
-    initArgContextMenu();
-    ui.initPositionContextMenu(htRightChildren);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void initArgContextMenu()
   {
     htArguments.addDefaultMenuItems();
@@ -239,7 +239,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   @Override public void clear()
   {
-    ctrlr.clear();
+    super.clear();
 
     htParents.clear();
     htArguments.clear();
@@ -251,7 +251,8 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   @Override public boolean saveToRecord()
   {
-    if (ctrlr.saveToRecord(curPosition) == false) return false;
+    if (super.saveToRecord() == false)
+      return false;
 
     if ((curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition)) == false) ||
         (curPosition.setLargerDebates  (htParents.saveToList(3, hdtDebate  )) == false))
@@ -311,9 +312,9 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(ctrlr.spMain, PREF_KEY_POS_TOP_VERT, 0);
-    setDividerPosition(ctrlr.spMain, PREF_KEY_POS_BOTTOM_VERT, 1);
-    setDividerPosition(ctrlr.spChildren, PREF_KEY_POS_BOTTOM_HORIZ, 0);
+    setDividerPosition(spMain, PREF_KEY_POS_TOP_VERT, 0);
+    setDividerPosition(spMain, PREF_KEY_POS_BOTTOM_VERT, 1);
+    setDividerPosition(spChildren, PREF_KEY_POS_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -321,9 +322,9 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(ctrlr.spMain, PREF_KEY_POS_TOP_VERT, 0);
-    getDividerPosition(ctrlr.spMain, PREF_KEY_POS_BOTTOM_VERT, 1);
-    getDividerPosition(ctrlr.spChildren, PREF_KEY_POS_BOTTOM_HORIZ, 0);
+    getDividerPosition(spMain, PREF_KEY_POS_TOP_VERT, 0);
+    getDividerPosition(spMain, PREF_KEY_POS_BOTTOM_VERT, 1);
+    getDividerPosition(spChildren, PREF_KEY_POS_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
