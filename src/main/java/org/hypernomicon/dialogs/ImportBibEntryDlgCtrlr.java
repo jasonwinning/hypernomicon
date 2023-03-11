@@ -53,7 +53,8 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
   @FXML private TextArea taContents;
   @FXML private TextField tfFile;
 
-  private HyperCB hcbWork;
+  private final HyperCB hcbWork;
+
   private boolean createNewWork;
   private boolean failedToLoad = false;
 
@@ -68,16 +69,10 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ImportBibEntryDlgCtrlr build(List<String> lines, FilePath filePath)
+  public ImportBibEntryDlgCtrlr(List<String> lines, FilePath filePath)
   {
-    return ((ImportBibEntryDlgCtrlr) create("ImportBibEntryDlg", "Import Bibliography File", true)).init(lines, filePath);
-  }
+    super("ImportBibEntryDlg", "Import Bibliography File", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ImportBibEntryDlgCtrlr init(List<String> lines, FilePath filePath)
-  {
     if (db.bibLibraryIsLinked())
       chkNewEntry.setText("Create new " + db.getBibLibrary().type().getUserFriendlyName() + " entry (unless existing work is already assigned to one)");
     else
@@ -109,8 +104,6 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     }
     else
       loadEntry(lines);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

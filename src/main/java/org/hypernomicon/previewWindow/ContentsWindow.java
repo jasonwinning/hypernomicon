@@ -55,7 +55,9 @@ public class ContentsWindow extends HyperDlg
   @FXML private TableView<HyperTableRow> tvContents;
 
   private static final String dialogTitle = "Contents";
-  private HyperTable htContents;
+
+  private final HyperTable htContents;
+
   private HDT_WorkFile curWorkFile;
   private FilePath curFilePath;
   private boolean mouseAlreadyHere = false;
@@ -65,16 +67,10 @@ public class ContentsWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ContentsWindow build()
+  public ContentsWindow()
   {
-    return ((ContentsWindow) createUsingFullPath("previewWindow/ContentsWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
-  }
+    super("previewWindow/ContentsWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ContentsWindow init()
-  {
     htContents = new HyperTable(tvContents, 2, false, PREF_KEY_HT_CONTENTS_DLG, this);
 
     htContents.addLabelCol(hdtPerson);
@@ -157,8 +153,6 @@ public class ContentsWindow extends HyperDlg
     htContents.setTooltip(8, ButtonAction.baCustom, "Jump to end page in preview window");
     htContents.setTooltip(6, ButtonAction.baCustom, "Assign page currently visible in preview window as start page");
     htContents.setTooltip(9, ButtonAction.baCustom, "Assign page currently visible in preview window as end page");
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

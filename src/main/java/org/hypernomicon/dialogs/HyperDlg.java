@@ -48,8 +48,8 @@ import javafx.stage.Window;
 public abstract class HyperDlg
 {
   protected boolean okClicked = false;
-  protected Stage dialogStage;
-  protected AnchorPane stagePane;
+  protected final Stage dialogStage;
+  protected final AnchorPane stagePane;
   protected Runnable onShown = null;
   private double initHeight = -1, initWidth = -1;
   private boolean shownAlready = false;
@@ -64,28 +64,41 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static <T extends HyperDlg> T create(String loc, String title, boolean resizable)
+  protected HyperDlg(String loc, String title, boolean resizable)
   {
-    return createUsingFullPath("dialogs/" + loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
+    this(loc, title, resizable, false);
   }
 
-  protected static <T extends HyperDlg> T createUsingFullPath(String loc, String title, boolean resizable)
+  protected HyperDlg(String loc, String title, boolean resizable, boolean fullPath)
   {
-    return createUsingFullPath(loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
+    this(loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL, fullPath);
   }
 
-  protected static <T extends HyperDlg> T createUsingFullPath(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
+  protected HyperDlg(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
   {
+    this(loc, title, resizable, stageStyle, modality, true);
+  }
+
+//---------------------------------------------------------------------------
+
+  private HyperDlg(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality, boolean fullPath)
+  {
+    if (fullPath == false)
+      loc = "dialogs/" + loc;
+
+    Stage tmpDialogStage = null;
+    AnchorPane tmpStagePane = null;
+
     try
     {
-      FXMLLoader loader = new FXMLLoader(App.class.getResource(loc + ".fxml"));
-      AnchorPane mainPane = loader.load();
+      FXMLLoader loader = new FXMLLoader(App.class.getResource(loc + ".fxml"), null, null, klass -> this);
+      tmpStagePane = loader.load();
 
-      Stage dialogStage = new Stage();
-      dialogStage.setTitle(title);
-      dialogStage.initModality(modality);
-      dialogStage.setResizable(resizable);
-      dialogStage.initStyle(stageStyle);
+      tmpDialogStage = new Stage();
+      tmpDialogStage.setTitle(title);
+      tmpDialogStage.initModality(modality);
+      tmpDialogStage.setResizable(resizable);
+      tmpDialogStage.initStyle(stageStyle);
 
       Window owner = null;
       if (modality != Modality.NONE)
@@ -96,29 +109,25 @@ public abstract class HyperDlg
           owner = null;
       }
 
-      dialogStage.initOwner(owner);
-      dialogStage.getIcons().addAll(ui.getStage().getIcons());
-      Scene scene = new Scene(mainPane);
-      dialogStage.setScene(scene);
+      tmpDialogStage.initOwner(owner);
+      tmpDialogStage.getIcons().addAll(ui.getStage().getIcons());
+      Scene scene = new Scene(tmpStagePane);
+      tmpDialogStage.setScene(scene);
 
-      if ("SpecialUI".equals(mainPane.getId()) == false)
+      if ("SpecialUI".equals(tmpStagePane.getId()) == false)
         scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
-      final T dlg = loader.getController();
-
-      dlg.stagePane = mainPane;
-      dlg.dialogStage = dialogStage;
-
-      dialogStage.setOnShown(event -> dlg.doOnShown());
-
-      return dlg;
+      tmpDialogStage.setOnShown(event -> doOnShown());
     }
     catch (IOException e)
     {
       messageDialog("Internal error while initializing dialog window", mtError);
     }
-
-    return null;
+    finally
+    {
+      dialogStage = tmpDialogStage;
+      stagePane = tmpStagePane;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -203,7 +212,7 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final void doOnShown()
+  private void doOnShown()
   {
     rescale();
 

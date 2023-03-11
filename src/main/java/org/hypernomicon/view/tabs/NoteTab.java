@@ -281,7 +281,7 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     if (folderName.isBlank())
     {
-      RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Create Folder in: " + parentFolder.filePath(), ntFolder, "");
+      RenameDlgCtrlr dlg = new RenameDlgCtrlr("Create Folder in: " + parentFolder.filePath(), ntFolder, "");
 
       if (dlg.showModal() == false) return;
 

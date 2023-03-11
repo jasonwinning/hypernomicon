@@ -272,44 +272,48 @@
              </ImageView>
            </graphic>
          </ToggleButton>
-            <AnchorPane prefHeight="24.0" prefWidth="55.0" AnchorPane.leftAnchor="35.0" AnchorPane.topAnchor="5.0">
-               <children>
-               <SplitMenuButton fx:id="btnGoTo" mnemonicParsing="false" prefHeight="24.0" prefWidth="55.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                 <items>
-                   <MenuItem fx:id="mnuRecordSelect" mnemonicParsing="false" text="Go to Record" />
-                   <MenuItem fx:id="mnuFindWithinName" mnemonicParsing="false" text="Find records with name containing this text" />
-                   <MenuItem fx:id="mnuFindWithinAnyField" mnemonicParsing="false" text="Find records with any field containing this text" />
-                   <MenuItem fx:id="mnuFindNextInName" mnemonicParsing="false" text="Find next match in record name" />
-                   <MenuItem fx:id="mnuFindPreviousInName" mnemonicParsing="false" text="Find previous match in record name" />
-                   <MenuItem fx:id="mnuFindNextAll" mnemonicParsing="false" text="Find next match in record name or description" />
-                   <MenuItem fx:id="mnuFindPreviousAll" mnemonicParsing="false" text="Find previous match in record name or description" />
-                 </items>
-                 <graphic>
-                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                     <Image url="@../resources/images/magnifier.png" />
-                   </ImageView>
-                 </graphic>
-               </SplitMenuButton>
-                  <Button fx:id="btnPrevResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/triangle-up.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnNextResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/triangle-down.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-               </children>
-            </AnchorPane>
+         <AnchorPane prefHeight="24.0" prefWidth="55.0" AnchorPane.leftAnchor="35.0" AnchorPane.topAnchor="5.0">
+           <SplitMenuButton fx:id="btnGoTo" mnemonicParsing="false" prefHeight="24.0" prefWidth="55.0"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                            AnchorPane.topAnchor="0.0">
+             <items>
+               <MenuItem fx:id="mnuRecordSelect" mnemonicParsing="false" text="Go to Record"/>
+               <MenuItem fx:id="mnuFindWithinName" mnemonicParsing="false"
+                         text="Find records with name containing this text"/>
+               <MenuItem fx:id="mnuFindWithinAnyField" mnemonicParsing="false"
+                         text="Find records with any field containing this text"/>
+               <MenuItem fx:id="mnuFindNextInName" mnemonicParsing="false" text="Find next match in record name"/>
+               <MenuItem fx:id="mnuFindPreviousInName" mnemonicParsing="false"
+                         text="Find previous match in record name"/>
+               <MenuItem fx:id="mnuFindNextAll" mnemonicParsing="false"
+                         text="Find next match in record name or description"/>
+               <MenuItem fx:id="mnuFindPreviousAll" mnemonicParsing="false"
+                         text="Find previous match in record name or description"/>
+             </items>
+             <graphic>
+               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                 <Image url="@../resources/images/magnifier.png"/>
+               </ImageView>
+             </graphic>
+           </SplitMenuButton>
+           <Button fx:id="btnPrevResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0"
+                   visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+             <graphic>
+               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                 <Image url="@../resources/images/triangle-up.png"/>
+               </ImageView>
+             </graphic>
+           </Button>
+           <Button fx:id="btnNextResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0"
+                   visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                   AnchorPane.topAnchor="0.0">
+             <graphic>
+               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                 <Image url="@../resources/images/triangle-down.png"/>
+               </ImageView>
+             </graphic>
+           </Button>
+         </AnchorPane>
          <TabPane fx:id="selectorTabPane" focusTraversable="false" layoutX="92.0" layoutY="5.0" nodeOrientation="RIGHT_TO_LEFT" side="BOTTOM" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0">
            <Tab fx:id="tabViewSelector" closable="false">
              <AnchorPane fx:id="apListGoTo" maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="24.0" />

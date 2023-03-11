@@ -39,17 +39,11 @@ public class ValueSelectDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ValueSelectDlgCtrlr build(List<HyperTableCell> list)
+  public ValueSelectDlgCtrlr(List<HyperTableCell> list)
   {
-    return ((ValueSelectDlgCtrlr) create("ValueSelectDlg", "Choose a Value", true)).init(list);
-  }
+    super("ValueSelectDlg", "Choose a Value", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ValueSelectDlgCtrlr init(List<HyperTableCell> list)
-  {
-    if (collEmpty(list)) return this;
+    if (collEmpty(list)) return;
 
     RecordType objType = HyperTableCell.getCellType(list.get(0));
 
@@ -68,8 +62,6 @@ public class ValueSelectDlgCtrlr extends HyperDlg
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
         btnOkClick();
     });
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

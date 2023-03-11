@@ -113,7 +113,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   private static final String appPathVar = "::::AppPath", filePathVar = "::::FilePath", pageNumVar = "::::PageNum";
 
-  private String appPrefKey, commandsPrefKey, commandTypePrefKey;
+  private final String appPrefKey, commandsPrefKey, commandTypePrefKey;
 
   private static final StringConverter<LaunchCommandTypeEnum> typeStrConv = new StringConverter<>()
   {
@@ -127,17 +127,10 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static LaunchCommandsDlgCtrlr build(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
+  LaunchCommandsDlgCtrlr(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
   {
-    return ((LaunchCommandsDlgCtrlr) createUsingFullPath("settings/LaunchCommandsDlg", title, true))
-      .init(appPrefKey, commandsPrefKey, commandTypePrefKey);
-  }
+    super("settings/LaunchCommandsDlg", title, true, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private LaunchCommandsDlgCtrlr init(String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
-  {
     this.appPrefKey = appPrefKey;
     this.commandsPrefKey = commandsPrefKey;
     this.commandTypePrefKey = commandTypePrefKey;
@@ -191,8 +184,6 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
       if (preset.isCompatible() && preset.commandsPrefKey.equals(commandsPrefKey))
         lvPresets.getItems().add(preset);
     });
-
-    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -219,9 +210,9 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
     {
       if ((commandType == appleScript) && SystemUtils.IS_OS_MAC)
       {
-        String[] argz = new String[] { "osascript",
-                                       "-e",
-                                       resolve(commands, appPath, filePath, pageNum) };
+        String[] argz = { "osascript",
+                          "-e",
+                          resolve(commands, appPath, filePath, pageNum) };
         try
         {
           Runtime.getRuntime().exec(argz);

@@ -248,7 +248,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
           int nameListNdx = nameListIndices.get(ndx);
           PersonName name = nonRecordAuthors.get(ndx).getName();
           boolean ed = nameToEd.get(name), tr = nameToTr.get(name);
-          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(name, null, false, null, null, matchedAuthors);
+          NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(name, null, false, null, null, matchedAuthors);
 
           if (npdc.showModal() == false) return;
 

@@ -374,7 +374,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   public void newCounterargumentClick(HDT_Argument target)
   {
-    NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.build(target);
+    NewArgDlgCtrlr newArgDialog = new NewArgDlgCtrlr(target);
 
     if (newArgDialog.showModal() == false) return;
 

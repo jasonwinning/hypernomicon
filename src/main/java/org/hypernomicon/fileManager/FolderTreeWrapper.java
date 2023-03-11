@@ -74,7 +74,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
     clear();
 
-    db.addCloseDBHandler(this::reset);
+    db.addCloseDBHandler    (this::reset);
     db.addPreDBChangeHandler(this::reset);
 
     tv.setCellFactory(treeView ->
@@ -114,7 +114,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void clear()
+  private void clear()
   {
     if (tv.getRoot() != null)
     {
@@ -131,7 +131,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void reset()
+  private void reset()
   {
     clear();
 

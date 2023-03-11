@@ -216,7 +216,7 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
                 showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
                 {
-                  SelectColumnsDlgCtrlr.build().showModal();
+                  new SelectColumnsDlgCtrlr().showModal();
                   event.consume();
                 });
               });

@@ -697,7 +697,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     if (ui.cantSaveRecord()) return;
 
-    RecordDropdownDlgCtrlr<HDT_Term> rdd = RecordDropdownDlgCtrlr.build(hdtTerm, id -> id != curTerm.getID());
+    RecordDropdownDlgCtrlr<HDT_Term> rdd = new RecordDropdownDlgCtrlr<>(hdtTerm, id -> id != curTerm.getID());
 
     if (rdd.showModal() == false) return;
 
@@ -720,7 +720,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
         return;
       }
 
-    MergeTermDlgCtrlr mtd = MergeTermDlgCtrlr.build(curTerm, otherTerm);
+    MergeTermDlgCtrlr mtd = new MergeTermDlgCtrlr(curTerm, otherTerm);
     if (mtd.showModal() == false) return;
 
     String oldKey1 = curTerm.getSearchKey();
@@ -775,7 +775,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     HDT_Concept concept = curConcept;
 
-    SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.build(concept);
+    SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(concept);
 
     if (frmSelectConcept.showModal())
     {

@@ -43,41 +43,21 @@ public class RenameDlgCtrlr extends HyperDlg
   @FXML private Label lblInvalid;
   @FXML private TextField tfName;
 
-  private NameType nameType;
-  private String oldName;
+  private final NameType nameType;
+  private final String oldName;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public String getNewName() { return tfName.getText(); }
 
-  @Override protected boolean isValid()
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public RenameDlgCtrlr(String title, NameType nameType, String oldName)
   {
-    if (tfName.getText().isEmpty())
-      return falseWithErrorMessage("Name cannot be zero-length.", tfName);
+    super("RenameDlg", title, true);
 
-    if (nameType != ntRecord)
-    {
-      if (FilenameUtils.equalsNormalizedOnSystem(oldName, tfName.getText()))
-        return falseWithErrorMessage("Original name and new name are the same.", tfName);
-    }
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static RenameDlgCtrlr build(String title, NameType nameType, String oldName)
-  {
-    return ((RenameDlgCtrlr) create("RenameDlg", title, true)).init(nameType, oldName);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private RenameDlgCtrlr init(NameType nameType, String oldName)
-  {
     this.nameType = nameType;
     this.oldName = oldName;
     tfName.setText(oldName);
@@ -130,8 +110,23 @@ public class RenameDlgCtrlr extends HyperDlg
     });
 
     onShown = () -> safeFocus(tfName);
+  }
 
-    return this;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isValid()
+  {
+    if (tfName.getText().isEmpty())
+      return falseWithErrorMessage("Name cannot be zero-length.", tfName);
+
+    if (nameType != ntRecord)
+    {
+      if (FilenameUtils.equalsNormalizedOnSystem(oldName, tfName.getText()))
+        return falseWithErrorMessage("Original name and new name are the same.", tfName);
+    }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

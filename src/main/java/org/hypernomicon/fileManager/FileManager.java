@@ -183,16 +183,17 @@ public class FileManager extends HyperDlg
 
   private static final String dialogTitle = "File Manager";
 
+  private final MenuItemSchema<HDT_RecordWithPath, FileRow> pasteMenuItem;
+
   private List<MarkedRowInfo> markedRows = null, dragRows = null;
   private FilePath srcPathToHilite = null;
   private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false;
-  private MenuItemSchema<HDT_RecordWithPath, FileRow> pasteMenuItem;
   private HDT_Folder curFolder;
 
-  public FolderTreeWrapper folderTree;
-  private FileTable fileTable;
-  private HyperTable recordTable;
-  private FolderHistory history;
+  public final FolderTreeWrapper folderTree;
+  private final FileTable fileTable;
+  private final HyperTable recordTable;
+  private final FolderHistory history;
   private static HyperTask task;
   private static long totalTaskCount, curTaskCount;
 
@@ -206,16 +207,14 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FileManager build()
+  public FileManager()
   {
-    return ((FileManager) createUsingFullPath("fileManager/FileManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
-  }
+    super("fileManager/FileManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    fileTable = new FileTable(fileTV, this);
+    folderTree = new FolderTreeWrapper(treeView, fileTable);
+    recordTable = new HyperTable(recordTV, 1, false, PREF_KEY_HT_FM_RECORDS, this);
 
-  private FileManager init()
-  {
     initContainers();
 
     fileTable.addContextMenuItem("Launch", Predicate.not(FileRow::isDirectory), fileRow -> launchFile(fileRow.getFilePath()));
@@ -325,8 +324,6 @@ public class FileManager extends HyperDlg
     setToolTip(btnRefresh      , "Refresh");
     setToolTip(btnMainWindow   , "Return to main application window");
     setToolTip(btnPreviewWindow, "Show preview window");
-
-    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -334,12 +331,7 @@ public class FileManager extends HyperDlg
 
   private void initContainers()
   {
-    fileTable = new FileTable(fileTV, this);
-    folderTree = new FolderTreeWrapper(treeView, fileTable);
-
     folderTree.getTreeModel().addParentChildRelation(rtParentFolderOfFolder, true);
-
-    recordTable = new HyperTable(recordTV, 1, false, PREF_KEY_HT_FM_RECORDS, this);
 
     recordTable.addCol(hdtNone, ctIncremental);
     recordTable.addLabelCol(hdtNone);
@@ -1124,7 +1116,7 @@ public class FileManager extends HyperDlg
   {
     if (parentFolder == null) return;
 
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Create Folder in: " + parentFolder.filePath(), ntFolder, "");
+    RenameDlgCtrlr dlg = new RenameDlgCtrlr("Create Folder in: " + parentFolder.filePath(), ntFolder, "");
 
     if (dlg.showModal() == false) return;
 
@@ -1176,7 +1168,7 @@ public class FileManager extends HyperDlg
       return;
     }
 
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Rename " + noun + ": " + fileRow.getFilePath(), isDir ? ntFolder : ntFile, fileRow.getFileName());
+    RenameDlgCtrlr dlg = new RenameDlgCtrlr("Rename " + noun + ": " + fileRow.getFilePath(), isDir ? ntFolder : ntFile, fileRow.getFileName());
 
     if (dlg.showModal() == false) return;
 

@@ -78,16 +78,18 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
-  private BibDataRetriever bibDataRetriever = null;
+  private final BibDataRetriever bibDataRetriever;
+  private final HyperCB hcbAuthor, hcbWork, hcbBibEntry;
+  private final boolean bibEntryIsConstant;
+
   private BibData bd = null;
   private AnchorPane apPreview;
   private FilePath filePath = null, previewFilePath = null;
   private PDFJSWrapper jsWrapper = null;
-  private HyperCB hcbAuthor, hcbWork, hcbBibEntry;
   private HDT_Work work = null;
   private HDT_Person author = null;
   private BibEntry<?, ?> bibEntry = null;
-  private boolean createNewClicked = false, previewInitialized = false, bibEntryIsConstant;
+  private boolean createNewClicked = false, previewInitialized = false;
 
   public HDT_Work getWork()           { return work; }
   public BibEntry<?, ?> getBibEntry() { return HDT_Work.isUnenteredSet(work) ? null : bibEntry; }
@@ -97,22 +99,24 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectWorkDlgCtrlr build(HDT_Person authorToUse, FilePath filePathToUse)
+  public SelectWorkDlgCtrlr(HDT_Person authorToUse, FilePath filePathToUse)
   {
-    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg", "Select a Work Record", true)).init(null, authorToUse, filePathToUse, true, null, false);
+    this(null, authorToUse, filePathToUse, true, null, false);
   }
 
-  public static SelectWorkDlgCtrlr build(HDT_Work workToUse, BibEntry<?, ?> bibEntryToUse)
+  public SelectWorkDlgCtrlr(HDT_Work workToUse, BibEntry<?, ?> bibEntryToUse)
   {
-    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg", "Select a Work Record", true)).init(workToUse, null, null, false, bibEntryToUse, true);
+    this(workToUse, null, null, false, bibEntryToUse, true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SelectWorkDlgCtrlr init(HDT_Work workToUse, HDT_Person authorToUse, FilePath       filePathToUse, boolean filePathIsConstant,
-                                                                              BibEntry<?, ?> bibEntryToUse, boolean bibEntryIsConstant)
+  private SelectWorkDlgCtrlr(HDT_Work workToUse, HDT_Person authorToUse, FilePath       filePathToUse, boolean filePathIsConstant,
+                                                                         BibEntry<?, ?> bibEntryToUse, boolean bibEntryIsConstant)
   {
+    super("SelectWorkDlg", "Select a Work Record", true);
+
     bibEntry = bibEntryToUse;
     work = workToUse;
 
@@ -393,10 +397,12 @@ public class SelectWorkDlgCtrlr extends HyperDlg
         updateFields();
       });
     }
+    else
+    {
+      this.bibDataRetriever = null;
+    }
 
     updateFields();
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

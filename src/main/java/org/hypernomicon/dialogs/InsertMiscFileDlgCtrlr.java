@@ -35,8 +35,9 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
   @FXML private Button btnExisting, btnNew;
   @FXML private ComboBox<HyperTableCell> cbExisting;
 
+  private final HyperCB hcbExisting;
+
   private HDT_MiscFile miscFile = null;
-  private HyperCB hcbExisting;
 
   public HDT_MiscFile getMiscFile()     { return miscFile; }
 
@@ -45,16 +46,10 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InsertMiscFileDlgCtrlr build()
+  public InsertMiscFileDlgCtrlr()
   {
-    return ((InsertMiscFileDlgCtrlr) create("InsertMiscFileDlg", "Insert Misc. File", true)).init();
-  }
+    super("InsertMiscFileDlg", "Insert Misc. File", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private InsertMiscFileDlgCtrlr init()
-  {
     hcbExisting = new HyperCB(cbExisting, ctDropDownList, new StandardPopulator(hdtMiscFile));
 
     btnExisting.setOnAction(event ->
@@ -71,8 +66,6 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
     });
 
     btnNew.setOnAction(event -> btnOkClick());
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

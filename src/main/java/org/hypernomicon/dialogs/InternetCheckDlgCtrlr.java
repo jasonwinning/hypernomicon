@@ -34,7 +34,7 @@ import java.net.UnknownHostException;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class InternetCheckDlgCtrlr extends HyperDlg
+public final class InternetCheckDlgCtrlr extends HyperDlg
 {
 
 //---------------------------------------------------------------------------
@@ -52,9 +52,9 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 
     while (result == mrRetry)
     {
-      InternetCheckDlgCtrlr ctrlr = create("InternetCheckDlg", appTitle, true);
+      InternetCheckDlgCtrlr ctrlr = new InternetCheckDlgCtrlr();
 
-      if (ctrlr.checkInternet())
+      if (ctrlr.showModal())
         return true;
 
       String msg = "Warning: Internet connection check failed" + (ctrlr.lastException == null ? '.' : ": " + ctrlr.lastException.getMessage());
@@ -67,8 +67,10 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean checkInternet()
+  private InternetCheckDlgCtrlr()
   {
+    super("InternetCheckDlg", appTitle, true);
+
     HyperTask task = new HyperTask("CheckForInternet") { @Override protected void call()
     {
       try
@@ -88,8 +90,6 @@ public class InternetCheckDlgCtrlr extends HyperDlg
     }};
 
     onShown = task::startWithNewThread;
-
-    return showModal();
   }
 
 //---------------------------------------------------------------------------

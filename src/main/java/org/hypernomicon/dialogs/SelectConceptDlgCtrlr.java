@@ -48,25 +48,29 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   @FXML private Button btnCreate;
   @FXML private TextField tfSearchKey;
 
-  private HyperCB hcbTerm, hcbGlossary, hcbSense;
+  private final HyperCB hcbTerm, hcbGlossary, hcbSense;
+  private final HDT_Concept oldConcept;
+
   private HDT_Glossary glossary;
-  private HDT_Concept oldConcept;
   private boolean createNew, alreadyChanging = false;
   private HDT_Term term;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectConceptDlgCtrlr build(HDT_Concept oldConcept)
-  {
-    return ((SelectConceptDlgCtrlr) create("SelectConceptDlg", "Term Select", true)).init(oldConcept);
-  }
+  public HDT_Term         getTerm()      { return term; }
+  public boolean          getCreateNew() { return createNew; }
+  public HDT_Glossary     getGlossary()  { return glossary != null ? glossary : hcbGlossary.selectedRecord(); }
+  public HDT_ConceptSense getSense()     { return hcbSense.selectedRecord(); }
+  public String           getSenseText() { return ultraTrim(hcbSense.getText()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SelectConceptDlgCtrlr init(HDT_Concept oldConcept)
+  public SelectConceptDlgCtrlr(HDT_Concept oldConcept)
   {
+    super("SelectConceptDlg", "Term Select", true);
+
     this.oldConcept = oldConcept;
 
     hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm));
@@ -139,15 +143,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     btnCreate.setOnAction(event -> btnCreateClick());
     createNew = false;
-
-    return this;
   }
-
-  public HDT_Term         getTerm()      { return term; }
-  public boolean          getCreateNew() { return createNew; }
-  public HDT_Glossary     getGlossary()  { return glossary != null ? glossary : hcbGlossary.selectedRecord(); }
-  public HDT_ConceptSense getSense()     { return hcbSense.selectedRecord(); }
-  public String           getSenseText() { return ultraTrim(hcbSense.getText()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -197,7 +193,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     if (hcbTerm.selectedRecord() == null)
       return falseWithErrorMessage("You must select a term.", cbTerm);
 
-    HDT_Glossary glossary = hcbGlossary.selectedRecord();
+    glossary = hcbGlossary.selectedRecord();
 
     if (glossary == null)
       return falseWithErrorMessage("You must select a glossary.", cbGlossary);

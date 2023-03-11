@@ -42,16 +42,10 @@ public class VerdictDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static VerdictDlgCtrlr build(String title, HDT_Record parent)
+  public VerdictDlgCtrlr(String title, HDT_Record parent)
   {
-    return ((VerdictDlgCtrlr) create("VerdictDlg", title, false)).init(parent);
-  }
+    super("VerdictDlg", title, false);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private VerdictDlgCtrlr init(HDT_Record parent)
-  {
     lblParentName.setText(parent.getCBText());
 
     if (parent.getType() == hdtPosition)
@@ -70,8 +64,6 @@ public class VerdictDlgCtrlr extends HyperDlg
     }
 
     hcbVerdict.addBlankEntry();
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

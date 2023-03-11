@@ -336,7 +336,7 @@ public final class Util
 
   public static void showStackTrace(Throwable e)
   {
-    LockedDlgCtrlr.build("Error", e).showModal();
+    new LockedDlgCtrlr("Error", e).showModal();
   }
 
 //---------------------------------------------------------------------------

@@ -29,7 +29,6 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.hypernomicon.App;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
@@ -53,7 +52,6 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import javafx.concurrent.Worker;
 import javafx.event.Event;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -106,11 +104,8 @@ public final class MainTextWrapper
     view = new WebView();
     webViewAddZoom(view, PREF_KEY_MAINTEXT_ZOOM);
 
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/mainText/MainTextEditor.fxml"));
-
-    try { bpEditorRoot = loader.load(); } catch (IOException e) { noOp(); }
-    editCtrlr = loader.getController();
-    editCtrlr.init();
+    editCtrlr = new MainTextCtrlr();
+    bpEditorRoot = editCtrlr.getRootNode();
 
     setAnchors(bpEditorRoot, 0.0, 0.0, 0.0, 0.0);
     setAnchors(view        , 0.0, 0.0, 0.0, 0.0);
@@ -311,7 +306,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void nextSearchResult()
+  public static void nextSearchResult()
   {
     nextSearchResult(we);
   }
@@ -324,7 +319,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void previousSearchResult()
+  public static void previousSearchResult()
   {
     previousSearchResult(we);
   }

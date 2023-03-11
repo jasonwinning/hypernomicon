@@ -388,7 +388,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   {
     if (ui.cantSaveRecord()) return;
 
-    SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.build(null);
+    SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(null);
 
     if ((frmSelectConcept.showModal() == false) || (frmSelectConcept.getGlossary() == null)) return;
 

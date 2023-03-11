@@ -69,12 +69,16 @@ import javafx.stage.FileChooser;
 
 public class PictureDlgCtrlr extends HyperDlg
 {
-  private static Image picture;
   public static final AsyncHttpClient httpClient = new AsyncHttpClient();
+
+  private static Image picture;
+
+  private final Rectangle2D origViewPort;
+  private final PersonTabCtrlr personHyperTab;
 
   private Point2D mouseStart, mouseEnd, cropStart, cropEnd;
   private Rectangle cropRect = null;
-  private Rectangle2D picRect, origViewPort;
+  private Rectangle2D picRect;
   private boolean changed = false, noRemoveCrop = false, bufferOutOfDate = true, dontRefresh = false;
   private FileDownloadUtility.Buffer imageBuffer;
   private String bufferFileName = "";
@@ -88,21 +92,13 @@ public class PictureDlgCtrlr extends HyperDlg
   @FXML private RadioButton rbNone, rbFile, rbWeb, rbCurrent;
   @FXML private TextField tfCurrent, tfFile, tfWeb, tfName;
 
-  private PersonTabCtrlr personHyperTab;
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static PictureDlgCtrlr build(Rectangle2D viewPort)
+  public PictureDlgCtrlr(Rectangle2D viewPort)
   {
-    return ((PictureDlgCtrlr) create("PictureDlg", "Edit Picture", true)).init(viewPort);
-  }
+    super("PictureDlg", "Edit Picture", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private PictureDlgCtrlr init(Rectangle2D viewPort)
-  {
     this.personHyperTab = MainCtrlr.personHyperTab();
 
     ivPicture.fitWidthProperty ().bind(apPicture.widthProperty ());
@@ -261,8 +257,6 @@ public class PictureDlgCtrlr extends HyperDlg
     }
 
     changed = false;
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

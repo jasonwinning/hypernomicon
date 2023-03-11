@@ -32,6 +32,32 @@ public class NewLinkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public NewLinkDlgCtrlr(String selText)
+  {
+    super("NewLinkDlg", "Insert Link", true);
+
+    String clipText = getClipboardText(true).trim();
+    selText = selText.trim();
+
+    btnPaste.setOnAction(event -> tfURL.setText(ultraTrim(getClipboardText(true))));
+    setToolTip(btnPaste, "Paste text from clipboard");
+
+    if (isStringUrl(selText))
+    {
+      tfURL.setText(selText);
+      tfDisplayText.setText(clipText.length() > 0 ? clipText : selText);
+      return;
+    }
+
+    if (isStringUrl(clipText))
+      tfURL.setText(clipText);
+
+    tfDisplayText.setText(selText.length() > 0 ? selText : clipText);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override protected boolean isValid()
   {
     if (tfDisplayText.getText().trim().isEmpty())
@@ -43,39 +69,6 @@ public class NewLinkDlgCtrlr extends HyperDlg
     return true;
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static NewLinkDlgCtrlr build(String selText)
-  {
-    return ((NewLinkDlgCtrlr) create("NewLinkDlg", "Insert Link", true)).init(selText);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private NewLinkDlgCtrlr init(String selText)
-  {
-    String clipText = getClipboardText(true).trim();
-    selText = selText.trim();
-
-    btnPaste.setOnAction(event -> tfURL.setText(ultraTrim(getClipboardText(true))));
-    setToolTip(btnPaste, "Paste text from clipboard");
-
-    if (isStringUrl(selText))
-    {
-      tfURL.setText(selText);
-      tfDisplayText.setText(clipText.length() > 0 ? clipText : selText);
-      return this;
-    }
-
-    if (isStringUrl(clipText))
-      tfURL.setText(clipText);
-
-    tfDisplayText.setText(selText.length() > 0 ? selText : clipText);
-
-    return this;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

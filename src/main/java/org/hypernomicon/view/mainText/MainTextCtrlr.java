@@ -45,6 +45,7 @@ import com.sun.javafx.webkit.Accessor;
 import com.sun.webkit.WebPage;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.hypernomicon.App;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
 import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
@@ -75,6 +76,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.Node;
@@ -115,9 +117,10 @@ public class MainTextCtrlr
   @FXML private TextArea taKeyWorks;
   @FXML private TitledPane tpKeyWorks;
 
-  private HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
+  private final HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
+  private final BooleanProperty prop; // Needs to be a member variable to prevent being garbage-collected
+
   private HDT_RecordWithMainText curRecord;
-  private BooleanProperty prop = null; // Needs to be a member variable to prevent being garbage-collected
   private boolean ignoreKeyEvent = false;
 
 //---------------------------------------------------------------------------
@@ -131,55 +134,17 @@ public class MainTextCtrlr
   private void clearText()     { he.setHtmlText(disableLinks("")); }
   private WebView getWebView() { return (WebView) he.lookup("WebView"); }
   WebEngine getEngine()        { return getWebView().getEngine(); }
+  BorderPane getRootNode()     { return borderPane; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void clear()
+  MainTextCtrlr()
   {
-    taKeyWorks.clear();
-    clearDisplayItems();
-    clearText();
-  }
+    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/mainText/MainTextEditor.fxml"), null, null, klass -> this);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    try { loader.load(); } catch (IOException e) { noOp(); }
 
-  void focus()
-  {
-    runDelayedInFXThread(5, 100, () ->
-    {
-      final WebView view = getWebView();
-      Platform.runLater(() ->
-      {
-        view.fireEvent(new MouseEvent(MouseEvent.MOUSE_PRESSED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
-        he.requestFocus();
-        view.fireEvent(new MouseEvent(MouseEvent.MOUSE_RELEASED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
-      });
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static EnumSet<RecordType> getDisplayedTypes()
-  {
-    EnumSet<RecordType> typeSet = EnumSet.noneOf(RecordType.class);
-
-    EnumSet.allOf(RecordType.class).forEach(type ->
-    {
-      if (type.hasMainText() && (type != hdtHub) && (type != hdtWorkLabel))
-        typeSet.add(type);
-    });
-
-    return typeSet;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void init()
-  {
     final WebView webview = getWebView();
     GridPane.setHgrow(webview, Priority.ALWAYS);
     GridPane.setVgrow(webview, Priority.ALWAYS);
@@ -312,7 +277,7 @@ public class MainTextCtrlr
       MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
       menuItem1.setOnAction(actionEvent -> pastePlainText(false));
 
-      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + shortcutKey + "-" + altKey + "-V)");
+      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + shortcutKey + '-' + altKey + "-V)");
       menuItem2.setOnAction(actionEvent -> pastePlainText(true));
 
       setHTMLContextMenu(menuItem1, menuItem2);
@@ -380,7 +345,7 @@ public class MainTextCtrlr
     MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
     menuItem1.setOnAction(event -> pastePlainText(false));
 
-    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + shortcutKey + "-" + altKey + "-V)");
+    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + shortcutKey + '-' + altKey + "-V)");
     menuItem2.setOnAction(event -> pastePlainText(true));
 
     MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
@@ -457,6 +422,49 @@ public class MainTextCtrlr
     });
 
     he.setFocusTraversable(false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void clear()
+  {
+    taKeyWorks.clear();
+    clearDisplayItems();
+    clearText();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void focus()
+  {
+    runDelayedInFXThread(5, 100, () ->
+    {
+      final WebView view = getWebView();
+      Platform.runLater(() ->
+      {
+        view.fireEvent(new MouseEvent(MouseEvent.MOUSE_PRESSED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
+        he.requestFocus();
+        view.fireEvent(new MouseEvent(MouseEvent.MOUSE_RELEASED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
+      });
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static EnumSet<RecordType> getDisplayedTypes()
+  {
+    EnumSet<RecordType> typeSet = EnumSet.noneOf(RecordType.class);
+
+    EnumSet.allOf(RecordType.class).forEach(type ->
+    {
+      if (type.hasMainText() && (type != hdtHub) && (type != hdtWorkLabel))
+        typeSet.add(type);
+    });
+
+    return typeSet;
   }
 
 //---------------------------------------------------------------------------
@@ -668,7 +676,7 @@ public class MainTextCtrlr
 
   private void btnPictureClick()
   {
-    InsertMiscFileDlgCtrlr imfd = InsertMiscFileDlgCtrlr.build();
+    InsertMiscFileDlgCtrlr imfd = new InsertMiscFileDlgCtrlr();
 
     if (imfd.showModal() == false) return;
 
@@ -678,7 +686,7 @@ public class MainTextCtrlr
     {
       miscFile = db.createNewBlankRecord(hdtMiscFile);
 
-      FileDlgCtrlr fdc = FileDlgCtrlr.build("Image File Record", miscFile, "", true);
+      FileDlgCtrlr fdc = new FileDlgCtrlr("Image File Record", miscFile, "", true);
 
       if (fdc.showModal() == false)
       {
@@ -724,7 +732,7 @@ public class MainTextCtrlr
 
     String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
 
-    NewLinkDlgCtrlr dlg = NewLinkDlgCtrlr.build(convertToSingleLine(selText));
+    NewLinkDlgCtrlr dlg = new NewLinkDlgCtrlr(convertToSingleLine(selText));
 
     if (dlg.showModal() == false) return;
 

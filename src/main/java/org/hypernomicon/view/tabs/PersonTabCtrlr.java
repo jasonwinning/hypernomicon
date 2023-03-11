@@ -129,7 +129,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private final HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
   private final MainTextWrapper mainText;
 
-
   private static final String TOOLTIP_PREFIX = "Search for this person using ";
 
   private FilePath curPicture = null;
@@ -296,7 +295,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     ivPerson.setOnMouseClicked(event ->
     {
-      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.build(viewPort);
+      PictureDlgCtrlr ctrlr = new PictureDlgCtrlr(viewPort);
 
       if (ctrlr.showModal())
         viewPort = ctrlr.getViewPort();
@@ -825,7 +824,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     ArrayList<Author> matchedAuthors = matchedAuthorsList.get(0);
 
     if (matchedAuthors.size() > 0)
-      return NewPersonDlgCtrlr.build(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors).showModal();
+      return new NewPersonDlgCtrlr(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors).showModal();
 
     curPerson.setName(personName);
     return true;
@@ -886,7 +885,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     HDT_Work work = row.getRecord();
 
-    InvestigationsDlgCtrlr dlg = InvestigationsDlgCtrlr.build(work, invViews, curPerson);
+    InvestigationsDlgCtrlr dlg = new InvestigationsDlgCtrlr(work, invViews, curPerson);
 
     if (dlg.showModal() == false)
       return;
@@ -1071,7 +1070,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if ((newName.length() > 0) && (colNdx == 2))
       oldParent = null;
 
-    NewInstDlgCtrlr newInstDialog = NewInstDlgCtrlr.build(oldParent, newName, colNdx == 2);
+    NewInstDlgCtrlr newInstDialog = new NewInstDlgCtrlr(oldParent, newName, colNdx == 2);
 
     if (newInstDialog.showModal() == false) return;
 

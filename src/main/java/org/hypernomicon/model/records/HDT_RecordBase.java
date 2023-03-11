@@ -444,7 +444,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     objList.clear();
 
-    list.forEach(objList::add);
+    objList.addAll(list);
     return true;
   }
 

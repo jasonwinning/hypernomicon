@@ -176,8 +176,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
       try
       {
-        mwd = MergeWorksDlgCtrlr.build("Merge Remote Changes with Local Changes", entry, BibEntry.create(this, jObj, true),
-                                       null, null, entry.getWork(), false, false, Ternary.False);
+        mwd = new MergeWorksDlgCtrlr("Merge Remote Changes with Local Changes", entry, BibEntry.create(this, jObj, true), null, null, entry.getWork(), false, false, Ternary.False);
       }
       catch (IOException e)
       {

@@ -581,7 +581,7 @@ public final class QueryCtrlr
 
     if (fav == null)
     {
-      NewQueryFavDlgCtrlr ctrlr = NewQueryFavDlgCtrlr.build(tfFavName.getText());
+      NewQueryFavDlgCtrlr ctrlr = new NewQueryFavDlgCtrlr(tfFavName.getText());
 
       if (ctrlr.showModal() == false) return;
 
@@ -979,7 +979,7 @@ public final class QueryCtrlr
       {
         refreshView(false);
 
-        String textToHilite = curQC.getTextToHilite();
+        String textToHilite = getTextToHilite();
         if (textToHilite.isBlank() == false)
           ui.findInDescription(textToHilite);
       }
@@ -1079,7 +1079,7 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getTextToHilite()
+  private String getTextToHilite()
   {
     for (HyperTableRow row : htFields.dataRows())
     {

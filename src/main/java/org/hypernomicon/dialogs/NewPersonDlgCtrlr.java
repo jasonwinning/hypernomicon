@@ -66,12 +66,13 @@ public class NewPersonDlgCtrlr extends HyperDlg
   @FXML private TextField tfDupFirstName, tfDupLastName, tfDupSearchKey, tfFirstName, tfLastName, tfSearchKey;
   @FXML private ToggleGroup grpAction, grpName;
 
-  private HDT_Person person = null;
-  private Author origAuthor = null;
+  private final Author origAuthor;
+  private final ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
+
+  private HDT_Person person;
   private boolean alreadyChangingName = false, noTabUpdate = false;
   private HyperTask task;
-  private ArrayList<Author> matchedAuthors = null;
-  private final ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
+  private ArrayList<Author> matchedAuthors;
 
   public HDT_Person getPerson()     { return person; }
   public PersonName getName()       { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
@@ -83,26 +84,20 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewPersonDlgCtrlr build(boolean mustCreate, String name, Author origAuthor)
+  public NewPersonDlgCtrlr(boolean mustCreate, String name, Author origAuthor)
   {
-    return ((NewPersonDlgCtrlr) create("NewPersonDlg", "Add a New Person to the Database", true))
-      .init(name, null, null, mustCreate, null, origAuthor, new ArrayList<>());
+    this("Add a New Person to the Database", name, null, null, mustCreate, null, origAuthor, new ArrayList<>());
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static NewPersonDlgCtrlr build(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
+  public NewPersonDlgCtrlr(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
   {
-    return ((NewPersonDlgCtrlr) create("NewPersonDlg", "Potential Duplicate(s)", true))
-      .init(null, personName, searchKey, mustCreate, person, origAuthor, matchedAuthors);
+    this("Potential Duplicate(s)", null, personName, searchKey, mustCreate, person, origAuthor, matchedAuthors);
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private NewPersonDlgCtrlr init(String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
+  private NewPersonDlgCtrlr(String title, String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
   {
+    super("NewPersonDlg", title, true);
+
     this.matchedAuthors = matchedAuthors;
     this.person = person;
     this.origAuthor = origAuthor;
@@ -222,8 +217,6 @@ public class NewPersonDlgCtrlr extends HyperDlg
       finishDupSearch();
     else
       startDupThread(personName);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

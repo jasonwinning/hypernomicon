@@ -40,17 +40,10 @@ public class ChangeParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ChangeParentDlgCtrlr build(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
+  ChangeParentDlgCtrlr(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
   {
-    return ((ChangeParentDlgCtrlr) createUsingFullPath("tree/ChangeParentDlg", "Copy or Move Record to Destination", true))
-                                  .init(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
-  }
+    super("tree/ChangeParentDlg", "Copy or Move Record to Destination", true, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ChangeParentDlgCtrlr init(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
-  {
     label1.setText("The " + getTypeName(dragTargetEdge.child.getType()) + " record:");
     label2.setText("will be attached under the " + getTypeName(dragTargetEdge.parent.getType()) + " record:");
 
@@ -74,8 +67,6 @@ public class ChangeParentDlgCtrlr extends HyperDlg
       setAllVisible(false, chkDetach2, tfOldParent2);
     else
       tfOldParent2.setText(otherEdgeToDetach.parent.name());
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

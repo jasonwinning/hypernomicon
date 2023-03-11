@@ -36,16 +36,10 @@ public class HelpDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HelpDlgCtrlr build()
+  public HelpDlgCtrlr()
   {
-    return ((HelpDlgCtrlr) create("HelpDlg", "Hypernomicon", true)).init();
-  }
+    super("HelpDlg", "Hypernomicon", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private HelpDlgCtrlr init()
-  {
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
     StringBuilder html = new StringBuilder();
@@ -60,11 +54,9 @@ public class HelpDlgCtrlr extends HyperDlg
       onShown = () ->
       {
         messageDialog("Unable to show help content: " + e.getMessage(), mtError);
-        Platform.runLater(() -> dialogStage.close());
+        Platform.runLater(dialogStage::close);
       };
     }
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

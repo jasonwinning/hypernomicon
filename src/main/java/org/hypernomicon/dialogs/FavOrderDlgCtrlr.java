@@ -41,16 +41,10 @@ public class FavOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FavOrderDlgCtrlr build()
+  public FavOrderDlgCtrlr()
   {
-    return ((FavOrderDlgCtrlr) create("FavOrderDlg", "Change Order of Favorites", true)).init();
-  }
+    super("FavOrderDlg", "Change Order of Favorites", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private FavOrderDlgCtrlr init()
-  {
     Callback<ListView<MenuItem>, ListCell<MenuItem>> factory = listView -> new ListCell<>()
     {
       @Override public void updateItem(MenuItem item, boolean empty)
@@ -73,8 +67,6 @@ public class FavOrderDlgCtrlr extends HyperDlg
 
     btnQueryUp.setOnAction(event -> moveQuery(-1));
     btnQueryDown.setOnAction(event -> moveQuery(1));
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

@@ -53,16 +53,10 @@ public class MergeTermDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MergeTermDlgCtrlr build(HDT_Term term1, HDT_Term term2)
+  public MergeTermDlgCtrlr(HDT_Term term1, HDT_Term term2)
   {
-    return ((MergeTermDlgCtrlr) create("MergeTermDlg", "Specify How to Merge Fields", true)).init(term1, term2);
-  }
+    super("MergeTermDlg", "Specify How to Merge Fields", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private MergeTermDlgCtrlr init(HDT_Term term1, HDT_Term term2)
-  {
     String name1 = term1.listName(),
            name2 = term2.listName(),
            key1  = term1.getSearchKey(),
@@ -86,8 +80,6 @@ public class MergeTermDlgCtrlr extends HyperDlg
     setSearchKeyToolTip(tfKey1);
     setSearchKeyToolTip(tfKey2);
     setSearchKeyToolTip(tfKey3);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

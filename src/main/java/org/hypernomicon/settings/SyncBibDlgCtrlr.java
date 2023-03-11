@@ -29,7 +29,7 @@ import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.ProgressBar;
 
-public class SyncBibDlgCtrlr extends HyperDlg
+public final class SyncBibDlgCtrlr extends HyperDlg
 {
   @FXML private ProgressBar progressBar;
 
@@ -40,14 +40,16 @@ public class SyncBibDlgCtrlr extends HyperDlg
 
   static void sync()
   {
-    ((SyncBibDlgCtrlr)createUsingFullPath("settings/SyncBibDlg", "Link to " + db.getBibLibrary().type().getUserFriendlyName(), true)).doSync();
+    new SyncBibDlgCtrlr().showModal();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doSync()
+  private SyncBibDlgCtrlr()
   {
+    super("settings/SyncBibDlg", "Link to " + db.getBibLibrary().type().getUserFriendlyName(), true, true);
+
     onShown = () ->
     {
       SyncTask syncTask = db.getBibLibrary().createNewSyncTask();
@@ -72,8 +74,6 @@ public class SyncBibDlgCtrlr extends HyperDlg
     };
 
     dialogStage.setOnHiding(event -> db.getBibLibrary().stop());
-
-    showModal();
   }
 
 //---------------------------------------------------------------------------

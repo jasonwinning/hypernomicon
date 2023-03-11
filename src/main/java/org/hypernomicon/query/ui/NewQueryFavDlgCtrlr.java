@@ -39,21 +39,13 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static NewQueryFavDlgCtrlr build(String newName)
+  NewQueryFavDlgCtrlr(String newName)
   {
-    return ((NewQueryFavDlgCtrlr) createUsingFullPath("query/NewQueryFavDlg", "Add Query Favorite", true)).init(newName);
-  }
+    super("query/NewQueryFavDlg", "Add Query Favorite", true, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private NewQueryFavDlgCtrlr init(String newName)
-  {
     tfName.setText(newName);
 
     onShown = () -> safeFocus(tfName);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

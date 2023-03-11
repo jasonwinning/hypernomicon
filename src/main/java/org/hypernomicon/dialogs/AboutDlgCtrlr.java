@@ -45,7 +45,9 @@ public class AboutDlgCtrlr extends HyperDlg
   @FXML private TabPane tabPane;
   @FXML private Tab tabGeneral, tabContributors, tabAcknowledgements;
 
-  private String buildDate, htmlStart, nextVersionHtml, tabContributorsHtml, tabAcknowledgementsHtml;
+  private final String buildDate, htmlStart, tabContributorsHtml, tabAcknowledgementsHtml;
+
+  private String nextVersionHtml;
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
@@ -54,27 +56,20 @@ public class AboutDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static AboutDlgCtrlr build()
+  public AboutDlgCtrlr()
   {
-    return ((AboutDlgCtrlr) create("AboutDlg", "About " + appTitle, false)).init();
-  }
+    super("AboutDlg", "About " + appTitle, false);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    String manifestBuildTimeStr = manifestValue("Build-Time");
 
-  private AboutDlgCtrlr init()
-  {
-    buildDate = manifestValue("Build-Time");
-
-    if (safeStr(buildDate).isEmpty())
-      buildDate = "not found";
+    buildDate = safeStr(manifestBuildTimeStr).isEmpty() ? "not found" : manifestBuildTimeStr;
 
     String family = Font.getDefault().getFamily();
 
     htmlStart = "<html><head>" + MainTextUtil.scriptContent +
-        "<style>a:link { color:#906f6f; } a:visited { color:#906f6f; }" +
-               "a.download:link { color:#eef4ff; } a.download:visited { color:#eef4ff; } </style>" +
-        "</head><body style='margin: 0; padding: 0; font-family: " + family + "; font-size: 10pt; color: #906f6f;' bgcolor=\"#241f24\">";
+      "<style>a:link { color:#906f6f; } a:visited { color:#906f6f; }" +
+             "a.download:link { color:#eef4ff; } a.download:visited { color:#eef4ff; } </style>" +
+      "</head><body style='margin: 0; padding: 0; font-family: " + family + "; font-size: 10pt; color: #906f6f;' bgcolor=\"#241f24\">";
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
       MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo()));
@@ -83,35 +78,35 @@ public class AboutDlgCtrlr extends HyperDlg
 
     tabContributorsHtml = htmlStart + "Original design and development: " + anchorTag("Jason Winning", "http://jasonwinning.com") + "<br>" +
                                       "Design ideas and testing: " + anchorTag("Danny Weltman", "https://dannyweltman.com/") + "<br><br>" +
-        anchorTag("List at GitHub", "https://github.com/jasonwinning/hypernomicon/contributors") + "&nbsp;&nbsp;&nbsp;" +
-        anchorTag("Add your name to this list!", "https://akrabat.com/the-beginners-guide-to-contributing-to-a-github-project/") +
-        "</body></html>";
+      anchorTag("List at GitHub", "https://github.com/jasonwinning/hypernomicon/contributors") + "&nbsp;&nbsp;&nbsp;" +
+      anchorTag("Add your name to this list!", "https://akrabat.com/the-beginners-guide-to-contributing-to-a-github-project/") +
+      "</body></html>";
 
     tabAcknowledgementsHtml = htmlStart + "<div style='-webkit-column-count: 3;'>Hypernomicon uses the following software:<br><ul>" +
 
-        "<li>" + "Apache " + anchorTag("Commons", "https://commons.apache.org/") + ", " +
-        anchorTag("PDFBox", "https://pdfbox.apache.org/") + ", " +
-        anchorTag("Tika", "https://tika.apache.org/") + ", " +
-        anchorTag("HttpClient", "https://hc.apache.org/httpcomponents-client-ga/") + "</li>" +
-        "<li>" + anchorTag("Guava", "https://github.com/google/guava") + "</li>" +
-        "<li>" + anchorTag("JxBrowser", "https://www.teamdev.com/jxbrowser") + "</li>" +
-        "<li>" + anchorTag("PDF.js", "https://mozilla.github.io/pdf.js/") + "</li>" +
-        "<li>" + anchorTag("jsoup", "https://jsoup.org/") + "</li>" +
-        "<li>" + anchorTag("ICU4J", "http://site.icu-project.org/home") + "</li>" +
-        "<li>" + anchorTag("ControlsFX", "http://fxexperience.com/controlsfx/") + "</li>" +
-        "<li>" + anchorTag("JSON.simple", "https://code.google.com/archive/p/json-simple/") + "</li>" +
-        "<li>" + anchorTag("ScribeJava", "https://github.com/scribejava/scribejava") + "</li>" +
-        "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
-        "<li>" + anchorTag("Mammoth .docx to HTML converter", "https://github.com/mwilliamson/java-mammoth") + "</li>" +
-        "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +
-        "<li>" + anchorTag("mark.js", "https://markjs.io/") +
+      "<li>" + "Apache " + anchorTag("Commons", "https://commons.apache.org/") + ", " +
+      anchorTag("PDFBox", "https://pdfbox.apache.org/") + ", " +
+      anchorTag("Tika", "https://tika.apache.org/") + ", " +
+      anchorTag("HttpClient", "https://hc.apache.org/httpcomponents-client-ga/") + "</li>" +
+      "<li>" + anchorTag("Guava", "https://github.com/google/guava") + "</li>" +
+      "<li>" + anchorTag("JxBrowser", "https://www.teamdev.com/jxbrowser") + "</li>" +
+      "<li>" + anchorTag("PDF.js", "https://mozilla.github.io/pdf.js/") + "</li>" +
+      "<li>" + anchorTag("jsoup", "https://jsoup.org/") + "</li>" +
+      "<li>" + anchorTag("ICU4J", "http://site.icu-project.org/home") + "</li>" +
+      "<li>" + anchorTag("ControlsFX", "http://fxexperience.com/controlsfx/") + "</li>" +
+      "<li>" + anchorTag("JSON.simple", "https://code.google.com/archive/p/json-simple/") + "</li>" +
+      "<li>" + anchorTag("ScribeJava", "https://github.com/scribejava/scribejava") + "</li>" +
+      "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
+      "<li>" + anchorTag("Mammoth .docx to HTML converter", "https://github.com/mwilliamson/java-mammoth") + "</li>" +
+      "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +
+      "<li>" + anchorTag("mark.js", "https://markjs.io/") +
 
-        "</li></ul>Icons:<br><ul>" +
+      "</li></ul>Icons:<br><ul>" +
 
-        "<li>" + anchorTag("FatCow", "http://www.fatcow.com/free-icons") + "</li>" +
-        "<li>" + anchorTag("Fugue", "http://p.yusukekamiyamane.com/") + "</li></ul>" +
+      "<li>" + anchorTag("FatCow", "http://www.fatcow.com/free-icons") + "</li>" +
+      "<li>" + anchorTag("Fugue", "http://p.yusukekamiyamane.com/") + "</li></ul>" +
 
-        "</div></body></html>";
+      "</div></body></html>";
 
     tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) -> updateHtml(newTab));
 
@@ -134,8 +129,6 @@ public class AboutDlgCtrlr extends HyperDlg
 
       updateHtml(tabPane.getSelectionModel().getSelectedItem());
     });
-
-    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -171,17 +164,17 @@ public class AboutDlgCtrlr extends HyperDlg
 
     return htmlStart +
 
-        "Version: " + app.getVersion() + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
-        "Build date: " + buildDate + "<br>" +
-        "Copyright \u00a9 2015-2023 Jason Winning.<br><br>" +
-        "Operating system: " + SystemUtils.OS_NAME + "<br>" +
-        "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
-        "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + ' ' + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
-        maxHeap +
-        "JavaFX version: " + VersionInfo. getRuntimeVersion() + "<br>" +
-        anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
-        anchorTag("Release Notes", "https://sourceforge.net/p/hypernomicon/wiki/ReleaseNotes/") + "&nbsp;&nbsp;&nbsp;" +
-        anchorTag("GitHub repo", "https://github.com/jasonwinning/hypernomicon") + "</body></html>";
+      "Version: " + app.getVersion() + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
+      "Build date: " + buildDate + "<br>" +
+      "Copyright \u00a9 2015-2023 Jason Winning.<br><br>" +
+      "Operating system: " + SystemUtils.OS_NAME + "<br>" +
+      "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
+      "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + ' ' + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
+      maxHeap +
+      "JavaFX version: " + VersionInfo. getRuntimeVersion() + "<br>" +
+      anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
+      anchorTag("Release Notes", "https://sourceforge.net/p/hypernomicon/wiki/ReleaseNotes/") + "&nbsp;&nbsp;&nbsp;" +
+      anchorTag("GitHub repo", "https://github.com/jasonwinning/hypernomicon") + "</body></html>";
   }
 
 //---------------------------------------------------------------------------

@@ -45,26 +45,21 @@ public class ChooseParentDlgCtrlr extends HyperDlg
   @FXML private TreeTableColumn<TreeRow, TreeRow> tcLinked;
   @FXML private TreeTableColumn<TreeRow, String> tcDesc;
 
-  private TreeWrapper popupTree;
+  private final TreeWrapper popupTree;
   private static String title;
-  private Set<RecordType> types;
-  private HDT_Record parent, child;
+  private final Set<RecordType> types;
+  private final HDT_Record child;
+  private HDT_Record parent;
 
   HDT_Record getParent() { return parent; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ChooseParentDlgCtrlr build(HDT_Record child)
+  ChooseParentDlgCtrlr(HDT_Record child)
   {
-    return ((ChooseParentDlgCtrlr) createUsingFullPath("tree/ChooseParentDlg", "Record Select", true)).init(child);
-  }
+    super("tree/ChooseParentDlg", "Record Select", true, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ChooseParentDlgCtrlr init(HDT_Record child)
-  {
     popupTree = new TreeWrapper(bcbPath, false, new ComboBox<>());
     this.child = child;
     parent = null;
@@ -112,8 +107,6 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
     title = title + " record";
     getStage().setTitle(title);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

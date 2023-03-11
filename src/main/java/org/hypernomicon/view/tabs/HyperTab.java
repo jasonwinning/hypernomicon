@@ -37,7 +37,6 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -113,8 +112,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public void enable(boolean enabled)      { getTab().getContent().setDisable(enabled == false); }
   void updateWebButtons(Preferences node)  { return; }
 
-  public void nextSearchResult    ()       { nullSwitch(mainTextWrapper(), MainTextWrapper::nextSearchResult    ); }
-  public void previousSearchResult()       { nullSwitch(mainTextWrapper(), MainTextWrapper::previousSearchResult); }
+  public void nextSearchResult    ()       { nullSwitch(mainTextWrapper(), mainTextWrapper -> MainTextWrapper.nextSearchResult()); }
+  public void previousSearchResult()       { nullSwitch(mainTextWrapper(), mainTextWrapper -> MainTextWrapper.previousSearchResult()); }
 
   public void findWithinDesc(String text)  { mainTextWrapper().hilite(text); }
 

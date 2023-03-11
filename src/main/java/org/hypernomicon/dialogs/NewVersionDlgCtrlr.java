@@ -34,24 +34,16 @@ public class NewVersionDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewVersionDlgCtrlr build()
+  public NewVersionDlgCtrlr()
   {
-    return ((NewVersionDlgCtrlr) create("NewVersionDlg", "A New Version Is Available", false)).init();
-  }
+    super("NewVersionDlg", "A New Version Is Available", false);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private NewVersionDlgCtrlr init()
-  {
     btnDownload.setOnAction(event ->
     {
       DesktopUtil.openWebLink("https://sourceforge.net/projects/hypernomicon/files/latest/download");
 
       btnOkClick();
     });
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

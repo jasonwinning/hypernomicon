@@ -43,25 +43,25 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 {
   @FXML private TableView<HyperTableRow> tvFind;
 
-  private OmniFinder omniFinder;
-  private HyperTable htFind;
+  private final OmniFinder omniFinder;
+  private final HyperTable htFind;
 
   public <HDT_T extends HDT_Record> HDT_T getRecord() { return htFind.selectedRecord(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RecordSelectDlgCtrlr build(Populator populator, List<HyperTableCell> list, String queryStr)
+  public RecordSelectDlgCtrlr(Populator populator, List<HyperTableCell> list, String queryStr)
   {
-    return ((RecordSelectDlgCtrlr) create("RecordSelectDlg", "Choose a Record", true)).init(populator, list, queryStr);
-  }
+    super("RecordSelectDlg", "Choose a Record", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    if (collEmpty(list))
+    {
+      htFind = null;
+      omniFinder = null;
+      return;
+    }
 
-  private RecordSelectDlgCtrlr init(Populator populator, List<HyperTableCell> list, String queryStr)
-  {
-    if (collEmpty(list)) return this;
     RecordType objType = HyperTableCell.getCellType(list.get(0));
 
     htFind = new HyperTable(tvFind, 1, false, ""); htFind.disableRefreshAfterCellUpdate = true;
@@ -98,8 +98,6 @@ public class RecordSelectDlgCtrlr extends HyperDlg
       Function<HyperTableCell, HDT_Record> function = cell -> cell.getRecord();
       omniFinder.setSourceAndStart(list.stream().map(function).iterator(), true);
     }
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

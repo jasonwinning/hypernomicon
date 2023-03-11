@@ -40,7 +40,37 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
   @FXML private CheckBox chkInst, chkFields, chkRanks, chkStatus, chkRegions, chkCountries;
   @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopicFolders, tfMiscFiles, tfResults;
 
-  private String newPath;
+  private final String newPath;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public NewDatabaseDlgCtrlr(String newPath)
+  {
+    super("NewDatabaseDlg", "Customize How Database Will Be Created", true);
+
+    tfPictures    .setText(DEFAULT_PICTURES_PATH);
+    tfBooks       .setText(DEFAULT_BOOKS_PATH);
+    tfPapers      .setText(DEFAULT_PAPERS_PATH);
+    tfUnentered   .setText(DEFAULT_UNENTERED_PATH);
+    tfMiscFiles   .setText(DEFAULT_MISC_FILES_PATH);
+    tfResults     .setText(DEFAULT_RESULTS_PATH);
+    tfTopicFolders.setText(DEFAULT_TOPICAL_PATH);
+
+    this.newPath = newPath;
+
+    chkCountries.selectedProperty().addListener((ob, ov, nv) ->
+    {
+      if (Boolean.TRUE.equals(nv) == false)
+        chkRegions.setSelected(false);
+    });
+
+    chkRegions.selectedProperty().addListener((ob, ov, nv) ->
+    {
+      if (Boolean.TRUE.equals(nv))
+        chkCountries.setSelected(true);
+    });
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -125,44 +155,6 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
     if (chkStatus.isSelected ())   choices.add(hdtPersonStatus);
 
     return choices;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static NewDatabaseDlgCtrlr build(String newPath)
-  {
-    return ((NewDatabaseDlgCtrlr) create("NewDatabaseDlg", "Customize How Database Will Be Created", true)).init(newPath);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private NewDatabaseDlgCtrlr init(String newPath)
-  {
-    tfPictures    .setText(DEFAULT_PICTURES_PATH);
-    tfBooks       .setText(DEFAULT_BOOKS_PATH);
-    tfPapers      .setText(DEFAULT_PAPERS_PATH);
-    tfUnentered   .setText(DEFAULT_UNENTERED_PATH);
-    tfMiscFiles   .setText(DEFAULT_MISC_FILES_PATH);
-    tfResults     .setText(DEFAULT_RESULTS_PATH);
-    tfTopicFolders.setText(DEFAULT_TOPICAL_PATH);
-
-    this.newPath = newPath;
-
-    chkCountries.selectedProperty().addListener((ob, ov, nv) ->
-    {
-      if (Boolean.TRUE.equals(nv) == false)
-        chkRegions.setSelected(false);
-    });
-
-    chkRegions.selectedProperty().addListener((ob, ov, nv) ->
-    {
-      if (Boolean.TRUE.equals(nv))
-        chkCountries.setSelected(true);
-    });
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

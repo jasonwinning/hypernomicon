@@ -87,10 +87,11 @@ public class PreviewWindow extends HyperDlg
 
   public boolean disablePreviewUpdating = false;
 
+  private static final Map<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
+
   private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new EnumMap<>(PreviewSource.class);
   private final Map<PreviewSource, PreviewSetting> srcToSetting = new EnumMap<>(PreviewSource.class);
-  private static final Map<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
-  private ClickHoldButton chbBack, chbForward;
+  private final ClickHoldButton chbBack, chbForward;
 
   public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); clearControls(); }
   public void clearPreview(PreviewSource src)    { setPreview(src, null, null); }
@@ -173,16 +174,10 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static PreviewWindow build()
+  public PreviewWindow()
   {
-    return ((PreviewWindow) createUsingFullPath("previewWindow/PreviewWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
-  }
+    super("previewWindow/PreviewWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private PreviewWindow init()
-  {
     addWrapper(pvsPersonTab , apPerson , tabPerson , btnPerson );
     addWrapper(pvsWorkTab   , apWork   , tabWork   , btnWorks  );
     addWrapper(pvsQueriesTab, apQuery  , tabQuery  , btnQueries);
@@ -426,8 +421,6 @@ public class PreviewWindow extends HyperDlg
     dialogStage.setOnHidden(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow));
 
     btnContents.setOnAction(event -> openContentsWindow());
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

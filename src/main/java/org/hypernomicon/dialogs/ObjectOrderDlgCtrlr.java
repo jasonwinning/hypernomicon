@@ -38,23 +38,17 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
   @FXML private Button btnMoveUp, btnMoveDown;
   @FXML private TableView<HyperTableRow> tv;
 
-  private List<HyperTableRow> rows;
+  private final List<HyperTableRow> rows;
 
   @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ObjectOrderDlgCtrlr build(HyperTable ht, List<HyperTableRow> rows)
+  public ObjectOrderDlgCtrlr(HyperTable ht, List<HyperTableRow> rows)
   {
-    return ((ObjectOrderDlgCtrlr) create("ObjectOrderDlg", "Change Order of Rows", true)).init(ht, rows);
-  }
+    super("ObjectOrderDlg", "Change Order of Rows", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ObjectOrderDlgCtrlr init(HyperTable ht, List<HyperTableRow> rows)
-  {
     List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
     this.rows = rows;
@@ -90,8 +84,6 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
     btnMoveDown.setOnAction(event -> moveDown());
 
     tv.getSelectionModel().clearAndSelect(0);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

@@ -37,7 +37,7 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
 {
   @FXML private TableView<HyperTableRow> tvFiles;
 
-  private HyperTable htFiles;
+  private final HyperTable htFiles;
 
   public HDT_WorkFile getWorkFile()     { return htFiles.selectedRecord(); }
   @Override protected boolean isValid() { return (htFiles.selectedRecord() != null) || falseWithWarningMessage("Select a file."); }
@@ -45,16 +45,10 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChooseParentWorkFileDlgCtrlr build(HDT_Work work)
+  public ChooseParentWorkFileDlgCtrlr(HDT_Work work)
   {
-    return ((ChooseParentWorkFileDlgCtrlr) create("ChooseParentWorkFileDlg", "Choose Work File", true)).init(work);
-  }
+    super("ChooseParentWorkFileDlg", "Choose Work File", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ChooseParentWorkFileDlgCtrlr init(HDT_Work work)
-  {
     htFiles = new HyperTable(tvFiles, 0, false, "");
     htFiles.addLabelCol(hdtWorkFile);
     htFiles.addLabelCol(hdtWorkFile);
@@ -73,8 +67,6 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
       row.setCellValue(0, workFile, pathStr);
       row.setCellValue(1, workFile, workFile.name());
     });
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

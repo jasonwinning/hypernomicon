@@ -349,7 +349,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void find(String text, boolean forward, boolean nameOnly)
+  private void find(String text, boolean forward, boolean nameOnly)
   {
     text = text.toLowerCase();
     lastSearchTerm = text;
@@ -529,14 +529,14 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
       if ((draggingRow.getRecord().getType() == hdtConcept) && (dragTargetEdge.isConceptsInSameGlossary() == false))
       {
-        DragConceptDlgCtrlr dcdc = DragConceptDlgCtrlr.build(draggingRow.getRecord(), dragTargetEdge.parent);
+        DragConceptDlgCtrlr dcdc = new DragConceptDlgCtrlr(draggingRow.getRecord(), dragTargetEdge.parent);
 
         if (dcdc.showModal() == false)
           return;
       }
       else
       {
-        ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.build(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
+        ChangeParentDlgCtrlr cpdc = new ChangeParentDlgCtrlr(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
 
         if (cpdc.showModal() == false)
           return;

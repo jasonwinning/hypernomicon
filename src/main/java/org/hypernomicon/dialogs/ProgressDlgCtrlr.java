@@ -26,7 +26,7 @@ import static org.hypernomicon.App.*;
 
 import org.hypernomicon.HyperTask;
 
-public class ProgressDlgCtrlr extends HyperDlg
+public final class ProgressDlgCtrlr extends HyperDlg
 {
   private boolean ownThread = true;
   private long lastPercent = -200;
@@ -39,14 +39,17 @@ public class ProgressDlgCtrlr extends HyperDlg
 
   public static State performTask(HyperTask task)
   {
-    return ((ProgressDlgCtrlr) create("ProgressDlg", appTitle, true)).execute(task);
+    new ProgressDlgCtrlr(task).showModal();
+    return task.getState();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private State execute(HyperTask task)
+  private ProgressDlgCtrlr(HyperTask task)
   {
+    super("ProgressDlg", appTitle, true);
+
     lblTask.setText("");
     lblPercent.setText("Progress: 0 %");
     progressBar.setProgress(0.0);
@@ -86,10 +89,6 @@ public class ProgressDlgCtrlr extends HyperDlg
       lblTask.textProperty().unbind();
       progressBar.progressProperty().unbind();
     });
-
-    showModal();
-
-    return task.getState();
   }
 
 //---------------------------------------------------------------------------

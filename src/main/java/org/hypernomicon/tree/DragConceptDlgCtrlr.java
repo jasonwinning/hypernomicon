@@ -37,25 +37,18 @@ public class DragConceptDlgCtrlr extends HyperDlg
 {
   @FXML private Label lblMove, lblMoveInfo, lblAdd, lblAddInfo;
 
-  private HDT_Glossary newGlossary;
-  private HDT_Concept sourceChildConcept, newParentConcept;
+  private final HDT_Glossary newGlossary;
+  private final HDT_Concept sourceChildConcept, newParentConcept;
 
   @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static DragConceptDlgCtrlr build(HDT_Concept childConcept, HDT_Record newParent)
+  DragConceptDlgCtrlr(HDT_Concept childConcept, HDT_Record newParent)
   {
-    return ((DragConceptDlgCtrlr) createUsingFullPath("tree/DragConceptDlg", "Copy or Move Record to Destination", true))
-                                 .init(childConcept, newParent);
-  }
+    super("tree/DragConceptDlg", "Copy or Move Record to Destination", true, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private DragConceptDlgCtrlr init(HDT_Concept childConcept, HDT_Record newParent)
-  {
     sourceChildConcept = childConcept;
 
     HDT_Glossary oldGlossary = childConcept.glossary.get();
@@ -67,6 +60,7 @@ public class DragConceptDlgCtrlr extends HyperDlg
     }
     else
     {
+      newParentConcept = null;
       newGlossary = (HDT_Glossary) newParent;
     }
 
@@ -83,8 +77,6 @@ public class DragConceptDlgCtrlr extends HyperDlg
     lblAddInfo.setText("In this case, the existing entry (Concept) in Glossary \"" + oldGlossary.name() +
                        "\" and its definition will remain intact. The definition for the new entry (Concept) in Glossary \"" + newGlossary.name() +
                        "\" will be blank.");
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

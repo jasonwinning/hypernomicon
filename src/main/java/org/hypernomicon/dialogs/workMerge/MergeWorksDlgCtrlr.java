@@ -83,16 +83,18 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   @FXML private CheckBox chkNewEntry;
   @FXML private Button btnLaunch;
 
-  private AnchorPane apPreview;
-  private MasterDetailPane mdp;
-  private PDFJSWrapper jsWrapper = null;
+  private final AnchorPane apPreview;
+  private final MasterDetailPane mdp;
   private final Map<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
   private final Map<BibFieldEnum, BibFieldRow> extraRows = new EnumMap<>(BibFieldEnum.class);
   private final List<WorkToMerge> works = new ArrayList<>(4);
-  private int nextRowNdx = 4;
-  private boolean creatingNewWork, previewInitialized = false;
-  private Ternary newEntryChoice;
+  private final boolean creatingNewWork;
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
+
+  private PDFJSWrapper jsWrapper = null;
+  private int nextRowNdx = 4;
+  private boolean previewInitialized = false;
+  private Ternary newEntryChoice;
 
   public EntryType getEntryType()   { return nullSwitch(extraRows.get(bfEntryType), null, row -> ((EntryTypeCtrlr) row).getEntryType()); }
   public Ternary creatingNewEntry() { return chkNewEntry.isVisible() == false ? Ternary.Unset : (chkNewEntry.isSelected() ? Ternary.True : newEntryChoice); }
@@ -100,29 +102,15 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MergeWorksDlgCtrlr build(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                                         boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
+  public MergeWorksDlgCtrlr(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice) throws IOException
   {
-    return ((MergeWorksDlgCtrlr) createUsingFullPath("dialogs/workMerge/MergeWorksDlg", title, true))
-      .init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChoice, filePath);
+    this(title, bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChoice, nullSwitch(destWork, null, HDT_Work::filePath));
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static MergeWorksDlgCtrlr build(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                                         boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice) throws IOException
+  public MergeWorksDlgCtrlr(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
   {
-    return build(title, bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChoice,
-                 nullSwitch(destWork, null, HDT_Work::filePath));
-  }
+    super("dialogs/workMerge/MergeWorksDlg", title, true, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private MergeWorksDlgCtrlr init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                                  boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
-  {
     this.newEntryChoice = newEntryChoice;
     apPreview = new AnchorPane();
     mdp = WorkDlgCtrlr.addPreview(stagePane, apMain, apPreview, btnPreview);
@@ -327,8 +315,6 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     });
 
     onShown = () -> safeFocus(rbTitle1);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

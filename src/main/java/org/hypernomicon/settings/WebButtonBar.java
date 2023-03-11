@@ -76,7 +76,7 @@ class WebButtonBar extends WebButtonCtrl
     {
       try
       {
-        EditWebButtonsDlgCtrlr dlg = EditWebButtonsDlgCtrlr.build(getWebButton(), prefKey);
+        EditWebButtonsDlgCtrlr dlg = new EditWebButtonsDlgCtrlr(getWebButton(), prefKey);
 
         if ((dlg.showModal() == false) || dlg.unchanged()) return;
 

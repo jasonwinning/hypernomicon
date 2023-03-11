@@ -75,16 +75,10 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InvestigationsDlgCtrlr build(HDT_Work work, List<InvestigationView> invViews, HDT_Person curPerson)
+  public InvestigationsDlgCtrlr(HDT_Work work, List<InvestigationView> invViews, HDT_Person curPerson)
   {
-    return ((InvestigationsDlgCtrlr) create("InvestigationsDlg", "Assign Investigations - " + work.name(), true)).init(work, invViews, curPerson);
-  }
+    super("InvestigationsDlg", "Assign Investigations - " + work.name(), true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private InvestigationsDlgCtrlr init(HDT_Work work, List<InvestigationView> invViews, HDT_Person curPerson)
-  {
     final ObservableList<InvestigationSetting> data = FXCollections.observableArrayList();
     Set<HDT_Investigation> investigations = work.investigationSet();
 
@@ -100,8 +94,6 @@ public class InvestigationsDlgCtrlr extends HyperDlg
     tfNew.textProperty().addListener((ob, ov, nv) -> chkNew.setSelected(nv.trim().length() > 0));
 
     onShown = tfNew::requestFocus;
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

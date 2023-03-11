@@ -131,7 +131,7 @@ class RecordTreeEdge
       {
         HDT_Argument childArg = (HDT_Argument) subj;
 
-        VerdictDlgCtrlr vdc = VerdictDlgCtrlr.build("Select Verdict for " + childArg.getCBText(), obj);
+        VerdictDlgCtrlr vdc = new VerdictDlgCtrlr("Select Verdict for " + childArg.getCBText(), obj);
 
         if (vdc.showModal() == false)
           return false;

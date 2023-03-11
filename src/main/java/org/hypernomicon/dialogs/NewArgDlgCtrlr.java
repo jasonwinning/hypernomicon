@@ -63,11 +63,12 @@ public class NewArgDlgCtrlr extends HyperDlg
   @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfTargetName, tfTitle;
   @FXML private WebView view;
 
-  private HDT_RecordWithMainText target;
-  private HDT_Argument argument;
-  private HyperCB hcbPerson, hcbVerdict, hcbWork;
-  private boolean revising = false, programmaticWorkChange = false, programmaticVerdictChange = false;
+  private final HDT_RecordWithMainText target;
+  private final HyperCB hcbPerson, hcbVerdict, hcbWork;
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
+
+  private HDT_Argument argument;
+  private boolean revising = false, programmaticWorkChange = false, programmaticVerdictChange = false;
   private String argName1 = "", argName2 = "", argName3 = "", argName4 = "", argName5 = "", argName6 = "", argName7 = "", argName8 = "";
 
   public HDT_Argument getArgument() { return argument; }
@@ -75,21 +76,20 @@ public class NewArgDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewArgDlgCtrlr build(HDT_Position position)
+  public NewArgDlgCtrlr(HDT_Position position)
   {
-    return ((NewArgDlgCtrlr) create("NewArgDlg", "New Argument", true)).init(position);
+    this("New Argument", position);
   }
 
-  public static NewArgDlgCtrlr build(HDT_Argument counteredArg)
+  public NewArgDlgCtrlr(HDT_Argument counteredArg)
   {
-    return ((NewArgDlgCtrlr) create("NewArgDlg", "New Counterargument", true)).init(counteredArg);
+    this("New Counterargument", counteredArg);
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private NewArgDlgCtrlr init(HDT_RecordWithMainText target)
+  private NewArgDlgCtrlr(String title, HDT_RecordWithMainText target)
   {
+    super("NewArgDlg", title, true);
+
     this.target = target;
     RecordType verdictType = target.getType() == hdtPosition ? hdtPositionVerdict : hdtArgumentVerdict;
 
@@ -197,8 +197,6 @@ public class NewArgDlgCtrlr extends HyperDlg
     });
 
     chkIncludeAuth.setSelected(true);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

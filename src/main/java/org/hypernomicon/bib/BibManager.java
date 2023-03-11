@@ -119,19 +119,20 @@ public class BibManager extends HyperDlg
   @FXML private ProgressBar progressBar;
 
   private static final String dialogTitle = "Bibliographic Entry Manager";
-
-  private HyperTable htRelatives;
-  private BibEntryTable entryTable;
-  private CollectionTree collTree;
-  private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper = null;
-  private SyncTask syncTask = null;
-  private String assignCaption, unassignCaption;
-  private ImageView assignImg, unassignImg;
-  private CustomTextField searchField;
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
-  private BibDataRetriever bibDataRetriever = null;
+
+  private final HyperTable htRelatives;
+  private final BibEntryTable entryTable;
+  private final CollectionTree collTree;
+  private final String assignCaption, unassignCaption;
+  private final ImageView assignImg, unassignImg;
+  private final CustomTextField searchField;
 
   public final ObjectProperty<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
+
+  private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper = null;
+  private BibDataRetriever bibDataRetriever = null;
+  private SyncTask syncTask = null;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -145,20 +146,14 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibManager build()
+  public BibManager()
   {
-    return ((BibManager) createUsingFullPath("bib/BibManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
-  }
+    super("bib/BibManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private BibManager init()
-  {
     entryTable = new BibEntryTable(tableView, this);
     collTree = new CollectionTree(treeView);
 
-    setupSearchField();
+    searchField = setupSearchField();
 
     assignCaption = btnAssign.getText();
     unassignCaption = btnUnassign.getText();
@@ -306,35 +301,35 @@ public class BibManager extends HyperDlg
   //---------------------------------------------------------------------------
 
     dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
-
-    return this;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setupSearchField()
+  private CustomTextField setupSearchField()
   {
-    searchField = (CustomTextField) TextFields.createClearableTextField();
-    searchField.setPromptText("Title, Author, Year, Published In");
+    CustomTextField ctf = (CustomTextField) TextFields.createClearableTextField();
+    ctf.setPromptText("Title, Author, Year, Published In");
     ImageView imageView = imgViewFromRelPath("resources/images/magnifier.png");
     imageView.setFitHeight(16);
     imageView.setPreserveRatio(true);
-    searchField.setLeft(imageView);
+    ctf.setLeft(imageView);
 
-    copyRegionLayout(tfSearch, searchField);
+    copyRegionLayout(tfSearch, ctf);
 
     toolBar2.getItems().remove(tfSearch);
-    toolBar2.getItems().add(searchField);
+    toolBar2.getItems().add(ctf);
 
-    searchField.textProperty().addListener((obs, ov, nv) -> entryTable.filter(nv));
+    ctf.textProperty().addListener((obs, ov, nv) -> entryTable.filter(nv));
 
     KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
     dialogStage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
     {
       if (keyComb.match(event))
-        safeFocus(searchField);
+        safeFocus(ctf);
     });
+
+    return ctf;
   }
 
 //---------------------------------------------------------------------------
@@ -488,7 +483,7 @@ public class BibManager extends HyperDlg
 
       try
       {
-        mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", entry, pdfBD, queryBD, null, entry.getWork(), false, false, Ternary.False);
+        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", entry, pdfBD, queryBD, null, entry.getWork(), false, false, Ternary.False);
       }
       catch (IOException e)
       {
@@ -729,7 +724,7 @@ public class BibManager extends HyperDlg
   {
     if (ui.cantSaveRecord()) return;
 
-    SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.build(workRecordToAssign.get(), row.getEntry());
+    SelectWorkDlgCtrlr dlg = new SelectWorkDlgCtrlr(workRecordToAssign.get(), row.getEntry());
 
     if (dlg.showModal() == false) return;
 
@@ -761,7 +756,7 @@ public class BibManager extends HyperDlg
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", work.getBibData(), entry, null, null, work, false, false, Ternary.False);
+      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", work.getBibData(), entry, null, null, work, false, false, Ternary.False);
     }
     catch (IOException e)
     {

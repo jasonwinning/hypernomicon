@@ -68,7 +68,6 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -113,8 +112,10 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void init()
+  public App()
   {
+    super();
+
     app = this;
 
     try (LoggerContext lc = Configurator.initialize(new DefaultConfiguration())) { Configurator.setRootLevel(Level.WARN); }
@@ -145,6 +146,21 @@ public final class App extends Application
 
     //db.viewTestingInProgress = true;
     //testMainTextEditing = true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void init() throws Exception
+  {
+    super.init();
+    noOp();
+  }
+
+  @Override public void stop() throws Exception
+  {
+    super.stop();
+    noOp();
   }
 
 //---------------------------------------------------------------------------
@@ -227,7 +243,7 @@ public final class App extends Application
     if (appPrefs.getBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, true)) checkForNewVersion(new AsyncHttpClient(), newVersion ->
     {
       if (newVersion.compareTo(app.getVersion()) > 0)
-        NewVersionDlgCtrlr.build().showModal();
+        new NewVersionDlgCtrlr().showModal();
     }, Util::noOp);
 
     if (db.viewTestingInProgress && hdbExists)
@@ -324,11 +340,8 @@ public final class App extends Application
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
 
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"));
-    Region rootNode = loader.load();
-
-    ui = loader.getController();
-    ui.init(stage);
+    MainCtrlr.create(stage);
+    Region rootNode = ui.getRootNode();
 
     Scene scene = new Scene(rootNode);
 
@@ -373,7 +386,7 @@ public final class App extends Application
 
     forEachHyperTab(HyperTab::setDividerPositions);
 
-    bibManagerDlg = BibManager.build();
+    bibManagerDlg = new BibManager();
     bibManagerDlg.initBounds(PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_WIDTH, PREF_KEY_BM_WINDOW_HEIGHT);
 
     db.addBibChangedHandler(() ->
@@ -389,13 +402,13 @@ public final class App extends Application
         ui.update();
     });
 
-    fileManagerDlg = FileManager.build();
+    fileManagerDlg = new FileManager();
     fileManagerDlg.initBounds(PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_WIDTH, PREF_KEY_FM_WINDOW_HEIGHT);
 
-    previewWindow = PreviewWindow.build();
+    previewWindow = new PreviewWindow();
     previewWindow.initBounds(PREF_KEY_PREV_WINDOW_X, PREF_KEY_PREV_WINDOW_Y, PREF_KEY_PREV_WINDOW_WIDTH, PREF_KEY_PREV_WINDOW_HEIGHT);
 
-    contentsWindow = ContentsWindow.build();
+    contentsWindow = new ContentsWindow();
     contentsWindow.initBounds(PREF_KEY_CONTENTS_WINDOW_X, PREF_KEY_CONTENTS_WINDOW_Y, PREF_KEY_CONTENTS_WINDOW_WIDTH, PREF_KEY_CONTENTS_WINDOW_HEIGHT);
   }
 

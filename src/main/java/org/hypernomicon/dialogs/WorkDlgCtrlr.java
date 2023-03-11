@@ -132,17 +132,20 @@ public class WorkDlgCtrlr extends HyperDlg
   @FXML private ToggleGroup tgSelect;
   @FXML public Button btnCancel;
 
-  private AnchorPane apPreview;
-  private MasterDetailPane mdp;
-  private HyperCB hcbType;
-  private HyperTable htAuthors, htISBN;
-  private HDT_WorkFile oldWorkFile = null, newWorkFile = null;
+  private final AnchorPane apPreview;
+  private final MasterDetailPane mdp;
+  private final HyperCB hcbType;
+  private final HyperTable htAuthors, htISBN;
+  private final HDT_WorkFile oldWorkFile;
+  private final GUIBibData curBD;
+  private final HDT_Work curWork;
+  private final ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
+
+  private BibDataRetriever bibDataRetriever = null;
+  private HDT_WorkFile newWorkFile = null;
   private PDFJSWrapper jsWrapper = null;
   private FilePath previewFilePath = null, origFilePath = null;
-  private GUIBibData origBDtoUse = null, curBD = null;
-  private HDT_Work curWork;
-  private final ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
-  private BibDataRetriever bibDataRetriever = null;
+  private GUIBibData origBDtoUse = null;
   private Ternary newEntryChoice;
   private boolean userOverrideDest = false, dontRegenerateFilename = false, previewInitialized = false;
 
@@ -157,21 +160,23 @@ public class WorkDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static WorkDlgCtrlr build(FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
+  public WorkDlgCtrlr(FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
-    return ((WorkDlgCtrlr) create("WorkDlg", "Import New Work File", true)).init(null, filePathToUse, bdToUse, newEntryChoice, newEntryType);
+    this("Import New Work File", null, filePathToUse, bdToUse, newEntryChoice, newEntryType);
   }
 
-  public static WorkDlgCtrlr build(HDT_WorkFile workFileToUse)
+  public WorkDlgCtrlr(HDT_WorkFile workFileToUse)
   {
-    return ((WorkDlgCtrlr) create("WorkDlg", "Work File", true)).init(workFileToUse, null, null, Ternary.Unset, EntryType.etUnentered);
+    this("Work File", workFileToUse, null, null, Ternary.Unset, EntryType.etUnentered);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private WorkDlgCtrlr init(HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
+  private WorkDlgCtrlr(String dialogTitle, HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
+    super("WorkDlg", dialogTitle, true);
+
     apPreview = new AnchorPane();
     mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
 
@@ -185,31 +190,14 @@ public class WorkDlgCtrlr extends HyperDlg
       updatePreview();
     });
 
-    initControls();
-
-    onShown = () ->
-    {
-      disableCache(taMisc);
-
-      if (oldWorkFile == null)
-      {
-        if (filePathToUse == null)
-        {
-          btnSrcBrowseClick();
-
-          if (FilePath.isEmpty(origFilePath))
-            safeFocus(tfTitle);
-        }
-        else
-          useChosenFile(filePathToUse, bdToUse);
-      }
-
-      if (newEntryType != EntryType.etUnentered)
-        cbEntryType.getSelectionModel().select(newEntryType);
-    };
-
     curWork = workHyperTab().activeRecord();
     curBD = new GUIBibData(curWork.getBibData());
+
+    hcbType = initWorkTypeHCB();
+    htISBN = initISBNTable();
+    htAuthors = initAuthorsTable();
+
+    initControls();
 
     this.newEntryChoice = newEntryChoice;
     origBDtoUse = bdToUse == null ? null : new GUIBibData(bdToUse);
@@ -223,6 +211,8 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (workFileToUse == null)
     {
+      oldWorkFile = null;
+
       switch (db.prefs.get(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE))
       {
         case PREF_KEY_IMPORT_ACTION_MOVE : rbMove   .setSelected(true); break;
@@ -242,6 +232,12 @@ public class WorkDlgCtrlr extends HyperDlg
 
     workHyperTab().getBibDataFromGUI(curBD);
     populateFieldsFromBibData(curBD, false);
+
+    if (oldWorkFile != null)
+    {
+      updatePreview();
+      tfOrigFile.setText(origFilePath.toString());
+    }
 
     htAuthors.clear();
     htAuthors.getPopulator(0).populate(null, false);
@@ -282,158 +278,38 @@ public class WorkDlgCtrlr extends HyperDlg
       newRow.setCheckboxValue(4, origRow.getCheckboxValue(3));
     }
 
-    if (oldWorkFile != null)
-    {
-      updatePreview();
-      tfOrigFile.setText(origFilePath.toString());
-    }
 
-    return this;
+    onShown = () ->
+    {
+      disableCache(taMisc);
+
+      if (oldWorkFile == null)
+      {
+        if (filePathToUse == null)
+        {
+          btnSrcBrowseClick();
+
+          if (FilePath.isEmpty(origFilePath))
+            safeFocus(tfTitle);
+        }
+        else
+          useChosenFile(filePathToUse, bdToUse);
+      }
+
+      if (newEntryType != EntryType.etUnentered)
+        cbEntryType.getSelectionModel().select(newEntryType);
+    };
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initControls()
+  private HyperCB initWorkTypeHCB()
   {
-    lblAutoPopulated.setText("");
-    tfOrigFile.setEditable(false);
-
     StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet, DisplayKind.cbText);
-    hcbType = new HyperCB(cbType, ctDropDownList, pop);
+    HyperCB hyperCB = new HyperCB(cbType, ctDropDownList, pop);
 
-    destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
-
-    if (db.bibLibraryIsLinked())
-      bibManagerDlg.initCB(cbEntryType);
-
-    tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
-
-    btnPaste.setOnAction(event ->
-    {
-      FilePath filePath = new FilePath(getClipboardText(true));
-      if (filePath.exists())
-        useChosenFile(filePath, null);
-    });
-
-    setToolTip(btnPaste, "Paste file path from clipboard");
-
-    mnuPopulateUsingDOI.setOnAction(event ->
-    {
-      String doi = matchDOI(tfDOI.getText());
-      if (doi.length() > 0)
-        industryIdClick(true, doi, null);
-    });
-
-    btnAutoFill       .setOnAction(event -> extractDataFromPdf(true , true, false));
-    mnuPopulateFromPDF.setOnAction(event -> extractDataFromPdf(false, true, false));
-
-    setToolTip(btnAutoFill, AUTOFILL_TOOLTIP);
-
-    htISBN = new HyperTable(tvISBN, 0, true, "");
-
-    htISBN.addTextEditCol(hdtWork, true, false);
-
-    htISBN.addContextMenuItem("Use this ISBN to fill in fields",
-      row -> row.getText(0).length() > 0,
-      row ->
-      {
-        List<String> list = matchISBN(row.getText(0));
-        if (collEmpty(list) == false)
-          industryIdClick(false, null, list.get(0));
-      });
-
-    htAuthors = new HyperTable(tvAuthors, 0, true, PREF_KEY_HT_WORK_DLG);
-
-    htAuthors.addColWithUpdateHandler(hdtPerson, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      dontRegenerateFilename = true;
-
-      if (HyperTableCell.getCellID(cellVal) > 0)
-        row.setCheckboxValue(1, true);
-
-      if (htAuthors.dataRowCount() == 1)
-        row.setCheckboxValue(2, true);
-      else if (HyperTableCell.getCellID(cellVal) > 0)
-      {
-        boolean useInFilename = true, keepGoing = true;
-        Iterator<HyperTableRow> it = htAuthors.dataRows().iterator();
-
-        while (it.hasNext() && keepGoing && useInFilename)
-        {
-          HyperTableRow loopRow = it.next();
-          if (loopRow == row)
-            keepGoing = false;
-          else if (loopRow.getID(0) > 0)
-            useInFilename = false;
-        }
-
-        if (useInFilename)
-        {
-          htAuthors.dataRows().forEach(loopRow -> loopRow.setCheckboxValue(2, false));
-          row.setCheckboxValue(2, true);
-        }
-      }
-
-      dontRegenerateFilename = false;
-
-      btnRegenerateFilenameClick();
-    });
-
-    htAuthors.addCheckboxColWithUpdateHandler(createAuthorRecordHandler(htAuthors, () -> curWork));
-
-    CellUpdateHandler handler = (row, cellVal, nextColNdx, nextPopulator) -> btnRegenerateFilenameClick();
-
-    htAuthors.addCheckboxColWithUpdateHandler(handler);
-    htAuthors.addCheckboxColWithUpdateHandler(handler);
-    htAuthors.addCheckboxColWithUpdateHandler(handler);
-
-    Consumer<HyperTableRow> removeHandler = removedRow ->
-    {
-      if (htAuthors.dataRowCount() == 0) return;
-
-      HyperTableRow firstRecordRow = null;
-
-      for (HyperTableRow row : htAuthors.dataRows())
-      {
-        if (row.getCheckboxValue(2))
-          return;
-
-        if ((firstRecordRow == null) && (row.getID(0) > 0))
-          firstRecordRow = row;
-      }
-
-      Objects.requireNonNullElseGet(firstRecordRow, () -> htAuthors.dataRowStream().findFirst().orElseThrow()).setCheckboxValue(2, true);
-    };
-
-    htAuthors.addRemoveMenuItem(removeHandler);
-
-    htAuthors.addContextMenuItem("Remove this row", row -> (row.getText(0).length() > 0) && (row.getID(0) < 1), row ->
-    {
-      htAuthors.removeRow(row);
-      removeHandler.accept(row);
-    });
-
-    htAuthors.addChangeOrderMenuItem(true);
-
-    tfTitle.textProperty().addListener((ob, oldValue, newValue) ->
-    {
-      String fileTitle = newValue;
-
-      fileTitle = fileTitle.replace('?', ':')
-                           .replace('/', '-');
-
-      int pos = fileTitle.indexOf(':');
-      if (pos >= 0) fileTitle = fileTitle.substring(0, pos);
-
-      fileTitle = FilePath.removeInvalidFileNameChars(fileTitle);
-
-      tfFileTitle.setText(fileTitle.trim());
-    });
-
-    tfFileTitle.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
-
-    hcbType.addListener((oldValue, newValue) ->
+    hyperCB.addListener((oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -469,6 +345,164 @@ public class WorkDlgCtrlr extends HyperDlg
         updateDest();
       }
     });
+
+    return hyperCB;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private HyperTable initISBNTable()
+  {
+    HyperTable hyperTable = new HyperTable(tvISBN, 0, true, "");
+
+    hyperTable.addTextEditCol(hdtWork, true, false);
+
+    hyperTable.addContextMenuItem("Use this ISBN to fill in fields",
+      row -> row.getText(0).length() > 0,
+      row ->
+      {
+        List<String> list = matchISBN(row.getText(0));
+        if (collEmpty(list) == false)
+          industryIdClick(false, null, list.get(0));
+      });
+
+    return hyperTable;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private HyperTable initAuthorsTable()
+  {
+    HyperTable hyperTable = new HyperTable(tvAuthors, 0, true, PREF_KEY_HT_WORK_DLG);
+
+    hyperTable.addColWithUpdateHandler(hdtPerson, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      dontRegenerateFilename = true;
+
+      if (HyperTableCell.getCellID(cellVal) > 0)
+        row.setCheckboxValue(1, true);
+
+      if (hyperTable.dataRowCount() == 1)
+        row.setCheckboxValue(2, true);
+      else if (HyperTableCell.getCellID(cellVal) > 0)
+      {
+        boolean useInFilename = true, keepGoing = true;
+        Iterator<HyperTableRow> it = hyperTable.dataRows().iterator();
+
+        while (it.hasNext() && keepGoing && useInFilename)
+        {
+          HyperTableRow loopRow = it.next();
+          if (loopRow == row)
+            keepGoing = false;
+          else if (loopRow.getID(0) > 0)
+            useInFilename = false;
+        }
+
+        if (useInFilename)
+        {
+          hyperTable.dataRows().forEach(loopRow -> loopRow.setCheckboxValue(2, false));
+          row.setCheckboxValue(2, true);
+        }
+      }
+
+      dontRegenerateFilename = false;
+
+      btnRegenerateFilenameClick();
+    });
+
+    hyperTable.addCheckboxColWithUpdateHandler(createAuthorRecordHandler(hyperTable, () -> curWork));
+
+    CellUpdateHandler handler = (row, cellVal, nextColNdx, nextPopulator) -> btnRegenerateFilenameClick();
+
+    hyperTable.addCheckboxColWithUpdateHandler(handler);
+    hyperTable.addCheckboxColWithUpdateHandler(handler);
+    hyperTable.addCheckboxColWithUpdateHandler(handler);
+
+    Consumer<HyperTableRow> removeHandler = removedRow ->
+    {
+      if (hyperTable.dataRowCount() == 0) return;
+
+      HyperTableRow firstRecordRow = null;
+
+      for (HyperTableRow row : hyperTable.dataRows())
+      {
+        if (row.getCheckboxValue(2))
+          return;
+
+        if ((firstRecordRow == null) && (row.getID(0) > 0))
+          firstRecordRow = row;
+      }
+
+      Objects.requireNonNullElseGet(firstRecordRow, () -> hyperTable.dataRowStream().findFirst().orElseThrow()).setCheckboxValue(2, true);
+    };
+
+    hyperTable.addRemoveMenuItem(removeHandler);
+
+    hyperTable.addContextMenuItem("Remove this row", row -> (row.getText(0).length() > 0) && (row.getID(0) < 1), row ->
+    {
+      hyperTable.removeRow(row);
+      removeHandler.accept(row);
+    });
+
+    hyperTable.addChangeOrderMenuItem(true);
+
+    return hyperTable;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initControls()
+  {
+    lblAutoPopulated.setText("");
+    tfOrigFile.setEditable(false);
+
+    destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
+
+    if (db.bibLibraryIsLinked())
+      bibManagerDlg.initCB(cbEntryType);
+
+    tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
+
+    btnPaste.setOnAction(event ->
+    {
+      FilePath filePath = new FilePath(getClipboardText(true));
+      if (filePath.exists())
+        useChosenFile(filePath, null);
+    });
+
+    setToolTip(btnPaste, "Paste file path from clipboard");
+
+    mnuPopulateUsingDOI.setOnAction(event ->
+    {
+      String doi = matchDOI(tfDOI.getText());
+      if (doi.length() > 0)
+        industryIdClick(true, doi, null);
+    });
+
+    btnAutoFill       .setOnAction(event -> extractDataFromPdf(true , true, false));
+    mnuPopulateFromPDF.setOnAction(event -> extractDataFromPdf(false, true, false));
+
+    setToolTip(btnAutoFill, AUTOFILL_TOOLTIP);
+
+    tfTitle.textProperty().addListener((ob, oldValue, newValue) ->
+    {
+      String fileTitle = newValue;
+
+      fileTitle = fileTitle.replace('?', ':')
+                           .replace('/', '-');
+
+      int pos = fileTitle.indexOf(':');
+      if (pos >= 0) fileTitle = fileTitle.substring(0, pos);
+
+      fileTitle = FilePath.removeInvalidFileNameChars(fileTitle);
+
+      tfFileTitle.setText(fileTitle.trim());
+    });
+
+    tfFileTitle.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
 
     tfYear.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
 
@@ -574,7 +608,7 @@ public class WorkDlgCtrlr extends HyperDlg
           author = new Author(work, new PersonName(text), false, false, Ternary.Unset);
       }
 
-      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(true, text, author);
+      NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(true, text, author);
 
       if (npdc.showModal())
       {
@@ -936,7 +970,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     try
     {
-      MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", curBD,
+      MergeWorksDlgCtrlr mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", curBD,
         bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(),
         chkCreateBibEntry.isSelected() ? Ternary.True : Ternary.Unset, origFilePath);
 

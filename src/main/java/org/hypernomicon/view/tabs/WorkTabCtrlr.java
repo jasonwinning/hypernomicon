@@ -226,7 +226,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           return;
         }
 
-        NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(true, text, author);
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(true, text, author);
 
         if (npdc.showModal())
         {
@@ -339,7 +339,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       },
       row ->
       {
-        ChooseParentWorkFileDlgCtrlr ctrlr = ChooseParentWorkFileDlgCtrlr.build(curWork);
+        ChooseParentWorkFileDlgCtrlr ctrlr = new ChooseParentWorkFileDlgCtrlr(curWork);
 
         if (ctrlr.showModal() == false) return;
 
@@ -1636,7 +1636,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (HDT_Work.isUnenteredSet(curWork))
     {
-      fdc = FileDlgCtrlr.build("Unentered Work File", workFile, curWork);
+      fdc = new FileDlgCtrlr("Unentered Work File", workFile, curWork);
 
       fdc.setSrcFilePath(filePathToUse, true);
 
@@ -1648,9 +1648,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     else
     {
       wdc = (workFile == null) && (filePathToUse != null) ?
-        WorkDlgCtrlr.build(filePathToUse, bdToUse, newEntryChoice, newEntryType)
+        new WorkDlgCtrlr(filePathToUse, bdToUse, newEntryChoice, newEntryType)
       :
-        WorkDlgCtrlr.build(workFile);
+        new WorkDlgCtrlr(workFile);
 
       boolean result = wdc.showModal();
 
@@ -1876,7 +1876,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       try
       {
-        mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", workBD, pdfBD, queryBD, null, curWork, false, true, Ternary.Unset);
+        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", workBD, pdfBD, queryBD, null, curWork, false, true, Ternary.Unset);
       }
       catch (IOException e)
       {
@@ -1913,8 +1913,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", workBibData,
-                                     pdfBDprop.get(), crossrefBDprop.get(), googleBDprop.get(), curWork, false, true, Ternary.Unset);
+      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", workBibData, pdfBDprop.get(), crossrefBDprop.get(), googleBDprop.get(), curWork, false, true, Ternary.Unset);
     }
     catch (IOException e)
     {

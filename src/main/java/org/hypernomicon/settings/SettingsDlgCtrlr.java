@@ -88,12 +88,13 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private TabPane tpMain;
   @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfVerificationCode;
 
-  private StringProperty authUrl;
-  private OAuth1RequestToken requestToken;
-  private boolean noDB;
-  private SettingsControl webBtnSettingsCtrlr;
+  private final StringProperty authUrl;
+  private final boolean noDB;
+  private final SettingsControl webBtnSettingsCtrlr;
   private final Map<SettingsPage, Tab> pageToTab = new EnumMap<>(SettingsPage.class);
   private final Map<SettingsPage, TreeItem<SettingsPage>> pageToTreeItem = new EnumMap<>(SettingsPage.class);
+
+  private OAuth1RequestToken requestToken;
 
   public enum SettingsPage
   {
@@ -122,42 +123,118 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void btnExtFileBrowseClick()
+  public SettingsDlgCtrlr()
   {
-    DirectoryChooser dirChooser = new DirectoryChooser();
+    this(CompGeneral);
+  }
 
-    FilePath startPath = new FilePath(tfExtFiles.getText());
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    if (FilePath.isEmpty(startPath))
+  public SettingsDlgCtrlr(SettingsPage page)
+  {
+    super("settings/SettingsDlg", appTitle + " Settings", true, true);
+
+    noDB = (db.prefs == null) || (db.isLoaded() == false);
+
+    initTree();
+
+    webBtnSettingsCtrlr = initControl(tabWebButtons, "WebButtonSettings");
+    initControl(tabFolders, "FolderSettings");
+    initControl(tabNaming, "WorkFileNamingSettings");
+
+    btnVerify.setOnAction(event ->
     {
-      if (db.isLoaded())
+      if (tfVerificationCode.textProperty().isEmpty().get())
       {
-        startPath = db.getRootPath();
-        FilePath parentPath = startPath.getParent();
-        if (FilePath.isEmpty(parentPath) == false)
-          startPath = parentPath;
+        falseWithWarningMessage("You must enter a verification code.", tfVerificationCode);
+        return;
       }
+
+      if (btnZoteroAuthorize.isSelected())
+        zoteroVerifyClick();
       else
-        startPath = new FilePath(userWorkingDir());
-    }
+        mendeleyVerifyClick();
+    });
 
-    dirChooser.setInitialDirectory(startPath.toFile());
-    dirChooser.setTitle("Select Folder");
+    btnUnlink.setOnAction(event -> btnUnlinkClick());
 
-    nullSwitch(ui.windows.showDirDialog(dirChooser, dialogStage), filePath -> tfExtFiles.setText(filePath.toString()));
-  }
+    authUrl = new SimpleStringProperty();
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    btnZoteroAuthorize.disableProperty().bind(authUrl.isNotEmpty());
+    btnMendeleyAuthorize.disableProperty().bind(authUrl.isNotEmpty());
+    lblRedirect.visibleProperty().bind(authUrl.isNotEmpty());
 
-  public static SettingsDlgCtrlr build()
-  {
-    return build(CompGeneral);
-  }
+    btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
+    btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
+    lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
 
-  public static SettingsDlgCtrlr build(SettingsPage page)
-  {
-    return ((SettingsDlgCtrlr) createUsingFullPath("settings/SettingsDlg", appTitle + " Settings", true)).init(page);
+    btnCodePaste.setOnAction(event -> tfVerificationCode.setText(getClipboardText(true)));
+    setToolTip(btnCodePaste, "Paste text from clipboard");
+
+    btnVerify.disableProperty().bind(tfVerificationCode.textProperty().isEmpty());
+
+    btnVerify           .visibleProperty().bind(authUrl.isNotEmpty());
+    lblRedirect         .visibleProperty().bind(authUrl.isNotEmpty());
+    btnCodePaste        .visibleProperty().bind(authUrl.isNotEmpty());
+    tfVerificationCode  .visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep2            .visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep2Instructions.visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep3            .visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep3Instructions.visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep4            .visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep4Instructions.visibleProperty().bind(authUrl.isNotEmpty());
+
+    initAppTextField(tfImageEditor, PREF_KEY_IMAGE_EDITOR);
+    initAppTextField(tfPDFReader, PREF_KEY_PDF_READER);
+    initAppTextField(tfExtFiles, PREF_KEY_EXT_FILES_1);
+
+    btnImgEditorAdvanced.setOnAction(event ->
+    {
+      LaunchCommandsDlgCtrlr lcdc = new LaunchCommandsDlgCtrlr
+        ("Modify Image Editor Command(s)", PREF_KEY_IMAGE_EDITOR, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE);
+
+      if (lcdc.showModal())
+        tfImageEditor.setText(appPrefs.get(PREF_KEY_IMAGE_EDITOR, ""));
+    });
+
+    btnPdfViewerAdvanced.setOnAction(event ->
+    {
+      LaunchCommandsDlgCtrlr lcdc = new LaunchCommandsDlgCtrlr
+        ("Modify PDF Viewer Command(s)", PREF_KEY_PDF_READER, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE);
+
+      if (lcdc.showModal())
+        tfPDFReader.setText(appPrefs.get(PREF_KEY_PDF_READER, ""));
+    });
+
+    sliderFontSize.setValue(appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
+    sliderFontSize.valueProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if ((oldValue == null) || (newValue == null) || (oldValue.doubleValue() == newValue.doubleValue())) return;
+      if (appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE) == newValue.doubleValue()) return;
+
+      appPrefs.putDouble(PREF_KEY_FONT_SIZE, newValue.doubleValue());
+    });
+
+    setToolTip(sliderFontSize, "Base font size");
+
+    initAppCheckBox(chkInternet       , PREF_KEY_CHECK_INTERNET       , true);
+    initAppCheckBox(chkNewVersionCheck, PREF_KEY_CHECK_FOR_NEW_VERSION, true);
+    initAppCheckBox(chkAutoOpenPDF    , PREF_KEY_AUTO_OPEN_PDF        , true);
+    initAppCheckBox(chkAutoRetrieveBib, PREF_KEY_AUTO_RETRIEVE_BIB    , true);
+
+    chkLinuxWorkaround.setVisible(SystemUtils.IS_OS_LINUX);
+
+    initAppCheckBox(chkLinuxWorkaround, PREF_KEY_LINUX_WORKAROUND, false);
+
+    disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming);
+
+    if (noDB == false)
+      initDBCheckBox(chkUseSentenceCase, PREF_KEY_SENTENCE_CASE, false);
+
+    dialogStage.setOnHiding(event -> webBtnSettingsCtrlr.save());
+
+    onShown = () -> treeView.getSelectionModel().select(pageToTreeItem.get(page));
   }
 
 //---------------------------------------------------------------------------
@@ -206,115 +283,6 @@ public class SettingsDlgCtrlr extends HyperDlg
       setUnlinkMessage();
       tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private SettingsDlgCtrlr init(SettingsPage page)
-  {
-    noDB = (db.prefs == null) || (db.isLoaded() == false);
-
-    initTree();
-
-    webBtnSettingsCtrlr = initControl(tabWebButtons, "WebButtonSettings");
-    initControl(tabFolders, "FolderSettings");
-    initControl(tabNaming, "WorkFileNamingSettings");
-
-    btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
-    btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
-    lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
-
-    btnVerify.setOnAction(event ->
-    {
-      if (tfVerificationCode.textProperty().isEmpty().get())
-      {
-        falseWithWarningMessage("You must enter a verification code.", tfVerificationCode);
-        return;
-      }
-
-      if (btnZoteroAuthorize.isSelected())
-        zoteroVerifyClick();
-      else
-        mendeleyVerifyClick();
-    });
-
-    btnUnlink.setOnAction(event -> btnUnlinkClick());
-
-    authUrl = new SimpleStringProperty();
-
-    btnZoteroAuthorize.disableProperty().bind(authUrl.isNotEmpty());
-    btnMendeleyAuthorize.disableProperty().bind(authUrl.isNotEmpty());
-    lblRedirect.visibleProperty().bind(authUrl.isNotEmpty());
-
-    btnCodePaste.setOnAction(event -> tfVerificationCode.setText(getClipboardText(true)));
-    setToolTip(btnCodePaste, "Paste text from clipboard");
-
-    btnVerify.disableProperty().bind(tfVerificationCode.textProperty().isEmpty());
-
-    btnVerify           .visibleProperty().bind(authUrl.isNotEmpty());
-    lblRedirect         .visibleProperty().bind(authUrl.isNotEmpty());
-    btnCodePaste        .visibleProperty().bind(authUrl.isNotEmpty());
-    tfVerificationCode  .visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep2            .visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep2Instructions.visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep3            .visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep3Instructions.visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep4            .visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep4Instructions.visibleProperty().bind(authUrl.isNotEmpty());
-
-    initAppTextField(tfImageEditor, PREF_KEY_IMAGE_EDITOR);
-    initAppTextField(tfPDFReader, PREF_KEY_PDF_READER);
-    initAppTextField(tfExtFiles, PREF_KEY_EXT_FILES_1);
-
-    btnImgEditorAdvanced.setOnAction(event ->
-    {
-      LaunchCommandsDlgCtrlr lcdc = LaunchCommandsDlgCtrlr.build
-        ("Modify Image Editor Command(s)", PREF_KEY_IMAGE_EDITOR, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE);
-
-      if (lcdc.showModal())
-        tfImageEditor.setText(appPrefs.get(PREF_KEY_IMAGE_EDITOR, ""));
-    });
-
-    btnPdfViewerAdvanced.setOnAction(event ->
-    {
-      LaunchCommandsDlgCtrlr lcdc = LaunchCommandsDlgCtrlr.build
-        ("Modify PDF Viewer Command(s)", PREF_KEY_PDF_READER, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE);
-
-      if (lcdc.showModal())
-        tfPDFReader.setText(appPrefs.get(PREF_KEY_PDF_READER, ""));
-    });
-
-    sliderFontSize.setValue(appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
-    sliderFontSize.valueProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if ((oldValue == null) || (newValue == null) || (oldValue.doubleValue() == newValue.doubleValue())) return;
-      if (appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE) == newValue.doubleValue()) return;
-
-      appPrefs.putDouble(PREF_KEY_FONT_SIZE, newValue.doubleValue());
-    });
-
-    setToolTip(sliderFontSize, "Base font size");
-
-    initAppCheckBox(chkInternet       , PREF_KEY_CHECK_INTERNET       , true);
-    initAppCheckBox(chkNewVersionCheck, PREF_KEY_CHECK_FOR_NEW_VERSION, true);
-    initAppCheckBox(chkAutoOpenPDF    , PREF_KEY_AUTO_OPEN_PDF        , true);
-    initAppCheckBox(chkAutoRetrieveBib, PREF_KEY_AUTO_RETRIEVE_BIB    , true);
-
-    chkLinuxWorkaround.setVisible(SystemUtils.IS_OS_LINUX);
-
-    initAppCheckBox(chkLinuxWorkaround, PREF_KEY_LINUX_WORKAROUND, false);
-
-    disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming);
-
-    if (noDB == false)
-      initDBCheckBox(chkUseSentenceCase, PREF_KEY_SENTENCE_CASE, false);
-
-    dialogStage.setOnHiding(event -> webBtnSettingsCtrlr.save());
-
-    onShown = () -> treeView.getSelectionModel().select(pageToTreeItem.get(page));
-
-    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -380,6 +348,34 @@ public class SettingsDlgCtrlr extends HyperDlg
       if (newValue != null)
         appPrefs.putBoolean(prefKey, newValue);
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnExtFileBrowseClick()
+  {
+    DirectoryChooser dirChooser = new DirectoryChooser();
+
+    FilePath startPath = new FilePath(tfExtFiles.getText());
+
+    if (FilePath.isEmpty(startPath))
+    {
+      if (db.isLoaded())
+      {
+        startPath = db.getRootPath();
+        FilePath parentPath = startPath.getParent();
+        if (FilePath.isEmpty(parentPath) == false)
+          startPath = parentPath;
+      }
+      else
+        startPath = new FilePath(userWorkingDir());
+    }
+
+    dirChooser.setInitialDirectory(startPath.toFile());
+    dirChooser.setTitle("Select Folder");
+
+    nullSwitch(ui.windows.showDirDialog(dirChooser, dialogStage), filePath -> tfExtFiles.setText(filePath.toString()));
   }
 
 //---------------------------------------------------------------------------
@@ -513,7 +509,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     String message = "This database is currently linked to a " + db.getBibLibrary().type().getUserFriendlyName() + " library.";
 
     if (additionalInfo.length() > 0)
-      message = message + " " + additionalInfo;
+      message = message + ' ' + additionalInfo;
 
     lblCurrentlyLinked.setText(message);
   }
@@ -540,7 +536,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     ((MendeleyWrapper)library).getUserNameFromServer(emailAddress ->
     {
-      setLinkedMessage("Username: " + emailAddress.toString());
+      setLinkedMessage("Username: " + emailAddress);
     },
     ex ->
     {

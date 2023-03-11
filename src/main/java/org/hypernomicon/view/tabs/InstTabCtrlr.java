@@ -162,7 +162,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         return;
       }
 
-      NewRegionDlgCtrlr nrdc = NewRegionDlgCtrlr.build(country);
+      NewRegionDlgCtrlr nrdc = new NewRegionDlgCtrlr(country);
       if (nrdc.showModal() == false) return;
 
       hcbRegion.populate(true);

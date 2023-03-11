@@ -43,7 +43,7 @@ import static org.hypernomicon.FolderTreeWatcher.*;
 public class LockedDlgCtrlr extends HyperDlg
 {
   private static MessageSenderThread thread = null;
-  private String otherCompName, otherHostName;
+  private final String otherCompName, otherHostName;
   private long sentTime;
 
   @FXML private Button btnTryComm, btnTryTerminate, btnStop, btnOverride, btnCancel;
@@ -69,7 +69,6 @@ public class LockedDlgCtrlr extends HyperDlg
       done = false;
     }
 
-  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     @Override public void run()
@@ -128,25 +127,15 @@ public class LockedDlgCtrlr extends HyperDlg
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  public static LockedDlgCtrlr build(String otherCompName)
+  public LockedDlgCtrlr(String title, Throwable e)
   {
-    return ((LockedDlgCtrlr) create("LockedDlg", "Database is Currently Locked", true)).init(otherCompName);
-  }
+    super("LockedDlg", title, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    otherHostName = "";
+    otherCompName = "";
 
-  public static LockedDlgCtrlr build(String title, Throwable e)
-  {
-    return ((LockedDlgCtrlr) create("LockedDlg", title, true)).init(e);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private LockedDlgCtrlr init(Throwable e)
-  {
     String stacktrace = ExceptionUtils.getStackTrace(e);
 
     taOutput.setText(stacktrace);
@@ -155,35 +144,37 @@ public class LockedDlgCtrlr extends HyperDlg
     btnTryTerminate.setOnAction(event -> copyToClipboard(stacktrace));
 
     setAllVisible(false, btnTryComm, btnOverride, btnStop, lblSeconds);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private LockedDlgCtrlr init(String otherCompName)
+  public LockedDlgCtrlr(String otherCompName)
   {
+    super("LockedDlg", "Database is Currently Locked", true);
+
     this.otherCompName = otherCompName;
+
+    String tmpOtherHostName = "";
 
     if (otherCompName.contains("::::"))
     {
-      this.otherHostName = otherCompName.substring(0, otherCompName.indexOf("::::"));
+      tmpOtherHostName = otherCompName.substring(0, otherCompName.indexOf("::::"));
 
-      if (otherHostName.isBlank())
-        otherHostName = otherCompName.substring(otherCompName.indexOf("::::") + 4);
+      if (tmpOtherHostName.isBlank())
+        tmpOtherHostName = otherCompName.substring(otherCompName.indexOf("::::") + 4);
     }
     else
-      this.otherHostName = otherCompName;
+      tmpOtherHostName = otherCompName;
+
+    otherHostName = tmpOtherHostName;
 
     taOutput.appendText("Database locked by computer " + otherHostName + System.lineSeparator());
 
     onShown = () -> disableCache(taOutput);
 
-    db.getRequestMessageFilePath(true).deletePromptOnFail(true);
+    db.getRequestMessageFilePath (true).deletePromptOnFail(true);
     db.getResponseMessageFilePath(true).deletePromptOnFail(true);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

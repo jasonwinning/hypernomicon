@@ -39,8 +39,8 @@ import javafx.scene.control.TextField;
 
 public class ChangeIDDlgCtrlr extends HyperDlg
 {
-  private HyperCB hcbType;
-  public HyperCB hcbRecord;
+  private final HyperCB hcbType;
+  public final HyperCB hcbRecord;
 
   @FXML private ComboBox<HyperTableCell> cbType, cbRecord;
   @FXML public TextField tfOldID, tfNewID;
@@ -50,16 +50,10 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChangeIDDlgCtrlr build()
+  public ChangeIDDlgCtrlr()
   {
-    return ((ChangeIDDlgCtrlr) create("ChangeIDDlg", "Change Record ID", true)).init();
-  }
+    super("ChangeIDDlg", "Change Record ID", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private ChangeIDDlgCtrlr init()
-  {
     hcbType = new HyperCB(cbType, ctDropDownList, new RecordTypePopulator(false));
     hcbRecord = new HyperCB(cbRecord, ctDropDownList, new RecordByTypePopulator());
 
@@ -108,8 +102,6 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 
       lblNotAvailable.setVisible(false);
     });
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

@@ -44,7 +44,7 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  final RecordType recordType;
+  private final RecordType recordType;
   final String caption;
   private final List<ColumnGroupItem> items = new ArrayList<>();
   TypeCheckBox checkBox;

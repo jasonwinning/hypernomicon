@@ -122,6 +122,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.BooleanExpression;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
@@ -173,22 +174,25 @@ public final class MainCtrlr
 
   public final WindowStack windows = new WindowStack();
   public final Map<String, WebButton> webButtonMap = new HashMap<>();
-  public HyperViewSequence viewSequence;
-  private final EnumHashBiMap<TabEnum, Tab> selectorTabs = EnumHashBiMap.create(TabEnum.class);
-  private Stage stage;
-  private HyperFavorites favorites;
-  private OmniFinder omniFinder;
-  private CustomTextField ctfOmniGoTo;
-  private ClickHoldButton chbBack, chbForward;
-  private HyperCB hcbGoTo;
-  private HyperTable htFind;
+  public final HyperViewSequence viewSequence;
   public final ComboBox<TreeRow> cbTreeGoTo = new ComboBox<>();
-  private ComboBox<ResultsRow> cbResultGoTo = null;
-  private CreateMenuItems createMenuItems;
-  private TextField tfSelector = null;
   public final TreeSelector treeSelector = new TreeSelector();
+  public final Tooltip ttDates;
 
-  public Tooltip ttDates;
+  private final EnumHashBiMap<TabEnum, Tab> selectorTabs = EnumHashBiMap.create(TabEnum.class);
+  private final Stage stage;
+  private final HyperFavorites favorites;
+  private final OmniFinder omniFinder;
+  private final CustomTextField ctfOmniGoTo;
+  private final ClickHoldButton chbBack, chbForward;
+  private final HyperCB hcbGoTo;
+  private final HyperTable htFind;
+  private final CreateMenuItems createMenuItems;
+  private final Region rootNode;
+
+  private ComboBox<ResultsRow> cbResultGoTo = null;
+  private TextField tfSelector = null;
+
   private boolean selectorTabChangeIsProgrammatic = false, dontShowOmniTable = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
   private long lastImportTime = 0L;
@@ -205,14 +209,15 @@ public final class MainCtrlr
   MenuBar getMenuBar()                        { return menuBar; }
   public static TreeWrapper tree()            { return treeHyperTab().getTree(); }
   public Stage getStage()                     { return stage; }
+  public Region getRootNode()                 { return rootNode; }
   public boolean isShuttingDown()             { return shuttingDown; }
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
   @FXML private void mnuOpenClick()           { openDB(null); }
-  @FXML private void mnuAboutClick()          { AboutDlgCtrlr.build().showModal(); }
-  @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.build().showModal(); }
-  @FXML private void mnuSettingsClick()       { if (cantSaveRecord() == false) SettingsDlgCtrlr.build().showModal(); }
+  @FXML private void mnuAboutClick()          { new AboutDlgCtrlr().showModal(); }
+  @FXML private void mnuChangeFavOrderClick() { new FavOrderDlgCtrlr().showModal(); }
+  @FXML private void mnuSettingsClick()       { if (cantSaveRecord() == false) new SettingsDlgCtrlr().showModal(); }
   @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(activeRecord(), false); }
 
   public static PersonTabCtrlr  personHyperTab  () { return getHyperTab(personTabEnum  ); }
@@ -272,8 +277,19 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void init(Stage stage) throws IOException
+  @SuppressWarnings("unused")
+  public static void create(Stage stage) throws IOException
   {
+    new MainCtrlr(stage);
+  }
+
+  private MainCtrlr(Stage stage) throws IOException
+  {
+    ui = this;
+
+    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"), null, null, klass -> this);
+    rootNode = loader.load();
+
     this.stage = stage;
     menuBar.setUseSystemMenuBar(true);
 
@@ -911,7 +927,7 @@ public final class MainCtrlr
 
   @FXML public void mnuShortcutsClick()
   {
-    HelpDlgCtrlr.build().showModal();
+    new HelpDlgCtrlr().showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -930,7 +946,7 @@ public final class MainCtrlr
 
     if (cantSaveRecord()) return;
 
-    ChangeIDDlgCtrlr ctrlr = ChangeIDDlgCtrlr.build();
+    ChangeIDDlgCtrlr ctrlr = new ChangeIDDlgCtrlr();
 
     if (ctrlr.showModal() == false) return;
 
@@ -1231,7 +1247,9 @@ public final class MainCtrlr
 
   private void closeWindows(boolean exitingApp)
   {
-    ctfOmniGoTo.clear();
+    if (ctfOmniGoTo != null)
+      ctfOmniGoTo.clear();
+
     clearOmniFinder();
 
     if ((fileManagerDlg != null) && fileManagerDlg.getStage().isShowing())
@@ -1488,7 +1506,7 @@ public final class MainCtrlr
       if ((result == mrYes) && (saveAllToDisk(false, false, false) == false))
         return;
 
-      NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.build(rootPath.toString());
+      NewDatabaseDlgCtrlr dlg = new NewDatabaseDlgCtrlr(rootPath.toString());
 
       if (dlg.showModal() == false)
         return;
@@ -1772,7 +1790,7 @@ public final class MainCtrlr
 
     if (save && cantSaveRecord()) return null;
 
-    NewCategoryDlgCtrlr ctrlr = NewCategoryDlgCtrlr.build(type, canChangeType);
+    NewCategoryDlgCtrlr ctrlr = new NewCategoryDlgCtrlr(type, canChangeType);
 
     if (ctrlr.showModal() == false) return null;
 
@@ -2133,7 +2151,7 @@ public final class MainCtrlr
 
       .showModal())
     {
-      case mrYes    : SettingsDlgCtrlr.build(SettingsPage.BibMgr).showModal();     break;
+      case mrYes    : new SettingsDlgCtrlr(SettingsPage.BibMgr).showModal();       break;
 
       case mrNo     : db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true ); break;
       case mrIgnore : db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, false); break;
@@ -2181,7 +2199,7 @@ public final class MainCtrlr
     String otherCompName = db.getLockOwner();
     if (otherCompName != null)
     {
-      if (LockedDlgCtrlr.build(otherCompName).showModal() == false)
+      if (new LockedDlgCtrlr(otherCompName).showModal() == false)
         return false;
 
       if (db.getLockOwner() != null)
@@ -2779,7 +2797,7 @@ public final class MainCtrlr
     else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))    desc = record1.getMainText().getHtml();
     else
     {
-      MergeSpokeDlgCtrlr frmMerge = MergeSpokeDlgCtrlr.build(record1, record2);
+      MergeSpokeDlgCtrlr frmMerge = new MergeSpokeDlgCtrlr(record1, record2);
 
       if (frmMerge.showModal() == false)
         return;
@@ -2834,7 +2852,9 @@ public final class MainCtrlr
   private void clearOmniFinder()
   {
     tvFind.setPlaceholder(new Text(""));
-    omniFinder.stop();
+
+    if (omniFinder != null)
+      omniFinder.stop();
   }
 
 //---------------------------------------------------------------------------
@@ -2915,7 +2935,7 @@ public final class MainCtrlr
 
     if (promptForExistingRecord)
     {
-      SelectWorkDlgCtrlr swdc = SelectWorkDlgCtrlr.build(person, filePathToUse);
+      SelectWorkDlgCtrlr swdc = new SelectWorkDlgCtrlr(person, filePathToUse);
       if (swdc.showModal() == false) return false;
 
       work = swdc.getWork();
@@ -2938,8 +2958,7 @@ public final class MainCtrlr
 
             try
             {
-              mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, newEntryChoice,
-                                             nullSwitch(filePathToUse, work.filePath()));
+              mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, newEntryChoice, nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
             {
@@ -2968,8 +2987,7 @@ public final class MainCtrlr
           {
             try
             {
-              mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", workBD, bdToUse, null, null, work, false, true, newEntryChoice,
-                                             nullSwitch(filePathToUse, work.filePath()));
+              mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", workBD, bdToUse, null, null, work, false, true, newEntryChoice, nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
             {
@@ -3087,7 +3105,7 @@ public final class MainCtrlr
   {
     if (cantSaveRecord()) return;
 
-    ImportBibEntryDlgCtrlr ibed = ImportBibEntryDlgCtrlr.build(lines, filePath);
+    ImportBibEntryDlgCtrlr ibed = new ImportBibEntryDlgCtrlr(lines, filePath);
 
     if (ibed.getFailedToLoad() || !ibed.showModal()) return;
 
@@ -3136,8 +3154,8 @@ public final class MainCtrlr
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.build("Import Into " + (creatingNewWork ? "New" : "Existing") + " Work Record",
-                                     workBibData, fileBibData, null, null, work, creatingNewWork, showNewEntry, newEntryChecked ? Ternary.True : Ternary.Unset);
+      mwd = new MergeWorksDlgCtrlr("Import Into " + (creatingNewWork ? "New" : "Existing") + " Work Record",
+                                   workBibData, fileBibData, null, null, work, creatingNewWork, showNewEntry, newEntryChecked ? Ternary.True : Ternary.Unset);
     }
     catch (IOException e)
     {
@@ -3173,7 +3191,7 @@ public final class MainCtrlr
 
   @FXML private void showWelcomeWindow()
   {
-    WelcomeDlgCtrlr wdc = WelcomeDlgCtrlr.build();
+    WelcomeDlgCtrlr wdc = new WelcomeDlgCtrlr();
     if (wdc.showModal() == false) return;
 
     if (wdc.newClicked())

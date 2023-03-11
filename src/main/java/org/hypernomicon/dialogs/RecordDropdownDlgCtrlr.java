@@ -37,8 +37,8 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 {
   @FXML private ComboBox<HyperTableCell> cbRecord;
 
-  private HyperCB hcbRecord;
-  private String typeName;
+  private final HyperCB hcbRecord;
+  private final String typeName;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -48,18 +48,10 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(RecordType recordType, Predicate<Integer> idFilter)
+  public RecordDropdownDlgCtrlr(RecordType recordType, Predicate<Integer> idFilter)
   {
-    RecordDropdownDlgCtrlr<HDT_T2> rdd = create("RecordDropdownDlg", "Select a Term Record to Merge With", true);
-    rdd.init(recordType, idFilter);
-    return rdd;
-  }
+    super("RecordDropdownDlg", "Select a Term Record to Merge With", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void init(RecordType recordType, Predicate<Integer> idFilter)
-  {
     hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, idFilter, DisplayKind.cbText));
     typeName = getTypeName(recordType);
   }

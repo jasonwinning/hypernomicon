@@ -61,16 +61,10 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static SelectColumnsDlgCtrlr build()
+  SelectColumnsDlgCtrlr()
   {
-    return ((SelectColumnsDlgCtrlr) createUsingFullPath("query/SelectColumnsDlg", "Select Columns", true)).init();
-  }
+    super("query/SelectColumnsDlg", "Select Columns", true, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private SelectColumnsDlgCtrlr init()
-  {
     double typeLeft = chkFirstType.getLayoutX(),
            fieldLeft = chkFirstField.getLayoutX(),
            itemMargin = chkFirstField.getLayoutY() - chkFirstType.getLayoutY(),
@@ -212,8 +206,6 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         }
       }
     }
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

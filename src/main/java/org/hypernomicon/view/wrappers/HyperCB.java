@@ -435,12 +435,12 @@ public class HyperCB implements CommitableWrapper
       {
         if (populator.getValueType(row) == CellValueType.cvtRecord)
         {
-          RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.build(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
+          RecordSelectDlgCtrlr ctrlr = new RecordSelectDlgCtrlr(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
           selection = ctrlr.showModal() ? populator.getChoiceByID(row, ctrlr.getRecord().getID()) : null;
         }
         else
         {
-          ValueSelectDlgCtrlr ctrlr = ValueSelectDlgCtrlr.build(cells);
+          ValueSelectDlgCtrlr ctrlr = new ValueSelectDlgCtrlr(cells);
           selection = ctrlr.showModal() ? ctrlr.listView.getSelectionModel().getSelectedItem() : null;
         }
 
@@ -472,7 +472,7 @@ public class HyperCB implements CommitableWrapper
               if (cell.getID() == otherPerson.getID())
                 return cell;
 
-          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(table == null, cb.getEditor().getText(), null);
+          NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(table == null, cb.getEditor().getText(), null);
 
           if (npdc.showModal())
           {

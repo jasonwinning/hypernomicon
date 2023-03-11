@@ -61,12 +61,14 @@ public class FileDlgCtrlr extends HyperDlg
   @FXML public ComboBox<HyperTableCell> cbType;
   @FXML public TextField tfRecordName;
 
+  private final RecordType recordType;
+  private final HDT_Work curWork;
+  private final HyperCB hcbType;
+  private final boolean canBrowseToExistingMiscFileRecord;
+
   private FilePath srcFilePath;
   private HDT_RecordWithPath curFileRecord;
-  private RecordType recordType;
-  private HDT_Work curWork;
-  private HyperCB hcbType;
-  private boolean copyOnly, canBrowseToExistingMiscFileRecord = false;
+  private boolean copyOnly;
 
   @SuppressWarnings("unchecked")
   public <HDT_T extends HDT_RecordWithPath> HDT_T getFileRecord() { return (HDT_T) curFileRecord; }
@@ -74,21 +76,23 @@ public class FileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FileDlgCtrlr build(String title, HDT_MiscFile curFileRecord, String recordName, boolean canBrowseToExistingMiscFileRecord)
+  public FileDlgCtrlr(String title, HDT_MiscFile curFileRecord, String recordName, boolean canBrowseToExistingMiscFileRecord)
   {
-    return ((FileDlgCtrlr) create("FileDlg", title, true)).init(hdtMiscFile, curFileRecord, null, recordName, canBrowseToExistingMiscFileRecord);
+    this(title, hdtMiscFile, curFileRecord, null, recordName, canBrowseToExistingMiscFileRecord);
   }
 
-  public static FileDlgCtrlr build(String title, HDT_WorkFile curFileRecord, HDT_Work curWork)
+  public FileDlgCtrlr(String title, HDT_WorkFile curFileRecord, HDT_Work curWork)
   {
-    return ((FileDlgCtrlr) create("FileDlg", title, true)).init(hdtWorkFile, curFileRecord, curWork, "", false);
+    this(title, hdtWorkFile, curFileRecord, curWork, "", false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private FileDlgCtrlr init(RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName, boolean canBrowseToExistingMiscFileRecord)
+  private FileDlgCtrlr(String title, RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName, boolean canBrowseToExistingMiscFileRecord)
   {
+    super("FileDlg", title, true);
+
     this.canBrowseToExistingMiscFileRecord = canBrowseToExistingMiscFileRecord;
     this.curWork = curWork;
     this.recordType = recordType;
@@ -116,8 +120,6 @@ public class FileDlgCtrlr extends HyperDlg
       if (FilePath.isEmpty(srcFilePath))
         btnBrowseOldClick(true);
     };
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

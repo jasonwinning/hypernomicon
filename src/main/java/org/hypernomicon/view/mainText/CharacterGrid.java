@@ -72,6 +72,7 @@ class CharacterGrid
     private final Character ch;
     private final int codepoint;
     private final String html, desc;
+
     @Override public String toString() { return ch.toString(); }
 
     public int getCodePoint() { return codepoint; }
@@ -81,7 +82,7 @@ class CharacterGrid
 
 //---------------------------------------------------------------------------
 
-  public final class SymbolCtrl extends Hyperlink
+  private final class SymbolCtrl extends Hyperlink
   {
     private final int col, row;
 
@@ -122,7 +123,7 @@ class CharacterGrid
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CharacterGrid(GridPane gp, int colCount, int rowCount, Consumer<Symbol> symbolHndlr)
+  CharacterGrid(GridPane gp, int colCount, int rowCount, Consumer<Symbol> symbolHndlr)
   {
     this.colCount = colCount;
     this.rowCount = rowCount;

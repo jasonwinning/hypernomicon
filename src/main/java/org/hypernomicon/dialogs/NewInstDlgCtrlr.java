@@ -38,7 +38,7 @@ import javafx.scene.control.TextField;
 
 public class NewInstDlgCtrlr extends HyperDlg
 {
-  public HyperCB hcbParent, hcbExisting, hcbType;
+  public final HyperCB hcbParent, hcbExisting, hcbType;
 
   @FXML public TextField tfName, tfNewParentName;
   @FXML private ComboBox<HyperTableCell> cbType, cbParent, cbExisting;
@@ -48,16 +48,10 @@ public class NewInstDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewInstDlgCtrlr build(HDT_Institution parent, String newName, boolean isParent)
+  public NewInstDlgCtrlr(HDT_Institution parent, String newName, boolean isParent)
   {
-    return ((NewInstDlgCtrlr) create("NewInstDlg", "New Institution or Institutional Division", true)).init(parent, newName, isParent);
-  }
+    super("NewInstDlg", "New Institution or Institutional Division", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private NewInstDlgCtrlr init(HDT_Institution parent, String newName, boolean isParent)
-  {
     hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name));
     hcbExisting = new HyperCB(cbExisting, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, false), true);
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType));
@@ -114,8 +108,6 @@ public class NewInstDlgCtrlr extends HyperDlg
     hcbType.selectID(HDT_Institution.DEPARTMENT_INST_TYPE_ID);
 
     onShown = () -> safeFocus(rbNewInst.isSelected() ? tfNewParentName : tfName);
-
-    return this;
   }
 
 //---------------------------------------------------------------------------

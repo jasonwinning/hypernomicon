@@ -437,7 +437,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void createGlossary(HDT_Glossary glossary)
   {
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Glossary Name", ntRecord, "");
+    RenameDlgCtrlr dlg = new RenameDlgCtrlr("Glossary Name", ntRecord, "");
 
     if (dlg.showModal() == false) return;
 
@@ -455,7 +455,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void createLabel(HDT_WorkLabel label)
   {
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Label Name", ntRecord, "");
+    RenameDlgCtrlr dlg = new RenameDlgCtrlr("Label Name", ntRecord, "");
 
     if (dlg.showModal() == false) return;
 
@@ -479,7 +479,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       return;
     }
 
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.build(typeName + " Name", ntRecord, record.name());
+    RenameDlgCtrlr dlg = new RenameDlgCtrlr(typeName + " Name", ntRecord, record.name());
 
     if (dlg.showModal())
     {
@@ -493,7 +493,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private static void chooseParent(HDT_Record child)
   {
-    ChooseParentDlgCtrlr dlg = ChooseParentDlgCtrlr.build(child);
+    ChooseParentDlgCtrlr dlg = new ChooseParentDlgCtrlr(child);
 
     if (dlg.showModal() == false) return;
 

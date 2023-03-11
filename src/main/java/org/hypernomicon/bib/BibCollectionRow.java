@@ -28,7 +28,7 @@ class BibCollectionRow
   private final String key;
   private final BibCollectionType type;
 
-  private BibCollection coll = null;
+  private BibCollection coll;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

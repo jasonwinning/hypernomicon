@@ -17,7 +17,6 @@
 
 package org.hypernomicon.settings;
 
-import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -25,16 +24,13 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.hypernomicon.App;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.WebButton.UrlPattern;
 import org.hypernomicon.util.WebButton.WebButtonField;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 
 public class EditWebButtonsDlgCtrlr extends HyperDlg
@@ -43,7 +39,8 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
   @FXML private Button btnAdd;
 
   private final List<EditWebButtonCtrlr> ctrlrList = new ArrayList<>();
-  private String prefKey = null;
+  private final String prefKey;
+
   private boolean unchanged = true;
 
   public void setChanged()   { unchanged = false; }
@@ -52,17 +49,10 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static EditWebButtonsDlgCtrlr build(WebButton webBtn, String prefKey) throws IOException
+  EditWebButtonsDlgCtrlr(WebButton webBtn, String prefKey) throws IOException
   {
-    return ((EditWebButtonsDlgCtrlr) createUsingFullPath("settings/EditWebButtonsDlg", "Edit Web Button", true))
-      .init(webBtn, prefKey);
-  }
+    super("settings/EditWebButtonsDlg", "Edit Web Button", true, true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private EditWebButtonsDlgCtrlr init(WebButton webBtn, String prefKey) throws IOException
-  {
     this.prefKey = prefKey;
 
     if (webBtn == null)
@@ -85,8 +75,6 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
         showStackTrace(e);
       }
     });
-
-    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -99,16 +87,7 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
 
   private void addPattern(UrlPattern pattern) throws IOException
   {
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("settings/EditWebButton.fxml"));
-    AnchorPane ap = loader.load();
-    EditWebButtonCtrlr ctrlr = loader.getController();
-
-    ctrlr.init(pattern, prefKey, this);
-
-    GridPane.setRowIndex(ap, ctrlrList.size());
-    addToParent(ap, gpMain);
-
-    ctrlrList.add(ctrlr);
+    ctrlrList.add(new EditWebButtonCtrlr(pattern, prefKey, this, ctrlrList.size(), gpMain));
   }
 
 //---------------------------------------------------------------------------

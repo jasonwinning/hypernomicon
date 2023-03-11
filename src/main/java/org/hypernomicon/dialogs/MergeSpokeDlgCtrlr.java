@@ -33,7 +33,7 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
   @FXML private WebView view1, view2;
   @FXML private HTMLEditor he3;
 
-  private String mainText1, mainText2;
+  private final String mainText1, mainText2;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -43,16 +43,10 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MergeSpokeDlgCtrlr build(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2)
+  public MergeSpokeDlgCtrlr(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2)
   {
-    return ((MergeSpokeDlgCtrlr) create("MergeSpokeDlg", "Select How to Merge Fields", true)).init(record1, record2);
-  }
+    super("MergeSpokeDlg", "Select How to Merge Fields", true);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private MergeSpokeDlgCtrlr init(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2)
-  {
     rbDesc1.setText(getTypeName(record1.getType()));
     rbDesc2.setText(getTypeName(record2.getType()));
 
@@ -67,8 +61,6 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
         rbDesc2.setSelected(true);
 
     he3.setHtmlText(disableLinks(""));
-
-    return this;
   }
 
 //---------------------------------------------------------------------------
