@@ -267,7 +267,7 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
 
     Platform.runLater(() ->
     {
-      String font = appPrefs.node("symbols").get("font", "Arial");
+      String font = app.prefs.node("symbols").get("font", "Arial");
       if (safeStr(font).isBlank()) font = "Arial";
 
       programmaticFontChange = true;
@@ -290,11 +290,11 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
       }
     });
 
-    chkUseFont.setSelected(appPrefs.node("symbols").getBoolean("useFont", false));
+    chkUseFont.setSelected(app.prefs.node("symbols").getBoolean("useFont", false));
     chkUseFont.selectedProperty().addListener((obs, oldValue, newValue) ->
     {
-      if      (Boolean.TRUE .equals(newValue)) appPrefs.node("symbols").putBoolean("useFont", true);
-      else if (Boolean.FALSE.equals(newValue)) appPrefs.node("symbols").putBoolean("useFont", false);
+      if      (Boolean.TRUE .equals(newValue)) app.prefs.node("symbols").putBoolean("useFont", true);
+      else if (Boolean.FALSE.equals(newValue)) app.prefs.node("symbols").putBoolean("useFont", false);
     });
 
     cbFont.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> charGrid.setFont(newValue, programmaticFontChange));

@@ -137,11 +137,11 @@ public abstract class HyperDlg
 
   public final void initBounds(String prefKeyX, String prefKeyY, String prefKeyWidth, String prefKeyHeight)
   {
-    double x = appPrefs.getDouble(prefKeyX, -1.0);
+    double x = app.prefs.getDouble(prefKeyX, -1.0);
     if (x > 0)
       dialogStage.setX(x);
 
-    double y = appPrefs.getDouble(prefKeyY, -1.0);
+    double y = app.prefs.getDouble(prefKeyY, -1.0);
     if (y > 0)
       dialogStage.setY(y);
     else if (SystemUtils.IS_OS_WINDOWS && (dialogStage.getY() < 30.0)) // Make sure Windows taskbar isn't at the top and covering the window controls
@@ -165,10 +165,10 @@ public abstract class HyperDlg
 
     if (b.equals(boundsMap.get(prefKeyX)) == false)
     {
-      appPrefs.putDouble(prefKeyX, b.getMinX());
-      appPrefs.putDouble(prefKeyY, b.getMinY());
-      appPrefs.putDouble(prefKeyWidth, b.getWidth());
-      appPrefs.putDouble(prefKeyHeight, b.getHeight());
+      app.prefs.putDouble(prefKeyX, b.getMinX());
+      app.prefs.putDouble(prefKeyY, b.getMinY());
+      app.prefs.putDouble(prefKeyWidth, b.getWidth());
+      app.prefs.putDouble(prefKeyHeight, b.getHeight());
     }
   }
 
@@ -188,7 +188,7 @@ public abstract class HyperDlg
         defHeight = screenHeight - 60.0;
     }
 
-    initHeight = appPrefs.getDouble(prefKey, defHeight);
+    initHeight = app.prefs.getDouble(prefKey, defHeight);
 
     if (initHeight < 350)
       initHeight = stagePane.getPrefHeight();
@@ -201,7 +201,7 @@ public abstract class HyperDlg
 
   private double setInitWidth(String prefKey)
   {
-    initWidth = appPrefs.getDouble(prefKey, stagePane.getPrefWidth());
+    initWidth = app.prefs.getDouble(prefKey, stagePane.getPrefWidth());
 
     if (initWidth < 350)
       initWidth = stagePane.getPrefWidth();

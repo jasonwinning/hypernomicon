@@ -704,7 +704,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public void update()
   {
-    btnTree.setDisable(tree().getRowsForRecord(curWork).isEmpty());
+    btnTree.setDisable(ui.tree().getRowsForRecord(curWork).isEmpty());
 
     WorkTypeEnum workTypeEnumVal = curWork.getWorkTypeEnum();
 

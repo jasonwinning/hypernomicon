@@ -17,6 +17,7 @@
 
 package org.hypernomicon.query;
 
+import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.db;
 
 import java.util.HashMap;
@@ -24,7 +25,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.query.Query.FilteredFolderQuery;
 import org.hypernomicon.util.filePath.FilePath;
@@ -45,7 +45,7 @@ public final class FolderQueries
 
   public static void addQueries(List<Query<?>> allQueries)
   {
-    if (App.debugging()) allQueries.add(new FilteredFolderQuery(QUERY_DUPLICATE_FOLDERS, "that are duplicate folders")
+    if (app.debugging) allQueries.add(new FilteredFolderQuery(QUERY_DUPLICATE_FOLDERS, "that are duplicate folders")
     {
       @Override public boolean evaluate(HDT_Folder folder, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {

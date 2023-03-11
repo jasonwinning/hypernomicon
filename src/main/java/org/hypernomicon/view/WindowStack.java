@@ -233,7 +233,7 @@ public final class WindowStack
         if (windows.stream().anyMatch(window -> window.getModality() != Modality.NONE))
           return;
 
-        if ((stage.isFocused() == false) || appPrefs.getBoolean(PREF_KEY_LINUX_WORKAROUND, false))
+        if ((stage.isFocused() == false) || app.prefs.getBoolean(PREF_KEY_LINUX_WORKAROUND, false))
         {
           stage.hide();
           stage.show();

@@ -29,9 +29,7 @@ limitations under the License.
            AnchorPane.topAnchor="0.0"/>
   <HBox alignment="CENTER" layoutX="170.0" layoutY="984.0" maxHeight="30.0" minHeight="30.0" prefHeight="30.0"
         AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-    <children>
-      <Button defaultButton="true" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnOkClick"
-              prefWidth="80.0" text="OK"/>
-    </children>
+    <Button defaultButton="true" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnOkClick"
+            prefWidth="80.0" text="OK"/>
   </HBox>
 </AnchorPane>

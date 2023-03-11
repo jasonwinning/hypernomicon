@@ -17,6 +17,7 @@
 
 package org.hypernomicon.tree;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -35,7 +36,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
-import org.hypernomicon.view.MainCtrlr;
 
 public class ChooseParentDlgCtrlr extends HyperDlg
 {
@@ -72,7 +72,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
     popupTree.reset(ttv, true, true);
 
-    TreeWrapper tree = MainCtrlr.tree();
+    TreeWrapper tree = ui.tree();
     tree.debateTree.copyTo(popupTree.debateTree);
     tree.noteTree  .copyTo(popupTree.noteTree  );
     tree.labelTree .copyTo(popupTree.labelTree );

@@ -274,7 +274,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     clear();
 
     HDT_Debate rootDebate = db.debates.getByID(1);      // If these two lines are combined into one, there will be
-    debateTree.reset(rootDebate);                       // build errors that aren't really errors
+    debateTree.reset(rootDebate);                       // false-positive build errors
 
     HDT_Note rootNote = db.notes.getByID(1);            // Same as above
     noteTree.reset(rootNote);
@@ -370,7 +370,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       if (row.getName().toLowerCase().contains(text) ||
           ((searchingNameOnly == false) && row.getDescString().toLowerCase().contains(text)))
       {
-        MainCtrlr.treeHyperTab().textToHilite = text;
+        ui.treeHyperTab().textToHilite = text;
         selectRow(row, true);
         return;
       }

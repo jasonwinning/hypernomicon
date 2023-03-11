@@ -241,8 +241,8 @@ public final class MainTextUtil
         }
         else if (recordType == hdtNote)
         {
-          HDT_Note note = db.notes.getByID(recordID); // If these two lines are combined into one, for some unknown reason
-          launchFile(note.getPath().filePath());      // there will be "The type HDT_Note is not visible" build errors
+          HDT_Note note = db.notes.getByID(recordID); // If these two lines are combined into one, for some unknown reason there
+          launchFile(note.getPath().filePath());      // will be "The type HDT_Note is not visible" false-positive build errors
         }
         else
           db.works.getByID(recordID).launch(-1);
@@ -960,16 +960,16 @@ public final class MainTextUtil
       if ((event.isControlDown() == false) || (deltaY == 0)) return;
       event.consume();
 
-      int ndx = appPrefs.getInt(prefID, zoomFactors.indexOf(100)) + (deltaY > 0 ? 1 : -1);
+      int ndx = app.prefs.getInt(prefID, zoomFactors.indexOf(100)) + (deltaY > 0 ? 1 : -1);
 
       if ((ndx < 0) || (ndx == zoomFactors.size())) return;
 
-      appPrefs.putInt(prefID, ndx);
+      app.prefs.putInt(prefID, ndx);
       view.setZoom(zoomFactors.get(ndx) / 100.0);
       ui.lblStatus.setText("Zoom: " + zoomFactors.get(ndx) + '%');
     });
 
-    view.setZoom(zoomFactors.get(appPrefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);
+    view.setZoom(zoomFactors.get(app.prefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);
   }
 
 //---------------------------------------------------------------------------

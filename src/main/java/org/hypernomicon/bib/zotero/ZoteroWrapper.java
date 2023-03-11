@@ -17,6 +17,7 @@
 
 package org.hypernomicon.bib.zotero;
 
+import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
@@ -52,7 +53,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
-import org.hypernomicon.App;
 import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.EnumHashBiMap;
@@ -510,7 +510,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
         offlineLibVersion = onlineLibVersion;
 
-        if (App.debugging())
+        if (app.debugging)
           System.out.println("libraryVersion: " + offlineLibVersion);
       }
       catch (HttpResponseException e)

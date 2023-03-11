@@ -250,7 +250,7 @@ public class HyperViewSequence
       bibManagerDlg.workRecordToAssign.set(null);
 
     if (curHyperTab.getTabEnum() == treeTabEnum)
-      MainCtrlr.treeHyperTab().selectRecord(curView.getViewRecord(), true);
+      ui.treeHyperTab().selectRecord(curView.getViewRecord(), true);
   }
 
 //---------------------------------------------------------------------------

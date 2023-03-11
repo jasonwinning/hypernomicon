@@ -254,7 +254,7 @@ public final class DesktopUtil
   {
     if (FilePath.isEmpty(filePath)) return;
 
-    String readerPath = appPrefs.get(PREF_KEY_PDF_READER, "");
+    String readerPath = app.prefs.get(PREF_KEY_PDF_READER, "");
 
     if (("pdf".equalsIgnoreCase(filePath.getExtensionOnly()) == false) || readerPath.isEmpty())
     {

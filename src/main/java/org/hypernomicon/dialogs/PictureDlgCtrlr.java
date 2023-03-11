@@ -39,7 +39,6 @@ import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
@@ -99,7 +98,7 @@ public class PictureDlgCtrlr extends HyperDlg
   {
     super("PictureDlg", "Edit Picture", true);
 
-    this.personHyperTab = MainCtrlr.personHyperTab();
+    this.personHyperTab = ui.personHyperTab();
 
     ivPicture.fitWidthProperty ().bind(apPicture.widthProperty ());
     ivPicture.fitHeightProperty().bind(apPicture.heightProperty());
@@ -551,7 +550,7 @@ public class PictureDlgCtrlr extends HyperDlg
     else
       return;
 
-    String execPath = appPrefs.get(PREF_KEY_IMAGE_EDITOR, "");
+    String execPath = app.prefs.get(PREF_KEY_IMAGE_EDITOR, "");
     FilePath picturePath = getDestFilePath(tfName.getText());
 
     if (execPath.isEmpty())

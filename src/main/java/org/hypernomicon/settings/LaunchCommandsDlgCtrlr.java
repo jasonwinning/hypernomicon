@@ -139,8 +139,8 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
     btnBrowse.setOnAction(event -> SettingsDlgCtrlr.browseClick(dialogStage, tfPath));
 
-    taCommands.setText(appPrefs.get(commandsPrefKey, ""));
-    tfPath.setText(appPrefs.get(appPrefKey, ""));
+    taCommands.setText(app.prefs.get(commandsPrefKey, ""));
+    tfPath.setText(app.prefs.get(appPrefKey, ""));
 
     btnAppPathVar .setOnAction(event -> taCommands.insertText(taCommands.getCaretPosition(), appPathVar ));
     btnFilePathVar.setOnAction(event -> taCommands.insertText(taCommands.getCaretPosition(), filePathVar));
@@ -172,7 +172,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
       cbCommandType.getSelectionModel().select(preset.commandType);
     });
 
-    String typePrefVal = appPrefs.get(commandTypePrefKey, opSysCmdAndArgs.prefVal);
+    String typePrefVal = app.prefs.get(commandTypePrefKey, opSysCmdAndArgs.prefVal);
 
     cbCommandType.setItems(FXCollections.observableArrayList(EnumSet.allOf(LaunchCommandTypeEnum.class)));
     cbCommandType.setConverter(typeStrConv);
@@ -191,9 +191,9 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    appPrefs.put(appPrefKey, tfPath.getText());
-    appPrefs.put(commandsPrefKey, taCommands.getText());
-    appPrefs.put(commandTypePrefKey, nullSwitch(cbCommandType.getSelectionModel().getSelectedItem(), "", typeEnum -> typeEnum.prefVal));
+    app.prefs.put(appPrefKey, tfPath.getText());
+    app.prefs.put(commandsPrefKey, taCommands.getText());
+    app.prefs.put(commandTypePrefKey, nullSwitch(cbCommandType.getSelectionModel().getSelectedItem(), "", typeEnum -> typeEnum.prefVal));
 
     return true;
   }
@@ -203,8 +203,8 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   public static void launch(String appPath, FilePath filePath, String commandsPrefKey, String commandTypePrefKey, int pageNum)
   {
-    String commands = appPrefs.get(commandsPrefKey, "");
-    LaunchCommandTypeEnum commandType = getByPrefVal(appPrefs.get(commandTypePrefKey, ""));
+    String commands = app.prefs.get(commandsPrefKey, "");
+    LaunchCommandTypeEnum commandType = getByPrefVal(app.prefs.get(commandTypePrefKey, ""));
 
     if ((commandType != null) && (commands.length() > 0))
     {

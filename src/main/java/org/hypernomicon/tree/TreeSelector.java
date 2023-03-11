@@ -35,7 +35,6 @@ import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class TreeSelector
@@ -169,7 +168,7 @@ public class TreeSelector
       return;
 
     if ((folder != null) && ((HDT_Note) subj).folder.isNull())
-      MainCtrlr.noteHyperTab().assignFolder(folder);
+      ui.noteHyperTab().assignFolder(folder);
   }
 
 //---------------------------------------------------------------------------
@@ -195,8 +194,8 @@ public class TreeSelector
       if (glossaryChecks((HDT_Glossary) record, showErrMsg) == false)
         return false;
 
-      MainCtrlr.termHyperTab().selectFromTree(tableRow, (HDT_Glossary) record, ((HDT_Concept) base).sense.get(), null);
-      ui.goToRecord(MainCtrlr.termHyperTab().viewRecord(), false);
+      ui.termHyperTab().selectFromTree(tableRow, (HDT_Glossary) record, ((HDT_Concept) base).sense.get(), null);
+      ui.goToRecord(ui.termHyperTab().viewRecord(), false);
       return true;
     }
 
@@ -204,8 +203,8 @@ public class TreeSelector
     {
       HDT_Concept parentConcept = (HDT_Concept) record;
 
-      MainCtrlr.termHyperTab().selectFromTree(tableRow, parentConcept.glossary.get(), ((HDT_Concept) base).sense.get(), parentConcept);
-      ui.goToRecord(MainCtrlr.termHyperTab().viewRecord(), false);
+      ui.termHyperTab().selectFromTree(tableRow, parentConcept.glossary.get(), ((HDT_Concept) base).sense.get(), parentConcept);
+      ui.goToRecord(ui.termHyperTab().viewRecord(), false);
       return true;
     }
 

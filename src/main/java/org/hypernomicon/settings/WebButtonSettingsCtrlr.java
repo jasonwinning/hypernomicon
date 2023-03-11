@@ -392,7 +392,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
   @Override public void save()
   {
-    Preferences node = appPrefs.node(PREF_KEY_WEB_BUTTONS);
+    Preferences node = app.prefs.node(PREF_KEY_WEB_BUTTONS);
 
     webBtnCtrlList.forEach(btnCtrls -> btnCtrls.saveToPrefNode(node));
 
@@ -410,7 +410,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     try
     {
-      Preferences node = appPrefs.node(PREF_KEY_WEB_BUTTONS);
+      Preferences node = app.prefs.node(PREF_KEY_WEB_BUTTONS);
 
       WebButtonTable.loadPref(node, personSrchList, PREF_KEY_PERSON_SRCH, personSrchDefaults);
       WebButtonTable.loadPref(node, workSrchList  , PREF_KEY_WORK_SRCH  , workSrchDefaults  );

@@ -27,7 +27,6 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static org.hypernomicon.FolderTreeWatcher.WatcherEvent.WatcherEventKind.*;
-import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
@@ -129,7 +128,7 @@ public class FolderTreeWatcher
         return;
       }
 
-      if (debugging())
+      if (app.debugging)
         System.out.println("Watcher start");
 
       clearKeyQueue();
@@ -268,7 +267,7 @@ public class FolderTreeWatcher
 
     private void processEventList(List<WatcherEvent> eventList) throws IOException
     {
-      if (debugging())
+      if (app.debugging)
       {
         System.out.println("---------------------------");
         System.out.println("New event list");
@@ -288,7 +287,7 @@ public class FolderTreeWatcher
             if (watcherEvent.isDirectory())
               registerTree(newPath);
             else if (((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
-                     appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+                     app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                      (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
                      "pdf".equalsIgnoreCase(newPath.getExtensionOnly()))
             {
@@ -349,7 +348,7 @@ public class FolderTreeWatcher
 
           case wekModify:
 
-            if (appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) && downloading.contains(newPath))
+            if (app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) && downloading.contains(newPath))
             {
               doImport(newPath);
             }
@@ -364,7 +363,7 @@ public class FolderTreeWatcher
 
             if (untrackedFile)
             {
-              if (appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+              if (app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                   (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
                   ("pdf".equalsIgnoreCase(oldPathInfo.getFilePath().getExtensionOnly()) == false) &&
                   "pdf".equalsIgnoreCase(newPath.getExtensionOnly()))
@@ -408,18 +407,18 @@ public class FolderTreeWatcher
 
                     if (workFile.works.contains(ui.activeRecord()))
                     {
-                      if      (workHyperTab().wdc != null) workHyperTab().wdc.btnCancel.fire();
-                      else if (workHyperTab().fdc != null) workHyperTab().fdc.btnCancel.fire();
+                      if      (ui.workHyperTab().wdc != null) ui.workHyperTab().wdc.btnCancel.fire();
+                      else if (ui.workHyperTab().fdc != null) ui.workHyperTab().fdc.btnCancel.fire();
 
-                      workHyperTab().refreshFiles();
+                      ui.workHyperTab().refreshFiles();
                     }
                   }
                   else if ((record.getType() == hdtMiscFile) && (ui.activeTabEnum() == fileTabEnum))
                   {
-                    if (fileHyperTab().fdc != null)
-                      fileHyperTab().fdc.btnCancel.fire();
+                    if (ui.fileHyperTab().fdc != null)
+                      ui.fileHyperTab().fdc.btnCancel.fire();
 
-                    fileHyperTab().refreshFile();
+                    ui.fileHyperTab().refreshFile();
                   }
                 });
               }
@@ -440,7 +439,7 @@ public class FolderTreeWatcher
 
         }
 
-        if (debugging())
+        if (app.debugging)
         {
           switch (watcherEvent.kind)
           {
@@ -649,12 +648,12 @@ public class FolderTreeWatcher
         watcher.close();
         stopped = true;
 
-        if (debugging())
+        if (app.debugging)
           System.out.println("Watcher closed");
       }
       catch (IOException e)
       {
-        if (debugging())
+        if (app.debugging)
           System.out.println("Watcher close exception");
       }
     }

@@ -160,7 +160,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public void update()
   {
-    btnTree.setDisable(MainCtrlr.tree().getRowsForRecord(curMiscFile).isEmpty());
+    btnTree.setDisable(ui.tree().getRowsForRecord(curMiscFile).isEmpty());
 
     tfName.setText(curMiscFile.name());
     tfSearchKey.setText(curMiscFile.getSearchKey());

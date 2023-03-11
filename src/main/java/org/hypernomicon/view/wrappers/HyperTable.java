@@ -209,7 +209,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
       if ((newWidth > 0.0) && (Math.abs(newWidth - colSettings.oldWidth) >= 1.0))
       {
-        appPrefs.putDouble(prefID + "ColWidth" + colSettings.oldNdx, newWidth);
+        app.prefs.putDouble(prefID + "ColWidth" + colSettings.oldNdx, newWidth);
         col.setUserData(new ColumnSettings(colSettings.oldNdx, newWidth, colSettings.defVisible));
       }
 
@@ -217,12 +217,12 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       if (col.isVisible())
       {
         if (colSettings.defVisible) // Indicates that it was visible by default
-          appPrefs.remove(prefKey);
+          app.prefs.remove(prefKey);
         else
-          appPrefs.putBoolean(prefKey, true); // Since it was hidden by default, explicit true value needs to be saved
+          app.prefs.putBoolean(prefKey, true); // Since it was hidden by default, explicit true value needs to be saved
       }
       else
-        appPrefs.putBoolean(prefKey, false);
+        app.prefs.putBoolean(prefKey, false);
     });
   }
 
@@ -251,14 +251,14 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     for (int numCols = columns.size(), ndx = 1; ndx <= numCols; ndx++)
     {
       ColType col = columns.get(ndx - 1);
-      double width = appPrefs.getDouble(prefID + "ColWidth" + ndx, -1.0);
+      double width = app.prefs.getDouble(prefID + "ColWidth" + ndx, -1.0);
 
       col.setUserData(new ColumnSettings(ndx, width, col.isVisible()));
 
       if ((width > 0.0) && col.isResizable())
         col.setPrefWidth(width);
 
-      col.setVisible(appPrefs.getBoolean(prefID + "ColVisible" + ndx, col.isVisible()));
+      col.setVisible(app.prefs.getBoolean(prefID + "ColVisible" + ndx, col.isVisible()));
     }
   }
 

@@ -122,7 +122,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 
   public <T extends HDT_Record> void reset(T rootRecord) // Use of generic type is to prevent "not applicable for argument"
-  {                                                      // build errors that are not really errors
+  {                                                      // false-positive build errors
     clear();
 
     if (rootRecord != null)

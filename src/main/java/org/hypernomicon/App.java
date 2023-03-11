@@ -23,17 +23,16 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.tabs.HyperTab.*;
 
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.dialogs.NewVersionDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.ContentsWindow;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWindow;
-import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.MediaUtil;
@@ -43,7 +42,6 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.tabs.HyperTab;
 
 import java.io.IOException;
 
@@ -55,8 +53,6 @@ import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -69,9 +65,6 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
@@ -85,9 +78,11 @@ import javafx.scene.text.Text;
  */
 public final class App extends Application
 {
-  private VersionNumber version;
+  public final Preferences prefs;
+  public final boolean debugging;
+
   private boolean testMainTextEditing = false;
-  private static boolean isDebugging;
+
   private static int total, ctr, lastPercent;
 
   private static final double baseDisplayScale = 81.89306640625;
@@ -97,20 +92,17 @@ public final class App extends Application
   public static ContentsWindow contentsWindow = null;
   public static FileManager fileManagerDlg = null;
   public static MainCtrlr ui;
-  public static Preferences appPrefs;
   public static PreviewWindow previewWindow = null;
-  public static QueryCtrlr curQC;
   public static boolean jxBrowserInitialized = false,
                         jxBrowserDisabled    = false;
   public static double displayScale;
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
   public static final String appTitle = "Hypernomicon";
 
-  public static boolean debugging() { return isDebugging; }
-  public VersionNumber getVersion() { return version; }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  // Runs in FX application thread before init and before start
 
   public App()
   {
@@ -121,23 +113,37 @@ public final class App extends Application
     try (LoggerContext lc = Configurator.initialize(new DefaultConfiguration())) { Configurator.setRootLevel(Level.WARN); }
 
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
-    isDebugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
+    debugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
 
     BrowserPreferences.setChromiumSwitches("--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses");
 
-    // On Mac OS X Chromium engine must be initialized in non-UI thread.
-    if (Environment.isMac()) PDFJSWrapper.init();
+    MediaUtil.init();
+
+    Preferences appPrefs = null;
 
     try
     {
-      MediaUtil.init();
-
       appPrefs = Preferences.userNodeForPackage(App.class);
-      db.init(appPrefs, folderTreeWatcher);
     }
-    catch (SecurityException | HDB_InternalError e)
+    catch (SecurityException e)
     {
-      appPrefs = null;
+      messageDialog("Initialization error: " + e.getMessage(), mtError, true);
+
+      prefs = null;
+      Platform.exit();
+      return;
+    }
+
+    prefs = appPrefs;
+
+    try
+    {
+      if (prefs == null) throw new HDB_InternalError(37546);
+
+      HyperDB.create(folderTreeWatcher);
+    }
+    catch (HDB_InternalError e)
+    {
       messageDialog("Initialization error: " + e.getMessage(), mtError, true);
 
       Platform.exit();
@@ -151,11 +157,21 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // Runs in launcher thread (not FX application thread) after constructor and before start
+
   @Override public void init() throws Exception
   {
     super.init();
-    noOp();
+
+    // On Mac OS Chromium engine must be initialized outside of FX application thread
+    if (Environment.isMac()) PDFJSWrapper.init();
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Runs in FX application thread, only if start was called
+  // Occurs if all windows are closed, or if Platform.exit is called
 
   @Override public void stop() throws Exception
   {
@@ -166,19 +182,15 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // Runs in FX application thread after init
+
   @Override public void start(Stage stage)
   {
     stage.setTitle(appTitle);
 
-    if (appPrefs == null)
-    {
-      Platform.exit();
-      return;
-    }
-
     try
     {
-      initMainWindows(stage);
+      initMainWindows(stage, prefs);
     }
     catch(IOException e)
     {
@@ -194,20 +206,18 @@ public final class App extends Application
 
     String versionStr = manifestValue("Impl-Version");
 
-    if ((safeStr(versionStr).isEmpty() == false) && (new VersionNumber(versionStr).equals(dbVersion) == false))
+    if ((safeStr(versionStr).isEmpty() == false) && (new VersionNumber(versionStr).equals(appVersion) == false))
     {
       messageDialog("Internal error #69698", mtError);
       ui.shutDown(false, false, false);
       return;
     }
 
-    version = dbVersion;
-
     boolean hdbExists = false;
-    String srcName = appPrefs.get(PREF_KEY_SOURCE_FILENAME, "");
+    String srcName = prefs.get(PREF_KEY_SOURCE_FILENAME, "");
     if (srcName.isBlank() == false)
     {
-      String srcPath = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
+      String srcPath = prefs.get(PREF_KEY_SOURCE_PATH, "");
       if (srcPath.isBlank() == false)
       {
         FilePath hdbPath = new FilePath(srcPath).resolve(srcName);
@@ -224,8 +234,8 @@ public final class App extends Application
 
       if ("hdb".equalsIgnoreCase(filePath.getExtensionOnly()))
       {
-        appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
-        appPrefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
+        prefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
+        prefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
         hdbExists = true;
         args.remove(0);
       }
@@ -240,9 +250,9 @@ public final class App extends Application
       return;
     }
 
-    if (appPrefs.getBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, true)) checkForNewVersion(new AsyncHttpClient(), newVersion ->
+    if (prefs.getBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, true)) checkForNewVersion(new AsyncHttpClient(), newVersion ->
     {
-      if (newVersion.compareTo(app.getVersion()) > 0)
+      if (newVersion.compareTo(appVersion) > 0)
         new NewVersionDlgCtrlr().showModal();
     }, Util::noOp);
 
@@ -257,7 +267,7 @@ public final class App extends Application
   {
     JsonHttpClient.getArrayAsync("https://api.github.com/repos/jasonwinning/hypernomicon/releases", httpClient, jsonArray ->
     {
-      VersionNumber updateNum =  app.version;
+      VersionNumber updateNum = appVersion;
 
       if (jsonArray.isEmpty())
       {
@@ -315,7 +325,7 @@ public final class App extends Application
       if (testMainTextEditing)
       {
         MainTextWrapper mainText = record.getType() == hdtInvestigation ?
-          MainCtrlr.personHyperTab().getInvMainTextWrapper((HDT_Investigation)record)
+          ui.personHyperTab().getInvMainTextWrapper((HDT_Investigation)record)
         :
           ui.activeTab().mainTextWrapper();
 
@@ -336,55 +346,13 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void initMainWindows(Stage stage) throws IOException
+  private static void initMainWindows(Stage stage, Preferences prefs) throws IOException
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
 
+    initScaling(prefs);
+
     MainCtrlr.create(stage);
-    Region rootNode = ui.getRootNode();
-
-    Scene scene = new Scene(rootNode);
-
-    scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
-
-    stage.setScene(scene);
-
-    ui.initInputHandlers();
-
-    stage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
-                                  .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))
-                                  .collect(Collectors.toList()));
-    ui.hideFindTable();
-
-    initScaling(rootNode);
-
-    double  x          = appPrefs.getDouble (PREF_KEY_WINDOW_X,          stage.getX()),
-            y          = appPrefs.getDouble (PREF_KEY_WINDOW_Y,          stage.getY()),
-            width      = appPrefs.getDouble (PREF_KEY_WINDOW_WIDTH,      rootNode.getPrefWidth()),  // stage.getWidth and stage.getHeight are not the
-            height     = appPrefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     rootNode.getPrefHeight()); // correct values in some Linux environments
-    boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, stage.isFullScreen()),
-            maximized  = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  stage.isMaximized());
-
-    stage.setX(x); // set X and Y first so that window gets full-screened or
-    stage.setY(y); // maximized onto the correct monitor if there are more than one
-
-    if      (fullScreen) stage.setFullScreen(true);
-    else if (maximized)  stage.setMaximized(true);
-    else
-    {
-      stage.setWidth(width);
-      stage.setHeight(height);
-
-      ensureVisible(stage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
-    }
-
-    stage.show();
-
-    scaleNodeForDPI(rootNode);
-    MainTextWrapper.rescale();
-    MainCtrlr.personHyperTab().rescale();
-
-    forEachHyperTab(HyperTab::setDividerPositions);
 
     bibManagerDlg = new BibManager();
     bibManagerDlg.initBounds(PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_WIDTH, PREF_KEY_BM_WINDOW_HEIGHT);
@@ -415,12 +383,10 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void initScaling(Region rootNode)
+  private static void initScaling(Preferences prefs)
   {
-    setFontSize(rootNode);
-
     Text text = new Text("Mac @Wow Cem");
-    double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+    double fontSize = prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize > 0)
       text.setFont(new Font(fontSize));
 

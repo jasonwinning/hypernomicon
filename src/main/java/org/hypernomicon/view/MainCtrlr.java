@@ -59,6 +59,7 @@ import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.ui.QueriesTabCtrlr;
+import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.query.ui.ResultsRow;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
@@ -96,6 +97,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -127,6 +129,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
@@ -188,7 +191,6 @@ public final class MainCtrlr
   private final HyperCB hcbGoTo;
   private final HyperTable htFind;
   private final CreateMenuItems createMenuItems;
-  private final Region rootNode;
 
   private ComboBox<ResultsRow> cbResultGoTo = null;
   private TextField tfSelector = null;
@@ -207,9 +209,8 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 
   MenuBar getMenuBar()                        { return menuBar; }
-  public static TreeWrapper tree()            { return treeHyperTab().getTree(); }
+  public TreeWrapper tree()                   { return treeHyperTab().getTree(); }
   public Stage getStage()                     { return stage; }
-  public Region getRootNode()                 { return rootNode; }
   public boolean isShuttingDown()             { return shuttingDown; }
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
@@ -220,17 +221,17 @@ public final class MainCtrlr
   @FXML private void mnuSettingsClick()       { if (cantSaveRecord() == false) new SettingsDlgCtrlr().showModal(); }
   @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(activeRecord(), false); }
 
-  public static PersonTabCtrlr  personHyperTab  () { return getHyperTab(personTabEnum  ); }
-  public static InstTabCtrlr    instHyperTab    () { return getHyperTab(instTabEnum    ); }
-  public static WorkTabCtrlr    workHyperTab    () { return getHyperTab(workTabEnum    ); }
-  public static FileTabCtrlr    fileHyperTab    () { return getHyperTab(fileTabEnum    ); }
-  public static DebateTab       debateHyperTab  () { return getHyperTab(debateTabEnum  ); }
-  public static PositionTab     positionHyperTab() { return getHyperTab(positionTabEnum); }
-  public static ArgumentTab     argumentHyperTab() { return getHyperTab(argumentTabEnum); }
-  public static NoteTab         noteHyperTab    () { return getHyperTab(noteTabEnum    ); }
-  public static TermTab         termHyperTab    () { return getHyperTab(termTabEnum    ); }
-  public static QueriesTabCtrlr queryHyperTab   () { return getHyperTab(queryTabEnum   ); }
-  public static TreeTabCtrlr    treeHyperTab    () { return getHyperTab(treeTabEnum    ); }
+  public PersonTabCtrlr  personHyperTab    () { return getHyperTab(personTabEnum  ); }
+  public InstTabCtrlr    instHyperTab      () { return getHyperTab(instTabEnum    ); }
+  public WorkTabCtrlr    workHyperTab      () { return getHyperTab(workTabEnum    ); }
+  public FileTabCtrlr    fileHyperTab      () { return getHyperTab(fileTabEnum    ); }
+  public DebateTab       debateHyperTab    () { return getHyperTab(debateTabEnum  ); }
+  public PositionTab     positionHyperTab  () { return getHyperTab(positionTabEnum); }
+  public ArgumentTab     argumentHyperTab  () { return getHyperTab(argumentTabEnum); }
+  public NoteTab         noteHyperTab      () { return getHyperTab(noteTabEnum    ); }
+  public TermTab         termHyperTab      () { return getHyperTab(termTabEnum    ); }
+  public QueriesTabCtrlr queryHyperTab     () { return getHyperTab(queryTabEnum   ); }
+  public TreeTabCtrlr    treeHyperTab      () { return getHyperTab(treeTabEnum    ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -288,7 +289,7 @@ public final class MainCtrlr
     ui = this;
 
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"), null, null, klass -> this);
-    rootNode = loader.load();
+    Region rootNode = loader.load();
 
     this.stage = stage;
     menuBar.setUseSystemMenuBar(true);
@@ -424,7 +425,7 @@ public final class MainCtrlr
     btnPrevResult.visibleProperty().bind(btnTextSearch.selectedProperty()      );
     btnNextResult.visibleProperty().bind(btnTextSearch.selectedProperty()      );
 
-    if (appPrefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
+    if (app.prefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
       btnPointerLaunch.setSelected(true);
     else
       btnPointerPreview.setSelected(true);
@@ -432,13 +433,13 @@ public final class MainCtrlr
     btnPointerLaunch.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (Boolean.TRUE.equals(newValue))
-        appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
+        app.prefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
     });
 
     btnPointerPreview.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (Boolean.TRUE.equals(newValue))
-        appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
+        app.prefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
     });
 
     btnPointerLaunch.getToggleGroup().selectedToggleProperty().addListener((ob, oldValue, newValue) ->
@@ -517,8 +518,6 @@ public final class MainCtrlr
       });
     }
 
-//---------------------------------------------------------------------------
-
     createMenuItems = new CreateMenuItems(mbCreateNew, btnCreateNew);
 
     repositionPopupListWorkaround(btnCreateNew);
@@ -538,6 +537,21 @@ public final class MainCtrlr
       menuItem.setOnAction(event -> createNew(type));
       createMenuItems.add(menuItem);
     });
+
+    Scene scene = new Scene(rootNode);
+
+    scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
+
+    stage.setScene(scene);
+
+    initInputHandlers();
+
+    stage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
+                                  .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))
+                                  .collect(Collectors.toList()));
+    hideFindTable();
+
+    setFontSize(rootNode);
 
 //---------------------------------------------------------------------------
 
@@ -725,10 +739,10 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    mnuAutoImport.setSelected(appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
-    mnuAutoImport.setOnAction(event -> appPrefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
+    mnuAutoImport.setSelected(app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
+    mnuAutoImport.setOnAction(event -> app.prefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
 
-    mnuChangeID.setVisible(debugging());
+    mnuChangeID.setVisible(app.debugging);
 
 //---------------------------------------------------------------------------
 
@@ -764,12 +778,39 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
+    double  x             = app.prefs.getDouble (PREF_KEY_WINDOW_X,          stage.getX()),
+            y             = app.prefs.getDouble (PREF_KEY_WINDOW_Y,          stage.getY()),
+            width         = app.prefs.getDouble (PREF_KEY_WINDOW_WIDTH,      rootNode.getPrefWidth()),  // stage.getWidth and stage.getHeight are not the
+            height        = app.prefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     rootNode.getPrefHeight()); // correct values in some Linux environments
+    boolean fullScreen    = app.prefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, stage.isFullScreen()),
+            maximizedPref = app.prefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  stage.isMaximized());
+
+    stage.setX(x); // set X and Y first so that window gets full-screened or
+    stage.setY(y); // maximized onto the correct monitor if there are more than one
+
+    if      (fullScreen)    stage.setFullScreen(true);
+    else if (maximizedPref) stage.setMaximized(true);
+    else
+    {
+      stage.setWidth(width);
+      stage.setHeight(height);
+
+      ensureVisible(stage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
+    }
+
+    scaleNodeForDPI(rootNode);
+    MainTextWrapper.rescale();
+    personHyperTab().rescale();
+
+    forEachHyperTab(HyperTab::setDividerPositions);
+
+    stage.show();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void initInputHandlers()
+  private void initInputHandlers()
   {
     Scene scene = stage.getScene();
 
@@ -842,7 +883,7 @@ public final class MainCtrlr
       if (board.hasContent(HYPERNOMICON_DATA_FORMAT))
         return;
 
-      if (board.hasImage() && debugging())
+      if (board.hasImage() && app.debugging)
         System.out.println("has image");
 
       if (board.hasFiles())
@@ -1134,7 +1175,7 @@ public final class MainCtrlr
 
     Platform.runLater(() ->
     {
-      List<ResultsRow> resultList = results();
+      List<ResultsRow> resultList = queryHyperTab().results();
       int num = resultList.size();
 
       if (num == 1)
@@ -1172,7 +1213,7 @@ public final class MainCtrlr
           if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?"))
             return;
 
-        if (appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
+        if (app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
           return;
 
         if (saveAllToDisk(false, false, false) == false)
@@ -1204,13 +1245,13 @@ public final class MainCtrlr
 
       if (fullScreen || maximizedPrefVal) iconified = false; // This has to be done due to bug JDK-8087997
 
-      appPrefs.putDouble(PREF_KEY_WINDOW_X, stage.getX());
-      appPrefs.putDouble(PREF_KEY_WINDOW_Y, stage.getY());
-      appPrefs.putDouble(PREF_KEY_WINDOW_WIDTH, stage.getWidth());
-      appPrefs.putDouble(PREF_KEY_WINDOW_HEIGHT, stage.getHeight());
-      appPrefs.putBoolean(PREF_KEY_WINDOW_ICONIFIED, iconified);
-      appPrefs.putBoolean(PREF_KEY_WINDOW_FULLSCREEN, fullScreen);
-      appPrefs.putBoolean(PREF_KEY_WINDOW_MAXIMIZED, maximizedPrefVal);
+      app.prefs.putDouble(PREF_KEY_WINDOW_X, stage.getX());
+      app.prefs.putDouble(PREF_KEY_WINDOW_Y, stage.getY());
+      app.prefs.putDouble(PREF_KEY_WINDOW_WIDTH, stage.getWidth());
+      app.prefs.putDouble(PREF_KEY_WINDOW_HEIGHT, stage.getHeight());
+      app.prefs.putBoolean(PREF_KEY_WINDOW_ICONIFIED, iconified);
+      app.prefs.putBoolean(PREF_KEY_WINDOW_FULLSCREEN, fullScreen);
+      app.prefs.putBoolean(PREF_KEY_WINDOW_MAXIMIZED, maximizedPrefVal);
 
       if (fileManagerDlg.shownAlready())
         HyperDlg.saveBoundPrefs(fileManagerDlg.getStage(), PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_WIDTH, PREF_KEY_FM_WINDOW_HEIGHT);
@@ -1279,7 +1320,7 @@ public final class MainCtrlr
 
     apStatus.setDisable(false);
 
-    mnuSaveReloadAll.setDisable(disabled || (debugging() == false));
+    mnuSaveReloadAll.setDisable(disabled || (app.debugging == false));
 
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
@@ -1415,8 +1456,8 @@ public final class MainCtrlr
   {
     if (saveAllToDisk(true, false, false) == false) return;
 
-    appPrefs.put(PREF_KEY_SOURCE_FILENAME, db.getHdbPath().getNameOnly().toString());
-    appPrefs.put(PREF_KEY_SOURCE_PATH, db.getRootPath().toString());
+    app.prefs.put(PREF_KEY_SOURCE_FILENAME, db.getHdbPath().getNameOnly().toString());
+    app.prefs.put(PREF_KEY_SOURCE_PATH, db.getRootPath().toString());
 
     if (loadDataFromDisk(false))
     {
@@ -1444,7 +1485,7 @@ public final class MainCtrlr
 
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb"));
 
-      File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
+      File dir = new File(app.prefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
 
       if (dir.exists() == false)
         dir = new File(userWorkingDir());
@@ -1456,8 +1497,8 @@ public final class MainCtrlr
 
     if (FilePath.isEmpty(filePath) || (close(true) == false) || db.isLoaded()) return;
 
-    appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
-    appPrefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
+    app.prefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
+    app.prefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
 
     loadDB(false);
   }
@@ -1472,7 +1513,7 @@ public final class MainCtrlr
 
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    File file = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, ""));
+    File file = new File(app.prefs.get(PREF_KEY_SOURCE_PATH, ""));
 
     dirChooser.setTitle("Select an empty folder in which to create database");
 
@@ -1577,8 +1618,8 @@ public final class MainCtrlr
         return;
       }
 
-      appPrefs.put(PREF_KEY_SOURCE_FILENAME, srcFilePath.getNameOnly().toString());
-      appPrefs.put(PREF_KEY_SOURCE_PATH    , srcFilePath.getDirOnly ().toString());
+      app.prefs.put(PREF_KEY_SOURCE_FILENAME, srcFilePath.getNameOnly().toString());
+      app.prefs.put(PREF_KEY_SOURCE_PATH    , srcFilePath.getDirOnly ().toString());
     }
 
     loadDB(true);
@@ -1954,7 +1995,7 @@ public final class MainCtrlr
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
                    new HyperTableCell("", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
     {
-      List<ResultsRow> resultRows = curQC.results();
+      List<ResultsRow> resultRows = queryHyperTab().results();
 
       if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.get(0).getRecord() != record)))
         return;
@@ -1976,7 +2017,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (curQC.inReportMode())
+    if (queryHyperTab().getCurQueryCtrlr().inReportMode())
     {
       messageDialog("That menu option cannot be used to add a record to a report.", mtInformation);
       return;
@@ -2012,6 +2053,8 @@ public final class MainCtrlr
       messageDialog("No record is currently selected.", mtError);
       return;
     }
+
+    QueryCtrlr curQC = queryHyperTab().getCurQueryCtrlr();
 
     for (ResultsRow row : curQC.results())
       if (row.getRecord() == record) return;
@@ -2170,10 +2213,10 @@ public final class MainCtrlr
 
     FilePath hdbPath = null;
     boolean hdbExists = false;
-    String srcName = appPrefs.get(PREF_KEY_SOURCE_FILENAME, "");
+    String srcName = app.prefs.get(PREF_KEY_SOURCE_FILENAME, "");
     if (srcName.isBlank() == false)
     {
-      String srcPath = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
+      String srcPath = app.prefs.get(PREF_KEY_SOURCE_PATH, "");
       if (srcPath.isBlank() == false)
       {
         hdbPath = new FilePath(srcPath).resolve(srcName);
@@ -2188,7 +2231,7 @@ public final class MainCtrlr
     if (InterProcClient.checkFolder(hdbPath) == false)
       return falseWithErrorMessage("Unable to load database: Database folder(s) are already in use by another instance of " + appTitle);
 
-    if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
+    if (internetNotCheckedYet && app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
     {
       if (InternetCheckDlgCtrlr.check() == false)
         return false;
@@ -2255,7 +2298,7 @@ public final class MainCtrlr
     removeDupsInStrList(mruList);
 
     for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
-      appPrefs.put(PREF_KEY_HDB_MRU + (ndx + 1), mruList.size() > ndx ? mruList.get(ndx) : "");
+      app.prefs.put(PREF_KEY_HDB_MRU + (ndx + 1), mruList.size() > ndx ? mruList.get(ndx) : "");
   }
 
 //---------------------------------------------------------------------------
@@ -2266,7 +2309,7 @@ public final class MainCtrlr
     List<String> mruList = new ArrayList<>();
 
     for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
-      mruList.add(appPrefs.get(PREF_KEY_HDB_MRU + (ndx + 1), ""));
+      mruList.add(app.prefs.get(PREF_KEY_HDB_MRU + (ndx + 1), ""));
 
     mruList.removeIf(String::isBlank);
     return mruList;
@@ -2564,7 +2607,7 @@ public final class MainCtrlr
 
         if (count > 0)
         {
-          HDT_Record record = nullSwitch(hyperTab, null, HyperTab::activeRecord);  // Save to variable to avoid Maven build errors
+          HDT_Record record = nullSwitch(hyperTab, null, HyperTab::activeRecord);  // Save to variable to avoid Maven false-positive build errors
           hcbGoTo.addAndSelectEntryOrBlank(record, HDT_Record::listName);
         }
 

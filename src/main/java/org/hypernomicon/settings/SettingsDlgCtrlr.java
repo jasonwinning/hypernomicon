@@ -195,7 +195,7 @@ public class SettingsDlgCtrlr extends HyperDlg
         ("Modify Image Editor Command(s)", PREF_KEY_IMAGE_EDITOR, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE);
 
       if (lcdc.showModal())
-        tfImageEditor.setText(appPrefs.get(PREF_KEY_IMAGE_EDITOR, ""));
+        tfImageEditor.setText(app.prefs.get(PREF_KEY_IMAGE_EDITOR, ""));
     });
 
     btnPdfViewerAdvanced.setOnAction(event ->
@@ -204,16 +204,16 @@ public class SettingsDlgCtrlr extends HyperDlg
         ("Modify PDF Viewer Command(s)", PREF_KEY_PDF_READER, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE);
 
       if (lcdc.showModal())
-        tfPDFReader.setText(appPrefs.get(PREF_KEY_PDF_READER, ""));
+        tfPDFReader.setText(app.prefs.get(PREF_KEY_PDF_READER, ""));
     });
 
-    sliderFontSize.setValue(appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
+    sliderFontSize.setValue(app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
     sliderFontSize.valueProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((oldValue == null) || (newValue == null) || (oldValue.doubleValue() == newValue.doubleValue())) return;
-      if (appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE) == newValue.doubleValue()) return;
+      if (app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE) == newValue.doubleValue()) return;
 
-      appPrefs.putDouble(PREF_KEY_FONT_SIZE, newValue.doubleValue());
+      app.prefs.putDouble(PREF_KEY_FONT_SIZE, newValue.doubleValue());
     });
 
     setToolTip(sliderFontSize, "Base font size");
@@ -314,12 +314,12 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   private static void initAppTextField(TextField tf, String prefKey)
   {
-    tf.setText(appPrefs.get(prefKey, ""));
+    tf.setText(app.prefs.get(prefKey, ""));
 
     tf.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue != null)
-        appPrefs.put(prefKey, newValue);
+        app.prefs.put(prefKey, newValue);
     });
   }
 
@@ -342,11 +342,11 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   private static void initAppCheckBox(CheckBox chk, String prefKey, boolean defValue)
   {
-    chk.setSelected(appPrefs.getBoolean(prefKey, defValue));
+    chk.setSelected(app.prefs.getBoolean(prefKey, defValue));
     chk.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue != null)
-        appPrefs.putBoolean(prefKey, newValue);
+        app.prefs.putBoolean(prefKey, newValue);
     });
   }
 

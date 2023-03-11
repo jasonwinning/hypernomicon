@@ -147,7 +147,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     MainCtrlr.setSearchKeyToolTip(tfSearchKey);
 
-    double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+    double fontSize = app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
 
     lblGoTo1.setFont     (new Font(fontSize + 6.0));

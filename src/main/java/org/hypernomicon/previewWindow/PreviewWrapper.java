@@ -40,7 +40,6 @@ import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.MainCtrlr;
 
 import javafx.application.Platform;
 import javafx.scene.control.MenuItem;
@@ -658,7 +657,7 @@ public class PreviewWrapper
       work.setEndPageNum(workFile, pageNum);
 
     if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
-      MainCtrlr.workHyperTab().setPageNum(workFile, pageNum, isStart);
+      ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
 
     if (workFile == null)
       contentsWindow.update(curPrevFile.filePath, pageNum);

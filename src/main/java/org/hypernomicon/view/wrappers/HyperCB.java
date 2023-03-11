@@ -38,12 +38,12 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.AutoCompleteCB;
-import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
@@ -502,7 +502,7 @@ public class HyperCB implements CommitableWrapper
 
         case hdtInstitution :
 
-          MainCtrlr.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
+          ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
           break;
 
         default: break;

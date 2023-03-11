@@ -112,7 +112,37 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private final List<QueryCtrlr> queryCtrlrs = new ArrayList<>();
 
+  private QueryCtrlr curQC;
+
   private static final List<Query<?>> allQueries = new ArrayList<>();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public List<ResultsRow> results()                  { return (curQC == null) ? List.of() : curQC.results(); }
+  public void refreshTables()                        { queryCtrlrs.forEach(qc -> qc.resultsTable.getTV().refresh()); }
+  public void setCB(ComboBox<ResultsRow> cb)         { this.cb = cb; updateCB(curQC); }
+  public void btnExecuteClick()                      { curQC.btnExecuteClick(true); }
+  public QueryCtrlr getCurQueryCtrlr()               { return curQC; }
+
+  @Override protected RecordType type()              { return hdtNone; }
+  @Override public void update()                     { curQC.refreshView(true); }
+  @Override public void setRecord(HDT_Record rec)    { if (curQC != null) curQC.setRecord(rec); }
+  @Override public int recordCount()                 { return results().size(); }
+  @Override public TextViewInfo mainTextInfo()       { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
+  @Override public void setDividerPositions()        { return; }
+  @Override public void getDividerPositions()        { return; }
+  @Override public boolean saveToRecord()            { return false; }
+  @Override public HDT_Record activeRecord()         { return curQC == null ? null : curQC.getRecord(); }
+  @Override public HDT_Record viewRecord()           { return activeRecord(); }
+  @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
+  @Override public int recordNdx()                   { return recordCount() > 0 ? curQC.resultsTable.getTV().getSelectionModel().getSelectedIndex() : -1; }
+  @Override public void findWithinDesc(String text)  { if (activeRecord() != null) MainTextWrapper.hilite(text, webView.getEngine()); }
+  @Override public void nextSearchResult()           { MainTextWrapper.nextSearchResult(webView.getEngine()); }
+  @Override public void previousSearchResult()       { MainTextWrapper.previousSearchResult(webView.getEngine()); }
+
+  @FXML private void mnuCopyToFolderClick()          { copyFilesToFolder(true); }
+  @FXML private void mnuShowSearchFolderClick()      { if (db.isLoaded()) launchFile(db.resultsPath()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -189,33 +219,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addFilesButton();
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static List<ResultsRow> results()           { return (curQC == null) ? List.of() : curQC.results(); }
-  public void refreshTables()                        { queryCtrlrs.forEach(qc -> qc.resultsTable.getTV().refresh()); }
-  public void setCB(ComboBox<ResultsRow> cb)         { this.cb = cb; updateCB(curQC); }
-  public static void btnExecuteClick()               { curQC.btnExecuteClick(true); }
-
-  @Override protected RecordType type()              { return hdtNone; }
-  @Override public void update()                     { curQC.refreshView(true); }
-  @Override public void setRecord(HDT_Record rec)    { if (curQC != null) curQC.setRecord(rec); }
-  @Override public int recordCount()                 { return results().size(); }
-  @Override public TextViewInfo mainTextInfo()       { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
-  @Override public void setDividerPositions()        { return; }
-  @Override public void getDividerPositions()        { return; }
-  @Override public boolean saveToRecord()            { return false; }
-  @Override public HDT_Record activeRecord()         { return curQC == null ? null : curQC.getRecord(); }
-  @Override public HDT_Record viewRecord()           { return activeRecord(); }
-  @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
-  @Override public int recordNdx()                   { return recordCount() > 0 ? curQC.resultsTable.getTV().getSelectionModel().getSelectedIndex() : -1; }
-  @Override public void findWithinDesc(String text)  { if (activeRecord() != null) MainTextWrapper.hilite(text, webView.getEngine()); }
-  @Override public void nextSearchResult()           { MainTextWrapper.nextSearchResult(webView.getEngine()); }
-  @Override public void previousSearchResult()       { MainTextWrapper.previousSearchResult(webView.getEngine()); }
-
-  @FXML private void mnuCopyToFolderClick()          { copyFilesToFolder(true); }
-  @FXML private void mnuShowSearchFolderClick()      { if (db.isLoaded()) launchFile(db.resultsPath()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

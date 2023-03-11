@@ -66,7 +66,7 @@ abstract class WebButtonCtrl
   static void loadPref(Preferences node, List<WebButton> srchList, String prefKey, MutableInt numCustom) throws BackingStoreException
   {
     String name = node.get(prefKey, ""),
-           caption = appPrefs.node("webButtonCaptions").get(prefKey, "");
+           caption = app.prefs.node("webButtonCaptions").get(prefKey, "");
 
     if (name.isEmpty()) return;
 
@@ -143,7 +143,7 @@ abstract class WebButtonCtrl
       }
     }
 
-    appPrefs.node("webButtonCaptions").put(prefKey, webBtn.getCaption());
+    app.prefs.node("webButtonCaptions").put(prefKey, webBtn.getCaption());
   }
 
 //---------------------------------------------------------------------------

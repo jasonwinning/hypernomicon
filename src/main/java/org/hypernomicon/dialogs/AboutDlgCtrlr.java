@@ -25,6 +25,7 @@ import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -116,7 +117,7 @@ public class AboutDlgCtrlr extends HyperDlg
 
     checkForNewVersion(httpClient, newVersion ->
     {
-      if (newVersion.compareTo(app.getVersion()) > 0)
+      if (newVersion.compareTo(appVersion) > 0)
         nextVersionHtml = "<b><a class=download href=\"\" onclick=\"openURL('https://sourceforge.net/projects/hypernomicon/files/latest/download'); return false;\">" +
                           "Newer version " + newVersion + " is available for download.</a></b>";
       else
@@ -160,11 +161,11 @@ public class AboutDlgCtrlr extends HyperDlg
 
   private String getGeneralTabHtml()
   {
-    String maxHeap = debugging() ? "Max heap space: " + new DecimalFormat("#,###").format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
+    String maxHeap = app.debugging ? "Max heap space: " + new DecimalFormat("#,###").format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
 
     return htmlStart +
 
-      "Version: " + app.getVersion() + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
+      "Version: " + appVersion + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
       "Build date: " + buildDate + "<br>" +
       "Copyright \u00a9 2015-2023 Jason Winning.<br><br>" +
       "Operating system: " + SystemUtils.OS_NAME + "<br>" +

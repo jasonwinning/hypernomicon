@@ -19,7 +19,6 @@ package org.hypernomicon.query.reports;
 
 import java.util.List;
 
-import org.hypernomicon.App;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
@@ -29,6 +28,8 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+
+import static org.hypernomicon.App.app;
 
 public abstract class ReportEngine
 {
@@ -54,7 +55,7 @@ public abstract class ReportEngine
     pop.addEntry(row, QUERY_DUPLICATE_AUTHORS, "Duplicate authors");
     pop.addEntry(row, QUERY_LICENSE_AND_NOTICE, "Application license and notices");
 
-    if (App.debugging()) pop.addEntry(row, QUERY_DANGLING_LABELS, "Dangling labels united to records with parent/child relationship");
+    if (app.debugging) pop.addEntry(row, QUERY_DANGLING_LABELS, "Dangling labels united to records with parent/child relationship");
   }
 
 //---------------------------------------------------------------------------

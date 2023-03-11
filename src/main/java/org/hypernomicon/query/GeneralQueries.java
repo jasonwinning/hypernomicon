@@ -17,12 +17,12 @@
 
 package org.hypernomicon.query;
 
-import static org.hypernomicon.App.curQC;
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.query.WorkQueries.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.getCellText;
+import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -118,7 +118,7 @@ public final class GeneralQueries
           return false;
 
         List<String> list = new ArrayList<>();
-        record.getAllStrings(list, curQC.getSearchLinkedRecords());
+        record.getAllStrings(list, ui.queryHyperTab().getCurQueryCtrlr().getSearchLinkedRecords());
 
         String val1LC = val1.toLowerCase();
         return list.stream().anyMatch(str -> str.toLowerCase().contains(val1LC));

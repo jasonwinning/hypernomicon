@@ -180,7 +180,7 @@ class TreeCB
     sorted = false;
 
     HDT_Debate rootDebate = db.debates.getByID(1);                           // If these two lines are combined into one, there will be
-    nullSwitch(nullSwitch(tree.selectedRecord(), rootDebate), this::select); // build errors that aren't really errors
+    nullSwitch(nullSwitch(tree.selectedRecord(), rootDebate), this::select); // false-positive build errors
   }
 
 //---------------------------------------------------------------------------

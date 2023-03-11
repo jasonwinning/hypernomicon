@@ -131,38 +131,39 @@ import org.hypernomicon.view.mainText.MainTextCtrlr;
 
 public final class HyperDB
 {
-  public static final HyperDB db = new HyperDB();
+  public static HyperDB db;
 
-  final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(RecordType.class);
-  final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(RecordType.class);
-  final private EnumMap<RecordType, String> mainTextTemplates = new EnumMap<>(RecordType.class);
-  final private EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
-  final private EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
-  final private EnumMap<Tag, EnumSet<RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
+  private final EnumMap<RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(RecordType.class);
+  private final EnumMap<RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(RecordType.class);
+  private final EnumMap<RecordType, String> mainTextTemplates = new EnumMap<>(RecordType.class);
+  private final EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
+  private final EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
+  private final EnumMap<Tag, EnumSet<RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
 
-  final private List<Consumer<HDT_Record>> recordDeleteHandlers          = new ArrayList<>();
-  final private List<Runnable>             dbCloseHandlers               = new ArrayList<>(),
+  private final List<Consumer<HDT_Record>> recordDeleteHandlers          = new ArrayList<>();
+  private final List<Runnable>             dbCloseHandlers               = new ArrayList<>(),
                                            dbLoadedHandlers              = new ArrayList<>(),
                                            dbPreChangeHandlers           = new ArrayList<>(),
                                            dbMentionsNdxCompleteHandlers = new ArrayList<>(),
                                            bibChangedHandlers            = new ArrayList<>();
 
-  final private SearchKeys searchKeys = new SearchKeys();
-  final private MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
-  final private List<HDT_Record> initialNavList = new ArrayList<>();
-  final private EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
-  final private Map<HDT_RecordWithPath, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
-  final private BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
-  final private Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
-  final private Map<String, String> xmlChecksums = new HashMap<>();
-  final private SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
+  private final SearchKeys searchKeys = new SearchKeys();
+  private final MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
+  private final List<HDT_Record> initialNavList = new ArrayList<>();
+  private final EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
+  private final Map<HDT_RecordWithPath, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
+  private final BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
+  private final Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
+  private final Map<String, String> xmlChecksums = new HashMap<>();
+  private final SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
 
-  final public FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
+  public final FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
+
+  private final FolderTreeWatcher folderTreeWatcher;
 
   public Preferences prefs = null;
-  private Preferences appPrefs;
   private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bibLibrary = null;
-  private FolderTreeWatcher folderTreeWatcher;
+
   private DialogResult deleteFileAnswer;
   HyperTask task;
   long totalTaskCount, curTaskCount;
@@ -337,12 +338,313 @@ public final class HyperDB
   public FilePath unenteredPath(String fileNameStr) { return unenteredFolder.filePath().resolve(fileNameStr); }
   public FilePath topicalPath  (String fileNameStr) { return topicalFolder  .filePath().resolve(fileNameStr); }
 
+  public static String getTypeName(RecordType type) { return nullSwitch(getTag(type), type == hdtNone ? "All" : "Unknown", tag -> tag.header); }
+
+//---------------------------------------------------------------------------
+
+  public final HyperDataset<HDT_Person         >.CoreAccessor persons;
+  public final HyperDataset<HDT_PersonStatus   >.CoreAccessor personStatuses;
+  public final HyperDataset<HDT_Institution    >.CoreAccessor institutions;
+  public final HyperDataset<HDT_InstitutionType>.CoreAccessor institutionTypes;
+  public final HyperDataset<HDT_Region         >.CoreAccessor regions;
+  public final HyperDataset<HDT_Country        >.CoreAccessor countries;
+  public final HyperDataset<HDT_Rank           >.CoreAccessor ranks;
+  public final HyperDataset<HDT_Investigation  >.CoreAccessor investigations;
+  public final HyperDataset<HDT_Debate         >.CoreAccessor debates;
+  public final HyperDataset<HDT_Argument       >.CoreAccessor arguments;
+  public final HyperDataset<HDT_Position       >.CoreAccessor positions;
+  public final HyperDataset<HDT_Field          >.CoreAccessor fields;
+  public final HyperDataset<HDT_Subfield       >.CoreAccessor subfields;
+  public final HyperDataset<HDT_Term           >.CoreAccessor terms;
+  public final HyperDataset<HDT_Concept        >.CoreAccessor concepts;
+  public final HyperDataset<HDT_ConceptSense   >.CoreAccessor conceptSenses;
+  public final HyperDataset<HDT_Work           >.CoreAccessor works;
+  public final HyperDataset<HDT_WorkType       >.CoreAccessor workTypes;
+  public final HyperDataset<HDT_WorkLabel      >.CoreAccessor workLabels;
+  public final HyperDataset<HDT_PositionVerdict>.CoreAccessor positionVerdicts;
+  public final HyperDataset<HDT_ArgumentVerdict>.CoreAccessor argumentVerdicts;
+  public final HyperDataset<HDT_MiscFile       >.CoreAccessor miscFiles;
+  public final HyperDataset<HDT_WorkFile       >.CoreAccessor workFiles;
+  public final HyperDataset<HDT_Folder         >.CoreAccessor folders;
+  public final HyperDataset<HDT_Note           >.CoreAccessor notes;
+  public final HyperDataset<HDT_Glossary       >.CoreAccessor glossaries;
+  public final HyperDataset<HDT_Hub            >.CoreAccessor hubs;
+  public final HyperDataset<HDT_PersonGroup    >.CoreAccessor personGroups;
+  public final HyperDataset<HDT_FileType       >.CoreAccessor fileTypes;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unused")
+  public static void create(FolderTreeWatcher folderTreeWatcher) throws HDB_InternalError
+  {
+    new HyperDB(folderTreeWatcher);
+  }
+
+  private HyperDB(FolderTreeWatcher folderTreeWatcher) throws HDB_InternalError
+  {
+    db = this;
+
+    this.folderTreeWatcher = folderTreeWatcher;
+
+    persons          = getAccessor(HDT_Person         .class);
+    personStatuses   = getAccessor(HDT_PersonStatus   .class);
+    institutions     = getAccessor(HDT_Institution    .class);
+    institutionTypes = getAccessor(HDT_InstitutionType.class);
+    regions          = getAccessor(HDT_Region         .class);
+    countries        = getAccessor(HDT_Country        .class);
+    ranks            = getAccessor(HDT_Rank           .class);
+    investigations   = getAccessor(HDT_Investigation  .class);
+    debates          = getAccessor(HDT_Debate         .class);
+    arguments        = getAccessor(HDT_Argument       .class);
+    terms            = getAccessor(HDT_Term           .class);
+    concepts         = getAccessor(HDT_Concept        .class);
+    conceptSenses    = getAccessor(HDT_ConceptSense   .class);
+    works            = getAccessor(HDT_Work           .class);
+    workTypes        = getAccessor(HDT_WorkType       .class);
+    workLabels       = getAccessor(HDT_WorkLabel      .class);
+    fields           = getAccessor(HDT_Field          .class);
+    subfields        = getAccessor(HDT_Subfield       .class);
+    positions        = getAccessor(HDT_Position       .class);
+    positionVerdicts = getAccessor(HDT_PositionVerdict.class);
+    argumentVerdicts = getAccessor(HDT_ArgumentVerdict.class);
+    miscFiles        = getAccessor(HDT_MiscFile       .class);
+    workFiles        = getAccessor(HDT_WorkFile       .class);
+    folders          = getAccessor(HDT_Folder         .class);
+    notes            = getAccessor(HDT_Note           .class);
+    glossaries       = getAccessor(HDT_Glossary       .class);
+    hubs             = getAccessor(HDT_Hub            .class);
+    personGroups     = getAccessor(HDT_PersonGroup    .class);
+    fileTypes        = getAccessor(HDT_FileType       .class);
+
+    try
+    {
+      RelationSet.init(relationSets);
+
+  /*****************************************************************************
+  * ************************************************************************** *
+  * *                                                                        * *
+  * *                        Type Definitions                                * *
+  * *                                                                        * *
+  * ************************************************************************** *
+  *****************************************************************************/
+
+      // Nested items are defined in RelationSet.createSet()
+
+      addStringItem(hdtArgument, tagName);
+      addPointerMulti(hdtArgument, rtWorkOfArgument, tagWork);
+      addPointerMulti(hdtArgument, rtPositionOfArgument, tagPosition);
+      addPointerMulti(hdtArgument, rtCounterOfArgument, tagCounterargument);
+      addMainTextItem(hdtArgument, tagDescription, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtDebate, tagName);
+      addPointerMulti(hdtDebate, rtParentDebateOfDebate, tagLargerDebate);
+      addPointerMulti(hdtDebate, rtParentPosOfDebate, tagLargerPosition);
+      addMainTextItem(hdtDebate, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtMiscFile, tagName);
+      addPointerSingle(hdtMiscFile, rtTypeOfFile, tagFileType);
+      addPointerSingle(hdtMiscFile, rtWorkOfMiscFile, tagWork);
+      addPathItem(hdtMiscFile, rtFolderOfMiscFile, tagFolder, tagFileName);
+      addAuthorsItem(hdtMiscFile, rtAuthorOfFile);
+      addBooleanItem(hdtMiscFile, tagAnnotated);
+      addMainTextItem(hdtMiscFile, tagDescription, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtWorkFile, tagName);
+      addPathItem(hdtWorkFile, rtFolderOfWorkFile, tagFolder, tagFileName);
+      addBooleanItem(hdtWorkFile, tagAnnotated);
+
+      addStringItem(hdtFolder, tagName);
+      addPathItem(hdtFolder, rtParentFolderOfFolder, tagParentFolder, tagFileName);
+
+      addStringItem(hdtInstitution, tagName);
+      addPointerSingle(hdtInstitution, rtTypeOfInst, tagInstitutionType);
+      addPointerSingle(hdtInstitution, rtParentInstOfInst, tagParentInst);
+      addPointerSingle(hdtInstitution, rtRegionOfInst, tagRegion);
+      addPointerSingle(hdtInstitution, rtCountryOfInst, tagCountry);
+      addStringItem(hdtInstitution, tagWebURL);
+      addStringItem(hdtInstitution, tagCity);
+
+      addStringItem(hdtInvestigation, tagName);
+      addPointerSingle(hdtInvestigation, rtPersonOfInv, tagPerson);
+      addMainTextItem(hdtInvestigation, tagDescription, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtNote, tagName);
+      addPointerMulti(hdtNote, rtParentNoteOfNote, tagParentNote);
+      addPointerSingle(hdtNote, rtFolderOfNote, tagFolder);
+      addMainTextItem(hdtNote, tagHub, tagText, tagDisplayRecord, tagKeyWork);
+
+      addPersonNameItem();
+      addPointerSingle(hdtPerson, rtStatusOfPerson, tagPersonStatus);
+      addPointerMulti(hdtPerson, rtInstOfPerson, tagInstitution);
+      addPointerSingle(hdtPerson, rtRankOfPerson, tagRank);
+      addPointerSingle(hdtPerson, rtFieldOfPerson, tagField);
+      addPointerSingle(hdtPerson, rtSubfieldOfPerson, tagSubfield);
+      addStringItem(hdtPerson, tagWebURL);
+      addStringItem(hdtPerson, tagORCID);
+      addPathItem(hdtPerson, rtPictureFolderOfPerson, tagPictureFolder, tagPicture);
+      addStringItem(hdtPerson, tagPictureCrop);
+      addMainTextItem(hdtPerson, tagWhyFamous, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtPersonGroup, tagName);
+      addPointerMulti(hdtPersonGroup, rtParentGroupOfGroup, tagParentGroup);
+
+      addStringItem(hdtPosition, tagName);
+      addPointerMulti(hdtPosition, rtParentDebateOfPos, tagDebate);
+      addPointerMulti(hdtPosition, rtParentPosOfPos, tagLargerPosition);
+      addMainTextItem(hdtPosition, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtRegion, tagName);
+      addStringItem(hdtRegion, tagAbbreviation);
+      addPointerSingle(hdtRegion, rtCountryOfRegion, tagCountry);
+
+      addStringItem(hdtSubfield, tagName);
+      addPointerSingle(hdtSubfield, rtFieldOfSubfield, tagField);
+
+      addStringItem(hdtPositionVerdict, tagListName);
+      addStringItem(hdtArgumentVerdict, tagListName);
+
+      addStringItem(hdtTerm, tagTerm);
+      addPointerMulti(hdtTerm, rtConceptOfTerm, tagConcept);
+
+      addStringItem(hdtConcept, tagName);
+      addPointerSingle(hdtConcept, rtGlossaryOfConcept, tagGlossary);
+      addPointerSingle(hdtConcept, rtSenseOfConcept, tagSense);
+      addPointerMulti(hdtConcept, rtParentConceptOfConcept, tagParentConcept);
+      addMainTextItem(hdtConcept, tagHub, tagDefinition, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtGlossary, tagName);
+      addBooleanItem(hdtGlossary, tagActive);
+      addPointerMulti(hdtGlossary, rtParentGlossaryOfGlossary, tagParentGlossary);
+
+      addStringItem(hdtWork, tagTitle);
+      addPointerSingle(hdtWork, rtTypeOfWork, tagWorkType);
+      addPointerSingle(hdtWork, rtParentWorkOfWork, tagLargerWork);
+      addPointerMulti(hdtWork, rtWorkFileOfWork, tagWorkFile);
+      addAuthorsItem(hdtWork, rtAuthorOfWork);
+      addStringItem(hdtWork, tagWebURL);
+      addStringItem(hdtWork, tagStartPageNum);
+      addStringItem(hdtWork, tagEndPageNum);
+      addStringItem(hdtWork, tagYear);
+      addBibEntryKeyItem();
+      addStringItem(hdtWork, tagMiscBib);
+      addStringItem(hdtWork, tagDOI);
+      addStringItem(hdtWork, tagISBN);
+      addMainTextItem(hdtWork, tagComments, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtWorkLabel, tagText);
+      addPointerMulti(hdtWorkLabel, rtParentLabelOfLabel, tagParentLabel);
+      addMainTextItem(hdtWorkLabel, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtHub, tagName);
+      addHubSpokesItem();
+      addMainTextItem(hdtHub, tagDescription, tagDisplayRecord, tagKeyWork);
+
+      initialized = true;
+    }
+    catch (HDB_InternalError e)
+    {
+      unableToLoad = true;
+      throw e;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperDataset<? extends HDT_Record>.CoreAccessor records(RecordType type)
+  {
+    HyperDataset<? extends HDT_Record>.CoreAccessor accessor = accessors.get(type);
+
+    if (accessor == null)
+      messageDialog("Internal error: null dataset", mtError);
+
+    return accessor;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private <HDT_T extends HDT_Record> HyperDataset<HDT_T>.CoreAccessor getAccessor(Class<HDT_T> klass)
+  {
+    RecordType type = typeByRecordClass(klass);
+
+    HyperDataset<HDT_T> dataset = new HyperDataset<>(type);
+    HyperDataset<HDT_T>.CoreAccessor accessor = dataset.getAccessor();
+    datasets.put(type, dataset);
+    accessors.put(type, accessor);
+
+    return accessor;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addItem(RecordType recordType, HyperDataCategory dataCat, RelationType relType, Tag... tags) throws HDB_InternalError
+  {
+    HDI_Schema schema;
+    EnumSet<RecordType> types = tagToSubjType.get(tags[0]);
+
+    if (types == null)
+    {
+      types = EnumSet.noneOf(RecordType.class);
+
+      for (Tag tag : tags)
+        tagToSubjType.put(tag, types);
+    }
+
+    if (types.contains(recordType))
+    {
+      schema = datasets.get(recordType).getSchema(tags[0]);
+      if (schema.getCategory() != dataCat)
+        throw new HDB_InternalError(78129);
+    }
+    else
+    {
+      switch (dataCat)
+      {
+        case hdcPointerMulti : case hdcPointerSingle : case hdcPath : case hdcAuthors :
+
+          schema = new HDI_Schema(dataCat, relType, tags);
+
+          if (relType != rtNone)
+            relTypeToIsMulti.put(relType, (dataCat == hdcPointerMulti) || (dataCat == hdcAuthors));
+
+          break;
+
+        default : schema = new HDI_Schema(dataCat, tags); break;
+      }
+
+      types.add(recordType);
+      datasets.get(recordType).addSchema(schema);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unused")
+  private void addTernaryItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary       , rtNone, tags); }
+
+  private void addBooleanItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean       , rtNone, tags); }
+  private void addPointerMulti (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti  , rt    , tags); }
+  private void addPointerSingle(RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle , rt    , tags); }
+  private void addStringItem   (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString        , rtNone, tags); }
+  private void addPathItem     (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath          , rt    , tags); }
+  private void addMainTextItem (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcMainTextAndHub, rtNone, tags); }
+  private void addAuthorsItem  (RecordType type, RelationType rt             ) throws HDB_InternalError { addItem(type, hdcAuthors       , rt    , tagAuthor); }
+
+  private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone, tagBibEntryKey           ); }
+
+  private void addPersonNameItem () throws HDB_InternalError { addItem(hdtPerson, hdcPersonName,  rtNone, tagFirstName, tagLastName); }
+  private void addHubSpokesItem  () throws HDB_InternalError { addItem(hdtHub,    hdcHubSpokes,   rtNone, tagLinkedRecord          ); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public FilePath extPath()
   {
-    String path = appPrefs.get(PREF_KEY_EXT_FILES_1, "");
+    String path = app.prefs.get(PREF_KEY_EXT_FILES_1, "");
     return path.isBlank() ? null : new FilePath(path);
   }
 
@@ -438,19 +740,6 @@ public final class HyperDB
     }
 
     filePath.deletePromptOnFail(false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperDataset<? extends HDT_Record>.CoreAccessor records(RecordType type)
-  {
-    HyperDataset<? extends HDT_Record>.CoreAccessor accessor = accessors.get(type);
-
-    if (accessor == null)
-      messageDialog("Internal error: null dataset", mtError);
-
-    return accessor;
   }
 
 //---------------------------------------------------------------------------
@@ -615,7 +904,7 @@ public final class HyperDB
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
     {
-      if (entry.getKey().isLessThanOrEqualTo(app.getVersion()))
+      if (entry.getKey().isLessThanOrEqualTo(appVersion))
       {
         VersionNumber maxVersion = entry.getValue();
 
@@ -638,7 +927,7 @@ public final class HyperDB
     if (getLockOwner() != null)
       return false;
 
-    FilePath newRootFilePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
+    FilePath newRootFilePath = new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
     boolean dbChanged = FilePath.isEmpty(rootFilePath) || (rootFilePath.equals(newRootFilePath) == false);
 
     close(null);
@@ -646,7 +935,7 @@ public final class HyperDB
     InterProcClient.refresh(newRootFilePath);
 
     rootFilePath = newRootFilePath;
-    hdbFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
+    hdbFilePath = rootFilePath.resolve(app.prefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
 
     if (dbChanged)
       dbPreChangeHandlers.forEach(Runnable::run);
@@ -890,7 +1179,7 @@ public final class HyperDB
 
     for (Entry<Integer, Collection<Integer>> entry : workIDtoInvIDs.asMap().entrySet())
     {
-      List<HDT_Investigation> invList = entry.getValue().stream().map(id -> investigations.getByID(id)).collect(Collectors.toList());
+      List<HDT_Investigation> invList = entry.getValue().stream().map(investigations::getByID).collect(Collectors.toList());
 
       invList.forEach(inv -> inv.getMainText().addKeyworksIfNotPresent());
 
@@ -1361,7 +1650,7 @@ public final class HyperDB
           oldestTooNewAppVersion = entry.getKey();
     }
 
-    if (oldestTooNewAppVersion.isLessThanOrEqualTo(app.getVersion()))
+    if (oldestTooNewAppVersion.isLessThanOrEqualTo(appVersion))
       throw new HyperDataException("A version of " + appTitle + " older than v" + oldestTooNewAppVersion + " is required to load " + dataName);
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
@@ -1371,7 +1660,7 @@ public final class HyperDB
           newestTooOldAppVersion = entry.getKey();
     }
 
-    if (newestTooOldAppVersion.isGreaterThanOrEqualTo(app.getVersion()))
+    if (newestTooOldAppVersion.isGreaterThanOrEqualTo(appVersion))
       throw new HyperDataException("A version of " + appTitle + " newer than v" + newestTooOldAppVersion + " is required to load " + dataName);
 
     VersionNumber savingAs = getVersionNumberSavingAs(appVersionToMaxVersion);
@@ -1639,7 +1928,7 @@ public final class HyperDB
   public FilePath getRequestMessageFilePath(boolean useAppPrefs)
   {
     return useAppPrefs ?
-      new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(REQUEST_MSG_FILE_NAME)
+      new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(REQUEST_MSG_FILE_NAME)
     :
       db.getRootPath(REQUEST_MSG_FILE_NAME);
   }
@@ -1647,7 +1936,7 @@ public final class HyperDB
   public FilePath getResponseMessageFilePath(boolean useAppPrefs)
   {
     return useAppPrefs ?
-      new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(RESPONSE_MSG_FILE_NAME)
+      new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(RESPONSE_MSG_FILE_NAME)
     :
       db.getRootPath(RESPONSE_MSG_FILE_NAME);
   }
@@ -1655,7 +1944,7 @@ public final class HyperDB
   public FilePath getLockFilePath(boolean useAppPrefs)
   {
     return useAppPrefs ?
-      new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(LOCK_FILE_NAME)
+      new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(LOCK_FILE_NAME)
     :
       db.getRootPath(LOCK_FILE_NAME);
   }
@@ -1818,9 +2107,9 @@ public final class HyperDB
     dbCreationDate = Instant.now();
     prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
-    appPrefs.put(PREF_KEY_SOURCE_PATH, newPath.toString());
+    app.prefs.put(PREF_KEY_SOURCE_PATH, newPath.toString());
     rootFilePath = newPath;
-    hdbFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
+    hdbFilePath = rootFilePath.resolve(app.prefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
 
     addRootFolder();
 
@@ -1902,288 +2191,6 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperDataset<HDT_Person         >.CoreAccessor persons;
-  public HyperDataset<HDT_PersonStatus   >.CoreAccessor personStatuses;
-  public HyperDataset<HDT_Institution    >.CoreAccessor institutions;
-  public HyperDataset<HDT_InstitutionType>.CoreAccessor institutionTypes;
-  public HyperDataset<HDT_Region         >.CoreAccessor regions;
-  public HyperDataset<HDT_Country        >.CoreAccessor countries;
-  public HyperDataset<HDT_Rank           >.CoreAccessor ranks;
-  public HyperDataset<HDT_Investigation  >.CoreAccessor investigations;
-  public HyperDataset<HDT_Debate         >.CoreAccessor debates;
-  public HyperDataset<HDT_Argument       >.CoreAccessor arguments;
-  public HyperDataset<HDT_Position       >.CoreAccessor positions;
-  public HyperDataset<HDT_Field          >.CoreAccessor fields;
-  public HyperDataset<HDT_Subfield       >.CoreAccessor subfields;
-  public HyperDataset<HDT_Term           >.CoreAccessor terms;
-  public HyperDataset<HDT_Concept        >.CoreAccessor concepts;
-  public HyperDataset<HDT_ConceptSense   >.CoreAccessor conceptSenses;
-  public HyperDataset<HDT_Work           >.CoreAccessor works;
-  public HyperDataset<HDT_WorkType       >.CoreAccessor workTypes;
-  public HyperDataset<HDT_WorkLabel      >.CoreAccessor workLabels;
-  public HyperDataset<HDT_PositionVerdict>.CoreAccessor positionVerdicts;
-  public HyperDataset<HDT_ArgumentVerdict>.CoreAccessor argumentVerdicts;
-  public HyperDataset<HDT_MiscFile       >.CoreAccessor miscFiles;
-  public HyperDataset<HDT_WorkFile       >.CoreAccessor workFiles;
-  public HyperDataset<HDT_Folder         >.CoreAccessor folders;
-  public HyperDataset<HDT_Note           >.CoreAccessor notes;
-  public HyperDataset<HDT_Glossary       >.CoreAccessor glossaries;
-  public HyperDataset<HDT_Hub            >.CoreAccessor hubs;
-  public HyperDataset<HDT_PersonGroup    >.CoreAccessor personGroups;
-  public HyperDataset<HDT_FileType       >.CoreAccessor fileTypes;
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private <HDT_T extends HDT_Record> HyperDataset<HDT_T>.CoreAccessor getAccessor(Class<HDT_T> klass)
-  {
-    RecordType type = typeByRecordClass(klass);
-
-    HyperDataset<HDT_T> dataset = new HyperDataset<>(type);
-    HyperDataset<HDT_T>.CoreAccessor accessor = dataset.getAccessor();
-    datasets.put(type, dataset);
-    accessors.put(type, accessor);
-
-    return accessor;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void init(Preferences appPrefs, FolderTreeWatcher folderTreeWatcher) throws HDB_InternalError
-  {
-    if (initialized || unableToLoad) return;
-
-    this.appPrefs = appPrefs;
-    this.folderTreeWatcher = folderTreeWatcher;
-
-    try
-    {
-      persons          = getAccessor(HDT_Person         .class);
-      personStatuses   = getAccessor(HDT_PersonStatus   .class);
-      institutions     = getAccessor(HDT_Institution    .class);
-      institutionTypes = getAccessor(HDT_InstitutionType.class);
-      regions          = getAccessor(HDT_Region         .class);
-      countries        = getAccessor(HDT_Country        .class);
-      ranks            = getAccessor(HDT_Rank           .class);
-      investigations   = getAccessor(HDT_Investigation  .class);
-      debates          = getAccessor(HDT_Debate         .class);
-      arguments        = getAccessor(HDT_Argument       .class);
-      terms            = getAccessor(HDT_Term           .class);
-      concepts         = getAccessor(HDT_Concept        .class);
-      conceptSenses    = getAccessor(HDT_ConceptSense   .class);
-      works            = getAccessor(HDT_Work           .class);
-      workTypes        = getAccessor(HDT_WorkType       .class);
-      workLabels       = getAccessor(HDT_WorkLabel      .class);
-      fields           = getAccessor(HDT_Field          .class);
-      subfields        = getAccessor(HDT_Subfield       .class);
-      positions        = getAccessor(HDT_Position       .class);
-      positionVerdicts = getAccessor(HDT_PositionVerdict.class);
-      argumentVerdicts = getAccessor(HDT_ArgumentVerdict.class);
-      miscFiles        = getAccessor(HDT_MiscFile       .class);
-      workFiles        = getAccessor(HDT_WorkFile       .class);
-      folders          = getAccessor(HDT_Folder         .class);
-      notes            = getAccessor(HDT_Note           .class);
-      glossaries       = getAccessor(HDT_Glossary       .class);
-      hubs             = getAccessor(HDT_Hub            .class);
-      personGroups     = getAccessor(HDT_PersonGroup    .class);
-      fileTypes        = getAccessor(HDT_FileType       .class);
-
-      RelationSet.init(relationSets);
-
-  /*****************************************************************************
-  * ************************************************************************** *
-  * *                                                                        * *
-  * *                        Type Definitions                                * *
-  * *                                                                        * *
-  * ************************************************************************** *
-  *****************************************************************************/
-
-      // Nested items are defined in RelationSet.createSet()
-
-      addStringItem(hdtArgument, tagName);
-      addPointerMulti(hdtArgument, rtWorkOfArgument, tagWork);
-      addPointerMulti(hdtArgument, rtPositionOfArgument, tagPosition);
-      addPointerMulti(hdtArgument, rtCounterOfArgument, tagCounterargument);
-      addMainTextItem(hdtArgument, tagDescription, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtDebate, tagName);
-      addPointerMulti(hdtDebate, rtParentDebateOfDebate, tagLargerDebate);
-      addPointerMulti(hdtDebate, rtParentPosOfDebate, tagLargerPosition);
-      addMainTextItem(hdtDebate, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtMiscFile, tagName);
-      addPointerSingle(hdtMiscFile, rtTypeOfFile, tagFileType);
-      addPointerSingle(hdtMiscFile, rtWorkOfMiscFile, tagWork);
-      addPathItem(hdtMiscFile, rtFolderOfMiscFile, tagFolder, tagFileName);
-      addAuthorsItem(hdtMiscFile, rtAuthorOfFile);
-      addBooleanItem(hdtMiscFile, tagAnnotated);
-      addMainTextItem(hdtMiscFile, tagDescription, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtWorkFile, tagName);
-      addPathItem(hdtWorkFile, rtFolderOfWorkFile, tagFolder, tagFileName);
-      addBooleanItem(hdtWorkFile, tagAnnotated);
-
-      addStringItem(hdtFolder, tagName);
-      addPathItem(hdtFolder, rtParentFolderOfFolder, tagParentFolder, tagFileName);
-
-      addStringItem(hdtInstitution, tagName);
-      addPointerSingle(hdtInstitution, rtTypeOfInst, tagInstitutionType);
-      addPointerSingle(hdtInstitution, rtParentInstOfInst, tagParentInst);
-      addPointerSingle(hdtInstitution, rtRegionOfInst, tagRegion);
-      addPointerSingle(hdtInstitution, rtCountryOfInst, tagCountry);
-      addStringItem(hdtInstitution, tagWebURL);
-      addStringItem(hdtInstitution, tagCity);
-
-      addStringItem(hdtInvestigation, tagName);
-      addPointerSingle(hdtInvestigation, rtPersonOfInv, tagPerson);
-      addMainTextItem(hdtInvestigation, tagDescription, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtNote, tagName);
-      addPointerMulti(hdtNote, rtParentNoteOfNote, tagParentNote);
-      addPointerSingle(hdtNote, rtFolderOfNote, tagFolder);
-      addMainTextItem(hdtNote, tagHub, tagText, tagDisplayRecord, tagKeyWork);
-
-      addPersonNameItem();
-      addPointerSingle(hdtPerson, rtStatusOfPerson, tagPersonStatus);
-      addPointerMulti(hdtPerson, rtInstOfPerson, tagInstitution);
-      addPointerSingle(hdtPerson, rtRankOfPerson, tagRank);
-      addPointerSingle(hdtPerson, rtFieldOfPerson, tagField);
-      addPointerSingle(hdtPerson, rtSubfieldOfPerson, tagSubfield);
-      addStringItem(hdtPerson, tagWebURL);
-      addStringItem(hdtPerson, tagORCID);
-      addPathItem(hdtPerson, rtPictureFolderOfPerson, tagPictureFolder, tagPicture);
-      addStringItem(hdtPerson, tagPictureCrop);
-      addMainTextItem(hdtPerson, tagWhyFamous, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtPersonGroup, tagName);
-      addPointerMulti(hdtPersonGroup, rtParentGroupOfGroup, tagParentGroup);
-
-      addStringItem(hdtPosition, tagName);
-      addPointerMulti(hdtPosition, rtParentDebateOfPos, tagDebate);
-      addPointerMulti(hdtPosition, rtParentPosOfPos, tagLargerPosition);
-      addMainTextItem(hdtPosition, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtRegion, tagName);
-      addStringItem(hdtRegion, tagAbbreviation);
-      addPointerSingle(hdtRegion, rtCountryOfRegion, tagCountry);
-
-      addStringItem(hdtSubfield, tagName);
-      addPointerSingle(hdtSubfield, rtFieldOfSubfield, tagField);
-
-      addStringItem(hdtPositionVerdict, tagListName);
-      addStringItem(hdtArgumentVerdict, tagListName);
-
-      addStringItem(hdtTerm, tagTerm);
-      addPointerMulti(hdtTerm, rtConceptOfTerm, tagConcept);
-
-      addStringItem(hdtConcept, tagName);
-      addPointerSingle(hdtConcept, rtGlossaryOfConcept, tagGlossary);
-      addPointerSingle(hdtConcept, rtSenseOfConcept, tagSense);
-      addPointerMulti(hdtConcept, rtParentConceptOfConcept, tagParentConcept);
-      addMainTextItem(hdtConcept, tagHub, tagDefinition, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtGlossary, tagName);
-      addBooleanItem(hdtGlossary, tagActive);
-      addPointerMulti(hdtGlossary, rtParentGlossaryOfGlossary, tagParentGlossary);
-
-      addStringItem(hdtWork, tagTitle);
-      addPointerSingle(hdtWork, rtTypeOfWork, tagWorkType);
-      addPointerSingle(hdtWork, rtParentWorkOfWork, tagLargerWork);
-      addPointerMulti(hdtWork, rtWorkFileOfWork, tagWorkFile);
-      addAuthorsItem(hdtWork, rtAuthorOfWork);
-      addStringItem(hdtWork, tagWebURL);
-      addStringItem(hdtWork, tagStartPageNum);
-      addStringItem(hdtWork, tagEndPageNum);
-      addStringItem(hdtWork, tagYear);
-      addBibEntryKeyItem();
-      addStringItem(hdtWork, tagMiscBib);
-      addStringItem(hdtWork, tagDOI);
-      addStringItem(hdtWork, tagISBN);
-      addMainTextItem(hdtWork, tagComments, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtWorkLabel, tagText);
-      addPointerMulti(hdtWorkLabel, rtParentLabelOfLabel, tagParentLabel);
-      addMainTextItem(hdtWorkLabel, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
-
-      addStringItem(hdtHub, tagName);
-      addHubSpokesItem();
-      addMainTextItem(hdtHub, tagDescription, tagDisplayRecord, tagKeyWork);
-
-      initialized = true;
-    }
-    catch (HDB_InternalError e)
-    {
-      unableToLoad = true;
-      throw e;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void addItem(RecordType recordType, HyperDataCategory dataCat, RelationType relType, Tag... tags) throws HDB_InternalError
-  {
-    HDI_Schema schema;
-    EnumSet<RecordType> types = tagToSubjType.get(tags[0]);
-
-    if (types == null)
-    {
-      types = EnumSet.noneOf(RecordType.class);
-
-      for (Tag tag : tags)
-        tagToSubjType.put(tag, types);
-    }
-
-    if (types.contains(recordType))
-    {
-      schema = datasets.get(recordType).getSchema(tags[0]);
-      if (schema.getCategory() != dataCat)
-        throw new HDB_InternalError(78129);
-    }
-    else
-    {
-      switch (dataCat)
-      {
-        case hdcPointerMulti : case hdcPointerSingle : case hdcPath : case hdcAuthors :
-
-          schema = new HDI_Schema(dataCat, relType, tags);
-
-          if (relType != rtNone)
-            relTypeToIsMulti.put(relType, (dataCat == hdcPointerMulti) || (dataCat == hdcAuthors));
-
-          break;
-
-        default : schema = new HDI_Schema(dataCat, tags); break;
-      }
-
-      types.add(recordType);
-      datasets.get(recordType).addSchema(schema);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unused")
-  private void addTernaryItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary       , rtNone, tags); }
-
-  private void addBooleanItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean       , rtNone, tags); }
-  private void addPointerMulti (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti  , rt    , tags); }
-  private void addPointerSingle(RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle , rt    , tags); }
-  private void addStringItem   (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString        , rtNone, tags); }
-  private void addPathItem     (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath          , rt    , tags); }
-  private void addMainTextItem (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcMainTextAndHub, rtNone, tags); }
-  private void addAuthorsItem  (RecordType type, RelationType rt             ) throws HDB_InternalError { addItem(type, hdcAuthors       , rt    , tagAuthor); }
-
-  private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone, tagBibEntryKey           ); }
-
-  private void addPersonNameItem () throws HDB_InternalError { addItem(hdtPerson, hdcPersonName,  rtNone, tagFirstName, tagLastName); }
-  private void addHubSpokesItem  () throws HDB_InternalError { addItem(hdtHub,    hdcHubSpokes,   rtNone, tagLinkedRecord          ); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static final int DEFAULT_XML_FOLDER_ID = 2; // 2 is the default for new databases. Old ones may have 9 as the XML folder ID.
 
   public static final int ROOT_FOLDER_ID = 1;
@@ -2221,14 +2228,6 @@ public final class HyperDB
     FILE_FILE_NAME = "Files.xml",
     NOTE_FILE_NAME = "Notes.xml",
     HUB_FILE_NAME = "Hubs.xml";
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String getTypeName(RecordType type)
-  {
-    return nullSwitch(getTag(type), type == hdtNone ? "All" : "Unknown", tag -> tag.header);
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

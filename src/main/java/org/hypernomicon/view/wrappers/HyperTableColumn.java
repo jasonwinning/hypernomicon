@@ -31,7 +31,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
@@ -232,7 +231,7 @@ public class HyperTableColumn
             super.startEdit();
             super.cancelEdit();
 
-            MainCtrlr.personHyperTab().showInvSelectDialog(getTableRow().getItem());
+            ui.personHyperTab().showInvSelectDialog(getTableRow().getItem());
           }
 
           @Override public void updateItem(HyperTableCell item, boolean empty)

@@ -210,8 +210,8 @@ class CharacterGrid
     {
       try
       {
-        if (appPrefs.node("symbols").nodeExists(String.valueOf(col)))
-          appPrefs.node("symbols").node(String.valueOf(col)).removeNode();
+        if (app.prefs.node("symbols").nodeExists(String.valueOf(col)))
+          app.prefs.node("symbols").node(String.valueOf(col)).removeNode();
       }
       catch (BackingStoreException e)
       {
@@ -221,7 +221,7 @@ class CharacterGrid
       return;
     }
 
-    Preferences node = appPrefs.node("symbols").node(String.valueOf(col));
+    Preferences node = app.prefs.node("symbols").node(String.valueOf(col));
 
     node.putInt("codePoint", symbol.codepoint);
     node.put("description", symbol.desc);
@@ -233,8 +233,8 @@ class CharacterGrid
 
   void readPrefs() throws BackingStoreException
   {
-    if (appPrefs.nodeExists("symbols") == false) return;
-    Preferences symbolsNode = appPrefs.node("symbols");
+    if (app.prefs.nodeExists("symbols") == false) return;
+    Preferences symbolsNode = app.prefs.node("symbols");
     int row = rowCount - 1;
 
     for (int col = 0; col < colCount; col++)
@@ -299,7 +299,7 @@ class CharacterGrid
       }
 
     if (programmaticFontChange == false)
-      appPrefs.node("symbols").put("font", newValue);
+      app.prefs.node("symbols").put("font", newValue);
 
     if (focusCol > -1)
       focusOnHyperlink(symbolCtrls[focusCol][focusRow]);

@@ -130,6 +130,7 @@ public class WorkDlgCtrlr extends HyperDlg
   @FXML private TextField tfDest, tfDOI, tfFileTitle, tfNewFile, tfOrigFile, tfTitle, tfYear;
   @FXML private ToggleButton btnPreview;
   @FXML private ToggleGroup tgSelect;
+
   @FXML public Button btnCancel;
 
   private final AnchorPane apPreview;
@@ -190,7 +191,7 @@ public class WorkDlgCtrlr extends HyperDlg
       updatePreview();
     });
 
-    curWork = workHyperTab().activeRecord();
+    curWork = ui.workHyperTab().activeRecord();
     curBD = new GUIBibData(curWork.getBibData());
 
     hcbType = initWorkTypeHCB();
@@ -230,7 +231,7 @@ public class WorkDlgCtrlr extends HyperDlg
       rbCopy.setDisable(true);
     }
 
-    workHyperTab().getBibDataFromGUI(curBD);
+    ui.workHyperTab().getBibDataFromGUI(curBD);
     populateFieldsFromBibData(curBD, false);
 
     if (oldWorkFile != null)
@@ -244,7 +245,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     boolean atLeastOneInFilename = false;
 
-    for (HyperTableRow origRow : workHyperTab().htAuthors.dataRows())
+    for (HyperTableRow origRow : ui.workHyperTab().htAuthors.dataRows())
     {
       int authID = origRow.getID(1);
       String authName = origRow.getText(1);
@@ -850,7 +851,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (bdToUse != null)
       populateFieldsFromBibData(bdToUse, true, true);
     else if (tfTitle.getText().isEmpty() && tfYear.getText().isEmpty())
-      extractDataFromPdf(appPrefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
+      extractDataFromPdf(app.prefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
   }
 
 //---------------------------------------------------------------------------
@@ -901,7 +902,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
         if ((pdfBD == null) && (queryBD == null))
         {
-          if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+          if (launchIfNoData && app.prefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
             mdp.setShowDetailNode(true);
 
           return;
@@ -915,7 +916,7 @@ public class WorkDlgCtrlr extends HyperDlg
         {
           populateFieldsFromBibData(pdfBD, true, true);
 
-          if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+          if (launchIfNoData && app.prefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
             mdp.setShowDetailNode(true);
         }
       });
@@ -940,7 +941,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (pdfBD == null)
     {
-      if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+      if (launchIfNoData && app.prefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
         mdp.setShowDetailNode(true);
 
       return;
@@ -1287,12 +1288,9 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     if (chkSetDefault.isSelected() == false) return;
 
-    if (rbMove.isSelected())
-      db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE);
-    else if (rbCopy.isSelected())
-      db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_COPY);
-    else
-      db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_NONE);
+    if      (rbMove.isSelected()) db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE);
+    else if (rbCopy.isSelected()) db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_COPY);
+    else                          db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_NONE);
   }
 
 //---------------------------------------------------------------------------

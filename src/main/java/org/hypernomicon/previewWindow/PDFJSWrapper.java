@@ -306,7 +306,7 @@ public class PDFJSWrapper
       @Override public void onAlert(DialogParams params) { MessageDialog.show(browserView, "Alert", params.getMessage()); }
     });
 
-    if (debugging()) browser.addConsoleListener(event ->
+    if (app.debugging) browser.addConsoleListener(event ->
     {
       String msg = event.getMessage();
       Level level = event.getLevel();
@@ -503,7 +503,7 @@ public class PDFJSWrapper
 
     public void sidebarChange(int view)
     {
-      appPrefs.putInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, view);
+      app.prefs.putInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, view);
     }
 
 //---------------------------------------------------------------------------
@@ -656,7 +656,7 @@ public class PDFJSWrapper
 
       browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " +
                                                    initialPage + ", " +
-                                                   appPrefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
+                                                   app.prefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
       ready = false;
     };
 

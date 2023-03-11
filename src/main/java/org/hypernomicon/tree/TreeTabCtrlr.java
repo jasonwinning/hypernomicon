@@ -31,7 +31,6 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
@@ -149,7 +148,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new counterargument to this argument", HDT_Argument.class,
       arg -> db.isLoaded(),
-      arg -> MainCtrlr.argumentHyperTab().newCounterargumentClick(arg)));
+      arg -> ui.argumentHyperTab().newCounterargumentClick(arg)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new note under this note", HDT_Note.class,
       note -> db.isLoaded(),

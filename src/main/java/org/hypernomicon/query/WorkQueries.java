@@ -17,7 +17,6 @@
 
 package org.hypernomicon.query;
 
-import org.hypernomicon.App;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -25,6 +24,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.concurrent.Worker.State;
 
+import static org.hypernomicon.App.app;
 import static org.hypernomicon.util.MediaUtil.*;
 
 import java.io.IOException;
@@ -121,7 +121,7 @@ public final class WorkQueries
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    if (App.debugging()) allQueries.add(new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
+    if (app.debugging) allQueries.add(new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
     {
       private List<String> csvFile;
 

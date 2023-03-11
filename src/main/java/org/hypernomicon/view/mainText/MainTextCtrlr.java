@@ -61,7 +61,6 @@ import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
-import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.controls.HiddenSidesPane;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -163,7 +162,7 @@ public class MainTextCtrlr
 
       if (oldType != newType)
       {
-        appPrefs.put(PREF_KEY_DISPLAY_RECORD_TYPE, Tag.getTypeTagStr(newType));
+        app.prefs.put(PREF_KEY_DISPLAY_RECORD_TYPE, Tag.getTypeTagStr(newType));
 
         ((RecordByTypePopulator)hcbName.getPopulator()).setRecordType(dummyRow, newType);
         if (oldType != hdtNone)
@@ -547,12 +546,12 @@ public class MainTextCtrlr
 
     if (keyType == hdtWork)
     {
-      if (MainCtrlr.workHyperTab().showWorkDialog(null) == false)
+      if (ui.workHyperTab().showWorkDialog(null) == false)
         ui.deleteCurrentRecord(false);
     }
     else
     {
-      if (MainCtrlr.fileHyperTab().showFileDialog(null) == false)
+      if (ui.fileHyperTab().showFileDialog(null) == false)
         ui.deleteCurrentRecord(false);
     }
   }
@@ -883,7 +882,7 @@ public class MainTextCtrlr
 
     if (hcbType.selectedType() == hdtNone)
     {
-      RecordType type = Tag.parseTypeTagStr(appPrefs.get(PREF_KEY_DISPLAY_RECORD_TYPE, ""));
+      RecordType type = Tag.parseTypeTagStr(app.prefs.get(PREF_KEY_DISPLAY_RECORD_TYPE, ""));
 
       hcbType.selectType(type == hdtNone ? hdtConcept : type);
     }

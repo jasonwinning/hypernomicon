@@ -86,7 +86,7 @@ public final class UIUtil
 
   public static void setDividerPosition(SplitPane sp, String key, int ndx)
   {
-    double pos = appPrefs.getDouble(key, -1.0);
+    double pos = app.prefs.getDouble(key, -1.0);
     dividerMap.put(key, pos);
 
     if (pos >= 0)
@@ -100,7 +100,7 @@ public final class UIUtil
   {
     double pos = sp.getDividerPositions()[ndx];
     if (Double.valueOf(pos).equals(dividerMap.get(key)) == false)
-      appPrefs.putDouble(key, sp.getDividerPositions()[ndx]);
+      app.prefs.putDouble(key, sp.getDividerPositions()[ndx]);
   }
 
 //---------------------------------------------------------------------------
@@ -388,7 +388,7 @@ public final class UIUtil
 
   public static void setFontSize(Node node)
   {
-    double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+    double fontSize = app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize >= 1)
       node.setStyle("-fx-font-size: " + fontSize + "px;");
   }

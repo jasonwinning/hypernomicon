@@ -52,7 +52,7 @@ public class NewVersionDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (chkNoShow.isSelected())
-      appPrefs.putBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, false);
+      app.prefs.putBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, false);
 
     return true;
   }

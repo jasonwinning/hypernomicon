@@ -259,7 +259,8 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
         ui.treeSelector.setTarget(nullSwitch(parentConcept, glossary));
 
-        ui.goToTreeRecord(childConcept == null ? db.glossaries.getByID(1) : childConcept);
+        HDT_Record generalGlossary = db.glossaries.getByID(1);                     // If these two lines are combined into one, there will be
+        ui.goToTreeRecord(childConcept == null ? generalGlossary : childConcept);  // false-positive build errors
       });
 
     htGlossaries.addColWithUpdateHandler(hdtGlossary, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) -> updateGlossaryRow(row))
