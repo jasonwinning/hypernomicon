@@ -816,32 +816,33 @@ public final class MainCtrlr
 
     scene.getAccelerators().putAll(Map.of
     (
-      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                               ), () -> { if (db.isLoaded()) saveAllToDisk(true, true, false);   },
-      new KeyCodeCombination(KeyCode.ESCAPE                                                        ), () -> { if (db.isLoaded()) hideFindTable();                    },
-      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN                               ), () -> { if (db.isLoaded()) omniFocus(true);                    },
-      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN    ), () -> { if (db.isLoaded()) omniFocus(false);                   }
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) saveAllToDisk(true, true, false);   },
+      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { if (db.isLoaded()) hideFindTable();                    },
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) omniFocus(true);                    },
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) omniFocus(false);                   }
     ));
 
     scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
     (
-      new KeyCodeCombination(KeyCode.G    , KeyCombination.SHORTCUT_DOWN                           ), this::nextSearchResult,
-      new KeyCodeCombination(KeyCode.G    , KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), this::previousSearchResult,
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnBackClick),
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnForwardClick)
+      new KeyCodeCombination(KeyCode.Y            , KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) chbBack.showMenu(); },
+      new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN                           ), this::nextSearchResult,
+      new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), this::previousSearchResult,
+      new KeyCodeCombination(KeyCode.OPEN_BRACKET , KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnBackClick),
+      new KeyCodeCombination(KeyCode.CLOSE_BRACKET, KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnForwardClick)
     )
     : Map.of
     (
-      new KeyCodeCombination(KeyCode.F3                                                            ), this::nextSearchResult,
-      new KeyCodeCombination(KeyCode.F3   , KeyCombination.SHIFT_DOWN                              ), this::previousSearchResult,
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN                                ), () -> Platform.runLater(this::btnBackClick),
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN                                ), () -> Platform.runLater(this::btnForwardClick)
+      new KeyCodeCombination(KeyCode.F3                              ), this::nextSearchResult,
+      new KeyCodeCombination(KeyCode.F3   , KeyCombination.SHIFT_DOWN), this::previousSearchResult,
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN  ), () -> Platform.runLater(this::btnBackClick),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN  ), () -> Platform.runLater(this::btnForwardClick)
     ));
 
 //---------------------------------------------------------------------------
 
     // Override CTRL-H for textfields and text areas, which for some reason is mapped to act like Backspace
 
-    stage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    if (SystemUtils.IS_OS_MAC == false) stage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
       if ((event.getCode() == KeyCode.H) && shortcutKeyIsDown(event))
       {

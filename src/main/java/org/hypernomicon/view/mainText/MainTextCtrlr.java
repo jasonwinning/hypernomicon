@@ -259,16 +259,16 @@ public class MainTextCtrlr
     btnAdd     .setOnAction(event -> btnAddClick     ());
     btnNew     .setOnAction(event -> btnNewClick     ());
 
-    String shortcutKey, altKey;
+    String shortcutKey, pasteNoLineBreaksKey;
     if (SystemUtils.IS_OS_MAC)
     {
       shortcutKey = "Command";
-      altKey = "Option/Alt";
+      pasteNoLineBreaksKey = "Ctrl-Command-V";
     }
     else
     {
       shortcutKey = "Ctrl";
-      altKey = "Alt";
+      pasteNoLineBreaksKey = "Ctrl-Alt-V";
     }
 
     webview.setOnContextMenuRequested(contextMenuEvent ->
@@ -276,7 +276,7 @@ public class MainTextCtrlr
       MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
       menuItem1.setOnAction(actionEvent -> pastePlainText(false));
 
-      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + shortcutKey + '-' + altKey + "-V)");
+      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey + ")");
       menuItem2.setOnAction(actionEvent -> pastePlainText(true));
 
       setHTMLContextMenu(menuItem1, menuItem2);
@@ -292,9 +292,19 @@ public class MainTextCtrlr
     {
       if (shortcutKeyIsDown(event))
       {
-        if ((event.getCode() == KeyCode.B) ||
-            (event.getCode() == KeyCode.I) ||
-            (event.getCode() == KeyCode.U))
+        if (event.getCode() == KeyCode.V)
+        {
+          // On Mac, if you press V while alt is down, it will always insert a checkmark character
+
+          if ((SystemUtils.IS_OS_MAC && event.isControlDown()) || ((SystemUtils.IS_OS_MAC == false) && event.isAltDown()))
+          {
+            pastePlainText(true);
+            event.consume();
+          }
+        }
+        else if ((event.getCode() == KeyCode.B) ||
+                 (event.getCode() == KeyCode.I) ||
+                 (event.getCode() == KeyCode.U))
         {
           if (ignoreKeyEvent)
             event.consume();
@@ -329,22 +339,13 @@ public class MainTextCtrlr
       }
     });
 
-    he.addEventFilter(KeyEvent.KEY_PRESSED, event ->
-    {
-      if (shortcutKeyIsDown(event) && event.isAltDown() && (event.getCode() == KeyCode.V))
-      {
-        pastePlainText(true);
-        event.consume();
-      }
-    });
-
     MenuItem menuItem0 = new MenuItem("Paste (" + shortcutKey + "-V)");
     menuItem0.setOnAction(event -> Accessor.getPageFor(getEngine()).executeCommand(Command.PASTE.getCommand(), null));
 
     MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
     menuItem1.setOnAction(event -> pastePlainText(false));
 
-    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + shortcutKey + '-' + altKey + "-V)");
+    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey +")");
     menuItem2.setOnAction(event -> pastePlainText(true));
 
     MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
