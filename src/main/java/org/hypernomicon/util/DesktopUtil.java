@@ -346,22 +346,27 @@ public final class DesktopUtil
       if (SystemUtils.IS_OS_WINDOWS)
       {
         output = execReadToString("wmic csproduct get UUID");
-        uuid = output.substring(output.indexOf('\n')).trim();
+
+        SplitString ss = new SplitString(output, '\n');
+        ss.next();
+        uuid = ss.next();
       }
       else if (SystemUtils.IS_OS_MAC)
       {
-        output = execReadToString("system_profiler SPHardwareDataType | awk '/UUID/ { print $3; }'");
-        uuid = output.substring(output.indexOf("UUID: ")).replace("UUID: ", "");
+        output = execReadToString("system_profiler SPHardwareDataType");
+
+        String[] arr = output.split("UUID: ", 2);
+        uuid = arr.length < 2 ? "" : new SplitString(arr[1], '\n').next();
       }
       else if (SystemUtils.IS_OS_LINUX)
       {
-        output = execReadToString("cat /etc/machine-id");
-        uuid = output.trim();
+        uuid = execReadToString("cat /etc/machine-id");
       }
     }
     catch (IOException | InterruptedException e) { noOp(); }
 
-    return computerName = (safeStr(uuid).isBlank() ? hostName : (hostName.replace("::::", "") + "::::" + uuid.toLowerCase()));
+    uuid = ultraTrim(safeStr(uuid));
+    return computerName = uuid.isBlank() ? hostName : (hostName.replace("::::", "") + "::::" + uuid.toLowerCase());
   }
 
 //---------------------------------------------------------------------------
@@ -425,7 +430,7 @@ public final class DesktopUtil
 
     process.waitFor();
 
-    return output;
+    return safeStr(output);
   }
 
 //---------------------------------------------------------------------------

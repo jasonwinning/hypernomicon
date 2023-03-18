@@ -447,7 +447,7 @@ public final class Util
 
   public static String ultraTrim(String text)
   {
-    return text.replaceAll("(^\\h+)|(\\h+$)", "");
+    return text.trim().replaceAll("(^\\h+)|(\\h+$)", "");
   }
 
 //---------------------------------------------------------------------------
