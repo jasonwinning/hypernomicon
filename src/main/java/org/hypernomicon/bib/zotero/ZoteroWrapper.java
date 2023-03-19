@@ -671,7 +671,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
                   {
                     int workID = zItem.getWork().getID();
                     zItem.unassignWork();
-                    messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning, true);
+                    messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning);
                   }
                 }
               }
@@ -720,7 +720,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       errMsgList.add(item.getKey() + " code: " + jError.getLong("code", -1) + ' ' + jError.getStr("message"));
     });
 
-    messageDialog(strListToStr(errMsgList, false), mtError, true);
+    messageDialog(strListToStr(errMsgList, false), mtError);
   }
 
 //---------------------------------------------------------------------------
@@ -750,25 +750,20 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Object lock = new Object();
-
-  private static void initTemplates() throws IOException, ParseException
+  private static synchronized void initTemplates() throws IOException, ParseException
   {
-    synchronized (lock)
+    if (templates != null) return;
+
+    StringBuilder sb = new StringBuilder();
+
+    readResourceTextFile("resources/" + ZOTERO_TEMPLATE_FILE_NAME, sb, false);
+    JsonArray jArr = parseJson(sb.toString());
+
+    if (jArr != null)
     {
-      if (templates != null) return;
+      templates = new EnumMap<>(EntryType.class);
 
-      StringBuilder sb = new StringBuilder();
-
-      readResourceTextFile("resources/" + ZOTERO_TEMPLATE_FILE_NAME, sb, false);
-      JsonArray jArr = parseJson(sb.toString());
-
-      if (jArr != null)
-      {
-        templates = new EnumMap<>(EntryType.class);
-
-        jArr.getObjs().forEach(jObj -> templates.put(entryTypeMap.inverse().getOrDefault(jObj.getStrSafe("itemType"), etOther), jObj));
-      }
+      jArr.getObjs().forEach(jObj -> templates.put(entryTypeMap.inverse().getOrDefault(jObj.getStrSafe("itemType"), etOther), jObj));
     }
   }
 

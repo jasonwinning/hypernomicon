@@ -98,7 +98,7 @@ public abstract class BibData
   public abstract BibAuthors getAuthors();
   public abstract HDT_Work getWork();
   public abstract HDT_WorkType getWorkType();
-  public abstract void setWorkType(HDT_WorkType workType);
+  protected abstract void setWorkType(HDT_WorkType workType);
 
 //---------------------------------------------------------------------------
 

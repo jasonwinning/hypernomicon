@@ -59,7 +59,7 @@ public class InterComputerMsg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean writeToDisk(boolean getFolderFromAppPrefs)
+  public void writeToDisk(boolean getFolderFromAppPrefs) throws IOException
   {
     FilePath filePath;
     List<String> lines = Lists.newArrayList(source, dest);
@@ -70,12 +70,10 @@ public class InterComputerMsg
       case hmtEchoReply      : lines.add("echo reply"     ); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
       case hmtUnlockRequest  : lines.add("unlock request" ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
       case hmtUnlockComplete : lines.add("unlock complete"); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
-      default                : return false;
+      default                : throw new UnsupportedOperationException("Attempt to write inter-computer message of invalid type.");
     }
 
-    try { FileUtils.writeLines(filePath.toFile(), lines); }
-    catch (IOException e) { return false; }
-    return true;
+    FileUtils.writeLines(filePath.toFile(), lines);
   }
 
 //---------------------------------------------------------------------------

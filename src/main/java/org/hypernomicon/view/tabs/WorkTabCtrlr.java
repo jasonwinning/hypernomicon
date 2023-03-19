@@ -623,13 +623,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     String url = tfURL.getText();
 
-    if (url.startsWith(EXT_1) && (db.extPath() == null))
+    if (url.startsWith(EXT_1) && (extPath() == null))
     {
       messageDialog(WorkTabCtrlr.NO_EXT_PATH_MESSAGE, mtWarning);
       return;
     }
 
-    FilePath filePath = db.resolveExtFilePath(url);
+    FilePath filePath = resolveExtFilePath(url);
 
     if (FilePath.isEmpty(filePath))
       openWebLink(url);
@@ -1744,7 +1744,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       pdfBDprop.set(PDFBibData.createFromFiles(pdfFilePaths));
 
       if (pdfBDprop.get() == null)
-        pdfBDprop.set(PDFBibData.createFromFiles(safeListOf(db.resolveExtFilePath(tfURL.getText()))));
+        pdfBDprop.set(PDFBibData.createFromFiles(safeListOf(resolveExtFilePath(tfURL.getText()))));
 
       if (pdfBDprop.get() == null)
         taPdfMetadata.setText("[No PDF file.]");
@@ -1854,7 +1854,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
                                                             .map(HDT_WorkFile::filePath)
                                                             .collect(Collectors.toList());
     if (collEmpty(pdfFilePaths))
-      pdfFilePaths = safeListOf(db.resolveExtFilePath(tfURL.getText()));
+      pdfFilePaths = safeListOf(resolveExtFilePath(tfURL.getText()));
 
     BibData workBD = curWork.getBibData();
 
@@ -2035,7 +2035,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (db.getRootPath().isSubpath(filePath))
       return false;
 
-    FilePath extPath = db.extPath();
+    FilePath extPath = extPath();
     if (FilePath.isEmpty(extPath))
     {
       messageDialog(NO_EXT_PATH_MESSAGE, mtError);

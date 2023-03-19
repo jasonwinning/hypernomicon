@@ -186,17 +186,9 @@ public class FilePath implements Comparable<FilePath>
 
   @Override public boolean equals(Object other)
   {
-    if (other == null) return false;
+    if ((other instanceof FilePath) == false) return false;
 
-    FilePath otherFilePath;
-
-    if      (other instanceof FilePath) otherFilePath = (FilePath)other;
-    else if (other instanceof String)   otherFilePath = new FilePath((String)other);
-    else if (other instanceof File)     otherFilePath = new FilePath((File)other);
-    else if (other instanceof Path)     otherFilePath = new FilePath((Path)other);
-    else return false;
-
-    return innerVal.equals(otherFilePath.innerVal);
+    return innerVal.equals(((FilePath)other).innerVal);
   }
 
 //---------------------------------------------------------------------------
@@ -486,7 +478,7 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (IOException e)
     {
-      messageDialog(e.getMessage(), mtError, true);
+      messageDialog(e.getMessage(), mtError);
       return true;
     }
 

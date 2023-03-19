@@ -108,7 +108,13 @@ public final class App extends Application
   {
     super();
 
-    app = this;
+    synchronized(App.class)
+    {
+      if (app != null)
+        throw new UnsupportedOperationException();
+
+      app = this;
+    }
 
     try (LoggerContext lc = Configurator.initialize(new DefaultConfiguration())) { Configurator.setRootLevel(Level.WARN); }
 
@@ -127,7 +133,7 @@ public final class App extends Application
     }
     catch (SecurityException e)
     {
-      messageDialog("Initialization error: " + e.getMessage(), mtError, true);
+      messageDialog("Initialization error: " + e.getMessage(), mtError);
 
       prefs = null;
       Platform.exit();
@@ -144,7 +150,7 @@ public final class App extends Application
     }
     catch (HDB_InternalError e)
     {
-      messageDialog("Initialization error: " + e.getMessage(), mtError, true);
+      messageDialog("Initialization error: " + e.getMessage(), mtError);
 
       Platform.exit();
       return;

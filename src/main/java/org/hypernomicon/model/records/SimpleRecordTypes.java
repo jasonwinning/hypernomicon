@@ -190,8 +190,8 @@ public final class SimpleRecordTypes
     public WorkTypeEnum enumVal() { return getEnumVal(this); }
 
     public static WorkTypeEnum getEnumVal(HDT_WorkType wt)   { return wt == null ? wtNone : workTypeIDToEnumVal(wt.getID()); }
-    public static HDT_WorkType get(WorkTypeEnum enumVal)     { return db.workTypes.getByID(enumMap.get(enumVal)); }
-    public static int getIDbyEnum(WorkTypeEnum enumVal)      { return enumMap.get(enumVal); }
+    public static HDT_WorkType get(WorkTypeEnum enumVal)     { return db.workTypes.getByID(enumMap.getOrDefault(enumVal, -1)); }
+    public static int getIDbyEnum(WorkTypeEnum enumVal)      { return enumMap.getOrDefault(enumVal, -1); }
     public static WorkTypeEnum workTypeIDToEnumVal(int wtID) { return enumMap.inverse().getOrDefault(wtID, wtNone); }
   }
 

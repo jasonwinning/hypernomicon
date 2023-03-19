@@ -43,11 +43,13 @@ import org.hypernomicon.model.records.HDT_Person;
 
 /**
  * Helper class for ComboBox autocompletion
- *
+ * <p>
  * Based on code from the following blog post:
- * http://tech.chitgoks.com/2013/08/20/how-to-create-autocomplete-combobox-or-textfield-in-java-fx-2/
+ * <p>
+ * <a href="https://web.archive.org/web/20190402042956/http://tech.chitgoks.com/2013/08/20/how-to-create-autocomplete-combobox-or-textfield-in-java-fx-2/">
+ * http://tech.chitgoks.com/2013/08/20/how-to-create-autocomplete-combobox-or-textfield-in-java-fx-2/</a>
  *
- * @since   1.0
+ * @since 1.0
  */
 
 public class AutoCompleteCB implements EventHandler<KeyEvent>
@@ -232,15 +234,11 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-/*
- * selectClosestResultBasedOnTextFieldValue() - selects the item and scrolls to it when
- * the popup is shown.
- *
- * parameters:
- *  affect - true if combobox is clicked to show popup so text and caret position will be readjusted.
- *  inFocus - true if combobox has focus. If not, programmatically press enter key to add new entry to list.
- *
- */
+  /**
+   * Selects the item and scrolls to it when the popup is shown.
+   * @param affect true if combobox is clicked to show popup so text and caret position will be readjusted.
+   * @param inFocus true if combobox has focus. If not, programmatically press enter key to add new entry to list.
+   */
   private void selectClosestResultBasedOnTextFieldValue(boolean affect, boolean inFocus)
   {
     SingleSelectionModel<HyperTableCell> selectionModel = cb.getSelectionModel();
@@ -265,8 +263,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       }
 
       // press enter key programmatically to have this entry added
-      KeyEvent ke = new KeyEvent(null, cb, KeyEvent.KEY_RELEASED, KeyCode.ENTER.toString(), KeyCode.ENTER.getName(), KeyCode.ENTER, false, false, false, false);
-      cb.fireEvent(ke);
+      cb.fireEvent(new KeyEvent(null, cb, KeyEvent.KEY_RELEASED, KeyCode.ENTER.toString(), KeyCode.ENTER.getName(), KeyCode.ENTER, false, false, false, false));
     }
   }
 

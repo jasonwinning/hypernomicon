@@ -32,8 +32,10 @@ import org.hypernomicon.util.DesktopUtil;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.io.IOException;
 import java.time.Instant;
 
 import static org.hypernomicon.FolderTreeWatcher.*;
@@ -233,14 +235,23 @@ public class LockedDlgCtrlr extends HyperDlg
 
   private void sendMessage(HDB_MessageType newMsgType, String output)
   {
+    InterComputerMsg sentMsg = new InterComputerMsg(DesktopUtil.getComputerName(), otherCompName, newMsgType);
+    try
+    {
+      sentMsg.writeToDisk(true);
+    }
+    catch (IOException e)
+    {
+      messageDialog("Error while writing message file: " + e.getMessage(), mtError);
+      return;
+    }
+
     taOutput.appendText(output + System.lineSeparator());
 
     btnTryComm     .setDisable(true );
     btnTryTerminate.setDisable(true );
     btnStop        .setDisable(false);
 
-    InterComputerMsg sentMsg = new InterComputerMsg(DesktopUtil.getComputerName(), otherCompName, newMsgType);
-    sentMsg.writeToDisk(true);
     sentTime = sentMsg.getSentTime();
 
     (thread = new MessageSenderThread(this, sentMsg)).start();

@@ -164,12 +164,10 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private volatile Boolean fxThreadReturnValue = null;
+  private volatile boolean fxThreadReturnValue;
 
   public boolean doMerge(BibEntry_T entry, JsonObj jObj)
   {
-    fxThreadReturnValue = null;
-
     runInFXThread(() ->
     {
       MergeWorksDlgCtrlr mwd;
@@ -181,7 +179,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       catch (IOException e)
       {
         messageDialog("Unable to initialize merge dialog window.", mtError);
-        fxThreadReturnValue = Boolean.FALSE;
+        fxThreadReturnValue = false;
         return;
       }
 
@@ -190,10 +188,9 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       if (mwd.showModal())
         mwd.mergeInto(entry);
 
-      fxThreadReturnValue = Boolean.TRUE;
-    });
+      fxThreadReturnValue = true;
 
-    while (fxThreadReturnValue == null) sleepForMillis(100);
+    }, true);
 
     didMergeDuringSync = true;
 

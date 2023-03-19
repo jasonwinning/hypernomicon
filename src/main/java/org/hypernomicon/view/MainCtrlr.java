@@ -278,15 +278,20 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unused")
   public static void create(Stage stage) throws IOException
   {
-    new MainCtrlr(stage);
+    noOp(new MainCtrlr(stage));
   }
 
   private MainCtrlr(Stage stage) throws IOException
   {
-    ui = this;
+    synchronized(MainCtrlr.class)
+    {
+      if (ui != null)
+        throw new UnsupportedOperationException();
+
+      ui = this;
+    }
 
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"), null, null, klass -> this);
     Region rootNode = loader.load();
@@ -798,13 +803,13 @@ public final class MainCtrlr
       ensureVisible(stage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
     }
 
+    stage.show();
+
     scaleNodeForDPI(rootNode);
     MainTextWrapper.rescale();
     personHyperTab().rescale();
 
     forEachHyperTab(HyperTab::setDividerPositions);
-
-    stage.show();
   }
 
 //---------------------------------------------------------------------------
@@ -1811,7 +1816,7 @@ public final class MainCtrlr
         }
       });
     }
-    catch (DirectoryIteratorException | IOException ex) { noOp(); }
+    catch (DirectoryIteratorException | IOException ex) { ex.printStackTrace(); }
   }
 
 //---------------------------------------------------------------------------
@@ -1842,7 +1847,15 @@ public final class MainCtrlr
     RecordState recordState = new RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
     T newRecord = null;
 
-    try { newRecord = db.createNewRecordFromState(recordState, true); } catch (HyperDataException e) { noOp(); }
+    try
+    {
+      newRecord = db.createNewRecordFromState(recordState, true);
+    }
+    catch (HyperDataException e)
+    {
+      messageDialog("An error occurred while creating the record: " + e.getMessage(), mtError);
+      return null;
+    }
 
     newRecord.setName(ctrlr.tfNewName.getText());
 
@@ -2135,7 +2148,7 @@ public final class MainCtrlr
 
       record.restoreTo(backupState, true);
     }
-    catch (RelationCycleException | SearchKeyException | HDB_InternalError | RestoreException e) { noOp(); }
+    catch (RelationCycleException | SearchKeyException | HDB_InternalError | RestoreException e) { throw new AssertionError(e); }
 
     return false;
   }
@@ -2927,7 +2940,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void hideFindTable()
+  private void hideFindTable()
   {
     apFindBackground.setMouseTransparent(true);
     tvFind.setVisible(false);
@@ -3261,7 +3274,7 @@ public final class MainCtrlr
 
   private static WebTooltip searchKeyToolTip = null;
 
-  public static void setSearchKeyToolTip(TextField tf)
+  synchronized public static void setSearchKeyToolTip(TextField tf)
   {
     if (searchKeyToolTip == null) searchKeyToolTip = new WebTooltip(
 

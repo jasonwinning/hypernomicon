@@ -32,7 +32,7 @@ import java.util.Scanner;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
@@ -211,7 +211,7 @@ public final class DesktopUtil
 
     if (url.isEmpty()) return;
 
-    if (url.startsWith(EXT_1) && (db.extPath() == null))
+    if (url.startsWith(EXT_1) && (extPath() == null))
     {
       messageDialog(WorkTabCtrlr.NO_EXT_PATH_MESSAGE, mtWarning);
       return;
@@ -228,7 +228,7 @@ public final class DesktopUtil
 
     try
     {
-      @SuppressWarnings("unused") URI uri = new URI(url);
+      noOp(new URI(url));
     }
     catch (URISyntaxException e)
     {

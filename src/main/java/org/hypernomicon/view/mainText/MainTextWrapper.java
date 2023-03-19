@@ -48,7 +48,6 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import javafx.concurrent.Worker;
 import javafx.event.Event;
@@ -99,7 +98,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void init()
+  public static void init() throws IOException
   {
     view = new WebView();
     webViewAddZoom(view, PREF_KEY_MAINTEXT_ZOOM);
@@ -125,15 +124,8 @@ public final class MainTextWrapper
 
     curWrapper = null;
 
-    try
-    {
-      readResourceTextFile("resources/mark.es6.min.js", markJSContents, false);
-      readResourceTextFile("resources/match-jump.js", matchJumpJSContents, false);
-    }
-    catch (IOException e)
-    {
-      messageDialog("Unable to initialize find-in-hyperTab capability.", mtError);
-    }
+    readResourceTextFile("resources/mark.es6.min.js", markJSContents, false);
+    readResourceTextFile("resources/match-jump.js", matchJumpJSContents, false);
 
     view.setFocusTraversable(false);
 

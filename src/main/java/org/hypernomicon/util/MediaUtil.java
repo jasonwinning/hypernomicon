@@ -19,10 +19,10 @@ package org.hypernomicon.util;
 
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
@@ -86,7 +86,7 @@ public final class MediaUtil
     {
       byte[] array = new byte[stream.available()];
 
-      stream.read(array);
+      noOp(stream.read(array));
 
       return "data:image/png;base64," + javax.xml.bind.DatatypeConverter.printBase64Binary(array);
     }
@@ -148,9 +148,9 @@ public final class MediaUtil
       imageName = "document-code";
     else if (mimetype == MediaType.APPLICATION_ZIP)
       imageName = "vise-drawer";
-    else if (containsAny(typeStr, "pdf", "postscript", "framemaker"))
+    else if (strContainsAnyStr(typeStr, "pdf", "postscript", "framemaker"))
       imageName = "document-pdf";
-    else if (containsAny(typeStr, "djv", "book", "epub"))
+    else if (strContainsAnyStr(typeStr, "djv", "book", "epub"))
       imageName = "book";
     else if ("image".equals(mimetype.getType()))
       imageName = "image";
@@ -162,45 +162,37 @@ public final class MediaUtil
       imageName = "json";
     else if (typeStr.endsWith("tex"))
       imageName = "document-tex";
-    else if (containsAny(typeStr, "word", "rtf", "publisher", "mswrite", "writer", "msword", "xps"))
+    else if (strContainsAnyStr(typeStr, "word", "rtf", "publisher", "mswrite", "writer", "msword", "xps"))
       imageName = "paper";
-    else if (containsAny(typeStr, "excel", "spread", "calc"))
+    else if (strContainsAnyStr(typeStr, "excel", "spread", "calc"))
       imageName = "table-sheet";
-    else if (containsAny(typeStr, "power", "presen", "impress"))
+    else if (strContainsAnyStr(typeStr, "power", "presen", "impress"))
       imageName = "from_current_slide";
-    else if (containsAny(typeStr, "archi", "packa", "install", "diskimage"))
+    else if (strContainsAnyStr(typeStr, "archi", "packa", "install", "diskimage"))
       imageName = "vise-drawer";
-    else if (containsAny(typeStr, "compress", "stuffit", "x-tar", "zip", "x-gtar", "lzma", "lzop", "x-xz"))
+    else if (strContainsAnyStr(typeStr, "compress", "stuffit", "x-tar", "zip", "x-gtar", "lzma", "lzop", "x-xz"))
       imageName = "vise-drawer";
     else if (typeStr.contains("note"))
       imageName = "notebook-pencil";
-    else if (containsAny(typeStr, "chart", "ivio"))
+    else if (strContainsAnyStr(typeStr, "chart", "ivio"))
       imageName = "chart";
-    else if (typeStr.endsWith("eps") || containsAny(typeStr, "emf", "wmf", "cgm", "corel", "kontour", "freehand", "msmetafile",
-                                                             "dwg", "cmx", "cdr", "draw" , "karbon" , "vector"  , "illustr"))
+    else if (typeStr.endsWith("eps") || strContainsAnyStr(typeStr, "emf", "wmf", "cgm", "corel", "kontour", "freehand", "msmetafile",
+                                                                   "dwg", "cmx", "cdr", "draw" , "karbon" , "vector"  , "illustr"))
       imageName = "page_white_vector";
-    else if (containsAny(typeStr, "formul", "math"))
+    else if (strContainsAnyStr(typeStr, "formul", "math"))
       imageName = "edit_mathematics";
-    else if (containsAny(typeStr, "graphic", "image"))
+    else if (strContainsAnyStr(typeStr, "graphic", "image"))
       imageName = "image";
     else if ("audio".equals(mimetype.getType()))
       imageName = "sound_wave";
-    else if ("video".equals(mimetype.getType()) || containsAny(typeStr, "flash", "mp4"))
+    else if ("video".equals(mimetype.getType()) || strContainsAnyStr(typeStr, "flash", "mp4"))
       imageName = "recording";
-    else if (containsAny(typeStr, "text", "docu"))
+    else if (strContainsAnyStr(typeStr, "text", "docu"))
       imageName = "document-text";
     else
       imageName = "document";
 
     return "resources/images/" + imageName + ".png";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean containsAny(String container, String... strings)
-  {
-    return Arrays.stream(strings).parallel().anyMatch(container::contains);
   }
 
 //---------------------------------------------------------------------------
@@ -218,7 +210,6 @@ public final class MediaUtil
         {
           case wtBook         : return "resources/images/book.png";
           case wtChapter      : return "resources/images/chapter.png";
-          case wtNone         : return "resources/images/unknown.png";
           case wtPaper        : return "resources/images/paper.png";
           case wtRecording    : return "resources/images/recording.png";
           case wtThesis       : return "resources/images/thesis.png";
@@ -251,8 +242,8 @@ public final class MediaUtil
     {
       case hdtWorkLabel     : return "resources/images/tag.png";
       case hdtMiscFile      : return "resources/images/file.png";
-      case hdtConcept       : return "resources/images/term.png";
       case hdtGlossary      : return "resources/images/bookshelf.png";
+      case hdtConcept       : // Fall through
       case hdtTerm          : return "resources/images/term.png";
       case hdtNote          : return "resources/images/notebook-pencil.png";
       case hdtWork          : // Fall through

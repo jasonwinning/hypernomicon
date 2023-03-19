@@ -19,7 +19,6 @@ package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -89,11 +88,20 @@ public class DragConceptDlgCtrlr extends HyperDlg
     List.copyOf(sourceChildConcept.parentConcepts).forEach(sourceChildConcept::removeParent);
     List.copyOf(sourceChildConcept.subConcepts).forEach(subConcept -> subConcept.removeParent(sourceChildConcept));
 
-    if (newParentConcept != null)
-      try { sourceChildConcept.addParentConcept(newParentConcept); } catch (RelationCycleException e) { noOp(); }
-
-    okClicked = true;
-    dialogStage.close();
+    try
+    {
+      if (newParentConcept != null)
+        sourceChildConcept.addParentConcept(newParentConcept);
+    }
+    catch (RelationCycleException e)
+    {
+      throw new AssertionError(e.getMessage(), e);
+    }
+    finally
+    {
+      okClicked = true;
+      dialogStage.close();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -112,11 +120,20 @@ public class DragConceptDlgCtrlr extends HyperDlg
     targetChildConcept.glossary.set(newGlossary);
     targetChildConcept.sense.set(sense);
 
-    if (newParentConcept != null)
-      try { targetChildConcept.addParentConcept(newParentConcept); } catch (RelationCycleException e) { noOp(); }
-
-    okClicked = true;
-    dialogStage.close();
+    try
+    {
+      if (newParentConcept != null)
+        targetChildConcept.addParentConcept(newParentConcept);
+    }
+    catch (RelationCycleException e)
+    {
+      throw new AssertionError(e.getMessage(), e);
+    }
+    finally
+    {
+      okClicked = true;
+      dialogStage.close();
+    }
   }
 
 //---------------------------------------------------------------------------

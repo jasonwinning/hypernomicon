@@ -33,8 +33,10 @@ class TransientPreferences extends AbstractPreferences
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  TransientPreferences(TransientPreferences parent, String name) { super(parent, name); }
-  TransientPreferences()                                         { this(null, ""); }
+  TransientPreferences()                                                 { this(null, ""); }
+
+  private TransientPreferences(TransientPreferences parent, String name) { super(parent, name); }
+
 
   @Override public boolean isUserNode()                     { return true; }
   @Override protected boolean isRemoved()                   { return super.isRemoved(); } // Increase visibility

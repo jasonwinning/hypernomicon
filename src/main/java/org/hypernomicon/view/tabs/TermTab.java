@@ -741,9 +741,15 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
         curTerm.setSearchKey(oldKey1);
         otherTerm.setSearchKey(oldKey2);
       }
-      catch (SearchKeyException e1) { noOp(); }
+      catch (SearchKeyException e1)
+      {
+        throw new AssertionError(e1.getMessage(), e1);
+      }
+      finally
+      {
+        ui.update();
+      }
 
-      ui.update();
       return;
     }
 

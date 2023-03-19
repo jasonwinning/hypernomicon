@@ -138,11 +138,11 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MainTextCtrlr()
+  MainTextCtrlr() throws IOException
   {
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/mainText/MainTextEditor.fxml"), null, null, klass -> this);
 
-    try { loader.load(); } catch (IOException e) { noOp(); }
+    loader.load();
 
     final WebView webview = getWebView();
     GridPane.setHgrow(webview, Priority.ALWAYS);
@@ -276,7 +276,7 @@ public class MainTextCtrlr
       MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
       menuItem1.setOnAction(actionEvent -> pastePlainText(false));
 
-      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey + ")");
+      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey + ')');
       menuItem2.setOnAction(actionEvent -> pastePlainText(true));
 
       setHTMLContextMenu(menuItem1, menuItem2);
@@ -345,7 +345,7 @@ public class MainTextCtrlr
     MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
     menuItem1.setOnAction(event -> pastePlainText(false));
 
-    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey +")");
+    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey + ')');
     menuItem2.setOnAction(event -> pastePlainText(true));
 
     MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);

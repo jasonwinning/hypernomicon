@@ -256,11 +256,8 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
       fonts.add(0, "");
       programmaticFontChange = true;
 
-      for (@SuppressWarnings("unused") String fontFamily : fonts)
-      {
-        cbFont.setValue("");
-        cbFont.setItems(fonts);
-      }
+      cbFont.setValue("");
+      cbFont.setItems(fonts);
 
       programmaticFontChange = false;
     });

@@ -82,7 +82,7 @@ public class BibDataRetriever
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while extracting metadata: " + e.getMessage(), mtError, true);
+      messageDialog("An error occurred while extracting metadata: " + e.getMessage(), mtError);
     }
 
     this.workBD = workBD;

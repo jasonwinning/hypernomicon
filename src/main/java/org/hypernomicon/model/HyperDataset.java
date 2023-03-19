@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
-import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
@@ -189,7 +188,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       recordToAssign = record;
       record.assignID();
 
-      try { add(record); } catch (DuplicateRecordException e) { noOp(); }
+      try { add(record); } catch (DuplicateRecordException e) { throw new AssertionError(e.getMessage(), e); }
     }
 
     needIDs.clear();

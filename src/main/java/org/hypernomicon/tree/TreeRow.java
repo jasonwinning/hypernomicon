@@ -84,6 +84,15 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
   @Override public String toString()        { return getCBText(); }
   @Override public int compareTo(TreeRow o) { return record.getSortKey().compareTo(o.record.getSortKey()); }
+  @Override public int hashCode()           { return record.getSortKey().hashCode(); }
+
+  @Override public boolean equals(Object obj)
+  {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    return compareTo((TreeRow) obj) == 0;
+  }
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) record; }

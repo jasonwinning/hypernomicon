@@ -20,6 +20,7 @@ package org.hypernomicon.model;
 import static org.hypernomicon.model.HyperDB.*;
 
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
 @SuppressWarnings("serial")
@@ -75,6 +76,11 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Exception intended to be thrown in {@link org.hypernomicon.model.records.HDT_Record#restoreTo(RecordState,boolean) HDT_Record.restoreTo}, when restoring data to a record from its backup record state.
+   * Thrown when existing data in the record (like the record's hub, or a term record's concept records) conflicts with
+   * data in the recordState.
+   */
   public static class RestoreException extends HyperDataException { RestoreException(String msg) { super(msg); } }
 
   public static class ConceptChangedException extends RestoreException

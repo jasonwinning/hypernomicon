@@ -427,8 +427,6 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
           JsonObj ed1 = jArr1.getObj(ndx),
                   ed2 = jArr2.getObj(ndx);
 
-          if (((ed1 == null) != (ed2 == null)) || (ed1 == null)) return true;
-
           if (ed1.getStrSafe("first_name").equals(ed2.getStrSafe("first_name")) == false) return true;
           if (ed1.getStrSafe("last_name" ).equals(ed2.getStrSafe("last_name" )) == false) return true;
         }

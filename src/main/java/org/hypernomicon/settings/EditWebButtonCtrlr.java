@@ -38,7 +38,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
-class EditWebButtonCtrlr
+public class EditWebButtonCtrlr
 {
   @FXML private HBox hBox;
   @FXML private Button btnUp, btnDown, btnDelete;

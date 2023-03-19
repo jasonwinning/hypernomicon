@@ -392,7 +392,7 @@ public class PDFBibData extends BibDataStandalone
         catch (XMPException e)
         {
           messageDialog("An error occurred while parsing XMP data from PDF file: " +
-                        nullSwitch(e.getCause(), e.getMessage(), Throwable::getMessage), mtError, true);
+                        nullSwitch(e.getCause(), e.getMessage(), Throwable::getMessage), mtError);
 
           xmpRoot = null;
         }

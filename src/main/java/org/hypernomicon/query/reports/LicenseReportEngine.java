@@ -59,22 +59,25 @@ public class LicenseReportEngine extends ReportEngine
       new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell("LICENSE.html", hdtNone)), ht),
       new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell("NOTICE.html" , hdtNone)), ht));
 
-    if (license == null)
+    synchronized (LicenseReportEngine.class)
     {
-      license = new StringBuilder();
-      notice = new StringBuilder();
-
-      try
+      if (license == null)
       {
-        readResourceTextFile("/LICENSE.html", license, true);
-        processHtml(license);
+        license = new StringBuilder();
+        notice = new StringBuilder();
 
-        readResourceTextFile("/NOTICE.html", notice, true);
-        processHtml(notice);
-      }
-      catch (IOException e)
-      {
-        messageDialog("An error occurred while trying to load the LICENSE and NOTICE files.", mtError);
+        try
+        {
+          readResourceTextFile("/LICENSE.html", license, true);
+          processHtml(license);
+
+          readResourceTextFile("/NOTICE.html", notice, true);
+          processHtml(notice);
+        }
+        catch (IOException e)
+        {
+          messageDialog("An error occurred while trying to load the LICENSE and NOTICE files.", mtError);
+        }
       }
     }
 

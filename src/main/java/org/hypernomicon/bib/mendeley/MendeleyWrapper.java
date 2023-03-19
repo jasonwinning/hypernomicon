@@ -348,7 +348,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
               {
                 int workID = document.getWork().getID();
                 document.unassignWork();
-                messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning, true);
+                messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning);
               }
             }
           });

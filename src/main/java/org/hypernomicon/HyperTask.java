@@ -125,8 +125,7 @@ public abstract class HyperTask
   protected void done() { }
 
   /**
-   * Terminates execution of this Worker. Calling this method will either
-   * remove this Worker from the execution queue or stop execution.
+   * Terminates execution of this task.
    *
    * @return returns true if the cancel was successful
    */
@@ -164,6 +163,11 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Terminates execution of this task and waits for the thread to die.
+   *
+   * @return returns true if the cancel was successful
+   */
   public boolean cancelAndWait()
   {
     if (cancel() == false)

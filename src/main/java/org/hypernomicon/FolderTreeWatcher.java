@@ -531,7 +531,7 @@ public class FolderTreeWatcher
 
         sentResponse = false;
 
-        try { Files.delete(db.getResponseMessageFilePath(false).toPath()); } catch (IOException e) { noOp(); }
+        try { Files.delete(db.getResponseMessageFilePath(false).toPath()); } catch (IOException e) { e.printStackTrace(); }
 
         if (requestType == hmtUnlockRequest)
         {
@@ -553,22 +553,30 @@ public class FolderTreeWatcher
       if ((receivedMsg != null) && receivedMsg.getDest().equals(compName))
         requestType = receivedMsg.getType();
 
-      switch (requestType)
+      try
       {
-        case hmtEchoRequest :
+        switch (requestType)
+        {
+          case hmtEchoRequest :
 
-          new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply).writeToDisk(false);
-          sentResponse = true;
-          return true;
+            new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply).writeToDisk(false);
+            sentResponse = true;
+            return true;
 
-        case hmtUnlockRequest :
+          case hmtUnlockRequest :
 
-          new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete).writeToDisk(false);
-          sentResponse = true;
-          return true;
+            new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete).writeToDisk(false);
+            sentResponse = true;
+            return true;
 
-        default :
-          return true;
+          default :
+            return true;
+        }
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+        return true;
       }
     }
   }
@@ -653,8 +661,7 @@ public class FolderTreeWatcher
       }
       catch (IOException e)
       {
-        if (app.debugging)
-          System.out.println("Watcher close exception");
+        e.printStackTrace();
       }
     }
 

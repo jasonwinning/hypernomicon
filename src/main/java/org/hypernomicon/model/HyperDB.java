@@ -383,7 +383,13 @@ public final class HyperDB
 
   private HyperDB(FolderTreeWatcher folderTreeWatcher) throws HDB_InternalError
   {
-    db = this;
+    synchronized(HyperDB.class)
+    {
+      if (db != null)
+        throw new UnsupportedOperationException();
+
+      db = this;
+    }
 
     this.folderTreeWatcher = folderTreeWatcher;
 
@@ -642,7 +648,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath extPath()
+  public static FilePath extPath()
   {
     String path = app.prefs.get(PREF_KEY_EXT_FILES_1, "");
     return path.isBlank() ? null : new FilePath(path);
@@ -1125,7 +1131,7 @@ public final class HyperDB
       {
         int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
 
-        nullSwitch(db.records(hdtWorkType).getByID(thesisID), (HDT_Record record) -> record.changeID(datasets.get(hdtWorkType).getNextID()));
+        nullSwitch(records(hdtWorkType).getByID(thesisID), (HDT_Record record) -> record.changeID(datasets.get(hdtWorkType).getNextID()));
 
         try
         {
@@ -1165,7 +1171,14 @@ public final class HyperDB
 
     rebuildMentions();
 
-    lock();
+    try
+    {
+      lock();
+    }
+    catch (IOException e)
+    {
+      messageDialog("An error occurred while writing lock file: " + e.getMessage(), mtWarning);
+    }
 
     return true;
   }
@@ -1366,7 +1379,7 @@ public final class HyperDB
         mentionsIndex.removeRecord(record);
 
       if (record.getType() != hdtConcept)
-        try { record.setSearchKey(""); } catch (SearchKeyException e) { noOp(); }
+        try { record.setSearchKey(""); } catch (SearchKeyException e) { throw new AssertionError(e.getMessage(), e); }
     }
 
     if (deletionInProgress)
@@ -1560,6 +1573,25 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Create a new Hypernomicon record and initialize its data with information from
+   * the passed-in record state
+   *
+   * @param <T> The record type
+   * @param recordState The record state object containing information with which to initialize the record's fields
+   *                    such as record type, ID, etc.
+   * @param bringOnline Whether the new record should be brought online (included in indexes, etc.)
+   * @return The new record
+   * @throws DuplicateRecordException If a record already exists with the supplied type and ID
+   * @throws RelationCycleException Only thrown if bringing online; should never happen because a record cannot already
+   *                                be in relation with another record before it has been created
+   * @throws HDB_InternalError If bringOnline is true but the database is not online, or some other internal error
+   *                           happens while bringing record online
+   * @throws SearchKeyException Only thrown if bringing online; if the recordState's search key was too short or is a duplicate of an existing search key
+   * @throws RestoreException Only thrown if bringing online; should never happen because it only gets thrown when existing
+   *                          data in the record (like the record's hub, or a term record's concept records) conflicts with
+   *                          data in the recordState
+   */
   @SuppressWarnings("unchecked")
   public <T extends HDT_RecordBase> T createNewRecordFromState(RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException
   {
@@ -1580,7 +1612,7 @@ public final class HyperDB
     {
       messageDialog(e.getMessage(), mtError);
     }
-    catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { noOp(); }
+    catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { throw new AssertionError(e); }
 
     return null;
   }
@@ -1684,7 +1716,7 @@ public final class HyperDB
     }
 
     messageDialog("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with " + appTitle +
-                  " v" + newestTooOldAppVersion + " or older.", mtWarning, true);
+                  " v" + newestTooOldAppVersion + " or older.", mtWarning);
   }
 
 //---------------------------------------------------------------------------
@@ -1804,7 +1836,7 @@ public final class HyperDB
           if (isUnstoredRecord(xmlRecord.id, xmlRecord.type) == false)
             createNewRecordFromState(xmlRecord, false);
         }
-        catch (RelationCycleException | HDB_InternalError | SearchKeyException e) { noOp(); }
+        catch (RelationCycleException | SearchKeyException e) { throw new AssertionError(e.getMessage(), e); }
 
         if (event != null)
           task.updateProgress(curTaskCount + event.getLocation().getCharacterOffset(), totalTaskCount);
@@ -1930,7 +1962,7 @@ public final class HyperDB
     return useAppPrefs ?
       new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(REQUEST_MSG_FILE_NAME)
     :
-      db.getRootPath(REQUEST_MSG_FILE_NAME);
+      getRootPath(REQUEST_MSG_FILE_NAME);
   }
 
   public FilePath getResponseMessageFilePath(boolean useAppPrefs)
@@ -1938,7 +1970,7 @@ public final class HyperDB
     return useAppPrefs ?
       new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(RESPONSE_MSG_FILE_NAME)
     :
-      db.getRootPath(RESPONSE_MSG_FILE_NAME);
+      getRootPath(RESPONSE_MSG_FILE_NAME);
   }
 
   public FilePath getLockFilePath(boolean useAppPrefs)
@@ -1946,7 +1978,7 @@ public final class HyperDB
     return useAppPrefs ?
       new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(LOCK_FILE_NAME)
     :
-      db.getRootPath(LOCK_FILE_NAME);
+      getRootPath(LOCK_FILE_NAME);
   }
 
 //---------------------------------------------------------------------------
@@ -1990,14 +2022,11 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean lock()
+  private void lock() throws IOException
   {
     lockFilePath = getLockFilePath(true);
 
-    try { FileUtils.writeLines(lockFilePath.toFile(), singletonList(getComputerName())); }
-    catch (IOException e) { return false; }
-
-    return true;
+    FileUtils.writeLines(lockFilePath.toFile(), singletonList(getComputerName()));
   }
 
 //---------------------------------------------------------------------------
@@ -2074,7 +2103,7 @@ public final class HyperDB
 
       dbCloseHandlers.forEach(Runnable::run);
 
-    } catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { noOp(); }
+    } catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { throw new AssertionError(e); }
   }
 
 //---------------------------------------------------------------------------
@@ -2415,7 +2444,7 @@ public final class HyperDB
       case wtBook    : // fall through
       case wtChapter : return booksFolder;
       case wtPaper   : return papersFolder;
-      case wtThesis  : return db.prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
+      case wtThesis  : return prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
       default        : return miscFilesFolder;
     }
   }
@@ -2444,7 +2473,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath resolveExtFilePath(String url)
+  public static FilePath resolveExtFilePath(String url)
   {
     return (url != null) && url.startsWith(EXT_1) && (extPath() != null) ?
       extPath().resolve(FilenameUtils.separatorsToSystem(url.substring(7)))

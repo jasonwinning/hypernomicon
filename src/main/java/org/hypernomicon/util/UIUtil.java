@@ -35,7 +35,6 @@ import org.hypernomicon.view.WindowStack;
 import com.google.common.collect.HashBasedTable;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
-import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.event.EventTarget;
 import javafx.geometry.Orientation;
@@ -669,15 +668,8 @@ public final class UIUtil
 
   public static void messageDialog(String msg, MessageDialogType mt)
   {
-    messageDialog(msg, mt, false);
-  }
-
-  public static void messageDialog(String msg, MessageDialogType mt, boolean wait)
-  {
     if (mt  == null) throw new NullPointerException("messageDialog type");
     if (msg == null) throw new NullPointerException("messageDialog msg" );
-
-    Object stopLight = new Object();
 
     runInFXThread(() ->
     {
@@ -706,11 +698,7 @@ public final class UIUtil
 
       showAndWait(alert);
 
-      synchronized (stopLight) { stopLight.notifyAll(); }
-    });
-
-    if (wait && (Platform.isFxApplicationThread() == false))
-      synchronized (stopLight) { try { stopLight.wait(); } catch (InterruptedException e) { noOp(); }}
+    }, true);
   }
 
 //---------------------------------------------------------------------------

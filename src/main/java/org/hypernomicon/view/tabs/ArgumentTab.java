@@ -76,7 +76,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/ArgumentLowerPane.fxml"));
 
-    try { spMain.getItems().set(2, loader.load()); } catch (IOException e) { noOp(); }
+    spMain.getItems().set(2, loader.load());
 
     lowerCtrlr = loader.getController();
 

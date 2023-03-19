@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -105,6 +106,20 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
         strToComp.apply(text).compareTo(other.strToComp.apply(other.text))
       :
         sortVal.compareTo((Comp_T) other.sortVal);
+    }
+
+    @Override public int hashCode()
+    {
+      return Objects.hash(sortVal, strToComp, text);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override public boolean equals(Object obj)
+    {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      return compareTo((ResultCellValue) obj) == 0;
     }
   }
 
@@ -221,11 +236,12 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
                 });
               });
             }
-          });
-
-          sleepForMillis(50);
+          }, true);
 
           synchronized (buttonAdded) { buttonNotAdded = buttonAdded.isFalse(); }
+
+          if (buttonNotAdded)
+            sleepForMillis(50);
         }
       }
     };

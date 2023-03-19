@@ -78,7 +78,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   @Override public HDT_Work getWork()         { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getKey()); }
   @Override public HDT_WorkType getWorkType() { return linkedToWork() ? getWork().workType.get() : EntryType.toWorkType(getEntryType()); }
 
-  @Override public void setWorkType(HDT_WorkType workType) { if (linkedToWork()) getWork().workType.set(workType); }
+  @Override protected void setWorkType(HDT_WorkType workType) { if (linkedToWork()) getWork().workType.set(workType); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

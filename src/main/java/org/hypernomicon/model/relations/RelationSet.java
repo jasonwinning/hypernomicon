@@ -743,7 +743,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     while (getObjectCount(subj) > 0)
     {
       HDT_Obj obj = getObject(subj, 0);
-      try { setObject(subj, obj, 0, false); } catch (RelationCycleException e) { noOp(); }
+      try { setObject(subj, obj, 0, false); } catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
     }
   }
 
@@ -827,7 +827,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       if (HDT_Record.isEmptyThrowsException(obj))
       {
-        try { setObject(subj, obj, ndx, false); } catch (RelationCycleException e) { noOp(); }
+        try { setObject(subj, obj, ndx, false); } catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
         ndx--;
       }
       else if (hasNestedItems)

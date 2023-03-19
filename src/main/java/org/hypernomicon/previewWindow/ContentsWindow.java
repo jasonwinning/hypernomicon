@@ -219,7 +219,7 @@ public class ContentsWindow extends HyperDlg
     {
       dialogStage.setTitle(dialogTitle + " - " + curFilePath.getNameOnly());
 
-      works = db.works.stream().filter(work -> curFilePath.equals(db.resolveExtFilePath(work.getURL())))
+      works = db.works.stream().filter(work -> curFilePath.equals(resolveExtFilePath(work.getURL())))
                                .collect(Collectors.toList());
     }
     else

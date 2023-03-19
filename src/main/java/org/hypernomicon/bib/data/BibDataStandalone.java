@@ -69,7 +69,7 @@ public abstract class BibDataStandalone extends BibData
   @Override public final void setMultiStr(BibFieldEnum bfe, List<String> list) { bibFieldEnumToBibField.get(bfe).setAll(list); }
   @Override protected final void setEntryType(EntryType entryType)             { this.entryType = entryType; }
   @Override public HDT_WorkType getWorkType()                                  { return EntryType.toWorkType(getEntryType()); }
-  @Override public void setWorkType(HDT_WorkType workType)                     { return; }
+  @Override protected void setWorkType(HDT_WorkType workType)                  { return; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

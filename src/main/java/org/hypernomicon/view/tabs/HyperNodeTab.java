@@ -357,7 +357,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
   private static WebTooltip uniteToolTip = null;
 
-  private static void setUniteTooltip(Label label)
+  synchronized private static void setUniteTooltip(Label label)
   {
     if (uniteToolTip == null) uniteToolTip = new WebTooltip(
 

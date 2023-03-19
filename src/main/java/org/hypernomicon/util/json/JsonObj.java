@@ -31,7 +31,7 @@ import org.json.simple.parser.JSONParser;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class JsonObj implements Cloneable
+public final class JsonObj implements Cloneable
 {
   public enum JsonNodeType { OBJECT, STRING, ARRAY, BOOLEAN, INTEGER, NONE }
 
@@ -102,13 +102,16 @@ public class JsonObj implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final JsonObj clone()
+  @Override public JsonObj clone()
   {
-    JsonObj otherObj = null;
-
-    try { otherObj = parseJsonObj(jObj.toJSONString()); } catch (ParseException e) { noOp(); }
-
-    return otherObj;
+    try
+    {
+      return parseJsonObj(jObj.toJSONString());
+    }
+    catch (ParseException e)
+    {
+      throw new AssertionError("Cloning JsonObj failed.");
+    }
   }
 
 //---------------------------------------------------------------------------

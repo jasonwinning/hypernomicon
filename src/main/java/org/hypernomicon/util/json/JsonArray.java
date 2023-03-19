@@ -33,7 +33,7 @@ import static org.hypernomicon.util.json.JsonObj.*;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class JsonArray implements Cloneable
+public final class JsonArray implements Cloneable
 {
   final JSONArray jArr;
 
@@ -110,9 +110,16 @@ public class JsonArray implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final JsonArray clone()
+  @Override public JsonArray clone()
   {
-    try { return new JsonArray((JSONArray)jsonParser.parse(jArr.toJSONString())); } catch (ParseException e) { return null; }
+    try
+    {
+      return new JsonArray((JSONArray)jsonParser.parse(jArr.toJSONString()));
+    }
+    catch (ParseException e)
+    {
+      throw new AssertionError("Cloning JsonArray failed.");
+    }
   }
 
 //---------------------------------------------------------------------------

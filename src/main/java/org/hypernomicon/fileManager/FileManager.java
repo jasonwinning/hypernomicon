@@ -1025,7 +1025,7 @@ public class FileManager extends HyperDlg
 
     suppressNeedRefresh = true;
 
-    rowInfoList.stream().allMatch(FileManager::deleteRow); // Deletes rows until deleteRow returns false
+    noOp(rowInfoList.stream().allMatch(FileManager::deleteRow)); // Deletes rows until deleteRow returns false
 
     folderTree.prune();
 

@@ -59,6 +59,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -636,6 +637,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static boolean strContainsAnyStr(String container, String... strings)
+  {
+    return Arrays.stream(strings).parallel().anyMatch(container::contains);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String safeStr(String s)           { return s == null ? "" : s; }
 
   public static boolean collEmpty(Collection<?> c) { return (c == null) || c.isEmpty(); }
@@ -799,7 +808,23 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Operation having no side effects that the compiler will not know how to optimize away, so
+   * you can always break on it.
+   */
   public static void noOp()
+  {
+    assert Boolean.TRUE;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Consume an object by doing nothing to it, to avoid compiler warnings and such.
+   * @param obj The object to which nothing will be done.
+   */
+  public static void noOp(Object obj)
   {
     assert Boolean.TRUE;
   }
@@ -809,10 +834,45 @@ public final class Util
 
   public static void runInFXThread(Runnable runnable)
   {
+    runInFXThread(runnable, false);
+  }
+
+  public static void runInFXThread(Runnable runnable, boolean wait)
+  {
     if (Platform.isFxApplicationThread())
+    {
       runnable.run();
-    else
+      return;
+    }
+
+    if (wait == false)
+    {
       Platform.runLater(runnable);
+      return;
+    }
+
+    final CountDownLatch doneLatch = new CountDownLatch(1);
+
+    Platform.runLater(() ->
+    {
+      try
+      {
+        runnable.run();
+      }
+      finally
+      {
+        doneLatch.countDown();
+      }
+    });
+
+    try
+    {
+      doneLatch.await();
+    }
+    catch (InterruptedException ex)
+    {
+      ex.printStackTrace();
+    }
   }
 
 //---------------------------------------------------------------------------
