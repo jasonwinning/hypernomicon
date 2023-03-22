@@ -55,8 +55,8 @@ import org.hypernomicon.query.*;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.mainText.Highlighter;
 import org.hypernomicon.view.mainText.MainTextUtil;
-import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.*;
@@ -112,6 +112,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private final List<QueryCtrlr> queryCtrlrs = new ArrayList<>();
 
+  private final Highlighter highlighter;
+
   private QueryCtrlr curQC;
 
   private static final List<Query<?>> allQueries = new ArrayList<>();
@@ -137,9 +139,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public HDT_Record viewRecord()           { return activeRecord(); }
   @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public int recordNdx()                   { return recordCount() > 0 ? curQC.resultsTable.getTV().getSelectionModel().getSelectedIndex() : -1; }
-  @Override public void findWithinDesc(String text)  { if (activeRecord() != null) MainTextWrapper.hilite(text, webView.getEngine()); }
-  @Override public void nextSearchResult()           { MainTextWrapper.nextSearchResult(webView.getEngine()); }
-  @Override public void previousSearchResult()       { MainTextWrapper.previousSearchResult(webView.getEngine()); }
+  @Override public void findWithinDesc()             { if (activeRecord() != null) highlighter.hilite(); }
+  @Override public void nextSearchResult()           { highlighter.nextSearchResult(); }
+  @Override public void previousSearchResult()       { highlighter.previousSearchResult(); }
 
   @FXML private void mnuCopyToFolderClick()          { copyFilesToFolder(true); }
   @FXML private void mnuShowSearchFolderClick()      { if (db.isLoaded()) launchFile(db.resultsPath()); }
@@ -170,6 +172,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       Platform.runLater(tabPane::requestLayout);
     });
 
+    highlighter = new Highlighter(webView.getEngine());
+
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
       if (curQC.inReportMode())
@@ -197,13 +201,11 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       {
         if ((curQC.getRecordToHilite() != null) && ui.currentFindInDescriptionText().isBlank())
         {
-          MainTextWrapper.hilite(webView.getEngine());
+          highlighter.hiliteAlreadyTagged();
         }
         else
         {
-          String textToHilite = ui.currentFindInDescriptionText();
-          if (textToHilite.length() > 0)
-            MainTextWrapper.hilite(textToHilite, webView.getEngine());
+          highlighter.hilite(true);
         }
       }
     });

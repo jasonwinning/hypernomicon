@@ -187,7 +187,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @Override public void setRecord(HDT_Institution rec) { curInst = rec; }
   @Override public void setDividerPositions()          { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
   @Override public void getDividerPositions()          { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void findWithinDesc(String text)    { messageDialog("Internal error #52009", mtError); }
+  @Override public void findWithinDesc()               { messageDialog("Internal error #52009", mtError); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

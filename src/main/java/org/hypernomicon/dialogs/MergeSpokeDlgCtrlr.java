@@ -60,7 +60,7 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
       if (extractTextFromHTML(mainText2).trim().length() > 0)
         rbDesc2.setSelected(true);
 
-    he3.setHtmlText(disableLinks(""));
+    he3.setHtmlText(prepHtmlForEditing(""));
   }
 
 //---------------------------------------------------------------------------

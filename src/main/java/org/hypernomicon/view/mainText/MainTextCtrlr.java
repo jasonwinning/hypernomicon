@@ -116,6 +116,9 @@ public class MainTextCtrlr
   @FXML private TextArea taKeyWorks;
   @FXML private TitledPane tpKeyWorks;
 
+  private final WebView webView;
+  private final WebEngine engine;
+  private final Highlighter highlighter;
   private final HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
   private final BooleanProperty prop; // Needs to be a member variable to prevent being garbage-collected
 
@@ -126,14 +129,10 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 
   List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
-  boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<>()).trim().isEmpty(); }
-
-  int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> webEngineScrollPos(webView.getEngine())); }
-
-  private void clearText()     { he.setHtmlText(disableLinks("")); }
-  private WebView getWebView() { return (WebView) he.lookup("WebView"); }
-  WebEngine getEngine()        { return getWebView().getEngine(); }
-  BorderPane getRootNode()     { return borderPane; }
+  int getScrollPos()                  { return webEngineScrollPos(engine); }
+  WebEngine getEngine()               { return engine; }
+  private void clearText()            { he.setHtmlText(prepHtmlForEditing("")); }
+  BorderPane getRootNode()            { return borderPane; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -144,9 +143,12 @@ public class MainTextCtrlr
 
     loader.load();
 
-    final WebView webview = getWebView();
-    GridPane.setHgrow(webview, Priority.ALWAYS);
-    GridPane.setVgrow(webview, Priority.ALWAYS);
+    webView = (WebView) he.lookup("WebView");
+    engine = webView.getEngine();
+    highlighter = new Highlighter(engine);
+
+    GridPane.setHgrow(webView, Priority.ALWAYS);
+    GridPane.setVgrow(webView, Priority.ALWAYS);
 
     RecordTypePopulator rtp = new RecordTypePopulator(getDisplayedTypes());
 
@@ -271,7 +273,7 @@ public class MainTextCtrlr
       pasteNoLineBreaksKey = "Ctrl-Alt-V";
     }
 
-    webview.setOnContextMenuRequested(contextMenuEvent ->
+    webView.setOnContextMenuRequested(contextMenuEvent ->
     {
       MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
       menuItem1.setOnAction(actionEvent -> pastePlainText(false));
@@ -282,6 +284,12 @@ public class MainTextCtrlr
       setHTMLContextMenu(menuItem1, menuItem2);
     });
 
+    he.focusWithinProperty().addListener((obs, ov, nv) ->
+    {
+      if (Boolean.TRUE.equals(nv))
+        highlighter.clear();
+    });
+
     he.setOnMouseClicked (Event::consume);
     he.setOnMousePressed (Event::consume);
     he.setOnMouseReleased(Event::consume);
@@ -290,6 +298,8 @@ public class MainTextCtrlr
 
     he.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
+      highlighter.clear();
+
       if (shortcutKeyIsDown(event))
       {
         if (event.getCode() == KeyCode.V)
@@ -310,7 +320,7 @@ public class MainTextCtrlr
             event.consume();
           else if (event.getCode() == KeyCode.B)
           {
-            String selText = (String) getEngine().executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
+            String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
 
             if (selText.isEmpty())
             {
@@ -340,7 +350,7 @@ public class MainTextCtrlr
     });
 
     MenuItem menuItem0 = new MenuItem("Paste (" + shortcutKey + "-V)");
-    menuItem0.setOnAction(event -> Accessor.getPageFor(getEngine()).executeCommand(Command.PASTE.getCommand(), null));
+    menuItem0.setOnAction(event -> Accessor.getPageFor(engine).executeCommand(Command.PASTE.getCommand(), null));
 
     MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
     menuItem1.setOnAction(event -> pastePlainText(false));
@@ -377,11 +387,11 @@ public class MainTextCtrlr
 
     Button btnSubscript = new Button("", imgViewFromRelPath("resources/images/text_subscript.png"));
     setToolTip(btnSubscript, "Toggle subscript for selected text");
-    btnSubscript.setOnAction(event -> getEngine().executeScript("document.execCommand('subscript', false, '');"));
+    btnSubscript.setOnAction(event -> engine.executeScript("document.execCommand('subscript', false, '');"));
 
     Button btnSuperscript = new Button("", imgViewFromRelPath("resources/images/text_superscript.png"));
     setToolTip(btnSuperscript, "Toggle superscript for selected text");
-    btnSuperscript.setOnAction(event -> getEngine().executeScript("document.execCommand('superscript', false, '');"));
+    btnSuperscript.setOnAction(event -> engine.executeScript("document.execCommand('superscript', false, '');"));
 
     Button btnSymbol = new Button("", imgViewFromRelPath("resources/images/text_letter_omega.png"));
     setToolTip(btnSymbol, "Insert symbol at cursor");
@@ -441,13 +451,9 @@ public class MainTextCtrlr
   {
     runDelayedInFXThread(5, 100, () ->
     {
-      final WebView view = getWebView();
-      Platform.runLater(() ->
-      {
-        view.fireEvent(new MouseEvent(MouseEvent.MOUSE_PRESSED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
-        he.requestFocus();
-        view.fireEvent(new MouseEvent(MouseEvent.MOUSE_RELEASED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
-      });
+      webView.fireEvent(new MouseEvent(MouseEvent.MOUSE_PRESSED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
+      he.requestFocus();
+      webView.fireEvent(new MouseEvent(MouseEvent.MOUSE_RELEASED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
     });
   }
 
@@ -473,7 +479,7 @@ public class MainTextCtrlr
   private void makeThisFontDefault()
   {
     boolean familyNotSet = false, sizeNotSet = false;
-    WebPage webPage = Accessor.getPageFor(getEngine());
+    WebPage webPage = Accessor.getPageFor(engine);
 
     String family = safeStr(webPage.queryCommandValue(Command.FONT_FAMILY.getCommand()));
     family = family.replace("'", "").replace("\"", "");
@@ -714,8 +720,6 @@ public class MainTextCtrlr
       miscFile.fileType.setID(fileTypeID);
     }
 
-    WebEngine engine = getEngine();
-
     Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
 
     String imageTag = '<' + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
@@ -728,8 +732,6 @@ public class MainTextCtrlr
 
   private void btnLinkClick()
   {
-    WebEngine engine = getEngine();
-
     String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
 
     NewLinkDlgCtrlr dlg = new NewLinkDlgCtrlr(convertToSingleLine(selText));
@@ -760,7 +762,7 @@ public class MainTextCtrlr
                  .replaceAll("\\v", "<br>");
     }
 
-    getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
+    engine.executeScript("insertHtmlAtCursor('" + text + "')");
   }
 
 //---------------------------------------------------------------------------
@@ -813,7 +815,17 @@ public class MainTextCtrlr
   String getHtmlAndKeyWorks(List<KeyWork> keyWorksArg)
   {
     getKeyWorks(keyWorksArg);
-    return getHtmlFromEditor(he.getHtmlText());
+
+    String markedHtml = he.getHtmlText();
+
+    if (highlighter.neverHilited())
+      return getHtmlFromEditor(markedHtml);
+
+    highlighter.clear();
+
+    String unmarkedHtml = getHtmlFromEditor(he.getHtmlText());
+    he.setHtmlText(markedHtml);
+    return unmarkedHtml;
   }
 
 //---------------------------------------------------------------------------
@@ -878,7 +890,7 @@ public class MainTextCtrlr
     if (html.contains("body { font-family"))
       html = html.replace("body { font-family", "body { " + MARGIN_STYLE + " font-family");
 
-    he.setHtmlText(disableLinks(html));
+    he.setHtmlText(prepHtmlForEditing(html));
     taKeyWorks.setText(keyWorksText);
 
     if (hcbType.selectedType() == hdtNone)
@@ -918,6 +930,40 @@ public class MainTextCtrlr
 
     if (descNdx >= 0)
       lvRecords.getSelectionModel().select(descNdx);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void hilite()
+  {
+    highlighter.hilite();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void nextSearchResult()
+  {
+    if (highlighter.hasSearchResults())
+      highlighter.nextSearchResult();
+    else
+      highlighter.hilite();
+
+    safeFocus(ui.btnNextResult);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void previousSearchResult()
+  {
+    if (highlighter.hasSearchResults())
+      highlighter.previousSearchResult();
+    else
+      highlighter.hilite();
+
+    safeFocus(ui.btnPrevResult);
   }
 
 //---------------------------------------------------------------------------

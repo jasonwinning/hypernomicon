@@ -147,7 +147,7 @@ public final class MainCtrlr
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
   @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
-                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll, btnPrevResult, btnNextResult;
+                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll;
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpBottom;
@@ -171,6 +171,7 @@ public final class MainCtrlr
   @FXML private ToggleButton btnPointerPreview, btnTextSearch;
   @FXML private ToolBar topToolBar;
 
+  @FXML public Button btnPrevResult, btnNextResult;
   @FXML public Label lblStatus;
   @FXML public Menu mnuFavorites, mnuQueries;
   @FXML public ToggleButton btnPointerLaunch;
@@ -588,7 +589,7 @@ public final class MainCtrlr
         hideFindTable();
         ctfOmniGoTo.setText(searchText);
         HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
-        if (hyperTab != null) hyperTab.findWithinDesc(searchText);
+        if (hyperTab != null) hyperTab.findWithinDesc();
       }
       else
       {
@@ -1176,7 +1177,7 @@ public final class MainCtrlr
       return;
     }
 
-    // The following is done inside a runLater command because the results table gets populated inside a runLater; this runLater needs
+    // The following is done in a runLater because the results table gets populated in a runLater; this runLater needs
     // to run after that one
 
     Platform.runLater(() ->
@@ -2886,7 +2887,7 @@ public final class MainCtrlr
     if (btnTextSearch.isSelected())
     {
       HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
-      if (hyperTab != null) hyperTab.findWithinDesc(tfSelector.getText());
+      if (hyperTab != null) hyperTab.findWithinDesc();
       return;
     }
 
@@ -2919,6 +2920,9 @@ public final class MainCtrlr
 
   public void omniFocus(boolean recordSearch)
   {
+    if ((recordSearch == false) && (activeTabEnum() == instTabEnum))
+      return;
+
     btnTextSearch.setSelected(recordSearch == false);
     setSelectorTab(tabOmniSelector);
 

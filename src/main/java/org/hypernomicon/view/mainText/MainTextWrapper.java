@@ -24,9 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
@@ -49,7 +49,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
-import javafx.concurrent.Worker;
 import javafx.event.Event;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
@@ -66,11 +65,8 @@ public final class MainTextWrapper
   private static MainTextCtrlr editCtrlr;
   private static WebView view;
   private static WebEngine we;
+  private static Highlighter highlighter;
   private static MainTextWrapper curWrapper;
-  private static String textToHilite = "";
-
-  private static final StringBuilder markJSContents      = new StringBuilder(),
-                                     matchJumpJSContents = new StringBuilder();
 
   private final AnchorPane parentPane;
   private HDT_RecordWithMainText curRecord;
@@ -111,25 +107,14 @@ public final class MainTextWrapper
 
     view.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    view.getEngine().getLoadWorker().stateProperty().addListener((ob, oldState, newState) ->
-    {
-      if (newState == Worker.State.SUCCEEDED)
-      {
-        if (textToHilite.length() > 0)
-          hilite(textToHilite, we);
-
-        textToHilite = "";
-      }
-    });
-
     curWrapper = null;
 
-    readResourceTextFile("resources/mark.es6.min.js", markJSContents, false);
-    readResourceTextFile("resources/match-jump.js", matchJumpJSContents, false);
+    Highlighter.init();
 
     view.setFocusTraversable(false);
 
     we = view.getEngine();
+    highlighter = new Highlighter(we);
 
     view.setOnDragDropped(Event::consume);
 
@@ -247,78 +232,35 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void hilite(String string)
+  public void hilite()
   {
     if (editing)
-    {
-      if (editCtrlr.isEmpty())
-        return;
-
-      hide();
-      textToHilite = string;
-      showReadOnly();
-    }
+      editCtrlr.hilite();
     else
-    {
-      hilite(string, we);
-    }
+      highlighter.hilite();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void hilite(String string, WebEngine weToUse)
+  public void nextSearchResult()
   {
-    hilite(string, weToUse, false);
-  }
-
-  public static void hilite(WebEngine weToUse)
-  {
-    hilite("", weToUse, true);
-  }
-
-  private static void hilite(String string, WebEngine weToUse, boolean matchesAlreadyTagged)
-  {
-    string = StringEscapeUtils.escapeEcmaScript(string);
-
-    if (! (boolean) weToUse.executeScript("'markInstance' in window"))
-    {
-      weToUse.executeScript(markJSContents.toString());
-      weToUse.executeScript("var markInstance = new Mark(\"body\"), results, lastNdx = -1, currentNdx = 0;");
-
-      weToUse.executeScript(matchJumpJSContents.toString());
-    }
-
-    if (matchesAlreadyTagged)
-      weToUse.executeScript("clearCurrent(); lastNdx=-1; results=document.getElementsByClassName('hypernomiconHilite'); currentNdx=0; jumpTo();");
+    if (editing)
+      editCtrlr.nextSearchResult();
     else
-      weToUse.executeScript("clearAll(); lastNdx=-1; markInstance.unmark({done: function(){markInstance.mark(\"" + string + "\",{ className:\"hypernomiconHilite\",iframes:true,ignoreJoiners:true,separateWordSearch:false,acrossElements:true,done: function(){results=document.getElementsByClassName('hypernomiconHilite'); currentNdx=0; jumpTo();}});}});");
+      highlighter.nextSearchResult();
   }
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void nextSearchResult()
+  public void previousSearchResult()
   {
-    nextSearchResult(we);
-  }
-
-  public static void nextSearchResult(WebEngine weToUse)
-  {
-    weToUse.executeScript("if ('markInstance' in window) nextResult();");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void previousSearchResult()
-  {
-    previousSearchResult(we);
-  }
-
-  public static void previousSearchResult(WebEngine weToUse)
-  {
-    weToUse.executeScript("if ('markInstance' in window) previousResult();");
+    if (editing)
+      editCtrlr.previousSearchResult();
+    else
+      highlighter.previousSearchResult();
   }
 
 //---------------------------------------------------------------------------
@@ -768,7 +710,19 @@ public final class MainTextWrapper
     if (showing && editing)
     {
       keyWorks = new ArrayList<>();
-      mainText.setHtml(editCtrlr.getHtmlAndKeyWorks(keyWorks));
+      String newHtml = editCtrlr.getHtmlAndKeyWorks(keyWorks);
+
+      try
+      {
+        FileUtils.writeLines(db.getRootPath("old.html").toFile(), convertMultiLineStrToStrList(mainText.getHtml(), true));
+        FileUtils.writeLines(db.getRootPath("new.html").toFile(), convertMultiLineStrToStrList(newHtml, true));
+      }
+      catch (IOException e)
+      {
+        noOp();
+      }
+
+      mainText.setHtml(newHtml);
       if (curRecord.getType() != hdtInvestigation) mainText.setKeyWorksFromList(keyWorks);
       mainText.setDisplayItemsFromList(editCtrlr.getDisplayItems());
     }

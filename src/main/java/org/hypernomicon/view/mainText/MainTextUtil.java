@@ -78,16 +78,17 @@ public final class MainTextUtil
 {
   private MainTextUtil() { throw new UnsupportedOperationException(); }
 
-  public static final String headContent,
-                             scriptContent,
-                             EMBEDDED_FILE_TAG = "misc-file";
+  public static final String  headContent,
+                              scriptContent,
+                              EMBEDDED_FILE_TAG = "misc-file";
 
   static final String         NO_LINKS_ATTR              = "hypncon-no-links",
                               ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ",
                               NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19";
   private static final String ALPHA_SORTED_INNER_CLASS   = "keyWorksSpanAZ",
                               NUMERIC_SORTED_INNER_CLASS = "keyWorksSpan19",
-                              TOPMOST_CLASS              = "topmostKeyWorksSpan";
+                              TOPMOST_CLASS              = "topmostKeyWorksSpan",
+                              hiliteStyles;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -149,11 +150,12 @@ public final class MainTextUtil
       .append("</script>\n\n")
       .toString();
 
+    hiliteStyles = ".hypernomiconHilite { background-color: yellow; } .hypernomiconHilite.hypernomiconHiliteCurrent { background-color: orange; }";
+
     headContent = new StringBuilder(scriptContent)
 
       .append("<style type=\"text/css\">\n")
-      .append("  .hypernomiconHilite { background-color: yellow; }\n")
-      .append("  .hypernomiconHilite.hypernomiconHiliteCurrent { background-color: orange; }\n")
+      .append("  ").append(hiliteStyles).append('\n')
       .append("  details summary { outline: none; }\n")
       .append("  a:link {color:#0000FF; } a:visited {color:#0000FF; }\n")
       .append("</style></head>")
@@ -886,6 +888,7 @@ public final class MainTextUtil
   {
     if (str.contains("</html>") == false)
       return convertPlainMainTextToHtml(str.isEmpty() ? "<br>" : str);
+
     if (forEditor)
       return str;
 
@@ -922,7 +925,9 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String disableLinks(String hyperText)
+  private static final String editingStyles = "a { pointer-events: none; } " + hiliteStyles;
+
+  public static String prepHtmlForEditing(String hyperText)
   {
     hyperText = prepHtmlForDisplay(hyperText, true);
 
@@ -931,7 +936,7 @@ public final class MainTextUtil
         "{\n" +
         "  document.execCommand('insertHtml', false, html);" +
         "}\n\n" +
-        "</script><style>a { pointer-events: none; }");
+        "</script><style>" + editingStyles);
   }
 
 //---------------------------------------------------------------------------
@@ -944,7 +949,7 @@ public final class MainTextUtil
     doc.getElementsByTag("script").forEach(Element::remove);
     doc.getElementsByAttributeValue("id", "key_works").forEach(Element::remove);
 
-    return doc.html().replace("a { pointer-events: none; }", "");
+    return doc.html().replace(editingStyles, "");
   }
 
 //---------------------------------------------------------------------------

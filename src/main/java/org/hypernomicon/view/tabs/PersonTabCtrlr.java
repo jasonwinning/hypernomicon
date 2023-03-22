@@ -1148,17 +1148,17 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void findWithinDesc(String text)
+  @Override public void findWithinDesc()
   {
     Tab tab = tpPerson.getSelectionModel().getSelectedItem();
 
     if (tab.equals(tabOverview))
     {
-      mainText.hilite(text);
+      mainText.hilite();
       return;
     }
 
-    nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), iV -> iV.textWrapper.hilite(text));
+    nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), iV -> iV.textWrapper.hilite());
   }
 
 //---------------------------------------------------------------------------

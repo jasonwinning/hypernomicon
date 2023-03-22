@@ -31,6 +31,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.mainText.Highlighter;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
@@ -75,12 +76,15 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML private WebView webView;
 
   private final SetMultimap<RecordType, MenuItemSchema<? extends HDT_Record, TreeRow>> recordTypeToSchemas = LinkedHashMultimap.create();
+  private final TreeWrapper tree;
+  private final Highlighter highlighter;
+
   private TreeTableView<TreeRow> ttv;
   private boolean useViewInfo = false;
   private boolean loaded = false;
   private String lastTextHilited = "";
   String textToHilite = "";
-  private final TreeWrapper tree;
+
 
 //---------------------------------------------------------------------------
 
@@ -89,6 +93,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     super(TabEnum.treeTabEnum, tab, "tree/TreeTab");
 
     tree = new TreeWrapper(bcbPath, true, ui.cbTreeGoTo);
+
+    highlighter = new Highlighter(webView.getEngine());
 
     initTTV();
 
@@ -191,12 +197,11 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         String text = ui.currentFindInDescriptionText();
         if (text.length() > 0)
         {
-          MainTextWrapper.hilite(text, webView.getEngine());
+          highlighter.hilite(text);
           return;
         }
 
-        if (textToHilite.length() > 0)
-          MainTextWrapper.hilite(textToHilite, webView.getEngine());
+        highlighter.hilite(textToHilite, true);
 
         lastTextHilited = textToHilite;
         textToHilite = "";
@@ -508,10 +513,10 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void findWithinDesc(String text)
+  @Override public void findWithinDesc()
   {
     if (tree.selectedRecord() != null)
-      MainTextWrapper.hilite(text, webView.getEngine());
+      highlighter.hilite();
   }
 
 //---------------------------------------------------------------------------
@@ -522,7 +527,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     String text = ui.currentFindInDescriptionText();
     if (text.length() > 0)
     {
-      MainTextWrapper.previousSearchResult(webView.getEngine());
+      highlighter.previousSearchResult();
 
       return;
     }
@@ -538,7 +543,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     String text = ui.currentFindInDescriptionText();
     if (text.length() > 0)
     {
-      MainTextWrapper.nextSearchResult(webView.getEngine());
+      highlighter.nextSearchResult();
 
       return;
     }

@@ -22,6 +22,7 @@ function jumpTo()
   if (results.length)
   {
     var current = results[currentNdx];
+    if (typeof current === "undefined") return;
     current.classList.add("hypernomiconHiliteCurrent");
     current.scrollIntoView();
     lastNdx = currentNdx;
@@ -44,6 +45,7 @@ function clearCurrent()
   if (lastNdx > -1)
   {
     var current = results[lastNdx];
+    if (typeof current === "undefined") return;
     current.classList.remove("hypernomiconHiliteCurrent");
     lastNdx = 0;
   }
