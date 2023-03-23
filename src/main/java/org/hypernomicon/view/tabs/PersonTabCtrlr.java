@@ -319,7 +319,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
   @Override protected RecordType type()              { return hdtPerson; }
   @Override public void setRecord(HDT_Person person) { curPerson = person; }
-  @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1124,14 +1123,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MainTextWrapper getInvMainTextWrapper(HDT_Investigation inv)
-  {
-    return findFirst(invViews, iV -> iV.record == inv, iV -> iV.textWrapper);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void newClick(RecordType objType, HyperTableRow row)
   {
     switch (objType)
@@ -1148,30 +1139,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void findWithinDesc()
-  {
-    Tab tab = tpPerson.getSelectionModel().getSelectedItem();
-
-    if (tab.equals(tabOverview))
-    {
-      mainText.hilite();
-      return;
-    }
-
-    nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), iV -> iV.textWrapper.hilite());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public TextViewInfo mainTextInfo()
+  @Override public MainTextWrapper mainTextWrapper()
   {
     Tab tab = tpPerson.getSelectionModel().getSelectedItem();
 
     return tab.equals(tabOverview) ?
-      mainText.getViewInfo()
+      mainText
     :
-      nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), new TextViewInfo(), iV -> iV.textWrapper.getViewInfo());
+      nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), null, iV -> iV.textWrapper);
   }
 
 //---------------------------------------------------------------------------

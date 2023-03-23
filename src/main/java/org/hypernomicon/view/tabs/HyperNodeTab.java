@@ -39,7 +39,6 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.MainCtrlr;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -162,7 +161,6 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   protected abstract HDT_CT getNodeRecord();
 
   @Override public final MainTextWrapper mainTextWrapper() { return mainText; }
-  @Override public TextViewInfo mainTextInfo()             { return mainText.getViewInfo(); }
   @Override public String recordName()                     { return tfName.getText(); }
 
   TextField nameCtrl()                                     { return tfName; }

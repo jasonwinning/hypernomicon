@@ -99,7 +99,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public abstract void getDividerPositions();
   public abstract void setRecord(HDT_CT record);
 
-  public TextViewInfo mainTextInfo()       { return new TextViewInfo(); }
+  public TextViewInfo mainTextInfo()       { return nullSwitch(mainTextWrapper(), new TextViewInfo(), MainTextWrapper::getViewInfo); }
   public MainTextWrapper mainTextWrapper() { return null; }
   public void rescale()                    { return; }
   public int recordCount()                 { return db.records(type()).size(); }

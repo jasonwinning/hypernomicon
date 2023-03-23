@@ -51,7 +51,6 @@ import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
@@ -602,7 +601,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public String recordName()               { return tfTitle.getText(); }
   @Override protected RecordType type()              { return hdtWork; }
-  @Override public TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
   @Override public void setRecord(HDT_Work work)     { curWork = work; }
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
@@ -1541,12 +1539,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (workTypeEnumVal != wtUnenteredSet)
           if (tfYear.getText().equals(curWork.getYear()) == false)
             if (confirmDialog("Year has been modified. Update search key?"))
-            {
-              if (tfSearchKey.getText().endsWith(curWork.getYear()))
-                tfSearchKey.setText(makeWorkSearchKey(tfSearchKey.getText().replace(curWork.getYear(), tfYear.getText()), curWork));
-              else
-                tfSearchKey.setText(makeWorkSearchKey(getFirstAuthorSingleName(), tfYear.getText(), curWork));
-            }
+              tfSearchKey.setText(tfSearchKey.getText().endsWith(curWork.getYear()) ?
+                makeWorkSearchKey(tfSearchKey.getText().replace(curWork.getYear(), tfYear.getText()), curWork)
+              :
+                makeWorkSearchKey(getFirstAuthorSingleName(), tfYear.getText(), curWork));
     }
 
     if (saveSearchKey(curWork, tfSearchKey) == false) return false;

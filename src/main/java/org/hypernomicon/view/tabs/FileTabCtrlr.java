@@ -25,7 +25,6 @@ import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -149,7 +148,6 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public String recordName()                 { return tfName.getText(); }
   @Override protected RecordType type()                { return hdtMiscFile; }
-  @Override public TextViewInfo mainTextInfo()         { return mainText.getViewInfo(); }
   @Override public MainTextWrapper mainTextWrapper()   { return mainText; }
   @Override public void setRecord(HDT_MiscFile record) { curMiscFile = record; }
 
