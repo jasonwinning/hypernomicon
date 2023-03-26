@@ -17,7 +17,6 @@
 
 package org.hypernomicon.dialogs;
 
-import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Investigation;
@@ -75,7 +74,7 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public InvestigationsDlgCtrlr(HDT_Work work, List<InvestigationView> invViews, HDT_Person curPerson)
+  public InvestigationsDlgCtrlr(HDT_Work work, Iterable<InvestigationView> invViews, HDT_Person curPerson)
   {
     super("InvestigationsDlg", "Assign Investigations - " + work.name(), true);
 

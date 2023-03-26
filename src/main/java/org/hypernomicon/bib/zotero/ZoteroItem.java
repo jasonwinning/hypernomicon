@@ -287,9 +287,9 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     switch (bibFieldEnum)
     {
-      case bfContainerTitle : case bfTitle : newStr = strListToStr(list, false      ); break;
-      case bfMisc           :                newStr = strListToStr(list, true       ); break;
-      case bfISBNs          : case bfISSNs : newStr = getMultiStrSpaceDelimited(list); break;
+      case bfContainerTitle : case bfTitle : newStr = strListToStr(list, false       ); break;
+      case bfMisc           :                newStr = strListToStr(list, true        ); break;
+      case bfISBNs          : case bfISSNs : newStr = strListToSpaceDelimitedStr(list); break;
       default               : return;
     }
 

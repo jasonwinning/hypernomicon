@@ -242,7 +242,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assignKeywordsToRecord(HDT_Record record, LinkedHashSet<SearchKeyword> oldKeywordObjs)
+  private void assignKeywordsToRecord(HDT_Record record, Iterable<SearchKeyword> oldKeywordObjs)
   {
     unassignKeywordsFromRecord(record);
     oldKeywordObjs.forEach(this::addKeyword);

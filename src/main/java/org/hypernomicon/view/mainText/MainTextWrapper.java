@@ -29,6 +29,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
@@ -45,9 +46,11 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
+import static org.hypernomicon.view.mainText.MainTextWrapper.MTW_State.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import javafx.event.Event;
 import javafx.scene.input.MouseButton;
@@ -61,6 +64,13 @@ import netscape.javascript.JSObject;
 
 public final class MainTextWrapper
 {
+  public enum MTW_State
+  {
+    showingReadOnly,
+    editing,
+    hidden
+  }
+
   private static BorderPane bpEditorRoot;
   private static MainTextCtrlr editCtrlr;
   private static WebView view;
@@ -75,7 +85,8 @@ public final class MainTextWrapper
   private List<KeyWork> keyWorks;
   private TextViewInfo viewInfo;
 
-  private boolean editing = false, edited = false, showing = false;
+  private boolean edited = false;
+  private MTW_State state = showingReadOnly;
 
 //---------------------------------------------------------------------------
 
@@ -87,7 +98,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean isEditing()                { return showing && editing; }
+  boolean isEditing()                { return state == editing; }
   private boolean canEdit()          { return (curRecord != null) && (isUnstoredRecord(curRecord.getID(), curRecord.getType()) == false); }
   static WebEngine getEditorEngine() { return editCtrlr == null ? null : editCtrlr.getEngine(); }
 
@@ -114,7 +125,7 @@ public final class MainTextWrapper
     view.setFocusTraversable(false);
 
     we = view.getEngine();
-    highlighter = new Highlighter(we);
+    highlighter = new Highlighter(view);
 
     view.setOnDragDropped(Event::consume);
 
@@ -156,19 +167,20 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear(boolean show)
+  public void clear()
   {
     removeFromParent(bpEditorRoot);
     removeFromParent(view);
 
     html = ""; completeHtml = "";
     curRecord = null;
-    editing = false;
+    state = showingReadOnly;
     edited = false;
     displayItems = null;
     keyWorks = null;
+    viewInfo = null;
 
-    if (show && (ui.isShuttingDown() == false)) showReadOnly();
+    if (ui.isShuttingDown() == false) showReadOnly();
   }
 
 //---------------------------------------------------------------------------
@@ -176,16 +188,15 @@ public final class MainTextWrapper
 
   public void hide()
   {
-    if (editing)
+    if (state == editing)
     {
-      keyWorks = new ArrayList<>();
-      html = editCtrlr.getHtmlAndKeyWorks(keyWorks);
-      displayItems = new ArrayList<>(editCtrlr.getDisplayItems());
+      commit();
 
       renderCompleteHtml();
     }
 
-    showing = false;
+    viewInfo = getViewInfo();
+    state = hidden;
   }
 
 //---------------------------------------------------------------------------
@@ -195,7 +206,7 @@ public final class MainTextWrapper
   {
     editCtrlr.clear();
 
-    editing = false;
+    state = showingReadOnly;
 
     removeFromParent(bpEditorRoot);
     removeFromParent(view);
@@ -225,7 +236,6 @@ public final class MainTextWrapper
     else
       setReadOnlyHTML(completeHtml, we, viewInfo, null, true);
 
-    showing = true;
     curWrapper = this;
   }
 
@@ -234,9 +244,9 @@ public final class MainTextWrapper
 
   public void hilite()
   {
-    if (editing)
+    if (state == editing)
       editCtrlr.hilite();
-    else
+    else if (state == showingReadOnly)
       highlighter.hilite();
   }
 
@@ -245,9 +255,9 @@ public final class MainTextWrapper
 
   public void nextSearchResult()
   {
-    if (editing)
+    if (state == editing)
       editCtrlr.nextSearchResult();
-    else
+    else if (state == showingReadOnly)
       highlighter.nextSearchResult();
   }
 
@@ -257,9 +267,9 @@ public final class MainTextWrapper
 
   public void previousSearchResult()
   {
-    if (editing)
+    if (state == editing)
       editCtrlr.previousSearchResult();
-    else
+    else if (state == showingReadOnly)
       highlighter.previousSearchResult();
   }
 
@@ -271,7 +281,7 @@ public final class MainTextWrapper
     if (curRecord == null)
       return new TextViewInfo(0);
 
-    if (editing)
+    if (state == editing)
       return new TextViewInfo(editCtrlr.getScrollPos());
 
     if (viewInfo == null)
@@ -682,9 +692,8 @@ public final class MainTextWrapper
 
     if (focus) editCtrlr.focus();
 
-    editing = true;
+    state = editing;
     edited = true;
-    showing = true;
     curWrapper = this;
   }
 
@@ -707,31 +716,41 @@ public final class MainTextWrapper
 
     MainText mainText = curRecord.getMainText();
 
-    if (showing && editing)
+    if (state == editing)
     {
-      keyWorks = new ArrayList<>();
-      String newHtml = editCtrlr.getHtmlAndKeyWorks(keyWorks);
+      commit();
 
       try
       {
         FileUtils.writeLines(db.getRootPath("old.html").toFile(), convertMultiLineStrToStrList(mainText.getHtml(), true));
-        FileUtils.writeLines(db.getRootPath("new.html").toFile(), convertMultiLineStrToStrList(newHtml, true));
+        FileUtils.writeLines(db.getRootPath("new.html").toFile(), convertMultiLineStrToStrList(html, true));
       }
       catch (IOException e)
       {
         noOp();
       }
+    }
 
-      mainText.setHtml(newHtml);
-      if (curRecord.getType() != hdtInvestigation) mainText.setKeyWorksFromList(keyWorks);
-      mainText.setDisplayItemsFromList(editCtrlr.getDisplayItems());
-    }
-    else
+    mainText.setHtml(html);
+    mainText.setDisplayItemsFromList(displayItems);
+    if (curRecord.getType() != hdtInvestigation) mainText.setKeyWorksFromList(keyWorks);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void commit()
+  {
+    keyWorks = new ArrayList<>();
+    String tempHtml = editCtrlr.getHtmlAndKeyWorks(keyWorks);
+    if (tempHtml.contains("hypernomiconHilite"))
     {
-      mainText.setHtml(html);
-      mainText.setDisplayItemsFromList(displayItems);
-      if (curRecord.getType() != hdtInvestigation) mainText.setKeyWorksFromList(keyWorks);
+      messageDialog(new HDB_InternalError(28469).getMessage(), mtError);
+      return;
     }
+
+    html = tempHtml;
+    displayItems = new ArrayList<>(editCtrlr.getDisplayItems());
   }
 
 //---------------------------------------------------------------------------

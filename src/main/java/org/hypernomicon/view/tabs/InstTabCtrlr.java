@@ -192,7 +192,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     Map<HDT_Person, Set<HDT_Institution>> peopleMap = new HashMap<>();
 

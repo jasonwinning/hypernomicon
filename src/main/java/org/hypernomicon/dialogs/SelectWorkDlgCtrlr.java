@@ -324,13 +324,12 @@ public class SelectWorkDlgCtrlr extends HyperDlg
             db.getBibLibrary().getNonTrashEntries().forEach(entry ->
             {
               if ((entry.linkedToWork() == false) && (HDT_WorkType.getEnumVal(entry.getWorkType()) == WorkTypeEnum.wtBook))
-              {
                 for (String isbn : entry.getMultiStr(BibFieldEnum.bfISBNs))
-                {
                   if (isbns.contains(isbn))
+                  {
                     bibEntry = entry;
-                }
-              }
+                    break;
+                  }
             });
           }
         }

@@ -82,7 +82,7 @@ public final class CrossrefBibData extends BibDataStandalone
       if (jsonArray == null)
         return new CrossrefBibData(jsonObj, queryDoi);
 
-      if (jsonArray.size() == 0)
+      if (jsonArray.isEmpty())
         return null;
 
       if ((jsonArray.size() == 1) || safeStr(title).isBlank())
@@ -246,7 +246,6 @@ public final class CrossrefBibData extends BibDataStandalone
       case "journal-issue"       : return etJournalIssue;
       case "journal-volume"      : return etJournalVolume;
       case "monograph"           : return etMonograph;
-      case "other"               : return etOther;
       case "peer-review"         : return etPeerReview;
       case "posted-content"      : return etPostedContent;
       case "proceedings"         : return etConferenceProceedings;
@@ -258,6 +257,7 @@ public final class CrossrefBibData extends BibDataStandalone
       case "report-series"       : return etReportSeries;
       case "standard"            : return etStandard;
       case "standard-series"     : return etStandardSeries;
+      case "other"               : // fall through
 
       default                    : return etOther;
     }

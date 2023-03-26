@@ -328,7 +328,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
         return;
 
-      default : return;
+      default : break;
     }
   }
 

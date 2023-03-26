@@ -46,6 +46,8 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType exten
   @Override public boolean isEmpty()                    { return size() > 0; }
   @Override public HDT_SubjType get(int index)          { return parentList.get(startNdx + index); }
   @Override public boolean containsAll(Collection<?> c) { return c.stream().allMatch(this::contains); }
+  @Override public Object[] toArray()                   { return relSet.getUnmodifiableSubjectList(obj).subList(startNdx, endNdx).toArray(); }
+  @Override public <T> T[] toArray(T[] a)               { return relSet.getUnmodifiableSubjectList(obj).subList(startNdx, endNdx).toArray(a); }
 
   @Override public HDT_SubjType set(int index, HDT_SubjType element)               { throw uoe(); }
   @Override public HDT_SubjType remove(int index)                                  { throw uoe(); }
@@ -59,41 +61,6 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType exten
       if (parentList.get(ndx) == o) return true;
 
     return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Object[] toArray()
-  {
-    List<HDT_SubjType> subjList = relSet.getUnmodifiableSubjectList(obj).subList(startNdx, endNdx);
-
-    Object[] array = new Object[subjList.size()];
-
-    for (int ndx = 0; ndx < subjList.size(); ndx++)
-      array[ndx] = subjList.get(ndx);
-
-    return array;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  @Override public <T> T[] toArray(T[] a)
-  {
-    List<HDT_SubjType> subjList = relSet.getUnmodifiableSubjectList(obj).subList(startNdx, endNdx);
-
-    if (a.length < subjList.size())
-      a = (T[]) new HDT_Record[subjList.size()];
-
-    for (int ndx = 0; ndx < subjList.size(); ndx++)
-      a[ndx] = (T) subjList.get(ndx);
-
-    if (a.length > subjList.size())
-      a[subjList.size()] = null;
-
-    return a;
   }
 
 //---------------------------------------------------------------------------

@@ -30,7 +30,6 @@ import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.reports.ReportGenerator;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.util.Util;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
@@ -115,14 +114,6 @@ public abstract class BibData
   {
     EntryType entryType = getEntryType();
     return (entryType != null) && (entryType != etNone) && (entryType != etUnentered);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected static String getMultiStrSpaceDelimited(List<String> list)
-  {
-    return ultraTrim(list.stream().map(Util::ultraTrim).reduce((s1, s2) -> s1 + ' ' + s2).orElse(""));
   }
 
 //---------------------------------------------------------------------------

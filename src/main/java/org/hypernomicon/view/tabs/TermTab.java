@@ -383,7 +383,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       HDT_Glossary glossary = curConcept.glossary.get();
       if (glossary.getID() > 1) glossary.viewNow();
-      super.update();
+      super.updateFromRecord();
 
       htSubConcepts.clear();
       htDisplayers .clear();
@@ -405,7 +405,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     boolean first = true;
     for (HDT_Concept concept : curTerm.concepts)
@@ -426,7 +426,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     tpConcepts.getTabs().get(0).setContent(null);
     getConceptTab(curConcept).setContent(apDescription);
 
-    super.update();
+    super.updateFromRecord();
 
     populateGlossaries();
 

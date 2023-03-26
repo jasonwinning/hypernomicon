@@ -147,7 +147,7 @@ public final class MainCtrlr
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
   @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
-                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll;
+                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll, btnPrevResult, btnNextResult;
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpBottom;
@@ -171,7 +171,6 @@ public final class MainCtrlr
   @FXML private ToggleButton btnPointerPreview, btnTextSearch;
   @FXML private ToolBar topToolBar;
 
-  @FXML public Button btnPrevResult, btnNextResult;
   @FXML public Label lblStatus;
   @FXML public Menu mnuFavorites, mnuQueries;
   @FXML public ToggleButton btnPointerLaunch;
@@ -477,8 +476,6 @@ public final class MainCtrlr
 
     apFindBackground.setOnMousePressed(event -> hideFindTable());
 
-    ctfOmniGoTo.setOnAction(event -> recordLookup());
-
     ttDates.setAutoHide(true);
 
     tabTree        .setGraphic(imgViewFromRelPath("resources/images/treeview-small.png"));
@@ -612,6 +609,19 @@ public final class MainCtrlr
     {
       if ((newValue != null) && (newValue.equals(oldValue) == false))
         tfOmniGoToChange(newValue, false);
+    });
+
+//---------------------------------------------------------------------------
+
+    ctfOmniGoTo.setOnAction(event ->
+    {
+      if (btnTextSearch.isSelected())
+      {
+        HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
+        if (hyperTab != null) hyperTab.findWithinDesc();
+      }
+      else
+        recordLookup();
     });
 
 //---------------------------------------------------------------------------
@@ -919,7 +929,13 @@ public final class MainCtrlr
 
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
 
-    if (hyperTab != null) hyperTab.previousSearchResult();
+    if (hyperTab != null)
+    {
+      hyperTab.previousSearchResult();
+
+      if (ctfOmniGoTo.isFocused() == false)
+        safeFocus(btnPrevResult);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -931,7 +947,13 @@ public final class MainCtrlr
 
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
 
-    if (hyperTab != null) hyperTab.nextSearchResult();
+    if (hyperTab != null)
+    {
+      hyperTab.nextSearchResult();
+
+      if (ctfOmniGoTo.isFocused() == false)
+        safeFocus(btnNextResult);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1683,18 +1705,18 @@ public final class MainCtrlr
       case hdtGlossary :
 
         if (activeTabEnum() != treeTabEnum)
-          return falseWithErrorMessage("Glossary records can only be deleted from the tree tab.");
+          return falseWithInfoMessage("Glossary records can only be deleted from the tree tab.");
 
         HDT_Glossary glossary = (HDT_Glossary) record;
 
         if (glossary.concepts.isEmpty() == false)
-          return falseWithErrorMessage("A glossary record can only be deleted if it does not contain any terms.");
+          return falseWithInfoMessage("A glossary record can only be deleted if it does not contain any terms.");
 
         break;
 
       case hdtNone : case hdtConcept : case hdtFolder : case hdtWorkFile : case hdtHub :
 
-        return falseWithErrorMessage("Records of that type cannot be deleted by this method.");
+        return falseWithInfoMessage("Records of that type cannot be deleted by this method.");
 
       default :
         break;
@@ -1846,7 +1868,7 @@ public final class MainCtrlr
     type = ctrlr.hcbRecordType.selectedType();
 
     RecordState recordState = new RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
-    T newRecord = null;
+    T newRecord;
 
     try
     {
@@ -2497,7 +2519,7 @@ public final class MainCtrlr
     switch (tabEnum)
     {
       case queryTabEnum : case treeTabEnum :
-        tab.update();
+        tab.updateFromRecord();
         updateBottomPanel(true, true);
         return;
 
@@ -2542,7 +2564,7 @@ public final class MainCtrlr
     }
 
     tab.enable(true);
-    tab.update();
+    tab.updateFromRecord();
     record.viewNow();
   }
 

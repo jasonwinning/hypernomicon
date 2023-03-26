@@ -125,8 +125,8 @@ public class RecordState
         case hdcPath           : item = new HDI_OfflinePath          (schema, this); break;
         case hdcPointerMulti   : item = new HDI_OfflinePointerMulti  (schema, this); break;
         case hdcPointerSingle  : item = new HDI_OfflinePointerSingle (schema, this); break;
+        case hdcBibEntryKey    : // fall through
         case hdcString         : item = new HDI_OfflineString        (schema, this); break;
-        case hdcBibEntryKey    : item = new HDI_OfflineString        (schema, this); break;
         case hdcAuthors        : item = new HDI_OfflineAuthors       (schema, this); break;
         case hdcHubSpokes      : item = new HDI_OfflineHubSpokes     (schema, this); break;
         default:

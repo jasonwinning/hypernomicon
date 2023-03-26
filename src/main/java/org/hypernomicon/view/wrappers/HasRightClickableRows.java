@@ -67,7 +67,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
     return createContextMenu(row, contextMenuSchemata);
   }
 
-  final public ContextMenu createContextMenu(RowType row, List<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
+  final public ContextMenu createContextMenu(RowType row, Iterable<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
   {
     if (row == null) return null;
 

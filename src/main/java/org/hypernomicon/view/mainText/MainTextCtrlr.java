@@ -49,6 +49,7 @@ import org.hypernomicon.App;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
 import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_MiscFile;
@@ -73,6 +74,7 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -133,6 +135,9 @@ public class MainTextCtrlr
   WebEngine getEngine()               { return engine; }
   private void clearText()            { he.setHtmlText(prepHtmlForEditing("")); }
   BorderPane getRootNode()            { return borderPane; }
+  void hilite()                       { highlighter.hilite(); }
+  public void nextSearchResult()      { highlighter.nextSearchResult(); }
+  public void previousSearchResult()  { highlighter.previousSearchResult(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -408,6 +413,9 @@ public class MainTextCtrlr
         if (node instanceof Button)
         {
           Button button = (Button)node;
+
+          button.addEventFilter(ActionEvent.ACTION, event -> highlighter.clear()); // Make sure user can't copy text with highlighting to clipboard
+
           if (convertToSingleLine(strListToStr(button.getStyleClass(), false)).contains("paste"))
             Platform.runLater(() -> topBarItems.remove(button));
         }
@@ -527,11 +535,19 @@ public class MainTextCtrlr
   {
     try
     {
-      db.updateMainTextTemplate(curRecord.getType(), getHtmlAndKeyWorks(new ArrayList<>()));
+      String templateHtml = getHtmlAndKeyWorks(new ArrayList<>());
+      if (templateHtml.contains("hypernomiconHilite"))
+        throw new HDB_InternalError(28468);
+
+      db.updateMainTextTemplate(curRecord.getType(), templateHtml);
     }
     catch (IOException e)
     {
       messageDialog("An error occurred while saving to the template file: " + e.getMessage(), mtError);
+    }
+    catch (HDB_InternalError e)
+    {
+      messageDialog(e.getMessage(), mtError);
     }
   }
 
@@ -930,40 +946,6 @@ public class MainTextCtrlr
 
     if (descNdx >= 0)
       lvRecords.getSelectionModel().select(descNdx);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void hilite()
-  {
-    highlighter.hilite();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void nextSearchResult()
-  {
-    if (highlighter.hasSearchResults())
-      highlighter.nextSearchResult();
-    else
-      highlighter.hilite();
-
-    safeFocus(ui.btnNextResult);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void previousSearchResult()
-  {
-    if (highlighter.hasSearchResults())
-      highlighter.previousSearchResult();
-    else
-      highlighter.hilite();
-
-    safeFocus(ui.btnPrevResult);
   }
 
 //---------------------------------------------------------------------------

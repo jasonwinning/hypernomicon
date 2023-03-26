@@ -112,7 +112,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setAllFromTable(List<ObjectGroup> authGroups)
+  public void setAllFromTable(Iterable<ObjectGroup> authGroups)
   {
     clear();
     List<AuthorType> authorTypes = new ArrayList<>();

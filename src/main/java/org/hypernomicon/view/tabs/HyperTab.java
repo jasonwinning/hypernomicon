@@ -92,7 +92,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   protected abstract RecordType type();
 
   public abstract String recordName();
-  public abstract void update();
+  public abstract void updateFromRecord();
   public abstract void clear();
   public abstract boolean saveToRecord();
   public abstract void setDividerPositions();

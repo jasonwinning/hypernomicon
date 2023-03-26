@@ -296,7 +296,10 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
     boolean visible = false;
     for (ColumnGroupItem item : recordTypeToItem.values())
       if (item.relType == RelationType.rtNone)
+      {
         visible = true;
+        break;
+      }
 
     col.setVisible(visible);
 

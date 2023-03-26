@@ -47,7 +47,7 @@ public class BasicTextMatcher
 
   //---------------------------------------------------------------------------
 
-    public Term(String newText, boolean caseSensitive)
+    private Term(String newText, boolean caseSensitive)
     {
       if (caseSensitive == false)
         newText = newText.toLowerCase();

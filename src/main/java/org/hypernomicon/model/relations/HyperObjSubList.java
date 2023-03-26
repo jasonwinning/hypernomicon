@@ -49,53 +49,13 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   @Override public boolean isEmpty()        { return size() > 0; }
   @Override public void clear()             { while (endNdx > startNdx) remove(0); }
   @Override public HDT_ObjType get(int ndx) { return parentList.get(startNdx + ndx); }
+  @Override public Object[] toArray()       { return relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx).toArray(); }
+  @Override public <T> T[] toArray(T[] a)   { return relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx).toArray(a); }
 
+  @Override public boolean contains(Object o)                    { return IntStream.range(startNdx, endNdx).anyMatch(ndx -> parentList.get(ndx) == o); }
   @Override public boolean containsAll(Collection<?> c)          { return c.stream().allMatch(this::contains); }
   @Override public HDT_ObjType set(int ndx, HDT_ObjType element) { return parentList.set(startNdx + ndx, element); }
   @Override public List<HDT_ObjType> subList(int from, int to)   { return new HyperObjSubList<>(parentList, startNdx + from, startNdx + to); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean contains(Object o)
-  {
-    return IntStream.range(startNdx, endNdx).anyMatch(ndx -> parentList.get(ndx) == o);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Object[] toArray()
-  {
-    List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx);
-
-    Object[] array = new Object[objList.size()];
-
-    for (int ndx = 0; ndx < objList.size(); ndx++)
-      array[ndx] = objList.get(ndx);
-
-    return array;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  @Override public <T> T[] toArray(T[] a)
-  {
-    List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx);
-
-    if (a.length < objList.size())
-      a = (T[]) new HDT_Record[objList.size()];
-
-    for (int ndx = 0; ndx < objList.size(); ndx++)
-      a[ndx] = (T) objList.get(ndx);
-
-    if (a.length > objList.size())
-      a[objList.size()] = null;
-
-    return a;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

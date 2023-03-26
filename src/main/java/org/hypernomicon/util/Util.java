@@ -211,6 +211,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static String strListToSpaceDelimitedStr(List<String> list)
+  {
+    return ultraTrim(list.stream().map(Util::ultraTrim).reduce((s1, s2) -> s1 + ' ' + s2).orElse(""));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static int parseInt(String value, int def)
   {
     try { return Integer.parseInt(value); }

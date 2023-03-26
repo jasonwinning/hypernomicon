@@ -174,11 +174,11 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     curArgument.addParentDisplayRecord();
 
-    super.update();
+    super.updateFromRecord();
 
     // Select parent records in ComboBoxes
     // -----------------------------------

@@ -448,7 +448,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     tfName.clear();
     tfSearchKey.clear();
 
-    mainText.clear(true);
+    mainText.clear();
 
     if (nodeRecordType != hdtArgument)
       updateLinkLabels(null);
@@ -482,7 +482,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     HDT_CT nodeRecord = getNodeRecord();
 

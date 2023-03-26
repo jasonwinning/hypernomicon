@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model.relations;
 
+import com.google.common.collect.ListMultimap;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
@@ -562,7 +563,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void updateObjectGroups(HDT_Subj subj, List<ObjectGroup> groups)
+  public void updateObjectGroups(HDT_Subj subj, Iterable<ObjectGroup> groups)
   {
     HyperObjList<HDT_Subj, HDT_Obj> list = new HyperObjList<>(this, subj, true);
 
@@ -960,7 +961,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   // Returns true if changed
 
-  private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> boolean reorderList(HDT_Key key, List<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
+  private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> boolean reorderList(HDT_Key key, List<HDT_Value> newValueList, ListMultimap<HDT_Key, HDT_Value> map)
   {
     if (key == null) throw new NullPointerException();
 

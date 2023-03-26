@@ -33,7 +33,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
  * Every record that has a main HTML description field refers to an object of
  * this class, which stores the HTML. All such record classes are subclasses of
  * {@link HDT_RecordWithMainText HDT_RecordWithMainText}.
- *
+ * <br><br>
  * Some of those record types, but not all, also can be "united" to other
  * records so that they will refer to the same MainText object.
  *
@@ -467,7 +467,10 @@ public class MainText
 
     for (DisplayItem displayItem : displayItems)
       if (displayItem.type == diKeyWorks)
+      {
         hasKeyworks = true;
+        break;
+      }
 
     if (hasKeyworks == false)
       displayItems.add(new DisplayItem(diKeyWorks));

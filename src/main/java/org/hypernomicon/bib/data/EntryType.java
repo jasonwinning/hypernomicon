@@ -147,12 +147,12 @@ public enum EntryType
     {
       case wtBook         : return etBook;
       case wtChapter      : return etBookChapter;
-      case wtNone         : return etUnentered;
       case wtPaper        : return etJournalArticle;
       case wtRecording    : return etAudiovisualMaterial;
       case wtThesis       : return etThesis;
       case wtUnenteredSet : return etNone;
       case wtWebPage      : return etWebPage;
+      case wtNone         : // fall through
 
       default             : return etUnentered;
     }

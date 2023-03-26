@@ -142,11 +142,11 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     curPosition.addParentDisplayRecord();
 
-    super.update();
+    super.updateFromRecord();
 
  // Populate parent records
  // -----------------------

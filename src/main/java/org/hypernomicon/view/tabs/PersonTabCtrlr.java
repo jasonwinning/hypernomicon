@@ -332,7 +332,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     alreadyChangingName = true;
 
@@ -673,7 +673,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     hcbField   .clear();
     hcbSubfield.clear();
 
-    mainText.clear(true);
+    mainText.clear();
 
     htPersonInst.clear();
     htWorks     .clearKeepSortOrder();

@@ -1099,12 +1099,12 @@ public class FileManager extends HyperDlg
     boolean isDir = filePath.isDirectory();
 
     if (db.isProtectedFile(filePath, true))
-      return falseWithErrorMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
+      return falseWithInfoMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
 
     if (deleting == false) return true;
 
     if (isDir && ((HDT_Folder) fileRecord).containsFilesThatAreInUse())
-      return falseWithErrorMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
+      return falseWithInfoMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
 
     return true;
   }
@@ -1164,7 +1164,7 @@ public class FileManager extends HyperDlg
 
     if (cantRename)
     {
-      messageDialog("That " + noun.toLowerCase() + " cannot be renamed.", mtError);
+      messageDialog("That " + noun.toLowerCase() + " cannot be renamed.", mtInformation);
       return;
     }
 

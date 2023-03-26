@@ -62,7 +62,7 @@ public abstract class ReportGenerator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String render(List<String> fieldOrder)
+  public String render(Iterable<String> fieldOrder)
   {
     StringBuilder report = getStart();
 

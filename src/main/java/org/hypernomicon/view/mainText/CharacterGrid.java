@@ -37,7 +37,6 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.App.*;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
@@ -175,7 +174,7 @@ class CharacterGrid
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setSymbols(Collection<Symbol> symbolCol)
+  public void setSymbols(Iterable<Symbol> symbolCol)
   {
     Iterator<Symbol> it = symbolCol.iterator();
 

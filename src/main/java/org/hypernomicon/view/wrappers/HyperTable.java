@@ -196,7 +196,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType, ColType extends TableColumnBase<RowType, ?>> void saveColWidthsForTable(List<ColType> columns, String prefID, boolean rescale)
+  public static <RowType, ColType extends TableColumnBase<RowType, ?>> void saveColWidthsForTable(Iterable<ColType> columns, String prefID, boolean rescale)
   {
     columns.forEach(col ->
     {

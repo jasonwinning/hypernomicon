@@ -36,7 +36,7 @@ public final class RISBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private RISBibData(List<String> lines) throws RISException
+  private RISBibData(Iterable<String> lines) throws RISException
   {
     String jf = "", jo = "", t2 = "", singleTitle = "";
     boolean gotType = false;

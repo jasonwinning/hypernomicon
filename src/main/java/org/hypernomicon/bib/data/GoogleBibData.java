@@ -57,7 +57,7 @@ public final class GoogleBibData extends BibDataStandalone
     {
       JsonArray jsonArray = jsonObj.getArray("items");
 
-      if (jsonArray.size() == 0) return null;
+      if (jsonArray.isEmpty()) return null;
 
       if ((jsonArray.size() == 1) || safeStr(title).isBlank())
         return new GoogleBibData(jsonArray.getObj(0).getObj("volumeInfo"), queryIsbn);

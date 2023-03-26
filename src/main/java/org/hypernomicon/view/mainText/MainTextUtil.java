@@ -777,7 +777,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static Map<String, String> keyWorkLinkMap(List<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
+  private static Map<String, String> keyWorkLinkMap(Iterable<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
   {
     Map<String, String> linkMap = new HashMap<>();
     Map<String, KeyWork> keyToKeyWork = new HashMap<>();

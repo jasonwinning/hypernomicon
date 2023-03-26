@@ -31,11 +31,7 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static java.util.Objects.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,7 +55,6 @@ import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
-import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.DesktopUtil;
@@ -669,7 +664,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addChildren(HDT_Work self, HyperSubjList<HDT_Work, HDT_Work> subWorks, BibEntryRelation relation, List<RelatedBibEntry> list)
+  private void addChildren(HDT_Work self, Iterable<HDT_Work> subWorks, BibEntryRelation relation, Collection<RelatedBibEntry> list)
   {
     subWorks.forEach(childWork ->
     {

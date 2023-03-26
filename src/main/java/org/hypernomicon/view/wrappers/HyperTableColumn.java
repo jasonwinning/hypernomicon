@@ -161,7 +161,7 @@ public class HyperTableColumn
 
         break;
 
-      case ctNone :
+      case ctNone : case ctIncremental :
 
         htcCol.setEditable(false);
         htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
@@ -202,14 +202,6 @@ public class HyperTableColumn
             setToolTip(this, getTypeName(type));
           }
         });
-
-        break;
-
-      case ctIncremental :
-
-        htcCol.setEditable(false);
-        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, this, graphicProvider));
 
         break;
 

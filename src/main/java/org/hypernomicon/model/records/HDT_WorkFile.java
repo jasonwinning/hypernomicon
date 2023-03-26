@@ -179,7 +179,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getAuthorStr(List<FileNameAuthor> authors, boolean isEditor, boolean isTrans)
+  private static String getAuthorStr(Iterable<FileNameAuthor> authors, boolean isEditor, boolean isTrans)
   {
     String comp = "";
 

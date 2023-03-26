@@ -400,7 +400,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     return createDupCheckTask(singletonList(name), singletonList(queryAuthor), matchedAuthorsList, finishHndlr);
   }
 
-  public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, ArrayList<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
+  public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, List<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
   {
     return new HyperTask("CheckForDupAuthors") { @Override protected void call() throws CancelledTaskException
     {

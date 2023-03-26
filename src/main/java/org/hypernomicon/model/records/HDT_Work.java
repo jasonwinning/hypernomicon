@@ -275,11 +275,17 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
       for (String isbn : ISBNs)
         if (lwISBNs.contains(isbn) == false)
+        {
           notAllInLW = true;
+          break;
+        }
 
       for (String isbn : lwISBNs)
         if (ISBNs.contains(isbn) == false)
+        {
           notAllInSW = true;
+          break;
+        }
 
       if ((notAllInLW == false) && notAllInSW)
       {
@@ -414,7 +420,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_Work getLaunchableWork(List<HDT_Work> works)
+  public static HDT_Work getLaunchableWork(Iterable<HDT_Work> works)
   {
     HDT_Work work = findFirst(works, HDT_Work::pathNotEmpty);
     if (work == null)

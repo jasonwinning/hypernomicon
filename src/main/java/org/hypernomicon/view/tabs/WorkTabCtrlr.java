@@ -700,7 +700,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     btnTree.setDisable(ui.tree().getRowsForRecord(curWork).isEmpty());
 
@@ -1388,7 +1388,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     hcbType      .clear();
     hcbLargerWork.clear();
 
-    mainText.clear(true);
+    mainText.clear();
 
     changeToNormalMode();
 

@@ -102,11 +102,11 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     curDebate.addParentDisplayRecord();
 
-    super.update();
+    super.updateFromRecord();
 
  // Populate parent records
  // -----------------------

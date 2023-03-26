@@ -178,7 +178,7 @@ public final class GeneralQueries
 
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        return record.getType() == HyperTableCell.getCellType(op1);
+        return record.getType() == getCellType(op1);
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }
@@ -206,7 +206,7 @@ public final class GeneralQueries
 
       @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
+        HDT_Record specifiedRecord = getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord) == false)
           records.add(specifiedRecord);
       }
@@ -259,7 +259,7 @@ public final class GeneralQueries
 
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
-        HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
+        HDT_Record specifiedRecord = getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord)) return false;
 
         boolean result = db.firstMentionsSecond(record, specifiedRecord, true, choseNotToWait);
@@ -306,7 +306,7 @@ public final class GeneralQueries
 
       @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
-        HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
+        HDT_Record specifiedRecord = getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord)) return;
 
         records.addAll(db.getMentionerSet(specifiedRecord, false, choseNotToWait));
@@ -402,7 +402,7 @@ public final class GeneralQueries
 
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
-        HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
+        HDT_Record specifiedRecord = getRecord(op2);
         if (HDT_Record.isEmpty(specifiedRecord)) return false;
 
         boolean result = db.firstMentionsSecond(specifiedRecord, record, true, choseNotToWait);

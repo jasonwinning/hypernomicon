@@ -94,7 +94,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tree = new TreeWrapper(bcbPath, true, ui.cbTreeGoTo);
 
-    highlighter = new Highlighter(webView.getEngine());
+    highlighter = new Highlighter(webView);
 
     initTTV();
 
@@ -284,7 +284,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
     if (db.isLoaded() == false)
     {

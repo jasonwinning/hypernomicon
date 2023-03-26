@@ -111,7 +111,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                                 entirePDF     = new SimpleBooleanProperty();
 
   private final List<QueryCtrlr> queryCtrlrs = new ArrayList<>();
-
   private final Highlighter highlighter;
 
   private QueryCtrlr curQC;
@@ -121,6 +120,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private boolean inReportMode()                     { return curQC == null ? false : curQC.inReportMode(); }
+
   public List<ResultsRow> results()                  { return (curQC == null) ? List.of() : curQC.results(); }
   public void refreshTables()                        { queryCtrlrs.forEach(qc -> qc.resultsTable.getTV().refresh()); }
   public void setCB(ComboBox<ResultsRow> cb)         { this.cb = cb; updateCB(curQC); }
@@ -128,7 +129,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public QueryCtrlr getCurQueryCtrlr()               { return curQC; }
 
   @Override protected RecordType type()              { return hdtNone; }
-  @Override public void update()                     { curQC.refreshView(true); }
+  @Override public void updateFromRecord()           { curQC.refreshView(true); }
   @Override public void setRecord(HDT_Record rec)    { if (curQC != null) curQC.setRecord(rec); }
   @Override public int recordCount()                 { return results().size(); }
   @Override public TextViewInfo mainTextInfo()       { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
@@ -139,7 +140,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public HDT_Record viewRecord()           { return activeRecord(); }
   @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public int recordNdx()                   { return recordCount() > 0 ? curQC.resultsTable.getTV().getSelectionModel().getSelectedIndex() : -1; }
-  @Override public void findWithinDesc()             { if (activeRecord() != null) highlighter.hilite(); }
+  @Override public void findWithinDesc()             { if ((activeRecord() != null) || inReportMode()) highlighter.hilite(); }
   @Override public void nextSearchResult()           { highlighter.nextSearchResult(); }
   @Override public void previousSearchResult()       { highlighter.previousSearchResult(); }
 
@@ -172,7 +173,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       Platform.runLater(tabPane::requestLayout);
     });
 
-    highlighter = new Highlighter(webView.getEngine());
+    highlighter = new Highlighter(webView);
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {

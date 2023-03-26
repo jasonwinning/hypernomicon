@@ -389,8 +389,6 @@ public class FileDlgCtrlr extends HyperDlg
 
     // check to see if destination file name currently points to a file in the database
 
-    boolean success = true;
-
     FilePath fileName = chkDontChangeFilename.isSelected() ? srcFilePath.getNameOnly() : new FilePath(tfFileName.getText()),
              destFilePath = rbNeither.isSelected() ? srcFilePath.getDirOnly().resolve(fileName) : new FilePath(tfNewPath.getText()).resolve(fileName);
 
@@ -398,6 +396,8 @@ public class FileDlgCtrlr extends HyperDlg
 
     if ((existingRecord != null) && (existingRecord != curFileRecord))
       return falseWithErrorMessage(HyperPath.alreadyInUseMessage(destFilePath, existingRecord));
+
+    boolean success = true;
 
     if (rbNeither.isSelected() == false)
     {

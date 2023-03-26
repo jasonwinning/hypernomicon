@@ -157,7 +157,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
     this.otherCompName = otherCompName;
 
-    String tmpOtherHostName = "";
+    String tmpOtherHostName;
 
     if (otherCompName.contains("::::"))
     {

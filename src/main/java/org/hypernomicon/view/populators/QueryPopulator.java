@@ -80,7 +80,7 @@ public class QueryPopulator extends Populator
 
     QueryType oldType = rowToQueryType.put(row, newType);
 
-    if (newType.equals(oldType)) return;
+    if (newType == oldType) return;
 
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());

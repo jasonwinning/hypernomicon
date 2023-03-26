@@ -221,7 +221,7 @@ public class WorkAuthors extends Authors
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private static void setListFromObjectGroups(List<Author> authorList, List<ObjectGroup> objGroups, HDT_Work work)
+  private static void setListFromObjectGroups(List<Author> authorList, Iterable<ObjectGroup> objGroups, HDT_Work work)
   {
     authorList.clear();
 

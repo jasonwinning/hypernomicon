@@ -87,36 +87,17 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
   {
     lastException = null;
 
-    List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj);
-
-    Object[] array = new Object[objList.size()];
-
-    for (int ndx = 0; ndx < objList.size(); ndx++)
-      array[ndx] = objList.get(ndx);
-
-    return array;
+    return relSet.getUnmodifiableObjectList(subj).toArray();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
   @Override public <T> T[] toArray(T[] a)
   {
     lastException = null;
 
-    List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj);
-
-    if (a.length < objList.size())
-      a = (T[]) new HDT_Record[objList.size()];
-
-    for (int ndx = 0; ndx < objList.size(); ndx++)
-      a[ndx] = (T) objList.get(ndx);
-
-    if (a.length > objList.size())
-      a[objList.size()] = null;
-
-    return a;
+    return relSet.getUnmodifiableObjectList(subj).toArray(a);
   }
 
 //---------------------------------------------------------------------------

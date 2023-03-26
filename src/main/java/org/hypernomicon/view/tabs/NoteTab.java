@@ -175,9 +175,9 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update()
+  @Override public void updateFromRecord()
   {
-    super.update();
+    super.updateFromRecord();
 
     tfFolder.setText(curNote.getFolderStr());
 
@@ -229,7 +229,7 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<HDT_Record> removeDupMentioners(Set<HDT_Record> mentioners)
+  private Set<HDT_Record> removeDupMentioners(Iterable<HDT_Record> mentioners)
   {
     Set<HDT_Record> output = new HashSet<>();
     Set<HDT_Hub> usedHubs = new HashSet<>();

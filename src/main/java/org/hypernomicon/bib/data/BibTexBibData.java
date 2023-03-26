@@ -25,7 +25,6 @@ import static org.hypernomicon.util.Util.*;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
@@ -83,10 +82,10 @@ public final class BibTexBibData extends BibDataStandalone
       {
         case "address"   : setStr(bfPubLoc, val); break;
         case "author"    : addBibTexAuthor(val, AuthorType.author); break;
-        case "booktitle" : setMultiStr(bfContainerTitle, safeListOf(val)); break;
+        case "booktitle" : // fall through
+        case "journal"   : setMultiStr(bfContainerTitle, safeListOf(val)); break;
         case "edition"   : setStr(bfEdition, val); break;
         case "editor"    : addBibTexAuthor(val, AuthorType.editor); break;
-        case "journal"   : setMultiStr(bfContainerTitle, safeListOf(val)); break;
         case "language"  : setStr(bfLanguage, val); break;
         case "note"      : addStr(bfMisc, val); break;
         case "number"    : setStr(bfIssue, val); break;
@@ -114,7 +113,7 @@ public final class BibTexBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibTexBibData create(List<String> lines) throws TokenMgrException, ParseException
+  public static BibTexBibData create(Iterable<String> lines) throws TokenMgrException, ParseException
   {
     BibTeXParser parser = new BibTeXParser();
 
@@ -137,17 +136,17 @@ public final class BibTexBibData extends BibDataStandalone
       case "article"       : return etJournalArticle;
       case "book"          : return etBook;
       case "booklet"       : return etBooklet;
-      case "conference"    : return etConferencePaper;
-      case "inbook"        : return etBookChapter;
-      case "incollection"  : return etBookChapter;
+      case "conference"    : // fall through
       case "inproceedings" : return etConferencePaper;
+      case "inbook"        : // fall through
+      case "incollection"  : return etBookChapter;
       case "manual"        : return etManual;
       case "mastersthesis" : return etMastersThesis;
-      case "misc"          : return etOther;
       case "phdthesis"     : return etDoctoralThesis;
       case "proceedings"   : return etConferenceProceedings;
       case "techreport"    : return etTechnicalReport;
       case "unpublished"   : return etUnpublishedWork;
+      case "misc"          : // fall through
 
       default              : return etOther;
     }

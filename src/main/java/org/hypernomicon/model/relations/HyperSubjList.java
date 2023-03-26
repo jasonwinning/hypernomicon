@@ -49,6 +49,8 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   @Override public Iterator<HDT_SubjType> iterator()                      { return new HyperSubjIterator<>(this); }
   @Override public ListIterator<HDT_SubjType> listIterator()              { return new HyperSubjListIterator<>(this, 0); }
   @Override public ListIterator<HDT_SubjType> listIterator(int index)     { return new HyperSubjListIterator<>(this, index); }
+  @Override public Object[] toArray()                                     { return relSet.getUnmodifiableSubjectList(obj).toArray(); }
+  @Override public <T> T[] toArray(T[] a)                                 { return relSet.getUnmodifiableSubjectList(obj).toArray(a); }
 
   @Override public boolean add(HDT_SubjType subj)                                  { throw uoe(); }
   @Override public boolean remove(Object o)                                        { throw uoe(); }
@@ -61,6 +63,8 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   @Override public void add(int index, HDT_SubjType subj)                          { throw uoe(); }
   @Override public HDT_SubjType remove(int index)                                  { throw uoe(); }
 
+  public int getOrd(HDT_SubjType subj)   { return relSet.getSubjectOrd(obj, subj); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -71,41 +75,6 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
       relSet.alreadyHasAsObject((HDT_SubjType)o, obj)
     :
       false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Object[] toArray()
-  {
-    List<HDT_SubjType> subjList = relSet.getUnmodifiableSubjectList(obj);
-
-    Object[] array = new Object[subjList.size()];
-
-    for (int ndx = 0; ndx < subjList.size(); ndx++)
-      array[ndx] = subjList.get(ndx);
-
-    return array;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  @Override public <T> T[] toArray(T[] a)
-  {
-    List<HDT_SubjType> subjList = relSet.getUnmodifiableSubjectList(obj);
-
-    if (a.length < subjList.size())
-      a = (T[]) new HDT_Record[subjList.size()];
-
-    for (int ndx = 0; ndx < subjList.size(); ndx++)
-      a[ndx] = (T) subjList.get(ndx);
-
-    if (a.length > subjList.size())
-      a[subjList.size()] = null;
-
-    return a;
   }
 
 //---------------------------------------------------------------------------
@@ -193,14 +162,6 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
     relSet.reorderSubjects(obj, list);
     if (modTracking && changed) obj.modifyNow();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public int getOrd(HDT_SubjType subj)
-  {
-    return relSet.getSubjectOrd(obj, subj);
   }
 
 //---------------------------------------------------------------------------

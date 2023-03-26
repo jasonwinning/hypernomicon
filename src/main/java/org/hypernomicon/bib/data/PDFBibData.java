@@ -362,8 +362,8 @@ public class PDFBibData extends BibDataStandalone
         case "magazine"   : return etMagazineArticle;
         case "manual"     : return etManual;
         case "newsletter" : return etNewsletterArticle;
-        case "other"      : return etOther;
         case "pamphlet"   : return etPamphlet;
+        case "other"      : // fall through
 
         default           : return etOther;
       }

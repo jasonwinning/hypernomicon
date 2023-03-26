@@ -490,10 +490,13 @@ public class FilePath implements Comparable<FilePath>
 
   public boolean isSubpath(FilePath subFilePath)
   {
-    if (equals(subFilePath)) return true;
+    while (equals(subFilePath) == false)
+    {
+      subFilePath = subFilePath.getParent();
+      if (isEmpty(subFilePath)) return false;
+    }
 
-    FilePath parent = subFilePath.getParent();
-    return (isEmpty(parent) == false) && isSubpath(parent);
+    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -25,6 +25,7 @@ import java.io.IOException;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 
 //---------------------------------------------------------------------------
 
@@ -35,9 +36,26 @@ public class Highlighter
 
   private final WebEngine engine;
 
+  private String currentString;
+
+//---------------------------------------------------------------------------
+
   public Highlighter(WebEngine engine)
   {
     this.engine = engine;
+  }
+
+//---------------------------------------------------------------------------
+
+  public Highlighter(WebView webView)
+  {
+    this(webView.getEngine());
+
+    webView.focusWithinProperty().addListener((obs, ov, nv) ->
+    {
+      if (Boolean.TRUE.equals(nv))
+        clear();
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -45,11 +63,19 @@ public class Highlighter
 
   boolean neverHilited()             { return ((boolean) engine.executeScript("'markInstance' in window")) == false; }
   boolean hasSearchResults()         { return (boolean) engine.executeScript("('markInstance' in window) && (results.length > 0)"); }
+  void clear()                       { engine.executeScript("if ('markInstance' in window) { clearAll(); markInstance.unmark({}); }"); currentString = ""; }
+  public void nextSearchResult()     { advance("nextResult();"); }
+  public void previousSearchResult() { advance("previousResult();"); }
 
-  public void nextSearchResult()     { engine.executeScript("if ('markInstance' in window) nextResult();"); }
-  public void previousSearchResult() { engine.executeScript("if ('markInstance' in window) previousResult();"); }
 
-  void clear()                       { engine.executeScript("if ('markInstance' in window) { clearAll(); markInstance.unmark({}); }"); }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void init() throws IOException
+  {
+    readResourceTextFile("resources/mark.es6.min.js", markJSContents, false);
+    readResourceTextFile("resources/match-jump.js", matchJumpJSContents, false);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -69,9 +95,15 @@ public class Highlighter
 
   private void hilite(String string, boolean onlyIfNonBlank, boolean matchesAlreadyTagged)
   {
-    if (onlyIfNonBlank && safeStr(string).isBlank())
+    string = safeStr(string);
+
+    if (onlyIfNonBlank && string.isBlank())
       return;
 
+    if (hasSearchResults() && string.equals(currentString))
+      return;
+
+    currentString = string;
     string = StringEscapeUtils.escapeEcmaScript(string);
 
     if (neverHilited())
@@ -91,10 +123,17 @@ public class Highlighter
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void init() throws IOException
+  private void advance(String jsCode)
   {
-    readResourceTextFile("resources/mark.es6.min.js", markJSContents, false);
-    readResourceTextFile("resources/match-jump.js", matchJumpJSContents, false);
+    if (hasSearchResults() == false)
+    {
+      if (currentString.isBlank())
+        hilite();
+      else
+        hilite(currentString);
+    }
+    else
+      engine.executeScript(jsCode);
   }
 
 //---------------------------------------------------------------------------
