@@ -585,8 +585,7 @@ public final class MainCtrlr
         updateSelectorTab(false);
         hideFindTable();
         ctfOmniGoTo.setText(searchText);
-        HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
-        if (hyperTab != null) hyperTab.findWithinDesc();
+        findWithinDesc();
       }
       else
       {
@@ -616,10 +615,7 @@ public final class MainCtrlr
     ctfOmniGoTo.setOnAction(event ->
     {
       if (btnTextSearch.isSelected())
-      {
-        HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
-        if (hyperTab != null) hyperTab.findWithinDesc();
-      }
+        findWithinDesc();
       else
         recordLookup();
     });
@@ -918,6 +914,15 @@ public final class MainCtrlr
 
       event.consume();
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void findWithinDesc()
+  {
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
+    if (hyperTab != null) hyperTab.findWithinDesc();
   }
 
 //---------------------------------------------------------------------------
@@ -2908,8 +2913,7 @@ public final class MainCtrlr
   {
     if (btnTextSearch.isSelected())
     {
-      HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
-      if (hyperTab != null) hyperTab.findWithinDesc();
+      findWithinDesc();
       return;
     }
 

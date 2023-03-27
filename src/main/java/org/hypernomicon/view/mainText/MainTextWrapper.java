@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jsoup.nodes.Document;
@@ -260,7 +259,6 @@ public final class MainTextWrapper
     else if (state == showingReadOnly)
       highlighter.nextSearchResult();
   }
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -717,19 +715,7 @@ public final class MainTextWrapper
     MainText mainText = curRecord.getMainText();
 
     if (state == editing)
-    {
       commit();
-
-      try
-      {
-        FileUtils.writeLines(db.getRootPath("old.html").toFile(), convertMultiLineStrToStrList(mainText.getHtml(), true));
-        FileUtils.writeLines(db.getRootPath("new.html").toFile(), convertMultiLineStrToStrList(html, true));
-      }
-      catch (IOException e)
-      {
-        noOp();
-      }
-    }
 
     mainText.setHtml(html);
     mainText.setDisplayItemsFromList(displayItems);
