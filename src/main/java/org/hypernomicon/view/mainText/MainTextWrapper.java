@@ -119,6 +119,7 @@ public final class MainTextWrapper
 
     curWrapper = null;
 
+    MainTextUtil.init();
     Highlighter.init();
 
     view.setFocusTraversable(false);

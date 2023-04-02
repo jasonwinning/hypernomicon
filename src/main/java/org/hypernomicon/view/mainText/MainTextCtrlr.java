@@ -44,6 +44,8 @@ import org.jsoup.nodes.Document;
 import com.sun.javafx.webkit.Accessor;
 import com.sun.webkit.WebPage;
 
+import org.w3c.dom.html.HTMLAnchorElement;
+
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
@@ -280,13 +282,23 @@ public class MainTextCtrlr
 
     webView.setOnContextMenuRequested(contextMenuEvent ->
     {
+      HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
+
       MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
       menuItem1.setOnAction(actionEvent -> pastePlainText(false));
 
       MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey + ')');
       menuItem2.setOnAction(actionEvent -> pastePlainText(true));
 
-      setHTMLContextMenu(menuItem1, menuItem2);
+      if (anchor == null)
+      {
+        setHTMLContextMenu(menuItem1, menuItem2);
+        return;
+      }
+
+      MenuItem editLinkItem = new MenuItem("Edit link");
+      editLinkItem.setOnAction(actionEvent -> editLink(anchor));
+      setHTMLContextMenu(editLinkItem, menuItem1, menuItem2);
     });
 
     he.focusWithinProperty().addListener((obs, ov, nv) ->
@@ -367,8 +379,16 @@ public class MainTextCtrlr
     setToolTip(btnPaste, "Paste");
 
     Button btnLink = new Button("", imgViewFromRelPath("resources/images/world_link.png"));
-    setToolTip(btnLink, "Insert web link");
-    btnLink.setOnAction(event -> btnLinkClick());
+    setToolTip(btnLink, "Insert/edit web link");
+    btnLink.setOnAction(event ->
+    {
+      HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
+
+      if (anchor == null)
+        btnLinkClick();
+      else
+        editLink(anchor);
+    });
 
     Button btnPicture = new Button("", imgViewFromRelPath("resources/images/picture_add.png"));
     setToolTip(btnPicture, "Insert picture");
@@ -759,6 +779,14 @@ public class MainTextCtrlr
     String anchorTag = "<a title=\"" + htmlEscaper.escape(urlText) + "\" href=\"" + urlText + "\">" + htmlEscaper.escape(dlg.tfDisplayText.getText()) + "</a>";
 
     engine.executeScript("insertHtmlAtCursor('" + anchorTag + "')");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void editLink(HTMLAnchorElement anchor)
+  {
+    new NewLinkDlgCtrlr(anchor).showModal();
   }
 
 //---------------------------------------------------------------------------

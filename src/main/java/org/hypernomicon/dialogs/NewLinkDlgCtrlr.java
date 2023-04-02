@@ -24,10 +24,14 @@ import javafx.scene.control.TextField;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.w3c.dom.html.HTMLAnchorElement;
+
 public class NewLinkDlgCtrlr extends HyperDlg
 {
   @FXML public TextField tfDisplayText, tfURL;
   @FXML private Button btnPaste;
+
+  private final HTMLAnchorElement anchor;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -36,11 +40,10 @@ public class NewLinkDlgCtrlr extends HyperDlg
   {
     super("NewLinkDlg", "Insert Link", true);
 
+    this.anchor = null;
+
     String clipText = getClipboardText(true).trim();
     selText = selText.trim();
-
-    btnPaste.setOnAction(event -> tfURL.setText(ultraTrim(getClipboardText(true))));
-    setToolTip(btnPaste, "Paste text from clipboard");
 
     if (isStringUrl(selText))
     {
@@ -53,6 +56,32 @@ public class NewLinkDlgCtrlr extends HyperDlg
       tfURL.setText(clipText);
 
     tfDisplayText.setText(selText.length() > 0 ? selText : clipText);
+
+    initPasteButton();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public NewLinkDlgCtrlr(HTMLAnchorElement anchor)
+  {
+    super("NewLinkDlg", "Edit Link", true);
+
+    this.anchor = anchor;
+
+    tfURL.setText(anchor.getHref());
+    tfDisplayText.setText(anchor.getTextContent());
+
+    initPasteButton();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initPasteButton()
+  {
+    btnPaste.setOnAction(event -> tfURL.setText(ultraTrim(getClipboardText(true))));
+    setToolTip(btnPaste, "Paste text from clipboard");
   }
 
 //---------------------------------------------------------------------------
@@ -65,6 +94,12 @@ public class NewLinkDlgCtrlr extends HyperDlg
 
     if (tfURL.getText().trim().isEmpty())
       return falseWithErrorMessage("Enter a web address (URL).", tfURL);
+
+    if (anchor != null)
+    {
+      anchor.setHref(tfURL.getText().trim());
+      anchor.setTextContent(tfDisplayText.getText());
+    }
 
     return true;
   }

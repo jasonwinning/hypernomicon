@@ -29,6 +29,7 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -78,17 +79,26 @@ public final class MainTextUtil
 {
   private MainTextUtil() { throw new UnsupportedOperationException(); }
 
-  public static final String  headContent,
+  public static String        headContent,
                               scriptContent,
-                              EMBEDDED_FILE_TAG = "misc-file";
+                              editingScriptContent,
+                              hiliteStyles,
+                              editingStyles;
+
+  /*************************************************************/
+  /*                                                           */
+  /*   Some of these constants are duplicated in mainText.js   */
+  /*                                                           */
+  /*************************************************************/
+
+  public static final String  EMBEDDED_FILE_TAG = "misc-file";
 
   static final String         NO_LINKS_ATTR              = "hypncon-no-links",
                               ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ",
                               NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19";
   private static final String ALPHA_SORTED_INNER_CLASS   = "keyWorksSpanAZ",
                               NUMERIC_SORTED_INNER_CLASS = "keyWorksSpan19",
-                              TOPMOST_CLASS              = "topmostKeyWorksSpan",
-                              hiliteStyles;
+                              TOPMOST_CLASS              = "topmostKeyWorksSpan";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -101,56 +111,21 @@ public final class MainTextUtil
                            JS_EVENT_SET_SORT_KEY_METHOD = 6;
   static final int         JS_EVENT_DETAILED_KEY_WORKS  = 7;
 
-  static
+  static void init() throws IOException
   {
-    scriptContent = new StringBuilder()
+    StringBuilder sb = new StringBuilder();
 
-      .append("<script>\n\n")
-      .append("var jsToJava = {};\n")
-      .append("function openFile(recordType, recordID)\n{\n")
-      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(").append(JS_EVENT_OPEN_FILE).append(");\n")
-      .append("}\n\n")
-      .append("function openRecord(recordType, recordID)\n{\n")
-      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(").append(JS_EVENT_OPEN_RECORD).append(");\n")
-      .append("}\n\n")
-      .append("function openPreview(recordType, recordID)\n{\n")
-      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(").append(JS_EVENT_OPEN_PREVIEW).append(");\n")
-      .append("}\n\n")
-      .append("function openURL(url)\n{\n")
-      .append("  jsToJava.url = url; callToJava(").append(JS_EVENT_OPEN_URL).append(");\n")
-      .append("}\n\n")
-      .append("function callToJava(eventType)\n{\n")
-      .append("  jsToJava.eventType = eventType;\n")
-      .append("  jsToJava.eventID = (new Date()).getTime();\n")
-      .append("  jsToJava.scrollTop = document.body.scrollTop;\n")
-      .append("  document.title = \"\" + jsToJava.eventID;\n")
-      .append("}\n\n")
-      .append("function switchToAZ()\n{\n")
-      .append("  var i,elements = document.getElementsByTagName('details');\n")
-      .append("  for (i=0; i<elements.length; i++)\n  {\n")
-      .append("    if (elements[i].id.slice(0,3) === \"num\")\n    {\n")
-      .append("      document.getElementById(\"alp\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
-      .append("  elements = document.getElementsByClassName('").append(NUMERIC_SORTED_OUTER_CLASS).append("');\n")
-      .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
-      .append("  elements = document.getElementsByClassName('").append(ALPHA_SORTED_OUTER_CLASS).append("');\n")
-      .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
-      .append("  jsToJava.sortByName = true; callToJava(").append(JS_EVENT_SET_SORT_KEY_METHOD).append(");\n")
-      .append("}\n\n")
-      .append("function switchTo19()\n{\n")
-      .append("  var i,elements = document.getElementsByTagName('details');\n")
-      .append("  for (i=0; i<elements.length; i++)\n  {\n")
-      .append("    if (elements[i].id.slice(0,3) === \"alp\")\n    {\n")
-      .append("      document.getElementById(\"num\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
-      .append("  elements = document.getElementsByClassName('").append(ALPHA_SORTED_OUTER_CLASS).append("');\n")
-      .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
-      .append("  elements = document.getElementsByClassName('").append(NUMERIC_SORTED_OUTER_CLASS).append("');\n")
-      .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
-      .append("  jsToJava.sortByName = false; callToJava(").append(JS_EVENT_SET_SORT_KEY_METHOD).append(");\n")
-      .append("}\n\n")
-      .append("</script>\n\n")
-      .toString();
+    readResourceTextFile("resources/mainText.js", sb, true);
+
+    scriptContent = "<script>" + sb.toString() + "</script>";
+
+    readResourceTextFile("resources/mainTextEdit.js", sb, true);
+
+    editingScriptContent = "<script>" + sb.toString() + "</script>";
 
     hiliteStyles = ".hypernomiconHilite { background-color: yellow; } .hypernomiconHilite.hypernomiconHiliteCurrent { background-color: orange; }";
+
+    editingStyles = "a { pointer-events: none; } " + hiliteStyles;
 
     headContent = new StringBuilder(scriptContent)
 
@@ -925,18 +900,11 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final String editingStyles = "a { pointer-events: none; } " + hiliteStyles;
-
   public static String prepHtmlForEditing(String hyperText)
   {
     hyperText = prepHtmlForDisplay(hyperText, true);
 
-    return hyperText.replace("<style>", "<script>\n" +
-        "function insertHtmlAtCursor(html)\n" +
-        "{\n" +
-        "  document.execCommand('insertHtml', false, html);" +
-        "}\n\n" +
-        "</script><style>" + editingStyles);
+    return hyperText.replace("<style>", editingScriptContent + "<style>" + editingStyles);
   }
 
 //---------------------------------------------------------------------------
