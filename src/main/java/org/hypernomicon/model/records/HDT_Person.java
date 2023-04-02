@@ -177,16 +177,16 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
   private static HDT_Person addSearchKey(StringBuilder keys, String key, HDT_Person person)
   {
-    key = key.trim();
-    if (key.length() < 3) return null;
+    SearchKeyword keyObj = new SearchKeyword(key, person);
+    if (keyObj.text.length() < 3) return null;
 
-    SearchKeyword hyperKey = db.getKeyByKeyword(key);
+    SearchKeyword existingKeyObj = db.getKeyByKeyword(keyObj.text);
 
-    if ((hyperKey != null) && (hyperKey.record != person))
-      return hyperKey.record.getType() == hdtPerson ? (HDT_Person) hyperKey.record : null;
+    if ((existingKeyObj != null) && (existingKeyObj.record != person))
+      return existingKeyObj.record.getType() == hdtPerson ? (HDT_Person) existingKeyObj.record : null;
 
     for (String val : new SplitString(keys.toString(), ';'))
-      if (val.trim().equalsIgnoreCase(key))
+      if (val.trim().equalsIgnoreCase(keyObj.text))
         return null;
 
     if (keys.length() > 0) keys.append("; ");
@@ -254,7 +254,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     HDT_Person otherPerson = null;
     StringBuilder keys = new StringBuilder();
 
-    PotentialKeySet keySet = makeSearchKeySet(name, false, false, false);
+    PotentialKeySet keySet = makeSearchKeySet(name, false, false, false, true);
 
     for (Entry<String, Boolean> entry : keySet.keys.entrySet())
     {
@@ -345,7 +345,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static PotentialKeySet makeSearchKeySet(PersonName personName, boolean useAllInitials, boolean lowerCase, boolean noNicknames)
+  public static PotentialKeySet makeSearchKeySet(PersonName personName, boolean useAllInitials, boolean lowerCase, boolean noNicknames, boolean caretOnLastName)
   {
     PotentialKeySet keySet = new PotentialKeySet(lowerCase);
     String first = personName.getFirst(), last = personName.getLast();
@@ -356,7 +356,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     last = getSearchKeyComponents(first, last, nameList, initialList, nickNames);
 
-    keySet.add(last, false);
+    keySet.add((caretOnLastName ? "^" : "") + last, false);
 
     if (nameList.size() > 0)
     {

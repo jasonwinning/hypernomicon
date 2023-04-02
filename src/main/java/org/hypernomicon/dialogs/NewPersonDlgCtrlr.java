@@ -239,7 +239,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
   {
     HDT_Person personToUse = person, dupPerson = curDupPerson();
 
-    if ((personToUse == null) || ((tf == tfDupSearchKey) && (dupPerson != null)))
+    if (((personToUse == null) && rbMerge.isSelected()) || ((tf == tfDupSearchKey) && (dupPerson != null)))
       personToUse = dupPerson;
 
     StringBuilder sb = new StringBuilder();
@@ -278,8 +278,8 @@ public class NewPersonDlgCtrlr extends HyperDlg
       this.author = author;
       this.name = name;
 
-      keySet = HDT_Person.makeSearchKeySet(name, true, true, false);
-      keySetNoNicknames = HDT_Person.makeSearchKeySet(name, true, true, true);
+      keySet = HDT_Person.makeSearchKeySet(name, true, true, false, false);
+      keySetNoNicknames = HDT_Person.makeSearchKeySet(name, true, true, true, false);
 
       newFullNameEngChar = removeAllParentheticals(newFullNameEngChar.toLowerCase());
 

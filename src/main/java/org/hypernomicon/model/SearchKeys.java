@@ -49,6 +49,8 @@ public final class SearchKeys
     {
       this.record = record;
 
+      newKeyword = newKeyword.trim();
+
       if (newKeyword.isEmpty())
       {
         text = "";
