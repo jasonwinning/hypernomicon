@@ -131,7 +131,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), true);
     hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), true);
 
-    hcbWork.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) -> cbWorkChange());
+    hcbWork.addListener((ov, nv) -> cbWorkChange());
 
     btnWork  .setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
     btnTree  .setOnAction(event -> ui.goToTreeRecord(curMiscFile));

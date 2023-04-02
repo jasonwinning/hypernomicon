@@ -37,7 +37,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="500.0" minWidth="400.0" prefHeight="700.0" prefWidth="712.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.previewWindow.PreviewWindow">
+<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="500.0" minWidth="400.0" prefHeight="700.0" prefWidth="712.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.previewWindow.PreviewWindow">
   <GridPane prefHeight="280.0" prefWidth="712.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <columnConstraints>
       <ColumnConstraints hgrow="NEVER" maxWidth="208.0" minWidth="208.0" prefWidth="208.0" />
@@ -124,13 +124,7 @@
               </ImageView>
             </graphic>
           </ToggleButton>
-          <ToggleButton fx:id="btnOther" layoutX="104.0" layoutY="2.0" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" prefWidth="100.0" text="Other" toggleGroup="$grpTab" AnchorPane.leftAnchor="104.0" AnchorPane.topAnchor="2.0">
-            <graphic>
-              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                <Image url="@../resources/images/argument.png" />
-              </ImageView>
-            </graphic>
-          </ToggleButton>
+          <ToggleButton fx:id="btnOther" layoutX="104.0" layoutY="2.0" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" prefWidth="100.0" text="Other" toggleGroup="$grpTab" AnchorPane.leftAnchor="104.0" AnchorPane.topAnchor="2.0" />
         </AnchorPane>
       </GridPane>
     </TitledPane>

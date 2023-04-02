@@ -784,7 +784,7 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void editLink(HTMLAnchorElement anchor)
+  private static void editLink(HTMLAnchorElement anchor)
   {
     new NewLinkDlgCtrlr(anchor).showModal();
   }

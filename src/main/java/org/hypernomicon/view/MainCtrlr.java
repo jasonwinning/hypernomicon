@@ -403,7 +403,7 @@ public final class MainCtrlr
     btnGoTo.setOnAction        (event -> btnGoToClick(false));
     mnuRecordSelect.setOnAction(event -> btnGoToClick(true));
 
-    hcbGoTo.setInnerOnAction(event -> recordLookup());
+    hcbGoTo.setOnAction(event -> recordLookup());
     hcbGoTo.dontCreateNewRecord = true;
 
     mnuImportWork        .setOnAction(event -> importWorkFile(null, null, false));

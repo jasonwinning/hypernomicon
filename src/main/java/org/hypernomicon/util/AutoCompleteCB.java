@@ -105,7 +105,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
         return;
 
       hcb.listenForActionEvents = false;
-      hcb.getOnAction().handle(event);
+      hcb.triggerOnAction(event);
       hcb.listenForActionEvents = true;
 
       hcb.somethingWasTyped = false;

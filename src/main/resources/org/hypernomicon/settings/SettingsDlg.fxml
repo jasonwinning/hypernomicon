@@ -20,6 +20,7 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.SplitPane?>
@@ -33,9 +34,10 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="356.0" minWidth="1026.0" prefHeight="657.0" prefWidth="1271.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.SettingsDlgCtrlr">
+<AnchorPane minHeight="356.0" minWidth="1026.0" prefHeight="657.0" prefWidth="1271.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.SettingsDlgCtrlr">
   <SplitPane dividerPositions="0.18124507486209615" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
       <TreeView fx:id="treeView" layoutX="11.0" layoutY="91.0" prefHeight="200.0" prefWidth="234.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
@@ -151,7 +153,7 @@
       </Tab>
       <Tab fx:id="tabDBSpecific" text="Database">
         <AnchorPane minHeight="0.0" minWidth="0.0">
-          <GridPane prefHeight="320.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+          <GridPane prefHeight="349.0" prefWidth="1036.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="8.0">
             <columnConstraints>
               <ColumnConstraints hgrow="ALWAYS" />
               <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
@@ -174,8 +176,20 @@
               <Insets left="4.0" right="4.0" />
             </padding>
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
-              <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" text="Use sentence case instead of title case for titles" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="16.0" />
+              <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" text="Use sentence case instead of title case for titles" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0" />
             </AnchorPane>
+            <HBox spacing="8.0" GridPane.rowIndex="1">
+              <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false"
+                          text="Default work type when reference manager entry type is Book Section:"
+                          AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0"/>
+              </AnchorPane>
+              <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
+                <HBox.margin>
+                  <Insets top="4.0"/>
+                </HBox.margin>
+              </ComboBox>
+            </HBox>
           </GridPane>
         </AnchorPane>
       </Tab>

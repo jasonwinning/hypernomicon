@@ -17,6 +17,9 @@
 
 package org.hypernomicon.bib.data;
 
+import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.HyperDB.db;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -131,6 +134,10 @@ public enum EntryType
       case etThesis : case etDoctoralThesis : case etMastersThesis :
 
         return HDT_WorkType.get(WorkTypeEnum.wtThesis);
+
+      case etBookChapter : case etBookPart: case etBookSection : case etElectronicBookSection :
+
+        return db.workTypes.getByID(db.prefs.getInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, -1));
 
       default : break;
     }

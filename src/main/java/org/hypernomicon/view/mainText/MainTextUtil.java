@@ -80,8 +80,9 @@ public final class MainTextUtil
   private MainTextUtil() { throw new UnsupportedOperationException(); }
 
   public static String        headContent,
-                              scriptContent,
-                              editingScriptContent,
+                              scriptContent;
+
+  private static String       editingScriptContent,
                               hiliteStyles,
                               editingStyles;
 
@@ -117,24 +118,23 @@ public final class MainTextUtil
 
     readResourceTextFile("resources/mainText.js", sb, true);
 
-    scriptContent = "<script>" + sb.toString() + "</script>";
+    scriptContent = "<script>" + sb + "</script>";
 
     readResourceTextFile("resources/mainTextEdit.js", sb, true);
 
-    editingScriptContent = "<script>" + sb.toString() + "</script>";
+    editingScriptContent = "<script>" + sb + "</script>";
 
     hiliteStyles = ".hypernomiconHilite { background-color: yellow; } .hypernomiconHilite.hypernomiconHiliteCurrent { background-color: orange; }";
 
     editingStyles = "a { pointer-events: none; } " + hiliteStyles;
 
-    headContent = new StringBuilder(scriptContent)
+    headContent = scriptContent +
 
-      .append("<style type=\"text/css\">\n")
-      .append("  ").append(hiliteStyles).append('\n')
-      .append("  details summary { outline: none; }\n")
-      .append("  a:link {color:#0000FF; } a:visited {color:#0000FF; }\n")
-      .append("</style></head>")
-      .toString();
+      "<style type=\"text/css\">\n" +
+      "  " + hiliteStyles + '\n' +
+      "  details summary { outline: none; }\n" +
+      "  a:link {color:#0000FF; } a:visited {color:#0000FF; }\n" +
+      "</style></head>";
   }
 
 //---------------------------------------------------------------------------

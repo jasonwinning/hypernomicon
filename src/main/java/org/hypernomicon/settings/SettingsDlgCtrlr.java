@@ -41,8 +41,13 @@ import org.hypernomicon.bib.mendeley.MendeleyOAuthApi;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.wrappers.HyperCB;
+import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -50,6 +55,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tab;
@@ -66,11 +72,13 @@ import javafx.stage.Window;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 //---------------------------------------------------------------------------
 
@@ -79,7 +87,8 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnClearExtPath;
-  @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLinuxWorkaround;
+  @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkDefaultChapterWorkType, chkLinuxWorkaround;
+  @FXML private ComboBox<HyperTableCell> cbDefaultChapterWorkType;
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
@@ -88,6 +97,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private TabPane tpMain;
   @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfVerificationCode;
 
+  private final HyperCB hcbDefaultChapterWorkType;
   private final StringProperty authUrl;
   private final boolean noDB;
   private final SettingsControl webBtnSettingsCtrlr;
@@ -229,8 +239,15 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming);
 
+    hcbDefaultChapterWorkType = new HyperCB(cbDefaultChapterWorkType, ctDropDownList, new StandardPopulator(hdtWorkType));
+
+    cbDefaultChapterWorkType.disableProperty().bind(chkDefaultChapterWorkType.selectedProperty().not());
+
     if (noDB == false)
+    {
       initDBCheckBox(chkUseSentenceCase, PREF_KEY_SENTENCE_CASE, false);
+      initDefaultChapterWorkType();
+    }
 
     dialogStage.setOnHiding(event -> webBtnSettingsCtrlr.save());
 
@@ -334,6 +351,38 @@ public class SettingsDlgCtrlr extends HyperDlg
       if (newValue == null) return;
 
       db.prefs.putBoolean(prefKey, newValue);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initDefaultChapterWorkType()
+  {
+    HDT_WorkType workType = db.workTypes.getByID(db.prefs.getInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, -1));
+
+    chkDefaultChapterWorkType.setSelected(workType != null);
+
+    if (workType != null)
+      hcbDefaultChapterWorkType.selectID(workType.getID());
+
+    chkDefaultChapterWorkType.selectedProperty().addListener((ob, ov, nv) ->
+    {
+      if (nv == null) return;
+
+      if (Boolean.FALSE.equals(nv))
+      {
+        db.prefs.putInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, -1);
+        return;
+      }
+
+      db.prefs.putInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, hcbDefaultChapterWorkType.selectedID());
+    });
+
+    hcbDefaultChapterWorkType.addListener((ov, nv) ->
+    {
+      int workTypeID = nullSwitch(HyperTableCell.getRecord(nv), -1, HDT_Record::getID);
+      db.prefs.putInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, workTypeID);
     });
   }
 

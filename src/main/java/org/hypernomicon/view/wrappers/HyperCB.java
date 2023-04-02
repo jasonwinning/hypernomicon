@@ -40,7 +40,6 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.AutoCompleteCB;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
-import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import static org.hypernomicon.App.*;
@@ -63,10 +62,11 @@ public class HyperCB implements CommitableWrapper
   private final ComboBox<HyperTableCell> cb;
   private final Populator populator;
   private final HyperTableRow row;
+  private final EventHandler<ActionEvent> internalOnAction;
 
   public HyperTableCell typedMatch;
   private HyperTableCell preShowingValue;
-  private EventHandler<ActionEvent> onAction, innerOnAction;
+  private EventHandler<ActionEvent> onAction;
   private MutableBoolean adjusting;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
   private boolean silentMode = false;
@@ -81,15 +81,15 @@ public class HyperCB implements CommitableWrapper
   @FunctionalInterface
   public interface HTCListener { void changed(HyperTableCell oldValue, HyperTableCell newValue); }
 
-  public EventHandler<ActionEvent> getOnAction() { return onAction; }
   public void setChoicesChanged()                { populator.setChanged(null); }
   public ComboBox<HyperTableCell> getComboBox()  { return cb; }
   public void addListener(HTCListener listener)  { listeners.add(listener); }
-  public void triggerOnAction()                  { getOnAction().handle(new ActionEvent(null, cb)); }
+  public void triggerOnAction()                  { internalOnAction.handle(new ActionEvent(null, cb)); }
+  public void triggerOnAction(ActionEvent event) { internalOnAction.handle(event); }
   private boolean isInTable()                    { return (cb != null) && (cb.getParent() instanceof ComboBoxCell); }
   public void addBlankEntry()                    { addEntry(-1, "", false); }
 
-  public void setInnerOnAction(EventHandler<ActionEvent> onAction) { if (onAction != null) innerOnAction = onAction; }
+  public void setOnAction(EventHandler<ActionEvent> onAction) { if (onAction != null) this.onAction = onAction; }
 
   @SuppressWarnings("unchecked")
   public <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
@@ -119,6 +119,7 @@ public class HyperCB implements CommitableWrapper
     if ((ctrlType != ctDropDown) && (ctrlType != ctDropDownList))
     {
       messageDialog("Internal error #42852", mtError);
+      internalOnAction = null;
       return;
     }
 
@@ -129,7 +130,7 @@ public class HyperCB implements CommitableWrapper
 
   //---------------------------------------------------------------------------
 
-    onAction = event ->
+    internalOnAction = event ->
     {
       if (somethingWasTyped && (HyperTableCell.getCellID(typedMatch) >= 1))
       {
@@ -214,19 +215,6 @@ public class HyperCB implements CommitableWrapper
       new HyperTableCell(str, selectedType())
     :
       htc;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void setOnAction(EventHandler<ActionEvent> onAction)
-  {
-    if (onAction == null) return;
-
-    if (populator instanceof VariablePopulator)
-      innerOnAction = onAction;
-    else
-      this.onAction = onAction;
   }
 
 //---------------------------------------------------------------------------
@@ -406,8 +394,8 @@ public class HyperCB implements CommitableWrapper
   {
     if (isInTable()) ((CommitableWrapper) cb.getParent()).commit();
 
-    if ((event != null) && (innerOnAction != null))
-      innerOnAction.handle(event);  // activates the "Execute" button in the queries hyperTab
+    if ((event != null) && (onAction != null))
+      onAction.handle(event);  // activates the "Execute" button in the queries hyperTab
   }
 
 //---------------------------------------------------------------------------

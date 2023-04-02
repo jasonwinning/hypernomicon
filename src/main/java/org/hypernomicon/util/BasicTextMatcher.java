@@ -40,7 +40,7 @@ public class BasicTextMatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class Term
+  private static final class Term
   {
     private final TermModifier modifier;
     private final String text;
