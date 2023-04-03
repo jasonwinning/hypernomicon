@@ -178,18 +178,21 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
               <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" text="Use sentence case instead of title case for titles" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0" />
             </AnchorPane>
-            <HBox spacing="8.0" GridPane.rowIndex="1">
+            <HBox spacing="8.0" GridPane.rowIndex="2">
               <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false"
-                          text="Default work type when reference manager entry type is Book Section:"
-                          AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0"/>
+                <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false" text="Default work type when reference manager entry type is Book Section:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0" />
               </AnchorPane>
               <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
                 <HBox.margin>
-                  <Insets top="4.0"/>
+                  <Insets top="4.0" />
                 </HBox.margin>
               </ComboBox>
             </HBox>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+              <CheckBox fx:id="chkLowerCaseTargetNames" layoutX="14.0" layoutY="6.0" mnemonicParsing="false"
+                        text="Always default to lowercase target position/argument name when generating new argument name suggestions"
+                        AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0"/>
+            </AnchorPane>
           </GridPane>
         </AnchorPane>
       </Tab>

@@ -90,6 +90,7 @@ public final class Const
     PREF_KEY_NOTE_ID = "noteID",
     PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID = "defaultChapterWorkTypeID",
     PREF_KEY_SENTENCE_CASE = "sentenceCase",
+    PREF_KEY_LOWER_CASE_TARGET_NAMES = "lowerCaseTargetNames",
     PREF_KEY_CHECK_INTERNET = "checkInternet",
     PREF_KEY_CHECK_FOR_NEW_VERSION = "checkForNewVersion",
     PREF_KEY_AUTO_OPEN_PDF = "autoOpenWorkFile",

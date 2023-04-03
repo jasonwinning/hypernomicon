@@ -17,6 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.Const.PREF_KEY_LOWER_CASE_TARGET_NAMES;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -56,7 +57,7 @@ import javafx.scene.web.WebView;
 
 public class NewArgDlgCtrlr extends HyperDlg
 {
-  @FXML private CheckBox chkIncludeAuth;
+  @FXML private CheckBox chkIncludeAuth, chkLowerCaseTargetName;
   @FXML private ComboBox<HyperTableCell> cbPerson, cbVerdict, cbWork;
   @FXML private Label lblTargetName, lblTargetDesc;
   @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;
@@ -133,9 +134,13 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));
 
-    tfTitle.textProperty().addListener((ob, oldText, newText) -> rbNew.setSelected(true));
+    tfTitle.textProperty().addListener((ob, ov, nv) -> rbNew.setSelected(true));
 
-    chkIncludeAuth.selectedProperty().addListener((ob, oldSelected, newSelected) -> reviseSuggestions());
+    chkIncludeAuth.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions());
+
+    chkLowerCaseTargetName.setSelected(db.prefs.getBoolean(PREF_KEY_LOWER_CASE_TARGET_NAMES, false));
+
+    chkLowerCaseTargetName.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions());
 
     hcbPerson.addBlankEntry();
 
@@ -249,8 +254,13 @@ public class NewArgDlgCtrlr extends HyperDlg
     if (targetName.startsWith("The "))
       targetName = "the " + targetName.substring(4);
 
+    if (chkLowerCaseTargetName.isSelected())
+      targetName = targetName.toLowerCase();
+
     if (target.getType() == hdtPosition)
     {
+      chkLowerCaseTargetName.setText("Lower case position name");
+
       String part2 = part1.isEmpty() ? "Argument " : "argument ";
 
       argName1 = part1 + part2 + "for "                   + targetName; tfArgName1.setText(argName1);
@@ -264,6 +274,8 @@ public class NewArgDlgCtrlr extends HyperDlg
     }
     else
     {
+      chkLowerCaseTargetName.setText("Lower case target name");
+
       String part2 = part1.isEmpty() ? "Counterargument " : "counterargument ";
 
       argName1 = part1 + part2 + "against "                + targetName; tfArgName1.setText(argName1);

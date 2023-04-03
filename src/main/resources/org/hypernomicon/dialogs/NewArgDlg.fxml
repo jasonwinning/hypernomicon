@@ -31,180 +31,140 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="618.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewArgDlgCtrlr">
-  <Label fx:id="lblTargetName" layoutX="33.0" layoutY="23.0" text="Position:" AnchorPane.leftAnchor="12.0"
-         AnchorPane.topAnchor="12.0">
+<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="618.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewArgDlgCtrlr">
+  <Label fx:id="lblTargetName" layoutX="33.0" layoutY="23.0" text="Position:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="12.0">
   </Label>
-  <Label fx:id="lblTargetDesc" layoutX="14.0" layoutY="34.0" prefHeight="217.0" prefWidth="66.0"
-         text="Position description:" wrapText="true" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="12.0"
-         AnchorPane.topAnchor="34.0">
+  <Label fx:id="lblTargetDesc" layoutX="14.0" layoutY="34.0" prefHeight="217.0" prefWidth="66.0" text="Position description:" wrapText="true" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="34.0">
   </Label>
-  <Label layoutX="12.0" layoutY="177.0" prefHeight="217.0" prefWidth="66.0" text="Name suggestions:" wrapText="true"
-         AnchorPane.bottomAnchor="224.0" AnchorPane.leftAnchor="12.0">
+  <Label layoutX="12.0" layoutY="177.0" prefHeight="85.0" prefWidth="66.0" text="Name suggestions:" wrapText="true" AnchorPane.bottomAnchor="356.0" AnchorPane.leftAnchor="12.0">
   </Label>
   <Label layoutX="12.0" layoutY="151.0" text="Person:" AnchorPane.bottomAnchor="141.0" AnchorPane.leftAnchor="12.0">
   </Label>
-  <TextField fx:id="tfTargetName" editable="false" layoutX="125.0" layoutY="9.0" prefHeight="22.0"
-             AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0"/>
-  <WebView fx:id="view" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0"
-           AnchorPane.topAnchor="34.0"/>
-  <GridPane layoutX="111.0" layoutY="170.0" prefHeight="281.0" prefWidth="1003.0" AnchorPane.bottomAnchor="167.0"
-            AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0">
+  <TextField fx:id="tfTargetName" editable="false" layoutX="125.0" layoutY="9.0" prefHeight="22.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0" />
+  <WebView fx:id="view" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
+  <GridPane layoutX="111.0" layoutY="170.0" prefHeight="281.0" prefWidth="1003.0" AnchorPane.bottomAnchor="167.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0">
     <columnConstraints>
-      <ColumnConstraints hgrow="NEVER" maxWidth="21.0" minWidth="21.0" prefWidth="21.0"/>
-      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" prefWidth="982.0"/>
+      <ColumnConstraints hgrow="NEVER" maxWidth="21.0" minWidth="21.0" prefWidth="21.0" />
+      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" prefWidth="982.0" />
     </columnConstraints>
     <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <AnchorPane prefHeight="200.0" prefWidth="200.0">
-      <RadioButton fx:id="rbArgName1" layoutX="-3.0" layoutY="9.0" mnemonicParsing="false"
-                   AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0">
+      <RadioButton fx:id="rbArgName1" layoutX="-3.0" layoutY="9.0" mnemonicParsing="false" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0">
         <toggleGroup>
-          <ToggleGroup fx:id="argNameGroup"/>
+          <ToggleGroup fx:id="argNameGroup" />
         </toggleGroup>
       </RadioButton>
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-      <TextField fx:id="tfArgName1" layoutX="-453.0" layoutY="1.0" prefHeight="22.0"
-                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+      <TextField fx:id="tfArgName1" layoutX="-453.0" layoutY="1.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-      <RadioButton fx:id="rbArgName2" layoutX="-2.0" layoutY="6.0" mnemonicParsing="false"
-                   toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0"/>
+      <RadioButton fx:id="rbArgName2" layoutX="-2.0" layoutY="6.0" mnemonicParsing="false" toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-      <TextField fx:id="tfArgName2" layoutX="-458.0" layoutY="6.0" prefHeight="22.0"
-                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+      <TextField fx:id="tfArgName2" layoutX="-458.0" layoutY="6.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-      <RadioButton fx:id="rbArgName3" layoutX="-2.0" layoutY="6.0" mnemonicParsing="false"
-                   toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0"/>
+      <RadioButton fx:id="rbArgName3" layoutX="-2.0" layoutY="6.0" mnemonicParsing="false" toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-      <TextField fx:id="tfArgName3" layoutX="-400.0" layoutY="4.0" prefHeight="22.0"
-                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+      <TextField fx:id="tfArgName3" layoutX="-400.0" layoutY="4.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-      <RadioButton fx:id="rbArgName4" layoutX="-3.0" layoutY="14.0" mnemonicParsing="false"
-                   toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0"/>
+      <RadioButton fx:id="rbArgName4" layoutX="-3.0" layoutY="14.0" mnemonicParsing="false" toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-      <TextField fx:id="tfArgName4" layoutX="-378.0" layoutY="6.0" prefHeight="22.0"
-                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+      <TextField fx:id="tfArgName4" layoutX="-378.0" layoutY="6.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-      <RadioButton fx:id="rbArgName5" layoutX="-2.0" layoutY="5.0" mnemonicParsing="false"
-                   toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0"/>
+      <RadioButton fx:id="rbArgName5" layoutX="-2.0" layoutY="5.0" mnemonicParsing="false" toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-      <TextField fx:id="tfArgName5" layoutX="-414.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0"
-                 AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+      <TextField fx:id="tfArgName5" layoutX="-414.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
-      <RadioButton fx:id="rbArgName6" layoutX="-3.0" layoutY="19.0" mnemonicParsing="false"
-                   toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0"/>
+      <RadioButton fx:id="rbArgName6" layoutX="-3.0" layoutY="19.0" mnemonicParsing="false" toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-      <TextField fx:id="tfArgName6" layoutX="-387.0" layoutY="6.0" prefHeight="22.0"
-                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+      <TextField fx:id="tfArgName6" layoutX="-387.0" layoutY="6.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
-      <RadioButton fx:id="rbArgName7" layoutX="-29.0" layoutY="7.0" mnemonicParsing="false"
-                   toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0"/>
+      <RadioButton fx:id="rbArgName7" layoutX="-29.0" layoutY="7.0" mnemonicParsing="false" toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
-      <TextField fx:id="tfArgName7" layoutX="-8.0" layoutY="4.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0"
-                 AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+      <TextField fx:id="tfArgName7" layoutX="-8.0" layoutY="4.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
-      <RadioButton fx:id="rbArgName8" layoutX="-29.0" layoutY="7.0" mnemonicParsing="false"
-                   toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0"/>
+      <RadioButton fx:id="rbArgName8" layoutX="-29.0" layoutY="7.0" mnemonicParsing="false" toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="7">
-      <TextField fx:id="tfArgName8" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                 AnchorPane.rightAnchor="0.0"/>
+      <TextField fx:id="tfArgName8" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="8">
-      <CheckBox fx:id="chkIncludeAuth" layoutY="10.0" mnemonicParsing="false"
-                text="Include author's name in name of argument" AnchorPane.bottomAnchor="2.0"
-                AnchorPane.leftAnchor="0.0"/>
+      <CheckBox fx:id="chkIncludeAuth" layoutY="10.0" mnemonicParsing="false" text="Include author's name in name of argument" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="9">
-      <GridPane layoutX="-431.0" layoutY="3.0" prefHeight="22.0" prefWidth="200.0"
-                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+      <GridPane layoutX="-431.0" layoutY="3.0" prefHeight="22.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0"
-                             prefWidth="256.0"/>
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0"
-                             prefWidth="328.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="256.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="328.0" />
         </columnConstraints>
         <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
         <AnchorPane prefHeight="200.0" prefWidth="200.0">
-          <ComboBox fx:id="cbPerson" layoutX="10.0" prefHeight="22.0" prefWidth="150.0"
-                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+          <ComboBox fx:id="cbPerson" layoutX="10.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
         </AnchorPane>
         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
           <Label layoutY="4.0" text="Argues that:" AnchorPane.leftAnchor="6.0">
           </Label>
-          <ComboBox fx:id="cbVerdict" layoutX="74.0" prefHeight="22.0" prefWidth="150.0"
-                    AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="0.0"/>
+          <ComboBox fx:id="cbVerdict" layoutX="74.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="0.0" />
         </AnchorPane>
       </GridPane>
     </AnchorPane>
   </GridPane>
-  <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="12.0" layoutY="456.0"
-              prefHeight="129.0" prefWidth="1102.0" text="Work" AnchorPane.bottomAnchor="33.0"
-              AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0">
+  <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="12.0" layoutY="456.0" prefHeight="129.0" prefWidth="1102.0" text="Work" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0">
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="106.0" prefWidth="691.0">
-      <RadioButton fx:id="rbNew" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="New"
-                   AnchorPane.leftAnchor="6.0">
+      <RadioButton fx:id="rbNew" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="New" AnchorPane.leftAnchor="6.0">
         <toggleGroup>
-          <ToggleGroup fx:id="radioGroup"/>
+          <ToggleGroup fx:id="radioGroup" />
         </toggleGroup>
       </RadioButton>
-      <TextField fx:id="tfTitle" layoutX="149.4" layoutY="11.0" prefHeight="22.0" prefWidth="588.0"
-                 AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0"/>
-      <RadioButton fx:id="rbExisting" layoutX="14.0" layoutY="46.0" mnemonicParsing="false" text="Existing"
-                   toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0"/>
-      <ComboBox fx:id="cbWork" layoutX="79.0" layoutY="42.0" prefHeight="22.0" prefWidth="594.0"
-                AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0"/>
-      <RadioButton layoutX="14.0" layoutY="80.0" mnemonicParsing="false" text="None" toggleGroup="$radioGroup"
-                   AnchorPane.leftAnchor="6.0"/>
+      <TextField fx:id="tfTitle" layoutX="149.4" layoutY="11.0" prefHeight="22.0" prefWidth="588.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
+      <RadioButton fx:id="rbExisting" layoutX="14.0" layoutY="46.0" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
+      <ComboBox fx:id="cbWork" layoutX="79.0" layoutY="42.0" prefHeight="22.0" prefWidth="594.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
+      <RadioButton layoutX="14.0" layoutY="80.0" mnemonicParsing="false" text="None" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
     </AnchorPane>
   </TitledPane>
-  <GridPane layoutX="25.0" layoutY="286.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-            AnchorPane.rightAnchor="0.0">
+  <GridPane layoutX="25.0" layoutY="286.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
     <columnConstraints>
-      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
     </columnConstraints>
     <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     </rowConstraints>
-    <Button fx:id="btnOK" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick"
-            prefWidth="60.0" text="OK">
+    <Button fx:id="btnOK" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK">
       <GridPane.margin>
-        <Insets right="4.0"/>
+        <Insets right="4.0" />
       </GridPane.margin>
     </Button>
-    <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick"
-            prefWidth="60.0" text="Cancel" GridPane.columnIndex="1">
+    <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" GridPane.columnIndex="1">
       <GridPane.margin>
-        <Insets left="4.0"/>
+        <Insets left="4.0" />
       </GridPane.margin>
     </Button>
   </GridPane>
+   <CheckBox fx:id="chkLowerCaseTargetName" layoutX="9.0" layoutY="248.0" mnemonicParsing="false" prefHeight="146.0" prefWidth="88.0" text="Lower case position name" wrapText="true" AnchorPane.bottomAnchor="224.0" AnchorPane.leftAnchor="12.0" />
 </AnchorPane>
