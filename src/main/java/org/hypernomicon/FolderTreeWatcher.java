@@ -50,8 +50,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.PathInfo;
-import org.hypernomicon.model.PathInfo.FileKind;
+import org.hypernomicon.PathInfo.FileKind;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.DesktopUtil;

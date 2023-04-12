@@ -61,6 +61,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
     public Iterable<HDT_DT> keyIterable()        { return this::keyIterator; }
     public Iterator<HDT_DT> keyIterator()        { return new CoreIterator(this, true); }
+
     @Override public Iterator<HDT_DT> iterator() { return new CoreIterator(this, false); }
   }
 
@@ -70,8 +71,9 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   private final class CoreIterator implements Iterator<HDT_DT>
   {
     private final CoreAccessor coreAccessor;
-    private int nextNdx = 0;
     private final boolean byKey;
+
+    private int nextNdx = 0;
 
     @Override public boolean hasNext() { return nextNdx < coreAccessor.size(); }
     @Override public void remove()     { throw new UnsupportedOperationException("Internal error: A 'remove' call was made to a core iterator."); }

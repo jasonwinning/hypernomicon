@@ -15,10 +15,10 @@
  *
  */
 
-package org.hypernomicon.model;
+package org.hypernomicon;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.PathInfo.FileKind.*;
+import static org.hypernomicon.PathInfo.FileKind.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
@@ -30,9 +30,9 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.filePath.FilePath;
 
-public class PathInfo
+class PathInfo
 {
-  public enum FileKind
+  enum FileKind
   {
     fkFileRecord,
     fkFolderRecord,
@@ -49,17 +49,17 @@ public class PathInfo
   private final FileKind fileKind;
   private final FilePath filePath;
 
-  public HDT_Folder getParentFolder() { return parentFolder; }
-  public HyperPath getHyperPath()     { return hyperPath; }
-  public FilePath getFilePath()       { return filePath; }
-  public FileKind getFileKind()       { return fileKind; }
-  public boolean isDirectory()        { return (fileKind == fkFolder) || (fileKind == fkFolderRecord); }
+  HDT_Folder getParentFolder()        { return parentFolder; }
+  HyperPath getHyperPath()            { return hyperPath; }
+  FilePath getFilePath()              { return filePath; }
+  FileKind getFileKind()              { return fileKind; }
+  boolean isDirectory()               { return (fileKind == fkFolder) || (fileKind == fkFolderRecord); }
 
   @Override public String toString()  { return filePath.toString(); }
 
 //---------------------------------------------------------------------------
 
-  public PathInfo(FilePath filePath)
+  PathInfo(FilePath filePath)
   {
     this.filePath = filePath;
 

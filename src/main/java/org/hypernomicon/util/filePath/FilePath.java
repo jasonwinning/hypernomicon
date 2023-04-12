@@ -104,22 +104,32 @@ public class FilePath implements Comparable<FilePath>
   @Override public String toString()         { return innerVal.getPathStr(); }
   @Override public int compareTo(FilePath o) { return toPath().compareTo(o.toPath()); }
 
-  // If this file is a directory, will return just the directory name. If it is not a directory, will return just the file name.
+  /**
+   * If this file is a directory, will return just the directory name. If it is not a directory, will return just the file name.
+   */
   public FilePath getNameOnly() { return new FilePath(FilenameUtils.getName(toString())); }
 
-  // If this file is a directory, will return the entire path. If it is not a directory, will return the parent directory
+  /**
+   * If this file is a directory, will return the entire path. If it is not a directory, will return the parent directory
+   */
   public FilePath getDirOnly() { return isDirectory() ? this : new FilePath(FilenameUtils.getFullPathNoEndSeparator(toString())); }
 
-  // this = base, parameter = relative, output = resolved
+  /**
+   * this = base, parameter = relative, output = resolved
+   */
   public FilePath resolve(FilePath relativeFilePath) { return new FilePath(toPath().resolve(relativeFilePath.toPath())); }
 
-  // this = base, parameter = relative, output = resolved
+  /**
+   * this = base, parameter = relative, output = resolved
+   */
   public FilePath resolve(String relativeStr) { return new FilePath(toPath().resolve(Paths.get(relativeStr.trim()))); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // this = base, parameter = resolved, output = relative
+  /**
+   * this = base, parameter = resolved, output = relative
+   */
   public FilePath relativize(FilePath resolvedFilePath)
   {
     try { return new FilePath(toPath().relativize(resolvedFilePath.toPath())); }

@@ -51,12 +51,13 @@ public final class Const
 
   public static final String
 
+    HDB_DEFAULT_FILENAME = "database.hdb",
+
     PREF_KEY_SETTINGS_VERSION = "settingsVersion",
     PREF_KEY_NOTIFY_USER_NOT_LINKED = "notifyUnlinked",
     PREF_KEY_DB_CREATION_DATE = "dbCreationDate",
     PREF_KEY_SOURCE_PATH = "sourcePath",
     PREF_KEY_SOURCE_FILENAME = "sourceFile",
-    HDB_DEFAULT_FILENAME = "database.hdb",
     PREF_KEY_HDB_MRU = "hbdMru",
     PREF_KEY_AUTO_IMPORT = "autoImport",
     PREF_KEY_IMAGE_EDITOR = "imageEditor",
@@ -271,21 +272,34 @@ public final class Const
 
     EXT_1 = "ext1://";
 
+  /**
+   * Change this and the version in pom.xml to set the application version
+   * <br>
+   */
   public static final VersionNumber appVersion = new VersionNumber(1, 25); // 1.25
 
-  // This is the minimum version that the application version is able to load
+  /**
+   * This is the minimum version that the application version is able to load
+   * <br>
+   */
   public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
     .put(new VersionNumber(1), new VersionNumber(1))
     .build();
 
-  // This is the minimum version that the application version is able to load
+  /**
+   * This is the minimum version that the application version is able to load
+   * <br>
+   */
   public static final Map<VersionNumber, VersionNumber> appVersionToMinSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
     .put(new VersionNumber(1), new VersionNumber(1))
     .build();
 
-  // This is the version that the application version will actually save to
+  /**
+   * This is the version that the application version will actually save to
+   * <br>
+   */
   public static final Map<VersionNumber, VersionNumber> appVersionToMaxRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
     .put(new VersionNumber(1, 17, 5), new VersionNumber(1))
@@ -297,7 +311,10 @@ public final class Const
     .put(appVersion, new VersionNumber(1, 6))
     .build();
 
-  // This is the version that the application version will actually save to
+  /**
+   *  This is the version that the application version will actually save to
+   *  <br>
+   */
   public static final Map<VersionNumber, VersionNumber> appVersionToMaxSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
     .put(new VersionNumber(1, 17, 5), new VersionNumber(1))

@@ -97,7 +97,10 @@ public class NewLinkDlgCtrlr extends HyperDlg
 
     if (anchor != null)
     {
-      anchor.setHref(tfURL.getText().trim());
+      String urlText = tfURL.getText().trim();
+
+      anchor.setHref(urlText);
+      anchor.setTitle(htmlEscaper.escape(urlText));
       anchor.setTextContent(tfDisplayText.getText());
     }
 

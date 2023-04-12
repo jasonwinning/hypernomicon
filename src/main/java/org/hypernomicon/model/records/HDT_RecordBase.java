@@ -91,7 +91,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final int keyNdx()                      { return db.records(type).getKeyNdxByID(id); }
   @Override public final void viewNow()                    { if (db.viewTestingInProgress == false) viewDate = Instant.now(); }
   @Override public final String getSortKeyAttr()           { return sortKeyAttr; }
-  @Override public final String getSortKey()               { return dataset.getKeyByID(id); }
+  @Override public final String getSortKey()               { return safeStr(dataset.getKeyByID(id)); }
   @Override public final boolean isExpired()               { return expired; }
   @Override public final Set<Tag> getAllTags()             { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
   @Override public final boolean getTagBoolean(Tag tag)    { return ((HDI_OnlineBoolean)items.get(tag)).get(); }
