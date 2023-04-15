@@ -23,6 +23,8 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.Objects;
+
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
@@ -82,16 +84,36 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
     return (record != null) && record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getPlainForDisplay() : "";
   }
 
-  @Override public String toString()        { return getCBText(); }
-  @Override public int compareTo(TreeRow o) { return record.getSortKey().compareTo(o.record.getSortKey()); }
-  @Override public int hashCode()           { return record.getSortKey().hashCode(); }
+  @Override public String toString()    { return getCBText(); }
+
+  @Override public int compareTo(TreeRow o)
+  {
+    String str = record == null ? text : record.getSortKey(),
+           oStr = o.record == null ? o.text : o.record.getSortKey();
+
+    return str.compareTo(oStr);
+  }
+
+  @Override public int hashCode()
+  {
+    return record != null ? Objects.hash(record, null) : Objects.hash(record, text);
+  }
 
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    return compareTo((TreeRow) obj) == 0;
+
+    TreeRow other = (TreeRow) obj;
+
+    if ((record == null) != (other.record == null))
+      return false;
+
+    if (record != null)
+      return record == other.record;
+
+    return safeStr(text).equals(safeStr(other.text));
   }
 
   @SuppressWarnings("unchecked")

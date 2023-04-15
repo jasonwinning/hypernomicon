@@ -267,6 +267,15 @@ public class PreviewWindow extends HyperDlg
     chbBack    = new ClickHoldButton(btnPreviewBack   , Side.BOTTOM);
     chbForward = new ClickHoldButton(btnPreviewForward, Side.BOTTOM);
 
+    setToolTip(btnPerson        , "Preview content selected on Persons tab");
+    setToolTip(btnWorks         , "Preview content selected on Works tab");
+    setToolTip(btnQueries       , "Preview content selected on Queries tab");
+    setToolTip(btnManager       , "Preview content selected in File Manager");
+    setToolTip(btnTree          , "Preview content selected on Tree tab");
+
+    setToolTip(btnGoToMain      , "Go to main window");
+    setToolTip(btnGoToManager   , "Go to File Manager");
+
     setToolTip(btnLock          , "Don't change the current view when a different record is selected in another window");
     setToolTip(btnPreviewNext   , "Go forward 1 page");
     setToolTip(btnPreviewPrev   , "Go back 1 page");
