@@ -60,7 +60,7 @@ public abstract class Populator
 
     @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
     {
-      return nullSwitch(super.getChoiceByID(row, id), HyperTableCell.blankCell);
+      return nullSwitch(super.getChoiceByID(row, id), HyperTableCell.blankCell());
     }
 
   //---------------------------------------------------------------------------

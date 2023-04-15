@@ -105,7 +105,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
     super.cancelEdit();
     setGraphic(null);
 
-    getTableRow().getItem().setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
+    getTableRow().getItem().setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue == null ? null : newValue.clone());
   }
 
 //---------------------------------------------------------------------------

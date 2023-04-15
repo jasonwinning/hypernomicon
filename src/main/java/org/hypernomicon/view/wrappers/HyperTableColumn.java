@@ -18,7 +18,6 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
@@ -36,7 +35,6 @@ import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -46,6 +44,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.SortType;
 
 //---------------------------------------------------------------------------
 
@@ -124,7 +123,30 @@ public class HyperTableColumn
     colNdx = table.getColumns().size();
     tc = table.getTV().getColumns().get(colNdx);
 
-    TableColumn<HyperTableRow, HyperTableCell> htcCol = ctrlType == ctCheckbox ? null : (TableColumn<HyperTableRow, HyperTableCell>) tc;
+    tc.setComparator((obj1, obj2) ->
+    {
+      if ((obj1 == null) && (obj2 == null)) return 0;
+      if (obj1 == null) return -1;
+      if (obj2 == null) return 1;
+
+      HyperTableCell cell1 = (HyperTableCell) obj1,
+                     cell2 = (HyperTableCell) obj2;
+
+      if (table.getCanAddRows() == false)
+        return cell1.compareTo(cell2);
+
+      HyperTableRow lastRow = table.getRows().get(table.getRows().size() - 1);
+
+      if (lastRow.getCell(colNdx) == cell1)
+        return tc.getSortType() == SortType.ASCENDING ? 1 : -1;
+
+      if (lastRow.getCell(colNdx) == cell2)
+        return tc.getSortType() == SortType.ASCENDING ? -1 : 1;
+
+      return cell1.compareTo(cell2);
+    });
+
+    TableColumn<HyperTableRow, HyperTableCell> htcCol = (TableColumn<HyperTableRow, HyperTableCell>) tc;
 
     switch (ctrlType)
     {
@@ -136,7 +158,7 @@ public class HyperTableColumn
       case ctEdit :
 
         htcCol.setEditable(true);
-        htcCol.setCellValueFactory(cellDataFeatures -> new SimpleObjectProperty<>(cellDataFeatures.getValue().getCell(colNdx)));
+        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
         htcCol.setCellFactory(tableCol -> new TextFieldCell(table, canEditIfEmpty, isNumeric));
 
         htcCol.setOnEditCommit(event ->
@@ -146,18 +168,9 @@ public class HyperTableColumn
 
       case ctCheckbox :
 
-        TableColumn<HyperTableRow, Boolean> boolCol = (TableColumn<HyperTableRow, Boolean>) tc;
-
-        boolCol.setEditable(true);
-        boolCol.setCellValueFactory(cellData ->
-        {
-          HyperTableCell cell = cellData.getValue().getCell(colNdx);
-          int id = HyperTableCell.getCellID(cell);
-
-          return new SimpleBooleanProperty(id == 1);
-        });
-
-        boolCol.setCellFactory(tableCol -> new CheckboxCell(table));
+        htcCol.setEditable(true);
+        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
+        htcCol.setCellFactory(tableCol -> new CheckboxCell(table));
 
         break;
 

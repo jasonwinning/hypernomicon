@@ -95,7 +95,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     matchMap.forEach((author, authorList) -> authorList.forEach(match ->
     {
-      ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(HyperTableCell.blankCell);
+      ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(HyperTableCell.blankCell());
 
       cells.add(author.getPerson() == null ?
         new HyperTableCell(author.getFullName(false), hdtNone)

@@ -551,7 +551,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
         db.glossaries.getByID(1);
 
       editedRow.setCellValue(2, glossary, glossary.name());
-      Platform.runLater(() -> editedRow.setCellValue(3, newCell));
+      Platform.runLater(() -> editedRow.setCellValue(3, newCell == null ? null : newCell.clone()));
 
       return;
     }

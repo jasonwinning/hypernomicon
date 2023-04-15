@@ -22,7 +22,7 @@ import javafx.scene.control.TableCell;
 
 import static org.hypernomicon.util.Util.*;
 
-class CheckboxCell extends TableCell<HyperTableRow, Boolean>
+class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 {
   final private HyperTable table;
   final private CheckBox chk;
@@ -42,16 +42,14 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
       HyperTableRow row = getTableRow().getItem();
       if (row == null) return;
 
-      HyperTableCell cell = Boolean.TRUE.equals(newValue) ? HyperTableCell.trueCheckboxCell : HyperTableCell.falseCheckboxCell;
-
-      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), cell);
+      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), HyperTableCell.checkboxCellFromBoolean(Boolean.TRUE.equals(newValue)));
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void updateItem(Boolean val, boolean empty)
+  @Override protected void updateItem(HyperTableCell val, boolean empty)
   {
     super.updateItem(val, empty);
 
@@ -62,7 +60,7 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
     }
 
     setGraphic(chk);
-    chk.setSelected(val);
+    chk.setSelected(HyperTableCell.getCellID(val) == 1);
 
     chk.setDisable(HyperTableCell.isEmpty(nullSwitch(getTableRow(), null, tableRow ->
                                           nullSwitch(tableRow.getItem(), null, row ->

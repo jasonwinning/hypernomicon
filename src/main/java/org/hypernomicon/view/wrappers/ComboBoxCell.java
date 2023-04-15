@@ -111,7 +111,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     if (hcb.somethingWasTyped && (hcb.typedMatch != null))
       newValue = hcb.typedMatch;
 
-    row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
+    row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue == null ? null : newValue.clone());
   }
 
 //---------------------------------------------------------------------------

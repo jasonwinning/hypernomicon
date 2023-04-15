@@ -185,7 +185,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
       if (match)
       {
-        hcb.typedMatch = cell;
+        hcb.typedMatch = cell.clone();
 
         editor.positionCaret(typed.length());
         editor.selectEnd();

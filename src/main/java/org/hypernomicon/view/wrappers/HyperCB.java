@@ -432,8 +432,8 @@ public class HyperCB implements CommitableWrapper
           selection = ctrlr.showModal() ? ctrlr.listView.getSelectionModel().getSelectedItem() : null;
         }
 
-        if ((table != null) && (selection != null))  // By the time we get back here, the ComboBox is gone
-          row.setCellValue(colNdx, selection);       // and the table is already out of edit mode
+        if ((table != null) && (selection != null))     // By the time we get back here, the ComboBox is gone
+          row.setCellValue(colNdx, selection.clone());  // and the table is already out of edit mode
 
         return selection;
       }

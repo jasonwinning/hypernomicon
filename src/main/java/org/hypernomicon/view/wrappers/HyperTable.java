@@ -90,6 +90,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   final private TableView<HyperTableRow> tv;
   final private List<HyperTableColumn> cols = new ArrayList<>();
   final private ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
+  final private List<HyperTableRow> unmodRows = Collections.unmodifiableList(rows);
   final private FilteredList<HyperTableRow> filteredRows;
   final private Map<Integer, HyperTableCell> colNdxToDefaultValue = new HashMap<>();
 
@@ -108,6 +109,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public TableView<HyperTableRow> getTV()                          { return tv; }
   public List<HyperTableColumn> getColumns()                       { return Collections.unmodifiableList(cols); }
+  public List<HyperTableRow> getRows()                             { return unmodRows; }
   public HyperTableColumn getColumn(int colNdx)                    { return cols.get(colNdx); }
   public <Pop extends Populator> Pop getPopulator(int colNdx)      { return cols.get(colNdx).getPopulator(); }
   public void clearFilter()                                        { filteredRows.setPredicate(row -> true); }
@@ -157,6 +159,54 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public <T> void buildRows(Iterable<T> objs, RowBuilder<T> bldr) { objs.forEach       (obj -> bldr.buildRow(newDataRow(), obj)); }
   public <T> void buildRows(Stream<T>   objs, RowBuilder<T> bldr) { objs.forEachOrdered(obj -> bldr.buildRow(newDataRow(), obj)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit);
+
+  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID)
+  {
+    this(tv, mainCol, canAddRows, prefID, null);
+  }
+
+  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDlg dialog)
+  {
+    this.tv = tv;
+    this.mainCol = mainCol;
+    this.canAddRows = canAddRows;
+
+    if (prefID.length() > 0)
+      registerTable(tv, prefID, dialog);
+
+    filteredRows = new FilteredList<>(rows, row -> true);
+
+    SortedList<HyperTableRow> sortedRows = new SortedList<>(filteredRows);
+    sortedRows.comparatorProperty().bind(tv.comparatorProperty());
+
+    tv.setItems(sortedRows);
+    tv.setPlaceholder(new Text(""));
+
+    tv.addEventHandler(KeyEvent.KEY_PRESSED, event ->
+    {
+      if ((event.getCode() != KeyCode.ENTER) || cols.stream().map(HyperTableColumn::getCtrlType).anyMatch(editableCtrlTypes::contains))
+        return;
+
+      doRowAction();
+      event.consume();
+    });
+
+    tv.setRowFactory(theTV ->
+    {
+      TableRow<HyperTableRow> row = new TableRow<>();
+
+      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(createContextMenu(nv)));
+
+      return row;
+    });
+
+    preventMovingColumns(tv, List.copyOf(tv.getColumns()));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -275,54 +325,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       dialogs.put(prefID, dialog);
 
     loadColWidthsForTable(tv.getColumns(), prefID);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit);
-
-  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID)
-  {
-    this(tv, mainCol, canAddRows, prefID, null);
-  }
-
-  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDlg dialog)
-  {
-    this.tv = tv;
-    this.mainCol = mainCol;
-    this.canAddRows = canAddRows;
-
-    if (prefID.length() > 0)
-      registerTable(tv, prefID, dialog);
-
-    filteredRows = new FilteredList<>(rows, row -> true);
-
-    SortedList<HyperTableRow> sortedRows = new SortedList<>(filteredRows);
-    sortedRows.comparatorProperty().bind(tv.comparatorProperty());
-
-    tv.setItems(sortedRows);
-    tv.setPlaceholder(new Text(""));
-
-    tv.addEventHandler(KeyEvent.KEY_PRESSED, event ->
-    {
-      if ((event.getCode() != KeyCode.ENTER) || cols.stream().map(HyperTableColumn::getCtrlType).anyMatch(editableCtrlTypes::contains))
-        return;
-
-      doRowAction();
-      event.consume();
-    });
-
-    tv.setRowFactory(theTV ->
-    {
-      TableRow<HyperTableRow> row = new TableRow<>();
-
-      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(createContextMenu(nv)));
-
-      return row;
-    });
-
-    preventMovingColumns(tv, List.copyOf(tv.getColumns()));
   }
 
 //---------------------------------------------------------------------------
@@ -535,7 +537,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       rows.add(row);
       settingDefaultValue = true;
-      colNdxToDefaultValue.forEach(row::setCellValue);
+      colNdxToDefaultValue.forEach((ndx, cell) -> row.setCellValue(ndx, cell.clone()));
       settingDefaultValue = false;
     }
 
@@ -570,7 +572,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void selectID(int colNdx, HyperTableRow row, int newID)
   {
-    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getID() == newID), cell -> row.setCellValue(colNdx, cell));
+    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getID() == newID), cell -> row.setCellValue(colNdx, cell.clone()));
   }
 
 //---------------------------------------------------------------------------
@@ -578,7 +580,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void selectType(int colNdx, HyperTableRow row, RecordType newType)
   {
-    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getType() == newType), cell -> row.setCellValue(colNdx, cell));
+    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getType() == newType), cell -> row.setCellValue(colNdx, cell.clone()));
   }
 
 //---------------------------------------------------------------------------

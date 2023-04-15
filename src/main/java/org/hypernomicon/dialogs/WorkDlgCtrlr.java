@@ -585,7 +585,7 @@ public class WorkDlgCtrlr extends HyperDlg
         return;
       }
 
-      if (cellVal.equals(HyperTableCell.falseCheckboxCell))
+      if (cellVal.equals(HyperTableCell.falseCheckboxCell()))
         return;
 
       String text = row.getText(0);

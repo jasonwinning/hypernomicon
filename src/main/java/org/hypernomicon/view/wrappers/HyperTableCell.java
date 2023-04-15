@@ -36,10 +36,6 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
     smStandard, smTextSimple, smNumeric, smLast, smWork
   }
 
-  public static final HyperTableCell trueCheckboxCell  = new HyperTableCell(1 , "", hdtNone),
-                                     falseCheckboxCell = new HyperTableCell(0 , "", hdtNone),
-                                     blankCell = new HyperTableCell("", hdtNone);
-
   private int id;
   private final String text;
   private final RecordType type;
@@ -51,11 +47,14 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 
   public <HDT_T extends HDT_Record> HDT_T getRecord()            { return getRecord(this); }
 
-  static HyperTableCell checkboxCellFromBoolean(boolean boolVal) { return boolVal ? trueCheckboxCell : falseCheckboxCell; }
+  static HyperTableCell checkboxCellFromBoolean(boolean boolVal) { return boolVal ? trueCheckboxCell() : falseCheckboxCell(); }
   public static int getCellID(HyperTableCell cell)               { return cell == null ? -1 : cell.id; }
   public static String getCellText(HyperTableCell cell)          { return cell == null ? "" : safeStr(cell.text); }
   public static RecordType getCellType(HyperTableCell cell)      { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
-  public static boolean isEmpty(HyperTableCell cell)             { return (cell == null) || cell.equals(blankCell); }
+  public static boolean isEmpty(HyperTableCell cell)             { return (cell == null) || cell.equals(blankCell()); }
+  public static HyperTableCell blankCell()                       { return new HyperTableCell("", hdtNone); }
+  public static HyperTableCell trueCheckboxCell()                { return new HyperTableCell(1 , "", hdtNone); }
+  public static HyperTableCell falseCheckboxCell()               { return new HyperTableCell(0 , "", hdtNone); }
 
   @Override public HyperTableCell clone()
   { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
@@ -149,7 +148,11 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
       return Integer.MIN_VALUE + 1;
 
     if (sortMethod == smTextSimple)
-      return text.compareTo(otherCell.text);
+    {
+      int result = text.compareTo(otherCell.text);
+      if (result == 0) result = id - otherCell.id;
+      return result;
+    }
 
     if (sortMethod == smNumeric)
       return parseInt(text, Integer.MAX_VALUE) - parseInt(getCellText(otherCell), Integer.MAX_VALUE);

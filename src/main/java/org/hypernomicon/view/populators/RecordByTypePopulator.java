@@ -89,7 +89,7 @@ public class RecordByTypePopulator extends RecordPopulator
 
     if ((recordType == hdtNone) || (db.isLoaded() == false))
     {
-      choices.add(HyperTableCell.blankCell);
+      choices.add(HyperTableCell.blankCell());
       return choices;
     }
 
@@ -113,7 +113,7 @@ public class RecordByTypePopulator extends RecordPopulator
     RecordType recordType = rowToRecordType.get(row);
 
     if ((recordType == hdtNone) || (HyperTableCell.getCellType(cell) == hdtNone) || (HyperTableCell.getCellID(cell) < 1))
-      return HyperTableCell.blankCell;
+      return HyperTableCell.blankCell();
 
     if (recordType != HyperTableCell.getCellType(cell))
       return null;
@@ -135,7 +135,7 @@ public class RecordByTypePopulator extends RecordPopulator
     RecordType recordType = rowToRecordType.get(row);
 
     return (recordType == hdtNone) || (id < 1) ?
-      HyperTableCell.blankCell
+      HyperTableCell.blankCell()
     :
       getCell(db.records(recordType).getByID(id), recordType);
   }

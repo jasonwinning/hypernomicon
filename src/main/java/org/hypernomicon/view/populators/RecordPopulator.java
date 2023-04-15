@@ -87,7 +87,7 @@ public abstract class RecordPopulator extends Populator
       }
     }
 
-    choices.add(HyperTableCell.blankCell);
+    choices.add(HyperTableCell.blankCell());
   }
 
 //---------------------------------------------------------------------------
