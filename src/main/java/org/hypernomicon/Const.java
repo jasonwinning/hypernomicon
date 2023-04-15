@@ -102,6 +102,7 @@ public final class Const
     PREF_KEY_FONT_SIZE = "fontSize",
     PREF_KEY_DEF_DESC_FONT_SIZE = "defDescFontSize",
     PREF_KEY_DEF_DESC_FONT_FAMILY = "defDescFontFamily",
+    PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS = "openEmptyKeyWorks",
 
     PREF_KEY_IMPORT_ACTION_MOVE = "move",
     PREF_KEY_IMPORT_ACTION_COPY = "copy",

@@ -911,7 +911,9 @@ public class MainTextCtrlr
       if (borderPane.getTop() == null)
         borderPane.setTop(tpKeyWorks);
 
-      tpKeyWorks.setExpanded((keyWorks.size() > 0) || (record.getType() != hdtPerson));
+      boolean dontOpenEmptyKeyWorks = db.prefs.getBoolean(PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false) || app.prefs.getBoolean(PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
+
+      tpKeyWorks.setExpanded((keyWorks.size() > 0) || ((record.getType() != hdtPerson) && (dontOpenEmptyKeyWorks == false)));
 
       Map<String, String> linkMap = new HashMap<>();
       List<String> searchKeys = new ArrayList<>();

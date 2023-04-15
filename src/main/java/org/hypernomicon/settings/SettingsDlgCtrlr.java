@@ -87,7 +87,8 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnClearExtPath;
-  @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLowerCaseTargetNames, chkDefaultChapterWorkType, chkLinuxWorkaround;
+  @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLowerCaseTargetNames, chkDefaultChapterWorkType, chkLinuxWorkaround,
+                         chkCompDontExpandKeyWorks, chkDBDontExpandKeyWorks;
   @FXML private ComboBox<HyperTableCell> cbDefaultChapterWorkType;
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
@@ -228,10 +229,11 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     setToolTip(sliderFontSize, "Base font size");
 
-    initAppCheckBox(chkInternet       , PREF_KEY_CHECK_INTERNET       , true);
-    initAppCheckBox(chkNewVersionCheck, PREF_KEY_CHECK_FOR_NEW_VERSION, true);
-    initAppCheckBox(chkAutoOpenPDF    , PREF_KEY_AUTO_OPEN_PDF        , true);
-    initAppCheckBox(chkAutoRetrieveBib, PREF_KEY_AUTO_RETRIEVE_BIB    , true);
+    initAppCheckBox(chkInternet              , PREF_KEY_CHECK_INTERNET           , true );
+    initAppCheckBox(chkNewVersionCheck       , PREF_KEY_CHECK_FOR_NEW_VERSION    , true );
+    initAppCheckBox(chkAutoOpenPDF           , PREF_KEY_AUTO_OPEN_PDF            , true );
+    initAppCheckBox(chkAutoRetrieveBib       , PREF_KEY_AUTO_RETRIEVE_BIB        , true );
+    initAppCheckBox(chkCompDontExpandKeyWorks, PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
 
     chkLinuxWorkaround.setVisible(SystemUtils.IS_OS_LINUX);
 
@@ -245,8 +247,9 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     if (noDB == false)
     {
-      initDBCheckBox(chkUseSentenceCase, PREF_KEY_SENTENCE_CASE, false);
-      initDBCheckBox(chkLowerCaseTargetNames, PREF_KEY_LOWER_CASE_TARGET_NAMES, false);
+      initDBCheckBox(chkUseSentenceCase     , PREF_KEY_SENTENCE_CASE            , false);
+      initDBCheckBox(chkLowerCaseTargetNames, PREF_KEY_LOWER_CASE_TARGET_NAMES  , false);
+      initDBCheckBox(chkDBDontExpandKeyWorks, PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
       initDefaultChapterWorkType();
     }
 
