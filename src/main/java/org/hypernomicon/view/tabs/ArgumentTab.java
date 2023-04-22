@@ -27,6 +27,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
@@ -36,7 +37,6 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
-import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -93,7 +93,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
-      RecordType parentType = cellVal.getType();
+      RecordType parentType = cellVal.type;
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
       row.setCellValue(nextColNdx, "", parentType);
@@ -141,13 +141,13 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       if (HyperTableCell.getCellID(cellVal) > 0)
       {
         HDT_Work work = db.works.getByID(HyperTableCell.getCellID(cellVal));
-        row.setCellValue(nextColNdx, work, work.getYear(), CellSortMethod.smNumeric);
+        row.setCellValue(nextColNdx, work, work.getYear());
       }
       else
-        row.setCellValue(nextColNdx, "", hdtWork, CellSortMethod.smNumeric);
+        row.setCellValue(nextColNdx, "", hdtWork);
     });
 
-    htWhereMade.addLabelCol(hdtWork);
+    htWhereMade.addLabelCol(hdtWork, smNumeric);
 
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);
@@ -210,7 +210,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
         row.setCellValue(1, work.getLongAuthorsStr(true), hdtPerson);
 
       row.setCellValue(2, work, work.getCBText());
-      row.setCellValue(3, work, work.getYear(), CellSortMethod.smNumeric);
+      row.setCellValue(3, work, work.getYear());
     });
 
   // Populate the counterarguments

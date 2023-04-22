@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.EnumMap;
 import java.util.function.Function;
@@ -35,6 +36,7 @@ import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -56,6 +58,11 @@ public class HyperTableColumn
     ctGoNewBtn, ctEditNewBtn,  ctCustomBtn,    ctCheckbox, ctIcon, ctInvSelect
   }
 
+  public enum CellSortMethod
+  {
+    smStandard, smTextSimple, smNumeric, smWork, smIcon
+  }
+
   final private Populator populator;
   final private RecordType objType;
   final private HyperCtrlType ctrlType;
@@ -64,8 +71,9 @@ public class HyperTableColumn
   final CellUpdateHandler updateHandler;
   final private int colNdx;
   final private MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
-                               isNumeric           = new MutableBoolean(false),
                                dontCreateNewRecord = new MutableBoolean(false);
+
+  final private ObjectProperty<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
 
   public Function<HyperTableRow, String> textHndlr = null;
 
@@ -78,7 +86,8 @@ public class HyperTableColumn
   public String getHeader()                          { return tc.getText(); }
   RecordType getObjType()                            { return objType; }
   void setCanEditIfEmpty(boolean newVal)             { canEditIfEmpty.setValue(newVal); }
-  void setNumeric(boolean newVal)                    { isNumeric.setValue(newVal); }
+  void setSortMethod(CellSortMethod newSM)           { sortMethod.setValue(newSM); }
+  CellSortMethod getSortMethod()                     { return sortMethod.get(); }
   public void setDontCreateNewRecord(boolean newVal) { dontCreateNewRecord.setValue(newVal); }
   void setTooltip(ButtonAction ba, String text)      { tooltips.put(ba, text); }
   void clear()                                       { if (populator != null) populator.clear(); }
@@ -132,16 +141,28 @@ public class HyperTableColumn
       HyperTableCell cell1 = (HyperTableCell) obj1,
                      cell2 = (HyperTableCell) obj2;
 
-      if (table.getCanAddRows() == false)
-        return cell1.compareTo(cell2);
-
-      HyperTableRow lastRow = table.getRows().get(table.getRows().size() - 1);
-
-      if (lastRow.getCell(colNdx) == cell1)
+      if (cell1.sortToBottom)
         return tc.getSortType() == SortType.ASCENDING ? 1 : -1;
 
-      if (lastRow.getCell(colNdx) == cell2)
+      if (cell2.sortToBottom)
         return tc.getSortType() == SortType.ASCENDING ? -1 : 1;
+
+      if (table.getCanAddRows())
+      {
+        HyperTableRow lastRow = table.getRows().get(table.getRows().size() - 1);
+
+        if (lastRow.getCell(colNdx) == cell1)
+          return tc.getSortType() == SortType.ASCENDING ? 1 : -1;
+
+        if (lastRow.getCell(colNdx) == cell2)
+          return tc.getSortType() == SortType.ASCENDING ? -1 : 1;
+      }
+
+      if (sortMethod.get() != null)
+        return HyperTableCell.compareCells(cell1, cell2, sortMethod.get());
+
+      if (objType == hdtWork)
+        return HyperTableCell.compareCells(cell1, cell2, smWork);
 
       return cell1.compareTo(cell2);
     });
@@ -159,7 +180,7 @@ public class HyperTableColumn
 
         htcCol.setEditable(true);
         htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, canEditIfEmpty, isNumeric));
+        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, canEditIfEmpty, sortMethod));
 
         htcCol.setOnEditCommit(event ->
           event.getRowValue().setCellValue(colNdx, event.getNewValue().getCopyWithID(event.getOldValue().getID()))); // preserve ID value
@@ -184,22 +205,31 @@ public class HyperTableColumn
 
       case ctIcon :
 
+        sortMethod.set(smIcon);
+
         htcCol.setEditable(false);
         htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
         htcCol.setCellFactory(tableCol -> new TableCell<>()
         {
           @Override public void updateItem(HyperTableCell cell, boolean empty)
           {
-            super.updateItem(cell, empty);
+            if (empty || (cell == null) || (getTableRow().getItem() == null))
+            {
+              super.updateItem(cell, empty);
 
-            setText("");
-
-            if (empty || (cell == null) || (getTableRow().getItem() == null)) { setGraphic(null); setTooltip(null); return; }
+              setText("");
+              setGraphic(null);
+              setTooltip(null);
+              return;
+            }
 
             HDT_Record record = HyperTableCell.getRecord(cell);
             RecordType type = HyperTableCell.getCellType(cell);
 
-            setGraphic(record == null ? imgViewForRecordType(type) : imgViewForRecord(record));
+            String relPath = cell.getImgRelPath();
+
+            super.updateItem(cell, empty);
+            setGraphic(imgViewFromRelPath(relPath));
 
             if ((type == hdtWork) && (record != null))
             {

@@ -34,15 +34,15 @@ final class ColumnGroupItem
   final Tag tag;
   final RelationType relType; // If relType != rtNone, then this is a column showing subjects for the row record (the object)
   final String caption;
-  ResultColumn<? extends Comparable<?>> col;
+  ResultColumn col;
 
-  static final double RESULT_COL_MAX_WIDTH = 400.0;
+  static final double RESULT_COL_MAX_WIDTH = 600.0;
 
   //---------------------------------------------------------------------------
 
   // Constructor for all and only items in the general column group
 
-  ColumnGroupItem(ResultColumn<? extends Comparable<?>> col, TableView<ResultsRow> tv, int colNdx)
+  ColumnGroupItem(ResultColumn col, TableView<ResultsRow> tv, int colNdx)
   {
     tag = tagNone;
     relType = RelationType.rtNone;

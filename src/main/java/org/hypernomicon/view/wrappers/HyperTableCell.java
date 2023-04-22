@@ -20,31 +20,30 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
+
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.util.MediaUtil;
+import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 import org.hypernomicon.model.records.HDT_Work;
 
 //---------------------------------------------------------------------------
 
 public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 {
-  public enum CellSortMethod
-  {
-    smStandard, smTextSimple, smNumeric, smLast, smWork
-  }
-
   private int id;
-  private final String text;
-  private final RecordType type;
-  private CellSortMethod sortMethod;
+  private String imgRelPath;  // should only ever be accessed by getImgRelPath
 
-  public int getID()          { return id; }
-  public String getText()     { return text; }
-  public RecordType getType() { return type; }
+  public final String text;
+  public final RecordType type;
+  public final boolean sortToBottom;
 
+  public int getID()                                             { return id; }
   public <HDT_T extends HDT_Record> HDT_T getRecord()            { return getRecord(this); }
 
   static HyperTableCell checkboxCellFromBoolean(boolean boolVal) { return boolVal ? trueCheckboxCell() : falseCheckboxCell(); }
@@ -52,7 +51,7 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
   public static String getCellText(HyperTableCell cell)          { return cell == null ? "" : safeStr(cell.text); }
   public static RecordType getCellType(HyperTableCell cell)      { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
   public static boolean isEmpty(HyperTableCell cell)             { return (cell == null) || cell.equals(blankCell()); }
-  public static HyperTableCell blankCell()                       { return new HyperTableCell("", hdtNone); }
+  public static HyperTableCell blankCell()                       { return new HyperTableCell(    "", hdtNone); }
   public static HyperTableCell trueCheckboxCell()                { return new HyperTableCell(1 , "", hdtNone); }
   public static HyperTableCell falseCheckboxCell()               { return new HyperTableCell(0 , "", hdtNone); }
 
@@ -61,19 +60,18 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 
 //---------------------------------------------------------------------------
 
-  public HyperTableCell(           String newText, RecordType newType)         { this(-1   , newText, newType, smStandard); }
-  public HyperTableCell(int newID, String newText, RecordType newType)         { this(newID, newText, newType, smStandard); }
-  public HyperTableCell(HDT_Record record, String newText)                     { this(record.getID(), newText, record.getType(), smStandard); }
+  public HyperTableCell(                   String text, RecordType type)         { this(-1            , text, type); }
+  public HyperTableCell(int id           , String text, RecordType type)         { this(id            , text, type, false); }
+  public HyperTableCell(HDT_Record record, String text                 )         { this(record.getID(), text, record.getType()); }
 
-  public HyperTableCell(HDT_Record record, String newText, CellSortMethod sm)  { this(record.getID(), newText, record.getType(), sm); }
-  public HyperTableCell(String newText, RecordType newType, CellSortMethod sm) { this(-1, newText, newType, sm); }
+  public HyperTableCell(String text, RecordType type, boolean sortToBottom)      { this(-1, text, type, sortToBottom); }
 
-  public HyperTableCell(int newID, String newText, RecordType newType, CellSortMethod newSortMethod)
+  private HyperTableCell(int id, String text, RecordType type, boolean sortToBottom)
   {
-    id = newID;
-    text = newText;
-    type = newType;
-    sortMethod = newSortMethod;
+    this.id = id;
+    this.text = text;
+    this.type = type;
+    this.sortToBottom = sortToBottom;
   }
 
 //---------------------------------------------------------------------------
@@ -119,6 +117,17 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public String getImgRelPath()
+  {
+    if (imgRelPath != null)
+      return imgRelPath;
+
+    return imgRelPath = safeStr(nullSwitch(getRecord(this), imgRelPathByType(type), MediaUtil::imgRelPath));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public HyperTableCell getCopyWithID(int newID)
   {
     HyperTableCell newCell = clone();
@@ -129,37 +138,87 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static HyperTableCell simpleSortValue(HyperTableCell cell)
+  public static boolean compareNumberStrings(String str1, String str2, MutableInt result)
   {
-    HyperTableCell newCell = cell.clone();
-    newCell.sortMethod = smTextSimple;
-    return newCell;
+    boolean numeric1 = true, numeric2 = true;
+    int int1 = 0, int2 = 0;
+
+    try { int1 = Integer.parseInt(safeStr(str1)); }
+    catch (NumberFormatException nfe) { numeric1 = false; }
+
+    try { int2 = Integer.parseInt(safeStr(str2)); }
+    catch (NumberFormatException nfe) { numeric2 = false; }
+
+    if (numeric1 && numeric2)
+    {
+      result.setValue(int1 - int2);
+      return true;
+    }
+
+    if (numeric1)
+    {
+      result.setValue(1);
+      return true;
+    }
+
+    if (numeric2)
+    {
+      result.setValue(-1);
+      return true;
+    }
+
+    return false;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int compareTo(HyperTableCell otherCell)
+  public static int compareCells(HyperTableCell cell1, HyperTableCell cell2, CellSortMethod sortMethod)
   {
-    if (sortMethod == smLast)
-      return Integer.MAX_VALUE;
+    if ((cell1 == null) && (cell2 == null)) return 0;
+    if (cell1 == null) return -1;
+    if (cell2 == null) return 1;
 
-    if (otherCell.sortMethod == smLast)
-      return Integer.MIN_VALUE + 1;
+    if (cell1.sortToBottom)
+      return 1;
 
-    if (sortMethod == smTextSimple)
+    if (cell2.sortToBottom)
+      return -1;
+
+    if (sortMethod == smIcon)
     {
-      int result = text.compareTo(otherCell.text);
-      if (result == 0) result = id - otherCell.id;
+      int result = compareImgRelPaths(cell1.getImgRelPath(), cell2.getImgRelPath());
+
+      if (result == 0)
+      {
+        result = cell1.type.compareTo(cell2.type);
+
+        if (result == 0) result = cell1.id - cell2.id;
+      }
+
       return result;
     }
 
     if (sortMethod == smNumeric)
-      return parseInt(text, Integer.MAX_VALUE) - parseInt(getCellText(otherCell), Integer.MAX_VALUE);
+    {
+      MutableInt result = new MutableInt();
+
+      if (compareNumberStrings(cell1.text, cell2.text, result))
+        return result.getValue();
+
+      sortMethod = smTextSimple;
+    }
+
+    if (sortMethod == smTextSimple)
+    {
+      int result = cell1.text.compareToIgnoreCase(cell2.text);
+      if (result == 0) result = cell1.id - cell2.id;
+      return result;
+    }
 
     if (sortMethod == smWork)
     {
-      HDT_Work thisWork = getRecord(), otherWork = otherCell.getRecord();
+      HDT_Work thisWork = cell1.getRecord(), otherWork = cell2.getRecord();
 
       int cResult, numAuthors = Math.max(thisWork.getAuthors().size(), otherWork.getAuthors().size());
 
@@ -178,19 +237,33 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
       return thisWork.getSortKey().compareTo(otherWork.getSortKey());
     }
 
-    String thisKey = "", otherKey = "";
+    String key1 = "", key2 = "";
 
-    if ((id > 0) && (type != null) && (type != hdtNone))
-      thisKey = db.records(type).getByID(id).getSortKey();
+    if ((cell1.id > 0) && (cell1.type != null) && (cell1.type != hdtNone))
+      key1 = db.records(cell1.type).getByID(cell1.id).getSortKey();
 
-    if (thisKey.isEmpty()) thisKey = makeSortKeyByType(text, type);
+    if (key1.isEmpty()) key1 = makeSortKeyByType(cell1.text, cell1.type);
 
-    if ((otherCell.id > 0) && (otherCell.type != null) && (otherCell.type != hdtNone))
-      otherKey = db.records(otherCell.type).getByID(otherCell.id).getSortKey();
+    if ((cell2.id > 0) && (cell2.type != null) && (cell2.type != hdtNone))
+      key2 = db.records(cell2.type).getByID(cell2.id).getSortKey();
 
-    if (otherKey.isEmpty()) otherKey = makeSortKeyByType(otherCell.text, otherCell.type);
+    if (key2.isEmpty()) key2 = makeSortKeyByType(cell2.text, cell2.type);
 
-    return thisKey.compareTo(otherKey);
+    return key1.compareTo(key2);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int compareTo(HyperTableCell otherCell)
+  {
+    if (sortToBottom)
+      return Integer.MAX_VALUE;
+
+    if (otherCell.sortToBottom)
+      return Integer.MIN_VALUE + 1;
+
+    return compareCells(this, otherCell, smStandard);
   }
 
 //---------------------------------------------------------------------------

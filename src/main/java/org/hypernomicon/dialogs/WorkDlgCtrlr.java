@@ -357,7 +357,7 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     HyperTable hyperTable = new HyperTable(tvISBN, 0, true, "");
 
-    hyperTable.addTextEditCol(hdtWork, true, false);
+    hyperTable.addTextEditCol(hdtWork, true);
 
     hyperTable.addContextMenuItem("Use this ISBN to fill in fields",
       row -> row.getText(0).length() > 0,

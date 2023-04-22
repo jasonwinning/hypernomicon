@@ -204,7 +204,7 @@ public final class QueryCtrlr
 
     htFields.autoCommitListSelections = true;
 
-    htFields.addLabelCol(hdtNone, Pos.CENTER);
+    htFields.addLabelColWithAlignment(hdtNone, Pos.CENTER);
 
     VariablePopulator queryTypePopulator = new VariablePopulator(() -> createQueryTypePopulator(true, true));
 

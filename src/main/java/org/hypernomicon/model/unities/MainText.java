@@ -103,7 +103,7 @@ public class MainText
   public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
   public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
   public List<KeyWork> getKeyWorksUnmod()         { return Collections.unmodifiableList(keyWorks); }
-  private List<KeyWork> getKeyWorksCopy()         { return new ArrayList<>(keyWorks); }
+  public List<KeyWork> getKeyWorksCopy()          { return new ArrayList<>(keyWorks); }
   void expire()                                   { removeKeyWorks(false); }
 
 //---------------------------------------------------------------------------

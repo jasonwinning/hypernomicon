@@ -21,6 +21,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.List;
 import java.util.function.Function;
@@ -67,9 +68,9 @@ public class RecordSelectDlgCtrlr extends HyperDlg
     htFind = new HyperTable(tvFind, 1, false, ""); htFind.disableRefreshAfterCellUpdate = true;
 
     htFind.addIconCol();
-    htFind.addCol(hdtNone, ctIncremental);
-    htFind.addLabelCol(hdtNone);
-    htFind.addLabelCol(hdtNone);
+    htFind.addCol     (hdtNone, ctIncremental);
+    htFind.addLabelCol(hdtNone, smNumeric);
+    htFind.addLabelCol(hdtNone, smTextSimple);
 
     htFind.setDblClickHandler(HDT_Record.class, work -> btnOkClick());
 

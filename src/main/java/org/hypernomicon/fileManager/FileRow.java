@@ -23,6 +23,7 @@ import java.time.Instant;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.mime.MediaType;
 
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
@@ -126,12 +127,11 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   {
     if (graphic != null) return graphic;
 
-    boolean isDir = isDirectory();
+    if (isDirectory()) return graphic = imgViewForRecordType(hdtFolder);
 
-    if (isDir == false)
-      determineType();
+    determineType();
 
-    return graphic = imgViewFromFilePath(hyperPath.filePath(), mimetype, isDir);
+    return graphic = imgViewFromFilePath(hyperPath.filePath(), mimetype);
   }
 
 //---------------------------------------------------------------------------

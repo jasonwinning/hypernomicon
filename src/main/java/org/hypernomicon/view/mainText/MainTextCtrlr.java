@@ -579,7 +579,7 @@ public class MainTextCtrlr
     if (ui.cantSaveRecord()) return;
 
     RecordType keyType = hcbKeyType.selectedType();
-    List<KeyWork> keyWorks = new ArrayList<>(curRecord.getMainText().getKeyWorksUnmod());
+    List<KeyWork> keyWorks = curRecord.getMainText().getKeyWorksCopy();
 
     HDT_RecordWithPath keyRecord = db.createNewBlankRecord(keyType);
     keyWorks.add(new KeyWork(keyRecord));

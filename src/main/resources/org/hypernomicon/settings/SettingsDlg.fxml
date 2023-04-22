@@ -148,10 +148,10 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="11">
               <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file from internet in Work File dialog" />
             </AnchorPane>
-                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="12">
-                     <children>
-                        <CheckBox fx:id="chkCompDontExpandKeyWorks" layoutY="4.0" mnemonicParsing="false" text="Don't expand key works when editing record description and there are no key works yet" />
-                     </children></AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="12">
+              <CheckBox fx:id="chkCompDontExpandKeyWorks" layoutY="4.0" mnemonicParsing="false"
+                        text="Don't expand key works when editing record description and there are no key works yet"/>
+            </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="13">
               <CheckBox fx:id="chkLinuxWorkaround" layoutY="4.0" mnemonicParsing="false" text="Enable workaround for when parent windows stop being resizable" />
             </AnchorPane>
@@ -200,11 +200,11 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
               <CheckBox fx:id="chkLowerCaseTargetNames" layoutX="14.0" layoutY="6.0" mnemonicParsing="false" text="Always default to lowercase target position/argument name when generating new argument name suggestions" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0" />
             </AnchorPane>
-                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-                     <children>
-                        <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false" text="Don't expand key works when editing record description and there are no key works yet" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0" />
-                     </children>
-                  </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+              <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false"
+                        text="Don't expand key works when editing record description and there are no key works yet"
+                        AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="8.0"/>
+            </AnchorPane>
           </GridPane>
         </AnchorPane>
       </Tab>

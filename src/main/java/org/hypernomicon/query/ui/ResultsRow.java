@@ -17,17 +17,12 @@
 
 package org.hypernomicon.query.ui;
 
-import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.query.ui.ResultsTable.ResultCellValue;
 import org.hypernomicon.view.wrappers.AbstractRow;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.*;
-
-import java.time.Instant;
 
 public final class ResultsRow extends AbstractRow<HDT_Record, ResultsRow>
 {
@@ -56,24 +51,6 @@ public final class ResultsRow extends AbstractRow<HDT_Record, ResultsRow>
   {
     RecordType type = getRecordType();
     return type == hdtNone ? "" : getTypeName(type);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  ResultCellValue<Instant> getDateCellValue(Tag dateTag)
-  {
-    Instant i = null;
-
-    if ((record != null) && (record.getType() != hdtNone)) switch (dateTag)
-    {
-      case tagCreationDate : i = record.getCreationDate(); break;
-      case tagModifiedDate : i = record.getModifiedDate(); break;
-      case tagViewDate     : i = record.getViewDate    (); break;
-      default              :                               break;
-    }
-
-    return i == null ? new ResultCellValue<>("", Instant.MIN) : new ResultCellValue<>(dateTimeToUserReadableStr(i), i);
   }
 
 //---------------------------------------------------------------------------

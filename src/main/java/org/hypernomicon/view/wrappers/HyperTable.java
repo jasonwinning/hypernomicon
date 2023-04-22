@@ -42,6 +42,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
+import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
@@ -74,6 +75,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -211,9 +213,10 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // If the tableview is embedded in a context where layout requests aren't getting propagated correctly,
-  // this method can be used with a user-supplied handler to manually trigger parent layout requests
-
+  /**
+   * If the tableview is embedded in a context where layout requests aren't getting propagated correctly,
+   * this method can be used with a user-supplied handler to manually trigger parent layout requests.
+   */
   void doExternalRefresh()
   {
     if (refreshHandler != null)
@@ -420,10 +423,17 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addLabelCol(RecordType objType)
   {
-    return addLabelCol(objType, null);
+    return addLabelColWithAlignment(objType, null);
   }
 
-  public HyperTableColumn addLabelCol(RecordType objType, Pos alignment)
+  public HyperTableColumn addLabelCol(RecordType objType, CellSortMethod sortMethod)
+  {
+    HyperTableColumn col = addLabelCol(objType);
+    col.setSortMethod(sortMethod);
+    return col;
+  }
+
+  public HyperTableColumn addLabelColWithAlignment(RecordType objType, Pos alignment)
   {
     HyperTableColumn col = addColAltPopulator(objType, ctNone, Populator.create(cvtRecord));
     col.alignment = alignment;
@@ -458,14 +468,14 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, ButtonCellHandler handler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, handler, btnCaption)); }
 
+  public HyperTableColumn addIconCol() {
+    return addCol(new HyperTableColumn(this, hdtNone, ctIcon, null, -1)); }
+
   public HyperTableColumn addCheckboxCol() {
     return addCol(new HyperTableColumn(this, hdtNone, ctCheckbox, null, -1)); }
 
   public HyperTableColumn addCheckboxColWithUpdateHandler(CellUpdateHandler updateHandler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctCheckbox, null, -1, updateHandler)); }
-
-  public HyperTableColumn addIconCol() {
-    return addCol(new HyperTableColumn(this, hdtNone, ctIcon, null, -1));  }
 
   public HyperTableColumn addReadOnlyColWithCustomGraphic(RecordType objType, Function<HyperTableRow, Node> graphicProvider) {
     return addCol(new HyperTableColumn(this, objType, ctNone, null, -1, graphicProvider)); }
@@ -473,12 +483,16 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn addTextEditColWithUpdateHandler(RecordType objType, boolean canEditIfEmpty, boolean isNumeric, CellUpdateHandler updateHandler)
+  public HyperTableColumn addTextEditColWithUpdateHandler(RecordType objType, boolean canEditIfEmpty, CellUpdateHandler updateHandler)
   {
-    HyperTableColumn col = new HyperTableColumn(this, objType, ctEdit, null, -1, updateHandler);
+    return addTextEditColWithUpdateHandler(objType, canEditIfEmpty, null, updateHandler);
+  }
+
+  public HyperTableColumn addTextEditColWithUpdateHandler(RecordType objType, boolean canEditIfEmpty, CellSortMethod sortMethod, CellUpdateHandler updateHandler)
+  {
+    HyperTableColumn col = addCol(new HyperTableColumn(this, objType, ctEdit, null, -1, updateHandler));
     col.setCanEditIfEmpty(canEditIfEmpty);
-    col.setNumeric(isNumeric);
-    cols.add(col);
+    col.setSortMethod(sortMethod);
 
     return col;
   }
@@ -486,12 +500,16 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn addTextEditCol(RecordType objType, boolean canEditIfEmpty, boolean isNumeric)
+  public HyperTableColumn addTextEditCol(RecordType objType, boolean canEditIfEmpty)
   {
-    HyperTableColumn col = new HyperTableColumn(this, objType, ctEdit, null, -1);
+    return addTextEditCol(objType, canEditIfEmpty, null);
+  }
+
+  public HyperTableColumn addTextEditCol(RecordType objType, boolean canEditIfEmpty, CellSortMethod sortMethod)
+  {
+    HyperTableColumn col = addCol(new HyperTableColumn(this, objType, ctEdit, null, -1));
     col.setCanEditIfEmpty(canEditIfEmpty);
-    col.setNumeric(isNumeric);
-    cols.add(col);
+    col.setSortMethod(sortMethod);
 
     return col;
   }
@@ -521,6 +539,15 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void sortAscending(int colNdx)
+  {
+    tv.getSortOrder().setAll(List.of(tv.getColumns().get(colNdx)));
+    tv.getColumns().get(colNdx).setSortType(SortType.ASCENDING);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private boolean settingDefaultValue = false;
 
   public HyperTableRow newDataRow() { return newRow(true); }
@@ -540,6 +567,19 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       colNdxToDefaultValue.forEach((ndx, cell) -> row.setCellValue(ndx, cell.clone()));
       settingDefaultValue = false;
     }
+
+    return row;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableRow newShowMoreRow()
+  {
+    HyperTableRow row = newDataRow();
+
+    for (int colNdx = 0; colNdx < cols.size(); colNdx++)
+      row.setCellValue(colNdx, new HyperTableCell("", cols.get(colNdx).getCtrlType() == ctIncremental ? hdtAuxiliary : hdtNone, true));
 
     return row;
   }
@@ -580,7 +620,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void selectType(int colNdx, HyperTableRow row, RecordType newType)
   {
-    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getType() == newType), cell -> row.setCellValue(colNdx, cell.clone()));
+    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.type == newType), cell -> row.setCellValue(colNdx, cell.clone()));
   }
 
 //---------------------------------------------------------------------------
@@ -735,8 +775,11 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // This assumes that the table is not currently being edited.
-
+  /**
+   * This assumes that the table is not currently being edited.
+   * @param row the row
+   * @param colNdx the column index
+   */
   public void edit(HyperTableRow row, int colNdx)
   {
     runDelayedInFXThread(1, 200, () -> tv.edit(tv.getItems().indexOf(row), tv.getColumns().get(colNdx)));

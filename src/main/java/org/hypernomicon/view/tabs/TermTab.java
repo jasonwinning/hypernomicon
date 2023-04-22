@@ -42,6 +42,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -344,7 +345,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     htSubConcepts.addActionCol(ctGoNewBtn, 2);
     htSubConcepts.addLabelCol(hdtConcept);
-    htSubConcepts.addLabelCol(hdtConcept);
+    htSubConcepts.addLabelCol(hdtConcept, smTextSimple);
 
     htDisplayers = new HyperTable(tvRightChildren, 1, false, PREF_KEY_HT_TERM_DISPLAYERS);
 
@@ -487,6 +488,8 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       row.setCellValue(1, subConcept, subConcept.name());
       row.setCellValue(2, subConcept, subConcept.getMainText().getPlainForDisplay());
     });
+
+    htSubConcepts.sortAscending(1);
   }
 
 //---------------------------------------------------------------------------
@@ -557,7 +560,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     }
 
     HDT_ConceptSense sense = newCell.getRecord();
-    String newText = ultraTrim(newCell.getText());
+    String newText = ultraTrim(newCell.text);
 
     if ((oldGlossaryRow.sense != null) && ((sense == oldGlossaryRow.sense) || newText.equalsIgnoreCase(oldGlossaryRow.sense.name())))
     {

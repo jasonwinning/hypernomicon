@@ -61,6 +61,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 //---------------------------------------------------------------------------
 
@@ -144,8 +145,8 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htSubnotes.addActionCol(ctGoNewBtn, 2);
     htSubnotes.addLabelCol(hdtNote);
-    htSubnotes.addLabelCol(hdtNote);
-    htSubnotes.addLabelCol(hdtNote);
+    htSubnotes.addLabelCol(hdtNote, smTextSimple);
+    htSubnotes.addLabelCol(hdtNote, smTextSimple);
 
     htMentioners = new HyperTable(tvRightChildren, 1, false, PREF_KEY_HT_NOTE_MENTIONERS);
 
@@ -195,6 +196,8 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       row.setCellValue(2, subNote, subNote.getMainText().getPlainForDisplay());
       row.setCellValue(3, subNote, subNote.getFolderStr());
     });
+
+    htSubnotes.sortAscending(1);
 
     updateMentioners();
   }

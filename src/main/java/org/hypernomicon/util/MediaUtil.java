@@ -17,6 +17,7 @@
 
 package org.hypernomicon.util;
 
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
@@ -126,19 +127,16 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ImageView imgViewFromFilePath(FilePath filePath, MediaType mediaType, boolean isDir)
+  public static ImageView imgViewFromFilePath(FilePath filePath, MediaType mediaType)
   {
-    return imgViewFromRelPath(imgRelPath(filePath, mediaType, isDir));
+    return imgViewFromRelPath(imgRelPath(filePath, mediaType));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String imgRelPath(FilePath filePath, MediaType mimetype, boolean isDir)
+  private static String imgRelPath(FilePath filePath, MediaType mimetype)
   {
-    if (isDir)
-      return "resources/images/folder.png";
-
     if (mimetype == null)
       mimetype = getMediaType(filePath);
 
@@ -198,7 +196,7 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String imgRelPath(HDT_Record record)
+  public static String imgRelPath(HDT_Record record)
   {
     switch (record.getType())
     {
@@ -223,7 +221,7 @@ public final class MediaUtil
         HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
         if (miscFile.pathNotEmpty())
-          return imgRelPath(miscFile.filePath(), null, false);
+          return imgRelPath(miscFile.filePath(), null);
 
         // Fall through
 
@@ -236,27 +234,88 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String imgRelPathByType(RecordType type)
+  private static final String labelImgPath         = "resources/images/tag.png",
+                              glossaryImgPath      = "resources/images/bookshelf.png",
+                              termImgPath          = "resources/images/term.png",
+                              noteImgPath          = "resources/images/notebook-pencil.png",
+                              personImgPath        = "resources/images/people.png",
+                              institutionImgPath   = "resources/images/building-hedge.png",
+                              debateImgPath        = "resources/images/debate.png",
+                              positionImgPath      = "resources/images/position.png",
+                              argumentImgPath      = "resources/images/argument.png",
+                              investigationImgPath = "resources/images/documents-stack.png",
+                              folderImgPath        = "resources/images/folder.png";
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String imgRelPathByType(RecordType type)
   {
+    if (type == null) return "";
+
     switch (type)
     {
-      case hdtWorkLabel     : return "resources/images/tag.png";
+      case hdtWorkLabel     : return labelImgPath;
       case hdtMiscFile      : return "resources/images/file.png";
-      case hdtGlossary      : return "resources/images/bookshelf.png";
+      case hdtGlossary      : return glossaryImgPath;
       case hdtConcept       : // Fall through
-      case hdtTerm          : return "resources/images/term.png";
-      case hdtNote          : return "resources/images/notebook-pencil.png";
+      case hdtTerm          : return termImgPath;
+      case hdtNote          : return noteImgPath;
       case hdtWork          : // Fall through
       case hdtWorkFile      : return "resources/images/paper.png";
-      case hdtPerson        : return "resources/images/people.png";
-      case hdtInstitution   : return "resources/images/building-hedge.png";
-      case hdtDebate        : return "resources/images/debate.png";
-      case hdtPosition      : return "resources/images/position.png";
-      case hdtArgument      : return "resources/images/argument.png";
-      case hdtInvestigation : return "resources/images/documents-stack.png";
-      case hdtFolder        : return "resources/images/folder.png";
+      case hdtPerson        : return personImgPath;
+      case hdtInstitution   : return institutionImgPath;
+      case hdtDebate        : return debateImgPath;
+      case hdtPosition      : return positionImgPath;
+      case hdtArgument      : return argumentImgPath;
+      case hdtInvestigation : return investigationImgPath;
+      case hdtFolder        : return folderImgPath;
       default               : return "";
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static RecordType imgRelPathToType(String relPath)
+  {
+    if (safeStr(relPath).isBlank()) return hdtNone;
+
+    switch (relPath)
+    {
+      case labelImgPath         : return hdtWorkLabel;
+      case glossaryImgPath      : return hdtGlossary;
+      case termImgPath          : return hdtTerm;
+      case noteImgPath          : return hdtNote;
+      case personImgPath        : return hdtPerson;
+      case institutionImgPath   : return hdtInstitution;
+      case debateImgPath        : return hdtDebate;
+      case positionImgPath      : return hdtPosition;
+      case argumentImgPath      : return hdtArgument;
+      case investigationImgPath : return hdtInvestigation;
+      case folderImgPath        : return hdtFolder;
+
+      default                   : return hdtNone;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static int compareImgRelPaths(String path1, String path2)
+  {
+    int strCompResult = safeStr(path1).compareTo(safeStr(path2));
+    if (strCompResult == 0) return 0;
+
+    RecordType type1 = imgRelPathToType(path1),
+               type2 = imgRelPathToType(path2);
+
+    if ((type1 != hdtNone) && (type2 == hdtNone)) return type1.compareTo(hdtWork);
+    if ((type2 != hdtNone) && (type1 == hdtNone)) return hdtWork.compareTo(type2);
+
+    if ((type1 == hdtNone) && (type2 == hdtNone)) return strCompResult;
+
+    return type1.compareTo(type2);
   }
 
 //---------------------------------------------------------------------------

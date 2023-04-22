@@ -19,6 +19,7 @@ package org.hypernomicon.query.ui;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
@@ -33,12 +35,14 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
+import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.query.ui.ResultsTable.ResultCellValue.*;
 import static org.hypernomicon.util.Util.*;
 
 import javafx.application.Platform;
@@ -48,6 +52,7 @@ import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
@@ -66,60 +71,139 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
 //---------------------------------------------------------------------------
 
-  static final class ResultColumn<Comp_T extends Comparable<Comp_T>> extends TableColumn<ResultsRow, ResultCellValue<Comp_T>>
+  static final class ResultColumn extends TableColumn<ResultsRow, ResultCellValue>
   {
-    ResultColumn(String caption) { super(caption); }
+    ResultColumn(String caption)
+    {
+      this(caption, false);
+    }
+
+    private ResultColumn(String caption, boolean caseSensitive)
+    {
+      super(caption);
+
+      setComparator((cell1, cell2) ->
+      {
+        if ((cell1 == null) && (cell2 == null)) return 0;
+        if (cell1 == null) return -1;
+        if (cell2 == null) return 1;
+
+        if (caseSensitive)
+          return safeStr(cell1.text).trim().compareTo(safeStr(cell2.text).trim());
+
+        return safeStr(cell1.text).trim().compareToIgnoreCase(safeStr(cell2.text).trim());
+      });
+    }
+
+    private ResultColumn(String caption, Comparator<HDT_Record> comparator)
+    {
+      this(caption, comparator, false);
+    }
+
+    private ResultColumn(String caption, Comparator<HDT_Record> comparator, boolean caseSensitive)
+    {
+      super(caption);
+
+      setComparator((cell1, cell2) ->
+      {
+        if ((cell1 == null) && (cell2 == null)) return 0;
+        if (cell1 == null) return -1;
+        if (cell2 == null) return 1;
+
+        if (HDT_Record.isEmpty(cell1.record) || HDT_Record.isEmpty(cell2.record))
+        {
+          if (caseSensitive)
+            return safeStr(cell1.text).trim().compareTo(safeStr(cell2.text).trim());
+
+          return safeStr(cell1.text).trim().compareToIgnoreCase(safeStr(cell2.text).trim());
+        }
+
+        return comparator.compare(cell1.record, cell2.record);
+      });
+    }
+
+    private ResultColumn(String caption, Function<String, String> sortKeyFunction)
+    {
+      this(caption, sortKeyFunction, false);
+    }
+
+    private ResultColumn(String caption, Function<String, String> sortKeyFunction, boolean caseSensitive)
+    {
+      super(caption);
+
+      setComparator((cell1, cell2) ->
+      {
+        if ((cell1 == null) && (cell2 == null)) return 0;
+        if (cell1 == null) return -1;
+        if (cell2 == null) return 1;
+
+        if (caseSensitive)
+          return sortKeyFunction.apply(safeStr(cell1.text).trim()).compareTo(sortKeyFunction.apply(safeStr(cell2.text).trim()));
+
+        return sortKeyFunction.apply(safeStr(cell1.text).trim()).compareToIgnoreCase(sortKeyFunction.apply(safeStr(cell2.text).trim()));
+      });
+    }
+
+    /**
+     *
+     * @param caption column header name
+     * @param comparator how to compare the display text of the cells
+     * @param klass is just there to disambiguate from the other constructor that takes a comparator; it doesn't do anything
+     */
+    private ResultColumn(String caption, Comparator<String> comparator, Class<String> klass)
+    {
+      super(caption);
+
+      setComparator((cell1, cell2) ->
+      {
+        if ((cell1 == null) && (cell2 == null)) return 0;
+        if (cell1 == null) return -1;
+        if (cell2 == null) return 1;
+
+        return comparator.compare(safeStr(cell1.text).trim(), safeStr(cell2.text).trim());
+      });
+    }
 
     final EnumMap<RecordType, ColumnGroupItem> map = new EnumMap<>(RecordType.class);
   }
 
 //---------------------------------------------------------------------------
 
-  static final class ResultCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<ResultCellValue<Comp_T>>
+  static final class ResultCellValue
   {
     private final String text;
-    private final Comparable<Comp_T> sortVal;
-    private final Function<String, Comp_T> strToComp;
+    private final HDT_Record record;
 
-    ResultCellValue(String text, Comparable<Comp_T> sortVal)
+    private ResultCellValue(String text, HDT_Record record)
     {
       this.text = text;
-      this.sortVal = sortVal;
-      strToComp = null;
+      this.record = record;
     }
 
-    private ResultCellValue(String text, Function<String, Comp_T> strToComp)
-    {
-      this.text = text;
-      this.strToComp = strToComp;
-      sortVal = null;
-    }
-
-    ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<>(this); }
+    private ObservableValue<ResultCellValue> getObservable() { return new SimpleObjectProperty<>(this); }
 
     @Override public String toString() { return text; }
 
-    @SuppressWarnings("unchecked")
-    @Override public int compareTo(ResultCellValue<Comp_T> other)
-    {
-      return strToComp != null ?
-        strToComp.apply(text).compareTo(other.strToComp.apply(other.text))
-      :
-        sortVal.compareTo((Comp_T) other.sortVal);
-    }
-
     @Override public int hashCode()
     {
-      return Objects.hash(sortVal, strToComp, text);
+      return Objects.hash(safeStr(text).toLowerCase(), record);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override public boolean equals(Object obj)
     {
       if (this == obj) return true;
       if (obj == null) return false;
       if (getClass() != obj.getClass()) return false;
-      return compareTo((ResultCellValue) obj) == 0;
+
+      ResultCellValue other = (ResultCellValue)obj;
+
+      if (record != other.record) return false;
+      return safeStr(text).trim().equalsIgnoreCase(safeStr(other.text).trim());
+    }
+
+    static ObservableValue<ResultCellValue> getObservableCellValue(CellDataFeatures<ResultsRow, ResultCellValue> cellData, String str)
+    {
+      return new ResultCellValue(str, cellData.getValue().getRecord()).getObservable();
     }
   }
 
@@ -155,16 +239,11 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
     addDefaultMenuItems();
 
     addContextMenuItem("Remove from query results", HDT_Record.class, record ->
-      tv.getItems().removeAll(new ArrayList<>(tv.getSelectionModel().getSelectedItems())));
+      tv.getItems().removeAll(List.copyOf(tv.getSelectionModel().getSelectedItems())));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
-  private static <Comp_T extends Comparable<Comp_T>> ObservableValue<ResultCellValue<Comp_T>> getCustomCellValue(String str, Function<String, Comp_T> strToComp)
-  {
-    return new ResultCellValue<>(str, strToComp).getObservable();
-  }
 
   void reset()
   {
@@ -176,29 +255,25 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     colGroups.add(generalGroup = new ColumnGroup("General"));
 
-    ResultColumn<Integer> intCol = new ResultColumn<>("ID");
-    intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordIDStr(), str -> parseInt(str, -1)));
+    ResultColumn intCol = new ResultColumn("ID", Comparator.comparingInt(HDT_Record::getID));
+    intCol.setCellValueFactory(cellData -> getObservableCellValue(cellData, cellData.getValue().getRecordIDStr()));
     generalGroup.add(new ColumnGroupItem(intCol, tv, -1));
 
-    ResultColumn<String> strCol = new ResultColumn<>("Name");
-    strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordName(), str -> makeSortKeyByType(str, hdtWork)));
+    ResultColumn strCol = new ResultColumn("Name", str -> makeSortKeyByType(str, hdtWork));
+    strCol.setCellValueFactory(cellData -> getObservableCellValue(cellData, cellData.getValue().getRecordName()));
     generalGroup.add(new ColumnGroupItem(strCol, tv, -1));
 
-    strCol = new ResultColumn<>("Type");
-    strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordTypeStr(), str -> str.trim().toLowerCase()));
+    strCol = new ResultColumn("Type");
+    strCol.setCellValueFactory(cellData -> getObservableCellValue(cellData, cellData.getValue().getRecordTypeStr()));
     generalGroup.add(new ColumnGroupItem(strCol, tv, -1));
 
-    strCol = new ResultColumn<>("Search Key");
-    strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getSearchKey(), str -> str.trim().toLowerCase()));
+    strCol = new ResultColumn("Search Key");
+    strCol.setCellValueFactory(cellData -> getObservableCellValue(cellData, cellData.getValue().getSearchKey()));
     strCol.setVisible(false);
     generalGroup.add(new ColumnGroupItem(strCol, tv, -1));
 
-    strCol = new ResultColumn<>("Sort Key");
-    strCol.setCellValueFactory(cellData ->
-    {
-      String sortKey = cellData.getValue().getSortKey();
-      return new ResultCellValue<>(sortKey, sortKey).getObservable();
-    });
+    strCol = new ResultColumn("Sort Key", true);
+    strCol.setCellValueFactory(cellData -> getObservableCellValue(cellData, cellData.getValue().getSortKey()));
 
     strCol.setVisible(false);
     generalGroup.add(new ColumnGroupItem(strCol, tv, -1));
@@ -258,8 +333,64 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
   private void addDateColumn(Tag dateTag)
   {
-    ResultColumn<Instant> col = new ResultColumn<>(dateTag.header);
-    col.setCellValueFactory(cellData -> cellData.getValue().getDateCellValue(dateTag).getObservable());
+    Comparator<HDT_Record> comparator = null;
+
+    switch (dateTag)
+    {
+      case tagCreationDate :
+
+        comparator = (record1, record2) ->
+        {
+          Instant i1 = nullSwitch(record1.getCreationDate(), Instant.MIN);
+          Instant i2 = nullSwitch(record2.getCreationDate(), Instant.MIN);
+          return i1.compareTo(i2);
+        };
+
+        break;
+
+      case tagModifiedDate :
+
+        comparator = (record1, record2) ->
+        {
+          Instant i1 = nullSwitch(record1.getModifiedDate(), Instant.MIN);
+          Instant i2 = nullSwitch(record2.getModifiedDate(), Instant.MIN);
+          return i1.compareTo(i2);
+        };
+
+        break;
+
+      case tagViewDate :
+
+        comparator = (record1, record2) ->
+        {
+          Instant i1 = nullSwitch(record1.getViewDate(), Instant.MIN);
+          Instant i2 = nullSwitch(record2.getViewDate(), Instant.MIN);
+          return i1.compareTo(i2);
+        };
+
+        break;
+
+      default : break;
+    }
+
+    ResultColumn col = new ResultColumn(dateTag.header, comparator);
+
+    col.setCellValueFactory(cellData ->
+    {
+      Instant i = null;
+      HDT_Record record = cellData.getValue().getRecord();
+
+      if ((record != null) && (record.getType() != hdtNone)) switch (dateTag)
+      {
+        case tagCreationDate : i = record.getCreationDate(); break;
+        case tagModifiedDate : i = record.getModifiedDate(); break;
+        case tagViewDate     : i = record.getViewDate    (); break;
+        default              :                               break;
+      }
+
+      return getObservableCellValue(cellData, i == null ? "" : dateTimeToUserReadableStr(i));
+    });
+
     generalGroup.add(new ColumnGroupItem(col, tv, firstNonGeneralColumnNdx()));
   }
 
@@ -282,16 +413,39 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ResultColumn<String> addNonGeneralColumn(EnumMap<RecordType, ColumnGroupItem> recordTypeToItem)
+  ResultColumn addNonGeneralColumn(EnumMap<RecordType, ColumnGroupItem> recordTypeToItem)
   {
     ColumnGroupItem firstItem = recordTypeToItem.entrySet().iterator().next().getValue();
 
-    ResultColumn<String> col = new ResultColumn<>(firstItem.caption);
+    ResultColumn col;
 
-    Function<String, String> strToComp = firstItem.tag == tagTitle ?
-      str -> makeSortKeyByType(str, hdtWork)
-    :
-      str -> str.trim().toLowerCase();
+    switch (firstItem.tag)
+    {
+      case tagTitle :
+
+        col = new ResultColumn(firstItem.caption, str -> makeSortKeyByType(str, hdtWork));
+        break;
+
+      case tagYear :
+
+        Comparator<String> strComparator = (str1, str2) ->
+        {
+          MutableInt result = new MutableInt();
+
+          if (HyperTableCell.compareNumberStrings(str1, str2, result))
+            return result.getValue();
+
+          return str1.compareToIgnoreCase(str2);
+        };
+
+        col = new ResultColumn(firstItem.caption, strComparator, String.class);
+        break;
+
+      default :
+
+        col = new ResultColumn(firstItem.caption);
+        break;
+    }
 
     boolean visible = false;
     for (ColumnGroupItem item : recordTypeToItem.values())
@@ -321,7 +475,7 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
         }
       }
 
-      return getCustomCellValue(str, strToComp);
+      return getObservableCellValue(cellData, str);
     });
 
     col.setMaxWidth(ColumnGroupItem.RESULT_COL_MAX_WIDTH);

@@ -215,18 +215,19 @@ public class PDFJSWrapper
 
       jxBrowserInitialized  = true;
     }
-    catch (IOException e)
-    {
-      String msg = safeStr(e.getMessage());
-      messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError);
-      disable();
-    }
     catch (ExceptionInInitializerError e)
     {
       String msg = safeStr(e.getCause().getMessage());
       messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError);
       disable();
     }
+    catch (IOException | LinkageError e)
+    {
+      String msg = safeStr(e.getMessage());
+      messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError);
+      disable();
+    }
+
 
     return jxBrowserDisabled ? null : browser;
   }

@@ -76,11 +76,12 @@ public abstract class ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void addCol(String caption, int prefWidth)
+  protected TableColumn<HyperTableRow, HyperTableCell> addCol(String caption, int prefWidth)
   {
     TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>(caption);
     col.setPrefWidth(prefWidth);
     tv.getColumns().add(col);
+    return col;
   }
 
 //---------------------------------------------------------------------------

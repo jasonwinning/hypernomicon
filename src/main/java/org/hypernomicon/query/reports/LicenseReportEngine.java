@@ -115,7 +115,7 @@ public class LicenseReportEngine extends ReportEngine
 
   @Override String getHtml(HyperTableRow row)
   {
-    String str = nullSwitch(row, "", r -> nullSwitch(r.getCell(0), "", HyperTableCell::getText));
+    String str = nullSwitch(row, "", r -> nullSwitch(r.getCell(0), "", cell -> cell.text));
 
     if (str.contains("LICENSE")) return license.toString();
     if (str.contains("NOTICE" )) return notice .toString();

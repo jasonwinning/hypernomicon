@@ -30,6 +30,8 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import com.google.common.collect.Ordering;
+
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
@@ -37,12 +39,12 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.instTabEnum;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,7 +87,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     htSubInst = new HyperTable(tvSubInstitutions, 0, true, PREF_KEY_HT_INST_SUB);
 
-    htSubInst.addTextEditCol(hdtInstitution, true, false);
+    htSubInst.addTextEditCol(hdtInstitution, true);
     htSubInst.addCol(hdtInstitutionType, ctDropDownList);
 
     htSubInst.addActionColWithButtonHandler(ctUrlBtn, 3, (row, colNdx) ->
@@ -102,7 +104,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         DesktopUtil.openWebLink(row.getText(colNdx));
     });
 
-    htSubInst.addTextEditCol(hdtInstitution, true, false);
+    htSubInst.addTextEditCol(hdtInstitution, true, smTextSimple);
 
     htSubInst.addContextMenuItem("Go to this record", HDT_Institution.class, inst -> ui.goToRecord(inst, true));
 
@@ -118,11 +120,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     htPersons = new HyperTable(tvPersons, 0, false, PREF_KEY_HT_INST_PEOPLE);
 
-    htPersons.addLabelCol(hdtPerson     );
-    htPersons.addLabelCol(hdtRank       );
-    htPersons.addLabelCol(hdtField      );
-    htPersons.addLabelCol(hdtInstitution);
-    htPersons.addLabelCol(hdtPerson     );
+    htPersons.addLabelCol(hdtPerson             );
+    htPersons.addLabelCol(hdtRank               );
+    htPersons.addLabelCol(hdtField, smTextSimple);
+    htPersons.addLabelCol(hdtInstitution        );
+    htPersons.addLabelCol(hdtPerson             );
 
     hcbCountry = new HyperCB(cbCountry, ctDropDownList, new StandardPopulator(hdtCountry), true);
     hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), true);
@@ -239,8 +241,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       if (person.field.isNotNull())
         row.setCellValue(2, person.field.get(), person.field.get().name());
 
-      List<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
-      instList.sort(Comparator.comparing(HDT_Record::name));
+      List<HDT_Institution> instList = Ordering.from(Comparator.comparing(HDT_Record::name)).immutableSortedCopy(peopleMap.get(person));
 
       String instStr = instList.stream().map(HDT_Institution::name).reduce((name1, name2) -> name1 + ", " + name2).orElse("");
       int instID = instList.isEmpty() ? -1 : instList.get(0).getID();
@@ -250,7 +251,9 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       row.setCellValue(4, instList.stream().noneMatch(Predicate.not(person::instIsPast)) ? "Past" : "", hdtPerson);
     });
 
-    htPersons.getTV().getSortOrder().setAll(List.of(htPersons.getTV().getColumns().get(0)));
+    // Always sort persons table by person name on tab update
+
+    htPersons.sortAscending(0);
 
     safeFocus(tfName);
   }

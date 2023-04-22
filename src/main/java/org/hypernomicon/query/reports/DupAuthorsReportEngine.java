@@ -24,6 +24,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,16 +99,16 @@ public class DupAuthorsReportEngine extends ReportEngine
       ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(HyperTableCell.blankCell());
 
       cells.add(author.getPerson() == null ?
-        new HyperTableCell(author.getFullName(false), hdtNone)
+        new HyperTableCell(author.getNameLastFirst(false), hdtNone)
       :
-        new HyperTableCell(author.getPerson(), author.getFullName(false)));
+        new HyperTableCell(author.getPerson(), author.getNameLastFirst(false)));
 
       cells.add(getWorkCell(author));
 
       cells.add(match.getPerson() == null ?
-        new HyperTableCell(match.getFullName(false), hdtNone)
+        new HyperTableCell(match.getNameLastFirst(false), hdtNone)
       :
-        new HyperTableCell(match.getPerson(), match.getFullName(false)));
+        new HyperTableCell(match.getPerson(), match.getNameLastFirst(false)));
 
       cells.add(getWorkCell(match));
 
@@ -134,7 +135,8 @@ public class DupAuthorsReportEngine extends ReportEngine
   {
     this.tv = tv;
 
-    addCol("", 100);
+    addCol("", 100).setSortable(false);
+
     addCol("Name 1", 200);
     addCol("Work 1", 500);
     addCol("Name 2", 200);
@@ -173,9 +175,9 @@ public class DupAuthorsReportEngine extends ReportEngine
     });
 
     ht.addLabelCol(hdtNone);
-    ht.addLabelCol(hdtWork);
+    ht.addLabelCol(hdtWork, smTextSimple);
     ht.addLabelCol(hdtNone);
-    ht.addLabelCol(hdtWork);
+    ht.addLabelCol(hdtWork, smTextSimple);
 
     return ht;
   }

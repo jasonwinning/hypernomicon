@@ -130,7 +130,7 @@ public class HyperFavorites
       HyperTableCell cell = favItem.favRecord;
 
       node.node("ids").putInt(String.valueOf(favNdx), cell.getID());
-      node.node("types").put(String.valueOf(favNdx), Tag.getTypeTagStr(cell.getType()));
+      node.node("types").put(String.valueOf(favNdx), Tag.getTypeTagStr(cell.type));
     }
 
     for (int queryNdx = 0; queryNdx < queryList.size(); queryNdx++)

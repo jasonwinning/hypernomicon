@@ -23,6 +23,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,7 +41,6 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
-import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -75,9 +75,9 @@ public class ContentsWindow extends HyperDlg
     htContents.addLabelCol(hdtPerson);
     htContents.addLabelCol(hdtWorkType);
     htContents.addLabelCol(hdtWork);
-    htContents.addLabelCol(hdtWork);
+    htContents.addLabelCol(hdtWork, smNumeric);
 
-    htContents.addTextEditColWithUpdateHandler(hdtWork, false, true, (row, cellVal, nextColNdx, nextPopulator) ->
+    htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       if (previewWindow.disablePreviewUpdating) return;
 
@@ -103,7 +103,7 @@ public class ContentsWindow extends HyperDlg
       setPageNum(work, num, true);
     });
 
-    htContents.addTextEditColWithUpdateHandler(hdtWork, false, true, (row, cellVal, nextColNdx, nextPopulator) ->
+    htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       if (previewWindow.disablePreviewUpdating) return;
 
@@ -220,7 +220,7 @@ public class ContentsWindow extends HyperDlg
       dialogStage.setTitle(dialogTitle + " - " + curFilePath.getNameOnly());
 
       works = db.works.stream().filter(work -> curFilePath.equals(resolveExtFilePath(work.getURL())))
-                               .collect(Collectors.toList());
+                               .collect(Collectors.toCollection(ArrayList::new));
     }
     else
     {
@@ -257,7 +257,7 @@ public class ContentsWindow extends HyperDlg
         row.setCellValue(1, workType, workType.listName());
 
       row.setCellValue(2, work, title);
-      row.setCellValue(3, work, year, CellSortMethod.smNumeric);
+      row.setCellValue(3, work, year);
 
       int pageNum = wtc == null ? -1 : wtc.getCurPageNum(work, curWorkFile, true);
 

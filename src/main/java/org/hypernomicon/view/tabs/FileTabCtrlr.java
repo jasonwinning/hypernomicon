@@ -318,7 +318,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       HyperTableCell cell = fdc.cbType.getValue();
       if (HyperTableCell.isEmpty(cell) == false)
       {
-        hcbType.addEntry(cell.getID(), cell.getText(), false);
+        hcbType.addEntry(cell.getID(), cell.text, false);
         cbType.setValue(cell);
         cbType.getSelectionModel().select(cell);
       }

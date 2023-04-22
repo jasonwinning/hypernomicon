@@ -55,7 +55,6 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
-import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -72,8 +71,9 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.MainCtrlr.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.workTabEnum;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,7 +108,6 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.SplitPane.Divider;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -248,8 +247,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htSubworks = new HyperTable(tvSubworks, 1, false, PREF_KEY_HT_WORK_SUB);
 
     htSubworks.addLabelCol(hdtPerson);
-    htSubworks.addLabelCol(hdtWork);
-    htSubworks.addLabelCol(hdtWork);
+    htSubworks.addLabelCol(hdtWork, smStandard);
+    htSubworks.addLabelCol(hdtWork, smNumeric);
 
     htSubworks.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
@@ -273,7 +272,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htArguments.addIconCol();
     htArguments.addLabelCol(hdtNone);
-    htArguments.addLabelCol(hdtNone);      // record type = hdtNone so that the column will sort purely based on displayed text
+    htArguments.addLabelCol(hdtNone, smTextSimple);
     htArguments.addLabelCol(hdtArgument);
 
     htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
@@ -284,7 +283,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htWorkFiles.addCheckboxCol();
     htWorkFiles.addLabelCol(hdtWorkFile);
-    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, true, (row, cellVal, nextColNdx, nextPopulator) ->
+    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int startPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (startPageNum < 0) return;
@@ -297,7 +296,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
     });
 
-    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, true, (row, cellVal, nextColNdx, nextPopulator) ->
+    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int endPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (endPageNum < 0) return;
@@ -310,7 +309,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
     });
 
-    htWorkFiles.addTextEditCol(hdtWorkFile, false, false);
+    htWorkFiles.addTextEditCol(hdtWorkFile, false);
 
     htWorkFiles.setTooltip(0, ButtonAction.baEdit, "Update or rename this work file");
     htWorkFiles.setTooltip(0, ButtonAction.baNew, "Add a new work file");
@@ -407,7 +406,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htISBN = new HyperTable(tvISBN, 0, true, "");
 
-    htISBN.addTextEditCol(hdtWork, true, false);
+    htISBN.addTextEditCol(hdtWork, true, smTextSimple);
 
     isbnSrchMenuItemSchema = htISBN.addContextMenuItem("WorldCat",
       row ->
@@ -781,7 +780,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         row.setCellValue(0, subWork, subWork.getLongAuthorsStr(true));
 
       row.setCellValue(1, subWork, subWork.name());
-      row.setCellValue(2, subWork, subWork.getYear(), CellSortMethod.smNumeric);
+      row.setCellValue(2, subWork, subWork.getYear());
     });
 
   // Populate arguments
@@ -847,9 +846,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (curWork == lastWork)
     {
-      List<TableColumn<HyperTableRow, ?>> list = new ArrayList<>(htWorkFiles.getTV().getSortOrder());
-
-      htWorkFiles.getTV().getSortOrder().setAll(list);
+      htWorkFiles.getTV().getSortOrder().setAll(List.copyOf(htWorkFiles.getTV().getSortOrder()));
 
       updatePreview = FilePath.isEmpty(filePath) || (filePath.equals(previewWindow.getFilePath(pvsWorkTab)) == false);
     }

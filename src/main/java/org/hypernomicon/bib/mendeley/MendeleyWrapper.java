@@ -427,7 +427,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 // Delete local folders not on list ---------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-        new ArrayList<>(keyToColl.keySet()).forEach(collKey ->
+        List.copyOf(keyToColl.keySet()).forEach(collKey ->
         {
           if (remoteFolderIDtoObj.containsKey(collKey) == false)
           {

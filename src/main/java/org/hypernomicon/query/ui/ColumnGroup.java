@@ -23,6 +23,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.query.ui.ResultsTable.*;
+import static org.hypernomicon.query.ui.ResultsTable.ResultCellValue.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,7 +80,7 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
     {
       if (item.tag == tagName) continue;
 
-      ResultColumn<? extends Comparable<?>> col = null;
+      ResultColumn col = null;
       EnumMap<RecordType, ColumnGroupItem> map = new EnumMap<>(RecordType.class);
       map.put(recordType, item);
 
@@ -119,13 +120,13 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
       {
         List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition, bfVolume, bfIssue, bfLanguage, bfISSNs, bfPages).forEach(field ->
         {
-          ResultColumn<String> strCol = new ResultColumn<>(field.getUserFriendlyName());
+          ResultColumn strCol = new ResultColumn(field.getUserFriendlyName());
 
           strCol.setCellValueFactory(cellData ->
           {
             HDT_Record record = cellData.getValue().getRecord();
             String text = record.getType() == hdtWork ? ((HDT_Work)record).getBibData().getStr(field) : "";
-            return new ResultCellValue<>(text, text.trim().toLowerCase()).getObservable();
+            return getObservableCellValue(cellData, text);
           });
 
           strCol.setVisible(false);

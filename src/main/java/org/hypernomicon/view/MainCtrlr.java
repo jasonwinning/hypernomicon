@@ -31,8 +31,9 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
@@ -387,9 +388,9 @@ public final class MainCtrlr
     htFind = new HyperTable(tvFind, 1, false, PREF_KEY_HT_FIND); htFind.disableRefreshAfterCellUpdate = true;
 
     htFind.addIconCol();
-    htFind.addCol(hdtNone, ctIncremental);
-    htFind.addLabelCol(hdtNone);
-    htFind.addLabelCol(hdtNone);
+    htFind.addCol     (hdtNone, ctIncremental);
+    htFind.addLabelCol(hdtNone, smNumeric);
+    htFind.addLabelCol(hdtNone, smTextSimple);
 
     htFind.setOnShowMore(() -> tfOmniGoToChange(ctfOmniGoTo.getText(), true));
 

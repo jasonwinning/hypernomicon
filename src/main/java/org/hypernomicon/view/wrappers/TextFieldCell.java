@@ -18,10 +18,14 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -31,21 +35,22 @@ import javafx.scene.input.KeyEvent;
 class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
   private TextField textField;
-  private final MutableBoolean canEditIfEmpty, isNumeric;
+  private final MutableBoolean canEditIfEmpty;
+  private final ObjectProperty<CellSortMethod> sortMethod;
   private final HyperTable table;
 
 //---------------------------------------------------------------------------
 
-  private String getString() { return getItem() == null ? "" : getItem().getText(); }
+  private String getString() { return nullSwitch(getItem(), "", cell -> cell.text); }
 
 //---------------------------------------------------------------------------
 
-  TextFieldCell(HyperTable table, MutableBoolean canEditIfEmpty, MutableBoolean isNumeric)
+  TextFieldCell(HyperTable table, MutableBoolean canEditIfEmpty, ObjectProperty<CellSortMethod> sortMethod)
   {
     this.table = table;
 
     this.canEditIfEmpty = canEditIfEmpty;
-    this.isNumeric = isNumeric;
+    this.sortMethod = sortMethod;
   }
 
 //---------------------------------------------------------------------------
@@ -121,7 +126,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
         commit();
     });
 
-    if (isNumeric.isTrue())
+    if (sortMethod.get() == smNumeric)
     {
       textField.setTextFormatter(new TextFormatter<>(change ->
       {
@@ -137,7 +142,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
       if (event.getCode() == KeyCode.ESCAPE)
       {
         HyperTableCell item = getItem();
-        textField.setText(item.getText());
+        textField.setText(item.text);
         commitEdit(item);
         event.consume();
       }

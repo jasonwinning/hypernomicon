@@ -83,6 +83,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
+import com.google.common.collect.Lists;
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
 import com.google.common.xml.XmlEscapers;
@@ -172,7 +173,7 @@ public final class Util
 
   public static List<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
   {
-    List<String> list = new ArrayList<>(Arrays.asList(str.split("\\r?\\n")));
+    List<String> list = Lists.newArrayList(str.split("\\r?\\n"));
 
     if (list.isEmpty()) return list;
 

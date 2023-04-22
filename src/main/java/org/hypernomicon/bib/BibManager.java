@@ -28,6 +28,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import static java.util.Objects.*;
 
 import java.io.IOException;
@@ -38,6 +39,7 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.EnumHashBiMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
 import org.controlsfx.control.textfield.CustomTextField;
@@ -224,9 +226,9 @@ public class BibManager extends HyperDlg
     tpRelated.heightProperty().addListener((ob, ov, nv) -> AnchorPane.setTopAnchor(webView, nv.doubleValue()));
 
     htRelatives = new HyperTable(tvRelatives, 2, false, "");
-    htRelatives.addLabelCol(hdtWork);
+    htRelatives.addLabelCol(hdtWork, smTextSimple);
     htRelatives.addIconCol();
-    htRelatives.addLabelCol(hdtWork);
+    htRelatives.addLabelCol(hdtWork, smTextSimple);
     htRelatives.setDblClickHandler(HDT_Work.class, this::goToWork);
 
     htRelatives.addDefaultMenuItems();
@@ -873,9 +875,7 @@ public class BibManager extends HyperDlg
       }
     });
 
-    List<EntryType> choices = new ArrayList<>(map.keySet());
-
-    choices.sort(Comparator.comparing(EntryType::getUserFriendlyName));
+    List<EntryType> choices = Ordering.from(Comparator.comparing(EntryType::getUserFriendlyName)).sortedCopy(map.keySet());
 
     cb.setItems(null);
     cb.setItems(FXCollections.observableList(choices));

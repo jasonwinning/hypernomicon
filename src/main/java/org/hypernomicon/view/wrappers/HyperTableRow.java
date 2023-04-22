@@ -31,7 +31,6 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.populators.*;
-import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 //---------------------------------------------------------------------------
 
@@ -107,12 +106,6 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   public boolean setCellValue(int colNdx, int id, String text, RecordType type) {
     return setCellValue(colNdx, new HyperTableCell(id, text, type)); }
 
-  public boolean setCellValue(int colNdx, HDT_Record record, String text, CellSortMethod newSortMethod) {
-    return setCellValue(colNdx, new HyperTableCell(record, text, newSortMethod)); }
-
-  public boolean setCellValue(int colNdx, String text, RecordType type, CellSortMethod newSortMethod) {
-    return setCellValue(colNdx, new HyperTableCell(text, type, newSortMethod)); }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -127,9 +120,6 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
       if (isNotCheckBox) table.refresh();
       return false;
     }
-
-    if (col.getObjType() == hdtNone)
-      newCell = HyperTableCell.simpleSortValue(newCell);
 
     Populator populator = col.getPopulator();
 
@@ -147,6 +137,8 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
         return false;
       }
     }
+    else
+      newCell = newCell.clone(); // Cells in a TableView always need to be unique so we can determine whether a cell is in the bottom row and if so, make sure it sorts to the bottom
 
     cells.set(colNdx, newCell);
 
@@ -178,7 +170,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       HyperTableCell cell = cells.get(colNdx);
       if ((HyperTableCell.getCellID(cell) == oldID) && (HyperTableCell.getCellType(cell) == changedType))
-        cells.set(colNdx, new HyperTableCell(newID, cell.getText(), changedType));
+        cells.set(colNdx, new HyperTableCell(newID, cell.text, changedType));
     }
   }
 

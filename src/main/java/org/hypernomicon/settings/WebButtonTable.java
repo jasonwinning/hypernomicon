@@ -59,7 +59,7 @@ class WebButtonTable extends WebButtonCtrl
 
     CustomPopulator pop = new CustomPopulator(cvtSrchBtnPreset, (row, force) -> webBtnList.stream().map(webButton -> new HyperTableCell(webButton.getName(), hdtNone)));
 
-    ht.addTextEditCol(hdtNone, true, false);
+    ht.addTextEditCol(hdtNone, true);
     ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDownList, pop,
                                            (row, cellVal, nextColNdx, nextPopulator) ->
                                              row.setCellValue(0, nullSwitch(htcToWebButton(cellVal), "", WebButton::getCaption), hdtNone));
@@ -123,7 +123,7 @@ class WebButtonTable extends WebButtonCtrl
 
   private WebButton htcToWebButton(HyperTableCell cell)
   {
-    return cell == null ? null : findFirst(webBtnList, webButton -> cell.getText().equals(webButton.getName()));
+    return cell == null ? null : findFirst(webBtnList, webButton -> cell.text.equals(webButton.getName()));
   }
 
 //---------------------------------------------------------------------------

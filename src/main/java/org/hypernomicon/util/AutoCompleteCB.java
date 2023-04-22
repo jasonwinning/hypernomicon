@@ -158,7 +158,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
       if (cellText.toLowerCase().startsWith(typedLC))
       {
-        if ((cell.getType() != hdtPerson) || (record != null))
+        if ((cell.type != hdtPerson) || (record != null))
         {
           match = true;
           editor.setText(typed + cellText.substring(typed.length()));

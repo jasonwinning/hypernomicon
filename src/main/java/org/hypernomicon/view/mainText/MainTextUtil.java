@@ -67,6 +67,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 
+import com.google.common.collect.Ordering;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.input.ScrollEvent;
@@ -711,10 +713,7 @@ public final class MainTextUtil
   {
     if ((parentLabel == null) || parentLabel.subLabels.isEmpty()) return;
 
-    List<HDT_WorkLabel> sortedLabels = new ArrayList<>(parentLabel.subLabels);
-    sortedLabels.sort(Comparator.comparing(HDT_Record::name));
-
-    sortedLabels.forEach(label ->
+    Ordering.from(Comparator.comparing(HDT_Record::name)).immutableSortedCopy(parentLabel.subLabels).forEach(label ->
     {
       if (label.subLabels.isEmpty() == false)
       {

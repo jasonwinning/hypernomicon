@@ -17,9 +17,7 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -109,10 +107,7 @@ public abstract class RecordPopulator extends Populator
       default       : text = record.name();
     }
 
-    return (record.getType() == hdtWork) && (displayKind != DisplayKind.name) ?
-      new HyperTableCell(record, text, smWork)
-    :
-      new HyperTableCell(record, text);
+    return new HyperTableCell(record, text);
   }
 
 //---------------------------------------------------------------------------

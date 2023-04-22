@@ -66,7 +66,7 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
-      RecordType parentType = cellVal.getType();
+      RecordType parentType = cellVal.type;
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
       row.setCellValue(nextColNdx, "", parentType);
@@ -126,6 +126,8 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
  // -----------------------
 
     htSubdebates.buildRows(curDebate.subDebates, (row, subDebate) -> row.setCellValue(1, subDebate, subDebate.name()));
+
+    htSubdebates.sortAscending(1);
 
     htPositions.buildRows(curDebate.subPositions, (row, position) ->
     {

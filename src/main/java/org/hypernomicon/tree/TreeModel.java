@@ -17,7 +17,6 @@
 
 package org.hypernomicon.tree;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -159,7 +158,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
   {
     if (parentToChildren.getForwardSet(parent).contains(child) == false) return;
 
-    new ArrayList<>(recordToRows.getRowsForRecord(parent)).forEach(row -> row.treeItem.getChildren().removeIf(childItem ->
+    List.copyOf(recordToRows.getRowsForRecord(parent)).forEach(row -> row.treeItem.getChildren().removeIf(childItem ->
     {
       RowType childRow = childItem.getValue();
 
@@ -199,7 +198,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
     parentToChildren.addForward(parent, child);
 
-    new ArrayList<>(recordToRows.getRowsForRecord(parent)).forEach(row ->
+    List.copyOf(recordToRows.getRowsForRecord(parent)).forEach(row ->
     {
       RowType childRow = treeWrapper.newRow(child, this);
 

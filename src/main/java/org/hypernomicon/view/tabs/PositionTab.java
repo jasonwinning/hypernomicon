@@ -31,7 +31,6 @@ import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -40,6 +39,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Tab;
@@ -85,7 +85,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
-      RecordType parentType = cellVal.getType();
+      RecordType parentType = cellVal.type;
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
       row.setCellValue(nextColNdx, "", parentType);
@@ -99,11 +99,11 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     htArguments = new HyperTable(tvLeftChildren, 3, true, PREF_KEY_HT_POS_ARG);
 
     htArguments.addActionCol(ctGoNewBtn, 3);
-    htArguments.addLabelCol(hdtPerson         );
-    htArguments.addLabelCol(hdtPositionVerdict);
-    htArguments.addLabelCol(hdtArgument       );
-    htArguments.addLabelCol(hdtWork           );
-    htArguments.addLabelCol(hdtArgument       );
+    htArguments.addLabelCol(hdtPerson         );               // Author(s) of work
+    htArguments.addLabelCol(hdtPositionVerdict, smTextSimple); // True, False, etc.
+    htArguments.addLabelCol(hdtArgument       , smNumeric);    // Year
+    htArguments.addLabelCol(hdtWork           , smStandard);   // Title of work
+    htArguments.addLabelCol(hdtArgument       );               // Name of argument
 
     TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>();
     tvRightChildren.getColumns().add(1, col);
@@ -181,7 +181,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
       if (work != null)
       {
-        row.setCellValue(3, argument, work.getYear(), CellSortMethod.smNumeric);
+        row.setCellValue(3, argument, work.getYear());
         row.setCellValue(4, work, work.name());
       }
       else
@@ -189,7 +189,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
       HDT_PositionVerdict verdict = argument.getPosVerdict(curPosition);
       if (verdict != null)
-        row.setCellValue(2, argument, verdict.listName(), CellSortMethod.smTextSimple);
+        row.setCellValue(2, argument, verdict.listName());
 
       row.setCellValue(5, argument, argument.listName());
     });

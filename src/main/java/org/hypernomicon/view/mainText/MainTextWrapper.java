@@ -219,19 +219,17 @@ public final class MainTextWrapper
       return;
     }
 
-    MainTextWrapper mainTextWrapper = this;
-
     view.setOnMouseClicked(mouseEvent ->
     {
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2) && canEdit())
-        mainTextWrapper.beginEditing(true);
+        beginEditing(true);
     });
 
     boolean noDisplayRecords = (displayItems == null) || displayItems.stream().noneMatch(item -> item.type == DisplayItemType.diRecord);
 
     int keyWorksSize = keyWorks == null ? 0 : getNestedKeyWorkCount(curRecord, keyWorks);
 
-    if (jsoupParse(html).text().trim().isEmpty() && (keyWorksSize == 0) && noDisplayRecords && canEdit())
+    if (jsoupParse(html).text().trim().isEmpty() && ((keyWorksSize == 0) || (curRecord.getType() == hdtInvestigation)) && noDisplayRecords && canEdit())
       beginEditing(false);
     else
       setReadOnlyHTML(completeHtml, we, viewInfo, null, true);

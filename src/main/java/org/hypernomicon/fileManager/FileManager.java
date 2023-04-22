@@ -64,7 +64,6 @@ import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
-import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.MenuItemSchema;
 import org.hypernomicon.view.wrappers.ReadOnlyCell;
@@ -859,7 +858,7 @@ public class FileManager extends HyperDlg
 
             HDT_Folder folder = HyperPath.getFolderFromFilePath(srcFilePath, false);
 
-            new ArrayList<>(folder.notes).forEach(note -> note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false)));
+            List.copyOf(folder.notes).forEach(note -> note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false)));
           });
 
       // If moving, remove source directories that are now empty
@@ -1484,9 +1483,7 @@ public class FileManager extends HyperDlg
 
       if ((hasMore) && (relIt.hasNext() == false))
       {
-        HyperTableRow row = recordTable.newDataRow();
-        row.setCellValue(0, "",  hdtAuxiliary, CellSortMethod.smLast);
-        row.setCellValue(1, "",  hdtNone, CellSortMethod.smLast);
+        recordTable.newShowMoreRow();
         break;
       }
 
