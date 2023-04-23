@@ -44,22 +44,21 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Window;
 
-final class ResultsTable extends HasRightClickableRows<ResultsRow>
+final class ResultsTable extends HasRightClickableRows<ResultRow>
 {
 
 //---------------------------------------------------------------------------
 
-  private final TableView<ResultsRow> tv;
+  private final TableView<ResultRow> tv;
   private boolean datesAdded = false;
   static final List<ColumnGroup> colGroups = new ArrayList<>();
   private static ColumnGroup generalGroup;
 
-  public TableView<ResultsRow> getTV() { return tv; }
-  public HDT_Record selectedRecord()   { return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultsRow::getRecord); }
+  public HDT_Record selectedRecord()  { return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultRow::getRecord); }
 
 //---------------------------------------------------------------------------
 
-  ResultsTable(TableView<ResultsRow> tvResults)
+  ResultsTable(TableView<ResultRow> tvResults)
   {
     tv = tvResults;
 
@@ -72,7 +71,7 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     tv.setRowFactory(theTV ->
     {
-      final TableRow<ResultsRow> row = new TableRow<>();
+      final TableRow<ResultRow> row = new TableRow<>();
 
       row.setOnMouseClicked(mouseEvent ->
       {
@@ -195,31 +194,32 @@ final class ResultsTable extends HasRightClickableRows<ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void addColumn(ResultColumn col, boolean addToFront)
+  void addColumn(ResultColumn newCol, boolean addToFront)
   {
-    if (addToFront)
-      tv.getColumns().add(firstNonGeneralColumnNdx(), col);
-    else
-      tv.getColumns().add(col);
-  }
+    if (addToFront == false)
+    {
+      tv.getColumns().add(newCol);
+      return;
+    }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    // In order to add column to front of non-general columns, determine first non-general column index
 
-  private int firstNonGeneralColumnNdx()
-  {
-    List<TableColumn<ResultsRow, ?>> columns = tv.getColumns();
+    List<TableColumn<ResultRow, ?>> columns = tv.getColumns();
     int numColumns = columns.size();
+    int colNdx = numColumns;
 
     for (int ndx = 0; ndx < numColumns; ndx++)
     {
-      TableColumn<ResultsRow, ?> col = columns.get(ndx);
+      TableColumn<ResultRow, ?> col = columns.get(ndx);
 
       if (generalGroup.stream().noneMatch(item -> item.col == col))
-        return ndx;
+      {
+        colNdx = ndx;
+        break;
+      }
     }
 
-    return numColumns;
+    tv.getColumns().add(colNdx, newCol);
   }
 
 //---------------------------------------------------------------------------

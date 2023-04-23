@@ -40,8 +40,9 @@ import com.google.common.collect.ForwardingCollection;
 
 class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
 {
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final RecordType recordType;
   private final List<ColumnGroupItem> items = new ArrayList<>();
@@ -51,8 +52,8 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
 
   TypeCheckBox checkBox;
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   ColumnGroup(String caption, ResultsTable resultsTable)
   {
@@ -61,7 +62,7 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
     this.resultsTable = resultsTable;
   }
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   ColumnGroup(RecordType recordType, Set<Tag> tags, ResultsTable resultsTable)
   {
@@ -75,8 +76,8 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
     RelationSet.getRelationsForObjType(recordType, false).forEach(relType -> items.add(new ColumnGroupItem(relType)));
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void addColumnsToTable()
   {
@@ -113,25 +114,25 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
     }
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  public void addColumn(ResultColumn col)
+  void addColumn(ResultColumn col)
   {
     addColumn(col, false);
   }
 
-  public void addColumn(ResultColumn col, boolean addToFront)
+  void addColumn(ResultColumn col, boolean addToFront)
   {
     resultsTable.addColumn(col, addToFront);
 
     add(new ColumnGroupItem(col));
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  public static ColumnGroup newBibFieldsColumnGroup(ResultsTable resultsTable)
+  static ColumnGroup newBibFieldsColumnGroup(ResultsTable resultsTable)
   {
     return new ColumnGroup("Reference Manager Fields", resultsTable)
     {
@@ -142,12 +143,12 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
     };
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected Collection<ColumnGroupItem> delegate() { return items; }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

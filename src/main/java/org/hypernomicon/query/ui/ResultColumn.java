@@ -43,7 +43,7 @@ import javafx.scene.control.TableColumn;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-class ResultColumn extends TableColumn<ResultsRow, ResultCellValue>
+class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 {
 
 //---------------------------------------------------------------------------

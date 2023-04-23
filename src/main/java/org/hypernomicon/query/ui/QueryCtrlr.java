@@ -109,7 +109,7 @@ public final class QueryCtrlr
 
   @FXML private MasterDetailPane spMain, spLower;
   @FXML private TableView<HyperTableRow> tvFields;
-  @FXML private TableView<ResultsRow> tvResults;
+  @FXML private TableView<ResultRow> tvResults;
   @FXML private AnchorPane apDescription, apResults;
   @FXML private ToggleGroup tgLogic;
   @FXML private TextField tfCustomLogic;
@@ -127,9 +127,9 @@ public final class QueryCtrlr
 
   ResultsTable resultsTable;
 
-  private final List<ResultsRow> resultsBackingList = new ArrayList<>();
+  private final List<ResultRow> resultsBackingList = new ArrayList<>();
   private final Multimap<RecordType, ColumnGroup> recordTypeToColumnGroup = LinkedHashMultimap.create();
-  private final Map<HDT_Record, ResultsRow> recordToRow = new HashMap<>();
+  private final Map<HDT_Record, ResultRow> recordToRow = new HashMap<>();
 
   private boolean programmaticFavNameChange = false,
                   programmaticCustomLogicChange = false,
@@ -147,13 +147,14 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<ResultsRow> results()       { return inReportMode() ? List.of() : Collections.unmodifiableList(resultsBackingList); }
+  public List<ResultRow> results()        { return inReportMode() ? List.of() : Collections.unmodifiableList(resultsBackingList); }
   void saveColumnWidths()                 { HyperTable.saveColWidthsForTable(tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS, false); }
   void focusOnFields()                    { safeFocus(tvFields); }
   public boolean inReportMode()           { return inRecordMode == false; }
   Tab getTab()                            { return tab; }
   HDT_Record getRecord()                  { return curResult; }
   public boolean getSearchLinkedRecords() { return searchLinkedRecords; }
+  TableView<ResultRow> getResultsTV()     { return tvResults; }
 
   private static QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(QUERY_TYPE_COL_NDX)); }
 
@@ -357,7 +358,7 @@ public final class QueryCtrlr
     htFields.addRefreshHandler(tabPane::requestLayout);
 
     resultsTable = new ResultsTable(tvResults);
-    resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList));
+    tvResults.setItems(FXCollections.observableList(resultsBackingList));
 
     reportTable = new ReportTable(this);
 
@@ -494,7 +495,7 @@ public final class QueryCtrlr
 
   void setRecord(HDT_Record record)
   {
-    ResultsRow targetRow = record == null ? null : recordToRow.get(record);
+    ResultRow targetRow = record == null ? null : recordToRow.get(record);
     if (targetRow == null) return;
 
     for (int ndx = 0, max = resultsBackingList.size(); ndx < max; ndx++)
@@ -863,7 +864,7 @@ public final class QueryCtrlr
     searchLinkedRecords = combinedSource.recordType() != hdtNone;
     int total = combinedSource.size();
 
-    resultsTable.getTV().setItems(FXCollections.emptyObservableList());
+    tvResults.setItems(FXCollections.emptyObservableList());
 
     // Evaluate record queries
 
@@ -958,7 +959,7 @@ public final class QueryCtrlr
     if (succeeded == false)
       resultsBackingList.clear();
 
-    Platform.runLater(() -> resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList)));
+    Platform.runLater(() -> tvResults.setItems(FXCollections.observableList(resultsBackingList)));
 
     if (succeeded == false) return false;
 
@@ -1025,12 +1026,12 @@ public final class QueryCtrlr
       }
     }
 
-    ResultsRow row = new ResultsRow(record);
+    ResultRow row = new ResultRow(record);
     recordToRow.put(record, row);
 
     if (addToObsList)
     {
-      resultsTable.getTV().getItems().add(row);
+      tvResults.getItems().add(row);
       refreshView(false);
     }
     else

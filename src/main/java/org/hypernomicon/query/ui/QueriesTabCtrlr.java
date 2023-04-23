@@ -49,8 +49,7 @@ import javafx.scene.web.WebView;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.query.*;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
@@ -101,9 +100,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML CheckBox chkShowDesc;
 
   private ComboBox<CheckBoxOrCommand> fileBtn = null;
-  private ObjectProperty<ObservableList<ResultsRow>> propToUnbind = null;
-  private ChangeListener<ResultsRow> cbListenerToRemove = null, tvListenerToRemove = null;
-  private ComboBox<ResultsRow> cb;
+  private ObjectProperty<ObservableList<ResultRow>> propToUnbind = null;
+  private ChangeListener<ResultRow> cbListenerToRemove = null, tvListenerToRemove = null;
+  private ComboBox<ResultRow> cb;
   private boolean clearingViews = false;
 
   private final BooleanProperty includeEdited = new SimpleBooleanProperty(),
@@ -122,9 +121,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private boolean inReportMode()                     { return curQC == null ? false : curQC.inReportMode(); }
 
-  public List<ResultsRow> results()                  { return (curQC == null) ? List.of() : curQC.results(); }
-  public void refreshTables()                        { queryCtrlrs.forEach(qc -> qc.resultsTable.getTV().refresh()); }
-  public void setCB(ComboBox<ResultsRow> cb)         { this.cb = cb; updateCB(curQC); }
+  public List<ResultRow> results()                   { return (curQC == null) ? List.of() : curQC.results(); }
+  public void refreshTables()                        { queryCtrlrs.forEach(qc -> qc.getResultsTV().refresh()); }
+  public void setCB(ComboBox<ResultRow> cb)          { this.cb = cb; updateCB(curQC); }
   public void btnExecuteClick()                      { curQC.btnExecuteClick(true); }
   public QueryCtrlr getCurQueryCtrlr()               { return curQC; }
 
@@ -139,7 +138,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public HDT_Record activeRecord()         { return curQC == null ? null : curQC.getRecord(); }
   @Override public HDT_Record viewRecord()           { return activeRecord(); }
   @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
-  @Override public int recordNdx()                   { return recordCount() > 0 ? curQC.resultsTable.getTV().getSelectionModel().getSelectedIndex() : -1; }
+  @Override public int recordNdx()                   { return recordCount() > 0 ? curQC.getResultsTV().getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc()             { if ((activeRecord() != null) || inReportMode()) highlighter.hilite(); }
   @Override public void nextSearchResult()           { highlighter.nextSearchResult(); }
   @Override public void previousSearchResult()       { highlighter.previousSearchResult(); }
@@ -159,7 +158,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     PersonQueries .addQueries(allQueries);
     WorkQueries   .addQueries(allQueries);
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     btnExecute.setOnAction(event -> btnExecuteClick());
     btnClear.setOnAction(event -> curQC.resetFields());
@@ -228,7 +227,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   public void removeRecord(HDT_Record record)
   {
-    queryCtrlrs.forEach(qc -> qc.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
+    queryCtrlrs.forEach(qc -> qc.getResultsTV().getItems().removeIf(row -> row.getRecord() == record));
   }
 
 //---------------------------------------------------------------------------
@@ -411,9 +410,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       updateProgress(0, 1);
 
-      List<ResultsRow> resultRowList = onlySelected ? curQC.resultsTable.getTV().getSelectionModel().getSelectedItems() : results();
+      List<ResultRow> resultRowList = onlySelected ? curQC.getResultsTV().getSelectionModel().getSelectedItems() : results();
 
-      int ndx = 0; for (ResultsRow row : resultRowList)
+      int ndx = 0; for (ResultRow row : resultRowList)
       {
         HDT_Record record = row.getRecord();
         if (record instanceof HDT_RecordWithPath)
@@ -450,8 +449,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     return true;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void mnuClearSearchFolderClick()
   {
@@ -505,14 +504,14 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                                                                       .forEach(node -> node.setDisable(enabled == false));
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void updateCB(QueryCtrlr queryCtrlr)
   {
     if ((cb == null) || (queryCtrlr == null)) return;
 
-    TableView<ResultsRow> tvResults = queryCtrlr.resultsTable.getTV();
+    TableView<ResultRow> tvResults = queryCtrlr.getResultsTV();
 
     if (propToUnbind != null)
     {
@@ -572,15 +571,15 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private boolean alreadySettingSelection = false;
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void setFavNameToggle(boolean selected)
   {
     btnToggleFavorite.setText(selected ? "Remove from favorites" : "Add to favorites");
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

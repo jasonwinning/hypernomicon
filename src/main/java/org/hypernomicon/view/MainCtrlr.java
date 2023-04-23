@@ -61,7 +61,7 @@ import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.ui.QueriesTabCtrlr;
 import org.hypernomicon.query.ui.QueryCtrlr;
-import org.hypernomicon.query.ui.ResultsRow;
+import org.hypernomicon.query.ui.ResultRow;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
@@ -193,7 +193,7 @@ public final class MainCtrlr
   private final HyperTable htFind;
   private final CreateMenuItems createMenuItems;
 
-  private ComboBox<ResultsRow> cbResultGoTo = null;
+  private ComboBox<ResultRow> cbResultGoTo = null;
   private TextField tfSelector = null;
 
   private boolean selectorTabChangeIsProgrammatic = false, dontShowOmniTable = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
@@ -1210,7 +1210,7 @@ public final class MainCtrlr
 
     Platform.runLater(() ->
     {
-      List<ResultsRow> resultList = queryHyperTab().results();
+      List<ResultRow> resultList = queryHyperTab().results();
       int num = resultList.size();
 
       if (num == 1)
@@ -1401,17 +1401,17 @@ public final class MainCtrlr
 
     cbResultGoTo.setConverter(new StringConverter<>()
     {
-      @Override public String toString(ResultsRow row)
+      @Override public String toString(ResultRow row)
       {
-        return nullSwitch(row, "", ResultsRow::getCBText);
+        return nullSwitch(row, "", ResultRow::getCBText);
       }
 
-      @Override public ResultsRow fromString(String string)
+      @Override public ResultRow fromString(String string)
       {
         return cbResultGoTo.getItems() == null ?
-          new ResultsRow("")
+          new ResultRow("")
         :
-          nullSwitch(findFirst(cbResultGoTo.getItems(), row -> string.equals(row.getCBText())), new ResultsRow(string));
+          nullSwitch(findFirst(cbResultGoTo.getItems(), row -> string.equals(row.getCBText())), new ResultRow(string));
       }
     });
   }
@@ -2038,7 +2038,7 @@ public final class MainCtrlr
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
                    new HyperTableCell("", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
     {
-      List<ResultsRow> resultRows = queryHyperTab().results();
+      List<ResultRow> resultRows = queryHyperTab().results();
 
       if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.get(0).getRecord() != record)))
         return;
@@ -2099,7 +2099,7 @@ public final class MainCtrlr
 
     QueryCtrlr curQC = queryHyperTab().getCurQueryCtrlr();
 
-    for (ResultsRow row : curQC.results())
+    for (ResultRow row : curQC.results())
       if (row.getRecord() == record) return;
 
     curQC.addRecord(record, true);

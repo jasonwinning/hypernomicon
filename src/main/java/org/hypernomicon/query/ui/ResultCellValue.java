@@ -51,7 +51,7 @@ final class ResultCellValue
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ObservableValue<ResultCellValue> observableCellValue(CellDataFeatures<ResultsRow, ResultCellValue> cellData, String str)
+  static ObservableValue<ResultCellValue> observableCellValue(CellDataFeatures<ResultRow, ResultCellValue> cellData, String str)
   {
     return new SimpleObjectProperty<>(new ResultCellValue(str, cellData.getValue().getRecord()));
   }
