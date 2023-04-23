@@ -962,7 +962,7 @@ public final class QueryCtrlr
 
     if (succeeded == false) return false;
 
-    recordTypeToColumnGroup.forEach((recordType, colGroup) -> colGroup.addColumnsToTable(resultsTable));
+    recordTypeToColumnGroup.forEach((recordType, colGroup) -> colGroup.addColumnsToTable());
 
     if (showDesc)
       queriesTabCtrlr.chkShowDesc.setSelected(true);
@@ -1005,21 +1005,21 @@ public final class QueryCtrlr
       Set<Tag> tags = record.getAllTags();
       removeAll(tags, tagHub, tagPictureCrop, tagMainText);
 
-      ColumnGroup colGroup = new ColumnGroup(recordType, tags);
+      ColumnGroup colGroup = new ColumnGroup(recordType, tags, resultsTable);
       recordTypeToColumnGroup.put(recordType, colGroup);
 
       if (addToObsList)
-        colGroup.addColumnsToTable(resultsTable);
+        colGroup.addColumnsToTable();
 
       colGroups.add(colGroup);
 
       if ((recordType == hdtWork) && db.bibLibraryIsLinked())
       {
-        colGroup = ColumnGroup.newBibFieldsColumnGroup();
+        colGroup = ColumnGroup.newBibFieldsColumnGroup(resultsTable);
         recordTypeToColumnGroup.put(recordType, colGroup);
 
         if (addToObsList)
-          colGroup.addColumnsToTable(resultsTable);
+          colGroup.addColumnsToTable();
 
         colGroups.add(colGroup);
       }

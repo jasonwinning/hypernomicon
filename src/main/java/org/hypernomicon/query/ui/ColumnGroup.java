@@ -23,7 +23,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.query.ui.ResultsTable.*;
-import static org.hypernomicon.query.ui.ResultsTable.ResultCellValue.*;
+import static org.hypernomicon.query.ui.ResultColumn.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.query.ui.SelectColumnsDlgCtrlr.TypeCheckBox;
@@ -46,24 +44,30 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
   //---------------------------------------------------------------------------
 
   private final RecordType recordType;
-  final String caption;
   private final List<ColumnGroupItem> items = new ArrayList<>();
+  private final ResultsTable resultsTable;
+
+  final String caption;
+
   TypeCheckBox checkBox;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  ColumnGroup(String caption)
+  ColumnGroup(String caption, ResultsTable resultsTable)
   {
     recordType = hdtNone;
     this.caption = caption;
+    this.resultsTable = resultsTable;
   }
 
   //---------------------------------------------------------------------------
 
-  ColumnGroup(RecordType recordType, Set<Tag> tags)
+  ColumnGroup(RecordType recordType, Set<Tag> tags, ResultsTable resultsTable)
   {
     this.recordType = recordType;
+    this.resultsTable = resultsTable;
+
     caption = getTypeName(recordType);
 
     tags.forEach(tag -> items.add(new ColumnGroupItem(db.mainTextTagForRecordType(recordType) == tag ? tagMainText : tag)));
@@ -74,7 +78,7 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  void addColumnsToTable(ResultsTable resultsTable)
+  void addColumnsToTable()
   {
     for (ColumnGroupItem item : this)
     {
@@ -112,27 +116,28 @@ class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static ColumnGroup newBibFieldsColumnGroup()
+  public void addColumn(ResultColumn col)
   {
-    return new ColumnGroup("Reference Manager Fields")
+    addColumn(col, false);
+  }
+
+  public void addColumn(ResultColumn col, boolean addToFront)
+  {
+    resultsTable.addColumn(col, addToFront);
+
+    add(new ColumnGroupItem(col));
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public static ColumnGroup newBibFieldsColumnGroup(ResultsTable resultsTable)
+  {
+    return new ColumnGroup("Reference Manager Fields", resultsTable)
     {
-      @Override void addColumnsToTable(ResultsTable resultsTable)
+      @Override void addColumnsToTable()
       {
-        List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition, bfVolume, bfIssue, bfLanguage, bfISSNs, bfPages).forEach(field ->
-        {
-          ResultColumn strCol = new ResultColumn(field.getUserFriendlyName());
-
-          strCol.setCellValueFactory(cellData ->
-          {
-            HDT_Record record = cellData.getValue().getRecord();
-            String text = record.getType() == hdtWork ? ((HDT_Work)record).getBibData().getStr(field) : "";
-            return getObservableCellValue(cellData, text);
-          });
-
-          strCol.setVisible(false);
-
-          add(new ColumnGroupItem(strCol, resultsTable.getTV(), -1));
-        });
+        List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition, bfVolume, bfIssue, bfLanguage, bfISSNs, bfPages).forEach(field -> addColumn(newBibFieldColumn(field)));
       }
     };
   }

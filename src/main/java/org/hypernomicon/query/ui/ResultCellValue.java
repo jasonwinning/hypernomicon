@@ -17,54 +17,43 @@
 
 package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.model.Tag.*;
+import org.hypernomicon.model.records.HDT_Record;
 
-import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 
-final class ColumnGroupItem
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+final class ResultCellValue
 {
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  final Tag tag;
-  final RelationType relType; // If relType != rtNone, then this is a column showing subjects for the row record (the object)
-  final String caption;
-  ResultColumn col;
-
-  static final double RESULT_COL_MAX_WIDTH = 600.0;
+  final String text;
+  final HDT_Record record;
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  // Constructor for all and only items in the general column group
-
-  ColumnGroupItem(ResultColumn col)
+  private ResultCellValue(String text, HDT_Record record)
   {
-    tag = tagNone;
-    relType = RelationType.rtNone;
-
-    this.col = col;
-    caption = col.getText();
-    col.setMaxWidth(RESULT_COL_MAX_WIDTH);
+    this.text = text;
+    this.record = record;
   }
 
 //---------------------------------------------------------------------------
-
-  ColumnGroupItem(Tag tag)
-  {
-    this.tag = tag;
-    relType = RelationType.rtNone;
-    caption = tag.header;
-  }
-
 //---------------------------------------------------------------------------
 
-  ColumnGroupItem(RelationType relType)
+  @Override public String toString() { return text; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static ObservableValue<ResultCellValue> observableCellValue(CellDataFeatures<ResultsRow, ResultCellValue> cellData, String str)
   {
-    tag = relType.getSubjTag();
-    this.relType = relType;
-    caption = relType.getSubjTitle();
+    return new SimpleObjectProperty<>(new ResultCellValue(str, cellData.getValue().getRecord()));
   }
 
 //---------------------------------------------------------------------------
