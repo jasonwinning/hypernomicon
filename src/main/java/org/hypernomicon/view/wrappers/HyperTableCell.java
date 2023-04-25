@@ -138,41 +138,6 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean compareNumberStrings(String str1, String str2, MutableInt result)
-  {
-    boolean numeric1 = true, numeric2 = true;
-    int int1 = 0, int2 = 0;
-
-    try { int1 = Integer.parseInt(safeStr(str1)); }
-    catch (NumberFormatException nfe) { numeric1 = false; }
-
-    try { int2 = Integer.parseInt(safeStr(str2)); }
-    catch (NumberFormatException nfe) { numeric2 = false; }
-
-    if (numeric1 && numeric2)
-    {
-      result.setValue(int1 - int2);
-      return true;
-    }
-
-    if (numeric1)
-    {
-      result.setValue(1);
-      return true;
-    }
-
-    if (numeric2)
-    {
-      result.setValue(-1);
-      return true;
-    }
-
-    return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static int compareCells(HyperTableCell cell1, HyperTableCell cell2, CellSortMethod sortMethod)
   {
     if ((cell1 == null) && (cell2 == null)) return 0;
@@ -218,23 +183,16 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 
     if (sortMethod == smWork)
     {
-      HDT_Work thisWork = cell1.getRecord(), otherWork = cell2.getRecord();
+      HDT_Work work1 = cell1.getRecord(), work2 = cell2.getRecord();
 
-      int cResult, numAuthors = Math.max(thisWork.getAuthors().size(), otherWork.getAuthors().size());
+      if ((work1 == null) && (work2 != null))
+        return -1;
 
-      for (int ndx = 0; ndx < numAuthors; ndx++)
-      {
-        if ((ndx >= thisWork.getAuthors().size()) || (ndx >= otherWork.getAuthors().size()))
-          return thisWork.getAuthors().size() - otherWork.getAuthors().size();
+      if ((work2 == null) && (work1 != null))
+        return 1;
 
-        cResult = thisWork.getAuthors().get(ndx).compareTo(otherWork.getAuthors().get(ndx));
-        if (cResult != 0) return cResult;
-      }
-
-      cResult = thisWork.getYear().compareTo(otherWork.getYear());
-      if (cResult != 0) return cResult;
-
-      return thisWork.getSortKey().compareTo(otherWork.getSortKey());
+      if (work1 != null)
+        return work1.compareTo(work2);
     }
 
     String key1 = "", key2 = "";

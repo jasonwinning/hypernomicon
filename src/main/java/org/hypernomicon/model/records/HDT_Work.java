@@ -53,7 +53,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
-public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<WorkAuthors>
+public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<WorkAuthors>, Comparable<HDT_Work>
 {
   private final WorkAuthors authors;
 
@@ -553,6 +553,32 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public FilePath filePathIncludeExt()
   {
     return workFiles.isEmpty() ? resolveExtFilePath(getURL()) : filePath();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // This function is similar to BibEntry.comparator()
+
+  @Override public int compareTo(HDT_Work otherWork)
+  {
+    if (otherWork == null) return 1;
+
+    int cResult, numAuthors = Math.max(getAuthors().size(), otherWork.getAuthors().size());
+
+    for (int ndx = 0; ndx < numAuthors; ndx++)
+    {
+      if ((ndx >= getAuthors().size()) || (ndx >= otherWork.getAuthors().size()))
+        return getAuthors().size() - otherWork.getAuthors().size();
+
+      cResult = getAuthors().get(ndx).compareTo(otherWork.getAuthors().get(ndx));
+      if (cResult != 0) return cResult;
+    }
+
+    cResult = compareYears(getYear(), otherWork.getYear());
+    if (cResult != 0) return cResult;
+
+    return getSortKey().compareTo(otherWork.getSortKey());
   }
 
 //---------------------------------------------------------------------------

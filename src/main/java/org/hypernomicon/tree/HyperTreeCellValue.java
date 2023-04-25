@@ -17,6 +17,11 @@
 
 package org.hypernomicon.tree;
 
+import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_Work;
+
+import static org.hypernomicon.model.records.RecordType.*;
+
 class HyperTreeCellValue implements Comparable<HyperTreeCellValue>
 {
   final private TreeRow row;
@@ -32,9 +37,25 @@ class HyperTreeCellValue implements Comparable<HyperTreeCellValue>
 
 //---------------------------------------------------------------------------
 
-  @Override public String toString()                       { return row.getName(); }
-  @Override public int compareTo(HyperTreeCellValue other) { return key.compareTo(other.key); }
-  @Override public int hashCode()                          { return key.hashCode(); }
+  @Override public String toString() { return row.getName(); }
+  @Override public int hashCode()    { return key.hashCode(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int compareTo(HyperTreeCellValue other)
+  {
+    HDT_Record record1 = row == null ? null : row.getRecord();
+    HDT_Record record2 = other.row == null ? null : other.row.getRecord();
+
+    if ((HDT_Record.isEmpty(record1) == false) && (HDT_Record.isEmpty(record2) == false))
+    {
+      if ((record1.getType() == hdtWork) && (record2.getType() == hdtWork))
+        return ((HDT_Work)record1).compareTo((HDT_Work)record2);
+    }
+
+    return key.compareTo(other.key);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

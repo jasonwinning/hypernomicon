@@ -1000,6 +1000,54 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static int compareYears(String year1, String year2)
+  {
+    MutableInt result = new MutableInt();
+
+    if (compareNumberStrings(year1, year2, result))
+      return result.getValue();
+
+    return year1.compareToIgnoreCase(year2);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean compareNumberStrings(String str1, String str2, MutableInt result)
+  {
+    boolean numeric1 = true, numeric2 = true;
+    int int1 = 0, int2 = 0;
+
+    try { int1 = Integer.parseInt(safeStr(str1)); }
+    catch (NumberFormatException nfe) { numeric1 = false; }
+
+    try { int2 = Integer.parseInt(safeStr(str2)); }
+    catch (NumberFormatException nfe) { numeric2 = false; }
+
+    if (numeric1 && numeric2)
+    {
+      result.setValue(int1 - int2);
+      return true;
+    }
+
+    if (numeric1)
+    {
+      result.setValue(1);
+      return true;
+    }
+
+    if (numeric2)
+    {
+      result.setValue(-1);
+      return true;
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 // DOI legal characters according to Crossref: "a-z", "A-Z", "0-9" and "-._;()/"
 // But I've seen at least one Crossref DOI that included a colon
 

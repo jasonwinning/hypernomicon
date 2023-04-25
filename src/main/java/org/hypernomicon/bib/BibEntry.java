@@ -22,6 +22,7 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -264,6 +265,8 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // This function is similar to HDT_Work.compareTo
+
   public static Comparator<BibEntry<?, ?>> comparator()
   {
     return (e1, e2) ->
@@ -294,7 +297,8 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
         if (cResult != 0) return cResult;
       }
 
-      cResult = e1.getStr(bfYear).compareTo(e2.getStr(bfYear));
+      cResult = compareYears(e1.getStr(bfYear), e2.getStr(bfYear));
+
       return cResult != 0 ?
         cResult
       :

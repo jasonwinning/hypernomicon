@@ -28,7 +28,6 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.function.Function;
 
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
@@ -36,7 +35,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.util.Util;
 
 import javafx.scene.control.TableColumn;
 
@@ -237,17 +236,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
       case tagYear :
 
-        Comparator<String> strComparator = (str1, str2) ->
-        {
-          MutableInt result = new MutableInt();
-
-          if (HyperTableCell.compareNumberStrings(str1, str2, result))
-            return result.getValue();
-
-          return str1.compareToIgnoreCase(str2);
-        };
-
-        col = new ResultColumn(firstItem.caption, strComparator, String.class);
+        col = new ResultColumn(firstItem.caption, Util::compareYears, String.class);
         break;
 
       default :
