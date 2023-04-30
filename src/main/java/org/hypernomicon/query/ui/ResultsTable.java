@@ -26,6 +26,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
 
 import static org.hypernomicon.App.*;
@@ -51,7 +52,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
   private final TableView<ResultRow> tv;
   private boolean datesAdded = false;
-  static final List<ColumnGroup> colGroups = new ArrayList<>();
+  final List<AbstractColumnGroup<? extends ColumnGroupItem>> colGroups = new ArrayList<>();
   private static ColumnGroup generalGroup;
 
   public HDT_Record selectedRecord()  { return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultRow::getRecord); }
@@ -103,11 +104,11 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
     colGroups.add(generalGroup = new ColumnGroup("General", this));
 
-    generalGroup.addColumn(newRecordIDColumn  ());
-    generalGroup.addColumn(newRecordNameColumn());
-    generalGroup.addColumn(newRecordTypeColumn());
-    generalGroup.addColumn(newSearchKeyColumn ());
-    generalGroup.addColumn(newSortKeyColumn   ());
+    generalGroup.addColumn(new RecordIDColumn  ());
+    generalGroup.addColumn(new RecordNameColumn());
+    generalGroup.addColumn(new RecordTypeColumn());
+    generalGroup.addColumn(new SearchKeyColumn ());
+    generalGroup.addColumn(new SortKeyColumn   ());
 
 //---------------------------------------------------------------------------
 
@@ -171,20 +172,20 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
     Platform.runLater(() ->
     {
-      generalGroup.addColumn(newDateColumn(tagCreationDate), true);
-      generalGroup.addColumn(newDateColumn(tagModifiedDate), true);
-      generalGroup.addColumn(newDateColumn(tagViewDate    ), true);
+      generalGroup.addColumn(new DateColumn(tagCreationDate.header, HDT_Record::getCreationDate), true);
+      generalGroup.addColumn(new DateColumn(tagModifiedDate.header, HDT_Record::getModifiedDate), true);
+      generalGroup.addColumn(new DateColumn(tagViewDate    .header, HDT_Record::getViewDate    ), true);
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ResultColumn addNonGeneralColumn(EnumMap<RecordType, ColumnGroupItem> recordTypeToItem)
+  NonGeneralColumn addNonGeneralColumn(EnumMap<RecordType, NonGeneralColumnGroupItem> recordTypeToItem)
   {
-    ColumnGroupItem firstItem = recordTypeToItem.entrySet().iterator().next().getValue();
+    NonGeneralColumnGroupItem firstItem = recordTypeToItem.entrySet().iterator().next().getValue();
 
-    ResultColumn col = newNonGeneralColumn(firstItem, recordTypeToItem);
+    NonGeneralColumn col = NonGeneralColumn.create(firstItem, recordTypeToItem);
 
     addColumn(col, EnumSet.of(tagAuthor, tagYear, tagWorkType, tagMainText).contains(firstItem.tag));
 

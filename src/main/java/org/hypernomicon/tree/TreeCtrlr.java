@@ -28,7 +28,7 @@ public class TreeCtrlr
 //---------------------------------------------------------------------------
 
   @FXML public TreeTableView<TreeRow> ttv;
-  @FXML public TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
+  @FXML public TreeTableColumn<TreeRow, TreeCellValue> tcName;
   @FXML public TreeTableColumn<TreeRow, TreeRow> tcLinked;
   @FXML public TreeTableColumn<TreeRow, String> tcDesc;
 

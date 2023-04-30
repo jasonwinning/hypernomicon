@@ -65,6 +65,7 @@ import org.hypernomicon.query.reports.ReportTable;
 import org.hypernomicon.query.sources.CombinedFilteredQuerySource;
 import org.hypernomicon.query.sources.CombinedUnfilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
+import org.hypernomicon.query.ui.ColumnGroup.*;
 import org.hypernomicon.view.HyperFavorites.FavMenuItem;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
@@ -128,7 +129,7 @@ public final class QueryCtrlr
   ResultsTable resultsTable;
 
   private final List<ResultRow> resultsBackingList = new ArrayList<>();
-  private final Multimap<RecordType, ColumnGroup> recordTypeToColumnGroup = LinkedHashMultimap.create();
+  private final Multimap<RecordType, NonGeneralColumnGroup> recordTypeToColumnGroup = LinkedHashMultimap.create();
   private final Map<HDT_Record, ResultRow> recordToRow = new HashMap<>();
 
   private boolean programmaticFavNameChange = false,
@@ -994,6 +995,7 @@ public final class QueryCtrlr
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
+  @SuppressWarnings("unchecked")
   public void addRecord(HDT_Record record, boolean addToObsList)
   {
     RecordType recordType = record.getType();
@@ -1006,23 +1008,23 @@ public final class QueryCtrlr
       Set<Tag> tags = record.getAllTags();
       removeAll(tags, tagHub, tagPictureCrop, tagMainText);
 
-      ColumnGroup colGroup = new ColumnGroup(recordType, tags, resultsTable);
+      NonGeneralColumnGroup colGroup = new RecordTypeColumnGroup(recordType, tags, resultsTable);
       recordTypeToColumnGroup.put(recordType, colGroup);
 
       if (addToObsList)
         colGroup.addColumnsToTable();
 
-      colGroups.add(colGroup);
+      colGroups.add((AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
 
       if ((recordType == hdtWork) && db.bibLibraryIsLinked())
       {
-        colGroup = ColumnGroup.newBibFieldsColumnGroup(resultsTable);
+        colGroup = new BibFieldsColumnGroup(resultsTable);
         recordTypeToColumnGroup.put(recordType, colGroup);
 
         if (addToObsList)
           colGroup.addColumnsToTable();
 
-        colGroups.add(colGroup);
+        colGroups.add((AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
       }
     }
 

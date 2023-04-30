@@ -41,7 +41,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 {
   @FXML private BreadCrumbBar<TreeRow> bcbPath;
   @FXML private TreeTableView<TreeRow> ttv;
-  @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
+  @FXML private TreeTableColumn<TreeRow, TreeCellValue> tcName;
   @FXML private TreeTableColumn<TreeRow, TreeRow> tcLinked;
   @FXML private TreeTableColumn<TreeRow, String> tcDesc;
 

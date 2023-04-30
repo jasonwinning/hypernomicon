@@ -29,12 +29,12 @@ import java.util.EnumMap;
 import java.util.function.Function;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
 import org.hypernomicon.util.Util;
 
 import javafx.scene.control.TableColumn;
@@ -44,10 +44,6 @@ import javafx.scene.control.TableColumn;
 
 class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 {
-
-//---------------------------------------------------------------------------
-
-  final EnumMap<RecordType, ColumnGroupItem> map = new EnumMap<>(RecordType.class);
 
 //---------------------------------------------------------------------------
 
@@ -62,12 +58,8 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   {
     super(caption);
 
-    setComparator((cell1, cell2) ->
+    setSafeComparator((cell1, cell2) ->
     {
-      if ((cell1 == null) && (cell2 == null)) return 0;
-      if (cell1 == null) return -1;
-      if (cell2 == null) return 1;
-
       if (caseSensitive)
         return safeStr(cell1.text).trim().compareTo(safeStr(cell2.text).trim());
 
@@ -88,12 +80,8 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   {
     super(caption);
 
-    setComparator((cell1, cell2) ->
+    setSafeComparator((cell1, cell2) ->
     {
-      if ((cell1 == null) && (cell2 == null)) return 0;
-      if (cell1 == null) return -1;
-      if (cell2 == null) return 1;
-
       if (HDT_Record.isEmpty(cell1.record) || HDT_Record.isEmpty(cell2.record))
       {
         if (caseSensitive)
@@ -119,12 +107,8 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   {
     super(caption);
 
-    setComparator((cell1, cell2) ->
+    setSafeComparator((cell1, cell2) ->
     {
-      if ((cell1 == null) && (cell2 == null)) return 0;
-      if (cell1 == null) return -1;
-      if (cell2 == null) return 1;
-
       if (caseSensitive)
         return sortKeyFunction.apply(safeStr(cell1.text).trim()).compareTo(sortKeyFunction.apply(safeStr(cell2.text).trim()));
 
@@ -144,212 +128,186 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   {
     super(caption);
 
+    setSafeComparator((cell1, cell2) -> comparator.compare(safeStr(cell1.text).trim(), safeStr(cell2.text).trim()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setSafeComparator(Comparator<ResultCellValue> comp)
+  {
     setComparator((cell1, cell2) ->
     {
       if ((cell1 == null) && (cell2 == null)) return 0;
       if (cell1 == null) return -1;
       if (cell2 == null) return 1;
 
-      return comparator.compare(safeStr(cell1.text).trim(), safeStr(cell2.text).trim());
+      return comp.compare(cell1, cell2);
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ResultColumn newDateColumn(Tag dateTag)
+  static class DateColumn extends ResultColumn { DateColumn(String caption, Function<HDT_Record, Instant> instantFunction)
   {
-    Comparator<HDT_Record> comparator = null;
-
-    switch (dateTag)
+    super (caption, (record1, record2) ->
     {
-      case tagCreationDate :
+      Instant i1 = nullSwitch(instantFunction.apply(record1), Instant.MIN);
+      Instant i2 = nullSwitch(instantFunction.apply(record2), Instant.MIN);
+      return i1.compareTo(i2);
+    });
 
-        comparator = (record1, record2) ->
-        {
-          Instant i1 = nullSwitch(record1.getCreationDate(), Instant.MIN);
-          Instant i2 = nullSwitch(record2.getCreationDate(), Instant.MIN);
-          return i1.compareTo(i2);
-        };
-
-        break;
-
-      case tagModifiedDate :
-
-        comparator = (record1, record2) ->
-        {
-          Instant i1 = nullSwitch(record1.getModifiedDate(), Instant.MIN);
-          Instant i2 = nullSwitch(record2.getModifiedDate(), Instant.MIN);
-          return i1.compareTo(i2);
-        };
-
-        break;
-
-      case tagViewDate :
-
-        comparator = (record1, record2) ->
-        {
-          Instant i1 = nullSwitch(record1.getViewDate(), Instant.MIN);
-          Instant i2 = nullSwitch(record2.getViewDate(), Instant.MIN);
-          return i1.compareTo(i2);
-        };
-
-        break;
-
-      default : break;
-    }
-
-    ResultColumn col = new ResultColumn(dateTag.header, comparator);
-
-    col.setCellValueFactory(cellData ->
+    setCellValueFactory(cellData ->
     {
-      Instant i = null;
       HDT_Record record = cellData.getValue().getRecord();
-
-      if ((record != null) && (record.getType() != hdtNone)) switch (dateTag)
-      {
-        case tagCreationDate : i = record.getCreationDate(); break;
-        case tagModifiedDate : i = record.getModifiedDate(); break;
-        case tagViewDate     : i = record.getViewDate    (); break;
-        default              :                               break;
-      }
+      Instant i = (record == null) || (record.getType() == hdtNone) ? null : instantFunction.apply(record);
 
       return observableCellValue(cellData, i == null ? "" : dateTimeToUserReadableStr(i));
     });
-
-    return col;
-  }
+  }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ResultColumn newNonGeneralColumn(ColumnGroupItem firstItem, EnumMap<RecordType, ColumnGroupItem> recordTypeToItem)
+  static class RecordIDColumn extends ResultColumn { RecordIDColumn()
   {
-    ResultColumn col;
+    super("ID", Comparator.comparingInt(HDT_Record::getID));
 
-    switch (firstItem.tag)
-    {
-      case tagTitle :
-
-        col = new ResultColumn(firstItem.caption, str -> makeSortKeyByType(str, hdtWork));
-        break;
-
-      case tagYear :
-
-        col = new ResultColumn(firstItem.caption, Util::compareYears, String.class);
-        break;
-
-      default :
-
-        col = new ResultColumn(firstItem.caption);
-        break;
-    }
-
-    boolean visible = false;
-    for (ColumnGroupItem item : recordTypeToItem.values())
-      if (item.relType == RelationType.rtNone)
-      {
-        visible = true;
-        break;
-      }
-
-    col.setVisible(visible);
-
-    col.setCellValueFactory(cellData ->
-    {
-      String str = "";
-      HDT_Record record = cellData.getValue().getRecord();
-
-      if (record != null)
-      {
-        ColumnGroupItem item = recordTypeToItem.get(record.getType());
-
-        if (item != null)
-        {
-          str = item.relType != RelationType.rtNone ?
-            HDI_OnlinePointerMulti.recordStreamResultText(db.getObjType(item.relType), db.getSubjectList(item.relType, record).stream())
-          :
-            record.resultTextForTag(item.tag);
-        }
-      }
-
-      return observableCellValue(cellData, str);
-    });
-
-    col.setMaxWidth(ColumnGroupItem.RESULT_COL_MAX_WIDTH);
-
-    return col;
-  }
+    setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordIDStr()));
+  }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ResultColumn newRecordIDColumn()
+  static class RecordNameColumn extends ResultColumn { RecordNameColumn()
   {
-    ResultColumn col = new ResultColumn("ID", Comparator.comparingInt(HDT_Record::getID));
-    col.setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordIDStr()));
-    return col;
-  }
+    super("Name", str -> makeSortKeyByType(str, hdtWork));
+
+    setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordName()));
+  }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ResultColumn newRecordNameColumn()
+  static class RecordTypeColumn extends ResultColumn { RecordTypeColumn()
   {
-    ResultColumn col = new ResultColumn("Name", str -> makeSortKeyByType(str, hdtWork));
-    col.setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordName()));
-    return col;
-  }
+    super("Type");
+
+    setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordTypeStr()));
+  }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ResultColumn newRecordTypeColumn()
+  static class SearchKeyColumn extends ResultColumn { SearchKeyColumn()
   {
-    ResultColumn col = new ResultColumn("Type");
-    col.setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordTypeStr()));
-    return col;
-  }
+    super("Search Key");
+
+    setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getSearchKey()));
+    setVisible(false);
+  }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ResultColumn newSearchKeyColumn()
+  static class SortKeyColumn extends ResultColumn { SortKeyColumn()
   {
-    ResultColumn col = new ResultColumn("Search Key");
-    col.setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getSearchKey()));
-    col.setVisible(false);
-    return col;
-  }
+    super("Sort Key", true);
+
+    setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getSortKey()));
+    setVisible(false);
+  }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static ResultColumn newSortKeyColumn()
+  static class BibFieldColumn extends ResultColumn { BibFieldColumn(BibFieldEnum field)
   {
-    ResultColumn col = new ResultColumn("Sort Key", true);
-    col.setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getSortKey()));
-    col.setVisible(false);
-    return col;
-  }
+    super(field.getUserFriendlyName());
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static ResultColumn newBibFieldColumn(BibFieldEnum field)
-  {
-    ResultColumn col = new ResultColumn(field.getUserFriendlyName());
-
-    col.setCellValueFactory(cellData ->
+    setCellValueFactory(cellData ->
     {
       HDT_Record record = cellData.getValue().getRecord();
       String text = record.getType() == hdtWork ? ((HDT_Work)record).getBibData().getStr(field) : "";
       return observableCellValue(cellData, text);
     });
 
-    col.setVisible(false);
+    setVisible(false);
+  }}
 
-    return col;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static class NonGeneralColumn extends ResultColumn
+  {
+    final EnumMap <RecordType, NonGeneralColumnGroupItem> map = new EnumMap<>(RecordType.class);
+
+//---------------------------------------------------------------------------
+
+    private NonGeneralColumn(String caption)                                                     { super(caption); }
+    private NonGeneralColumn(String caption, Function<String, String> sortKeyFunction)           { super(caption, sortKeyFunction); }
+    private NonGeneralColumn(String caption, Comparator<String> comparator, Class<String> klass) { super(caption, comparator, klass); }
+
+//---------------------------------------------------------------------------
+
+    static NonGeneralColumn create(NonGeneralColumnGroupItem firstItem, EnumMap<RecordType, NonGeneralColumnGroupItem> recordTypeToItem)
+    {
+      NonGeneralColumn col;
+
+      switch (firstItem.tag)
+      {
+        case tagTitle :
+
+          col = new NonGeneralColumn(firstItem.caption, str -> makeSortKeyByType(str, hdtWork));
+          break;
+
+        case tagYear :
+
+          col = new NonGeneralColumn(firstItem.caption, Util::compareYears, String.class);
+          break;
+
+        default :
+
+          col = new NonGeneralColumn(firstItem.caption);
+          break;
+      }
+
+      boolean visible = false;
+      for (NonGeneralColumnGroupItem item : recordTypeToItem.values())
+        if (item.relType == RelationType.rtNone) // Only subject columns have a relType set. They are invisible by default.
+        {
+          visible = true;
+          break;
+        }
+
+      col.setVisible(visible);
+
+      col.setCellValueFactory(cellData ->
+      {
+        String str = "";
+        HDT_Record record = cellData.getValue().getRecord();
+
+        if (record != null)
+        {
+          NonGeneralColumnGroupItem item = recordTypeToItem.get(record.getType());
+
+          if (item != null)
+          {
+            str = item.relType != RelationType.rtNone ?
+              HDI_OnlinePointerMulti.recordStreamResultText(db.getObjType(item.relType), db.getSubjectList(item.relType, record).stream())
+            :
+              record.resultTextForTag(item.tag);
+          }
+        }
+
+        return observableCellValue(cellData, str);
+      });
+
+      col.setMaxWidth(ColumnGroupItem.RESULT_COL_MAX_WIDTH);
+
+      return col;
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -74,10 +74,10 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HyperTreeCellValue getNameCell() { return new HyperTreeCellValue(this); }
-  String getCBText()               { return record == null ? text : '(' + getTypeName(getRecordType()) + ") " + getName(); }
-  String getName()                 { return record == null ? text : (record.getType() == hdtWork ? record.getCBText() : record.listName()); }
-  ImageView getGraphic()           { return graphic != null ? graphic : imgViewForRecord(record); }
+  TreeCellValue getNameCell() { return new TreeCellValue(this); }
+  String getCBText()          { return record == null ? text : '(' + getTypeName(getRecordType()) + ") " + getName(); }
+  String getName()            { return record == null ? text : (record.getType() == hdtWork ? record.getCBText() : record.listName()); }
+  ImageView getGraphic()      { return graphic != null ? graphic : imgViewForRecord(record); }
 
   String getDescString()
   {

@@ -77,7 +77,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
     chkSelectAll.setSelected(true);
 
-    for (ColumnGroup group : colGroups)
+    for (AbstractColumnGroup<? extends ColumnGroupItem> group : colGroups)
     {
       if (group.isEmpty()) continue;
 
