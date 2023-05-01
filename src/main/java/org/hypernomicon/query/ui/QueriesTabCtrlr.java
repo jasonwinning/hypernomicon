@@ -119,7 +119,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean inReportMode()                     { return curQC == null ? false : curQC.inReportMode(); }
+  private boolean inReportMode()                     { return (curQC != null) && curQC.inReportMode(); }
 
   public List<ResultRow> results()                   { return (curQC == null) ? List.of() : curQC.results(); }
   public void refreshTables()                        { queryCtrlrs.forEach(qc -> qc.getResultsTV().refresh()); }

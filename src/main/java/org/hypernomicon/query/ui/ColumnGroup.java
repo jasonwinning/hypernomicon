@@ -81,6 +81,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FunctionalInterface
   interface NonGeneralColumnGroup
   {
     void addColumnsToTable();
@@ -129,7 +130,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
 
         if (item.tag != tagNone) // Relation subject columns will sometimes have tagNone
         {
-          for (AbstractColumnGroup<? extends ColumnGroupItem> grp : colGroups)
+          for (AbstractColumnGroup<? extends ColumnGroupItem> grp : colGroups.values())
           {
             if (this == grp)
               continue;
@@ -149,7 +150,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
 
               if (otherItem.col != null)
               {
-                col = NonGeneralColumn.class.cast(otherItem.col);
+                col = (NonGeneralColumn) otherItem.col;
 
                 if (item.relType == rtNone) // Only subject columns have a relType set. They are invisible by default.
                   col.setVisible(true);

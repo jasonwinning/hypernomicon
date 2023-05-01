@@ -239,7 +239,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static class NonGeneralColumn extends ResultColumn
+  static final class NonGeneralColumn extends ResultColumn
   {
     final EnumMap <RecordType, NonGeneralColumnGroupItem> map = new EnumMap<>(RecordType.class);
 
@@ -273,15 +273,8 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
           break;
       }
 
-      boolean visible = false;
-      for (NonGeneralColumnGroupItem item : recordTypeToItem.values())
-        if (item.relType == RelationType.rtNone) // Only subject columns have a relType set. They are invisible by default.
-        {
-          visible = true;
-          break;
-        }
-
-      col.setVisible(visible);
+      // Only subject columns have a relType set. They are invisible by default.
+      col.setVisible(recordTypeToItem.values().stream().anyMatch(item -> item.relType == RelationType.rtNone));
 
       col.setCellValueFactory(cellData ->
       {

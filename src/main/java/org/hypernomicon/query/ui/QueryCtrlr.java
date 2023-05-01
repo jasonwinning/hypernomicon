@@ -81,9 +81,6 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.util.boolEvaluator.BoolEvaluator;
 import org.hypernomicon.util.boolEvaluator.BoolExpression;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
@@ -129,7 +126,6 @@ public final class QueryCtrlr
   ResultsTable resultsTable;
 
   private final List<ResultRow> resultsBackingList = new ArrayList<>();
-  private final Multimap<RecordType, NonGeneralColumnGroup> recordTypeToColumnGroup = LinkedHashMultimap.create();
   private final Map<HDT_Record, ResultRow> recordToRow = new HashMap<>();
 
   private boolean programmaticFavNameChange = false,
@@ -368,9 +364,6 @@ public final class QueryCtrlr
       refreshView(newValue.intValue());
       tabPane.requestLayout();
     });
-
-    recordTypeToColumnGroup.clear();
-    resultsBackingList.clear();
 
     switchToRecordMode();
 
@@ -875,7 +868,6 @@ public final class QueryCtrlr
 
       @Override protected void call() throws CancelledTaskException, HyperDataException
       {
-        recordTypeToColumnGroup.clear();
         resultsBackingList.clear();
 
         updateMessage("Running query...");
@@ -964,7 +956,11 @@ public final class QueryCtrlr
 
     if (succeeded == false) return false;
 
-    recordTypeToColumnGroup.forEach((recordType, colGroup) -> colGroup.addColumnsToTable());
+    colGroups.forEach((recordType, colGroup) ->
+    {
+      if (recordType != hdtNone)
+        ((NonGeneralColumnGroup) colGroup).addColumnsToTable();
+    });
 
     if (showDesc)
       queriesTabCtrlr.chkShowDesc.setSelected(true);
@@ -1000,7 +996,7 @@ public final class QueryCtrlr
   {
     RecordType recordType = record.getType();
 
-    if (recordTypeToColumnGroup.containsKey(recordType) == false)
+    if (colGroups.containsKey(recordType) == false)
     {
       if (recordType.getDisregardDates() == false)
         resultsTable.addDateColumns();
@@ -1009,22 +1005,18 @@ public final class QueryCtrlr
       removeAll(tags, tagHub, tagPictureCrop, tagMainText);
 
       NonGeneralColumnGroup colGroup = new RecordTypeColumnGroup(recordType, tags, resultsTable);
-      recordTypeToColumnGroup.put(recordType, colGroup);
+      colGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
 
       if (addToObsList)
         colGroup.addColumnsToTable();
 
-      colGroups.add((AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
-
       if ((recordType == hdtWork) && db.bibLibraryIsLinked())
       {
         colGroup = new BibFieldsColumnGroup(resultsTable);
-        recordTypeToColumnGroup.put(recordType, colGroup);
+        colGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
 
         if (addToObsList)
           colGroup.addColumnsToTable();
-
-        colGroups.add((AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
       }
     }
 
