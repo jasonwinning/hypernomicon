@@ -35,7 +35,6 @@ import java.util.List;
 import static org.hypernomicon.view.tabs.HyperTab.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.*;
 
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TabPane;
@@ -233,24 +232,26 @@ public class HyperViewSequence
     rebuildNavMenu(chbBack   .getMenu(), false);
     rebuildNavMenu(chbForward.getMenu(), true );
 
-    ui.update();
+    HDT_Record activeRecord = (curHyperTab.getTabEnum() == treeTabEnum) || (curHyperTab.getTabEnum() == queryTabEnum) ?
+      curView.getViewRecord()
+    :
+      HyperTab.getActiveRecordForViewRecord(curView.getViewRecord());
 
-    if (curHyperTab.getTabEnum() != queryTabEnum) nullSwitch(ui.activeRecord(), activeRecord ->
-    {
-      if (activeRecord.getType() == hdtPerson)
-      {
-        if (((HDT_Person)activeRecord).getLastName().length() > 0)
-          ui.omniFocus(true);
-      }
-      else if (activeRecord.name().length() > 0)
-        ui.omniFocus(true);
-    });
+    ui.update(activeRecord);
 
     if (curHyperTab.getTabEnum() != workTabEnum)
       bibManagerDlg.workRecordToAssign.set(null);
 
-    if (curHyperTab.getTabEnum() == treeTabEnum)
-      ui.treeHyperTab().selectRecord(curView.getViewRecord(), true);
+    if ((activeRecord == null) || (curHyperTab.getTabEnum() == queryTabEnum))
+      return;
+
+    if (activeRecord.getType() == hdtPerson)
+    {
+      if (((HDT_Person)activeRecord).getLastName().length() > 0)
+        ui.omniFocus(true);
+    }
+    else if (activeRecord.name().length() > 0)
+      ui.omniFocus(true);
   }
 
 //---------------------------------------------------------------------------
@@ -262,10 +263,7 @@ public class HyperViewSequence
 
     db.initialNavHistory().forEach(record ->
     {
-      if (record.getType() == hdtInvestigation)
-        record = ((HDT_Investigation)record).person.get();
-      else if (record.getType() == hdtTerm)
-        record = ((HDT_Term)record).concepts.get(0);
+      record = HyperTab.getActiveRecordForViewRecord(record);
 
       if (record == null) return;
 

@@ -245,9 +245,9 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
 //---------------------------------------------------------------------------
 
-    private NonGeneralColumn(String caption)                                                     { super(caption); }
-    private NonGeneralColumn(String caption, Function<String, String> sortKeyFunction)           { super(caption, sortKeyFunction); }
-    private NonGeneralColumn(String caption, Comparator<String> comparator, Class<String> klass) { super(caption, comparator, klass); }
+    private NonGeneralColumn(String caption                                                    ) { super(caption                        ); }
+    private NonGeneralColumn(String caption, Function<String, String> sortKeyFunction          ) { super(caption, sortKeyFunction       ); }
+    private NonGeneralColumn(String caption, Comparator<String> comparator, Class<String> klass) { super(caption, comparator     , klass); }
 
 //---------------------------------------------------------------------------
 

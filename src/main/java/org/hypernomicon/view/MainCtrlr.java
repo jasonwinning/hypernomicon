@@ -2510,6 +2510,19 @@ public final class MainCtrlr
 
   public void update()
   {
+    update(null);
+  }
+
+  /**
+   * Update the main window to refresh the display with the currently selected record
+   *
+   * @param record If a record is passed in, use that as the active record; it will likely
+   * be the record set in the active HyperView, rather than the one selected in the UI.
+   * <br>
+   * If the parameter is null, the currently selected record in the UI is used
+   */
+  public void update(HDT_Record record)
+  {
     updateTopicalFolders();
 
     if (db.isLoaded() == false)
@@ -2520,18 +2533,23 @@ public final class MainCtrlr
 
     TabEnum tabEnum = activeTabEnum();
     HyperTab<? extends HDT_Record, ? extends HDT_Record> tab = activeTab();
-    HDT_Record record = activeRecord();
 
     switch (tabEnum)
     {
       case queryTabEnum : case treeTabEnum :
         tab.updateFromRecord();
+
+        if ((record != null) && (tabEnum == treeTabEnum)) // Only select the record in the tree if activating record from HyperView
+          treeHyperTab().selectRecord(record, true);
+
         updateBottomPanel(true, true);
         return;
 
       default :
         break;
     }
+
+    if (record == null) record = activeRecord();
 
     int count = tab.recordCount();
 

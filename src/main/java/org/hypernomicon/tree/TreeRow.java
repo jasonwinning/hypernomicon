@@ -23,8 +23,6 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.Objects;
-
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
@@ -39,6 +37,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
 //---------------------------------------------------------------------------
+
+// Do NOT override hashCode or equals. Multiple TreeRows with the same text/record can be in the tree and collections that don't allow
+// "duplicates" (as ascertained by equals) are used to track them.
 
 public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 {
@@ -92,28 +93,6 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
            oStr = o.record == null ? o.text : o.record.getSortKey();
 
     return str.compareTo(oStr);
-  }
-
-  @Override public int hashCode()
-  {
-    return record != null ? Objects.hash(record, null) : Objects.hash(record, text);
-  }
-
-  @Override public boolean equals(Object obj)
-  {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-
-    TreeRow other = (TreeRow) obj;
-
-    if ((record == null) != (other.record == null))
-      return false;
-
-    if (record != null)
-      return record == other.record;
-
-    return safeStr(text).equals(safeStr(other.text));
   }
 
   @SuppressWarnings("unchecked")

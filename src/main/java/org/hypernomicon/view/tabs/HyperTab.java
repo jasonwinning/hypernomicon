@@ -33,6 +33,7 @@ import java.util.prefs.Preferences;
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
+import org.hypernomicon.model.records.HDT_Investigation;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -215,14 +216,31 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   @SuppressWarnings("unchecked")
   public HDT_RT activeRecord()
   {
-    HDT_CT viewRecord = view.getViewRecord();
+    return (HDT_RT) getActiveRecordForViewRecord(viewRecord());
+  }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  public static <ActiveType extends HDT_Record> ActiveType getActiveRecordForViewRecord(HDT_Record viewRecord)
+  {
     if (viewRecord == null) return null;
 
-    return viewRecord.getType() == hdtConcept ?
-      (HDT_RT) ((HDT_Concept) viewRecord).term.get()
-    :
-      (HDT_RT) viewRecord;
+    switch (viewRecord.getType())
+    {
+      case hdtConcept :
+
+        return (ActiveType) ((HDT_Concept) viewRecord).term.get();
+
+      case hdtInvestigation :
+
+        return (ActiveType) ((HDT_Investigation) viewRecord).person.get();
+
+      default :
+
+        return (ActiveType) viewRecord;
+    }
   }
 
 //---------------------------------------------------------------------------

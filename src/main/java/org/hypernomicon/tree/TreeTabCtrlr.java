@@ -271,7 +271,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override protected RecordType type()           { return hdtNone; }
   @Override public void clear()                   { tree.clear(); }
   @Override public boolean saveToRecord()         { return true; }
-  @Override public void setRecord(HDT_Record rec) { return; }
+  @Override public void setRecord(HDT_Record rec) { return; }                        // The selectRecord method is used to set the record instead.
   @Override public HDT_Record activeRecord()      { return tree.selectedRecord(); }
   @Override public HDT_Record viewRecord()        { return activeRecord(); }
   @Override public String recordName()            { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
