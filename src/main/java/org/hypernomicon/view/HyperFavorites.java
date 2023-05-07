@@ -50,7 +50,7 @@ public class HyperFavorites
   {
     public FavMenuItem(HDT_Record record)
     {
-      super(getTypeName(record.getType()) + ": " + record.getCBText());
+      super(getRecordText(record));
       isQuery = false;
       favRecord = new HyperTableCell(record, record.getCBText());
       query = null;
@@ -66,9 +66,30 @@ public class HyperFavorites
       setOnAction(event -> ui.showSearch(query.autoexec, null, -1, query, null, null, query.name));
     }
 
+  //---------------------------------------------------------------------------
+
     final private boolean isQuery;
     final private QueryFavorite query;
     private HyperTableCell favRecord;
+
+  //---------------------------------------------------------------------------
+
+    private static String getRecordText(HDT_Record record)
+    {
+      return getTypeName(record.getType()) + ": " + record.getCBText();
+    }
+
+  //---------------------------------------------------------------------------
+
+    public void update()
+    {
+      if (isQuery) return;
+
+      HDT_Record record = getRecord(favRecord);
+
+      if (favRecord != null)
+        setText(getRecordText(record));
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -265,10 +286,24 @@ public class HyperFavorites
     {
       FavMenuItem item = (FavMenuItem) mainList.get(ndx);
 
-      if (item.isQuery == false)
-        if (getCellID(item.favRecord) == oldID)
-          if (getCellType(item.favRecord) == changedType)
-            item.favRecord = item.favRecord.getCopyWithID(newID);
+      if (item.isQuery) continue;
+
+      if (getCellID(item.favRecord) == oldID)
+        if (getCellType(item.favRecord) == changedType)
+          item.favRecord = item.favRecord.getCopyWithID(newID);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void updateItems()
+  {
+    for (int ndx = FIRST_FAV_MENU_ITEM_NDX; ndx < mainList.size(); ndx++)
+    {
+      FavMenuItem item = (FavMenuItem) mainList.get(ndx);
+
+      item.update();
     }
   }
 

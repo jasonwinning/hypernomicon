@@ -492,15 +492,11 @@ public final class QueryCtrlr
     ResultRow targetRow = record == null ? null : recordToRow.get(record);
     if (targetRow == null) return;
 
-    for (int ndx = 0, max = resultsBackingList.size(); ndx < max; ndx++)
-    {
-      if (resultsBackingList.get(ndx) == targetRow)
-      {
-        tvResults.getSelectionModel().clearAndSelect(ndx);
-        HyperTable.scrollToSelection(tvResults, false);
-        return;
-      }
-    }
+    int ndx = resultsBackingList.indexOf(targetRow);
+    if (ndx == -1) return;
+
+    tvResults.getSelectionModel().clearAndSelect(ndx);
+    HyperTable.scrollToSelection(tvResults, false);
   }
 
   //---------------------------------------------------------------------------

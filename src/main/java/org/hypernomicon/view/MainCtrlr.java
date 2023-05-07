@@ -1950,6 +1950,8 @@ public final class MainCtrlr
     }
     else
       mnuToggleFavorite.setDisable(true);
+
+    favorites.updateItems();
   }
 
 //---------------------------------------------------------------------------

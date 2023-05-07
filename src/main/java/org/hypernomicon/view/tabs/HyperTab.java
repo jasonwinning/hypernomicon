@@ -31,9 +31,7 @@ import java.util.function.Function;
 import java.util.prefs.Preferences;
 
 import org.hypernomicon.App;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_Investigation;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
