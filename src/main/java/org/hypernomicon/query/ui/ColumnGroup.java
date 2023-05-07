@@ -130,7 +130,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
 
         if (item.tag != tagNone) // Relation subject columns will sometimes have tagNone
         {
-          for (AbstractColumnGroup<? extends ColumnGroupItem> grp : colGroups.values())
+          for (AbstractColumnGroup<? extends ColumnGroupItem> grp : recordTypeToColumnGroups.values())
           {
             if (this == grp)
               continue;

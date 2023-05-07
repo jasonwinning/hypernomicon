@@ -66,7 +66,6 @@ import org.hypernomicon.query.sources.CombinedFilteredQuerySource;
 import org.hypernomicon.query.sources.CombinedUnfilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.ui.ColumnGroup.*;
-import org.hypernomicon.view.HyperFavorites.FavMenuItem;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -576,19 +575,10 @@ public final class QueryCtrlr
 
       if (ctrlr.showModal() == false) return;
 
-      fav = new QueryFavorite();
-
-      fav.name = ctrlr.getNewName();
-      fav.autoexec = ctrlr.getAutoExec();
-      fav.orLogic = false;
-
-      if (tgLogic.getSelectedToggle() == btnCustom)
-        fav.customLogic = ultraTrim(tfCustomLogic.getText());
-      else
-      {
-        fav.customLogic = "";
-        fav.orLogic = tgLogic.getSelectedToggle() == btnOr;
-      }
+      fav = tgLogic.getSelectedToggle() == btnCustom ?
+        new QueryFavorite(ctrlr.getNewName(), ctrlr.getAutoExec(), ultraTrim(tfCustomLogic.getText()), false)
+      :
+        new QueryFavorite(ctrlr.getNewName(), ctrlr.getAutoExec(), "", tgLogic.getSelectedToggle() == btnOr);
 
       htFields.dataRows().forEach(row ->
       {
@@ -600,7 +590,7 @@ public final class QueryCtrlr
         fav.rows.add(queryRow);
       });
 
-      ui.mnuQueries.getItems().add(new FavMenuItem(fav));
+      ui.mnuQueries.getItems().add(fav);
 
       programmaticFavNameChange = true;
       tfFavName.setText(fav.name);
@@ -952,7 +942,7 @@ public final class QueryCtrlr
 
     if (succeeded == false) return false;
 
-    colGroups.forEach((recordType, colGroup) ->
+    recordTypeToColumnGroups.forEach((recordType, colGroup) ->
     {
       if (recordType != hdtNone)
         ((NonGeneralColumnGroup) colGroup).addColumnsToTable();
@@ -992,7 +982,7 @@ public final class QueryCtrlr
   {
     RecordType recordType = record.getType();
 
-    if (colGroups.containsKey(recordType) == false)
+    if (recordTypeToColumnGroups.containsKey(recordType) == false)
     {
       if (recordType.getDisregardDates() == false)
         resultsTable.addDateColumns();
@@ -1001,7 +991,7 @@ public final class QueryCtrlr
       removeAll(tags, tagHub, tagPictureCrop, tagMainText);
 
       NonGeneralColumnGroup colGroup = new RecordTypeColumnGroup(recordType, tags, resultsTable);
-      colGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
+      recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
 
       if (addToObsList)
         colGroup.addColumnsToTable();
@@ -1009,7 +999,7 @@ public final class QueryCtrlr
       if ((recordType == hdtWork) && db.bibLibraryIsLinked())
       {
         colGroup = new BibFieldsColumnGroup(resultsTable);
-        colGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
+        recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
 
         if (addToObsList)
           colGroup.addColumnsToTable();

@@ -77,7 +77,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
     chkSelectAll.setSelected(true);
 
-    for (AbstractColumnGroup<? extends ColumnGroupItem> group : colGroups.values())
+    for (AbstractColumnGroup<? extends ColumnGroupItem> group : recordTypeToColumnGroups.values())
     {
       if (group.isEmpty()) continue;
 
@@ -100,7 +100,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         {
           chkSelectNone.setSelected(false);
 
-          colGroups.values().forEach(grp ->
+          recordTypeToColumnGroups.values().forEach(grp ->
           {
             if (grp.isEmpty()) return;
 
@@ -127,7 +127,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         {
           chkSelectAll.setSelected(false);
 
-          colGroups.values().forEach(grp ->
+          recordTypeToColumnGroups.values().forEach(grp ->
           {
             if (grp.isEmpty()) return;
 

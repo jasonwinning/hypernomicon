@@ -73,8 +73,8 @@ import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.HyperFavorites.FavMenuItem;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
+import org.hypernomicon.view.HyperFavorites.RecordFavorite;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.mainText.SymbolPickerDlgCtrlr;
@@ -1035,8 +1035,6 @@ public final class MainCtrlr
 
     db.rebuildMentions();
 
-    favorites.changeRecordID(changedType, oldID, newID);
-
     update();
   }
 
@@ -1969,7 +1967,7 @@ public final class MainCtrlr
     if (ndx > -1)
       mnuFavorites.getItems().remove(ndx);
     else
-      mnuFavorites.getItems().add(new FavMenuItem(record));
+      mnuFavorites.getItems().add(new RecordFavorite(record));
 
     updateFavorites();
   }

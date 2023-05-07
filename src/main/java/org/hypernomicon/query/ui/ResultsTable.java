@@ -19,8 +19,6 @@ package org.hypernomicon.query.ui;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.List;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -29,6 +27,9 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.SetMultimap;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -54,7 +55,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
   private final TableView<ResultRow> tv;
   private boolean datesAdded = false;
-  final static Map<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> colGroups = new LinkedHashMap<>();
+  final static SetMultimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups = LinkedHashMultimap.create();
   private static ColumnGroup generalGroup;
 
   public HDT_Record selectedRecord()  { return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultRow::getRecord); }
@@ -100,11 +101,11 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
   {
     tv.getColumns().clear();
     tv.getItems().clear();
-    colGroups.clear();
+    recordTypeToColumnGroups.clear();
 
     datesAdded = false;
 
-    colGroups.put(hdtNone, generalGroup = new ColumnGroup("General", this));
+    recordTypeToColumnGroups.put(hdtNone, generalGroup = new ColumnGroup("General", this));
 
     generalGroup.addColumn(new RecordIDColumn  ());
     generalGroup.addColumn(new RecordNameColumn());
