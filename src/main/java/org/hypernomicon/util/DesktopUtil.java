@@ -36,6 +36,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -186,10 +187,28 @@ public final class DesktopUtil
 
   public static void searchORCID(String orcid, String first, String last)
   {
-    if (orcid.length() > 0)
+    if (safeStr(orcid).length() > 0)
+    {
       openWebLink("http://orcid.org/" + escapeURL(orcid, false));
-    else if ((first + last).length() > 0)
-      openWebLink("https://orcid.org/orcid-search/quick-search/?searchQuery=" + escapeURL(last + ", " + first, true));
+      return;
+    }
+
+    first = removeAllParentheticals(safeStr(first));
+    last = removeAllParentheticals(safeStr(last));
+
+    if ((first + last).isBlank())
+      return;
+
+    WebButton btn = new WebButton("ORCID", "ORCID");
+
+    btn.addPattern("https://orcid.org/orcid-search/search?firstName=" + QueryName + "&lastName=" + LastName, QueryName, LastName);
+    btn.addPattern("https://orcid.org/orcid-search/search?firstName=" + FirstName, FirstName);
+    btn.addPattern("https://orcid.org/orcid-search/search?lastName=" + LastName, LastName);
+
+    btn.first(QueryName, first);
+    btn.next(FirstName, first);
+    btn.next(LastName, last);
+    btn.go();
   }
 
 //---------------------------------------------------------------------------

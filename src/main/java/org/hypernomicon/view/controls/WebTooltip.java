@@ -49,7 +49,7 @@ public class WebTooltip extends Tooltip
       "a, a:visited, a:hover, a:active { color: #0000FF; } " +
       "td { white-space: nowrap; vertical-align: text-top; } body { white-space: nowrap; overflow-x: hidden; overflow-y: hidden; } " +
       "code { font-weight: bold; color: orangered; } " +
-      "body, table { font-size: 9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; line-height:10pt; } " +
+      "body, table { font-size: 11pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; line-height:14pt; } " +
 
       "</style></head><body><div id='" + DivID + "' style='overflow:hidden'>" + text + "</div></body></html>");
 

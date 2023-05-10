@@ -74,7 +74,7 @@ public class Highlighter
   static void init() throws IOException
   {
     readResourceTextFile("resources/mark.es6.min.js", markJSContents     , false);
-    readResourceTextFile("resources/match-jump.js  ", matchJumpJSContents, false);
+    readResourceTextFile("resources/match-jump.js"  , matchJumpJSContents, false);
   }
 
 //---------------------------------------------------------------------------

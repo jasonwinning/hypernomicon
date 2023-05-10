@@ -86,64 +86,59 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
       group.checkBox = chkType;
       chkType.setLayoutX(typeLeft);
       chkType.setLayoutY(posY);
-      chkType.setSelected(true);
+      chkType.setSelected(false);
       innerPane.getChildren().add(chkType);
 
   //---------------------------------------------------------------------------
 
-      chkSelectAll.selectedProperty().addListener((ob, oldValue, newValue) ->
+      for (ColumnGroupItem item : group)
       {
-        if (noListen) return;
-        noListen = true;
+        if (item.col == null) continue;
 
-        if (Boolean.TRUE.equals(newValue))
+        posY += itemMargin;
+        ColumnCheckBox chkField = new ColumnCheckBox(item.caption);
+        chkType.children.add(chkField);
+        chkField.parent = chkType;
+        chkField.setLayoutX(fieldLeft);
+        chkField.setLayoutY(posY);
+        chkField.selectedProperty().bindBidirectional(item.col.visibleProperty());
+
+        chkField.setOnAction(event ->
         {
-          chkSelectNone.setSelected(false);
+          if (Boolean.TRUE.equals(chkField.isSelected()))
+            item.col.getTableView().scrollToColumn(item.col);
+        });
 
-          recordTypeToColumnGroups.values().forEach(grp ->
-          {
-            if (grp.isEmpty()) return;
+        if (chkField.isSelected())
+          chkType.setSelected(true);
 
-            TypeCheckBox tcb = grp.checkBox;
-            tcb.setSelected(true);
+        innerPane.getChildren().add(chkField);
 
-            tcb.children.forEach(ccb -> ccb.setSelected(true));
-          });
-        }
-        else
-          chkSelectAll.setSelected(true);
-
-        noListen = false;
-      });
-
-  //---------------------------------------------------------------------------
-
-      chkSelectNone.selectedProperty().addListener((ob, oldValue, newValue) ->
-      {
-        if (noListen) return;
-        noListen = true;
-
-        if (Boolean.TRUE.equals(newValue))
+        chkField.selectedProperty().addListener((ob, oldValue, newValue) ->
         {
-          chkSelectAll.setSelected(false);
+          if (noListen) return;
+          noListen = true;
 
-          recordTypeToColumnGroups.values().forEach(grp ->
+          TypeCheckBox tcb = chkField.parent;
+
+          if (Boolean.TRUE.equals(newValue))
           {
-            if (grp.isEmpty()) return;
+            chkSelectNone.setSelected(false);
+            if (tcb.children.stream().allMatch(CheckBox::isSelected))
+              tcb.setSelected(true);
+          }
+          else
+          {
+            chkSelectAll.setSelected(false);
+            if (tcb.children.stream().noneMatch(CheckBox::isSelected))
+              tcb.setSelected(false);
+          }
 
-            TypeCheckBox tcb = grp.checkBox;
-            tcb.setSelected(false);
+          noListen = false;
+        });
+      }
 
-            tcb.children.forEach(ccb -> ccb.setSelected(false));
-          });
-        }
-        else
-          chkSelectNone.setSelected(true);
-
-        noListen = false;
-      });
-
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
       chkType.selectedProperty().addListener((ob, oldValue, newValue) ->
       {
@@ -163,49 +158,61 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
         noListen = false;
       });
-
-  //---------------------------------------------------------------------------
-
-      for (ColumnGroupItem item : group)
-      {
-        if (item.col != null)
-        {
-          posY += itemMargin;
-          ColumnCheckBox chkField = new ColumnCheckBox(item.caption);
-          chkType.children.add(chkField);
-          chkField.parent = chkType;
-          chkField.setLayoutX(fieldLeft);
-          chkField.setLayoutY(posY);
-          chkField.selectedProperty().bindBidirectional(item.col.visibleProperty());
-          chkField.selectedProperty().addListener((ob, ov, nv) -> item.col.getTableView().scrollToColumnIndex(0));
-
-          innerPane.getChildren().add(chkField);
-
-          chkField.selectedProperty().addListener((ob, oldValue, newValue) ->
-          {
-            if (noListen) return;
-            noListen = true;
-
-            TypeCheckBox tcb = chkField.parent;
-
-            if (Boolean.TRUE.equals(newValue))
-            {
-              chkSelectNone.setSelected(false);
-              if (tcb.children.stream().allMatch(CheckBox::isSelected))
-                tcb.setSelected(true);
-            }
-            else
-            {
-              chkSelectAll.setSelected(false);
-              if (tcb.children.stream().noneMatch(CheckBox::isSelected))
-                tcb.setSelected(false);
-            }
-
-            noListen = false;
-          });
-        }
-      }
     }
+
+//---------------------------------------------------------------------------
+
+    chkSelectAll.selectedProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (noListen) return;
+      noListen = true;
+
+      if (Boolean.TRUE.equals(newValue))
+      {
+        chkSelectNone.setSelected(false);
+
+        recordTypeToColumnGroups.values().forEach(grp ->
+        {
+          if (grp.isEmpty()) return;
+
+          TypeCheckBox tcb = grp.checkBox;
+          tcb.setSelected(true);
+
+          tcb.children.forEach(ccb -> ccb.setSelected(true));
+        });
+      }
+      else
+        chkSelectAll.setSelected(true);
+
+      noListen = false;
+    });
+
+//---------------------------------------------------------------------------
+
+    chkSelectNone.selectedProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (noListen) return;
+      noListen = true;
+
+      if (Boolean.TRUE.equals(newValue))
+      {
+        chkSelectAll.setSelected(false);
+
+        recordTypeToColumnGroups.values().forEach(grp ->
+        {
+          if (grp.isEmpty()) return;
+
+          TypeCheckBox tcb = grp.checkBox;
+          tcb.setSelected(false);
+
+          tcb.children.forEach(ccb -> ccb.setSelected(false));
+        });
+      }
+      else
+        chkSelectNone.setSelected(true);
+
+      noListen = false;
+    });
   }
 
 //---------------------------------------------------------------------------

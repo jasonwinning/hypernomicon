@@ -109,27 +109,36 @@
                     </cursor>
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="6">
-                    <Button fx:id="btnPaste" mnemonicParsing="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <Button fx:id="btnWebsitePaste" mnemonicParsing="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                           <Image url="@../../resources/images/page_paste.png" />
                         </ImageView>
                       </graphic>
                     </Button>
-                    <TextField fx:id="tfWebsite" maxWidth="32.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    <TextField fx:id="tfWebsite" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                   </AnchorPane>
-                  <Label fx:id="lblSearchKey" text="Search Key" underline="true" GridPane.rowIndex="7">
+                  <Label fx:id="lblORCID" text="ORCID" underline="true" GridPane.rowIndex="7">
                     <cursor>
                       <Cursor fx:constant="HAND" />
                     </cursor>
                   </Label>
-                  <TextField fx:id="tfSearchKey" prefHeight="22.0" prefWidth="319.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                  <Label fx:id="lblORCID" text="ORCID" underline="true" GridPane.rowIndex="8">
+                  <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="7">
+                    <Button fx:id="btnOrcidPaste" mnemonicParsing="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                          <Image url="@../../resources/images/page_paste.png" />
+                        </ImageView>
+                      </graphic>
+                    </Button>
+                    <TextField fx:id="tfORCID" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  </AnchorPane>
+                  <Label fx:id="lblSearchKey" text="Search Key" underline="true" GridPane.rowIndex="8">
                     <cursor>
                       <Cursor fx:constant="HAND" />
                     </cursor>
                   </Label>
-                  <TextField fx:id="tfORCID" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                  <TextField fx:id="tfSearchKey" prefHeight="22.0" prefWidth="319.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
                   <GridPane GridPane.columnSpan="2" GridPane.rowIndex="9">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -150,7 +159,6 @@
                       <Button fx:id="btnNewWork" mnemonicParsing="false" text="New work..." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" />
                     </AnchorPane>
                   </GridPane>
-
                 </GridPane>
               </GridPane>
             </top>
@@ -178,6 +186,11 @@
             <Tab fx:id="tabNew" text="Add new investigation...">
             </Tab>
           </TabPane>
+            <Label fx:id="lblInvHelp" layoutX="227.0" layoutY="7.0" text="What are investigations?" underline="true">
+              <cursor>
+                <Cursor fx:constant="HAND" />
+              </cursor>
+            </Label>
         </AnchorPane>
       </SplitPane>
     </AnchorPane>

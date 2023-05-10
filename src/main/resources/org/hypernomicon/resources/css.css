@@ -1,3 +1,8 @@
+.tooltip
+{
+  -fx-font-size: 14;
+}
+
 .tab-pane .tab
 {
   -fx-background-color: #e4e4e4;

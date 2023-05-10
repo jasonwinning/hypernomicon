@@ -190,6 +190,8 @@ public class WebButton
 
   public void go()
   {
+    boolean isScholar = false;
+
     nextPattern:
 
     for (UrlPattern pattern : patterns)
@@ -201,6 +203,9 @@ public class WebButton
       }
 
       String str = pattern.str;
+
+      if ((isScholar == false) && str.toLowerCase().contains("scholar") && str.toLowerCase().contains("google"))
+        isScholar = true;
 
       for (WebButtonField field : WebButtonField.values())
       {
@@ -217,8 +222,15 @@ public class WebButton
           String[] array = value.split("[.;:!?()]|--");
 
           if (array.length > 1)
-            if (confirmDialog("Should the subtitle be omitted? Sometimes (e.g., in Google Scholar) this yields better results."))
+          {
+            String msg = isScholar ?
+              "Should the subtitle be omitted? Sometimes (e.g., in Google Scholar) this yields better results."
+            :
+              "Should the subtitle be omitted? Sometimes this yields better results.";
+
+            if (confirmDialog(msg))
               value = array[0];
+          }
         }
         else if (field == WebButtonField.QueryName)
         {
@@ -228,23 +240,24 @@ public class WebButton
 
           if (ndx >= 0)
           {
-            String first3 = String.valueOf(first1.charAt(0));
-
-            for (; ndx >= 0; ndx = first1.indexOf(' ', ndx + 1))
-              first3 = first3 + first1.charAt(ndx + 1);
-
-            first3 = first3.toUpperCase();
-
             String first2 = ultraTrim(first1.replaceAll("^[^\\s]\\.", "")
                                             .replaceAll("\\s[^\\s]\\.", ""));
 
             ndx = first2.indexOf(' ');
+
             if (ndx >=0)
               first2 = first2.substring(0, ndx);
 
+            String first3 = String.valueOf(first1.charAt(0));
+
+            for (ndx = first1.indexOf(' '); ndx >= 0; ndx = first1.indexOf(' ', ndx + 1))
+              first3 = first3 + first1.charAt(ndx + 1);
+
+            first3 = first3.toUpperCase();
+
             String last = values.get(WebButtonField.LastName);
 
-            switch (new PopupDialog("How should the name be phrased? Initials often works well with Google Scholar.")
+            switch (new PopupDialog("How should the name be phrased?" + (isScholar ? " Initials often works well with Google Scholar." : ""))
 
               .addButton(first1 + ' ' + last, mrYes)
               .addButton(first2 + ' ' + last, mrNo)

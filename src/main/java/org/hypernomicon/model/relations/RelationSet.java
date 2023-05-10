@@ -243,10 +243,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       Class<? extends HDT_Record> recordClass = objType.getRecordClass();
       if (HDT_RecordWithMainText.class.isAssignableFrom(recordClass) && (objType != hdtHub) && MainText.typeHasKeyWorks(objType))
       {
-        if (typeMappingsWithKeyWork.get(hdtWork, objType) == null)
-          typeMappingsWithKeyWork.put(hdtWork, objType, rtKeyWork);
-        if (typeMappingsWithKeyWork.get(hdtMiscFile, objType) == null)
-          typeMappingsWithKeyWork.put(hdtMiscFile, objType, rtKeyWork);
+        if (typeMappingsWithKeyWork.get(hdtWork    , objType) == null) typeMappingsWithKeyWork.put(hdtWork    , objType, rtKeyWork);
+        if (typeMappingsWithKeyWork.get(hdtMiscFile, objType) == null) typeMappingsWithKeyWork.put(hdtMiscFile, objType, rtKeyWork);
       }
     }
   }
@@ -320,21 +318,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       switch (schema.getCategory())
       {
-        case hdcString :        if (NestedValue.isEmpty(((HDI_OnlineString)onlineItem).get()) == false)
-                                  offlineItem = new HDI_OfflineString(schema, recordState);
-          break;
-
-        case hdcBoolean :       if (NestedValue.isEmpty(((HDI_OnlineBoolean)onlineItem).get()) == false)
-                                  offlineItem = new HDI_OfflineBoolean(schema, recordState);
-          break;
-
-        case hdcTernary :       if (NestedValue.isEmpty(((HDI_OnlineTernary)onlineItem).get()) == false)
-                                  offlineItem = new HDI_OfflineTernary(schema, recordState);
-          break;
-
-        case hdcNestedPointer : if (HDT_Record.isEmpty(((HDI_OnlineNestedPointer)onlineItem).get()) == false)
-                                  offlineItem = new HDI_OfflineNestedPointer(schema, recordState);
-          break;
+        case hdcString        : if (NestedValue.isEmpty(((HDI_OnlineString       ) onlineItem).get()) == false) offlineItem = new HDI_OfflineString       (schema, recordState); break;
+        case hdcBoolean       : if (NestedValue.isEmpty(((HDI_OnlineBoolean      ) onlineItem).get()) == false) offlineItem = new HDI_OfflineBoolean      (schema, recordState); break;
+        case hdcTernary       : if (NestedValue.isEmpty(((HDI_OnlineTernary      ) onlineItem).get()) == false) offlineItem = new HDI_OfflineTernary      (schema, recordState); break;
+        case hdcNestedPointer : if (HDT_Record .isEmpty(((HDI_OnlineNestedPointer) onlineItem).get()) == false) offlineItem = new HDI_OfflineNestedPointer(schema, recordState); break;
 
         default : break;
       }
@@ -357,10 +344,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     switch (value.getCategory())
     {
-      case hdcBoolean       : isEmpty = NestedValue.isEmpty(((HDI_OfflineBoolean      )value).get     ()); break;
-      case hdcTernary       : isEmpty = NestedValue.isEmpty(((HDI_OfflineTernary      )value).get     ()); break;
-      case hdcString        : isEmpty = NestedValue.isEmpty(((HDI_OfflineString       )value).get     ()); break;
-      case hdcNestedPointer : isEmpty = NestedValue.isEmpty(((HDI_OfflineNestedPointer)value).getObjID()); break;
+      case hdcBoolean       : isEmpty = NestedValue.isEmpty(((HDI_OfflineBoolean      ) value).get     ()); break;
+      case hdcTernary       : isEmpty = NestedValue.isEmpty(((HDI_OfflineTernary      ) value).get     ()); break;
+      case hdcString        : isEmpty = NestedValue.isEmpty(((HDI_OfflineString       ) value).get     ()); break;
+      case hdcNestedPointer : isEmpty = NestedValue.isEmpty(((HDI_OfflineNestedPointer) value).getObjID()); break;
       default               : return;
     }
 
@@ -416,7 +403,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public boolean setNestedTernary(HDT_Subj subj, HDT_Obj obj, Tag tag, Ternary ternary)
   {
-    if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49224");
+    if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49220");
 
     boolean isEmpty = NestedValue.isEmpty(ternary);
     if (isEmpty == false) addObjAndMod(subj, obj);
@@ -491,8 +478,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private <HDI_Offline extends HDI_OfflineBase, HDI_Online extends HDI_OnlineBase<HDI_Offline>>
-                HDI_Online getNestedItem(HDT_Subj subj, HDT_Obj obj, Tag tag, boolean noCreate)
+  private <HDI_Offline extends HDI_OfflineBase, HDI_Online extends HDI_OnlineBase<HDI_Offline>> HDI_Online getNestedItem(HDT_Subj subj, HDT_Obj obj, Tag tag, boolean noCreate)
   {
     Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
 
@@ -545,7 +531,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public Ternary getNestedTernary(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
-    if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49227"); return Ternary.Unset; }
+    if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49228"); return Ternary.Unset; }
 
     return nullSwitch(getNestedItem(subj, obj, tag, true), Ternary.Unset, HDI_OnlineTernary::get);
   }
@@ -555,7 +541,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public HDT_Record getNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
-    if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49228"); return null; }
+    if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49229"); return null; }
 
     return nullSwitch(getNestedItem(subj, obj, tag, true), null, HDI_OnlineNestedPointer::get);
   }
@@ -779,15 +765,19 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     objToSubjList = rebuildMultimap(objToSubjList);
 
     Iterator<HDT_Subj> orphanIt = orphans.iterator();
+
     while (orphanIt.hasNext())
     {
-      if (HDT_Record.isEmptyThrowsException(orphanIt.next())) orphanIt.remove();
+      if (HDT_Record.isEmptyThrowsException(orphanIt.next()))
+        orphanIt.remove();
     }
 
     Iterator<Entry<HDT_Subj, Integer>> subjOrdMapIt = subjOrdMap.entrySet().iterator();
+
     while (subjOrdMapIt.hasNext())
     {
-      if (HDT_Record.isEmptyThrowsException(subjOrdMapIt.next().getKey())) subjOrdMapIt.remove();
+      if (HDT_Record.isEmptyThrowsException(subjOrdMapIt.next().getKey()))
+        subjOrdMapIt.remove();
     }
 
     if (hasNestedItems == false) return;
@@ -798,7 +788,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       Cell<HDT_Subj, HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> cell = cellIt.next();
 
-      if      (HDT_Record.isEmptyThrowsException(cell.getRowKey()))    cellIt.remove();
+      if      (HDT_Record.isEmptyThrowsException(cell.getRowKey   ())) cellIt.remove();
       else if (HDT_Record.isEmptyThrowsException(cell.getColumnKey())) cellIt.remove();
       else
       {
@@ -808,8 +798,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
         {
           HDI_OnlineBase<? extends HDI_OfflineBase> item = targetIt.next().getValue();
 
-          if (item.getCategory() == hdcNestedPointer)
-            if (HDT_Record.isEmptyThrowsException(((HDI_OnlineNestedPointer)item).get())) targetIt.remove();
+          if ((item.getCategory() == hdcNestedPointer) && HDT_Record.isEmptyThrowsException(((HDI_OnlineNestedPointer)item).get()))
+            targetIt.remove();
         }
       }
     }

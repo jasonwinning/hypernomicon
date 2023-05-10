@@ -29,7 +29,7 @@ import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
 
 import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Multimap;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -55,7 +55,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
   private final TableView<ResultRow> tv;
   private boolean datesAdded = false;
-  final static SetMultimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups = LinkedHashMultimap.create();
+  final static Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups = LinkedHashMultimap.create();  // Has to be a multimap because there are two ColumnGroups for hdtWork
   private static ColumnGroup generalGroup;
 
   public HDT_Record selectedRecord()  { return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultRow::getRecord); }

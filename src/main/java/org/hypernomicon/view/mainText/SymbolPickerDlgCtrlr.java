@@ -40,7 +40,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.scene.web.WebEngine;
@@ -235,7 +234,7 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
     greek       = initGreek      ();
     misc        = initMisc       ();
 
-    cbFont.setTooltip(new Tooltip("Set the font that characters will be displayed in"));
+    setToolTip(cbFont, "Set the font that characters will be displayed in");
 
     cbFont.setCellFactory(param -> new ListCell<>()
     {

@@ -52,6 +52,7 @@ import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
@@ -104,16 +105,17 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 
 //---------------------------------------------------------------------------
 
 public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 {
   @FXML private AnchorPane apOverview;
-  @FXML private Button btnWebSrch1, btnWebSrch2, btnPaste, btnNewWork;
+  @FXML private Button btnWebSrch1, btnWebSrch2, btnWebsitePaste, btnOrcidPaste, btnNewWork;
   @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
   @FXML private ImageView ivPerson;
-  @FXML private Label lblORCID, lblWebsite, lblPicture, lblSearchKey;
+  @FXML private Label lblORCID, lblWebsite, lblPicture, lblSearchKey, lblInvHelp;
   @FXML private SplitMenuButton smbWebSrch1;
   @FXML private SplitPane spTopHoriz, spVert;
   @FXML private Tab tabNew, tabOverview;
@@ -267,6 +269,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     setToolTip(lblWebsite, "Click to launch website in browser");
 
+    setToolTip(lblORCID, "Click to search for ORCID or open ORCID profile in browser");
+
     tpPerson.addEventFilter(KeyEvent.ANY, keyEvent ->
     {
       if (keyEvent.getCode().isArrowKey())
@@ -289,6 +293,18 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       tpPersonChange(oldTab, newTab);
     });
 
+    Platform.runLater(() ->
+    {
+      final double invHelpGap = 20.0;
+
+      StackPane headersRegion = (StackPane) tpPerson.lookup(".headers-region");
+      lblInvHelp.setLayoutX(headersRegion.getWidth() + invHelpGap);
+
+      headersRegion.widthProperty().addListener((obs, ov, nv) -> lblInvHelp.setLayoutX(nv.doubleValue() + invHelpGap));
+    });
+
+    setInvHelpTooltip();
+
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
     btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
@@ -306,11 +322,50 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       refreshPicture();
     });
 
-    btnPaste.setOnAction(event -> tfWebsite.setText(getClipboardText(true)));
-    setToolTip(btnPaste, "Paste text from clipboard");
+    btnWebsitePaste.setOnAction(event -> tfWebsite.setText(getClipboardText(true)));
+    setToolTip(btnWebsitePaste, "Paste text from clipboard");
+
+    btnOrcidPaste.setOnAction(event -> tfORCID.setText(getClipboardText(true)));
+    setToolTip(btnOrcidPaste, "Paste text from clipboard");
 
     initWorkContextMenu();
     initArgContextMenu();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setInvHelpTooltip()
+  {
+    lblInvHelp.setTooltip(new WebTooltip(
+
+      "Investigation records are a way of providing a description of a person's ongoing research<br>" +
+      "project (i.e., what they are \"investigating\"), which can include a number of works they've<br>" +
+      "authored.<br><br>" +
+      "Investigations can also be thought of as a way of grouping an author's works by topic.<br><br>" +
+      "You add an Investigation record on the Persons tab by clicking the \"Add new investigation\" " +
+      "sub-tab.<br><br>" +
+      "For example, a Person record for Daniel Dennett might have at least 3 Investigation records:<br>" +
+      "\"Agency and Free Will\", \"Intentional Stance\", and \"Consciousness\".<br><br>" +
+      "You can assign an investigation to a work in the Persons tab, by clicking in the \"Investigation(s)\"<br>" +
+      "column in the list of works.<br><br>" +
+      "When an Investigation sub-tab is selected on the Persons tab, you can enter a description for<br>" +
+      "that Investigation in the text editor, and only works assigned to that Investigation are displayed<br>" +
+      "in the list of works.<br><br>" +
+      "As with many other types of records, you can assign a search key to an Investigation on its sub-tab.<br><br>" +
+      "Overall, it is a way of grouping a given author's works and prevents you from writing a large<br>" +
+      "amount of text on the Person's main description field (the \"Overview\" sub-tab)."));
+
+    lblInvHelp.setOnMouseClicked(event ->
+    {
+      lblInvHelp.getTooltip().show(lblInvHelp, event.getScreenX() + 7, event.getScreenY() + 10);
+
+      lblInvHelp.setOnMouseExited(exitEvent ->
+      {
+        lblInvHelp.getTooltip().hide();
+        lblInvHelp.setOnMouseExited(null);
+      });
+    });
   }
 
 //---------------------------------------------------------------------------

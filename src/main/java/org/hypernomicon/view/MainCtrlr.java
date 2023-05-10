@@ -346,8 +346,7 @@ public final class MainCtrlr
 
     MainTextWrapper.init();
 
-    ttDates = new Tooltip(NO_DATES_TOOLTIP);
-    ttDates.setStyle("-fx-font-size: 14px;");
+    ttDates = makeTooltip(NO_DATES_TOOLTIP);
 
     initHyperTabs();
 
@@ -371,8 +370,8 @@ public final class MainCtrlr
     {
       switch (getHyperTabByTab(tab).getTabEnum())
       {
-        case queryTabEnum : return new Tooltip("Populate dropdown with query results");
-        case treeTabEnum  : return new Tooltip("Search within Tree (additional actions become available in magnifying glass button dropdown menu)");
+        case queryTabEnum : return makeTooltip("Populate dropdown with query results");
+        case treeTabEnum  : return makeTooltip("Search within Tree (additional actions become available in magnifying glass button dropdown menu)");
         default           : return null;
       }
     }));

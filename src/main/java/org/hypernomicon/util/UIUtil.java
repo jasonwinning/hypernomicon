@@ -167,12 +167,23 @@ public final class UIUtil
 
   public static void setToolTip(Control ctrl, String str)
   {
-    ctrl.setTooltip(safeStr(str).isBlank() ? null : new Tooltip(str));
+    ctrl.setTooltip(makeTooltip(str));
   }
 
   public static void setToolTip(Tab ctrl, String str)
   {
-    ctrl.setTooltip(safeStr(str).isBlank() ? null : new Tooltip(str));
+    ctrl.setTooltip(makeTooltip(str));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Tooltip makeTooltip(String str)
+  {
+    return safeStr(str).isBlank() ?
+      null
+    :
+      new Tooltip(str); // Font size is set in css file
   }
 
 //---------------------------------------------------------------------------
