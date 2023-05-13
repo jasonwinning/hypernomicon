@@ -80,6 +80,7 @@ public interface HDT_Record
   String getSortKey();
   String makeSortKey();
   String getSortKeyAttr();
+  void setSortKeyAttr(String sortKeyAttr);
   String getSearchKey();
   String firstActiveKeyWord();
   void setSearchKey(String newKey) throws SearchKeyException;

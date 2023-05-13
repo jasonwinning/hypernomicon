@@ -153,6 +153,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       hcbCountry.selectID(country.getID());
     });
 
+    setToolTip(btnNewCountry, "Add new Country record to the list");
+
     btnNewRegion.setOnAction(event ->
     {
       HDT_Country country = hcbCountry.selectedRecord();
@@ -171,7 +173,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       hcbRegion.selectID(nrdc.getRegion().getID());
     });
 
+    setToolTip(btnNewRegion, "Add new State/Region record for the currently selected Country");
+
     btnParent.setOnAction(event -> ui.goToRecord(getRecord(hcbParentInst.selectedHTC()), true));
+
+    setToolTip(btnParent, "Go to parent record");
 
     btnURL.setOnAction(event ->
     {
@@ -180,6 +186,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       else
         ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText()).go();
     });
+
+    setToolTip(btnURL, "Search for website (if not entered) or navigate to website (if entered) in browser");
   }
 
 //---------------------------------------------------------------------------

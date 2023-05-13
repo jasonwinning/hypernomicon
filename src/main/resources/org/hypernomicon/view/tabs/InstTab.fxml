@@ -46,7 +46,7 @@
       <TextField fx:id="tfName" layoutX="55.0" layoutY="3.0" prefHeight="25.0" prefWidth="408.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-      <Button fx:id="btnURL" layoutY="3.0" mnemonicParsing="false" prefHeight="25.0" text="URL:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="3.0" />
+      <Button fx:id="btnURL" layoutY="3.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="URL:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="3.0" />
       <TextField fx:id="tfURL" layoutX="44.0" layoutY="3.0" prefHeight="25.0" prefWidth="402.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">

@@ -434,7 +434,14 @@ public final class Util
 
   public static MessageDigest newMessageDigest()
   {
-    try { return MessageDigest.getInstance("MD5"); } catch (NoSuchAlgorithmException e) { return null; }
+    try
+    {
+      return MessageDigest.getInstance("MD5");
+    }
+    catch (NoSuchAlgorithmException e)
+    {
+      throw new AssertionError(e);
+    }
   }
 
 //---------------------------------------------------------------------------

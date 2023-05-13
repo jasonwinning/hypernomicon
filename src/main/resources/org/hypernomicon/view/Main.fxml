@@ -74,6 +74,19 @@
              <MenuItem fx:id="mnuNewRank" mnemonicParsing="false" onAction="#mnuNewRankClick" text="Academic Rank" />
              <MenuItem fx:id="mnuNewPersonStatus" mnemonicParsing="false" onAction="#mnuNewPersonStatusClick" text="Person Status" />
            </Menu>
+               <Menu mnemonicParsing="false" text="Change category listing order...">
+                 <items>
+                   <MenuItem fx:id="mnuChangeFieldOrder" mnemonicParsing="false" text="Academic Fields" />
+                   <MenuItem fx:id="mnuChangeRankOrder" mnemonicParsing="false" text="Academic Ranks" />
+                   <MenuItem fx:id="mnuChangeCountryOrder" mnemonicParsing="false" text="Countries" />
+                   <MenuItem fx:id="mnuChangePersonStatusOrder" mnemonicParsing="false" text="Person Statuses" />
+                   <MenuItem fx:id="mnuChangeFileTypeOrder" mnemonicParsing="false" text="File Types" />
+                   <MenuItem fx:id="mnuChangeWorkTypeOrder" mnemonicParsing="false" text="Work Types" />
+                   <MenuItem fx:id="mnuChangeArgVerdictOrder" mnemonicParsing="false" text="Argument Verdicts" />
+                   <MenuItem fx:id="mnuChangePosVerdictOrder" mnemonicParsing="false" text="Position Verdicts" />
+                   <MenuItem fx:id="mnuChangeInstitutionTypeOrder" mnemonicParsing="false" text="Institution Types" />
+                 </items>
+               </Menu>
            <CheckMenuItem fx:id="mnuAutoImport" mnemonicParsing="false" text="Automatically watch for and import PDF files added" />
            <MenuItem fx:id="mnuAddToQueryResults" mnemonicParsing="false" onAction="#mnuAddToQueryResultsClick" text="Add this record to query results" />
            <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick" text="Change record ID..." />
@@ -273,43 +286,33 @@
            </graphic>
          </ToggleButton>
          <AnchorPane prefHeight="24.0" prefWidth="55.0" AnchorPane.leftAnchor="35.0" AnchorPane.topAnchor="5.0">
-           <SplitMenuButton fx:id="btnGoTo" mnemonicParsing="false" prefHeight="24.0" prefWidth="55.0"
-                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                            AnchorPane.topAnchor="0.0">
+           <SplitMenuButton fx:id="btnGoTo" mnemonicParsing="false" prefHeight="24.0" prefWidth="55.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
              <items>
-               <MenuItem fx:id="mnuRecordSelect" mnemonicParsing="false" text="Go to Record"/>
-               <MenuItem fx:id="mnuFindWithinName" mnemonicParsing="false"
-                         text="Find records with name containing this text"/>
-               <MenuItem fx:id="mnuFindWithinAnyField" mnemonicParsing="false"
-                         text="Find records with any field containing this text"/>
-               <MenuItem fx:id="mnuFindNextInName" mnemonicParsing="false" text="Find next match in record name"/>
-               <MenuItem fx:id="mnuFindPreviousInName" mnemonicParsing="false"
-                         text="Find previous match in record name"/>
-               <MenuItem fx:id="mnuFindNextAll" mnemonicParsing="false"
-                         text="Find next match in record name or description"/>
-               <MenuItem fx:id="mnuFindPreviousAll" mnemonicParsing="false"
-                         text="Find previous match in record name or description"/>
+               <MenuItem fx:id="mnuRecordSelect" mnemonicParsing="false" text="Go to Record" />
+               <MenuItem fx:id="mnuFindWithinName" mnemonicParsing="false" text="Find records with name containing this text" />
+               <MenuItem fx:id="mnuFindWithinAnyField" mnemonicParsing="false" text="Find records with any field containing this text" />
+               <MenuItem fx:id="mnuFindNextInName" mnemonicParsing="false" text="Find next match in record name" />
+               <MenuItem fx:id="mnuFindPreviousInName" mnemonicParsing="false" text="Find previous match in record name" />
+               <MenuItem fx:id="mnuFindNextAll" mnemonicParsing="false" text="Find next match in record name or description" />
+               <MenuItem fx:id="mnuFindPreviousAll" mnemonicParsing="false" text="Find previous match in record name or description" />
              </items>
              <graphic>
                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                 <Image url="@../resources/images/magnifier.png"/>
+                 <Image url="@../resources/images/magnifier.png" />
                </ImageView>
              </graphic>
            </SplitMenuButton>
-           <Button fx:id="btnPrevResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0"
-                   visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+           <Button fx:id="btnPrevResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
              <graphic>
                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                 <Image url="@../resources/images/triangle-up.png"/>
+                 <Image url="@../resources/images/triangle-up.png" />
                </ImageView>
              </graphic>
            </Button>
-           <Button fx:id="btnNextResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0"
-                   visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                   AnchorPane.topAnchor="0.0">
+           <Button fx:id="btnNextResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
              <graphic>
                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                 <Image url="@../resources/images/triangle-down.png"/>
+                 <Image url="@../resources/images/triangle-down.png" />
                </ImageView>
              </graphic>
            </Button>

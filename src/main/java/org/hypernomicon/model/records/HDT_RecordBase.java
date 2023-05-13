@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -74,7 +75,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   private final NameItem name;
   private final Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
   private final boolean dummyFlag;
-  private final String sortKeyAttr;
+  private String sortKeyAttr;
   private final RecordType type;
 
   private int id;
@@ -164,6 +165,19 @@ public abstract class HDT_RecordBase implements HDT_Record
   {
     name.set(update ? updateString(name.get(), str) : safeStr(str));
     updateSortKey();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public final void setSortKeyAttr(String sortKeyAttr)
+  {
+    if (Objects.equals(this.sortKeyAttr, sortKeyAttr))
+      return;
+
+    this.sortKeyAttr = sortKeyAttr;
+    updateSortKey();
+    modifyNow();
   }
 
 //---------------------------------------------------------------------------

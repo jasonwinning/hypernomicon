@@ -62,7 +62,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     this.ctrlType = ctrlType;
     this.col = col;
     this.handler = handler;
-    this.caption = safeStr(caption);
+    this.caption = ctrlType == ctCustomBtn ? safeStr(caption) : ""; // Custom caption is only supported for ctCustomBtn
 
     btn = HyperTableColumn.makeButton(this);
 
@@ -104,7 +104,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     {
       case baBrowse:
 
-        btn.setText(caption.length() > 0 ? caption : "...");
+        btn.setText("...");
         btn.setGraphic(null);
         setOnAction(ht::browseClick);
 
@@ -125,7 +125,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
       case baGo:
 
-        btn.setText(caption.length() > 0 ? caption : "Go:");
+        btn.setText("Go:");
         btn.setGraphic(null);
         setOnAction((row, colNdx) -> ui.goToRecord(row.getRecord(colNdx), true));
 
@@ -133,15 +133,16 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
       case baWeb:
 
-        btn.setText(caption.length() > 0 ? caption : "URL:");
+        btn.setText("URL:");
         btn.setGraphic(null);
+        setToolTip(btn, "Search for website (if not entered) or navigate to website (if entered) in browser");
         setOnAction((row, colNdx) -> DesktopUtil.openWebLink(row.getText(colNdx)));
 
         break;
 
       case baNew:
 
-        btn.setText(caption.length() > 0 ? caption : "New");
+        btn.setText("New");
         btn.setGraphic(null);
         setOnAction((row, colNdx) -> ui.activeTab().newClick(ht.getTypeByCol(colNdx), row));
 
@@ -157,7 +158,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
       default: break;
     }
 
-    setToolTip(btn, col.tooltips.get(newAction));
+    nullSwitch(col.tooltips.get(newAction), tooltip -> setToolTip(btn, tooltip));
   }
 
 //---------------------------------------------------------------------------

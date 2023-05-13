@@ -161,7 +161,10 @@ public final class MainCtrlr
                          mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
                          mnuImportBibFile, mnuNewCountry, mnuNewDatabase, mnuNewField, mnuNewPersonStatus, mnuNewRank, mnuVideos,
                          mnuRecordSelect, mnuRevertToDiskCopy, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile,
-                         mnuShortcuts;
+                         mnuShortcuts, mnuChangeFieldOrder, mnuChangeRankOrder, mnuChangeCountryOrder, mnuChangePersonStatusOrder,
+                         mnuChangeFileTypeOrder, mnuChangeWorkTypeOrder, mnuChangeArgVerdictOrder, mnuChangePosVerdictOrder,
+                         mnuChangeInstitutionTypeOrder;
+
   @FXML private MenuButton mbCreateNew;
   @FXML private ProgressBar progressBar;
   @FXML private SeparatorMenuItem mnuBibImportSeparator;
@@ -429,6 +432,17 @@ public final class MainCtrlr
     btnGoTo      .visibleProperty().bind(btnTextSearch.selectedProperty().not());
     btnPrevResult.visibleProperty().bind(btnTextSearch.selectedProperty()      );
     btnNextResult.visibleProperty().bind(btnTextSearch.selectedProperty()      );
+
+    mnuChangeFieldOrder          .setOnAction(event -> mnuChangeSortOrder(hdtField          ));
+    mnuChangeRankOrder           .setOnAction(event -> mnuChangeSortOrder(hdtRank           ));
+    mnuChangeCountryOrder        .setOnAction(event -> mnuChangeSortOrder(hdtCountry        ));
+    mnuChangePersonStatusOrder   .setOnAction(event -> mnuChangeSortOrder(hdtPersonStatus   ));
+    mnuChangeFileTypeOrder       .setOnAction(event -> mnuChangeSortOrder(hdtFileType       ));
+    mnuChangeWorkTypeOrder       .setOnAction(event -> mnuChangeSortOrder(hdtWorkType       ));
+    mnuChangeArgVerdictOrder     .setOnAction(event -> mnuChangeSortOrder(hdtArgumentVerdict));
+    mnuChangePosVerdictOrder     .setOnAction(event -> mnuChangeSortOrder(hdtPositionVerdict));
+    mnuChangeInstitutionTypeOrder.setOnAction(event -> mnuChangeSortOrder(hdtInstitutionType));
+
 
     if (app.prefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
       btnPointerLaunch.setSelected(true);
@@ -1033,6 +1047,26 @@ public final class MainCtrlr
     htFind.changeIDs(changedType, oldID, newID);
 
     db.rebuildMentions();
+
+    update();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void mnuChangeSortOrder(RecordType recordType)
+  {
+    if (db.isLoaded() == false)
+    {
+      messageDialog("No database is currently loaded.", mtError);
+      return;
+    }
+
+    if (cantSaveRecord()) return;
+
+    SortOrderDlgCtrlr ctrlr = new SortOrderDlgCtrlr(recordType);
+
+    if (ctrlr.showModal() == false) return;
 
     update();
   }
@@ -2749,6 +2783,9 @@ public final class MainCtrlr
 
       disableAllIff(count < 1, btnIncrement, btnDecrement);
 
+      setToolTip(btnIncrement, "Go to next instance of this record in tree");
+      setToolTip(btnDecrement, "Go to previous instance of this record in tree");
+
       btnDelete.setDisable(activeRec == null);
       setToolTip(btnDelete, "Delete selected record");
 
@@ -2789,6 +2826,9 @@ public final class MainCtrlr
 
       btnDecrement.setDisable((count == 0) || (ndx == 0));
       btnIncrement.setDisable((count == 0) || (ndx == (count - 1)));
+
+      setToolTip(btnIncrement, "Go to next record in sort order");
+      setToolTip(btnDecrement, "Go to previous record in sort order");
     }
 
   //---------------------------------------------------------------------------

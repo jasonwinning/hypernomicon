@@ -86,37 +86,54 @@
                   </padding>
                   <Label text="Last name">
                   </Label>
-
-                  <TextField fx:id="tfLast" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                  <AnchorPane prefHeight="74.0" prefWidth="228.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+                    <TextField fx:id="tfLast" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
+                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                  </AnchorPane>
                   <Label text="First name" GridPane.rowIndex="1">
                   </Label>
-                  <TextField fx:id="tfFirst" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
+                  <AnchorPane GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                    <TextField fx:id="tfFirst" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
+                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                  </AnchorPane>
                   <Label text="Rank" GridPane.rowIndex="2">
                   </Label>
-                  <ComboBox fx:id="cbRank" maxWidth="1.7976931348623157E308" prefHeight="22.0" prefWidth="209.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" />
+                  <AnchorPane GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                    <ComboBox fx:id="cbRank" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
+                              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                  </AnchorPane>
                   <Label text="Status" GridPane.rowIndex="3">
                   </Label>
-                  <ComboBox fx:id="cbStatus" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="3">
+                    <ComboBox fx:id="cbStatus" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
+                              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                  </AnchorPane>
                   <Label text="Field" GridPane.rowIndex="4">
                   </Label>
-                  <ComboBox fx:id="cbField" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="4">
+                    <ComboBox fx:id="cbField" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
+                              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                  </AnchorPane>
                   <Label text="Specialty" GridPane.rowIndex="5">
                   </Label>
-                  <ComboBox fx:id="cbSubfield" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                  <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="5">
+                    <ComboBox fx:id="cbSubfield" minHeight="1.0" AnchorPane.bottomAnchor="1.0"
+                              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                  </AnchorPane>
                   <Label fx:id="lblWebsite" text="Website" underline="true" GridPane.rowIndex="6">
                     <cursor>
                       <Cursor fx:constant="HAND" />
                     </cursor>
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="6">
-                    <Button fx:id="btnWebsitePaste" mnemonicParsing="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <Button fx:id="btnWebsitePaste" minHeight="1.0" mnemonicParsing="false" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="1.0">
                       <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                           <Image url="@../../resources/images/page_paste.png" />
                         </ImageView>
                       </graphic>
                     </Button>
-                    <TextField fx:id="tfWebsite" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    <TextField fx:id="tfWebsite" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <Label fx:id="lblORCID" text="ORCID" underline="true" GridPane.rowIndex="7">
                     <cursor>
@@ -124,21 +141,24 @@
                     </cursor>
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="7">
-                    <Button fx:id="btnOrcidPaste" mnemonicParsing="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <Button fx:id="btnOrcidPaste" minHeight="1.0" mnemonicParsing="false" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="1.0">
                       <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                           <Image url="@../../resources/images/page_paste.png" />
                         </ImageView>
                       </graphic>
                     </Button>
-                    <TextField fx:id="tfORCID" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    <TextField fx:id="tfORCID" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="34.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <Label fx:id="lblSearchKey" text="Search Key" underline="true" GridPane.rowIndex="8">
                     <cursor>
                       <Cursor fx:constant="HAND" />
                     </cursor>
                   </Label>
-                  <TextField fx:id="tfSearchKey" prefHeight="22.0" prefWidth="319.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                  <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="8">
+                    <TextField fx:id="tfSearchKey" minHeight="1.0" AnchorPane.bottomAnchor="1.0"
+                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                  </AnchorPane>
                   <GridPane GridPane.columnSpan="2" GridPane.rowIndex="9">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -149,14 +169,14 @@
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <AnchorPane>
-                      <Button fx:id="btnWebSrch1" mnemonicParsing="false" text="Google" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0" GridPane.hgrow="ALWAYS" />
-                      <SplitMenuButton fx:id="smbWebSrch1" alignment="CENTER" mnemonicParsing="false" text="Google" visible="false" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0" GridPane.hgrow="ALWAYS" />
+                      <Button fx:id="btnWebSrch1" minHeight="1.0" mnemonicParsing="false" text="Google" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="1.0" GridPane.hgrow="ALWAYS" />
+                      <SplitMenuButton fx:id="smbWebSrch1" alignment="CENTER" minHeight="1.0" mnemonicParsing="false" text="Google" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="1.0" GridPane.hgrow="ALWAYS" />
                     </AnchorPane>
                     <AnchorPane GridPane.columnIndex="1">
-                      <Button fx:id="btnWebSrch2" mnemonicParsing="false" text="Scholar" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                      <Button fx:id="btnWebSrch2" minHeight="1.0" mnemonicParsing="false" text="Scholar" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="1.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
                     </AnchorPane>
                     <AnchorPane GridPane.columnIndex="2">
-                      <Button fx:id="btnNewWork" mnemonicParsing="false" text="New work..." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" />
+                      <Button fx:id="btnNewWork" minHeight="1.0" mnemonicParsing="false" text="New work..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" />
                     </AnchorPane>
                   </GridPane>
                 </GridPane>

@@ -347,14 +347,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       "sub-tab.<br><br>" +
       "For example, a Person record for Daniel Dennett might have at least 3 Investigation records:<br>" +
       "\"Agency and Free Will\", \"Intentional Stance\", and \"Consciousness\".<br><br>" +
-      "You can assign an investigation to a work in the Persons tab, by clicking in the \"Investigation(s)\"<br>" +
+      "You can assign an investigation to a work in the Persons tab by clicking in the \"Investigation(s)\"<br>" +
       "column in the list of works.<br><br>" +
       "When an Investigation sub-tab is selected on the Persons tab, you can enter a description for<br>" +
       "that Investigation in the text editor, and only works assigned to that Investigation are displayed<br>" +
       "in the list of works.<br><br>" +
       "As with many other types of records, you can assign a search key to an Investigation on its sub-tab.<br><br>" +
-      "Overall, it is a way of grouping a given author's works and prevents you from writing a large<br>" +
-      "amount of text on the Person's main description field (the \"Overview\" sub-tab)."));
+      "Overall, it is a way of grouping a given author's works and prevents you from needing to write<br>" +
+      "a large amount of text on the Person's main description field (the \"Overview\" sub-tab)."));
 
     lblInvHelp.setOnMouseClicked(event ->
     {
@@ -774,7 +774,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     // Save investigations
     // -----------------------------------------------------------------
 
-    if (saveInvestigations() == false) return false;
+    if (saveInvestigations(null) == false) return false;
 
     // -----------------------------------------------------------------
     // End of save investigations
@@ -1197,10 +1197,20 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean saveInvestigations()
+  private boolean saveInvestigations(InvestigationView ivNotToSave)
   {
     for (InvestigationView iV : invViews)
     {
+      if (ivNotToSave == iV) continue;
+
+      String invName = iV.tfName.getText();
+
+      if (invName.isBlank())
+      {
+        tpPerson.getSelectionModel().select(iV.tab);
+        return falseWithErrorMessage("Enter a name for the investigation.", iV.tfName);
+      }
+
       HDT_Investigation inv = iV.record;
 
       try
@@ -1209,17 +1219,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       }
       catch (SearchKeyException e)
       {
-        falseWithErrorMessage(e.getTooShort() ?
-          "Unable to modify investigation \"" + iV.tfName.getText() + "\": search key must be at least 3 characters."
-        :
-          "Unable to modify investigation \"" + iV.tfName.getText() + "\": search key already exists.");
-
         tpPerson.getSelectionModel().select(iV.tab);
-        safeFocus(iV.tfSearchKey);
-        return false;
+
+        String msg = "Unable to save investigation \"" + iV.tfName.getText() + "\": search key " + (e.getTooShort() ? "must be at least 3 characters." : "already exists.");
+
+        return falseWithErrorMessage(msg, iV.tfSearchKey);
       }
 
-      inv.setName(iV.tfName.getText());
+      inv.setName(invName);
       iV.textWrapper.saveToRecord(inv);
     }
 
@@ -1252,22 +1259,25 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   private void deleteInvestigation(Event event)
   {
-    Tab tab = (Tab) event.getSource();
-
-    InvestigationView view = invViewByTab(tab);
-
-    if ((view == null) || (view.record == null))
-      return;
-
     event.consume();
 
-    if (ui.cantSaveRecord() || (confirmDialog("Are you sure you want to delete the investigation?") == false))
-      return;
+    Platform.runLater(() ->   // Needs to be a runLater because otherwise, a mouse click event on the tab being closed gets processed after this, even if this event is consumed
+    {
+      Tab tab = (Tab) event.getSource();
 
-    invViews.remove(view);
-    tpPerson.getTabs().remove(view.tab);
+      InvestigationView view = invViewByTab(tab);
 
-    ui.btnSaveClick();
+      if ((view == null) || (view.record == null))
+        return;
+
+      if ((saveInvestigations(view) == false) || confirmDialog("Are you sure you want to delete the investigation?") == false)
+        return;
+
+      invViews.remove(view);
+      tpPerson.getTabs().remove(view.tab);
+
+      saveInvestigations(null);
+    });
   }
 
 //---------------------------------------------------------------------------
