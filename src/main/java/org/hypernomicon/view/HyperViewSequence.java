@@ -263,7 +263,10 @@ public class HyperViewSequence
 
     db.initialNavHistory().forEach(record ->
     {
-      record = HyperTab.getActiveRecordForViewRecord(record);
+      if (record.getType() == hdtInvestigation)
+        record = ((HDT_Investigation)record).person.get();
+      else if (record.getType() == hdtTerm)
+        record = ((HDT_Term)record).concepts.get(0);
 
       if (record == null) return;
 

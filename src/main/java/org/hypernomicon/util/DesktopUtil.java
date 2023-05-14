@@ -86,13 +86,44 @@ public final class DesktopUtil
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)))
         return falseWithErrorMessage("An error occurred while trying to browse to: " + url + '.');
 
-      Desktop.getDesktop().browse(new URI(url));
+      Desktop.getDesktop().browse(makeURI(url));
       return true;
     }
     catch (IOException | URISyntaxException e)
     {
       return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static URI makeURI(String url) throws URISyntaxException
+  {
+    if (url.contains(":") == false)
+      return new URI(url);
+
+    int pos = url.indexOf(":");
+    String scheme = url.substring(0, pos),
+           ssp = safeSubstring(url, pos + 1, url.length());
+
+    if (ssp.contains("#") == false)
+    {
+      try
+      {
+        return new URI(url);
+      }
+      catch (URISyntaxException e)
+      {
+        return new URI(scheme, ssp, "");
+      }
+    }
+
+    pos = ssp.indexOf("#");
+    String fragment = safeSubstring(ssp, pos + 1, ssp.length());
+    ssp = ssp.substring(0, pos);
+
+    return new URI(scheme, ssp, fragment);
   }
 
 //---------------------------------------------------------------------------
@@ -247,7 +278,7 @@ public final class DesktopUtil
 
     try
     {
-      noOp(new URI(url));
+      noOp(makeURI(url));
     }
     catch (URISyntaxException e)
     {
