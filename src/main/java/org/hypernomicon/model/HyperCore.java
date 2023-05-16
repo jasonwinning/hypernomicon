@@ -57,7 +57,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
 
     @Override public KeyIDpair clone()
     {
-      try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }
+      try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException ex) { throw new AssertionError(ex); }
     }
 
 //---------------------------------------------------------------------------
@@ -84,9 +84,9 @@ final class HyperCore<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final List<KeyIDpair> sortedKeys = new ArrayList<>();
-  private final List<Integer> sortedIDs = new ArrayList<>();
-  private final Map<Integer, String> idToKey = new HashMap<>();
+  private final List<KeyIDpair>      sortedKeys = new ArrayList<>();
+  private final List<Integer>        sortedIDs  = new ArrayList<>();
+  private final Map<Integer, String> idToKey    = new HashMap<>();
   private final Map<Integer, HDT_DT> idToRecord = new HashMap<>();
 
   int size()                   { return sortedIDs.size(); }
@@ -105,8 +105,8 @@ final class HyperCore<HDT_DT extends HDT_Record>
   void clear()
   {
     idToRecord.clear();
-    idToKey.clear();
-    sortedIDs.clear();
+    idToKey   .clear();
+    sortedIDs .clear();
     sortedKeys.clear();
   }
 
@@ -159,12 +159,12 @@ final class HyperCore<HDT_DT extends HDT_Record>
         if (idToKey.containsKey(id))
         {
           sortedKeys.remove(getKeyNdxByID(id));
-          idToKey.remove(id);
+          idToKey   .remove(id);
         }
       }
       else if (record.getID() < 1)
       {
-        throw new HDB_InternalError(88388);
+        throw new HDB_InternalError(88389);
       }
     }
   }
@@ -184,9 +184,9 @@ final class HyperCore<HDT_DT extends HDT_Record>
 
   private void remove(int id)
   {
-    sortedIDs.remove(getIDNdxByID(id));
+    sortedIDs .remove(getIDNdxByID (id));
     sortedKeys.remove(getKeyNdxByID(id));
-    idToKey.remove(id);
+    idToKey   .remove(id);
     idToRecord.remove(id);
   }
 

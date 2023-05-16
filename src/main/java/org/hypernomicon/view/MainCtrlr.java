@@ -443,7 +443,6 @@ public final class MainCtrlr
     mnuChangePosVerdictOrder     .setOnAction(event -> mnuChangeSortOrder(hdtPositionVerdict));
     mnuChangeInstitutionTypeOrder.setOnAction(event -> mnuChangeSortOrder(hdtInstitutionType));
 
-
     if (app.prefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
       btnPointerLaunch.setSelected(true);
     else
@@ -1390,10 +1389,9 @@ public final class MainCtrlr
 
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
-    enableAllIff(enabled, mnuCloseDatabase,      mnuImportWork,  mnuImportFile, mnuExitNoSave,      mnuChangeID,      mnuNewField,
-                          mnuImportBibClipboard, mnuNewCountry,  mnuNewRank,    mnuNewPersonStatus, mnuImportBibFile, mnuRevertToDiskCopy,
-                          mnuAddToQueryResults,  btnFileMgr,     btnBibMgr,     btnPreviewWindow,   btnMentions,      btnAdvancedSearch,
-                          btnSaveAll);
+    enableAllIff(enabled, mnuCloseDatabase,      mnuImportWork,     mnuImportFile,       mnuExitNoSave, mnuChangeID,           mnuChangeFieldOrder.getParentMenu(),
+                          mnuImportBibClipboard, mnuImportBibFile,  mnuRevertToDiskCopy, btnFileMgr,    btnBibMgr,             mnuNewRank.getParentMenu(),
+                          btnPreviewWindow,      btnMentions,       btnAdvancedSearch,   btnSaveAll,    mnuAddToQueryResults);
     if (disabled)
       tree().clear();
 

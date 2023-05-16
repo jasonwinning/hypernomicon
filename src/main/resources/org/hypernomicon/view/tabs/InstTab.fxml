@@ -80,7 +80,7 @@
           <TextField fx:id="tfCity" layoutX="30.0" prefHeight="25.0" prefWidth="243.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
         </AnchorPane>
       </GridPane>
-      <Hyperlink fx:id="hlMaps" layoutX="823.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="4.0" />
+      <Hyperlink fx:id="hlMaps" layoutX="823.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="4.0" />
     </AnchorPane>
     <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
       <SplitPane fx:id="spHoriz" dividerPositions="0.5" minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

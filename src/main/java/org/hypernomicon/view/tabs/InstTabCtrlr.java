@@ -21,6 +21,7 @@ import org.hypernomicon.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.util.DesktopUtil;
+import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -428,7 +429,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   @Override void updateWebButtons(Preferences node)
   {
-    hlMaps.setText(ui.webButtonMap.get(PREF_KEY_INST_MAP_SRCH).getCaption());
+    WebButton mapButton = ui.webButtonMap.get(PREF_KEY_INST_MAP_SRCH);
+
+    hlMaps.setText(mapButton.getCaption());
+
+    setToolTip(hlMaps, "Show location of institution in " + mapButton.getName());
   }
 
 //---------------------------------------------------------------------------

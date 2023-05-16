@@ -159,7 +159,7 @@ public class AsyncHttpClient
     }
     catch (NoSuchAlgorithmException | KeyManagementException e)
     {
-      throw new RuntimeException("Error while creating SSLContext", e);
+      throw new AssertionError("Error while creating SSLContext", e);
     }
 
     return HttpClientBuilder.create().setSSLContext(sc).setSSLHostnameVerifier((hostname, session) -> true).build();

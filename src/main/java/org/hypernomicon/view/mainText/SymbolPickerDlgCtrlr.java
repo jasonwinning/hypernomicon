@@ -308,11 +308,11 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
 
   private void bottomRowSelected(boolean bottomSelected)
   {
-    tfChar.setEditable(bottomSelected);
+    tfChar     .setEditable(bottomSelected);
     tfCodePoint.setEditable(bottomSelected);
-    tfDesc.setEditable(bottomSelected);
-    tfHex.setEditable(bottomSelected);
-    tfHTML.setEditable(bottomSelected);
+    tfDesc     .setEditable(bottomSelected);
+    tfHex      .setEditable(bottomSelected);
+    tfHTML     .setEditable(bottomSelected);
   }
 
 //---------------------------------------------------------------------------

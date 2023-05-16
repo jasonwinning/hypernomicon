@@ -50,7 +50,7 @@ public class HyperView<HDT_CT extends HDT_Record>
   int getTabRecordKeyNdx()          { return tabRecordKeyNdx; }
   public TextViewInfo getTextInfo() { return textInfo; }
   RecordType getTabRecordType()     { return tabRecordType; }
-  public TabEnum getTabEnum()       { return tabEnum; }
+  TabEnum getTabEnum()              { return tabEnum; }
   public HDT_CT getViewRecord()     { return viewRecord; }
 
 //---------------------------------------------------------------------------

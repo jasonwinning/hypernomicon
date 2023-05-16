@@ -122,8 +122,8 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     tfFolder.setEditable(false);
 
     GridPane.setColumnIndex(bp, 1);
-    gpToolBar.getColumnConstraints().get(0).setMinWidth(510.0);
-    gpToolBar.getColumnConstraints().get(0).setMaxWidth(510.0);
+    gpToolBar.getColumnConstraints().get(0).setMinWidth(560.0);
+    gpToolBar.getColumnConstraints().get(0).setMaxWidth(560.0);
     gpToolBar.getColumnConstraints().get(0).setHgrow(javafx.scene.layout.Priority.NEVER);
 
     gpToolBar.getColumnConstraints().get(1).setMinWidth(Control.USE_COMPUTED_SIZE);
@@ -161,7 +161,7 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     btnBrowse      .setOnAction(event -> browseClick());
 
     htMentioners.addDefaultMenuItems();
-    htSubnotes.addDefaultMenuItems();
+    htSubnotes  .addDefaultMenuItems();
 
     htSubnotes.addContextMenuItem("Go to subnote", HDT_Note.class,
       note -> ui.goToRecord(note, true));
@@ -352,10 +352,10 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void clear()
   {
-    setHeights(btnFolder      , 25.0 * displayScale);
-    setHeights(tfFolder       , 25.0 * displayScale);
-    setHeights(btnCreateFolder, 25.0 * displayScale);
-    setHeights(btnBrowse      , 25.0 * displayScale);
+    setHeights(btnFolder      , 24.0 * displayScale);
+    setHeights(tfFolder       , 24.0 * displayScale);
+    setHeights(btnCreateFolder, 24.0 * displayScale);
+    setHeights(btnBrowse      , 24.0 * displayScale);
 
     super       .clear();
     htParents   .clear();
