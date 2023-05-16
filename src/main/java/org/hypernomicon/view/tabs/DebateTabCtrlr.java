@@ -43,7 +43,7 @@ import org.hypernomicon.model.records.HDT_Position.PositionSource;
 
 //---------------------------------------------------------------------------
 
-public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
+public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 {
   private final HyperTable htParents, htSubdebates, htPositions;
 
@@ -51,7 +51,7 @@ public final class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
 //---------------------------------------------------------------------------
 
-  public DebateTab(Tab tab) throws IOException
+  public DebateTabCtrlr(Tab tab) throws IOException
   {
     super(debateTabEnum, tab);
 

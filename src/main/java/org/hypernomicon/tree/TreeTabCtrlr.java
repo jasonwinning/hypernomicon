@@ -35,7 +35,7 @@ import org.hypernomicon.view.mainText.Highlighter;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.PositionTab;
+import org.hypernomicon.view.tabs.PositionTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.MenuItemSchema;
 
@@ -146,7 +146,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new argument for/against this position", HDT_Position.class,
       pos -> db.isLoaded(),
-      PositionTab::newArgumentClick));
+      PositionTabCtrlr::newArgumentClick));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new position under this position", HDT_Position.class,
       pos -> db.isLoaded(),

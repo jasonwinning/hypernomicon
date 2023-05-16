@@ -65,7 +65,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 //---------------------------------------------------------------------------
 
-public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
+public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 {
   private final SplitMenuButton btnFolder = new SplitMenuButton();
   private final Button btnBrowse = new Button("..."), btnCreateFolder = new Button("Create Folder");
@@ -78,7 +78,7 @@ public final class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
 //---------------------------------------------------------------------------
 
-  public NoteTab(Tab tab) throws IOException
+  public NoteTabCtrlr(Tab tab) throws IOException
   {
     super(noteTabEnum, tab);
 

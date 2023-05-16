@@ -48,7 +48,7 @@ import javafx.scene.layout.HBox;
 
 //---------------------------------------------------------------------------
 
-public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
+public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Position>
 {
   private final HyperTable htParents, htArguments, htRightChildren;
 
@@ -56,7 +56,7 @@ public final class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
 //---------------------------------------------------------------------------
 
-  public PositionTab(Tab tab) throws IOException
+  public PositionTabCtrlr(Tab tab) throws IOException
   {
     super(positionTabEnum, tab);
 

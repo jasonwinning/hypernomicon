@@ -50,7 +50,7 @@ import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
 
-public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
+public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argument>
 {
   private final ArgumentLowerPaneCtrlr lowerCtrlr;
   private final HyperTable htParents, htWhereMade, htCounters;
@@ -60,7 +60,7 @@ public final class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ArgumentTab(Tab tab) throws IOException
+  public ArgumentTabCtrlr(Tab tab) throws IOException
   {
     super(argumentTabEnum, tab);
 

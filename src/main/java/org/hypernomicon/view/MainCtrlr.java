@@ -225,17 +225,17 @@ public final class MainCtrlr
   @FXML private void mnuSettingsClick()       { if (cantSaveRecord() == false) new SettingsDlgCtrlr().showModal(); }
   @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(activeRecord(), false); }
 
-  public PersonTabCtrlr  personHyperTab    () { return getHyperTab(personTabEnum  ); }
-  public InstTabCtrlr    instHyperTab      () { return getHyperTab(instTabEnum    ); }
-  public WorkTabCtrlr    workHyperTab      () { return getHyperTab(workTabEnum    ); }
-  public FileTabCtrlr    fileHyperTab      () { return getHyperTab(fileTabEnum    ); }
-  public DebateTab       debateHyperTab    () { return getHyperTab(debateTabEnum  ); }
-  public PositionTab     positionHyperTab  () { return getHyperTab(positionTabEnum); }
-  public ArgumentTab     argumentHyperTab  () { return getHyperTab(argumentTabEnum); }
-  public NoteTab         noteHyperTab      () { return getHyperTab(noteTabEnum    ); }
-  public TermTab         termHyperTab      () { return getHyperTab(termTabEnum    ); }
-  public QueriesTabCtrlr queryHyperTab     () { return getHyperTab(queryTabEnum   ); }
-  public TreeTabCtrlr    treeHyperTab      () { return getHyperTab(treeTabEnum    ); }
+  public PersonTabCtrlr   personHyperTab    () { return getHyperTab(personTabEnum  ); }
+  public InstTabCtrlr     instHyperTab      () { return getHyperTab(instTabEnum    ); }
+  public WorkTabCtrlr     workHyperTab      () { return getHyperTab(workTabEnum    ); }
+  public FileTabCtrlr     fileHyperTab      () { return getHyperTab(fileTabEnum    ); }
+  public DebateTabCtrlr   debateHyperTab    () { return getHyperTab(debateTabEnum  ); }
+  public PositionTabCtrlr positionHyperTab  () { return getHyperTab(positionTabEnum); }
+  public ArgumentTabCtrlr argumentHyperTab  () { return getHyperTab(argumentTabEnum); }
+  public NoteTabCtrlr     noteHyperTab      () { return getHyperTab(noteTabEnum    ); }
+  public TermTabCtrlr     termHyperTab      () { return getHyperTab(termTabEnum    ); }
+  public QueriesTabCtrlr  queryHyperTab     () { return getHyperTab(queryTabEnum   ); }
+  public TreeTabCtrlr     treeHyperTab      () { return getHyperTab(treeTabEnum    ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -980,17 +980,17 @@ public final class MainCtrlr
   @SuppressWarnings("unused")
   private void initHyperTabs() throws IOException
   {
-    new PersonTabCtrlr (tabPersons  );
-    new InstTabCtrlr   (tabInst     );
-    new WorkTabCtrlr   (tabWorks    );
-    new FileTabCtrlr   (tabFiles    );
-    new DebateTab      (tabDebates  );
-    new PositionTab    (tabPositions);
-    new ArgumentTab    (tabArguments);
-    new NoteTab        (tabNotes    );
-    new TermTab        (tabTerms    );
-    new QueriesTabCtrlr(tabQueries  );
-    new TreeTabCtrlr   (tabTree     );
+    new PersonTabCtrlr  (tabPersons  );
+    new InstTabCtrlr    (tabInst     );
+    new WorkTabCtrlr    (tabWorks    );
+    new FileTabCtrlr    (tabFiles    );
+    new DebateTabCtrlr  (tabDebates  );
+    new PositionTabCtrlr(tabPositions);
+    new ArgumentTabCtrlr(tabArguments);
+    new NoteTabCtrlr    (tabNotes    );
+    new TermTabCtrlr    (tabTerms    );
+    new QueriesTabCtrlr (tabQueries  );
+    new TreeTabCtrlr    (tabTree     );
   }
 
 //---------------------------------------------------------------------------

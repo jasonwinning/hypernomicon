@@ -64,7 +64,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 
 //---------------------------------------------------------------------------
 
-public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
+public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 {
   private static final class ConceptTab extends Tab
   {
@@ -213,7 +213,7 @@ public final class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TermTab(Tab tab) throws IOException
+  public TermTabCtrlr(Tab tab) throws IOException
   {
     super(termTabEnum, tab);
 

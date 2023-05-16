@@ -190,7 +190,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   {
     MenuItem miMove = new MenuItem();
     miMove.setText("Move this definition to a different term");
-    miMove.setOnAction(event -> ((TermTab) this).moveConcept());
+    miMove.setOnAction(event -> ((TermTabCtrlr) this).moveConcept());
 
     return miMove;
   }
@@ -330,7 +330,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       lblMergeTerms.setOnMouseClicked(mouseEvent ->
       {
         if (mouseEvent.getButton() == MouseButton.PRIMARY)
-          ((TermTab) this).merge();
+          ((TermTabCtrlr) this).merge();
       });
     }
 
