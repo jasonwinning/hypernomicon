@@ -86,6 +86,7 @@ import org.hypernomicon.view.wrappers.*;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -1675,6 +1676,11 @@ public final class MainCtrlr
             }
           }
         }
+      }
+      catch (AccessDeniedException e)
+      {
+        messageDialog("Unable to create new database. Reason: Access denied. " + e.getMessage(), mtError);
+        return;
       }
       catch (IOException e)
       {

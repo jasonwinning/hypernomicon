@@ -17,6 +17,8 @@
 
 package org.hypernomicon.dialogs;
 
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -126,9 +128,13 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
       filePath.resolve(ultraTrim(tfResults     .getText())).createDirectory();
       filePath.resolve(ultraTrim(tfTopicFolders.getText())).createDirectory();
     }
-    catch(Exception e)
+    catch(AccessDeniedException e)
     {
-      return falseWithErrorMessage("An error occurred while trying to create the directories: " + e.getMessage());
+      return falseWithErrorMessage("Unable to create new database. Reason: Access denied. " + e.getMessage());
+    }
+    catch(IOException e)
+    {
+      return falseWithErrorMessage("Unable to create new database: " + e.getMessage());
     }
 
     return true;
