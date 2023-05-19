@@ -138,7 +138,7 @@ public class HyperViewSequence
     if ((record != null) && HDT_Record.isEmpty(record)) // If concept was just deleted, active record (term) will be null
       return;                                           // so we also have to check view record (concept)
 
-    saveViewToCurrentSlotAndTab(new HyperView<>(tabEnumOfViewInCurrentSlot(), record, hyperTab.mainTextInfo()));
+    saveViewToCurrentSlotAndTab(hyperTab.newView(record));
   }
 
 //---------------------------------------------------------------------------
@@ -263,9 +263,7 @@ public class HyperViewSequence
 
     db.initialNavHistory().forEach(record ->
     {
-      if (record.getType() == hdtInvestigation)
-        record = ((HDT_Investigation)record).person.get();
-      else if (record.getType() == hdtTerm)
+      if (record.getType() == hdtTerm)
         record = ((HDT_Term)record).concepts.get(0);
 
       if (record == null) return;

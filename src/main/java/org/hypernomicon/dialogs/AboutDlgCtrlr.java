@@ -32,6 +32,8 @@ import static org.hypernomicon.util.Util.*;
 import java.text.DecimalFormat;
 
 import org.apache.commons.lang3.SystemUtils;
+
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -73,7 +75,7 @@ public class AboutDlgCtrlr extends HyperDlg
       "</head><body style='margin: 0; padding: 0; font-family: " + family + "; font-size: 10pt; color: #906f6f;' bgcolor=\"#241f24\">";
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
-      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo()));
+      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo((HDT_Record)null)));
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 

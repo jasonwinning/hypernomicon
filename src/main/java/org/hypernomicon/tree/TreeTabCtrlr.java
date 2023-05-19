@@ -185,7 +185,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (record.hasDesc())
         mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo((HDT_Record)null));
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
@@ -268,24 +268,24 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected RecordType type()           { return hdtNone; }
-  @Override public void clear()                   { tree.clear(); }
-  @Override public boolean saveToRecord()         { return true; }
-  @Override public void setRecord(HDT_Record rec) { return; }                        // The selectRecord method is used to set the record instead, because the TreeTableView selection model is the
-                                                                                     // only way the TreeTab keeps track of which record is active.
-  @Override public HDT_Record activeRecord()      { return tree.selectedRecord(); }
-  @Override public HDT_Record viewRecord()        { return activeRecord(); }
-  @Override public String recordName()            { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
-  @Override public TextViewInfo mainTextInfo()    { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
-  @Override public void setDividerPositions()     { return; }
-  @Override public void getDividerPositions()     { return; }
+  @Override protected RecordType type()        { return hdtNone; }
 
-  public TreeWrapper getTree() { return tree; }
+  @Override public void clear()                { tree.clear(); }
+  @Override public boolean saveToRecord()      { return true; }
+  @Override public HDT_Record activeRecord()   { return tree.selectedRecord(); }
+  @Override public HDT_Record viewRecord()     { return activeRecord(); }
+  @Override public String recordName()         { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
+  @Override public void setDividerPositions()  { return; }
+  @Override public void getDividerPositions()  { return; }
+
+  @Override public TextViewInfo mainTextInfo(HDT_Record record) { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
+
+  public TreeWrapper getTree()                 { return tree; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void updateFromRecord()
+  @Override protected void updateFromRecord()
   {
     if (db.isLoaded() == false)
     {
@@ -385,7 +385,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
           String desc = record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getHtml() : "";
 
-          MainTextWrapper.setReadOnlyHTML(desc, webView.getEngine(), useViewInfo ? getView().getTextInfo() : new TextViewInfo(), null);
+          MainTextWrapper.setReadOnlyHTML(desc, webView.getEngine(), useViewInfo ? getView().getTextInfo() : new TextViewInfo((HDT_Record)null), null);
           clearWV = false;
         }
       }
@@ -571,16 +571,16 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectRecord(HDT_Record record, boolean useViewInfo)
+  @Override protected void setRecord(HDT_Record record)
   {
     if ((record != null) && HDT_Record.isEmpty(record)) return; // Record was probably just deleted; go with whatever is currently selected
 
-    this.useViewInfo = useViewInfo;
+    this.useViewInfo = true;
     tree.selectRecord(record, record == null ? 0 : record.keyNdx(), false);
     this.useViewInfo = false;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

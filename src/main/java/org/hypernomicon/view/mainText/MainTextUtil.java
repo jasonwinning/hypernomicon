@@ -144,7 +144,7 @@ public final class MainTextUtil
 
   private static double lastEventID = -1;
 
-  public static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo)
+  public static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo)
   {
     int recordID = -1;
     RecordType recordType = hdtNone;
@@ -235,12 +235,12 @@ public final class MainTextUtil
 
       case JS_EVENT_DETAILED_KEY_WORKS :
 
-        viewInfo.detailedWorks = !viewInfo.detailedWorks;
+        textViewInfo.detailedWorks = !textViewInfo.detailedWorks;
 
         Document doc = Jsoup.parse(htmlToUse);
 
-        toggleDetailedKeyWorks(doc, NUMERIC_SORTED_INNER_CLASS, false, weToUse, viewInfo.detailedWorks);
-        toggleDetailedKeyWorks(doc, ALPHA_SORTED_INNER_CLASS, true, weToUse, viewInfo.detailedWorks);
+        toggleDetailedKeyWorks(doc, NUMERIC_SORTED_INNER_CLASS, false, weToUse, textViewInfo.detailedWorks);
+        toggleDetailedKeyWorks(doc, ALPHA_SORTED_INNER_CLASS, true, weToUse, textViewInfo.detailedWorks);
 
         break;
     }
@@ -500,13 +500,13 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void appendKeyWorkSpanAndBody(HDT_RecordWithMainText recordWMT, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, boolean topmost, TextViewInfo viewInfo)
+  static void appendKeyWorkSpanAndBody(HDT_RecordWithMainText recordWMT, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, boolean topmost, TextViewInfo textViewInfo)
   {
     innerHtml.append(keyWorkSpanElement(recordWMT, tagNdx, sortByName, topmost));
 
     List<KeyWork> keyWorks = recordWMT.getMainText().getKeyWorksUnmod();
 
-    if (viewInfo.detailedWorks)
+    if (textViewInfo.detailedWorks)
       appendDetailedKeyWorkBody(keyWorks, innerHtml, sortByName, topmost);
     else
       appendKeyWorkBody(keyWorks, innerHtml, sortByName);
@@ -532,7 +532,7 @@ public final class MainTextUtil
 
   // Returns HTML for record description that is being embedded within another record's description
 
-  static String getSecondaryDisplayHtml(HDT_RecordWithMainText recordWMT, MutableInt tagNdx, TextViewInfo viewInfo)
+  static String getSecondaryDisplayHtml(HDT_RecordWithMainText recordWMT, MutableInt tagNdx, TextViewInfo textViewInfo)
   {
     MainText mainText = recordWMT.getMainText();
     List<KeyWork> keyWorks = mainText.getKeyWorksUnmod();
@@ -545,10 +545,10 @@ public final class MainTextUtil
     boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
 
     StringBuilder secondaryHtml = new StringBuilder("<div class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\" style=\"display: ").append(sortByName ? "none" : "block").append(";\"><b>Key Works:&nbsp;</b>");
-    appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, false, tagNdx, false, viewInfo);
+    appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, false, tagNdx, false, textViewInfo);
 
     secondaryHtml.append("</div><div class=\"").append(ALPHA_SORTED_OUTER_CLASS).append("\" style=\"display: ").append(sortByName ? "block" : "none").append(";\"><b>Key Works:&nbsp;</b>");
-    appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, true, tagNdx, false, viewInfo);
+    appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, true, tagNdx, false, textViewInfo);
 
     secondaryHtml.append("</div>");
 
@@ -681,7 +681,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static String detailsTag(String divitID, TextViewInfo viewInfo, boolean defOpen)
+  static String detailsTag(String divitID, TextViewInfo textViewInfo, boolean defOpen)
   {
     boolean open = false;
 
@@ -690,17 +690,17 @@ public final class MainTextUtil
     if (divitID.startsWith("alp") || divitID.startsWith("num"))
       strippedDivitID = divitID.substring(3);
 
-    if (viewInfo.openDivits == null)
+    if (textViewInfo.openDivits == null)
       open = defOpen;
-    else if (viewInfo.openDivits.contains(strippedDivitID))
+    else if (textViewInfo.openDivits.contains(strippedDivitID))
       open = true;
 
     if (open)
     {
-      if (viewInfo.openDivits == null)
-        viewInfo.openDivits = new HashSet<>();
+      if (textViewInfo.openDivits == null)
+        textViewInfo.openDivits = new HashSet<>();
 
-      viewInfo.openDivits.add(strippedDivitID);
+      textViewInfo.openDivits.add(strippedDivitID);
     }
 
     return "<details id=\"" + divitID + "\" " + (open ? "open" : "closed") + '>';
@@ -709,7 +709,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void appendSubLabelsKeyWorkBody(HDT_WorkLabel parentLabel, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, TextViewInfo viewInfo, String parentDivitID)
+  static void appendSubLabelsKeyWorkBody(HDT_WorkLabel parentLabel, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, TextViewInfo textViewInfo, String parentDivitID)
   {
     if ((parentLabel == null) || parentLabel.subLabels.isEmpty()) return;
 
@@ -719,17 +719,17 @@ public final class MainTextUtil
       {
         String divitID = parentDivitID + makeElementID(label);
 
-        innerHtml.append("<br>").append(detailsTag(divitID, viewInfo, false)).append("<summary>");
+        innerHtml.append("<br>").append(detailsTag(divitID, textViewInfo, false)).append("<summary>");
 
         appendImgTagsForLabel(label, innerHtml, true);
 
         innerHtml.append("<b>").append(getAnchorForUnitable(label)).append(":</b>&nbsp;");
 
-        appendKeyWorkSpanAndBody(label, innerHtml, sortByName, tagNdx, false, viewInfo);
+        appendKeyWorkSpanAndBody(label, innerHtml, sortByName, tagNdx, false, textViewInfo);
 
         innerHtml.append("</summary><div style=\"margin-left: 3.5em;\">");
 
-        appendSubLabelsKeyWorkBody(label, innerHtml, sortByName, tagNdx, viewInfo, divitID);
+        appendSubLabelsKeyWorkBody(label, innerHtml, sortByName, tagNdx, textViewInfo, divitID);
 
         innerHtml.append("</div></details>");
       }
@@ -741,7 +741,7 @@ public final class MainTextUtil
 
         innerHtml.append("<b>").append(getAnchorForUnitable(label)).append(":</b>&nbsp;");
 
-        appendKeyWorkSpanAndBody(label, innerHtml, sortByName, tagNdx, false, viewInfo);
+        appendKeyWorkSpanAndBody(label, innerHtml, sortByName, tagNdx, false, textViewInfo);
 
         innerHtml.append("<br>");
       }

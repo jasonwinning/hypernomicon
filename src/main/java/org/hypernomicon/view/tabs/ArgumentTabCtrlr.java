@@ -167,9 +167,9 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected RecordType type()             { return hdtArgument; }
-  @Override public void setRecord(HDT_Argument arg) { curArgument = arg; }
-  @Override protected HDT_Argument getNodeRecord()  { return curArgument; }
+  @Override protected RecordType type()                { return hdtArgument; }
+  @Override protected void setRecord(HDT_Argument arg) { curArgument = arg; }
+  @Override protected HDT_Argument getNodeRecord()     { return curArgument; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

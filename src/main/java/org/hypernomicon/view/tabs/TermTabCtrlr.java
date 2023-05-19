@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -380,7 +379,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       curConcept = ((ConceptTab) newTab).concept;
 
-      ui.viewSequence.saveViewToCurrentSlotAndTab(new HyperView<>(termTabEnum, curConcept, mainTextInfo()));
+      ui.viewSequence.saveViewToCurrentSlotAndTab(newView(curConcept));
 
       HDT_Glossary glossary = curConcept.glossary.get();
       if (glossary.getID() > 1) glossary.viewNow();
@@ -397,11 +396,11 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected RecordType type()             { return hdtTerm; }
-  @Override public void setRecord(HDT_Concept rec)  { curConcept = rec; curTerm = curConcept == null ? null : curConcept.term.get(); }
-  @Override protected HDT_Concept getNodeRecord()   { return curConcept; }
+  @Override protected RecordType type()                { return hdtTerm; }
+  @Override protected void setRecord(HDT_Concept rec)  { curConcept = rec; curTerm = curConcept == null ? null : curConcept.term.get(); }
+  @Override protected HDT_Concept getNodeRecord()      { return curConcept; }
 
-  private ConceptTab curTab()                       { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
+  private ConceptTab curTab()                          { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

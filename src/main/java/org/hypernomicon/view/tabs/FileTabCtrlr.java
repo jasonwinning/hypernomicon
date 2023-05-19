@@ -146,17 +146,18 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String recordName()                 { return tfName.getText(); }
-  @Override protected RecordType type()                { return hdtMiscFile; }
-  @Override public MainTextWrapper mainTextWrapper()   { return mainText; }
-  @Override public void setRecord(HDT_MiscFile record) { curMiscFile = record; }
+  @Override protected RecordType type()                   { return hdtMiscFile; }
+  @Override protected void setRecord(HDT_MiscFile record) { curMiscFile = record; }
 
-  @FXML public boolean btnManageClick()                { return showFileDialog(null); }
+  @Override public String recordName()                    { return tfName.getText(); }
+  @Override public MainTextWrapper mainTextWrapper()      { return mainText; }
+
+  @FXML public boolean btnManageClick()                   { return showFileDialog(null); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void updateFromRecord()
+  @Override protected void updateFromRecord()
   {
     btnTree.setDisable(ui.tree().getRowsForRecord(curMiscFile).isEmpty());
 

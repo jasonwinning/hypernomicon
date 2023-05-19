@@ -2465,7 +2465,6 @@ public final class MainCtrlr
     if ((record == null) || (db.isLoaded() == false) || shuttingDown) return;
 
     treeSelector.reset();
-    HDT_Investigation inv = null;
     HDT_WorkFile workFile = null;
 
     switch (record.getType())
@@ -2499,12 +2498,6 @@ public final class MainCtrlr
         goToFileInManager(((HDT_Folder)record).filePath());
         return;
 
-      case hdtInvestigation :
-
-        inv = (HDT_Investigation)record;
-        record = inv.person.get();
-        break;
-
       case hdtWorkFile :
 
         workFile = (HDT_WorkFile)record;
@@ -2527,7 +2520,7 @@ public final class MainCtrlr
     }
 
     if (getTabEnumByRecordType(record.getType()) == personTabEnum)
-      if (record.getType() != hdtPerson) return;
+      if ((record.getType() != hdtPerson) && (record.getType() != hdtInvestigation)) return;
 
     if (windows.getOutermostStage() != stage)
       windows.focusStage(stage);
@@ -2536,9 +2529,7 @@ public final class MainCtrlr
 
     viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(new HyperView<>(record));
 
-    if (inv != null)
-      personHyperTab().showInvestigation(inv);
-    else if (workFile != null)
+    if (workFile != null)
       workHyperTab().showWorkFile(workFile);
   }
 
@@ -2570,14 +2561,12 @@ public final class MainCtrlr
 
     TabEnum tabEnum = activeTabEnum();
     HyperTab<? extends HDT_Record, ? extends HDT_Record> tab = activeTab();
+    boolean updateRecord = record != null;
 
     switch (tabEnum)
     {
       case queryTabEnum : case treeTabEnum :
-        tab.updateFromRecord();
-
-        if ((record != null) && (tabEnum == treeTabEnum)) // Only select the record in the tree if activating record from HyperView
-          treeHyperTab().selectRecord(record, true);
+        tab.update(updateRecord);
 
         updateBottomPanel(true, true);
         return;
@@ -2625,7 +2614,7 @@ public final class MainCtrlr
     }
 
     tab.enable(true);
-    tab.updateFromRecord();
+    tab.update(updateRecord);
     record.viewNow();
   }
 
@@ -2871,7 +2860,7 @@ public final class MainCtrlr
   {
     if (cantSaveRecord()) return false;
 
-    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(new HyperView<>(queryTabEnum, queryHyperTab().activeRecord(), queryHyperTab().mainTextInfo()));
+    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(queryHyperTab().newView(queryHyperTab().activeRecord()));
 
     boolean result = queryHyperTab().showSearch(doSearch, type, query, fav, op1, op2, caption);
     updateFavorites();

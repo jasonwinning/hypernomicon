@@ -193,17 +193,18 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
 //---------------------------------------------------------------------------
 
-  @Override public String recordName()                 { return tfName.getText(); }
-  @Override protected RecordType type()                { return hdtInstitution; }
-  @Override public void setRecord(HDT_Institution rec) { curInst = rec; }
-  @Override public void setDividerPositions()          { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void getDividerPositions()          { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void findWithinDesc()               { messageDialog("Internal error #52009", mtError); }
+  @Override protected RecordType type()                   { return hdtInstitution; }
+  @Override protected void setRecord(HDT_Institution rec) { curInst = rec; }
+
+  @Override public String recordName()                    { return tfName.getText(); }
+  @Override public void setDividerPositions()             { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void getDividerPositions()             { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void findWithinDesc()                  { messageDialog("Internal error #52009", mtError); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void updateFromRecord()
+  @Override protected void updateFromRecord()
   {
     Map<HDT_Person, Set<HDT_Institution>> peopleMap = new HashMap<>();
 

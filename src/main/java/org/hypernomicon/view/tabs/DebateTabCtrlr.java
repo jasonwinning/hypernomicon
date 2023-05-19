@@ -95,9 +95,9 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
 //---------------------------------------------------------------------------
 
-  @Override protected RecordType type()           { return hdtDebate; }
-  @Override public void setRecord(HDT_Debate deb) { curDebate = deb; }
-  @Override protected HDT_Debate getNodeRecord()  { return curDebate; }
+  @Override protected RecordType type()              { return hdtDebate; }
+  @Override protected void setRecord(HDT_Debate deb) { curDebate = deb; }
+  @Override protected HDT_Debate getNodeRecord()     { return curDebate; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

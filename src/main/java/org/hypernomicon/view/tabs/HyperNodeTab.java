@@ -482,7 +482,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void updateFromRecord()
+  @Override protected void updateFromRecord()
   {
     HDT_CT nodeRecord = getNodeRecord();
 

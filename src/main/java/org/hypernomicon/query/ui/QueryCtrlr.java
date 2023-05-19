@@ -430,7 +430,7 @@ public final class QueryCtrlr
     {
       String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
 
-      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
+      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo((HDT_Record)null), ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
     }
 
     setPreview();

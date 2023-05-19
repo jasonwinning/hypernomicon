@@ -418,7 +418,7 @@ public class FileManager extends HyperDlg
           if (record.hasDesc())
             mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
-          MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), null);
+          MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo((HDT_Record)null), null);
 
           setPreviewFromRecordTable();
 
@@ -440,7 +440,7 @@ public class FileManager extends HyperDlg
       if (record.hasDesc())
         mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo((HDT_Record)null));
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());

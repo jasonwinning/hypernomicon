@@ -128,10 +128,10 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public QueryCtrlr getCurQueryCtrlr()               { return curQC; }
 
   @Override protected RecordType type()              { return hdtNone; }
-  @Override public void updateFromRecord()           { curQC.refreshView(true); }
-  @Override public void setRecord(HDT_Record rec)    { if (curQC != null) curQC.setRecord(rec); }
+  @Override protected void setRecord(HDT_Record rec) { if (curQC != null) curQC.setRecord(rec); }
+  @Override protected void updateFromRecord()        { curQC.refreshView(true); }
+
   @Override public int recordCount()                 { return results().size(); }
-  @Override public TextViewInfo mainTextInfo()       { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()        { return; }
   @Override public void getDividerPositions()        { return; }
   @Override public boolean saveToRecord()            { return false; }
@@ -145,6 +145,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @FXML private void mnuCopyToFolderClick()          { copyFilesToFolder(true); }
   @FXML private void mnuShowSearchFolderClick()      { if (db.isLoaded()) launchFile(db.resultsPath()); }
+
+  @Override public TextViewInfo mainTextInfo(HDT_Record record) { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -178,7 +180,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (curQC.inReportMode())
       {
-        MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo());
+        MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo((HDT_Record)null));
         return;
       }
 
@@ -190,7 +192,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (record.hasDesc())
         mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo((HDT_Record)null));
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());

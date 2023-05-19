@@ -54,6 +54,7 @@ import org.hypernomicon.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -234,7 +235,7 @@ public class BibManager extends HyperDlg
     htRelatives.addDefaultMenuItems();
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
-      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo()));
+      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo((HDT_Record)null)));
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 

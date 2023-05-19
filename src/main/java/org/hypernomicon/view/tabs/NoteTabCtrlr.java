@@ -169,9 +169,9 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
 //---------------------------------------------------------------------------
 
-  @Override protected RecordType type()          { return hdtNote; }
-  @Override public void setRecord(HDT_Note note) { curNote = note; }
-  @Override protected HDT_Note getNodeRecord()   { return curNote; }
+  @Override protected RecordType type()             { return hdtNote; }
+  @Override protected void setRecord(HDT_Note note) { curNote = note; }
+  @Override protected HDT_Note getNodeRecord()      { return curNote; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

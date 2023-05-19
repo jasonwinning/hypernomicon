@@ -135,9 +135,9 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
 //---------------------------------------------------------------------------
 
-  @Override protected RecordType type()             { return hdtPosition; }
-  @Override public void setRecord(HDT_Position pos) { curPosition = pos; }
-  @Override protected HDT_Position getNodeRecord()  { return curPosition; }
+  @Override protected RecordType type()                { return hdtPosition; }
+  @Override protected void setRecord(HDT_Position pos) { curPosition = pos; }
+  @Override protected HDT_Position getNodeRecord()     { return curPosition; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

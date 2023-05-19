@@ -18,13 +18,12 @@
 package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.tabs.HyperTab;
 
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.tabs.HyperTab.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -33,9 +32,27 @@ public class HyperView<HDT_CT extends HDT_Record>
 {
   public static class TextViewInfo
   {
-    public TextViewInfo()              { return; }
-    public TextViewInfo(int scrollPos) { this.scrollPos = scrollPos; }
+    public TextViewInfo(HDT_Record record)
+    {
+      this.record = record;
+    }
 
+    public TextViewInfo(HDT_Record record, int scrollPos)
+    {
+      this(record);
+
+      this.scrollPos = scrollPos;
+    }
+
+    public TextViewInfo(TextViewInfo textViewInfo) // Copy constructor
+    {
+      this(textViewInfo.record, textViewInfo.scrollPos);
+
+      openDivits    = textViewInfo.openDivits == null ? null : new HashSet<>(textViewInfo.openDivits);
+      detailedWorks = textViewInfo.detailedWorks;
+    }
+
+    public final HDT_Record record;
     public Set<String> openDivits = null;
     public int scrollPos = 0;
     public boolean detailedWorks = false;
@@ -45,10 +62,10 @@ public class HyperView<HDT_CT extends HDT_Record>
   private final int tabRecordKeyNdx;
   private final RecordType tabRecordType;
   private final TabEnum tabEnum;
-  private final TextViewInfo textInfo;
+  private final TextViewInfo textViewInfo;
 
   int getTabRecordKeyNdx()          { return tabRecordKeyNdx; }
-  public TextViewInfo getTextInfo() { return textInfo; }
+  public TextViewInfo getTextInfo() { return new TextViewInfo(textViewInfo); }
   RecordType getTabRecordType()     { return tabRecordType; }
   TabEnum getTabEnum()              { return tabEnum; }
   public HDT_CT getViewRecord()     { return viewRecord; }
@@ -57,19 +74,14 @@ public class HyperView<HDT_CT extends HDT_Record>
 //---------------------------------------------------------------------------
 
   public HyperView(HDT_CT record)                  { this(getTabEnumByRecordType(record.getType()), record); }
-  public HyperView(TabEnum tabEnum, HDT_CT record) { this(tabEnum, record, new TextViewInfo()); }
+  public HyperView(TabEnum tabEnum, HDT_CT record) { this(tabEnum, record, new TextViewInfo(record)); }
 
-  public HyperView(TabEnum tabEnum, HDT_CT record, TextViewInfo textInfo)
+  public HyperView(TabEnum tabEnum, HDT_CT record, TextViewInfo textViewInfo)
   {
-    if (record == null)
-      tabRecordKeyNdx = 0;
-    else if (record.getType() == hdtConcept)
-      tabRecordKeyNdx = ((HDT_Concept)record).term.get().keyNdx();
-    else
-      tabRecordKeyNdx = record.keyNdx();
+    tabRecordKeyNdx = record == null ? 0 : HyperTab.getActiveRecordForViewRecord(record).keyNdx();
 
     this.tabEnum = tabEnum;
-    this.textInfo = textInfo;
+    this.textViewInfo = textViewInfo;
 
     tabRecordType = getRecordTypeByTabEnum(tabEnum);
     viewRecord = record;

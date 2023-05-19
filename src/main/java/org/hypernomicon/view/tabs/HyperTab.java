@@ -32,7 +32,6 @@ import java.util.prefs.Preferences;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
@@ -89,16 +88,15 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 
   protected abstract RecordType type();
+  protected abstract void setRecord(HDT_CT record);
+  protected abstract void updateFromRecord();
 
   public abstract String recordName();
-  public abstract void updateFromRecord();
   public abstract void clear();
   public abstract boolean saveToRecord();
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
-  public abstract void setRecord(HDT_CT record);
 
-  public TextViewInfo mainTextInfo()       { return nullSwitch(mainTextWrapper(), new TextViewInfo(), MainTextWrapper::getViewInfo); }
   public MainTextWrapper mainTextWrapper() { return null; }
   public void rescale()                    { return; }
   public int recordCount()                 { return db.records(type()).size(); }
@@ -117,8 +115,21 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public void findWithinDesc()             { mainTextWrapper().hilite(); }
 
   public void newClick(RecordType objType, HyperTableRow row) { }
+  public TextViewInfo mainTextInfo(HDT_Record record)         { return nullSwitch(mainTextWrapper(), new TextViewInfo(record), mainText -> new TextViewInfo(mainText.getViewInfo(record))); }
+
+  @SuppressWarnings("unchecked")
+  public final HyperView<HDT_CT> newView(HDT_Record record)   { return new HyperView<>(getTabEnum(), (HDT_CT)record, mainTextInfo(record)); }
 
   public static void forEachHyperTab(Consumer<HyperTab<? extends HDT_Record, ? extends HDT_Record>> a) { enumToHyperTab.values().forEach(a); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public final void update(boolean updateRecord)
+  {
+    if (updateRecord) setRecord(view.getViewRecord());
+    updateFromRecord();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -205,7 +216,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   private void setView(HyperView<HDT_CT> hyperView)
   {
     view = hyperView;
-    setRecord(view.getViewRecord());
   }
 
 //---------------------------------------------------------------------------
@@ -248,11 +258,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   public void refreshRecordPtr()
   {
-    nullSwitch(getView(), thisView ->
-    {
-      thisView.refreshRecordPtr();
-      nullSwitch(thisView.getViewRecord(), this::setRecord);
-    });
+    nullSwitch(getView(), HyperView::refreshRecordPtr);
   }
 
 //---------------------------------------------------------------------------

@@ -598,9 +598,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String recordName()               { return tfTitle.getText(); }
   @Override protected RecordType type()              { return hdtWork; }
-  @Override public void setRecord(HDT_Work work)     { curWork = work; }
+  @Override protected void setRecord(HDT_Work work)  { curWork = work; }
+
+  @Override public String recordName()               { return tfTitle.getText(); }
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
   private List<Author> getAuthorsFromUI()      { return WorkAuthors.getListFromObjectGroups(getAuthorGroups(), curWork); }
@@ -699,7 +700,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void updateFromRecord()
+  @Override protected void updateFromRecord()
   {
     btnTree.setDisable(ui.tree().getRowsForRecord(curWork).isEmpty());
 

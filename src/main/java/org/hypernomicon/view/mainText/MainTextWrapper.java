@@ -18,6 +18,7 @@
 package org.hypernomicon.view.mainText;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -82,10 +83,10 @@ public final class MainTextWrapper
   private String html, completeHtml;
   private List<DisplayItem> displayItems;
   private List<KeyWork> keyWorks;
-  private TextViewInfo viewInfo;
+  private TextViewInfo textViewInfo;
 
   private boolean edited = false;
-  private MTW_State state = showingReadOnly;
+  private MTW_State state = hidden;
 
 //---------------------------------------------------------------------------
 
@@ -129,7 +130,7 @@ public final class MainTextWrapper
 
     view.setOnDragDropped(Event::consume);
 
-    we.titleProperty().addListener((ob, oldTitle, newTitle) -> handleJSEvent(curWrapper.completeHtml, we, curWrapper.viewInfo));
+    we.titleProperty().addListener((ob, oldTitle, newTitle) -> handleJSEvent(curWrapper.completeHtml, we, curWrapper.textViewInfo));
   }
 
 //---------------------------------------------------------------------------
@@ -144,18 +145,18 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo, HDT_Record recordToHilite)
+  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo, HDT_Record recordToHilite)
   {
-    setReadOnlyHTML(htmlToUse, weToUse, viewInfo, recordToHilite, false);
+    setReadOnlyHTML(htmlToUse, weToUse, textViewInfo, recordToHilite, false);
   }
 
-  private static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo, HDT_Record recordToHilite, boolean alreadyPrepped)
+  private static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo, HDT_Record recordToHilite, boolean alreadyPrepped)
   {
     if (alreadyPrepped == false)
       htmlToUse = prepHtmlForDisplay(htmlToUse);
 
-    if (viewInfo.scrollPos > 0)
-      htmlToUse = htmlToUse.replace("<body", "<body onload='window.scrollTo(0," + viewInfo.scrollPos + ")'");
+    if (textViewInfo.scrollPos > 0)
+      htmlToUse = htmlToUse.replace("<body", "<body onload='setTimeout(function() { window.scrollTo(0," + textViewInfo.scrollPos + "); }, 0);'"); // only scroll after all other events on the queue are processed
 
     Document doc = makeDocLinksExternal(jsoupParse(htmlToUse.replace("contenteditable=\"true\"", "contenteditable=\"false\"")));
 
@@ -174,13 +175,13 @@ public final class MainTextWrapper
 
     html = ""; completeHtml = "";
     curRecord = null;
-    state = showingReadOnly;
     edited = false;
     displayItems = null;
     keyWorks = null;
-    viewInfo = null;
+    textViewInfo = null;
 
     if (ui.isShuttingDown() == false) showReadOnly();
+    state = hidden;
   }
 
 //---------------------------------------------------------------------------
@@ -188,6 +189,9 @@ public final class MainTextWrapper
 
   public void hide()
   {
+    if (state == hidden)
+      return;
+
     if (state == editing)
     {
       commit();
@@ -195,18 +199,23 @@ public final class MainTextWrapper
       renderCompleteHtml();
     }
 
-    viewInfo = getViewInfo();
+    textViewInfo = getViewInfo(curRecord);
+
     state = hidden;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private long lastRender = 0L;
+
   public void showReadOnly()
   {
     editCtrlr.clear();
 
     state = showingReadOnly;
+
+    lastRender = Instant.now().toEpochMilli();
 
     removeFromParent(bpEditorRoot);
     removeFromParent(view);
@@ -232,7 +241,7 @@ public final class MainTextWrapper
     if (jsoupParse(html).text().trim().isEmpty() && ((keyWorksSize == 0) || (curRecord.getType() == hdtInvestigation)) && noDisplayRecords && canEdit())
       beginEditing(false);
     else
-      setReadOnlyHTML(completeHtml, we, viewInfo, null, true);
+      setReadOnlyHTML(completeHtml, we, textViewInfo, null, true);
 
     curWrapper = this;
   }
@@ -273,18 +282,38 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TextViewInfo getViewInfo()
+  public TextViewInfo getViewInfo(HDT_Record viewRecord)
   {
     if (curRecord == null)
-      return new TextViewInfo(0);
+      return new TextViewInfo(viewRecord);
+
+    assert(curRecord == viewRecord);
 
     if (state == editing)
-      return new TextViewInfo(editCtrlr.getScrollPos());
+    {
+      assert(textViewInfo.record == viewRecord);
 
-    if (viewInfo == null)
-      viewInfo = new TextViewInfo();
+      textViewInfo = new TextViewInfo(viewRecord, editCtrlr.getScrollPos());
+      return textViewInfo;
+    }
 
-    viewInfo.scrollPos = webEngineScrollPos(we);
+    if (state == hidden)
+    {
+      if (textViewInfo == null)
+        textViewInfo = new TextViewInfo(viewRecord);
+
+      return textViewInfo;
+    }
+    else
+    {
+      assert(textViewInfo != null);
+      assert(textViewInfo.record == viewRecord);
+    }
+
+    if ((Instant.now().toEpochMilli() - lastRender) > 200) // Assume user didn't interact with WebView in less than 200 ms
+      return textViewInfo;
+
+    textViewInfo.scrollPos = webEngineScrollPos(we);
 
     boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
 
@@ -294,26 +323,26 @@ public final class MainTextWrapper
                                                   "  if ((prefix === \"" + (sortByName ? "alp" : "num") + "\") && (elements[i].open === true)) openDivits.push(elements[i].id.slice(3));\n" +
                                                   "  if ((prefix !== \"alp\") && (prefix !== \"num\") && (elements[i].open === true)) openDivits.push(elements[i].id);\n}\n" +
                                                   "openDivits");
-    viewInfo.openDivits = new HashSet<>();
+    textViewInfo.openDivits = new HashSet<>();
 
     for (int len = (Integer) divits.getMember("length"), ndx = 0; ndx < len; ndx++)
     {
       String divitID = (String) divits.getSlot(ndx);
 
       if (divitID.length() > 0)
-        viewInfo.openDivits.add(divitID);
+        textViewInfo.openDivits.add(divitID);
     }
 
-    return viewInfo;
+    return textViewInfo;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadFromRecord(HDT_RecordWithMainText record, boolean show, TextViewInfo viewInfo)
+  public void loadFromRecord(HDT_RecordWithMainText record, boolean show, TextViewInfo textViewInfo)
   {
     curRecord = record;
-    this.viewInfo = viewInfo;
+    this.textViewInfo = textViewInfo;
 
     MainText mainText = record.getMainText();
 
@@ -491,10 +520,10 @@ public final class MainTextWrapper
             }
             else
             {
-              if (viewInfo.openDivits == null)
-                viewInfo.openDivits = new HashSet<>();
+              if (textViewInfo.openDivits == null)
+                textViewInfo.openDivits = new HashSet<>();
 
-              viewInfo.openDivits.add(KEYWORKS_DIVIT_ID); // make sure keyworks divit becomes open once a keywork is added
+              textViewInfo.openDivits.add(KEYWORKS_DIVIT_ID); // make sure keyworks divit becomes open once a keywork is added
             }
           }
 
@@ -508,11 +537,11 @@ public final class MainTextWrapper
 
           if (firstOpen.isTrue())
           {
-            innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, true)).append("<summary><b>");
+            innerHtml.append(detailsTag(makeElementID(item.record), textViewInfo, true)).append("<summary><b>");
             firstOpen.setFalse();
           }
           else
-            innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, false)).append("<summary><b>");
+            innerHtml.append(detailsTag(makeElementID(item.record), textViewInfo, false)).append("<summary><b>");
 
           innerHtml.append(getTypeName(item.record.getType())).append(": ")
                    .append(getKeywordLink(cbText, new KeywordLink(0, cbText.length(), new SearchKeyword(cbText, item.record)), "text-decoration: none;"))
@@ -522,7 +551,7 @@ public final class MainTextWrapper
 
           innerHtml.append("</summary><br><div style=\"margin-left: 3.5em;\">");
 
-          String secondaryHtml = getSecondaryDisplayHtml(item.record, tagNdx, viewInfo);
+          String secondaryHtml = getSecondaryDisplayHtml(item.record, tagNdx, textViewInfo);
 
           innerHtml.append(secondaryHtml).append("</div></details>");
           break;
@@ -602,7 +631,7 @@ public final class MainTextWrapper
   {
     if (innerHtml.length() > 0) innerHtml.append("<br>");
 
-    innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true)).append("<summary><b>Key Works</b>&nbsp;");
+    innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, textViewInfo, true)).append("<summary><b>Key Works</b>&nbsp;");
 
     renderKeyWorkDisplayOptions(innerHtml, sortByName, haventRenderedKeyWorkDisplayOptionsYet);
 
@@ -612,21 +641,21 @@ public final class MainTextWrapper
 
     innerHtml.append("<div class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\" style=\"margin-left: 3.5em; display: ").append(sortByName ? "none" : "block").append(";\">");
 
-    appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, viewInfo);
+    appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, textViewInfo);
 
     if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
     {
       if (keyWorks.size() > 0) innerHtml.append("<br>");
-      appendSubLabelsKeyWorkBody(curLabel, innerHtml, false, tagNdx, viewInfo, "num" + makeElementID(curLabel));
+      appendSubLabelsKeyWorkBody(curLabel, innerHtml, false, tagNdx, textViewInfo, "num" + makeElementID(curLabel));
     }
 
     innerHtml.append("</div><div class=\"").append(ALPHA_SORTED_OUTER_CLASS).append("\" style=\"margin-left: 3.5em; display: ").append(sortByName ? "block" : "none").append(";\">");
-    appendKeyWorkSpanAndBody(curRecord, innerHtml, true, tagNdx, true, viewInfo);
+    appendKeyWorkSpanAndBody(curRecord, innerHtml, true, tagNdx, true, textViewInfo);
 
     if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
     {
       if (keyWorks.size() > 0) innerHtml.append("<br>");
-      appendSubLabelsKeyWorkBody(curLabel, innerHtml, true, tagNdx, viewInfo, "alp" + makeElementID(curLabel));
+      appendSubLabelsKeyWorkBody(curLabel, innerHtml, true, tagNdx, textViewInfo, "alp" + makeElementID(curLabel));
     }
 
     innerHtml.append("</div></details>");
