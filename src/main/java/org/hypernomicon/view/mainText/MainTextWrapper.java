@@ -310,7 +310,7 @@ public final class MainTextWrapper
       assert(textViewInfo.record == viewRecord);
     }
 
-    if ((Instant.now().toEpochMilli() - lastRender) > 200) // Assume user didn't interact with WebView in less than 200 ms
+    if ((Instant.now().toEpochMilli() - lastRender) < 200) // Assume user didn't interact with WebView in less than 200 ms
       return textViewInfo;
 
     textViewInfo.scrollPos = webEngineScrollPos(we);

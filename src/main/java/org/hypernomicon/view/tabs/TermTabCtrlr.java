@@ -17,6 +17,8 @@
 
 package org.hypernomicon.view.tabs;
 
+import org.hypernomicon.view.HyperView;
+import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -203,6 +205,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
   private final HyperTable htGlossaries, htSubConcepts, htDisplayers;
   private final TabPane tpConcepts;
   private final Map<HyperTableRow, GlossaryRow> glossaryRows = new HashMap<>();
+  private final Map<HDT_Concept, TextViewInfo> conceptToTextViewInfo = new HashMap<>();
 
   private HDT_Term curTerm;
   private HDT_Concept curConcept;
@@ -377,9 +380,10 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       oldTab.setContent(null);
       newTab.setContent(apDescription);
 
+      conceptToTextViewInfo.put(curConcept, mainTextInfo(curConcept));
       curConcept = ((ConceptTab) newTab).concept;
 
-      ui.viewSequence.saveViewToCurrentSlotAndTab(newView(curConcept));
+      ui.viewSequence.saveViewToCurrentSlotAndTab(new HyperView<>(getTabEnum(), curConcept, conceptToTextViewInfo.get(curConcept)));
 
       HDT_Glossary glossary = curConcept.glossary.get();
       if (glossary.getID() > 1) glossary.viewNow();
@@ -410,6 +414,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     boolean first = true;
     for (HDT_Concept concept : curTerm.concepts)
     {
+      conceptToTextViewInfo.put(concept, concept == curConcept ? getView().getTextInfo() : new TextViewInfo(concept));
+
       if (first)
       {
         ((ConceptTab) tpConcepts.getTabs().get(0)).setConcept(concept);
@@ -922,6 +928,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
   @Override public void clear()
   {
     super.clear();
+
+    conceptToTextViewInfo.clear();
 
     tpConcepts.getTabs().stream().filter(tab -> tab.getContent() == apDescription).forEach(tab -> tab.setContent(null));
 
