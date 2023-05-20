@@ -278,6 +278,23 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  void changeRecordID(RecordType changedType, int oldID, int newID)
+  {
+    queryFavList.stream().map(menuItem -> (QueryFavorite)menuItem).forEach(favItem -> favItem.rows.forEach(row ->
+    {
+      for (int colNdx = 0; colNdx < QUERY_FAV_ROW_COLUMN_COUNT; colNdx++)
+      {
+        HyperTableCell cell = row.cells[colNdx];
+
+        if ((getCellID(cell) == oldID) && (getCellType(cell) == changedType))
+          row.cells[colNdx] = cell.getCopyWithID(newID);
+      }
+    }));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void updateItems()
   {
     for (int ndx = FIRST_FAV_MENU_ITEM_NDX; ndx < recordFavList.size(); ndx++)

@@ -263,11 +263,6 @@ public class HyperViewSequence
 
     db.initialNavHistory().forEach(record ->
     {
-      if (record.getType() == hdtTerm)
-        record = ((HDT_Term)record).concepts.get(0);
-
-      if (record == null) return;
-
       goForward(true);
       saveViewToCurrentSlot(new HyperView<>(record));
     });

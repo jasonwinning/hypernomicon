@@ -1951,8 +1951,8 @@ public final class HyperDB
     int ndx = addToSortedList(initialNavList, record, Comparator.comparing(HDT_Record::getViewDate));
 
     if ((record.getType() == hdtInvestigation) || (record.getType() == hdtPerson))
-      if (removePersonIfAdjacentToInvestigation(record, ndx, -1) == false)
-          removePersonIfAdjacentToInvestigation(record, ndx,  1);
+      if (removePersonIfAdjacentToInvestigation(record, ndx, ndx - 1) == false)
+          removePersonIfAdjacentToInvestigation(record, ndx, ndx + 1);
 
     while (initialNavList.size() > INITIAL_NAV_LIST_SIZE)
       initialNavList.remove(0);
@@ -1961,30 +1961,30 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean removePersonIfAdjacentToInvestigation(HDT_Record record, int ndx, int increment)
+  private boolean removePersonIfAdjacentToInvestigation(HDT_Record record, int ndx, int otherNdx)
   {
-    int otherNdx = ndx + increment;
-
-    if ((otherNdx < 0) || (otherNdx == initialNavList.size())) return false;
+    if ((otherNdx < 0) || (otherNdx == initialNavList.size()))
+      return false;
 
     HDT_Record otherRecord = initialNavList.get(otherNdx);
-    if (Math.abs(record.getViewDate().toEpochMilli() - otherRecord.getViewDate().toEpochMilli()) < 200)
+
+    if (Math.abs(record.getViewDate().toEpochMilli() - otherRecord.getViewDate().toEpochMilli()) > 200)
+      return false;
+
+    if ((record.getType() == hdtInvestigation) && (otherRecord.getType() == hdtPerson))
     {
-      if ((record.getType() == hdtInvestigation) && (otherRecord.getType() == hdtPerson))
+      if (otherRecord == ((HDT_Investigation)record).person.get())
       {
-        if (otherRecord == ((HDT_Investigation)record).person.get())
-        {
-          initialNavList.remove(otherNdx);
-          return true;
-        }
+        initialNavList.remove(otherNdx);
+        return true;
       }
-      else if ((record.getType() == hdtPerson) && (otherRecord.getType() == hdtInvestigation))
+    }
+    else if ((record.getType() == hdtPerson) && (otherRecord.getType() == hdtInvestigation))
+    {
+      if (record == ((HDT_Investigation)otherRecord).person.get())
       {
-        if (record == ((HDT_Investigation)otherRecord).person.get())
-        {
-          initialNavList.remove(ndx);
-          return true;
-        }
+        initialNavList.remove(ndx);
+        return true;
       }
     }
 

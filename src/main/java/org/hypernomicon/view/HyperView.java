@@ -28,10 +28,19 @@ import java.util.Set;
 
 import static org.hypernomicon.model.HyperDB.*;
 
+//---------------------------------------------------------------------------
+
 public class HyperView<HDT_CT extends HDT_Record>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static class TextViewInfo
   {
+
+//---------------------------------------------------------------------------
+
     public TextViewInfo(HDT_Record record)
     {
       this.record = record;
@@ -52,11 +61,16 @@ public class HyperView<HDT_CT extends HDT_Record>
       detailedWorks = textViewInfo.detailedWorks;
     }
 
+//---------------------------------------------------------------------------
+
     public final HDT_Record record;
     public Set<String> openDivits = null;
     public int scrollPos = 0;
     public boolean detailedWorks = false;
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private HDT_CT viewRecord;
   private final int tabRecordKeyNdx;
@@ -73,8 +87,15 @@ public class HyperView<HDT_CT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperView(HDT_CT record)                  { this(getTabEnumByRecordType(record.getType()), record); }
-  public HyperView(TabEnum tabEnum, HDT_CT record) { this(tabEnum, record, new TextViewInfo(record)); }
+  public HyperView(HDT_CT record)
+  {
+    this(getTabEnumByRecordType(record.getType()), record);
+  }
+
+  public HyperView(TabEnum tabEnum, HDT_CT record)
+  {
+    this(tabEnum, record, new TextViewInfo(record));
+  }
 
   public HyperView(TabEnum tabEnum, HDT_CT record, TextViewInfo textViewInfo)
   {

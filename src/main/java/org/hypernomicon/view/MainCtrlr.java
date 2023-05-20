@@ -1048,6 +1048,8 @@ public final class MainCtrlr
 
     db.rebuildMentions();
 
+    favorites.changeRecordID(changedType, oldID, newID);
+
     update();
   }
 
