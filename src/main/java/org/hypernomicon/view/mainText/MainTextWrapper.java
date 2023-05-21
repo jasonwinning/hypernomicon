@@ -145,18 +145,28 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo, HDT_Record recordToHilite)
+  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse)
   {
-    setReadOnlyHTML(htmlToUse, weToUse, textViewInfo, recordToHilite, false);
+    setReadOnlyHTML(htmlToUse, weToUse, 0, null, false);
   }
 
-  private static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo, HDT_Record recordToHilite, boolean alreadyPrepped)
+  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, int scrollPos)
+  {
+    setReadOnlyHTML(htmlToUse, weToUse, scrollPos, null, false);
+  }
+
+  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, int scrollPos, HDT_Record recordToHilite)
+  {
+    setReadOnlyHTML(htmlToUse, weToUse, scrollPos, recordToHilite, false);
+  }
+
+  private static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, int scrollPos, HDT_Record recordToHilite, boolean alreadyPrepped)
   {
     if (alreadyPrepped == false)
       htmlToUse = prepHtmlForDisplay(htmlToUse);
 
-    if (textViewInfo.scrollPos > 0)
-      htmlToUse = htmlToUse.replace("<body", "<body onload='setTimeout(function() { window.scrollTo(0," + textViewInfo.scrollPos + "); }, 0);'"); // only scroll after all other events on the queue are processed
+    if (scrollPos > 0)
+      htmlToUse = htmlToUse.replace("<body", "<body onload='setTimeout(function() { window.scrollTo(0," + scrollPos + "); }, 0);'"); // only scroll after all other events on the queue are processed
 
     Document doc = makeDocLinksExternal(jsoupParse(htmlToUse.replace("contenteditable=\"true\"", "contenteditable=\"false\"")));
 
@@ -198,8 +208,8 @@ public final class MainTextWrapper
 
       renderCompleteHtml();
     }
-
-    textViewInfo = getViewInfo(curRecord);
+    else
+      textViewInfo = getViewInfo(curRecord);
 
     state = hidden;
   }
@@ -231,7 +241,10 @@ public final class MainTextWrapper
     view.setOnMouseClicked(mouseEvent ->
     {
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2) && canEdit())
+      {
+        textViewInfo = getViewInfo(curRecord);
         beginEditing(true);
+      }
     });
 
     boolean noDisplayRecords = (displayItems == null) || displayItems.stream().noneMatch(item -> item.type == DisplayItemType.diRecord);
@@ -241,7 +254,7 @@ public final class MainTextWrapper
     if (jsoupParse(html).text().trim().isEmpty() && ((keyWorksSize == 0) || (curRecord.getType() == hdtInvestigation)) && noDisplayRecords && canEdit())
       beginEditing(false);
     else
-      setReadOnlyHTML(completeHtml, we, textViewInfo, null, true);
+      setReadOnlyHTML(completeHtml, we, textViewInfo.scrollPos, null, true);
 
     curWrapper = this;
   }
@@ -293,7 +306,7 @@ public final class MainTextWrapper
     {
       assert(textViewInfo.record == viewRecord);
 
-      textViewInfo = new TextViewInfo(viewRecord, editCtrlr.getScrollPos());
+      textViewInfo.scrollPos = editCtrlr.getScrollPos();
       return textViewInfo;
     }
 
@@ -304,11 +317,9 @@ public final class MainTextWrapper
 
       return textViewInfo;
     }
-    else
-    {
-      assert(textViewInfo != null);
-      assert(textViewInfo.record == viewRecord);
-    }
+
+    assert(textViewInfo != null);
+    assert(textViewInfo.record == viewRecord);
 
     if ((Instant.now().toEpochMilli() - lastRender) < 200) // Assume user didn't interact with WebView in less than 200 ms
       return textViewInfo;
@@ -765,6 +776,20 @@ public final class MainTextWrapper
 
     html = tempHtml;
     displayItems = new ArrayList<>(editCtrlr.getDisplayItems());
+
+    textViewInfo = getViewInfo(curRecord);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void refreshRecordPtr()
+  {
+    if (curRecord != null)
+      curRecord = HDT_Record.getCurrentInstance(curRecord);
+
+    if (textViewInfo != null)
+      textViewInfo = new TextViewInfo(textViewInfo);
   }
 
 //---------------------------------------------------------------------------

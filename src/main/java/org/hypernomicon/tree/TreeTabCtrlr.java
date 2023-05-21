@@ -64,6 +64,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
 
 //---------------------------------------------------------------------------
@@ -185,7 +186,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (record.hasDesc())
         mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo((HDT_Record)null));
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
@@ -270,7 +271,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @Override protected RecordType type()        { return hdtNone; }
 
-  @Override public void clear()                { tree.clear(); }
+  @Override public void clear(boolean rstRec)  { tree.clear(); }
   @Override public boolean saveToRecord()      { return true; }
   @Override public HDT_Record activeRecord()   { return tree.selectedRecord(); }
   @Override public HDT_Record viewRecord()     { return activeRecord(); }
@@ -320,7 +321,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         return;
       }
 
-      HyperTable.saveColWidthsForTable(ttv.getColumns(), PREF_KEY_HT_TREE, true);
+      HyperTable.saveColWidthsForTable(ttv, ttv.getColumns(), PREF_KEY_HT_TREE);
       removeFromParent(ttv.getParent());
 
       loaded = false;
@@ -331,7 +332,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     // a new one.
 
     FXMLLoader loader = new FXMLLoader(App.class.getResource("tree/Tree.fxml"));
-    spMain.setMasterNode(loader.load());
+    AnchorPane treePane = loader.load();
+    spMain.setMasterNode(treePane);
     TreeCtrlr treeCtrlr = loader.getController();
 
     ttv = treeCtrlr.ttv;
@@ -385,7 +387,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
           String desc = record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getHtml() : "";
 
-          MainTextWrapper.setReadOnlyHTML(desc, webView.getEngine(), useViewInfo ? getView().getTextInfo() : new TextViewInfo((HDT_Record)null), null);
+          MainTextWrapper.setReadOnlyHTML(desc, webView.getEngine(), useViewInfo ? getView().getTextInfo().scrollPos : 0);
           clearWV = false;
         }
       }
@@ -397,7 +399,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         previewWindow.clearPreview(pvsTreeTab);
     });
 
-    HyperTable.loadColWidthsForTable(ttv.getColumns(), PREF_KEY_HT_TREE);
+    scaleNodeForDPI(treePane);
+
+    HyperTable.loadColWidthsForTable(ttv, ttv.getColumns(), PREF_KEY_HT_TREE);
 
     tree.reset(ttv, false, true);
   }

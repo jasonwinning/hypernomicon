@@ -432,7 +432,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
     if (btnWebSrch1.isVisible())
     {

@@ -26,8 +26,6 @@ import static org.hypernomicon.view.tabs.HyperTab.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.hypernomicon.model.HyperDB.*;
-
 //---------------------------------------------------------------------------
 
 public class HyperView<HDT_CT extends HDT_Record>
@@ -55,7 +53,7 @@ public class HyperView<HDT_CT extends HDT_Record>
 
     public TextViewInfo(TextViewInfo textViewInfo) // Copy constructor
     {
-      this(textViewInfo.record, textViewInfo.scrollPos);
+      this(HDT_Record.getCurrentInstance(textViewInfo.record), textViewInfo.scrollPos);
 
       openDivits    = textViewInfo.openDivits == null ? null : new HashSet<>(textViewInfo.openDivits);
       detailedWorks = textViewInfo.detailedWorks;
@@ -73,10 +71,11 @@ public class HyperView<HDT_CT extends HDT_Record>
 //---------------------------------------------------------------------------
 
   private HDT_CT viewRecord;
+  private TextViewInfo textViewInfo;
+
   private final int tabRecordKeyNdx;
   private final RecordType tabRecordType;
   private final TabEnum tabEnum;
-  private final TextViewInfo textViewInfo;
 
   int getTabRecordKeyNdx()          { return tabRecordKeyNdx; }
   public TextViewInfo getTextInfo() { return new TextViewInfo(textViewInfo); }
@@ -99,7 +98,7 @@ public class HyperView<HDT_CT extends HDT_Record>
 
   public HyperView(TabEnum tabEnum, HDT_CT record, TextViewInfo textViewInfo)
   {
-    tabRecordKeyNdx = record == null ? 0 : HyperTab.getActiveRecordForViewRecord(record).keyNdx();
+    tabRecordKeyNdx = record == null ? 0 : getActiveRecordForViewRecord(record).keyNdx();
 
     this.tabEnum = tabEnum;
     this.textViewInfo = textViewInfo;
@@ -122,11 +121,13 @@ public class HyperView<HDT_CT extends HDT_Record>
 
   // Update record pointer after saving/reloading database
 
-  @SuppressWarnings("unchecked")
   public void refreshRecordPtr()
   {
     if (viewRecord != null)
-      viewRecord = (HDT_CT) db.records(viewRecord.getType()).getByID(viewRecord.getID());
+      viewRecord = HDT_Record.getCurrentInstance(viewRecord);
+
+    if (textViewInfo != null)
+      textViewInfo = new TextViewInfo(textViewInfo);
   }
 
 //---------------------------------------------------------------------------

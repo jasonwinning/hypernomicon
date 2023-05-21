@@ -62,7 +62,7 @@ public class Highlighter
 //---------------------------------------------------------------------------
 
   boolean neverHilited()             { return ((boolean) engine.executeScript("'markInstance' in window")) == false; }
-  boolean hasSearchResults()         { return (boolean) engine.executeScript("('markInstance' in window) && (results.length > 0)"); }
+  private boolean hasSearchResults() { return (boolean) engine.executeScript("('markInstance' in window) && (results.length > 0)"); }
   void clear()                       { engine.executeScript("if ('markInstance' in window) { clearAll(); markInstance.unmark({}); }"); currentString = ""; }
   public void nextSearchResult()     { advance("nextResult();"); }
   public void previousSearchResult() { advance("previousResult();"); }

@@ -54,7 +54,6 @@ import org.hypernomicon.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -62,7 +61,6 @@ import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -234,8 +232,7 @@ public class BibManager extends HyperDlg
 
     htRelatives.addDefaultMenuItems();
 
-    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
-      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo((HDT_Record)null)));
+    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) -> MainTextUtil.handleJSEvent("", webView.getEngine()));
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 

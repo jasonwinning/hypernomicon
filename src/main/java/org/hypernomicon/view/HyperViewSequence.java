@@ -235,7 +235,7 @@ public class HyperViewSequence
     HDT_Record activeRecord = (curHyperTab.getTabEnum() == treeTabEnum) || (curHyperTab.getTabEnum() == queryTabEnum) ?
       curView.getViewRecord()
     :
-      HyperTab.getActiveRecordForViewRecord(curView.getViewRecord());
+      getActiveRecordForViewRecord(curView.getViewRecord());
 
     ui.update(activeRecord);
 

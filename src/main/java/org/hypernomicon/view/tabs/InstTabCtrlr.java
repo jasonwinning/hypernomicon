@@ -323,8 +323,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
+    curInst = resetRecord ? null : HDT_Record.getCurrentInstance(curInst);
+
     tfName.clear();
     tfCity.clear();
     tfURL .clear();

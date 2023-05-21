@@ -59,7 +59,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -418,7 +417,7 @@ public class FileManager extends HyperDlg
           if (record.hasDesc())
             mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
-          MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo((HDT_Record)null), null);
+          MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine());
 
           setPreviewFromRecordTable();
 
@@ -440,7 +439,7 @@ public class FileManager extends HyperDlg
       if (record.hasDesc())
         mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo((HDT_Record)null));
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());

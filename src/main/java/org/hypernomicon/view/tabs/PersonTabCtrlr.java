@@ -144,6 +144,15 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public FilePath getCurPicture()                { return curPicture; }
+  public HDT_Investigation getCurInvestigation() { return curInvestigation; }
+
+  @Override public String recordName()           { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
+  @Override protected RecordType type()          { return hdtPerson; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public PersonTabCtrlr(Tab tab) throws IOException
   {
     super(personTabEnum, tab, "view/tabs/PersonTab");
@@ -369,14 +378,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       });
     });
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public FilePath getCurPicture() { return curPicture; }
-
-  @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
-  @Override protected RecordType type()              { return hdtPerson; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -726,7 +727,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
     alreadyChangingName = true;
 
@@ -756,6 +757,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htArguments .clear();
 
     clearInvestigations();
+
+    curPerson        = resetRecord ? null : HDT_Record.getCurrentInstance(curPerson);
+    lastPerson       = resetRecord ? null : HDT_Record.getCurrentInstance(lastPerson);
+    curInvestigation = resetRecord ? null : HDT_Record.getCurrentInstance(curInvestigation);
 
     if ((curPerson != lastPerson) || (curPerson == null))
       htWorks.getTV().getSortOrder().clear();
@@ -1078,8 +1083,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       this(record, new TextViewInfo(record));
     }
 
-    public InvestigationView(HDT_Investigation record, TextViewInfo textViewInfo)
+    private InvestigationView(HDT_Investigation record, TextViewInfo textViewInfo)
     {
+      assert(record == textViewInfo.record);
+
       this.record = record;
 
       BorderPane bPane = new BorderPane();
@@ -1123,6 +1130,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     public final HDT_Investigation record;
     public final TextField tfName;
+
     private final TextField tfSearchKey;
     private final MainTextWrapper textWrapper;
     private final Tab tab;

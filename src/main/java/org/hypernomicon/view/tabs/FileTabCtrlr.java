@@ -233,16 +233,20 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
+    curMiscFile = resetRecord ? null : HDT_Record.getCurrentInstance(curMiscFile);
+
     mainText.clear();
-    tfName.setText("");
-    tfFileName.setText("");
+
+    tfName     .setText("");
+    tfFileName .setText("");
     tfSearchKey.setText("");
+
     checkAnnotated.setSelected(false);
 
-    htAuthors.clear();
-    htLabels.clear();
+    htAuthors      .clear();
+    htLabels       .clear();
     htKeyMentioners.clear();
 
     hcbType.clear();

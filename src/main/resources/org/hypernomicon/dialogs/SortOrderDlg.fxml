@@ -55,11 +55,9 @@
          <Font size="14.0" />
       </font>
       <graphic>
-         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-            <image>
-               <Image url="@../resources/images/information-italic.png" />
-            </image>
-         </ImageView>
+        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+          <Image url="@../resources/images/information-italic.png"/>
+        </ImageView>
       </graphic>
    </Label>
 </AnchorPane>

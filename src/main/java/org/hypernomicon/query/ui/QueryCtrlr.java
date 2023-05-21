@@ -68,7 +68,6 @@ import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.ui.ColumnGroup.*;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.QueryPopulator;
@@ -144,7 +143,7 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 
   public List<ResultRow> results()        { return inReportMode() ? List.of() : Collections.unmodifiableList(resultsBackingList); }
-  void saveColumnWidths()                 { HyperTable.saveColWidthsForTable(tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS, false); }
+  void saveColumnWidths()                 { HyperTable.saveColWidthsForTable(tvFields, tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS); }
   void focusOnFields()                    { safeFocus(tvFields); }
   public boolean inReportMode()           { return inRecordMode == false; }
   Tab getTab()                            { return tab; }
@@ -197,7 +196,7 @@ public final class QueryCtrlr
 
     htFields = new HyperTable(tvFields, QUERY_COL_NDX, true, "");
 
-    HyperTable.loadColWidthsForTable(tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS);
+    HyperTable.loadColWidthsForTable(tvFields, tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS);
 
     htFields.autoCommitListSelections = true;
 
@@ -430,7 +429,7 @@ public final class QueryCtrlr
     {
       String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
 
-      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo((HDT_Record)null), ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
+      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), 0, ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
     }
 
     setPreview();

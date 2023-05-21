@@ -144,7 +144,12 @@ public final class MainTextUtil
 
   private static double lastEventID = -1;
 
-  public static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo)
+  public static void handleJSEvent(String htmlToUse, WebEngine weToUse)
+  {
+    handleJSEvent(htmlToUse, weToUse, null);
+  }
+
+  static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo)
   {
     int recordID = -1;
     RecordType recordType = hdtNone;

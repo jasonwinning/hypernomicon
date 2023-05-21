@@ -587,14 +587,9 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     setLinkedMessage("Getting username from server...");
 
-    ((MendeleyWrapper)library).getUserNameFromServer(emailAddress ->
-    {
-      setLinkedMessage("Username: " + emailAddress);
-    },
-    ex ->
-    {
-      setLinkedMessage("Unable to retrieve username from " + library.type().getUserFriendlyName() + " server.");
-    });
+    ((MendeleyWrapper)library).getUserNameFromServer(
+      emailAddress -> setLinkedMessage("Username: " + emailAddress),
+      ex           -> setLinkedMessage("Unable to retrieve username from " + library.type().getUserFriendlyName() + " server."));
   }
 
 //---------------------------------------------------------------------------

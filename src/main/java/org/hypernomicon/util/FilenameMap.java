@@ -89,16 +89,16 @@ public class FilenameMap<T> implements Map<String, T>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public T remove(Object key)
+  @Override public T remove(Object keyObj)
   {
-    if ((key instanceof String) == false) return null;
+    if ((keyObj instanceof String) == false) return null;
 
-    String strKey = (String) key;
-    T oldVal = get(strKey);
+    String key = (String) keyObj;
+    T oldVal = get(key);
 
-    List<String> list = lowerToList.computeIfAbsent(strKey.toLowerCase(), k -> new ArrayList<>());
+    List<String> list = lowerToList.computeIfAbsent(key.toLowerCase(), keyLowerCase -> new ArrayList<>());
 
-    String realKey = findKey(strKey);
+    String realKey = findKey(key);
 
     if (realKey.length() > 0)
     {

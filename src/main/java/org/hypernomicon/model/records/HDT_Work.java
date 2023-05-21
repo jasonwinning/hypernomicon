@@ -271,21 +271,8 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     {
       List<String> ISBNs = getISBNs(), lwISBNs = largerWorkRec.getISBNs();
 
-      boolean notAllInLW = false, notAllInSW = false;
-
-      for (String isbn : ISBNs)
-        if (lwISBNs.contains(isbn) == false)
-        {
-          notAllInLW = true;
-          break;
-        }
-
-      for (String isbn : lwISBNs)
-        if (ISBNs.contains(isbn) == false)
-        {
-          notAllInSW = true;
-          break;
-        }
+      boolean notAllInLW = ISBNs  .stream().anyMatch(isbn -> (lwISBNs.contains(isbn) == false)),
+              notAllInSW = lwISBNs.stream().anyMatch(isbn -> (ISBNs  .contains(isbn) == false));
 
       if ((notAllInLW == false) && notAllInSW)
       {

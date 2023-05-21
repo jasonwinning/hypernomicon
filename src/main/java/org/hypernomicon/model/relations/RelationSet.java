@@ -144,7 +144,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     typeMappingsWithKeyWork.put(subjType, objType, type);
 
     if (trackOrphans)
-      orphanTypeToRelSets.computeIfAbsent(subjType, k -> new HashSet<>()).add(this);
+      orphanTypeToRelSets.computeIfAbsent(subjType, _subjType -> new HashSet<>()).add(this);
 
     for (HDI_Schema nestedSchema : nestedSchemas)
     {

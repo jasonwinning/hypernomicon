@@ -157,7 +157,11 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     }
 
     HDT_Glossary generalGlossary = db.glossaries.getByID(1);
-    term = HDT_Term.create(generalGlossary);
+
+    term = oldConcept == null ?
+      HDT_Term.create(generalGlossary)
+    :
+      db.createNewBlankRecord(hdtTerm); // Old concept gets attached to term record by caller
 
     try
     {
@@ -178,7 +182,10 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       return;
     }
 
-    glossary = generalGlossary;
+    glossary = oldConcept == null ?
+      generalGlossary
+    :
+      oldConcept.glossary.get();
 
     okClicked = true;
     createNew = true;

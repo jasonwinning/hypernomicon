@@ -115,7 +115,7 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 
         if ((objType == hdtWork) || (objType == hdtMiscFile))
         {
-          Set<Integer> idSet = usedKeyWorks.computeIfAbsent(objType, k -> new HashSet<>());
+          Set<Integer> idSet = usedKeyWorks.computeIfAbsent(objType, _objType -> new HashSet<>());
 
           if (idSet.contains(objID) == false)
           {

@@ -68,7 +68,7 @@ public class HyperFavorites
 
   //---------------------------------------------------------------------------
 
-    public void update()
+    private void update()
     {
       setText(getRecordText(record));
     }

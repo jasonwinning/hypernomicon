@@ -237,8 +237,8 @@ public final class SearchKeys
   {
     String lcText = keyword.text.toLowerCase();
 
-    recordToKeywordStrToKeywordObj   .computeIfAbsent(keyword.record     , k -> Collections.synchronizedMap(new LinkedHashMap<>())).put(lcText, keyword);
-    prefixStrToKeywordStrToKeywordObj.computeIfAbsent(keyword.getPrefix(), k -> Collections.synchronizedMap(new LinkedHashMap<>())).put(lcText, keyword);
+    recordToKeywordStrToKeywordObj   .computeIfAbsent(keyword.record     , keywordRecord -> Collections.synchronizedMap(new LinkedHashMap<>())).put(lcText, keyword);
+    prefixStrToKeywordStrToKeywordObj.computeIfAbsent(keyword.getPrefix(), keywordPrefix -> Collections.synchronizedMap(new LinkedHashMap<>())).put(lcText, keyword);
   }
 
 //---------------------------------------------------------------------------

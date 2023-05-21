@@ -19,6 +19,7 @@ package org.hypernomicon.model.relations;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.hypernomicon.model.records.HDT_Record;
 
@@ -48,53 +49,16 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType exten
   @Override public boolean containsAll(Collection<?> c) { return c.stream().allMatch(this::contains); }
   @Override public Object[] toArray()                   { return relSet.getUnmodifiableSubjectList(obj).subList(startNdx, endNdx).toArray(); }
   @Override public <T> T[] toArray(T[] a)               { return relSet.getUnmodifiableSubjectList(obj).subList(startNdx, endNdx).toArray(a); }
+  @Override public boolean contains(Object o)           { return IntStream.range(startNdx, endNdx).anyMatch(ndx -> parentList.get(ndx) == o); }
+  @Override public int indexOf(Object o)                { return IntStream.range(startNdx, endNdx).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
+  @Override public int lastIndexOf(Object o)            { return IntStream.iterate(endNdx - 1, ndx -> ndx >= startNdx, ndx -> ndx - 1).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
 
-  @Override public HDT_SubjType set(int index, HDT_SubjType element)               { throw uoe(); }
-  @Override public HDT_SubjType remove(int index)                                  { throw uoe(); }
+  @Override public HDT_SubjType set(int index, HDT_SubjType element)      { throw uoe(); }
+  @Override public HDT_SubjType remove(int index)                         { throw uoe(); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean contains(Object o)
-  {
-    for (int ndx = startNdx; ndx < endNdx; ndx++)
-      if (parentList.get(ndx) == o) return true;
-
-    return false;
-  }
+  @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex) { return new HyperSubjSubList<>(parentList, startNdx + fromIndex, startNdx + toIndex); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int indexOf(Object o)
-  {
-    for (int ndx = startNdx; ndx < endNdx; ndx++)
-      if (get(ndx) == o)
-        return ndx;
-
-    return -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int lastIndexOf(Object o)
-  {
-    for (int ndx = endNdx - 1; ndx >= startNdx; ndx--)
-      if (get(ndx) == o)
-        return ndx;
-
-    return -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex)
-  {
-    return new HyperSubjSubList<>(parentList, startNdx + fromIndex, startNdx + toIndex);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 }

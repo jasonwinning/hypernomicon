@@ -111,7 +111,21 @@ public interface HDT_Record
     if (record.getID() < 1)
       throw new HDB_InternalError(28883);
 
-    return db.records(record.getType()).getByID(record.getID()) == null;
+    return getCurrentInstance(record) == null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Get current live record instance having the same type and ID as the passed-in record.
+   * @param record Possibly out of date record instance
+   * @return Current live instance
+   */
+  @SuppressWarnings("unchecked")
+  static <HDT_R extends HDT_Record> HDT_R getCurrentInstance(HDT_R record)
+  {
+    return record == null ? null : (HDT_R) db.records(record.getType()).getByID(record.getID());
   }
 
 //---------------------------------------------------------------------------

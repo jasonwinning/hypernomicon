@@ -350,18 +350,20 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
     setHeights(btnFolder      , 24.0 * displayScale);
     setHeights(tfFolder       , 24.0 * displayScale);
     setHeights(btnCreateFolder, 24.0 * displayScale);
     setHeights(btnBrowse      , 24.0 * displayScale);
 
-    super       .clear();
+    super       .clear(resetRecord);
     htParents   .clear();
     htSubnotes  .clear();
     htMentioners.clear();
     tfFolder    .clear();
+
+    curNote = resetRecord ? null : HDT_Record.getCurrentInstance(curNote);
 
     if (curNote == null)
       bp.setLeft(btnFolder);

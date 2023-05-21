@@ -237,12 +237,14 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
-    super.clear();
+    super.clear(resetRecord);
 
-    htParents.clear();
-    htArguments.clear();
+    curPosition = resetRecord ? null : HDT_Record.getCurrentInstance(curPosition);
+
+    htParents      .clear();
+    htArguments    .clear();
     htRightChildren.clear();
   }
 

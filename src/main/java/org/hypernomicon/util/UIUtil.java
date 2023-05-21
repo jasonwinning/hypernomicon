@@ -29,6 +29,7 @@ import java.util.*;
 import javafx.beans.value.ObservableDoubleValue;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.view.WindowStack;
 
@@ -466,11 +467,65 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public enum NodeUserDataType
+  {
+    Scaled          // Data type: Boolean
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void setNodeUserObj(Node node, NodeUserDataType dataType, Object obj)
+  {
+    @SuppressWarnings("unchecked")
+    Map<NodeUserDataType, Object> objMap = (Map<NodeUserDataType, Object>) node.getUserData();
+
+    if (objMap == null)
+    {
+      objMap = new EnumMap<>(NodeUserDataType.class);
+      node.setUserData(objMap);
+    }
+
+    objMap.put(dataType, obj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static Object getNodeUserObj(Node node, NodeUserDataType dataType)
+  {
+    @SuppressWarnings("unchecked")
+    Map<NodeUserDataType, Object> objMap = (Map<NodeUserDataType, Object>) node.getUserData();
+
+    return objMap == null ? null : objMap.get(dataType);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void setIsScaled(Node node, boolean isScaled)
+  {
+    setNodeUserObj(node, NodeUserDataType.Scaled, isScaled);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean getIsScaled(Node node)
+  {
+    return nullSwitch((Boolean)getNodeUserObj(node, NodeUserDataType.Scaled), false, Boolean::booleanValue);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void scaleNodeForDPI(Node node)
   {
-    boolean childrenOnly = false;
+    if ((node == null) || getIsScaled(node)) return;
 
-    if (node == null) return;
+    setIsScaled(node, true);
+
+    boolean childrenOnly = false;
 
     if (node.getId() != null)
     {
@@ -493,7 +548,7 @@ public final class UIUtil
       }
 
       if (((node instanceof javafx.scene.shape.Path) == false) &&
-          ((node instanceof javafx.scene.text.Text) == false))
+          ((node instanceof javafx.scene.text.Text ) == false))
       {
         scalePropertiesForDPI(node.layoutXProperty(), node.layoutYProperty());
       }
@@ -527,6 +582,13 @@ public final class UIUtil
     {
       (node instanceof TreeTableView ? ((TreeTableView<?>)node).getColumns() : ((TableView<?>)node).getColumns()).forEach(column ->
         scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty()));
+    }
+    else if (node instanceof MasterDetailPane)
+    {
+      MasterDetailPane mdp = (MasterDetailPane)node;
+
+      scaleNodeForDPI(mdp.getMasterNode());
+      scaleNodeForDPI(mdp.getDetailNode());
     }
     else if (node instanceof ToolBar)
       ((ToolBar)node).getItems().forEach(UIUtil::scaleNodeForDPI);

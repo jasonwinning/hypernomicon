@@ -92,7 +92,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   protected abstract void updateFromRecord();
 
   public abstract String recordName();
-  public abstract void clear();
+  public abstract void clear(boolean resetRecord);
   public abstract boolean saveToRecord();
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
@@ -259,6 +259,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public void refreshRecordPtr()
   {
     nullSwitch(getView(), HyperView::refreshRecordPtr);
+
+    nullSwitch(mainTextWrapper(), MainTextWrapper::refreshRecordPtr);
   }
 
 //---------------------------------------------------------------------------
@@ -267,7 +269,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   private void clearTabAndView()
   {
     setView(new HyperView<>(tabEnum, null));
-    clear();
+    clear(true);
   }
 
 //---------------------------------------------------------------------------

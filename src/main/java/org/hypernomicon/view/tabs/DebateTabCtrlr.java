@@ -40,6 +40,7 @@ import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
+import org.hypernomicon.model.records.HDT_Record;
 
 //---------------------------------------------------------------------------
 
@@ -145,12 +146,14 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
-    super.clear();
+    super.clear(resetRecord);
 
-    htParents.clear();
-    htPositions.clear();
+    curDebate = resetRecord ? null : HDT_Record.getCurrentInstance(curDebate);
+
+    htParents   .clear();
+    htPositions .clear();
     htSubdebates.clear();
   }
 

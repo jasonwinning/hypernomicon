@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.stream.IntStream;
 
 import org.hypernomicon.model.records.HDT_Record;
 
@@ -136,10 +137,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
     if (list.size() != size()) return false;
 
-    for (int ndx = 0; ndx < list.size(); ndx++)
-      if (list.get(ndx) != get(ndx)) return false;
-
-    return true;
+    return IntStream.range(0, list.size()).noneMatch(ndx -> list.get(ndx) != get(ndx));
   }
 
 //---------------------------------------------------------------------------

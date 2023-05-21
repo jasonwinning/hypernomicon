@@ -1339,7 +1339,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
     disableAll(btnUseDOI, btnUseISBN, btnMergeBib);
 
@@ -1404,6 +1404,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     else
       btnBibManager.setVisible(false);
+
+    curWork  = resetRecord ? null : HDT_Record.getCurrentInstance(curWork);
+    lastWork = resetRecord ? null : HDT_Record.getCurrentInstance(lastWork);
 
     if ((curWork != lastWork) || (curWork == null))
     {

@@ -463,14 +463,7 @@ public class MainText
 
   public void addKeyworksIfNotPresent()
   {
-    boolean hasKeyworks = false;
-
-    for (DisplayItem displayItem : displayItems)
-      if (displayItem.type == diKeyWorks)
-      {
-        hasKeyworks = true;
-        break;
-      }
+    boolean hasKeyworks = displayItems.stream().anyMatch(displayItem -> displayItem.type == diKeyWorks);
 
     if (hasKeyworks == false)
       displayItems.add(new DisplayItem(diKeyWorks));

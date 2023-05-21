@@ -188,101 +188,99 @@ public class WebButton
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private String getPatternStr()
+  {
+    for (UrlPattern pattern : patterns)
+      if (pattern.requiredFields.stream().allMatch(values::containsKey))
+        return pattern.str;
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void go()
   {
-    boolean isScholar = false;
+    String str = getPatternStr();
+    if (str == null) return;
 
-    nextPattern:
+    boolean isScholar = str.toLowerCase().contains("scholar") && str.toLowerCase().contains("google");
 
-    for (UrlPattern pattern : patterns)
+    for (WebButtonField field : WebButtonField.values())
     {
-      for (WebButtonField requiredField : pattern.requiredFields)
+      String value = values.getOrDefault(field, "");
+
+      if (str.contains(field.key) == false) continue;
+
+      if ((field == WebButtonField.QueryTitle) || (field == WebButtonField.Title))
+        if (value.startsWith("("))
+          value = removeFirstParenthetical(value);
+
+      if (field == WebButtonField.QueryTitle)
       {
-        if (values.containsKey(requiredField) == false)
-          continue nextPattern;
-      }
+        String[] array = value.split("[.;:!?()]|--");
 
-      String str = pattern.str;
-
-      if ((isScholar == false) && str.toLowerCase().contains("scholar") && str.toLowerCase().contains("google"))
-        isScholar = true;
-
-      for (WebButtonField field : WebButtonField.values())
-      {
-        String value = values.getOrDefault(field, "");
-
-        if (str.contains(field.key) == false) continue;
-
-        if ((field == WebButtonField.QueryTitle) || (field == WebButtonField.Title))
-          if (value.startsWith("("))
-            value = removeFirstParenthetical(value);
-
-        if (field == WebButtonField.QueryTitle)
+        if (array.length > 1)
         {
-          String[] array = value.split("[.;:!?()]|--");
+          String msg = isScholar ?
+            "Should the subtitle be omitted? Sometimes (e.g., in Google Scholar) this yields better results."
+          :
+            "Should the subtitle be omitted? Sometimes this yields better results.";
 
-          if (array.length > 1)
+          if (confirmDialog(msg))
+            value = array[0];
+        }
+      }
+      else if (field == WebButtonField.QueryName)
+      {
+        String first1 = ultraTrim(removeFirstParenthetical(value));
+
+        int ndx = first1.indexOf(' ');
+
+        if (ndx >= 0)
+        {
+          String first2 = ultraTrim(first1.replaceAll("^[^\\s]\\.", "")
+                                          .replaceAll("\\s[^\\s]\\.", ""));
+
+          ndx = first2.indexOf(' ');
+
+          if (ndx >=0)
+            first2 = first2.substring(0, ndx);
+
+          String first3 = String.valueOf(first1.charAt(0));
+
+          for (ndx = first1.indexOf(' '); ndx >= 0; ndx = first1.indexOf(' ', ndx + 1))
+            first3 = first3 + first1.charAt(ndx + 1);
+
+          first3 = first3.toUpperCase();
+
+          String last = values.get(WebButtonField.LastName);
+
+          switch (new PopupDialog("How should the name be phrased?" + (isScholar ? " Initials often works well with Google Scholar." : ""))
+
+            .addButton(first1 + ' ' + last, mrYes)
+            .addButton(first2 + ' ' + last, mrNo)
+            .addButton(first3 + ' ' + last, mrOk)
+            .addButton("Cancel", mrCancel)
+
+            .showModal())
           {
-            String msg = isScholar ?
-              "Should the subtitle be omitted? Sometimes (e.g., in Google Scholar) this yields better results."
-            :
-              "Should the subtitle be omitted? Sometimes this yields better results.";
-
-            if (confirmDialog(msg))
-              value = array[0];
+            case mrYes : value = first1; break;
+            case mrNo  : value = first2; break;
+            case mrOk  : value = first3; break;
+            default    : return;
           }
         }
-        else if (field == WebButtonField.QueryName)
-        {
-          String first1 = ultraTrim(removeFirstParenthetical(value));
-
-          int ndx = first1.indexOf(' ');
-
-          if (ndx >= 0)
-          {
-            String first2 = ultraTrim(first1.replaceAll("^[^\\s]\\.", "")
-                                            .replaceAll("\\s[^\\s]\\.", ""));
-
-            ndx = first2.indexOf(' ');
-
-            if (ndx >=0)
-              first2 = first2.substring(0, ndx);
-
-            String first3 = String.valueOf(first1.charAt(0));
-
-            for (ndx = first1.indexOf(' '); ndx >= 0; ndx = first1.indexOf(' ', ndx + 1))
-              first3 = first3 + first1.charAt(ndx + 1);
-
-            first3 = first3.toUpperCase();
-
-            String last = values.get(WebButtonField.LastName);
-
-            switch (new PopupDialog("How should the name be phrased?" + (isScholar ? " Initials often works well with Google Scholar." : ""))
-
-              .addButton(first1 + ' ' + last, mrYes)
-              .addButton(first2 + ' ' + last, mrNo)
-              .addButton(first3 + ' ' + last, mrOk)
-              .addButton("Cancel", mrCancel)
-
-              .showModal())
-            {
-              case mrYes : value = first1; break;
-              case mrNo  : value = first2; break;
-              case mrOk  : value = first3; break;
-              default    : return;
-            }
-          }
-          else
-            value = first1;
-        }
-
-        while (str.contains(field.key))
-          str = str.replace(field.key, escapeURL(value, field != WebButtonField.doi));
+        else
+          value = first1;
       }
 
-      DesktopUtil.openWebLink(str);
-      return;
+      while (str.contains(field.key))
+        str = str.replace(field.key, escapeURL(value, field != WebButtonField.doi));
     }
+
+    DesktopUtil.openWebLink(str);
   }
 
 //---------------------------------------------------------------------------

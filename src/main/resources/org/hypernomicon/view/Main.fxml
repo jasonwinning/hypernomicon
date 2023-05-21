@@ -74,19 +74,17 @@
              <MenuItem fx:id="mnuNewRank" mnemonicParsing="false" onAction="#mnuNewRankClick" text="Academic Rank" />
              <MenuItem fx:id="mnuNewPersonStatus" mnemonicParsing="false" onAction="#mnuNewPersonStatusClick" text="Person Status" />
            </Menu>
-               <Menu mnemonicParsing="false" text="Change category listing order...">
-                 <items>
-                   <MenuItem fx:id="mnuChangeFieldOrder" mnemonicParsing="false" text="Academic Fields" />
-                   <MenuItem fx:id="mnuChangeRankOrder" mnemonicParsing="false" text="Academic Ranks" />
-                   <MenuItem fx:id="mnuChangeCountryOrder" mnemonicParsing="false" text="Countries" />
-                   <MenuItem fx:id="mnuChangePersonStatusOrder" mnemonicParsing="false" text="Person Statuses" />
-                   <MenuItem fx:id="mnuChangeFileTypeOrder" mnemonicParsing="false" text="File Types" />
-                   <MenuItem fx:id="mnuChangeWorkTypeOrder" mnemonicParsing="false" text="Work Types" />
-                   <MenuItem fx:id="mnuChangeArgVerdictOrder" mnemonicParsing="false" text="Argument Verdicts" />
-                   <MenuItem fx:id="mnuChangePosVerdictOrder" mnemonicParsing="false" text="Position Verdicts" />
-                   <MenuItem fx:id="mnuChangeInstitutionTypeOrder" mnemonicParsing="false" text="Institution Types" />
-                 </items>
-               </Menu>
+           <Menu mnemonicParsing="false" text="Change category listing order...">
+             <MenuItem fx:id="mnuChangeFieldOrder" mnemonicParsing="false" text="Academic Fields"/>
+             <MenuItem fx:id="mnuChangeRankOrder" mnemonicParsing="false" text="Academic Ranks"/>
+             <MenuItem fx:id="mnuChangeCountryOrder" mnemonicParsing="false" text="Countries"/>
+             <MenuItem fx:id="mnuChangePersonStatusOrder" mnemonicParsing="false" text="Person Statuses"/>
+             <MenuItem fx:id="mnuChangeFileTypeOrder" mnemonicParsing="false" text="File Types"/>
+             <MenuItem fx:id="mnuChangeWorkTypeOrder" mnemonicParsing="false" text="Work Types"/>
+             <MenuItem fx:id="mnuChangeArgVerdictOrder" mnemonicParsing="false" text="Argument Verdicts"/>
+             <MenuItem fx:id="mnuChangePosVerdictOrder" mnemonicParsing="false" text="Position Verdicts"/>
+             <MenuItem fx:id="mnuChangeInstitutionTypeOrder" mnemonicParsing="false" text="Institution Types"/>
+           </Menu>
            <CheckMenuItem fx:id="mnuAutoImport" mnemonicParsing="false" text="Automatically watch for and import PDF files added" />
            <MenuItem fx:id="mnuAddToQueryResults" mnemonicParsing="false" onAction="#mnuAddToQueryResultsClick" text="Add this record to query results" />
            <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick" text="Change record ID..." />

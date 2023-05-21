@@ -1289,7 +1289,7 @@ public final class MainCtrlr
       }
 
       shuttingDown = true;
-      forEachHyperTab(HyperTab::clear);
+      forEachHyperTab(hyperTab -> hyperTab.clear(true));
 
       folderTreeWatcher.stop();
 
@@ -1535,7 +1535,7 @@ public final class MainCtrlr
       forEachHyperTab(HyperTab::refreshRecordPtr);
 
       if (activeTabEnum() == queryTabEnum)
-        activeTab().clear();
+        activeTab().clear(true);
 
       update();
     }
@@ -2091,6 +2091,26 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static HDT_Record getActiveOrViewRecord(HDT_Record activeRecord, HDT_Record viewRecord)
+  {
+    if (activeRecord == null) return null;
+    if (viewRecord   == null) return activeRecord;
+
+    if (activeRecord == viewRecord) return activeRecord;
+
+    DialogResult result = new PopupDialog("Which record?")
+
+      .addButton(getTypeName(activeRecord.getType()), mrYes)
+      .addButton(getTypeName(viewRecord  .getType()), mrNo )
+
+      .showModal();
+
+    return result == mrYes ? activeRecord : viewRecord;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private void mnuAddToQueryResultsClick()
   {
     if (db.isLoaded() == false)
@@ -2107,28 +2127,12 @@ public final class MainCtrlr
 
     HDT_Record record;
 
-    if (activeTabEnum() == termTabEnum)
+    switch (activeTabEnum())
     {
-      HDT_Term term = (HDT_Term) activeRecord();
-      record = viewRecord();
-
-      if (record == null)
-        record = term;
-      else
-      {
-        DialogResult result = new PopupDialog("Which record?")
-
-          .addButton("Term", mrYes)
-          .addButton("Concept", mrNo)
-
-          .showModal();
-
-        if (result == mrYes)
-          record = term;
-      }
+      case termTabEnum   : record = getActiveOrViewRecord(activeRecord(), viewRecord());                           break;
+      case personTabEnum : record = getActiveOrViewRecord(activeRecord(), personHyperTab().getCurInvestigation()); break;
+      default            : record = activeRecord();                                                                break;
     }
-    else
-      record = activeRecord();
 
     if (record == null)
     {
@@ -2234,6 +2238,17 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static HDT_Record getInitialTabRecord(RecordType type, String prefID)
+  {
+    HDT_Record record = db.records(type).getByID(db.prefs.getInt(prefID, -1));
+    if (record != null) return record;
+
+    return db.records(type).size() > 0 ? db.records(type).getByKeyNdx(0) : null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void loadDB(boolean creatingNew)
   {
     if (loadDataFromDisk(creatingNew) == false)
@@ -2245,19 +2260,19 @@ public final class MainCtrlr
       return;
     }
 
-    saveViewToViewsTab(new HyperView<>(personTabEnum  , db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
-    saveViewToViewsTab(new HyperView<>(instTabEnum    , db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
-    saveViewToViewsTab(new HyperView<>(debateTabEnum  , db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
-    saveViewToViewsTab(new HyperView<>(positionTabEnum, db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
-    saveViewToViewsTab(new HyperView<>(argumentTabEnum, db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
-    saveViewToViewsTab(new HyperView<>(workTabEnum    , db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
+    saveViewToViewsTab(new HyperView<>(personTabEnum  , getInitialTabRecord(hdtPerson     , PREF_KEY_PERSON_ID     )));
+    saveViewToViewsTab(new HyperView<>(instTabEnum    , getInitialTabRecord(hdtInstitution, PREF_KEY_INSTITUTION_ID)));
+    saveViewToViewsTab(new HyperView<>(debateTabEnum  , getInitialTabRecord(hdtDebate     , PREF_KEY_DEBATE_ID     )));
+    saveViewToViewsTab(new HyperView<>(positionTabEnum, getInitialTabRecord(hdtPosition   , PREF_KEY_POSITION_ID   )));
+    saveViewToViewsTab(new HyperView<>(argumentTabEnum, getInitialTabRecord(hdtArgument   , PREF_KEY_ARGUMENT_ID   )));
+    saveViewToViewsTab(new HyperView<>(workTabEnum    , getInitialTabRecord(hdtWork       , PREF_KEY_WORK_ID       )));
 
-    HDT_Concept concept = nullSwitch(db.terms.getByID(db.prefs.getInt(PREF_KEY_TERM_ID, -1)), null, term -> term.concepts.get(0));
+    HDT_Concept concept = nullSwitch((HDT_Term)getInitialTabRecord(hdtTerm, PREF_KEY_TERM_ID), null, term -> term.concepts.get(0));
 
     saveViewToViewsTab(new HyperView<>(termTabEnum,     concept));
 
-    saveViewToViewsTab(new HyperView<>(fileTabEnum    , db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
-    saveViewToViewsTab(new HyperView<>(noteTabEnum    , db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
+    saveViewToViewsTab(new HyperView<>(fileTabEnum    , getInitialTabRecord(hdtMiscFile   , PREF_KEY_FILE_ID       )));
+    saveViewToViewsTab(new HyperView<>(noteTabEnum    , getInitialTabRecord(hdtNote       , PREF_KEY_NOTE_ID       )));
     saveViewToViewsTab(new HyperView<>(queryTabEnum   , null));
     saveViewToViewsTab(new HyperView<>(treeTabEnum    , null));
 
@@ -2354,7 +2369,7 @@ public final class MainCtrlr
     {
       lblStatus.setText("");
       updateTopicalFolders();
-      queryHyperTab().clear();
+      queryHyperTab().clear(true);
 
       gpBottom.setDisable(false);
       queryHyperTab().enable(true);
@@ -2549,7 +2564,9 @@ public final class MainCtrlr
    * @param record If a record is passed in, use that as the active record; it will likely
    * be the record set in the active HyperView, rather than the one selected in the UI.
    * <br>
-   * If the parameter is null, the currently selected record in the UI is used
+   * <p>If the parameter is null, the currently selected record in the UI is used.
+   * <br>
+   * <p>The parameter is ignored if the active tab is not Tree or Queries.
    */
   public void update(HDT_Record record)
   {
@@ -2607,16 +2624,17 @@ public final class MainCtrlr
       viewSequence.saveViewToCurrentSlotAndTab(new HyperView<>(tabEnum, null));
 
     updateBottomPanel(true, true);
-    tab.clear();
 
     if (HDT_Record.isEmpty(record))
     {
+      tab.clear(true);
       tab.enable(false);
       return;
     }
 
+    tab.clear(false);
     tab.enable(true);
-    tab.update(updateRecord);
+    tab.update(true);
     record.viewNow();
   }
 

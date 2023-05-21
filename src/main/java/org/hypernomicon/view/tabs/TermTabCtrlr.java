@@ -794,12 +794,12 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     if (frmSelectConcept.showModal())
     {
-      if (concept.glossary.get() != frmSelectConcept.getGlossary() &&
+      if ((concept.glossary.get() != frmSelectConcept.getGlossary()) &&
           ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false)))
       {
         if (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\". Proceed?") == false)
         {
-          ui.update();
+          ui.update(); // This scenario cannot happen if the user chose to create a new term record because then, the glossary doesn't change.
           return;
         }
 
@@ -810,6 +810,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       switchToDifferentTab();
 
       tpConcepts.getTabs().remove(getConceptTab(concept));
+
+      conceptToTextViewInfo.remove(concept);
 
       curTerm.concepts.remove(concept);
       frmSelectConcept.getTerm().concepts.add(concept);
@@ -893,6 +895,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       switchToDifferentTab();
 
     tpConcepts.getTabs().remove(getConceptTab(concept));
+    conceptToTextViewInfo.remove(concept);
     db.deleteRecord(concept);
 
     return true;
@@ -917,6 +920,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     concept.glossary.set(glossary);
     concept.sense.set(sense);
 
+    conceptToTextViewInfo.put(concept, new TextViewInfo(concept));
+
     tpConcepts.getTabs().add(new ConceptTab(concept));
 
     return concept;
@@ -925,9 +930,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
-    super.clear();
+    super.clear(resetRecord);
 
     conceptToTextViewInfo.clear();
 
@@ -939,6 +944,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     alreadyChangingTab = false;
 
     tpConcepts.getTabs().get(0).setContent(apDescription);
+
+    curTerm    = resetRecord ? null : HDT_Record.getCurrentInstance(curTerm);
+    curConcept = resetRecord ? null : HDT_Record.getCurrentInstance(curConcept);
 
     htGlossaries .clear();
     htSubConcepts.clear();

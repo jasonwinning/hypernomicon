@@ -103,7 +103,7 @@ public final class DesktopUtil
     if (url.contains(":") == false)
       return new URI(url);
 
-    int pos = url.indexOf(":");
+    int pos = url.indexOf(':');
     String scheme = url.substring(0, pos),
            ssp = safeSubstring(url, pos + 1, url.length());
 
@@ -119,7 +119,7 @@ public final class DesktopUtil
       }
     }
 
-    pos = ssp.indexOf("#");
+    pos = ssp.indexOf('#');
     String fragment = safeSubstring(ssp, pos + 1, ssp.length());
     ssp = ssp.substring(0, pos);
 

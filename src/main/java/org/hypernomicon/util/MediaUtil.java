@@ -313,9 +313,7 @@ public final class MediaUtil
     if ((type1 != hdtNone) && (type2 == hdtNone)) return type1.compareTo(hdtWork);
     if ((type2 != hdtNone) && (type1 == hdtNone)) return hdtWork.compareTo(type2);
 
-    if ((type1 == hdtNone) && (type2 == hdtNone)) return strCompResult;
-
-    return type1.compareTo(type2);
+    return type1 == hdtNone ? strCompResult : type1.compareTo(type2);
   }
 
 //---------------------------------------------------------------------------

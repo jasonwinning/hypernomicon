@@ -180,19 +180,16 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (curQC.inReportMode())
       {
-        MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo((HDT_Record)null));
+        MainTextUtil.handleJSEvent("", webView.getEngine());
         return;
       }
 
       HDT_Record record = curQC.resultsTable.selectedRecord();
       if (record == null) return;
 
-      String mainText = "";
+      String mainText = record.hasDesc() ? ((HDT_RecordWithDescription) record).getDesc().getHtml() : "";
 
-      if (record.hasDesc())
-        mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
-
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo((HDT_Record)null));
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
@@ -202,13 +199,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (newState == Worker.State.SUCCEEDED)
       {
         if ((curQC.getRecordToHilite() != null) && ui.currentFindInDescriptionText().isBlank())
-        {
           highlighter.hiliteAlreadyTagged();
-        }
         else
-        {
           highlighter.hilite(true);
-        }
       }
     });
 
@@ -328,7 +321,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
     clearingViews = true;
 

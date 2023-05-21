@@ -372,7 +372,7 @@ public class HyperPath
     if (FilePath.isEmpty(newFileName) == false)
     {
       newFileName = newFileName.getNameOnly();
-      Set<HyperPath> set = db.filenameMap.computeIfAbsent(newFileName.toString(), k -> ConcurrentHashMap.newKeySet());
+      Set<HyperPath> set = db.filenameMap.computeIfAbsent(newFileName.toString(), newFileNameStr -> ConcurrentHashMap.newKeySet());
 
       set.add(this);
     }

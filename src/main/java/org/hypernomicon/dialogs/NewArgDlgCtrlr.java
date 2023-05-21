@@ -38,7 +38,6 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
 import org.hypernomicon.view.populators.Populator;
@@ -174,7 +173,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     tfTargetName.setText(target.name());
 
-    MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), view.getEngine(), new TextViewInfo((HDT_Record)null), null);
+    MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), view.getEngine());
 
     reviseSuggestions();
 

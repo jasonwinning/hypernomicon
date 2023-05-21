@@ -45,12 +45,15 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int size()               { return endNdx - startNdx; }
-  @Override public boolean isEmpty()        { return size() > 0; }
-  @Override public void clear()             { while (endNdx > startNdx) remove(0); }
-  @Override public HDT_ObjType get(int ndx) { return parentList.get(startNdx + ndx); }
-  @Override public Object[] toArray()       { return relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx).toArray(); }
-  @Override public <T> T[] toArray(T[] a)   { return relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx).toArray(a); }
+  @Override public int size()                { return endNdx - startNdx; }
+  @Override public boolean isEmpty()         { return size() > 0; }
+  @Override public void clear()              { while (endNdx > startNdx) remove(0); }
+  @Override public HDT_ObjType get(int ndx)  { return parentList.get(startNdx + ndx); }
+  @Override public Object[] toArray()        { return relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx).toArray(); }
+  @Override public <T> T[] toArray(T[] a)    { return relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx).toArray(a); }
+  @Override public int indexOf(Object o)     { return IntStream.range(startNdx, endNdx).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
+  @Override public int lastIndexOf(Object o) { return IntStream.iterate(endNdx - 1, ndx -> ndx >= startNdx, ndx -> ndx - 1).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
+
 
   @Override public boolean contains(Object o)                    { return IntStream.range(startNdx, endNdx).anyMatch(ndx -> parentList.get(ndx) == o); }
   @Override public boolean containsAll(Collection<?> c)          { return c.stream().allMatch(this::contains); }
@@ -194,30 +197,6 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
     endNdx = endNdx + (parentList.size() - oldSize);
 
     return record;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int indexOf(Object o)
-  {
-    for (int ndx = startNdx; ndx < endNdx; ndx++)
-      if (get(ndx) == o)
-        return ndx;
-
-    return -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int lastIndexOf(Object o)
-  {
-    for (int ndx = endNdx - 1; ndx >= startNdx; ndx--)
-      if (get(ndx) == o)
-        return ndx;
-
-    return -1;
   }
 
 //---------------------------------------------------------------------------

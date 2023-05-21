@@ -73,6 +73,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Control;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.SortType;
@@ -178,7 +179,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     this.mainCol = mainCol;
     this.canAddRows = canAddRows;
 
-    if (prefID.length() > 0)
+    if (safeStr(prefID).length() > 0)
       registerTable(tv, prefID, dialog);
 
     filteredRows = new FilteredList<>(rows, row -> true);
@@ -242,21 +243,39 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       HyperDlg dialog = dialogs.get(prefID);
 
       if ((dialog == null) || dialog.shownAlready())
-        saveColWidthsForTable(tv.getColumns(), prefID, true);
+        saveColWidthsForTable(tv, tv.getColumns(), prefID);
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType, ColType extends TableColumnBase<RowType, ?>> void saveColWidthsForTable(Iterable<ColType> columns, String prefID, boolean rescale)
+  private static final class ColumnSettings
   {
+    private ColumnSettings(int oldNdx, double oldWidth, boolean defVisible)
+    {
+      this.oldNdx = oldNdx;
+      this.oldWidth = oldWidth;
+      this.defVisible = defVisible;
+    }
+
+    private final int oldNdx;
+    private final double oldWidth;
+    private final boolean defVisible;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Widths are saved to preferences as scaled
+
+  public static <RowType, ColType extends TableColumnBase<RowType, ?>> void saveColWidthsForTable(Control tv, Iterable<ColType> columns, String prefID)
+  {
+    assert(getIsScaled(tv));
+
     columns.forEach(col ->
     {
       double newWidth = col.getWidth();
-
-      if ((newWidth > 0.0) && rescale)
-        newWidth = newWidth / displayScale;
 
       ColumnSettings colSettings = (ColumnSettings) col.getUserData();
 
@@ -282,31 +301,20 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class ColumnSettings
+  // Widths are saved to preferences as scaled
+
+  public static <RowType, ColType extends TableColumnBase<RowType, ?>> void loadColWidthsForTable(Control tv, List<ColType> columns, String prefID)
   {
-    private ColumnSettings(int oldNdx, double oldWidth, boolean defVisible)
-    {
-      this.oldNdx = oldNdx;
-      this.oldWidth = oldWidth;
-      this.defVisible = defVisible;
-    }
+    boolean unscale = getIsScaled(tv) == false;
 
-    private final int oldNdx;
-    private final double oldWidth;
-    private final boolean defVisible;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static <RowType, ColType extends TableColumnBase<RowType, ?>> void loadColWidthsForTable(List<ColType> columns, String prefID)
-  {
     for (int numCols = columns.size(), ndx = 1; ndx <= numCols; ndx++)
     {
       ColType col = columns.get(ndx - 1);
       double width = app.prefs.getDouble(prefID + "ColWidth" + ndx, -1.0);
 
-      col.setUserData(new ColumnSettings(ndx, width, col.isVisible()));
+      col.setUserData(new ColumnSettings(ndx, width, col.isVisible())); // ColumnSettings always has scaled value
+
+      if (unscale) width = width / displayScale;
 
       if ((width > 0.0) && col.isResizable())
         col.setPrefWidth(width);
@@ -327,7 +335,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     if (dialog != null)
       dialogs.put(prefID, dialog);
 
-    loadColWidthsForTable(tv.getColumns(), prefID);
+    loadColWidthsForTable(tv, tv.getColumns(), prefID);
   }
 
 //---------------------------------------------------------------------------

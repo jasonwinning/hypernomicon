@@ -1478,7 +1478,7 @@ public final class HyperDB
 
   private void addRootFolder()
   {
-    filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), k -> ConcurrentHashMap.newKeySet()).add(getRootFolder().getPath());
+    filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), rootFolderName -> ConcurrentHashMap.newKeySet()).add(getRootFolder().getPath());
   }
 
 //---------------------------------------------------------------------------
@@ -2392,7 +2392,7 @@ public final class HyperDB
   public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithPath keyWorkRecord, boolean affirm)
   {
     if (affirm)
-      keyWorkIndex.computeIfAbsent(keyWorkRecord, k -> new HashSet<>()).add(record);
+      keyWorkIndex.computeIfAbsent(keyWorkRecord, _keyWorkRecord -> new HashSet<>()).add(record);
     else
       nullSwitch(keyWorkIndex.get(keyWorkRecord), set -> set.remove(record));
 

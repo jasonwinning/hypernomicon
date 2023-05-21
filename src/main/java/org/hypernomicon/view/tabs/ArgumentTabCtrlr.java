@@ -294,13 +294,15 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
+  @Override public void clear(boolean resetRecord)
   {
-    super.clear();
+    super.clear(resetRecord);
 
-    htParents.clear();
+    curArgument = resetRecord ? null : HDT_Record.getCurrentInstance(curArgument);
+
+    htParents  .clear();
     htWhereMade.clear();
-    htCounters.clear();
+    htCounters .clear();
   }
 
 //---------------------------------------------------------------------------
