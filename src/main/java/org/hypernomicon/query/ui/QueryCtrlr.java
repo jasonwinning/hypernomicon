@@ -68,6 +68,7 @@ import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.ui.ColumnGroup.*;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.QueryPopulator;
@@ -120,6 +121,7 @@ public final class QueryCtrlr
   private Tab tab;
   private QueryFavorite fav = null;
   private HDT_Record curResult = null;
+  private int scrollPos = 0;
 
   ResultsTable resultsTable;
 
@@ -359,7 +361,7 @@ public final class QueryCtrlr
 
     tvResults.getSelectionModel().selectedIndexProperty().addListener((ob, oldValue, newValue) ->
     {
-      refreshView(newValue.intValue());
+      refreshView(newValue.intValue(), false);
       tabPane.requestLayout();
     });
 
@@ -395,10 +397,10 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refreshView(boolean refreshTable)
+  public void refreshView(boolean activatingTab)
   {
     if (inRecordMode)
-      refreshView(tvResults.getSelectionModel().getSelectedIndex());
+      refreshView(tvResults.getSelectionModel().getSelectedIndex(), activatingTab);
     else
     {
       ui.updateBottomPanel(false, false);
@@ -408,14 +410,14 @@ public final class QueryCtrlr
       setPreview();
     }
 
-    if (refreshTable) tvResults.refresh();
+    if (activatingTab) tvResults.refresh();
     tabPane.requestLayout();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void refreshView(int selRowNdx)
+  private void refreshView(int selRowNdx, boolean activatingTab)
   {
     curResult = (resultsBackingList.isEmpty() || selRowNdx < 0) ? null : resultsBackingList.get(selRowNdx).getRecord();
 
@@ -429,7 +431,9 @@ public final class QueryCtrlr
     {
       String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
 
-      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), 0, ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
+      int scrollPos = queriesTabCtrlr.getUseTextViewInfo() ? queriesTabCtrlr.getView().getTextInfo().scrollPos : (activatingTab ? this.scrollPos : 0);
+
+      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), scrollPos, ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
     }
 
     setPreview();
@@ -1186,6 +1190,8 @@ public final class QueryCtrlr
   {
     spMain .showDetailNodeProperty().unbind();
     spLower.showDetailNodeProperty().unbind();
+
+    scrollPos = MainTextUtil.webEngineScrollPos(webView.getEngine());
 
     removeFromParent(webView);
   }

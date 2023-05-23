@@ -66,6 +66,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   private final TabEnum tabEnum;
 
   private HyperView<HDT_CT> view = null;
+  private boolean useTextViewInfo = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -98,6 +99,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public abstract void getDividerPositions();
 
   public MainTextWrapper mainTextWrapper() { return null; }
+  public boolean getUseTextViewInfo()      { return useTextViewInfo; }
   public void rescale()                    { return; }
   public int recordCount()                 { return db.records(type()).size(); }
   public final int activeID()              { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
@@ -127,8 +129,14 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   public final void update(boolean updateRecord)
   {
-    if (updateRecord) setRecord(view.getViewRecord());
+    if (updateRecord)
+    {
+      useTextViewInfo = true;
+      setRecord(view.getViewRecord());
+    }
+
     updateFromRecord();
+    useTextViewInfo = false;
   }
 
 //---------------------------------------------------------------------------

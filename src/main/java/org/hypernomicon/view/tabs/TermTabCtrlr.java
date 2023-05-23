@@ -792,30 +792,36 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(concept);
 
-    if (frmSelectConcept.showModal())
+    if (frmSelectConcept.showModal() == false)
     {
-      if ((concept.glossary.get() != frmSelectConcept.getGlossary()) &&
-          ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false)))
-      {
-        if (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\". Proceed?") == false)
-        {
-          ui.update(); // This scenario cannot happen if the user chose to create a new term record because then, the glossary doesn't change.
-          return;
-        }
+      ui.update();
+      return;
+    }
 
-        List.copyOf(concept.parentConcepts).forEach(concept::removeParent);
-        List.copyOf(concept.subConcepts).forEach(subConcept -> subConcept.removeParent(concept));
+    if ((concept.glossary.get() != frmSelectConcept.getGlossary()) &&
+        ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false)))
+    {
+      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\". Proceed?") == false)
+      {
+        ui.update(); // This scenario cannot happen if the user chose to create a new term record because then, the glossary doesn't change.
+        return;
       }
 
-      switchToDifferentTab();
+      List.copyOf(concept.parentConcepts).forEach(concept::removeParent);
+      List.copyOf(concept.subConcepts).forEach(subConcept -> subConcept.removeParent(concept));
+    }
 
-      tpConcepts.getTabs().remove(getConceptTab(concept));
+    switchToDifferentTab();
 
-      conceptToTextViewInfo.remove(concept);
+    tpConcepts.getTabs().remove(getConceptTab(concept));
 
-      curTerm.concepts.remove(concept);
-      frmSelectConcept.getTerm().concepts.add(concept);
+    conceptToTextViewInfo.remove(concept);
 
+    curTerm.concepts.remove(concept);
+    frmSelectConcept.getTerm().concepts.add(concept);
+
+    if (frmSelectConcept.getCreateNew() == false)
+    {
       concept.glossary.set(frmSelectConcept.getGlossary());
 
       HDT_ConceptSense sense = frmSelectConcept.getSense();
@@ -830,11 +836,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       }
 
       concept.sense.set(sense);
-
-      ui.goToRecord(concept, false);
     }
-    else
-      ui.update();
+
+    ui.goToRecord(concept, false);
   }
 
 //---------------------------------------------------------------------------

@@ -81,7 +81,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private final Highlighter highlighter;
 
   private TreeTableView<TreeRow> ttv;
-  private boolean useViewInfo = false;
   private boolean loaded = false;
   private String lastTextHilited = "";
   String textToHilite = "";
@@ -387,7 +386,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
           String desc = record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getHtml() : "";
 
-          MainTextWrapper.setReadOnlyHTML(desc, webView.getEngine(), useViewInfo ? getView().getTextInfo().scrollPos : 0);
+          MainTextWrapper.setReadOnlyHTML(desc, webView.getEngine(), getUseTextViewInfo() ? getView().getTextInfo().scrollPos : 0);
           clearWV = false;
         }
       }
@@ -579,9 +578,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     if ((record != null) && HDT_Record.isEmpty(record)) return; // Record was probably just deleted; go with whatever is currently selected
 
-    this.useViewInfo = true;
     tree.selectRecord(record, record == null ? 0 : record.keyNdx(), false);
-    this.useViewInfo = false;
   }
 
 //---------------------------------------------------------------------------

@@ -52,6 +52,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   private final HDT_Concept oldConcept;
 
   private HDT_Glossary glossary;
+  private HDT_ConceptSense sense;
   private boolean createNew, alreadyChanging = false;
   private HDT_Term term;
 
@@ -61,7 +62,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   public HDT_Term         getTerm()      { return term; }
   public boolean          getCreateNew() { return createNew; }
   public HDT_Glossary     getGlossary()  { return glossary != null ? glossary : hcbGlossary.selectedRecord(); }
-  public HDT_ConceptSense getSense()     { return hcbSense.selectedRecord(); }
+  public HDT_ConceptSense getSense()     { return sense != null ? sense : hcbSense.selectedRecord(); }
   public String           getSenseText() { return ultraTrim(hcbSense.getText()); }
 
 //---------------------------------------------------------------------------
@@ -182,10 +183,13 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       return;
     }
 
-    glossary = oldConcept == null ?
-      generalGlossary
-    :
-      oldConcept.glossary.get();
+    if (oldConcept != null)
+    {
+      glossary = oldConcept.glossary.get();
+      sense = oldConcept.sense.get();
+    }
+    else
+      glossary = generalGlossary;
 
     okClicked = true;
     createNew = true;

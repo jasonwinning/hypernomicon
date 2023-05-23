@@ -768,7 +768,7 @@ public final class MainCtrlr
     mnuAutoImport.setSelected(app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
     mnuAutoImport.setOnAction(event -> app.prefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
 
-    mnuChangeID.setVisible(app.debugging);
+    setAllVisible(app.debugging, mnuChangeID, mnuSaveReloadAll);
 
 //---------------------------------------------------------------------------
 
@@ -1388,13 +1388,11 @@ public final class MainCtrlr
 
     apStatus.setDisable(false);
 
-    mnuSaveReloadAll.setDisable(disabled || (app.debugging == false));
-
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
     enableAllIff(enabled, mnuCloseDatabase,      mnuImportWork,     mnuImportFile,       mnuExitNoSave, mnuChangeID,           mnuChangeFieldOrder.getParentMenu(),
                           mnuImportBibClipboard, mnuImportBibFile,  mnuRevertToDiskCopy, btnFileMgr,    btnBibMgr,             mnuNewRank.getParentMenu(),
-                          btnPreviewWindow,      btnMentions,       btnAdvancedSearch,   btnSaveAll,    mnuAddToQueryResults);
+                          btnPreviewWindow,      btnMentions,       btnAdvancedSearch,   btnSaveAll,    mnuAddToQueryResults,  mnuSaveReloadAll);
     if (disabled)
       tree().clear();
 
@@ -2093,10 +2091,8 @@ public final class MainCtrlr
 
   private static HDT_Record getActiveOrViewRecord(HDT_Record activeRecord, HDT_Record viewRecord)
   {
-    if (activeRecord == null) return null;
-    if (viewRecord   == null) return activeRecord;
-
-    if (activeRecord == viewRecord) return activeRecord;
+    if ((activeRecord == null) || (viewRecord == null) || (activeRecord == viewRecord))
+      return activeRecord;
 
     DialogResult result = new PopupDialog("Which record?")
 
