@@ -1306,11 +1306,14 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public boolean isProtectedRecord(HDT_Record record, boolean checkSubfolders)
+  {
+    return isProtectedRecord(record.getID(), record.getType(), checkSubfolders);
+  }
+
   public boolean isProtectedRecord(int id, RecordType type, boolean checkSubfolders)
   {
-    if (isUnstoredRecord(id, type)) return true;
-
-    return (type == hdtFolder) && isSpecialFolder(id, checkSubfolders);
+    return isUnstoredRecord(id, type) || ((type == hdtFolder) && isSpecialFolder(id, checkSubfolders));
   }
 
 //---------------------------------------------------------------------------
@@ -1337,6 +1340,11 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static boolean isUnstoredRecord(HDT_Record record)
+  {
+    return isUnstoredRecord(record.getID(), record.getType());
+  }
+
   public static boolean isUnstoredRecord(int id, RecordType type)
   {
     switch (type)
@@ -1362,7 +1370,7 @@ public final class HyperDB
       return;
     }
 
-    if (HDT_Record.isEmpty(record) || isProtectedRecord(record.getID(), record.getType(), true))
+    if (HDT_Record.isEmpty(record) || isProtectedRecord(record, true))
     {
       messageDialog("Unable to delete record.", mtError);
       return;
@@ -1936,7 +1944,7 @@ public final class HyperDB
 
   void addToInitialNavList(HDT_Record record)
   {
-    if (isUnstoredRecord(record.getID(), record.getType())) return;
+    if (isUnstoredRecord(record)) return;
 
     switch (record.getType())
     {
@@ -2304,7 +2312,7 @@ public final class HyperDB
 
     HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
 
-    if ((folder != null) && folder.filePath().equals(filePath) && isProtectedRecord(folder.getID(), folder.getType(), checkSubfolders))
+    if ((folder != null) && folder.filePath().equals(filePath) && isProtectedRecord(folder, checkSubfolders))
       return true;
 
     FilePath xmlPath = xmlPath();

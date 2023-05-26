@@ -331,7 +331,7 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // This function is what seems to have mostly fixed the HTML editor bugs
+  // The HTMLEditor is buggy if it is a child of multiple nodes
 
   public static Parent removeFromParent(Node node)
   {
@@ -780,19 +780,20 @@ public final class UIUtil
   private static final Map<Control, Double> rowHeight = new HashMap<>();
   private static final HashBasedTable<Control, Orientation, ScrollBar> sbMap = HashBasedTable.create();
 
-  public static ScrollBar getScrollBar(Control ctrl, Orientation o)
+  public static ScrollBar getScrollBar(Control ctrl, Orientation orientation)
   {
-    ScrollBar sb = sbMap.get(ctrl, o);
+    ScrollBar sb = sbMap.get(ctrl, orientation);
     if (sb != null) return sb;
 
-    for (Node n: ctrl.lookupAll(".scroll-bar"))
+    for (Node node : ctrl.lookupAll(".scroll-bar"))
     {
-      if (n instanceof ScrollBar)
+      if (node instanceof ScrollBar)
       {
-        sb = (ScrollBar) n;
-        if (sb.getOrientation() == o)
+        sb = (ScrollBar) node;
+
+        if (sb.getOrientation() == orientation)
         {
-          sbMap.put(ctrl, o, sb);
+          sbMap.put(ctrl, orientation, sb);
           return sb;
         }
       }

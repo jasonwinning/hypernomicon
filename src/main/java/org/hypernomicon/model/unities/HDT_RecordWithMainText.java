@@ -198,7 +198,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
       default: break;
     }
 
-    if ((parent == null) || isUnstoredRecord(parent.getID(), parent.getType())) return;
+    if ((parent == null) || isUnstoredRecord(parent)) return;
 
     boolean rc = db.runningConversion;
     db.runningConversion = true;

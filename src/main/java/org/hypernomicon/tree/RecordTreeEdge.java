@@ -222,7 +222,7 @@ class RecordTreeEdge
 
   boolean canDetachWithoutAttaching(boolean doDetach)
   {
-    if ((canDetach() == false) || HyperDB.isUnstoredRecord(obj.getID(), obj.getType()))
+    if ((canDetach() == false) || HyperDB.isUnstoredRecord(obj))
       return false;
 
     if (doDetach)

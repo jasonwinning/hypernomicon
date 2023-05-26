@@ -164,9 +164,9 @@ public class HDT_Hub extends HDT_RecordWithMainText
       return falseWithErrorMessage("Two records of the same type cannot be united.");
     if ((spoke1.isUnitable() == false) || (spoke2.isUnitable() == false))
       return falseWithErrorMessage("One or more of the records are not of a unitable type.");
-    if (isUnstoredRecord(spoke1.getID(), spoke1.getType()))
+    if (isUnstoredRecord(spoke1))
       return falseWithErrorMessage("That " + getTypeName(spoke1.getType()) + " record cannot be united to another record.");
-    if (isUnstoredRecord(spoke2.getID(), spoke2.getType()))
+    if (isUnstoredRecord(spoke2))
       return falseWithErrorMessage("That " + getTypeName(spoke2.getType()) + " record cannot be united to another record.");
 
     HDT_Hub hub;

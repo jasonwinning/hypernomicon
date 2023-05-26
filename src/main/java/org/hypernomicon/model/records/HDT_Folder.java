@@ -138,7 +138,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   {
     FilePath filePath = filePath();
 
-    if (db.isProtectedRecord(getID(), getType(), true))
+    if (db.isProtectedRecord(this, true))
       return falseWithErrorMessage("The folder \"" + filePath + "\" is in use by the database and cannot be deleted.");
 
     if (parentFolder() == null)
@@ -225,7 +225,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   {
     if ( ! (notes.isEmpty() && picturePeople.isEmpty() && workFiles.isEmpty() && miscFiles.isEmpty())) return false;
 
-    if (db.isProtectedRecord(getID(), getType(), false)) return false;
+    if (db.isProtectedRecord(this, false)) return false;
 
     return childFolders.stream().allMatch(HDT_Folder::hasNoNonFolderRecordDependencies);
   }

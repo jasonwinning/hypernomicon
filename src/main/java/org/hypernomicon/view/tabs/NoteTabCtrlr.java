@@ -184,7 +184,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     bp.setLeft(curNote.folder.isNull() ? btnCreateFolder : btnFolder);
 
-    bp.setDisable(isUnstoredRecord(curNote.getID(), hdtNote));
+    bp.setDisable(isUnstoredRecord(curNote));
 
     folderPath = curNote.filePath();
 

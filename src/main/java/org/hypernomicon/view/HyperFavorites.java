@@ -101,7 +101,7 @@ public class HyperFavorites
 
     public void removeFromList(List<MenuItem> items)
     {
-      nullSwitch(items.stream().map(item -> (QueryFavorite)item).filter(fav -> fav == this).findFirst().orElse(null),
+      nullSwitch(items.stream().map(item -> (QueryFavorite)item).filter(this::equals).findFirst().orElse(null),
                  items::remove);
     }
   }

@@ -485,7 +485,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     String typeName = getTypeName(record.getType());
 
-    if (isUnstoredRecord(record.getID(), record.getType()))
+    if (isUnstoredRecord(record))
     {
       messageDialog("That " + typeName + " cannot be renamed.", mtError);
       return;

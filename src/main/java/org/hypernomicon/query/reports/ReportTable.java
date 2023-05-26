@@ -35,12 +35,10 @@ public class ReportTable
 {
   private final TableView<HyperTableRow> tv;
   private ReportEngine reportEngine = null;
-  final private QueryCtrlr qc;
 
   public ReportTable(QueryCtrlr queryCtrlr)
   {
     tv = new TableView<>();
-    qc = queryCtrlr;
 
     setAnchors(tv, 0.0, 0.0, 0.0, 0.0);
 
@@ -49,7 +47,7 @@ public class ReportTable
 
     tv.setPlaceholder(new Label("There are no query results to display."));
 
-    tv.getSelectionModel().selectedItemProperty().addListener((ob, oldRow, newRow) -> qc.refreshView(false));
+    tv.getSelectionModel().selectedItemProperty().addListener((ob, oldRow, newRow) -> queryCtrlr.refreshView(false));
   }
 
   //---------------------------------------------------------------------------

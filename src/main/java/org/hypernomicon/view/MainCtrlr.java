@@ -1816,7 +1816,7 @@ public final class MainCtrlr
     clearAllTabsAndViews();
     lblStatus.setText("");
 
-    treeSelector.reset();
+    treeSelector.clear();
     closeWindows(false);
 
     try { db.close(null); }
@@ -2136,12 +2136,12 @@ public final class MainCtrlr
       return;
     }
 
-    QueryCtrlr curQC = queryHyperTab().getCurQueryCtrlr();
+    QueryCtrlr curQueryCtrlr = queryHyperTab().getCurQueryCtrlr();
 
-    for (ResultRow row : curQC.results())
+    for (ResultRow row : curQueryCtrlr.results())
       if (row.getRecord() == record) return;
 
-    curQC.addRecord(record, true);
+    curQueryCtrlr.addRecord(record, true);
   }
 
 //---------------------------------------------------------------------------
@@ -2433,7 +2433,7 @@ public final class MainCtrlr
 
     if (cantSaveRecord())
     {
-      treeSelector.reset();
+      treeSelector.clear();
       return;
     }
 
@@ -2477,7 +2477,7 @@ public final class MainCtrlr
   {
     if ((record == null) || (db.isLoaded() == false) || shuttingDown) return;
 
-    treeSelector.reset();
+    treeSelector.clear();
     HDT_WorkFile workFile = null;
 
     switch (record.getType())
@@ -2594,7 +2594,7 @@ public final class MainCtrlr
 
     int count = tab.recordCount();
 
-    treeSelector.reset();
+    treeSelector.clear();
 
     if (count > 0)
     {

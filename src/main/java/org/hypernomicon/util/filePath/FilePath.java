@@ -110,7 +110,7 @@ public class FilePath implements Comparable<FilePath>
   public FilePath getNameOnly() { return new FilePath(FilenameUtils.getName(toString())); }
 
   /**
-   * If this file is a directory, will return the entire path. If it is not a directory, will return the parent directory
+   * If this file is a directory, will return the entire path. If it is not a directory, will return the parent directory.
    */
   public FilePath getDirOnly() { return isDirectory() ? this : new FilePath(FilenameUtils.getFullPathNoEndSeparator(toString())); }
 

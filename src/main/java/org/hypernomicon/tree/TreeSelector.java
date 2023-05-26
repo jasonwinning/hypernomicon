@@ -28,12 +28,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.HDT_Glossary;
-import org.hypernomicon.model.records.HDT_Note;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -44,7 +39,7 @@ public class TreeSelector
   private HyperTableRow tableRow;
   private boolean baseIsSubj = true;
 
-  public TreeSelector()        { reset(); }
+  public TreeSelector()        { clear(); }
 
   public HDT_Record getBase()  { return base; }
   private HDT_Record getSubj() { return baseIsSubj ? base : target; }
@@ -54,12 +49,13 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void reset()
+  public void clear()
   {
     base = null;
     target = null;
     targetTypes.clear();
     baseIsSubj = true;
+    tableRow = null;
   }
 
 //---------------------------------------------------------------------------
@@ -72,7 +68,8 @@ public class TreeSelector
 
   public void reset(HDT_Record base, boolean baseIsSubj, HyperTableRow tableRow)
   {
-    reset();
+    clear();
+
     this.base = base;
     this.baseIsSubj = baseIsSubj;
     this.tableRow = tableRow;
@@ -100,7 +97,7 @@ public class TreeSelector
 
   public void linking(HDT_Record base, RecordType targetType)
   {
-    reset();
+    clear();
 
     this.base = base;
 
@@ -248,10 +245,10 @@ public class TreeSelector
     if (record2.getType() == record1.getType())
       return falseWithErrMsgCond(showErrMsg, "You cannot unite records of the same type.");
 
-    if (isUnstoredRecord(record1.getID(), record1.getType()))
+    if (isUnstoredRecord(record1))
       return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record1.getType()) + " record cannot be united with another record.");
 
-    if (isUnstoredRecord(record2.getID(), record2.getType()))
+    if (isUnstoredRecord(record2))
       return falseWithErrMsgCond(showErrMsg, "The selected " + getTypeName(record2.getType()) + " record cannot be united with another record.");
 
     if (record2.hasHub())
