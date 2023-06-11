@@ -20,6 +20,8 @@ package org.hypernomicon.bib.zotero;
 import org.hypernomicon.bib.BibEntity;
 import org.hypernomicon.util.json.JsonObj;
 
+//---------------------------------------------------------------------------
+
 public interface ZoteroEntity extends BibEntity
 {
 

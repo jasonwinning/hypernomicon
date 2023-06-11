@@ -25,14 +25,24 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflineBoolean extends HDI_OfflineBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   boolean boolValue = false;
+
+//---------------------------------------------------------------------------
 
   public HDI_OfflineBoolean(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
   }
+
+//---------------------------------------------------------------------------
 
   public boolean get()                 { return boolValue; }
   public void    set(boolean newValue) { boolValue = newValue; }

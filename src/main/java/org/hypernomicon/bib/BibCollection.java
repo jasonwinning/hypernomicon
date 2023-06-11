@@ -23,14 +23,19 @@ import org.hypernomicon.bib.zotero.ZoteroCollection;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
+//---------------------------------------------------------------------------
+
 public abstract class BibCollection implements BibEntity
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   protected JsonObj jObj;
 
   public abstract String getName();
   public abstract String getParentKey();
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void saveToDisk(JsonArray jArr) { jArr.add(jObj.clone()); }

@@ -44,6 +44,8 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public abstract class BibAuthors implements Iterable<BibAuthor>
 {
 

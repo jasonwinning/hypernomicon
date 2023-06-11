@@ -20,8 +20,14 @@ package org.hypernomicon.bib;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.wrappers.AbstractRow;
 
+//---------------------------------------------------------------------------
+
 public class BibEntryRow extends AbstractRow<HDT_Work, BibEntryRow>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final BibEntry<?, ?> entry;
 
   public BibEntryRow(BibEntry<?, ?> entry) { this.entry = entry; }

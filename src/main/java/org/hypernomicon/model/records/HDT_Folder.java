@@ -264,6 +264,8 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
 
+    fileManagerDlg.setNeedRefresh();
+
     return childFolder;
   }
 

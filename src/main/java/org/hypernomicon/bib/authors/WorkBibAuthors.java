@@ -22,11 +22,21 @@ import java.util.List;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.records.HDT_Work;
 
+//---------------------------------------------------------------------------
+
 public class WorkBibAuthors extends BibAuthors
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HDT_Work work;
 
+//---------------------------------------------------------------------------
+
   public WorkBibAuthors(HDT_Work work) { this.work = work; }
+
+//---------------------------------------------------------------------------
 
   @Override public boolean isEmpty() { return work.getAuthors().isEmpty(); }
 

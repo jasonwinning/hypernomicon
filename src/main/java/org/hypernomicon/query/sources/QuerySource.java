@@ -24,9 +24,17 @@ import java.util.function.Predicate;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public abstract class QuerySource extends AbstractCollection<HDT_Record>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static UnsupportedOperationException uoe() { return new UnsupportedOperationException(); }
+
+//---------------------------------------------------------------------------
 
   public enum QuerySourceType
   {
@@ -36,6 +44,8 @@ public abstract class QuerySource extends AbstractCollection<HDT_Record>
     QST_combinedFilteredRecords,
     QST_combinedUnfilteredRecords
   }
+
+//---------------------------------------------------------------------------
 
   public abstract QuerySourceType sourceType();
   public abstract RecordType recordType();
@@ -47,4 +57,8 @@ public abstract class QuerySource extends AbstractCollection<HDT_Record>
   @Override public boolean removeAll(Collection<?> c)                     { throw uoe(); }
   @Override public boolean removeIf(Predicate<? super HDT_Record> filter) { throw uoe(); }
   @Override public boolean retainAll(Collection<?> c)                     { throw uoe(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

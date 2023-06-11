@@ -26,9 +26,12 @@ import static org.hypernomicon.util.Util.*;
 
 import javafx.scene.control.TreeItem;
 
+//---------------------------------------------------------------------------
+
 public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends AbstractRow<HDT_T, RowType>>
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public abstract <HDT_T1 extends HDT_T> HDT_T1 getRecord();
@@ -37,6 +40,7 @@ public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends Abst
   public int        getRecordID          () { return nullSwitch(getRecord(), -1, HDT_Record::getID); }
   protected TreeItem<RowType> getTreeItem() { return null; }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   <HDT_T1 extends HDT_T> HDT_T1 getRecordByType(RecordType recordType)

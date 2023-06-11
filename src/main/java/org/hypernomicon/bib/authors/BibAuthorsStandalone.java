@@ -31,12 +31,17 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.SplitString;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public class BibAuthorsStandalone extends BibAuthors
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final EnumMap<AuthorType, List<BibAuthor>> authors = new EnumMap<>(AuthorType.class);
   private String oneLiner; // Sometimes all the authors appear in one line, in various formats and with various delimiting characters
+
+//---------------------------------------------------------------------------
 
   public BibAuthorsStandalone()
   {
@@ -44,6 +49,8 @@ public class BibAuthorsStandalone extends BibAuthors
     authors.put(AuthorType.editor    , new ArrayList<>());
     authors.put(AuthorType.translator, new ArrayList<>());
   }
+
+//---------------------------------------------------------------------------
 
   @Override public void add(BibAuthor author)   { authors.get(author.getType()).add(author); }
   @Override public boolean isEmpty()            { return listsAreEmpty() && safeStr(oneLiner).isEmpty(); }

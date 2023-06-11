@@ -24,12 +24,20 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.util.json.JsonObj;
 
+//---------------------------------------------------------------------------
+
 public class MendeleyFolder extends BibCollection implements MendeleyEntity
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public MendeleyFolder(JsonObj jObj)
   {
     update(jObj, false, false);
   }
+
+//---------------------------------------------------------------------------
 
   @Override public boolean isSynced()     { return true; }
   @Override public String getName()       { return jObj.getStr("name"); }

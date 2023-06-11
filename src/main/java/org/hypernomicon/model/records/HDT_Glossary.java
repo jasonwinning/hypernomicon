@@ -25,10 +25,18 @@ import java.util.List;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.relations.HyperSubjList;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Glossary extends HDT_RecordBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Glossary> parentGlossaries;
   public final HyperSubjList<HDT_Glossary, HDT_Concept> concepts;
+
+//---------------------------------------------------------------------------
 
   public HDT_Glossary(RecordState xmlState, HyperDataset<HDT_Glossary> dataset)
   {
@@ -38,7 +46,6 @@ public class HDT_Glossary extends HDT_RecordBase
     concepts = getSubjList(rtGlossaryOfConcept);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName()      { return name(); }

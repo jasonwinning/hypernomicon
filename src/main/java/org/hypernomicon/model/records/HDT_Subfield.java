@@ -26,11 +26,19 @@ import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Field;
 import org.hypernomicon.model.relations.HyperObjPointer;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Subfield extends HDT_RecordBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Person> persons;
 
   public final HyperObjPointer<HDT_Subfield, HDT_Field> field;
+
+//---------------------------------------------------------------------------
 
   public HDT_Subfield(RecordState xmlState, HyperDataset<HDT_Subfield> dataset)
   {
@@ -40,7 +48,6 @@ public class HDT_Subfield extends HDT_RecordBase
     field = getObjPointer(rtFieldOfSubfield);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName() { return name(); }

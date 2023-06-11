@@ -24,8 +24,14 @@ import java.util.function.Predicate;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public class FilteredQuerySource extends QuerySource
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final LinkedHashSet<HDT_Record> records;
   private final RecordType recordType;
 
@@ -39,7 +45,6 @@ public class FilteredQuerySource extends QuerySource
     records.removeIf(Predicate.not(origSource::contains));
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public int size()                      { return records.size(); }

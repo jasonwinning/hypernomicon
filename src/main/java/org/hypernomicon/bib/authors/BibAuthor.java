@@ -23,15 +23,22 @@ import org.hypernomicon.model.records.HDT_Person;
 
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public final class BibAuthor implements Cloneable
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public enum AuthorType { author, editor, translator }
+
+//---------------------------------------------------------------------------
 
   private final PersonName name;
   private final HDT_Person person;
   private final AuthorType type;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private BibAuthor(AuthorType type, HDT_Person person, PersonName name)
@@ -41,10 +48,11 @@ public final class BibAuthor implements Cloneable
     this.name = name;
   }
 
+//---------------------------------------------------------------------------
+
   public BibAuthor(AuthorType type, HDT_Person person) { this(type, person, null); }
   public BibAuthor(AuthorType type, PersonName name)   { this(type, null, name);   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public BibAuthor(AuthorType type, Author author)
@@ -54,7 +62,6 @@ public final class BibAuthor implements Cloneable
     name = person == null ? author.getName() : null;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public AuthorType getType()   { return type; }

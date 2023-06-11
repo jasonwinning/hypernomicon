@@ -227,6 +227,12 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
     addContextMenuItem("Show folder in system explorer", HDT_Note.class, HDT_Note::pathNotEmpty,
                        note -> highlightFileInExplorer(note.filePath()));
 
+    addContextMenuItem("Show nearest note ancestor's folder in File Manager", HDT_Note.class, note -> (note.pathNotEmpty() == false) && (note.getAncestorWithFolder() != null),
+                       note -> ui.goToFileInManager(note.getAncestorWithFolder().filePath()));
+
+    addContextMenuItem("Show nearest note ancestor's folder in system explorer", HDT_Note.class, note -> (note.pathNotEmpty() == false) && (note.getAncestorWithFolder() != null),
+                       note -> highlightFileInExplorer(note.getAncestorWithFolder().filePath()));
+
     addContextMenuItem("Assign to note record", HDT_Folder.class, HDT_Folder::pathNotEmpty,
                        folder ->
                        {

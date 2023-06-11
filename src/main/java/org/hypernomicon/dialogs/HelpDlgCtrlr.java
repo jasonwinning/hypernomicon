@@ -27,13 +27,16 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.web.WebView;
 
+//---------------------------------------------------------------------------
+
 public class HelpDlgCtrlr extends HyperDlg
 {
-  @FXML private WebView webView;
-
-  @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private WebView webView;
+
 //---------------------------------------------------------------------------
 
   public HelpDlgCtrlr()
@@ -58,6 +61,10 @@ public class HelpDlgCtrlr extends HyperDlg
       };
     }
   }
+
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

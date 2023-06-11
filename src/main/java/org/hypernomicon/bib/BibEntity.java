@@ -20,10 +20,20 @@ package org.hypernomicon.bib;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
+//---------------------------------------------------------------------------
+
 public interface BibEntity
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   boolean isSynced();
   void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
   String getKey();
   void saveToDisk(JsonArray jArr);
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

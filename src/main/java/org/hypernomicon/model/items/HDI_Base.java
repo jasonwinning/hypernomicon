@@ -20,15 +20,29 @@ package org.hypernomicon.model.items;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 
+//---------------------------------------------------------------------------
+
 public class HDI_Base
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HDI_Schema schema;
+
+//---------------------------------------------------------------------------
 
   HDI_Base(HDI_Schema schema)
   {
     this.schema = schema;
   }
 
+//---------------------------------------------------------------------------
+
   public HyperDataCategory getCategory() { return schema.getCategory(); }
   public HDI_Schema getSchema()          { return schema; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

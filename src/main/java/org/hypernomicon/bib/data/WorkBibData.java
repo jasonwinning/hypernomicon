@@ -31,16 +31,23 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class WorkBibData extends BibData
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HDT_Work work;
+
+//---------------------------------------------------------------------------
 
   public WorkBibData(HDT_Work work)
   {
     this.work = work;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public HDT_Work getWork()                   { return work; }

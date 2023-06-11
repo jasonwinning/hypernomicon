@@ -67,8 +67,11 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 {
+  private final String CREATE_FOLDER_CAPTION = "Create Folder",
+                       CREATE_FOLDER_TOOLTIP = "Create a new folder and assign it to this note";
+
   private final SplitMenuButton btnFolder = new SplitMenuButton();
-  private final Button btnBrowse = new Button("..."), btnCreateFolder = new Button("Create Folder");
+  private final Button btnBrowse = new Button("..."), btnCreateFolder = new Button(CREATE_FOLDER_CAPTION);
   private final TextField tfFolder = new TextField();
   private final BorderPane bp;
   private final HyperTable htParents, htSubnotes, htMentioners;
@@ -84,6 +87,16 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     tvParents.getColumns().remove(2);
 
+    tvParents.getColumns().get(2).setPrefWidth(300.0);
+
+    TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>("Text");
+    col.setPrefWidth(300.0);
+    tvParents.getColumns().add(col);
+
+    col = new TableColumn<>("Folder");
+    col.setPrefWidth(300.0);
+    tvParents.getColumns().add(col);
+
     tvLeftChildren .setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
     tvRightChildren.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
@@ -97,19 +110,8 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     spMain.setDividerPosition(1, 0.8);
 
-    btnFolder.setText("Folder:");
-    addFolderMenuItem("Show in system explorer", event -> launchFile(folderPath));
-    addFolderMenuItem("Show in file manager"   , event -> ui.goToFileInManager(folderPath));
-    addFolderMenuItem("Copy path to clipboard" , event -> copyToClipboard(folderPath.toString()));
-    addFolderMenuItem("Unassign folder"        , event ->
-    {
-      if (ui.cantSaveRecord()) return;
-      curNote.folder.set(null);
-      ui.update();
-    });
-
-    setToolTip(btnFolder, "Show folder in system explorer");
-    setToolTip(btnCreateFolder, "Create a new folder and assign it to this note");
+    refreshFolderButton(true);
+    setToolTip(btnCreateFolder, CREATE_FOLDER_TOOLTIP);
 
     BorderPane.setMargin(btnBrowse, new Insets(0, 2, 0, 0));
     BorderPane.setMargin(tfFolder , new Insets(0, 4, 0, 4));
@@ -136,8 +138,16 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htParents.addActionCol(ctGoBtn, 2);
     htParents.addActionCol(ctBrowseBtn, 2);
-    htParents.addCol(hdtNote, ctDropDownList);
+    htParents.addColWithUpdateHandler(hdtNote, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      HDT_Note parentNote = cellVal.getRecord();
+      updateRelativeRow(row, parentNote, 3, true);
+    });
 
+    htParents.addLabelCol(hdtNote, smTextSimple);
+    htParents.addLabelCol(hdtNote, smTextSimple);
+
+    htParents.addDefaultMenuItems();
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);
 
@@ -156,7 +166,6 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     db.addMentionsNdxCompleteHandler(this::updateMentioners);
 
-    btnFolder      .setOnAction(event -> launchFile(folderPath));
     btnCreateFolder.setOnAction(event -> createFolder());
     btnBrowse      .setOnAction(event -> browseClick());
 
@@ -176,30 +185,116 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // This assumes that either the current note has a folder, or one of its ancestors has a folder
+
+  private void refreshFolderButton(boolean curHasFolder)
+  {
+    btnFolder.getItems().clear();
+
+    if (curHasFolder)
+    {
+      btnFolder.setText("Folder:");
+      addFolderMenuItem("Show in system explorer", event -> launchFile(folderPath));
+      addFolderMenuItem("Show in File Manager"   , event -> ui.goToFileInManager(folderPath));
+      addFolderMenuItem("Copy path to clipboard" , event -> copyToClipboard(folderPath.toString()));
+      addFolderMenuItem("Unassign folder"        , event ->
+      {
+        if (ui.cantSaveRecord()) return;
+        curNote.folder.set(null);
+        ui.update();
+      });
+
+      btnFolder.setOnAction(event -> launchFile(folderPath));
+
+      setToolTip(btnFolder, "Show folder in system explorer");
+
+      return;
+    }
+
+    btnFolder.setText(CREATE_FOLDER_CAPTION);
+
+    HDT_Note ancestor = curNote.getAncestorWithFolder();
+
+    addFolderMenuItem("Show folder for note \"" + ancestor.name() + "\" in system explorer", event -> launchFile(ancestor.folder.get().filePath()));
+    addFolderMenuItem("Show folder for note \"" + ancestor.name() + "\" in File Manager"   , event -> ui.goToFileInManager(ancestor.folder.get().filePath()));
+
+    btnFolder.setOnAction(event -> btnCreateFolder.fire());
+
+    setToolTip(btnFolder, CREATE_FOLDER_TOOLTIP);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addFolderMenuItem(String text, EventHandler<ActionEvent> handler)
+  {
+    MenuItem menuItem = new MenuItem(text);
+    menuItem.setOnAction(handler);
+    btnFolder.getItems().add(menuItem);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void updateFromRecord()
   {
     super.updateFromRecord();
 
-    tfFolder.setText(curNote.getFolderStr());
+    tfFolder.setText(curNote.getFolderStr(true));
 
-    bp.setLeft(curNote.folder.isNull() ? btnCreateFolder : btnFolder);
+    if (curNote.getAncestorWithFolder() != null)
+    {
+      bp.setLeft(btnFolder);
+
+      refreshFolderButton(curNote.folder.isNotNull());
+    }
+    else
+    {
+      bp.setLeft(btnCreateFolder);
+    }
 
     bp.setDisable(isUnstoredRecord(curNote));
 
     folderPath = curNote.filePath();
 
-    htParents.buildRows(curNote.parentNotes, (row, otherNote) -> row.setCellValue(2, otherNote, otherNote.name()));
+    htParents.buildRows(curNote.parentNotes, (row, parentNote) ->
+    {
+      row.setCellValue(2, parentNote, parentNote.name());
+
+      updateRelativeRow(row, parentNote, 3, true);
+    });
 
     htSubnotes.buildRows(curNote.subNotes, (row, subNote) ->
     {
       row.setCellValue(1, subNote, subNote.name());
-      row.setCellValue(2, subNote, subNote.getMainText().getPlainForDisplay());
-      row.setCellValue(3, subNote, subNote.getFolderStr());
+
+      updateRelativeRow(row, subNote, 2, false);
     });
 
     htSubnotes.sortAscending(1);
 
     updateMentioners();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateRelativeRow(HyperTableRow row, HDT_Note relativeNote, int startColNdx, boolean showAncestor)
+  {
+    if (relativeNote == null)
+    {
+      row.setCellValue(startColNdx    , "", hdtNote);
+      row.setCellValue(startColNdx + 1, "", hdtNote);
+      return;
+    }
+
+    String folderStr = relativeNote.folder.isNotNull() ?
+      relativeNote.getFolderStr(false)
+    :
+      (showAncestor ? nullSwitch(relativeNote.getAncestorWithFolder(), "", ancestor -> "(Ancestor) " + ancestor.getFolderStr(false)) : "");
+
+    row.setCellValue(startColNdx    , relativeNote, relativeNote.getMainText().getPlainForDisplay());
+    row.setCellValue(startColNdx + 1, relativeNote, folderStr);
   }
 
 //---------------------------------------------------------------------------
@@ -263,16 +358,6 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addFolderMenuItem(String text, EventHandler<ActionEvent> handler)
-  {
-    MenuItem menuItem = new MenuItem(text);
-    menuItem.setOnAction(handler);
-    btnFolder.getItems().add(menuItem);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void createFolder()
   {
     HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
@@ -299,7 +384,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
   private FilePath getParentForNewFolder()
   {
-    HDT_Folder folder = curNote.getDefaultFolder();
+    HDT_Folder folder = nullSwitch(curNote.getAncestorWithFolder(), null, ancestor -> ancestor.folder.get());
 
     return (folder != null) && folder.filePath().exists() ? folder.filePath() : db.topicalPath();
   }

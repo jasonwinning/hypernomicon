@@ -29,11 +29,16 @@ import com.google.common.collect.Iterators;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
+//---------------------------------------------------------------------------
+
 public class CombinedUnfilteredQuerySource extends QuerySource
 {
-  private final Set<RecordType> types;
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private final Set<RecordType> types;
+
 //---------------------------------------------------------------------------
 
   public CombinedUnfilteredQuerySource(Set<RecordType> newTypes)
@@ -49,7 +54,6 @@ public class CombinedUnfilteredQuerySource extends QuerySource
       types = newTypes;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public int size()                      { return types.stream().map(type -> db.records(type).size()).reduce(0, Integer::sum); }

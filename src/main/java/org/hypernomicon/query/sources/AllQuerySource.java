@@ -23,6 +23,8 @@ import java.util.EnumSet;
 
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public class AllQuerySource extends CombinedUnfilteredQuerySource
 {
 
@@ -30,6 +32,8 @@ public class AllQuerySource extends CombinedUnfilteredQuerySource
 //---------------------------------------------------------------------------
 
   public AllQuerySource() { super(types()); }
+
+//---------------------------------------------------------------------------
 
   @Override public QuerySourceType sourceType() { return QuerySourceType.QST_allRecords; }
 

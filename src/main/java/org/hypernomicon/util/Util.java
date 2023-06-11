@@ -757,13 +757,20 @@ public final class Util
 
   public static boolean isStringUrl(String selText)
   {
-    return (selText.contains("www.")) || (selText.contains("http")) ||
-           (selText.contains(".com")) || (selText.contains(".htm")) ||
-           (selText.contains(".org")) || (selText.contains(".net")) ||
-           (selText.contains(".us" )) || (selText.contains(".uk" )) ||
-           (selText.contains(".gov")) || (selText.contains("://" )) ||
+    selText = ultraTrim(selText);
 
-           (selText.matches(".*\\w/\\w.*") && selText.matches(".*\\.[a-zA-Z].*"));
+    return (selText.contains("www." )) || (selText.contains("http" )) ||
+           (selText.contains(".com" )) || (selText.contains(".htm" )) ||
+           (selText.contains(".org" )) || (selText.contains(".net" )) ||
+           (selText.contains(".us"  )) || (selText.contains(".uk"  )) ||
+           (selText.contains(".ca"  )) || (selText.contains(".au"  )) ||
+           (selText.contains(".edu" )) || (selText.contains(".de"  )) ||
+           (selText.contains(".org" )) || (selText.contains(".me"  )) ||
+           (selText.contains(".info")) || (selText.contains(".site")) ||
+           (selText.contains(".gov" )) || (selText.contains("://"  )) ||
+
+           (selText.matches("^[A-Za-z\\-]+(\\.[A-Za-z\\-]+)+/?$")) ||
+           (selText.matches(".*/\\w.*") && selText.matches(".*\\.[a-zA-Z].*") && !selText.matches(".*\\.\\h.*"));
   }
 
 //---------------------------------------------------------------------------

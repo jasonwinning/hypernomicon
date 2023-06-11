@@ -21,11 +21,16 @@ import java.util.EnumSet;
 
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public class DatasetQuerySource extends CombinedUnfilteredQuerySource
 {
-  private final RecordType type;
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private final RecordType type;
+
 //---------------------------------------------------------------------------
 
   public DatasetQuerySource(RecordType type)
@@ -33,6 +38,8 @@ public class DatasetQuerySource extends CombinedUnfilteredQuerySource
     super(EnumSet.of(type));
     this.type = type;
   }
+
+//---------------------------------------------------------------------------
 
   @Override public RecordType recordType()      { return type; }
   @Override public QuerySourceType sourceType() { return QuerySourceType.QST_recordsByType; }

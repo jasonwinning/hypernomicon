@@ -27,14 +27,24 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   int objID = -1;
+
+//---------------------------------------------------------------------------
 
   public HDI_OfflineNestedPointer(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
   }
+
+//---------------------------------------------------------------------------
 
   public int getObjID() { return objID; }
 

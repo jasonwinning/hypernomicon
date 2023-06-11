@@ -24,9 +24,17 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 
+//---------------------------------------------------------------------------
+
 public class HDT_PersonGroup extends HDT_RecordBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_PersonGroup> parentGroups, subGroups;
+
+//---------------------------------------------------------------------------
 
   public HDT_PersonGroup(RecordState xmlState, HyperDataset<HDT_PersonGroup> dataset)
   {
@@ -36,7 +44,6 @@ public class HDT_PersonGroup extends HDT_RecordBase
     subGroups = getSubjList(rtParentGroupOfGroup);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName() { return name(); }

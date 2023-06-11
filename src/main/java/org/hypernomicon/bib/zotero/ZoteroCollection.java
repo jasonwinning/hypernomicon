@@ -20,12 +20,20 @@ package org.hypernomicon.bib.zotero;
 import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.util.json.JsonObj;
 
+//---------------------------------------------------------------------------
+
 public class ZoteroCollection extends BibCollection implements ZoteroEntity
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public ZoteroCollection(JsonObj jObj)
   {
     update(jObj, false, false);
   }
+
+//---------------------------------------------------------------------------
 
   @Override public boolean isSynced() { return true; }
   @Override public String getName()   { return jObj.getObj("data").getStr("name"); }

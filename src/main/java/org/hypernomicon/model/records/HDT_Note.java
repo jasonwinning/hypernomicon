@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model.records;
 
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
@@ -28,7 +29,6 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.util.filePath.FilePath;
 
 public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPath
 {
@@ -50,14 +50,13 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getFolderStr()          { return nullSwitch(filePath(), "", FilePath::toString); }
-  public HDT_Folder getDefaultFolder()  { return folder.isNotNull() ? folder.get() : findFirstHaving(parentNotes, HDT_Note::getDefaultFolder); }
-
   public boolean setParentNotes(List<HDT_Note> list) { return updateObjectsFromList(rtParentNoteOfNote, list); }
+  public String getFolderStr(boolean absolute)       { return nullSwitch(filePath(), "", filePath -> absolute ? filePath.toString() : db.getRootPath().relativize(filePath).toString()); }
+  public HDT_Note getAncestorWithFolder()            { return folder.isNotNull() ? this : findFirstHaving(parentNotes, HDT_Note::getAncestorWithFolder); }
 
-  @Override public HyperPath getPath()        { return folder.isNull() ? null : folder.get().getPath(); }
-  @Override public String listName()          { return name(); }
-  @Override public final boolean isUnitable() { return true; }
+  @Override public HyperPath getPath()               { return folder.isNull() ? null : folder.get().getPath(); }
+  @Override public String listName()                 { return name(); }
+  @Override public final boolean isUnitable()        { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

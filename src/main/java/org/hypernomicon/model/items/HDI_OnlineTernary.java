@@ -24,11 +24,21 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Record;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlineTernary extends HDI_OnlineBase<HDI_OfflineTernary>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private Ternary value;
 
+//---------------------------------------------------------------------------
+
   public HDI_OnlineTernary(HDI_Schema schema, HDT_Record record) { super(schema, record); }
+
+//---------------------------------------------------------------------------
 
   public Ternary get()           { return value; }
   public void set(Ternary value) { this.value = value; }

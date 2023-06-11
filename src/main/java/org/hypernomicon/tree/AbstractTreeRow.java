@@ -23,13 +23,21 @@ import org.hypernomicon.view.wrappers.AbstractRow;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 
+//---------------------------------------------------------------------------
+
 public abstract class AbstractTreeRow<HDT_T extends HDT_Record, RowType extends AbstractTreeRow<HDT_T, RowType>>
   extends AbstractRow<HDT_T, RowType>
   implements Comparable<RowType>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   protected TreeItem<RowType> treeItem = null;
   protected ImageView graphic = null;
   private final TreeModel<RowType> treeModel;
+
+//---------------------------------------------------------------------------
 
   protected AbstractTreeRow(TreeModel<RowType> treeModel) { this.treeModel = treeModel; }
 

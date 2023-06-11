@@ -27,6 +27,8 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public abstract class HDI_OfflineBase extends HDI_Base
 {
 

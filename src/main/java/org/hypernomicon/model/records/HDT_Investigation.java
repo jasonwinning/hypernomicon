@@ -24,9 +24,17 @@ import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Investigation extends HDT_RecordWithMainText
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final HyperObjPointer<HDT_Investigation, HDT_Person> person;
+
+//---------------------------------------------------------------------------
 
   public HDT_Investigation(RecordState xmlState, HyperDataset<HDT_Investigation> dataset)
   {
@@ -35,7 +43,6 @@ public class HDT_Investigation extends HDT_RecordWithMainText
     person = getObjPointer(rtPersonOfInv);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName() { return name(); }

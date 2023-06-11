@@ -26,12 +26,17 @@ import org.hypernomicon.model.records.RecordType;
 
 import static org.hypernomicon.model.records.RecordType.*;
 
+//---------------------------------------------------------------------------
+
 public class CombinedFilteredQuerySource extends QuerySource
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Set<HDT_Record> records;
   private final RecordType recordType;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public CombinedFilteredQuerySource(Iterable<QuerySource> sources)
@@ -55,7 +60,6 @@ public class CombinedFilteredQuerySource extends QuerySource
     this.recordType = singleType == null ? hdtNone : singleType;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public int size()                      { return records.size(); }

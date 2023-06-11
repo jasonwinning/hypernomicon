@@ -26,12 +26,17 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 
+//---------------------------------------------------------------------------
+
 public class NewVersionDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Button btnDownload;
   @FXML private CheckBox chkNoShow;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public NewVersionDlgCtrlr()

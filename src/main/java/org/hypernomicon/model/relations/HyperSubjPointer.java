@@ -23,10 +23,18 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Objects;
 
+//---------------------------------------------------------------------------
+
 public class HyperSubjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   private final HDT_ObjType obj;
+
+//---------------------------------------------------------------------------
 
   public HyperSubjPointer(RelationSet<HDT_SubjType, HDT_ObjType> relSet, HDT_ObjType obj)
   {
@@ -34,7 +42,6 @@ public class HyperSubjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType exten
     this.obj = obj;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_SubjType get()  { return relSet.getSubjectCount(obj) == 0 ? null : relSet.getSubject(obj, 0); }
