@@ -174,7 +174,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtParentDebateOfDebate     : return new RelationSet<>(relType, HDT_Debate       .class, HDT_Debate         .class, true );
       case rtParentNoteOfNote         : return new RelationSet<>(relType, HDT_Note         .class, HDT_Note           .class, true );
       case rtParentPosOfPos           : return new RelationSet<>(relType, HDT_Position     .class, HDT_Position       .class, true );
-      case rtWorkOfArgument           : return new RelationSet<>(relType, HDT_Argument     .class, HDT_Work           .class);
+      case rtWorkOfArgument           : return new RelationSet<>(relType, HDT_Argument     .class, HDT_Work           .class,
+
+          new HDI_Schema(hdcString, relType, tagPages));
+
       case rtParentDebateOfPos        : return new RelationSet<>(relType, HDT_Position     .class, HDT_Debate         .class, true );
       case rtParentPosOfDebate        : return new RelationSet<>(relType, HDT_Debate       .class, HDT_Position       .class, true );
       case rtPositionOfArgument       : return new RelationSet<>(relType, HDT_Argument     .class, HDT_Position       .class,

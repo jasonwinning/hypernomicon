@@ -48,9 +48,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Window;
 
+//---------------------------------------------------------------------------
+
 final class ResultsTable extends HasRightClickableRows<ResultRow>
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private final TableView<ResultRow> tv;

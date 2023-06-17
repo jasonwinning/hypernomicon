@@ -105,6 +105,7 @@ public enum Tag
   tagInFileName      ("in_filename"       , "Included in File Name"),
   tagEditor          ("editor"            , "Editor"),
   tagTranslator      ("translator"        , "Translator"),
+  tagPages           ("pages"             , "Pages"),
   tagStartPageNum    ("start_page"        , "Starting Page Number"),
   tagEndPageNum      ("end_page"          , "Ending Page Number"),
   tagAnnotated       ("annotated"         , "Annotated"),

@@ -25,18 +25,17 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
+//---------------------------------------------------------------------------
+
 public class NewQueryFavDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private TextField tfName;
   @FXML private CheckBox chkAutoExec;
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  String getNewName()   { return tfName.getText(); }
-  boolean getAutoExec() { return chkAutoExec.isSelected(); }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   NewQueryFavDlgCtrlr(String newName)
@@ -47,6 +46,11 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 
     onShown = () -> safeFocus(tfName);
   }
+
+//---------------------------------------------------------------------------
+
+  String getNewName()   { return tfName.getText(); }
+  boolean getAutoExec() { return chkAutoExec.isSelected(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

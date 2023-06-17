@@ -29,12 +29,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.layout.AnchorPane;
 
+//---------------------------------------------------------------------------
+
 public class SelectColumnsDlgCtrlr extends HyperDlg
 {
-  @FXML private CheckBox chkSelectAll, chkSelectNone, chkFirstType, chkFirstField, chkSecondType;
-  @FXML private Button btnOk;
-  @FXML private AnchorPane innerPane;
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   static final class TypeCheckBox extends CheckBox
@@ -43,6 +43,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
     private final List<CheckBox> children = new ArrayList<>();
   }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private static final class ColumnCheckBox extends CheckBox
@@ -54,11 +55,16 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FXML private CheckBox chkSelectAll, chkSelectNone, chkFirstType, chkFirstField, chkSecondType;
+  @FXML private Button btnOk;
+  @FXML private AnchorPane innerPane;
+
+//---------------------------------------------------------------------------
+
   private static boolean noListen = false;
 
   @Override protected boolean isValid() { return true; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   SelectColumnsDlgCtrlr()
@@ -89,7 +95,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
       chkType.setSelected(false);
       innerPane.getChildren().add(chkType);
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
       for (ColumnGroupItem item : group)
       {

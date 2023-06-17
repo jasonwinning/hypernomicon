@@ -24,18 +24,22 @@ import org.hypernomicon.view.wrappers.AbstractRow;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
+//---------------------------------------------------------------------------
+
 public final class ResultRow extends AbstractRow<HDT_Record, ResultRow>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HDT_Record record;
   private final String cbText;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   ResultRow(HDT_Record record)    { this.record = record; this.cbText = "";     }
   public ResultRow(String cbText) { this.record = null;   this.cbText = cbText; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   String getRecordIDStr()   { return record == null ? "" : String.valueOf(record.getID()); }
@@ -43,9 +47,6 @@ public final class ResultRow extends AbstractRow<HDT_Record, ResultRow>
   String getSearchKey()     { return record == null ? "" : record.getSearchKey(); }
   String getSortKey()       { return record == null ? "" : record.getSortKey(); }
   public String getCBText() { return record == null ? cbText : record.listName(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) record; }

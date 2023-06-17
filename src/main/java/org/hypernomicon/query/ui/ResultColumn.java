@@ -40,11 +40,11 @@ import org.hypernomicon.util.Util;
 import javafx.scene.control.TableColumn;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private ResultColumn(String caption)

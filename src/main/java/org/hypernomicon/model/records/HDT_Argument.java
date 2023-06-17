@@ -60,6 +60,7 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
   @Override public String listName()           { return name(); }
 
+  public String pagesInWork(HDT_Work work)     { return db.getNestedString(this, work, tagPages); }
   public boolean setWorks(List<HDT_Work> list) { return updateObjectsFromList(rtWorkOfArgument, list); }
 
   public static final int truePositionVerdictID  = 1,

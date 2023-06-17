@@ -435,6 +435,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + '2'));
 
     btnDOI.setOnAction(event -> searchDOI(tfDOI.getText()));
+    setToolTip(btnDOI, "Use this DOI to locate the document online");
 
     btnBibManager.setOnAction(event -> ui.goToWorkInBibManager(curWork));
 
@@ -474,6 +475,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     });
 
     btnURL.setOnAction(event -> urlClick());
+    setToolTip(btnURL, "Navigate to this URL in browser");
 
     btnLargerWork.setOnAction(event ->
     {
@@ -1689,6 +1691,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     btnUseDOI .setDisable(getDoiFromBibTab  ().isEmpty());
     btnUseISBN.setDisable(getIsbnsFromBibTab().isEmpty());
+
+    setToolTip(btnUseDOI , "Set current work's DOI to "     + getDoiFromBibTab());
+    setToolTip(btnUseISBN, "Add ISBN(s) " + getIsbnsFromBibTab().stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("") + " to current work's ISBN(s)");
 
     tabPane.requestLayout();
   }

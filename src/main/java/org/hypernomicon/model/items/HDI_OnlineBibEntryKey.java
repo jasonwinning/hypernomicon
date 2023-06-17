@@ -63,7 +63,7 @@ public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
   {
     newKeyStr = safeStr(newKeyStr);
 
-    if (newKeyStr.equals(safeStr(keyStr))) return;
+    if (newKeyStr.equals(keyStr)) return;
 
     if (keyStr.length() > 0)
       db.handleBibEntryKeyAssocation(keyStr, work, false);
