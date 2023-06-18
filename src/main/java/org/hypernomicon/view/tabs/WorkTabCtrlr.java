@@ -172,6 +172,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     super(workTabEnum, tab, "view/tabs/WorkTab");
 
+    HyperTableColumn col;
+
     mainText = new MainTextWrapper(apDescription);
 
     tabPane.setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
@@ -283,7 +285,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htWorkFiles.addCheckboxCol();
     htWorkFiles.addLabelCol(hdtWorkFile);
-    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
+    col = htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int startPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (startPageNum < 0) return;
@@ -296,7 +298,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
     });
 
-    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
+    col.setHeaderTooltip("Start page in PDF (actual PDF page, not page label)");
+
+    col = htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int endPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (endPageNum < 0) return;
@@ -308,6 +312,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
     });
+
+    col.setHeaderTooltip("End page in PDF (actual PDF page, not page label)");
 
     htWorkFiles.addTextEditCol(hdtWorkFile, false);
 

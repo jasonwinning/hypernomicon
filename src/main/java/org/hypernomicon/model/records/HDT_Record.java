@@ -22,6 +22,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +32,8 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.RestoreException;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.model.Tag;
 
 //---------------------------------------------------------------------------
@@ -68,6 +71,7 @@ public interface HDT_Record
   boolean isExpired();
   boolean isDummy();
   boolean changeID(int newID);
+  boolean updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags);
 
   void getAllStrings(List<String> list, boolean searchLinkedRecords);
   String name();

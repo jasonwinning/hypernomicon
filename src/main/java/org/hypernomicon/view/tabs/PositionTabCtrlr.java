@@ -30,6 +30,7 @@ import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.wrappers.HyperTableColumn;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.App.*;
@@ -37,6 +38,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.compareYears;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
@@ -99,11 +101,14 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htArguments = new HyperTable(tvLeftChildren, 3, true, PREF_KEY_HT_POS_ARG);
 
     htArguments.addActionCol(ctGoNewBtn, 3);
-    htArguments.addLabelCol(hdtPerson         );               // Author(s) of work
+    htArguments.addLabelCol(hdtPerson);                        // Author(s) of work
     htArguments.addLabelCol(hdtPositionVerdict, smTextSimple); // True, False, etc.
-    htArguments.addLabelCol(hdtArgument       , smNumeric);    // Year
-    htArguments.addLabelCol(hdtWork           , smStandard);   // Title of work
-    htArguments.addLabelCol(hdtArgument       );               // Name of argument
+
+    HyperTableColumn htCol = htArguments.addLabelCol(hdtArgument);    // Year
+    htCol.comparator.set((cell1, cell2) -> compareYears(cell1.text, cell2.text));
+
+    htArguments.addLabelCol(hdtWork, smStandard);   // Title of work
+    htArguments.addLabelCol(hdtArgument);           // Name of argument
 
     TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>();
     tvRightChildren.getColumns().add(1, col);

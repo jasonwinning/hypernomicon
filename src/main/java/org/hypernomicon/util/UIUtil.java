@@ -181,10 +181,14 @@ public final class UIUtil
 
   public static Tooltip makeTooltip(String str)
   {
-    return safeStr(str).isBlank() ?
-      null
-    :
-      new Tooltip(str); // Font size is set in css file
+    if (safeStr(str).isBlank())
+      return null;
+
+    Tooltip tooltip = new Tooltip(str); // Font size is set in css file
+
+    tooltip.setMaxWidth(1100);
+
+    return tooltip;
   }
 
 //---------------------------------------------------------------------------

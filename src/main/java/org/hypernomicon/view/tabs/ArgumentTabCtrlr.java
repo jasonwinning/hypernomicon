@@ -27,21 +27,14 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
-import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.relations.ObjectGroup;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
@@ -151,8 +144,25 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       }
     });
 
-    htWhereMade.addTextEditCol(hdtWork, false);
-    htWhereMade.addLabelCol(hdtWork, smNumeric);
+    col = htWhereMade.addTextEditCol(hdtWork, false); // Pages column
+    col.comparator.set((cell1, cell2) ->
+    {
+      String text1 = ultraTrim(cell1.text), text2 = ultraTrim(cell2.text);
+      int num1 = extractLeadingNumber(text1), num2 = extractLeadingNumber(text2);
+      if ((num1 < 0) && (num2 < 0))
+        return text1.compareTo(text2);
+
+      if (num1 < 0)
+        return -1;
+
+      if (num2 < 0)
+        return 1;
+
+      return Integer.compare(num1, num2);
+    });
+
+    col = htWhereMade.addLabelCol(hdtArgument); // Year column
+    col.comparator.set((cell1, cell2) -> compareYears(cell1.text, cell2.text));
 
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);
@@ -336,31 +346,13 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     if (okToSave == false)
       return falseWithErrorMessage("Unable to modify record: There must be a corresponding verdict for every position/argument targeted by this record.");
 
-    saveObjectGroups(tagPositionVerdict, rtPositionOfArgument);
-    saveObjectGroups(tagArgumentVerdict, rtCounterOfArgument);
-
-    if (curArgument.setWorks(htWhereMade.saveToList(2, hdtWork)) == false)
+    if (htWhereMade.saveObjectsAndSingleNestedItem(curArgument, rtWorkOfArgument, tagPages, 2, 3) == false)
       return false;
 
-    Map<Integer, Tag> colNdxToTag = new HashMap<>();
-    colNdxToTag.put(3, tagPages);
-
-    List<ObjectGroup> tableGroups  = htWhereMade.getObjectGroupList(curArgument, rtWorkOfArgument, 2, colNdxToTag);
-    curArgument.updateObjectGroups(rtWorkOfArgument, tableGroups, colNdxToTag.values());
+    htParents.saveObjectsAndSingleNestedItem(curArgument, rtPositionOfArgument, tagPositionVerdict, 3, 4);
+    htParents.saveObjectsAndSingleNestedItem(curArgument, rtCounterOfArgument , tagArgumentVerdict, 3, 4);
 
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void saveObjectGroups(Tag tag, RelationType relType)
-  {
-    Map<Integer, Tag> colNdxToTag = new HashMap<>();
-    colNdxToTag.put(4, tag);
-
-    List<ObjectGroup> tableGroups  = htParents.getObjectGroupList(curArgument, relType, 3, colNdxToTag);
-    curArgument.updateObjectGroups(relType, tableGroups, colNdxToTag.values());
   }
 
 //---------------------------------------------------------------------------

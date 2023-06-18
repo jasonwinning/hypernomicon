@@ -47,328 +47,391 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
-   <top>
-     <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
-       <MenuBar fx:id="menuBar" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
-         <Menu mnemonicParsing="false" text="File">
-           <MenuItem fx:id="mnuNewDatabase" mnemonicParsing="false" onAction="#mnuNewDatabaseClick" text="New Database..." />
-           <MenuItem mnemonicParsing="false" onAction="#mnuOpenClick" text="Open Database..." />
-           <SeparatorMenuItem mnemonicParsing="false" />
-           <MenuItem fx:id="mnuCloseDatabase" mnemonicParsing="false" onAction="#mnuCloseClick" text="Close Database..." />
-           <SeparatorMenuItem mnemonicParsing="false" />
-           <MenuItem fx:id="mnuImportWork" mnemonicParsing="false" text="Import Work File" />
-           <MenuItem fx:id="mnuImportFile" mnemonicParsing="false" text="Import Misc. File" />
-           <SeparatorMenuItem mnemonicParsing="false" />
-           <MenuItem fx:id="mnuImportBibFile" mnemonicParsing="false" text="Import Bibliographic Entry File" />
-           <MenuItem fx:id="mnuImportBibClipboard" mnemonicParsing="false" text="Import Bibliographic Entry from Clipboard" />
-           <SeparatorMenuItem fx:id="mnuBibImportSeparator" mnemonicParsing="false" />
-           <MenuItem mnemonicParsing="false" onAction="#mnuExitClick" text="Exit" />
-           <MenuItem fx:id="mnuExitNoSave" mnemonicParsing="false" onAction="#mnuExitNoSaveClick" text="Exit Without Saving" />
-         </Menu>
-         <Menu mnemonicParsing="false" text="Tools">
-           <MenuItem mnemonicParsing="false" onAction="#mnuSettingsClick" text="Settings" />
-           <Menu mnemonicParsing="false" text="Create new category record...">
-             <MenuItem fx:id="mnuNewField" mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Academic Field" />
-             <MenuItem fx:id="mnuNewCountry" mnemonicParsing="false" onAction="#mnuNewCountryClick" text="Country" />
-             <MenuItem fx:id="mnuNewRank" mnemonicParsing="false" onAction="#mnuNewRankClick" text="Academic Rank" />
-             <MenuItem fx:id="mnuNewPersonStatus" mnemonicParsing="false" onAction="#mnuNewPersonStatusClick" text="Person Status" />
-           </Menu>
-           <Menu mnemonicParsing="false" text="Change category listing order...">
-             <MenuItem fx:id="mnuChangeFieldOrder" mnemonicParsing="false" text="Academic Fields"/>
-             <MenuItem fx:id="mnuChangeRankOrder" mnemonicParsing="false" text="Academic Ranks"/>
-             <MenuItem fx:id="mnuChangeCountryOrder" mnemonicParsing="false" text="Countries"/>
-             <MenuItem fx:id="mnuChangePersonStatusOrder" mnemonicParsing="false" text="Person Statuses"/>
-             <MenuItem fx:id="mnuChangeFileTypeOrder" mnemonicParsing="false" text="File Types"/>
-             <MenuItem fx:id="mnuChangeWorkTypeOrder" mnemonicParsing="false" text="Work Types"/>
-             <MenuItem fx:id="mnuChangeArgVerdictOrder" mnemonicParsing="false" text="Argument Verdicts"/>
-             <MenuItem fx:id="mnuChangePosVerdictOrder" mnemonicParsing="false" text="Position Verdicts"/>
-             <MenuItem fx:id="mnuChangeInstitutionTypeOrder" mnemonicParsing="false" text="Institution Types"/>
-           </Menu>
-           <CheckMenuItem fx:id="mnuAutoImport" mnemonicParsing="false" text="Automatically watch for and import PDF files added" />
-           <MenuItem fx:id="mnuAddToQueryResults" mnemonicParsing="false" onAction="#mnuAddToQueryResultsClick" text="Add this record to query results" />
-           <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick" text="Change record ID..." />
-           <MenuItem fx:id="mnuRevertToDiskCopy" mnemonicParsing="false" onAction="#mnuRevertToDiskCopyClick" text="Revert this record to XML version" />
-           <MenuItem fx:id="mnuSaveReloadAll" mnemonicParsing="false" onAction="#mnuSaveReloadAllClick" text="Save/Reload All" />
-         </Menu>
-         <Menu fx:id="mnuFavorites" mnemonicParsing="false" text="Favorites">
-           <MenuItem fx:id="mnuToggleFavorite" mnemonicParsing="false" onAction="#mnuToggleFavoriteClick" text="Add to Favorites..." />
-           <MenuItem mnemonicParsing="false" onAction="#mnuChangeFavOrderClick" text="Change Order..." />
-           <Menu fx:id="mnuQueries" mnemonicParsing="false" text="Queries" />
-           <SeparatorMenuItem mnemonicParsing="false" />
-         </Menu>
-         <Menu fx:id="mnuFolders" mnemonicParsing="false" text="Folders">
-           <MenuItem id="10" mnemonicParsing="false" onAction="#mnuFolderClick" text="Papers" />
-           <MenuItem id="20" mnemonicParsing="false" onAction="#mnuFolderClick" text="Books" />
-           <MenuItem id="30" mnemonicParsing="false" onAction="#mnuFolderClick" text="Works not entered yet" />
-           <MenuItem id="40" mnemonicParsing="false" onAction="#mnuFolderClick" text="Topical" />
-           <MenuItem id="50" mnemonicParsing="false" onAction="#mnuFolderClick" text="Pictures" />
-           <MenuItem id="60" mnemonicParsing="false" onAction="#mnuFolderClick" text="Misc. files" />
-           <MenuItem id="80" mnemonicParsing="false" onAction="#mnuFolderClick" text="Search results" />
-           <MenuItem id="70" mnemonicParsing="false" onAction="#mnuFolderClick" text="Database root folder" />
-           <SeparatorMenuItem mnemonicParsing="false" />
-           <Menu mnemonicParsing="false" text="Copy path to clipboard">
-             <MenuItem id="11" mnemonicParsing="false" onAction="#mnuFolderClick" text="Papers" />
-             <MenuItem id="21" mnemonicParsing="false" onAction="#mnuFolderClick" text="Books" />
-             <MenuItem id="31" mnemonicParsing="false" onAction="#mnuFolderClick" text="Works not entered yet" />
-             <MenuItem id="41" mnemonicParsing="false" onAction="#mnuFolderClick" text="Topical" />
-             <MenuItem id="51" mnemonicParsing="false" onAction="#mnuFolderClick" text="Pictures" />
-             <MenuItem id="61" mnemonicParsing="false" onAction="#mnuFolderClick" text="Misc. files" />
-             <MenuItem id="81" mnemonicParsing="false" onAction="#mnuFolderClick" text="Search results" />
-             <MenuItem id="71" mnemonicParsing="false" onAction="#mnuFolderClick" text="Database root folder" />
-           </Menu>
-           <SeparatorMenuItem mnemonicParsing="false" />
-         </Menu>
-         <Menu mnemonicParsing="false" text="Help">
-           <MenuItem mnemonicParsing="false" onAction="#showWelcomeWindow" text="Show Welcome Window" />
-           <SeparatorMenuItem mnemonicParsing="false" />
-           <MenuItem fx:id="mnuVideos" mnemonicParsing="false" text="Tutorial Videos" />
-           <MenuItem fx:id="mnuShortcuts" mnemonicParsing="false" onAction="#mnuShortcutsClick" text="Keyboard Shortcuts" />
-           <SeparatorMenuItem mnemonicParsing="false" />
-           <MenuItem mnemonicParsing="false" onAction="#mnuAboutClick" text="About" />
-         </Menu>
-       </MenuBar>
-       <ToolBar fx:id="topToolBar" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" style="-fx-background-color: transparent;">
-         <Button fx:id="btnSaveAll" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" text="Save to XML">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/download.png" />
-             </ImageView>
-           </graphic>
-         </Button>
-         <Button fx:id="btnFileMgr" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" text="File Mgr">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/folders_explorer.png" />
-             </ImageView>
-           </graphic>
-         </Button>
-         <Button fx:id="btnBibMgr" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" text="Bib Mgr">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/card-catalog.png" />
-             </ImageView>
-           </graphic>
-         </Button>
-         <Button fx:id="btnPreviewWindow" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" text="Preview">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/view-document.png" />
-             </ImageView>
-           </graphic>
-         </Button>
-         <Separator orientation="VERTICAL" prefHeight="200.0" />
-         <ToggleButton fx:id="btnPointerLaunch" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" selected="true">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/pointer-rocket.png" />
-             </ImageView>
-           </graphic>
-           <toggleGroup>
-             <ToggleGroup fx:id="tgPointer" />
-           </toggleGroup>
-         </ToggleButton>
-         <ToggleButton fx:id="btnPointerPreview" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" toggleGroup="$tgPointer">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/pointer-preview.png" />
-             </ImageView>
-           </graphic>
-         </ToggleButton>
-         <Separator orientation="VERTICAL" prefHeight="200.0" />
-         <Button fx:id="btnMentions" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" onAction="#btnMentionsClick" prefHeight="22.0" text="Mentions" />
-         <Button fx:id="btnAdvancedSearch" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" text="Adv Search" />
-       </ToolBar>
-     </HBox>
-   </top>
-   <center>
-     <AnchorPane fx:id="midAnchorPane" BorderPane.alignment="TOP_CENTER">
-       <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <TabPane id="mainTabPane" fx:id="tabPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
-           <Tab fx:id="tabPersons" text="Persons" />
-           <Tab fx:id="tabInst" text="Institutions" />
-           <Tab fx:id="tabWorks" text="Works" />
-           <Tab fx:id="tabFiles" text="Misc. Files" />
-           <Tab fx:id="tabDebates" text="Problems/Debates" />
-           <Tab fx:id="tabPositions" text="Positions" />
-           <Tab fx:id="tabArguments" text="Arguments" />
-           <Tab fx:id="tabNotes" text="Notes" />
-           <Tab fx:id="tabTerms" text="Terms" />
-           <Tab fx:id="tabQueries" text="Queries" />
-           <Tab fx:id="tabTree" text="Tree" />
-         </TabPane>
-         <AnchorPane fx:id="apFindBackground" mouseTransparent="true">
-           <GridPane layoutX="336.0" layoutY="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="336.0" AnchorPane.rightAnchor="288.0" AnchorPane.topAnchor="0.0">
-             <columnConstraints>
-               <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-             </columnConstraints>
-             <rowConstraints>
-               <RowConstraints percentHeight="40.0" vgrow="SOMETIMES" />
-               <RowConstraints percentHeight="60.0" vgrow="SOMETIMES" />
-             </rowConstraints>
-             <TableView fx:id="tvFind" GridPane.rowIndex="1">
-               <columns>
-                 <TableColumn maxWidth="32.0" minWidth="32.0" prefWidth="32.0" resizable="false" />
-                 <TableColumn prefWidth="500.0" text="Name" />
-                 <TableColumn maxWidth="1000.0" prefWidth="100.0" text="Year" />
-                 <TableColumn maxWidth="2500.0" prefWidth="250.0" text="Additional Info" />
-               </columns>
-               <columnResizePolicy>
-                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-               </columnResizePolicy>
-             </TableView>
-           </GridPane>
-         </AnchorPane>
-       </StackPane>
-     </AnchorPane>
-   </center>
-   <bottom>
-     <GridPane fx:id="gpBottom">
-       <columnConstraints>
-         <ColumnConstraints hgrow="NEVER" maxWidth="336.0" minWidth="336.0" prefWidth="336.0" />
-         <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="40.0" />
-         <ColumnConstraints hgrow="NEVER" maxWidth="288.0" minWidth="288.0" prefWidth="288.0" />
-       </columnConstraints>
-       <rowConstraints>
-         <RowConstraints maxHeight="28.0" minHeight="10.0" vgrow="SOMETIMES" />
-         <RowConstraints minHeight="10.0" prefHeight="24.0" vgrow="SOMETIMES" />
-       </rowConstraints>
-       <AnchorPane>
-         <Button fx:id="btnBack" layoutX="2.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/arrow-180.png" />
-             </ImageView>
-           </graphic>
-         </Button>
-         <Button fx:id="btnForward" layoutX="38.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/arrow.png" />
-             </ImageView>
-           </graphic>
-         </Button>
-         <Button fx:id="btnDecrement" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" layoutX="74.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="74.0" AnchorPane.topAnchor="5.0">
-           <graphic>
-             <ImageView pickOnBounds="true" preserveRatio="true">
-               <viewport>
-                 <Rectangle2D />
-               </viewport>
-               <Image url="@../resources/images/control-stop-180.png" />
-             </ImageView>
-           </graphic>
-         </Button>
-         <Button fx:id="btnIncrement" contentDisplay="GRAPHIC_ONLY" layoutX="110.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" text="Button" AnchorPane.leftAnchor="110.0" AnchorPane.topAnchor="5.0">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true" smooth="false">
-               <viewport>
-                 <Rectangle2D />
-               </viewport>
-               <Image url="@../resources/images/control-stop.png" />
-             </ImageView>
-           </graphic>
-         </Button>
-         <Label layoutX="146.0" layoutY="10.0" text="Record:" AnchorPane.leftAnchor="146.0" AnchorPane.topAnchor="10.0" />
-         <TextField fx:id="tfRecord" layoutX="188.0" layoutY="5.0" prefHeight="24.0" prefWidth="79.0" AnchorPane.leftAnchor="188.0" AnchorPane.topAnchor="5.0">
-         </TextField>
-         <Label layoutX="273.0" layoutY="10.0" text="ID:" AnchorPane.leftAnchor="273.0" AnchorPane.topAnchor="10.0" />
-         <TextField fx:id="tfID" layoutX="291.0" layoutY="5.0" prefHeight="24.0" prefWidth="43.0" AnchorPane.leftAnchor="291.0" AnchorPane.topAnchor="5.0">
-         </TextField>
-       </AnchorPane>
-       <AnchorPane GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.valignment="TOP">
-         <ToggleButton fx:id="btnTextSearch" layoutY="5.0" maxWidth="32.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="5.0">
-           <graphic>
-             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@../resources/images/text-search2.png" />
-             </ImageView>
-           </graphic>
-         </ToggleButton>
-         <AnchorPane prefHeight="24.0" prefWidth="55.0" AnchorPane.leftAnchor="35.0" AnchorPane.topAnchor="5.0">
-           <SplitMenuButton fx:id="btnGoTo" mnemonicParsing="false" prefHeight="24.0" prefWidth="55.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-             <items>
-               <MenuItem fx:id="mnuRecordSelect" mnemonicParsing="false" text="Go to Record" />
-               <MenuItem fx:id="mnuFindWithinName" mnemonicParsing="false" text="Find records with name containing this text" />
-               <MenuItem fx:id="mnuFindWithinAnyField" mnemonicParsing="false" text="Find records with any field containing this text" />
-               <MenuItem fx:id="mnuFindNextInName" mnemonicParsing="false" text="Find next match in record name" />
-               <MenuItem fx:id="mnuFindPreviousInName" mnemonicParsing="false" text="Find previous match in record name" />
-               <MenuItem fx:id="mnuFindNextAll" mnemonicParsing="false" text="Find next match in record name or description" />
-               <MenuItem fx:id="mnuFindPreviousAll" mnemonicParsing="false" text="Find previous match in record name or description" />
-             </items>
-             <graphic>
-               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                 <Image url="@../resources/images/magnifier.png" />
-               </ImageView>
-             </graphic>
-           </SplitMenuButton>
-           <Button fx:id="btnPrevResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-             <graphic>
-               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                 <Image url="@../resources/images/triangle-up.png" />
-               </ImageView>
-             </graphic>
-           </Button>
-           <Button fx:id="btnNextResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-             <graphic>
-               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                 <Image url="@../resources/images/triangle-down.png" />
-               </ImageView>
-             </graphic>
-           </Button>
-         </AnchorPane>
-         <TabPane fx:id="selectorTabPane" focusTraversable="false" layoutX="92.0" layoutY="5.0" nodeOrientation="RIGHT_TO_LEFT" side="BOTTOM" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0">
-           <Tab fx:id="tabViewSelector" closable="false">
-             <AnchorPane fx:id="apListGoTo" maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="24.0" />
-           </Tab>
-           <Tab fx:id="tabOmniSelector" closable="false">
-             <AnchorPane maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="24.0">
-               <TextField fx:id="tfOmniGoTo" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-             </AnchorPane>
-           </Tab>
-           <Tab closable="false" />
-           <Tab closable="false" />
-           <Tab closable="false" />
-           <Tab closable="false" />
-           <Tab closable="false" />
-           <Tab closable="false" />
-           <Tab closable="false" />
-           <Tab closable="false" />
-           <Tab closable="false">
-             <AnchorPane fx:id="apGoTo" maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="24.0">
-               <ComboBox fx:id="cbGoTo" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-             </AnchorPane>
-           </Tab>
-         </TabPane>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" id="childrenOnly" prefHeight="746.0" prefWidth="1253.0"
+            xmlns="http://javafx.com/javafx/19" fx:controller="org.hypernomicon.view.MainCtrlr">
+  <top>
+    <HBox fx:id="topHBox"
+          style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
+      <MenuBar fx:id="menuBar" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
+        <Menu mnemonicParsing="false" text="File">
+          <MenuItem fx:id="mnuNewDatabase" mnemonicParsing="false" onAction="#mnuNewDatabaseClick"
+                    text="New Database..."/>
+          <MenuItem mnemonicParsing="false" onAction="#mnuOpenClick" text="Open Database..."/>
+          <SeparatorMenuItem mnemonicParsing="false"/>
+          <MenuItem fx:id="mnuCloseDatabase" mnemonicParsing="false" onAction="#mnuCloseClick"
+                    text="Close Database..."/>
+          <SeparatorMenuItem mnemonicParsing="false"/>
+          <MenuItem fx:id="mnuImportWork" mnemonicParsing="false" text="Import Work File"/>
+          <MenuItem fx:id="mnuImportFile" mnemonicParsing="false" text="Import Misc. File"/>
+          <SeparatorMenuItem mnemonicParsing="false"/>
+          <MenuItem fx:id="mnuImportBibFile" mnemonicParsing="false" text="Import Bibliographic Entry File"/>
+          <MenuItem fx:id="mnuImportBibClipboard" mnemonicParsing="false"
+                    text="Import Bibliographic Entry from Clipboard"/>
+          <SeparatorMenuItem fx:id="mnuBibImportSeparator" mnemonicParsing="false"/>
+          <MenuItem mnemonicParsing="false" onAction="#mnuExitClick" text="Exit"/>
+          <MenuItem fx:id="mnuExitNoSave" mnemonicParsing="false" onAction="#mnuExitNoSaveClick"
+                    text="Exit Without Saving"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Tools">
+          <MenuItem mnemonicParsing="false" onAction="#mnuSettingsClick" text="Settings"/>
+          <Menu mnemonicParsing="false" text="Create new category record...">
+            <MenuItem fx:id="mnuNewField" mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Academic Field"/>
+            <MenuItem fx:id="mnuNewCountry" mnemonicParsing="false" onAction="#mnuNewCountryClick" text="Country"/>
+            <MenuItem fx:id="mnuNewRank" mnemonicParsing="false" onAction="#mnuNewRankClick" text="Academic Rank"/>
+            <MenuItem fx:id="mnuNewPersonStatus" mnemonicParsing="false" onAction="#mnuNewPersonStatusClick"
+                      text="Person Status"/>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Change category listing order...">
+            <MenuItem fx:id="mnuChangeFieldOrder" mnemonicParsing="false" text="Academic Fields"/>
+            <MenuItem fx:id="mnuChangeRankOrder" mnemonicParsing="false" text="Academic Ranks"/>
+            <MenuItem fx:id="mnuChangeCountryOrder" mnemonicParsing="false" text="Countries"/>
+            <MenuItem fx:id="mnuChangePersonStatusOrder" mnemonicParsing="false" text="Person Statuses"/>
+            <MenuItem fx:id="mnuChangeFileTypeOrder" mnemonicParsing="false" text="File Types"/>
+            <MenuItem fx:id="mnuChangeWorkTypeOrder" mnemonicParsing="false" text="Work Types"/>
+            <MenuItem fx:id="mnuChangeArgVerdictOrder" mnemonicParsing="false" text="Argument Verdicts"/>
+            <MenuItem fx:id="mnuChangePosVerdictOrder" mnemonicParsing="false" text="Position Verdicts"/>
+            <MenuItem fx:id="mnuChangeInstitutionTypeOrder" mnemonicParsing="false" text="Institution Types"/>
+          </Menu>
+          <CheckMenuItem fx:id="mnuAutoImport" mnemonicParsing="false"
+                         text="Automatically watch for and import PDF files added"/>
+          <MenuItem fx:id="mnuAddToQueryResults" mnemonicParsing="false" onAction="#mnuAddToQueryResultsClick"
+                    text="Add this record to query results"/>
+          <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick"
+                    text="Change record ID..."/>
+          <MenuItem fx:id="mnuRevertToDiskCopy" mnemonicParsing="false" onAction="#mnuRevertToDiskCopyClick"
+                    text="Revert this record to XML version"/>
+          <MenuItem fx:id="mnuSaveReloadAll" mnemonicParsing="false" onAction="#mnuSaveReloadAllClick"
+                    text="Save/Reload All"/>
+        </Menu>
+        <Menu fx:id="mnuFavorites" mnemonicParsing="false" text="Favorites">
+          <MenuItem fx:id="mnuToggleFavorite" mnemonicParsing="false" onAction="#mnuToggleFavoriteClick"
+                    text="Add to Favorites..."/>
+          <MenuItem mnemonicParsing="false" onAction="#mnuChangeFavOrderClick" text="Change Order..."/>
+          <Menu fx:id="mnuQueries" mnemonicParsing="false" text="Queries"/>
+          <SeparatorMenuItem mnemonicParsing="false"/>
+        </Menu>
+        <Menu fx:id="mnuFolders" mnemonicParsing="false" text="Folders">
+          <MenuItem id="10" mnemonicParsing="false" onAction="#mnuFolderClick" text="Papers"/>
+          <MenuItem id="20" mnemonicParsing="false" onAction="#mnuFolderClick" text="Books"/>
+          <MenuItem id="30" mnemonicParsing="false" onAction="#mnuFolderClick" text="Works not entered yet"/>
+          <MenuItem id="40" mnemonicParsing="false" onAction="#mnuFolderClick" text="Topical"/>
+          <MenuItem id="50" mnemonicParsing="false" onAction="#mnuFolderClick" text="Pictures"/>
+          <MenuItem id="60" mnemonicParsing="false" onAction="#mnuFolderClick" text="Misc. files"/>
+          <MenuItem id="80" mnemonicParsing="false" onAction="#mnuFolderClick" text="Search results"/>
+          <MenuItem id="70" mnemonicParsing="false" onAction="#mnuFolderClick" text="Database root folder"/>
+          <SeparatorMenuItem mnemonicParsing="false"/>
+          <Menu mnemonicParsing="false" text="Copy path to clipboard">
+            <MenuItem id="11" mnemonicParsing="false" onAction="#mnuFolderClick" text="Papers"/>
+            <MenuItem id="21" mnemonicParsing="false" onAction="#mnuFolderClick" text="Books"/>
+            <MenuItem id="31" mnemonicParsing="false" onAction="#mnuFolderClick" text="Works not entered yet"/>
+            <MenuItem id="41" mnemonicParsing="false" onAction="#mnuFolderClick" text="Topical"/>
+            <MenuItem id="51" mnemonicParsing="false" onAction="#mnuFolderClick" text="Pictures"/>
+            <MenuItem id="61" mnemonicParsing="false" onAction="#mnuFolderClick" text="Misc. files"/>
+            <MenuItem id="81" mnemonicParsing="false" onAction="#mnuFolderClick" text="Search results"/>
+            <MenuItem id="71" mnemonicParsing="false" onAction="#mnuFolderClick" text="Database root folder"/>
+          </Menu>
+          <SeparatorMenuItem mnemonicParsing="false"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+          <MenuItem mnemonicParsing="false" onAction="#showWelcomeWindow" text="Show Welcome Window"/>
+          <SeparatorMenuItem mnemonicParsing="false"/>
+          <MenuItem fx:id="mnuVideos" mnemonicParsing="false" text="Tutorial Videos"/>
+          <MenuItem fx:id="mnuShortcuts" mnemonicParsing="false" onAction="#mnuShortcutsClick"
+                    text="Keyboard Shortcuts"/>
+          <SeparatorMenuItem mnemonicParsing="false"/>
+          <MenuItem mnemonicParsing="false" onAction="#mnuAboutClick" text="About"/>
+        </Menu>
+      </MenuBar>
+      <ToolBar fx:id="topToolBar" maxHeight="24.0" minHeight="24.0" prefHeight="24.0"
+               style="-fx-background-color: transparent;">
+        <Button fx:id="btnSaveAll" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0"
+                text="Save to XML">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/download.png"/>
+            </ImageView>
+          </graphic>
+        </Button>
+        <Button fx:id="btnFileMgr" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0"
+                text="File Mgr">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/folders_explorer.png"/>
+            </ImageView>
+          </graphic>
+        </Button>
+        <Button fx:id="btnBibMgr" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0"
+                text="Bib Mgr">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/card-catalog.png"/>
+            </ImageView>
+          </graphic>
+        </Button>
+        <Button fx:id="btnPreviewWindow" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0"
+                text="Preview">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/view-document.png"/>
+            </ImageView>
+          </graphic>
+        </Button>
+        <Separator orientation="VERTICAL" prefHeight="200.0"/>
+        <ToggleButton fx:id="btnPointerLaunch" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false"
+                      prefHeight="22.0" selected="true">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/pointer-rocket.png"/>
+            </ImageView>
+          </graphic>
+          <toggleGroup>
+            <ToggleGroup fx:id="tgPointer"/>
+          </toggleGroup>
+        </ToggleButton>
+        <ToggleButton fx:id="btnPointerPreview" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false"
+                      prefHeight="22.0" toggleGroup="$tgPointer">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/pointer-preview.png"/>
+            </ImageView>
+          </graphic>
+        </ToggleButton>
+        <Separator orientation="VERTICAL" prefHeight="200.0"/>
+        <Button fx:id="btnMentions" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false"
+                onAction="#btnMentionsClick" prefHeight="22.0" text="Mentions"/>
+        <Button fx:id="btnAdvancedSearch" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0"
+                text="Adv Search"/>
+      </ToolBar>
+    </HBox>
+  </top>
+  <center>
+    <AnchorPane fx:id="midAnchorPane" BorderPane.alignment="TOP_CENTER">
+      <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                 AnchorPane.topAnchor="0.0">
+        <TabPane id="mainTabPane" fx:id="tabPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+                 tabClosingPolicy="UNAVAILABLE">
+          <Tab fx:id="tabPersons" text="Persons"/>
+          <Tab fx:id="tabInst" text="Institutions"/>
+          <Tab fx:id="tabWorks" text="Works"/>
+          <Tab fx:id="tabFiles" text="Misc. Files"/>
+          <Tab fx:id="tabDebates" text="Problems/Debates"/>
+          <Tab fx:id="tabPositions" text="Positions"/>
+          <Tab fx:id="tabArguments" text="Arguments"/>
+          <Tab fx:id="tabNotes" text="Notes"/>
+          <Tab fx:id="tabTerms" text="Terms"/>
+          <Tab fx:id="tabQueries" text="Queries"/>
+          <Tab fx:id="tabTree" text="Tree"/>
+        </TabPane>
+        <AnchorPane fx:id="apFindBackground" mouseTransparent="true">
+          <GridPane layoutX="336.0" layoutY="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="336.0"
+                    AnchorPane.rightAnchor="288.0" AnchorPane.topAnchor="0.0">
+            <columnConstraints>
+              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+            </columnConstraints>
+            <rowConstraints>
+              <RowConstraints percentHeight="40.0" vgrow="SOMETIMES"/>
+              <RowConstraints percentHeight="60.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <TableView fx:id="tvFind" GridPane.rowIndex="1">
+              <columns>
+                <TableColumn maxWidth="32.0" minWidth="32.0" prefWidth="32.0" resizable="false"/>
+                <TableColumn prefWidth="500.0" text="Name"/>
+                <TableColumn maxWidth="1000.0" prefWidth="100.0" text="Year"/>
+                <TableColumn maxWidth="2500.0" prefWidth="250.0" text="Additional Info"/>
+              </columns>
+              <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+              </columnResizePolicy>
+            </TableView>
+          </GridPane>
+        </AnchorPane>
+      </StackPane>
+    </AnchorPane>
+  </center>
+  <bottom>
+    <GridPane fx:id="gpBottom">
+      <columnConstraints>
+        <ColumnConstraints hgrow="NEVER" maxWidth="336.0" minWidth="336.0" prefWidth="336.0"/>
+        <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="40.0"/>
+        <ColumnConstraints hgrow="NEVER" maxWidth="288.0" minWidth="288.0" prefWidth="288.0"/>
+      </columnConstraints>
+      <rowConstraints>
+        <RowConstraints maxHeight="28.0" minHeight="10.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="10.0" prefHeight="24.0" vgrow="SOMETIMES"/>
+      </rowConstraints>
+      <AnchorPane>
+        <Button fx:id="btnBack" layoutX="2.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/arrow-180.png"/>
+            </ImageView>
+          </graphic>
+        </Button>
+        <Button fx:id="btnForward" layoutX="38.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0"
+                prefWidth="32.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/arrow.png"/>
+            </ImageView>
+          </graphic>
+        </Button>
+        <Button fx:id="btnDecrement" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" layoutX="74.0" layoutY="5.0"
+                mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="74.0"
+                AnchorPane.topAnchor="5.0">
+          <graphic>
+            <ImageView pickOnBounds="true" preserveRatio="true">
+              <viewport>
+                <Rectangle2D/>
+              </viewport>
+              <Image url="@../resources/images/control-stop-180.png"/>
+            </ImageView>
+          </graphic>
+        </Button>
+        <Button fx:id="btnIncrement" contentDisplay="GRAPHIC_ONLY" layoutX="110.0" layoutY="5.0" mnemonicParsing="false"
+                prefHeight="24.0" prefWidth="32.0" text="Button" AnchorPane.leftAnchor="110.0"
+                AnchorPane.topAnchor="5.0">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true" smooth="false">
+              <viewport>
+                <Rectangle2D/>
+              </viewport>
+              <Image url="@../resources/images/control-stop.png"/>
+            </ImageView>
+          </graphic>
+        </Button>
+        <Label layoutX="146.0" layoutY="10.0" text="Record:" AnchorPane.leftAnchor="146.0" AnchorPane.topAnchor="10.0"/>
+        <TextField fx:id="tfRecord" layoutX="188.0" layoutY="5.0" prefHeight="24.0" prefWidth="79.0"
+                   AnchorPane.leftAnchor="188.0" AnchorPane.topAnchor="5.0">
+        </TextField>
+        <Label layoutX="273.0" layoutY="10.0" text="ID:" AnchorPane.leftAnchor="273.0" AnchorPane.topAnchor="10.0"/>
+        <TextField fx:id="tfID" layoutX="291.0" layoutY="5.0" prefHeight="24.0" prefWidth="43.0"
+                   AnchorPane.leftAnchor="291.0" AnchorPane.topAnchor="5.0">
+        </TextField>
+      </AnchorPane>
+      <AnchorPane GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.valignment="TOP">
+        <ToggleButton fx:id="btnTextSearch" layoutY="5.0" maxWidth="32.0" minWidth="32.0" mnemonicParsing="false"
+                      prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="5.0">
+          <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/text-search2.png"/>
+            </ImageView>
+          </graphic>
+        </ToggleButton>
+        <AnchorPane prefHeight="24.0" prefWidth="55.0" AnchorPane.leftAnchor="35.0" AnchorPane.topAnchor="5.0">
+          <SplitMenuButton fx:id="btnGoTo" mnemonicParsing="false" prefHeight="24.0" prefWidth="55.0"
+                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                           AnchorPane.topAnchor="0.0">
+            <items>
+              <MenuItem fx:id="mnuRecordSelect" mnemonicParsing="false" text="Go to Record"/>
+              <MenuItem fx:id="mnuFindWithinName" mnemonicParsing="false"
+                        text="Find records with name containing this text"/>
+              <MenuItem fx:id="mnuFindWithinAnyField" mnemonicParsing="false"
+                        text="Find records with any field containing this text"/>
+              <MenuItem fx:id="mnuFindNextInName" mnemonicParsing="false" text="Find next match in record name"/>
+              <MenuItem fx:id="mnuFindPreviousInName" mnemonicParsing="false"
+                        text="Find previous match in record name"/>
+              <MenuItem fx:id="mnuFindNextAll" mnemonicParsing="false"
+                        text="Find next match in record name or description"/>
+              <MenuItem fx:id="mnuFindPreviousAll" mnemonicParsing="false"
+                        text="Find previous match in record name or description"/>
+            </items>
+            <graphic>
+              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../resources/images/magnifier.png"/>
+              </ImageView>
+            </graphic>
+          </SplitMenuButton>
+          <Button fx:id="btnPrevResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0"
+                  visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <graphic>
+              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../resources/images/triangle-up.png"/>
+              </ImageView>
+            </graphic>
+          </Button>
+          <Button fx:id="btnNextResult" maxWidth="27.0" minWidth="27.0" mnemonicParsing="false" prefWidth="27.0"
+                  visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <graphic>
+              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                <Image url="@../resources/images/triangle-down.png"/>
+              </ImageView>
+            </graphic>
+          </Button>
+        </AnchorPane>
+        <TabPane fx:id="selectorTabPane" focusTraversable="false" layoutX="92.0" layoutY="5.0"
+                 nodeOrientation="RIGHT_TO_LEFT" side="BOTTOM" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0"
+                 AnchorPane.topAnchor="5.0">
+          <Tab fx:id="tabViewSelector" closable="false">
+            <AnchorPane fx:id="apListGoTo" maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT"
+                        prefHeight="24.0"/>
+          </Tab>
+          <Tab fx:id="tabOmniSelector" closable="false">
+            <AnchorPane maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="24.0">
+              <TextField fx:id="tfOmniGoTo" maxHeight="24.0" minHeight="24.0" prefHeight="24.0"
+                         AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+            </AnchorPane>
+          </Tab>
+          <Tab closable="false"/>
+          <Tab closable="false"/>
+          <Tab closable="false"/>
+          <Tab closable="false"/>
+          <Tab closable="false"/>
+          <Tab closable="false"/>
+          <Tab closable="false"/>
+          <Tab closable="false"/>
+          <Tab closable="false">
+            <AnchorPane fx:id="apGoTo" maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT"
+                        prefHeight="24.0">
+              <ComboBox fx:id="cbGoTo" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" AnchorPane.leftAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+            </AnchorPane>
+          </Tab>
+        </TabPane>
 
 
-       </AnchorPane>
-       <AnchorPane GridPane.columnIndex="2">
-         <Button fx:id="btnSave" layoutX="9.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnSaveClick" prefHeight="24.0" prefWidth="78.0" text="Accept Edits" AnchorPane.rightAnchor="208.0" AnchorPane.topAnchor="5.0" />
-         <Button fx:id="btnRevert" layoutX="91.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="53.0" text="Refresh" AnchorPane.rightAnchor="151.0" AnchorPane.topAnchor="5.0" />
-         <Button fx:id="btnDelete" layoutX="148.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="48.0" text="Delete" AnchorPane.rightAnchor="99.0" AnchorPane.topAnchor="5.0" />
-         <SplitMenuButton fx:id="btnCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnCreateClick" popupSide="TOP" prefHeight="24.0" prefWidth="93.0" text="Create New" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
-           <items>
-             <MenuItem mnemonicParsing="false" text="Action 1" />
-             <MenuItem mnemonicParsing="false" text="Action 2" />
-           </items>
-         </SplitMenuButton>
-         <MenuButton fx:id="mbCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" popupSide="TOP" prefHeight="24.0" prefWidth="93.0" text="Create New" visible="false" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
-           <items>
-             <MenuItem mnemonicParsing="false" text="Action 1" />
-             <MenuItem mnemonicParsing="false" text="Action 2" />
-           </items>
-         </MenuButton>
-       </AnchorPane>
-       <AnchorPane fx:id="apStatus" mouseTransparent="true" prefHeight="24.0" prefWidth="1253.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
-         <Label fx:id="lblStatus" layoutY="1.0" prefHeight="17.0" prefWidth="423.0" text="No database is currently loaded." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="4.0">
-         </Label>
-       </AnchorPane>
-       <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-         <Label fx:id="lblProgress" alignment="CENTER_RIGHT" contentDisplay="RIGHT" nodeOrientation="LEFT_TO_RIGHT" text="Indexing:" textAlignment="RIGHT" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="123.0" />
-         <ProgressBar fx:id="progressBar" prefHeight="17.0" prefWidth="77.0" progress="0.0" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="40.0" />
-         <ImageView fx:id="ivDates" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="10.0">
-           <Image url="@../resources/images/calendar-month.png" />
-         </ImageView>
-       </AnchorPane>
-     </GridPane>
-   </bottom>
+      </AnchorPane>
+      <AnchorPane GridPane.columnIndex="2">
+        <Button fx:id="btnSave" layoutX="9.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnSaveClick"
+                prefHeight="24.0" prefWidth="78.0" text="Accept Edits" AnchorPane.rightAnchor="208.0"
+                AnchorPane.topAnchor="5.0"/>
+        <Button fx:id="btnRevert" layoutX="91.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0"
+                prefWidth="53.0" text="Refresh" AnchorPane.rightAnchor="151.0" AnchorPane.topAnchor="5.0"/>
+        <Button fx:id="btnDelete" layoutX="148.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0"
+                prefWidth="48.0" text="Delete" AnchorPane.rightAnchor="99.0" AnchorPane.topAnchor="5.0"/>
+        <SplitMenuButton fx:id="btnCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false"
+                         onAction="#btnCreateClick" popupSide="TOP" prefHeight="24.0" prefWidth="93.0" text="Create New"
+                         AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Action 1"/>
+            <MenuItem mnemonicParsing="false" text="Action 2"/>
+          </items>
+        </SplitMenuButton>
+        <MenuButton fx:id="mbCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" popupSide="TOP"
+                    prefHeight="24.0" prefWidth="93.0" text="Create New" visible="false" AnchorPane.rightAnchor="2.0"
+                    AnchorPane.topAnchor="5.0">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Action 1"/>
+            <MenuItem mnemonicParsing="false" text="Action 2"/>
+          </items>
+        </MenuButton>
+      </AnchorPane>
+      <AnchorPane fx:id="apStatus" mouseTransparent="true" prefHeight="24.0" prefWidth="1253.0" GridPane.columnSpan="2"
+                  GridPane.rowIndex="1">
+        <Label fx:id="lblStatus" layoutY="1.0" prefHeight="17.0" prefWidth="423.0"
+               text="No database is currently loaded." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="4.0">
+        </Label>
+      </AnchorPane>
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+        <Label fx:id="lblProgress" alignment="CENTER_RIGHT" contentDisplay="RIGHT" nodeOrientation="LEFT_TO_RIGHT"
+               text="Indexing:" textAlignment="RIGHT" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="123.0"/>
+        <ProgressBar fx:id="progressBar" prefHeight="17.0" prefWidth="77.0" progress="0.0" AnchorPane.bottomAnchor="1.0"
+                     AnchorPane.rightAnchor="40.0"/>
+        <ImageView fx:id="ivDates" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true"
+                   AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="10.0">
+          <Image url="@../resources/images/calendar-month.png"/>
+        </ImageView>
+      </AnchorPane>
+    </GridPane>
+  </bottom>
 </BorderPane>

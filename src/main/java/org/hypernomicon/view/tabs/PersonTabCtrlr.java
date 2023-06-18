@@ -39,7 +39,6 @@ import org.hypernomicon.dialogs.NewInstDlgCtrlr;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.PictureDlgCtrlr;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
-import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
@@ -47,7 +46,6 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.WebButton.WebButtonField;
@@ -62,6 +60,7 @@ import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.wrappers.HyperTableColumn;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static java.util.Collections.*;
@@ -70,11 +69,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -98,6 +95,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -157,6 +155,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     super(personTabEnum, tab, "view/tabs/PersonTab");
 
+    HyperTableColumn col;
+
     mainText = new MainTextWrapper(apOverview);
 
     btnNewWork.setOnAction(event -> ui.importWorkFile(curPerson, null, false));
@@ -180,12 +180,17 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
 
-    htWorks.addLabelCol(hdtWork    , smTextSimple);
-    htWorks.addLabelCol(hdtWorkType, smTextSimple);
-    htWorks.addLabelCol(hdtWork    , smTextSimple);
-    htWorks.addCol(hdtInvestigation, ctInvSelect);
-    htWorks.addLabelCol(hdtNone);  // Can display work or misc. file records
-    htWorks.addLabelCol(hdtPerson);
+    col = htWorks.addLabelCol(hdtWork); // Year
+    col.comparator.set((cell1, cell2) -> compareYears(cell1.text, cell2.text));
+
+    htWorks.addLabelCol(hdtWorkType, smTextSimple); // Work Type
+    htWorks.addLabelCol(hdtWork    , smTextSimple); // Ed/Tr
+
+    col = htWorks.addCol(hdtInvestigation, ctInvSelect);
+    col.setHeaderTooltip(invHelpTooltip());
+
+    htWorks.addLabelCol(hdtNone);  // Title; can display work or misc. file records
+    htWorks.addLabelCol(hdtPerson); // Coauthor(s)
 
     tvWorks.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -346,26 +351,41 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private Tooltip invHelpTooltip()
+  {
+    return new WebTooltip(
+
+        "Investigation records are a way of providing a description of a person's ongoing research<br>" +
+        "project (i.e., what they are \"investigating\"), which can include a number of works they've<br>" +
+        "authored.<br><br>" +
+
+        "Investigations can also be thought of as a way of grouping an author's works by topic.<br><br>" +
+
+        "You add an Investigation record on the Persons tab by clicking the \"Add new investigation\" " +
+        "sub-tab.<br><br>" +
+
+        "For example, a Person record for Daniel Dennett might have at least 3 Investigation records:<br>" +
+        "\"Agency and Free Will\", \"Intentional Stance\", and \"Consciousness\".<br><br>" +
+
+        "You can assign an investigation to a work in the Persons tab by clicking in the \"Investigation(s)\"<br>" +
+        "column in the list of works.<br><br>" +
+
+        "When an Investigation sub-tab is selected on the Persons tab, you can enter a description for<br>" +
+        "that Investigation in the text editor, and only works assigned to that Investigation are displayed<br>" +
+        "in the list of works.<br><br>" +
+
+        "As with many other types of records, you can assign a search key to an Investigation on its sub-tab.<br><br>" +
+
+        "Overall, it is a way of grouping a given author's works and prevents you from needing to write<br>" +
+        "a large amount of text on the Person's main description field (the \"Overview\" sub-tab).");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void setInvHelpTooltip()
   {
-    lblInvHelp.setTooltip(new WebTooltip(
-
-      "Investigation records are a way of providing a description of a person's ongoing research<br>" +
-      "project (i.e., what they are \"investigating\"), which can include a number of works they've<br>" +
-      "authored.<br><br>" +
-      "Investigations can also be thought of as a way of grouping an author's works by topic.<br><br>" +
-      "You add an Investigation record on the Persons tab by clicking the \"Add new investigation\" " +
-      "sub-tab.<br><br>" +
-      "For example, a Person record for Daniel Dennett might have at least 3 Investigation records:<br>" +
-      "\"Agency and Free Will\", \"Intentional Stance\", and \"Consciousness\".<br><br>" +
-      "You can assign an investigation to a work in the Persons tab by clicking in the \"Investigation(s)\"<br>" +
-      "column in the list of works.<br><br>" +
-      "When an Investigation sub-tab is selected on the Persons tab, you can enter a description for<br>" +
-      "that Investigation in the text editor, and only works assigned to that Investigation are displayed<br>" +
-      "in the list of works.<br><br>" +
-      "As with many other types of records, you can assign a search key to an Investigation on its sub-tab.<br><br>" +
-      "Overall, it is a way of grouping a given author's works and prevents you from needing to write<br>" +
-      "a large amount of text on the Person's main description field (the \"Overview\" sub-tab)."));
+    lblInvHelp.setTooltip(invHelpTooltip());
 
     lblInvHelp.setOnMouseClicked(event ->
     {
@@ -482,8 +502,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         row.setCellValue(2, work, roleText);
 
-        HDT_Investigation inv = work.investigationStream().findFirst().orElse(null);
-        row.setCellValue(3, inv == null ? -1 : inv.getID(), work.getInvText(curPerson), hdtInvestigation);
+        updateInvInWorkRow(row, work);
 
         row.setCellValue(4, work, work.name());
 
@@ -819,11 +838,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     curPerson.field.setID(hcbField.selectedID());
     curPerson.status.setID(hcbStatus.selectedID());
 
-    Map<Integer, Tag> colNdxToTag = new HashMap<>();
-    colNdxToTag.put(1, tagPast);
-
-    List<ObjectGroup> tableGroups  = htPersonInst.getObjectGroupList(curPerson, rtInstOfPerson, 3, colNdxToTag);
-    curPerson.updateObjectGroups(rtInstOfPerson, tableGroups, colNdxToTag.values());
+    htPersonInst.saveObjectsAndSingleNestedItem(curPerson, rtInstOfPerson, tagPast, 3, 1);
 
     mainText.save();
 
@@ -1076,7 +1091,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class InvestigationView
+  public final class InvestigationView
   {
     private InvestigationView(HDT_Investigation record)
     {
@@ -1122,7 +1137,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
       tab = new Tab();
 
-      tfName.textProperty().addListener((ob, oldText, newText) -> tab.setText(newText));
+      tfName.textProperty().addListener((ob, oldText, newText) ->
+      {
+        tab.setText(newText);
+        updateInvInWorkTable();
+      });
+
       tfName.setText(record.listName());
 
       tab.setContent(bPane);
@@ -1323,7 +1343,50 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       tpPerson.getTabs().remove(view.tab);
 
       saveInvestigations(null);
+
+      updateInvInWorkTable();
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateInvInWorkTable()
+  {
+    htWorks.dataRows().forEach(row ->
+    {
+      if (row.getRecordType() != hdtWork) return;
+
+      updateInvInWorkRow(row, row.getRecord());
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateInvInWorkRow(HyperTableRow row, HDT_Work work)
+  {
+    HDT_Investigation inv = work.investigationStream().findFirst().orElse(null);
+    row.setCellValue(3, inv == null ? -1 : inv.getID(), getInvText(work, curPerson), hdtInvestigation);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String getInvText(HDT_Work work, HDT_Person person)
+  {
+    return work.investigationStream().filter(inv -> inv.person.get() == person)
+                                     .map(this::invName)
+                                     .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String invName(HDT_Investigation inv)
+  {
+    InvestigationView iv = invViewByRecord(inv);
+    return iv == null ? inv.name() : iv.tfName.getText();
   }
 
 //---------------------------------------------------------------------------
@@ -1362,7 +1425,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     MainText.setKeyWorkMentioners(work, investigations, HDT_Investigation.class);
 
-    row.setCellValue(3, investigations.isEmpty() ? -1 : investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
+    updateInvInWorkTable();
   }
 
 //---------------------------------------------------------------------------

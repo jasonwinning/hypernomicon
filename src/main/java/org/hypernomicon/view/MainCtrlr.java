@@ -3375,19 +3375,23 @@ public final class MainCtrlr
   {
     if (searchKeyToolTip == null) searchKeyToolTip = new WebTooltip(
 
-      "Multiple search keys should be separated by semicolon (<code>;</code>) character.<br>" +
-      "<br>" +
+      "Multiple search keys should be separated by semicolon (<code>;</code>) character.<br><br>" +
+
       "Example:<blockquote>" +
+
       "<table><tr><td>Search keys:</td><td><code>Parfit; Derek Parfit</code></td></tr>" +
       "<tr><td>Description text:</td><td>This conclusion was rejected by <a href=\"\">Derek Parfit</a>. Instead, <a href=\"\">Parfit</a> argues that&hellip;</td></tr></table></blockquote>" +
+
       "Use up-caret (<code>^</code>) character to indicate that search key should match beginning of word.<br>" +
       "Use dollar sign (<code>$</code>) character to indicate that search key should match end of word.<br><br>" +
-      "Example:" +
-      "<blockquote>" +
+
+      "Example:<blockquote>" +
+
       "<table><tr><td>Search keys:</td><td><code>^thing; object$; objects$; individual</code></td></tr>" +
       "<tr><td>Description text:</td><td>Anything that is an instance of an ontological category is an entity, but objectively<br>" +
       "speaking, only instances of certain categories count as <a href=\"\">things</a>, <a href=\"\">objects</a>, or <a href=\"\">individuals</a>.</td></tr></table>" +
       "</blockquote>" +
+
       "Notice that the <code>^</code> at the beginning of the <code>thing</code> search key prevents the word &lsquo;Anything&rsquo; from being matched. Similarly,<br>"+
       "the <code>$</code> at the end of the <code>object</code> search key prevents the word &lsquo;objectively&rsquo; from being matched.");
 

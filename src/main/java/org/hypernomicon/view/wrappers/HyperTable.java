@@ -815,17 +815,42 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<ObjectGroup> getObjectGroupList(HDT_Record subj, RelationType relType, int primaryColNdx, Map<Integer, Tag> colNdxToTag)
+  /**
+   * Saves data for 2 columns: An object column and a nested item column.
+   * Nothing if saved if saving the objects will result in a cycle; in that case,
+   * it shows an error popup and returns false.
+   *
+   * @param subj The subject record to save to
+   * @param relType The relation
+   * @param tag The nested item tag
+   * @param objColNdx The object column index
+   * @param nestedColNdx The nested item column index
+   * @return True if they saved successfully
+   */
+  public boolean saveObjectsAndSingleNestedItem(HDT_Record subj, RelationType relType, Tag tag, int objColNdx, int nestedColNdx)
+  {
+    Map<Integer, Tag> colNdxToTag = new HashMap<>();
+    colNdxToTag.put(nestedColNdx, tag);
+
+    List<ObjectGroup> newGroups = getObjectGroupList(subj, relType, objColNdx, colNdxToTag);
+
+    return subj.updateObjectGroups(relType, newGroups, colNdxToTag.values());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public List<ObjectGroup> getObjectGroupList(HDT_Record subj, RelationType relType, int objColNdx, Map<Integer, Tag> colNdxToTag)
   {
     List<ObjectGroup> list = new ArrayList<>();
     RecordType objType = db.getObjType(relType);
 
     db.getNestedTags(relType).stream().filter(Predicate.not(colNdxToTag::containsValue)).forEach(tag -> colNdxToTag.put(-1, tag));
 
-    rows.stream().filter(row -> row.getRecordType(primaryColNdx) == objType).forEach(row ->
+    rows.stream().filter(row -> row.getRecordType(objColNdx) == objType).forEach(row ->
     {
-      int id = row.getID(primaryColNdx);
-      if ((id < 1) && row.getText(primaryColNdx).isEmpty())
+      int id = row.getID(objColNdx);
+      if ((id < 1) && row.getText(objColNdx).isEmpty())
         return;
 
       HDT_Record obj;
@@ -834,7 +859,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       if (id < 1)
       {
         obj = null;
-        group = new ObjectGroup(row.getText(primaryColNdx));
+        group = new ObjectGroup(row.getText(objColNdx));
       }
       else
       {

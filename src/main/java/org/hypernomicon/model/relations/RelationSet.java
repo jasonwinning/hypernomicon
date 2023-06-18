@@ -216,8 +216,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtWorkOfMiscFile           : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Work           .class);
       case rtWorkFileOfWork           : return new RelationSet<>(relType, HDT_Work         .class, HDT_WorkFile       .class,
 
-        new HDI_Schema(hdcString, relType, tagStartPageNum),
-        new HDI_Schema(hdcString, relType, tagEndPageNum));
+        new HDI_Schema(hdcString, relType, tagStartPageNum),   // Non-nested versions of these items also exist for
+        new HDI_Schema(hdcString, relType, tagEndPageNum));    // works with an external file path
 
       case rtFolderOfWorkFile         : return new RelationSet<>(relType, HDT_WorkFile     .class, HDT_Folder         .class);
       case rtFolderOfMiscFile         : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Folder         .class);
@@ -552,9 +552,18 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void updateObjectGroups(HDT_Subj subj, Iterable<ObjectGroup> groups)
+  public void updateObjectGroups(HDT_Subj subj, Iterable<ObjectGroup> groups) throws RelationCycleException
   {
     HyperObjList<HDT_Subj, HDT_Obj> list = new HyperObjList<>(this, subj, true);
+
+    for (ObjectGroup group : groups)
+    {
+      HDT_Obj obj = group.getPrimary();
+
+      if (obj != null)
+        if (list.contains(obj) == false)
+          cycleCheck(subj, obj);
+    }
 
     list.clear();
 
@@ -567,7 +576,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       if (list.add(obj) == false)
       {
         try                              { list.throwLastException(); }
-        catch (RelationCycleException e) { messageDialog(e.getMessage(), mtError); }
+        catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
         return;
       }
 

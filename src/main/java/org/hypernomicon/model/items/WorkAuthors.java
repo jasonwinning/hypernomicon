@@ -177,7 +177,7 @@ public class WorkAuthors extends Authors
 
   public void update(List<ObjectGroup> objGroups)
   {
-    db.updateObjectGroups(rtAuthorOfWork, work, objGroups);
+    try { db.updateObjectGroups(rtAuthorOfWork, work, objGroups); } catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
     allRecords = true;
 
     for (ObjectGroup objGroup : objGroups)

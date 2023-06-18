@@ -24,6 +24,7 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.function.Function;
 
@@ -36,6 +37,7 @@ import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
@@ -44,9 +46,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.skin.TableColumnHeader;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.SortType;
+import javafx.scene.control.Tooltip;
 
 //---------------------------------------------------------------------------
 
@@ -72,6 +77,15 @@ public class HyperTableColumn
   final private int colNdx;
   final private MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
                                dontCreateNewRecord = new MutableBoolean(false);
+
+  /**
+   * Property to determine how cells will sort in the column.<br>
+   * The compare method can assume the cells are non-null.<br>
+   * If this property is set, the sortMethod is ignored.<br>
+   * <br>
+   * Note: updating this property does not cause the column to re-sort.
+   */
+  final public ObjectProperty<Comparator<HyperTableCell>> comparator = new SimpleObjectProperty<>();
 
   final private ObjectProperty<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
 
@@ -157,6 +171,9 @@ public class HyperTableColumn
         if (lastRow.getCell(colNdx) == cell2)
           return tc.getSortType() == SortType.ASCENDING ? -1 : 1;
       }
+
+      if (comparator.get() != null)
+        return comparator.get().compare(cell1, cell2);
 
       if (sortMethod.get() != null)
         return HyperTableCell.compareCells(cell1, cell2, sortMethod.get());
@@ -282,6 +299,28 @@ public class HyperTableColumn
       default :
         break;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setHeaderTooltip(String str)
+  {
+    setHeaderTooltip(makeTooltip(str));
+  }
+
+  public void setHeaderTooltip(Tooltip tooltip)
+  {
+    Platform.runLater(() ->
+    {
+      TableColumnHeader header = (TableColumnHeader) tc.getStyleableNode();
+      Label label = (Label) header.lookup(".label");
+
+      label.setTooltip(tooltip);
+
+      // Makes the tooltip display, no matter where the mouse is inside the column header.
+      label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+    });
   }
 
 //---------------------------------------------------------------------------

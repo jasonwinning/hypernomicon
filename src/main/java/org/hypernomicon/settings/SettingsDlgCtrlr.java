@@ -45,6 +45,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -86,7 +87,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
-  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnClearExtPath;
+  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnClearExtPath, btnExtFilesHelp;
   @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLowerCaseTargetNames, chkDefaultChapterWorkType, chkLinuxWorkaround,
                          chkCompDontExpandKeyWorks, chkDBDontExpandKeyWorks;
   @FXML private ComboBox<HyperTableCell> cbDefaultChapterWorkType;
@@ -149,6 +150,8 @@ public class SettingsDlgCtrlr extends HyperDlg
     noDB = (db.prefs == null) || (db.isLoaded() == false);
 
     initTree();
+
+    setExtFileTooltip();
 
     webBtnSettingsCtrlr = initControl(tabWebButtons, "WebButtonSettings");
     initControl(tabFolders, "FolderSettings");
@@ -217,6 +220,9 @@ public class SettingsDlgCtrlr extends HyperDlg
       if (lcdc.showModal())
         tfPDFReader.setText(app.prefs.get(PREF_KEY_PDF_READER, ""));
     });
+
+    setToolTip(btnImgEditorAdvanced, "Open dialog to customize how the image editor is launched");
+    setToolTip(btnPdfViewerAdvanced, "Open dialog to customize how the PDF viewer is launched");
 
     sliderFontSize.setValue(app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
     sliderFontSize.valueProperty().addListener((ob, oldValue, newValue) ->
@@ -619,6 +625,42 @@ public class SettingsDlgCtrlr extends HyperDlg
     fileChooser.setInitialDirectory(new File(userWorkingDir()));
 
     nullSwitch(ui.windows.showOpenDialog(fileChooser, owner), filePath -> tf.setText(filePath.toString()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setExtFileTooltip()
+  {
+    tfExtFiles.setTooltip(new WebTooltip(
+
+      "This setting should be used when you want multiple Hypernomicon databases to share PDF files<br>" +
+      "so that you don't have to have multiple copies of the same file.<br><br>" +
+
+      "Use the [...] button to select the path where the shared PDF files are located. It is a good idea<br>" +
+      "to select the root folder of another database that will be the \"owner\" of the files.<br><br>" +
+
+      "Once the external file path is set, you can drag and drop a file that lives under the external file<br>" +
+      "path onto the URL field on the Works tab. Its URL will start with " + EXT_1 + ".<br><br>" +
+
+      "Page numbers for that work can be set in the Preview window or the Contents window (accessed from<br>" +
+      "the \"Show contents\" button in the Preview window).<br><br>" +
+
+      "Warning: If the file is moved or renamed, e.g. using the File Manager while the \"owner\" database<br>" +
+      "is open, the path will not be automatically updated in the corresponding work in this database."));
+
+    setToolTip(btnExtFilesHelp, "Show help");
+
+    btnExtFilesHelp.setOnMouseClicked(event ->
+    {
+      tfExtFiles.getTooltip().show(tfExtFiles, event.getScreenX() + 7, event.getScreenY() + 10);
+
+      btnExtFilesHelp.setOnMouseExited(exitEvent ->
+      {
+        tfExtFiles.getTooltip().hide();
+        btnExtFilesHelp.setOnMouseExited(null);
+      });
+    });
   }
 
 //---------------------------------------------------------------------------

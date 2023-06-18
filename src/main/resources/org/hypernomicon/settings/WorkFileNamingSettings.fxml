@@ -16,6 +16,7 @@
    limitations under the License.
 -->
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
@@ -24,8 +25,9 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.WorkFileNamingSettingsCtrlr">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="381.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.WorkFileNamingSettingsCtrlr">
   <GridPane hgap="4.0" layoutX="31.0" layoutY="69.0" minWidth="869.0" prefHeight="144.0" prefWidth="869.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <columnConstraints>
       <ColumnConstraints hgrow="NEVER" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" />
@@ -149,13 +151,35 @@
       <TextField fx:id="tfTest5" layoutX="87.0" layoutY="2.0" text="Rainforest Realism: A Dennettian Theory of Existence" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
     </AnchorPane>
   </GridPane>
-  <CheckBox fx:id="chkTreatEdAsAuthor" layoutX="14.0" layoutY="152.0" mnemonicParsing="false" text="If there are no authors, treat editor(s) as author(s)" />
-  <CheckBox fx:id="chkAddInitial" layoutX="14.0" layoutY="174.0" mnemonicParsing="false" text="Add first initial if author last name is not unique (not yet implemented)" />
-  <CheckBox fx:id="chkYearLetter" layoutX="14.0" layoutY="196.0" mnemonicParsing="false" text="Add letter to year if there are multiple works for that author/year (not yet implemented)" />
-  <CheckBox fx:id="chkPosix" layoutX="14.0" layoutY="218.0" mnemonicParsing="false" text="Enforce POSIX compatibility (other than filename length)" />
-  <CheckBox fx:id="chkLowercase" layoutX="14.0" layoutY="240.0" mnemonicParsing="false" text="Enforce lowercase (do this if file will be made available for download)" />
-  <Label layoutX="14.0" layoutY="264.0" text="Maximum number of characters (usually 255):" />
-  <TextField fx:id="tfMaxChar" layoutX="260.0" layoutY="260.0" text="255" />
-  <Label fx:id="lblExample" layoutX="14.0" layoutY="288.0" text="Example:" />
-  <TextField fx:id="tfExample" editable="false" layoutX="69.0" layoutY="284.0" prefHeight="25.0" prefWidth="957.0" AnchorPane.leftAnchor="69.0" AnchorPane.rightAnchor="4.0" />
+  <VBox fx:id="vbox" layoutX="38.0" layoutY="158.0" prefHeight="643.0" prefWidth="1139.0" spacing="8.0"
+        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+        AnchorPane.topAnchor="158.0">
+    <padding>
+      <Insets bottom="8.0" left="14.0" right="4.0" top="8.0"/>
+    </padding>
+    <CheckBox fx:id="chkTreatEdAsAuthor" mnemonicParsing="false"
+              text="If there are no authors, treat editor(s) as author(s)"/>
+    <CheckBox fx:id="chkAddInitial" mnemonicParsing="false"
+              text="Add first initial if author last name is not unique (not yet implemented)"/>
+    <CheckBox fx:id="chkYearLetter" mnemonicParsing="false"
+              text="Add letter to year if there are multiple works for that author/year (not yet implemented)"/>
+    <CheckBox fx:id="chkPosix" mnemonicParsing="false" text="Enforce POSIX compatibility (other than filename length)"/>
+    <CheckBox fx:id="chkLowercase" mnemonicParsing="false" text="Enforce lowercase"/>
+    <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
+      <children>
+        <Label layoutY="4.0" text="Maximum number of characters (usually 255):" AnchorPane.leftAnchor="0.0"
+               AnchorPane.topAnchor="4.0"/>
+        <TextField fx:id="tfMaxChar" layoutX="246.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="255"
+                   AnchorPane.leftAnchor="246.0" AnchorPane.topAnchor="0.0"/>
+      </children>
+    </AnchorPane>
+    <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
+      <children>
+        <Label fx:id="lblExample" layoutX="-4.0" layoutY="4.0" text="Example:" AnchorPane.leftAnchor="0.0"
+               AnchorPane.topAnchor="4.0"/>
+        <TextField fx:id="tfExample" editable="false" layoutX="51.0" prefHeight="25.0" prefWidth="957.0"
+                   AnchorPane.leftAnchor="51.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+      </children>
+    </AnchorPane>
+  </VBox>
 </AnchorPane>

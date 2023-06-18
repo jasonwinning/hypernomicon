@@ -359,18 +359,18 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   {
     if (uniteToolTip == null) uniteToolTip = new WebTooltip(
 
-      "Click this link to choose another record to \"unite\" this record with.<br>" +
-      "<br>" +
+      "Click this link to choose another record to \"unite\" this record with.<br><br>" +
+
       "To understand what \"uniting\" two records means, consider the fact that sometimes, you might have multiple<br>" +
       "records of different types that represent the same topic and contain redundant information. For example, you<br>" +
-      "might have a Term record for \"Cause\" and a Problem/Debate record for \"What is the nature of causation?\".<br>" +
-      "<br>" +
+      "might have a Term record for \"Cause\" and a Problem/Debate record for \"What is the nature of causation?\".<br><br>" +
+
       "Instead of letting each one contain some information and key works relevant to the other and having to manually<br>" +
       "make sure they stay in sync with each other, you can \"unite\" these records, which causes them to always have<br>" +
       "the same description text and the same key works. Making a change to the description or key works of one record<br>" +
       "will automatically cause the other to be updated as well. Problem/Debates, Positions, Terms, and Labels can<br>" +
-      "all be united together.<br>" +
-      "<br>" +
+      "all be united together.<br><br>" +
+
       "Uniting records does not actually cause them to become merged into a single record. They will remain distinct<br>" +
       "records possessing some fields not possessed by the record(s) they are united with (a record cannot be united<br>" +
       "with another record of the same type). Once records are united together, you can right/secondary click this<br>" +

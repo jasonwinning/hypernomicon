@@ -267,7 +267,7 @@ public final class HyperDB
   { return ((RelationSet<HDT_SubjType, HDT_ObjType>)relationSets.get(relType)).getObjectGroupList(subj, tags); }
 
   @SuppressWarnings("unchecked")
-  public <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> void updateObjectGroups(RelationType relType, HDT_SubjType subj, List<ObjectGroup> groups)
+  public <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> void updateObjectGroups(RelationType relType, HDT_SubjType subj, List<ObjectGroup> groups) throws RelationCycleException
   { ((RelationSet<HDT_SubjType, HDT_ObjType>)relationSets.get(relType)).updateObjectGroups(subj, groups); subj.modifyNow(); }
 
   public void updateNestedString(HDT_Record subj, HDT_Record obj, Tag tag, String str)
@@ -529,8 +529,8 @@ public final class HyperDB
       addPointerMulti(hdtWork, rtWorkFileOfWork, tagWorkFile);
       addAuthorsItem(hdtWork, rtAuthorOfWork);
       addStringItem(hdtWork, tagWebURL);
-      addStringItem(hdtWork, tagStartPageNum);
-      addStringItem(hdtWork, tagEndPageNum);
+      addStringItem(hdtWork, tagStartPageNum);  // These are only used for works with an external file path. Otherwise, nested page
+      addStringItem(hdtWork, tagEndPageNum);    // number items in rtWorkFileOfWork relation are used.
       addStringItem(hdtWork, tagYear);
       addBibEntryKeyItem();
       addStringItem(hdtWork, tagMiscBib);

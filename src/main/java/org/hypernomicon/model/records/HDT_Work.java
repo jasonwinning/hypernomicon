@@ -419,16 +419,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getInvText(HDT_Person person)
-  {
-    return investigationStream().filter(inv -> inv.person.get() == person)
-                                .map(HDT_Investigation::listName)
-                                .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static String addFileIndicator(String str, HDT_RecordWithPath record)
   {
     if (record == null) return str;

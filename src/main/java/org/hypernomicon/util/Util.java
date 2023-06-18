@@ -1027,6 +1027,51 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns the non-negative integer, if any, at the beginning of the string.<br>
+   * Examples:<br>
+   * "123-456" -> 123<br>
+   * "012; XYZ" -> 12<br>
+   * "5.5" -> 5<br>
+   * "-5.5" -> -1<br>
+   * @param s The string
+   * @return The non-negative integer that begins the string, or -1 if the string doesn't start with a non-negative integer or the number is too large to be stored as an integer.
+   */
+  public static int extractLeadingNumber(String s)
+  {
+    if (safeStr(s).isBlank()) return -1;
+
+    int i = 0,
+        radix = 10,
+        len = s.length(),
+        limit = -Integer.MAX_VALUE,
+        multmin = limit / radix,
+        result = 0;
+
+    // Accumulating negatively avoids surprises near MAX_VALUE
+
+    while (i < len)
+    {
+      if (result < multmin)
+        return -1;
+
+      int digit = Character.digit(s.charAt(i++), radix);
+      if (digit < 0)
+        return i == 1 ? -1 : -result;
+
+      result *= radix;
+      if (result < (limit + digit))
+        return -1;
+
+      result -= digit;
+    }
+
+    return -result;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static boolean compareNumberStrings(String str1, String str2, MutableInt result)
   {
     boolean numeric1 = true, numeric2 = true;

@@ -17,6 +17,7 @@
 
 package org.hypernomicon.settings;
 
+import static org.hypernomicon.App.app;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
@@ -38,6 +39,8 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
@@ -52,6 +55,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
                 tfSepAfter1, tfSepAfter2, tfSepAfter3, tfSepAfter4, tfSepAfter5,
                 tfSepBefore1, tfSepBefore2, tfSepBefore3, tfSepBefore4, tfSepBefore5,
                 tfSepWithin1, tfSepWithin2, tfSepWithin3, tfSepWithin4, tfSepWithin5;
+  @FXML private VBox vbox;
 
   private final Map<String, Integer> componentMap = new LinkedHashMap<>();
 
@@ -111,6 +115,9 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     initComponentCB(cbComponent4, PREF_KEY_FN_COMPONENT_4, YEAR_FN_COMPONENT);
     initComponentCB(cbComponent5, PREF_KEY_FN_COMPONENT_5, TITLE_FN_COMPONENT);
 
+    if (app.debugging == false)
+      vbox.getChildren().remove(1, 3);
+
     refreshExample();
   }
 
@@ -164,6 +171,14 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
   {
     tf.setText(String.valueOf(db.prefs.getInt(prefKey, 255)));
 
+    tf.setTextFormatter(new TextFormatter<>(change ->
+    {
+      if (change.getText().matches(".*[^0-9].*") && change.isAdded())
+        change.setText("");
+
+      return change;
+    }));
+
     tf.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
@@ -177,6 +192,12 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
       db.prefs.putInt(prefKey, intVal);
       refreshExample();
+    });
+
+    tf.focusedProperty().addListener((obs, ov, nv) ->
+    {
+      if (Boolean.FALSE.equals(nv))
+        tf.setText(String.valueOf(db.prefs.getInt(prefKey, 255)));
     });
   }
 

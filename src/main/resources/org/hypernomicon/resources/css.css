@@ -1,6 +1,10 @@
 .tooltip
 {
   -fx-font-size: 14;
+  -fx-show-duration: indefinite;
+  -fx-wrap-text: true;
+  -fx-max-width: 1600;
+  -fx-font-weight: normal;
 }
 
 .tab-pane .tab

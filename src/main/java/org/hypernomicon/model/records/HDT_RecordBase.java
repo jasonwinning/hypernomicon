@@ -429,13 +429,23 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags)
+  @Override public final boolean updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags)
   {
     List<ObjectGroup> oldGroups = db.getObjectGroupList(relType, this, tags);
 
-    if ((newGroups.size() != oldGroups.size()) ||
-        (IntStream.range(0, newGroups.size()).anyMatch(ndx -> newGroups.get(ndx).equals(oldGroups.get(ndx)) == false)))
-      db.updateObjectGroups(relType, this, newGroups);
+    try
+    {
+      if ((newGroups.size() != oldGroups.size()) ||
+          (IntStream.range(0, newGroups.size()).anyMatch(ndx -> newGroups.get(ndx).equals(oldGroups.get(ndx)) == false)))
+        db.updateObjectGroups(relType, this, newGroups);
+    }
+    catch (RelationCycleException e)
+    {
+      messageDialog(e.getMessage(), mtError);
+      return false;
+    }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
