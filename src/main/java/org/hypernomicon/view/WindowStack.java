@@ -168,9 +168,9 @@ public final class WindowStack
         curStage.toFront();
     });
 
-    stage.toFront();
-
     cyclingFocus = false;
+
+    stage.toFront();
   }
 
 //---------------------------------------------------------------------------

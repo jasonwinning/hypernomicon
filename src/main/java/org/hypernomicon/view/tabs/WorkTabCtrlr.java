@@ -285,6 +285,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htWorkFiles.addCheckboxCol();
     htWorkFiles.addLabelCol(hdtWorkFile);
+
     col = htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int startPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);

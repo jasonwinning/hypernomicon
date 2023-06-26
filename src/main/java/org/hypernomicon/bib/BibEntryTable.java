@@ -87,7 +87,8 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
                                      tcTitle       = (TableColumn<BibEntryRow, String>) tv.getColumns().get(3),
                                      tcYear        = (TableColumn<BibEntryRow, String>) tv.getColumns().get(4),
                                      tcAssocRecord = (TableColumn<BibEntryRow, String>) tv.getColumns().get(5),
-                                     tcPublishedIn = (TableColumn<BibEntryRow, String>) tv.getColumns().get(6);
+                                     tcPublishedIn = (TableColumn<BibEntryRow, String>) tv.getColumns().get(6),
+                                     tcPublisher   = (TableColumn<BibEntryRow, String>) tv.getColumns().get(7);
 
     tcEntryKey   .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getKey()));
     tcType       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getEntryType().getUserFriendlyName()));
@@ -95,6 +96,7 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     tcTitle      .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfTitle)));
     tcYear       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfYear)));
     tcPublishedIn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfContainerTitle)));
+    tcPublisher  .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfPublisher)));
 
     tcTitle.setComparator(Comparator.comparing(str -> makeSortKeyByType(str, hdtWork)));
 
@@ -211,7 +213,7 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void filter(String txt)
+  public void filter(String txt, boolean requireByDefault)
   {
     String text = ultraTrim(safeStr(txt).toLowerCase());
 
@@ -221,13 +223,13 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
       return;
     }
 
-    BasicTextMatcher matcher = new BasicTextMatcher(text, false);
+    BasicTextMatcher matcher = new BasicTextMatcher(text, false, requireByDefault);
 
     filteredRows.setPredicate(row ->
     {
       BibEntry<?, ?> entry = row.getEntry();
 
-      String entryStr = entry.getCBText() + ' ' + entry.getStr(bfContainerTitle);
+      String entryStr = entry.getCBText() + ' ' + entry.getStr(bfContainerTitle) + ' ' + entry.getStr(bfPublisher);
 
       return matcher.isMatch(entryStr);
     });

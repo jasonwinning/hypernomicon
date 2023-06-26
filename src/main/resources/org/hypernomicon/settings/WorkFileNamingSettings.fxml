@@ -17,169 +17,60 @@
 -->
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="381.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.WorkFileNamingSettingsCtrlr">
-  <GridPane hgap="4.0" layoutX="31.0" layoutY="69.0" minWidth="869.0" prefHeight="144.0" prefWidth="869.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-    <columnConstraints>
-      <ColumnConstraints hgrow="NEVER" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" />
-      <ColumnConstraints hgrow="NEVER" maxWidth="301.0" minWidth="176.0" prefWidth="176.0" />
-      <ColumnConstraints hgrow="NEVER" maxWidth="394.0" minWidth="159.0" prefWidth="159.0" />
-      <ColumnConstraints hgrow="NEVER" maxWidth="394.0" minWidth="159.0" prefWidth="159.0" />
-      <ColumnConstraints hgrow="NEVER" maxWidth="324.0" minWidth="156.0" prefWidth="156.0" />
-      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="337.0" prefWidth="337.0" />
-    </columnConstraints>
-    <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-    </rowConstraints>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-      <Label layoutX="16.0" layoutY="6.0" text="Component" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-      <Label layoutX="14.0" layoutY="6.0" text="Before-component separator" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3">
-      <Label layoutX="9.0" layoutY="7.0" text="Within-component separator" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4">
-      <Label layoutX="14.0" layoutY="6.0" text="After-component separator" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5">
-      <Label layoutX="19.0" layoutY="6.0" text="Test value (separate by semicolons)" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-      <Label layoutX="-4.0" layoutY="6.0" text="1." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-      <ComboBox fx:id="cbComponent1" layoutX="-26.0" layoutY="3.0" prefWidth="150.0" promptText="Author last names" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-      <TextField fx:id="tfSepBefore1" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
-      <TextField fx:id="tfSepWithin1" layoutX="14.0" layoutY="3.0" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="1">
-      <TextField fx:id="tfSepAfter1" layoutX="14.0" layoutY="3.0" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="1">
-      <TextField fx:id="tfTest1" layoutY="2.0" text="Ross, Don" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-      <Label text="2." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-      <ComboBox fx:id="cbComponent2" prefWidth="150.0" promptText="Editors" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-      <TextField fx:id="tfSepBefore2" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
-      <TextField fx:id="tfSepWithin2" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
-      <TextField fx:id="tfSepAfter2" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="2">
-      <TextField fx:id="tfTest2" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-      <Label text="3." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-      <ComboBox fx:id="cbComponent3" prefWidth="150.0" promptText="Translators" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
-      <TextField fx:id="tfSepBefore3" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
-      <TextField fx:id="tfSepWithin3" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="3">
-      <TextField fx:id="tfSepAfter3" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="3">
-      <TextField fx:id="tfTest3" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-      <Label text="4." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-      <ComboBox fx:id="cbComponent4" prefWidth="150.0" promptText="Year" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="4">
-      <TextField fx:id="tfSepBefore4" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
-      <TextField fx:id="tfSepWithin4" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="26.0" prefWidth="185.0" GridPane.columnIndex="4" GridPane.rowIndex="4">
-      <TextField fx:id="tfSepAfter4" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="4">
-      <TextField fx:id="tfTest4" layoutY="2.0" text="2000" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
-      <Label layoutY="6.0" text="5." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-      <ComboBox fx:id="cbComponent5" prefWidth="150.0" promptText="Title, no subtitle" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
-      <TextField fx:id="tfSepBefore5" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="5">
-      <TextField fx:id="tfSepWithin5" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="5">
-      <TextField fx:id="tfSepAfter5" layoutX="-3.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="5">
-      <TextField fx:id="tfTest5" layoutX="87.0" layoutY="2.0" text="Rainforest Realism: A Dennettian Theory of Existence" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
-    </AnchorPane>
-  </GridPane>
-  <VBox fx:id="vbox" layoutX="38.0" layoutY="158.0" prefHeight="643.0" prefWidth="1139.0" spacing="8.0"
-        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-        AnchorPane.topAnchor="158.0">
-    <padding>
-      <Insets bottom="8.0" left="14.0" right="4.0" top="8.0"/>
-    </padding>
-    <CheckBox fx:id="chkTreatEdAsAuthor" mnemonicParsing="false"
-              text="If there are no authors, treat editor(s) as author(s)"/>
-    <CheckBox fx:id="chkAddInitial" mnemonicParsing="false"
-              text="Add first initial if author last name is not unique (not yet implemented)"/>
-    <CheckBox fx:id="chkYearLetter" mnemonicParsing="false"
-              text="Add letter to year if there are multiple works for that author/year (not yet implemented)"/>
-    <CheckBox fx:id="chkPosix" mnemonicParsing="false" text="Enforce POSIX compatibility (other than filename length)"/>
-    <CheckBox fx:id="chkLowercase" mnemonicParsing="false" text="Enforce lowercase"/>
-    <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
-      <children>
-        <Label layoutY="4.0" text="Maximum number of characters (usually 255):" AnchorPane.leftAnchor="0.0"
-               AnchorPane.topAnchor="4.0"/>
-        <TextField fx:id="tfMaxChar" layoutX="246.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="255"
-                   AnchorPane.leftAnchor="246.0" AnchorPane.topAnchor="0.0"/>
-      </children>
-    </AnchorPane>
-    <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
-      <children>
-        <Label fx:id="lblExample" layoutX="-4.0" layoutY="4.0" text="Example:" AnchorPane.leftAnchor="0.0"
-               AnchorPane.topAnchor="4.0"/>
-        <TextField fx:id="tfExample" editable="false" layoutX="51.0" prefHeight="25.0" prefWidth="957.0"
-                   AnchorPane.leftAnchor="51.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-      </children>
-    </AnchorPane>
-  </VBox>
+<AnchorPane prefHeight="495.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.WorkFileNamingSettingsCtrlr">
+  <SplitPane dividerPositions="0.5" layoutX="214.0" layoutY="100.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <items>
+      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+        <children>
+          <TableView fx:id="tv" editable="true" layoutX="119.0" layoutY="-2.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <columns>
+              <TableColumn prefWidth="169.0" text="Component" />
+              <TableColumn prefWidth="151.0" text="Exclude work types" />
+              <TableColumn prefWidth="151.0" text="Before-component&#10;separator" />
+              <TableColumn prefWidth="151.0" text="Within-component&#10;separator" />
+              <TableColumn prefWidth="151.0" style="-fx-text-alignment: center;" text="After-component&#10;separator" />
+              <TableColumn prefWidth="244.0" text="Test value (separate by semicolons)" />
+            </columns>
+          </TableView>
+        </children>
+      </AnchorPane>
+      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+        <children>
+          <VBox fx:id="vbox" spacing="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <padding>
+          <Insets bottom="8.0" left="14.0" right="4.0" top="8.0" />
+        </padding>
+        <CheckBox fx:id="chkTreatEdAsAuthor" mnemonicParsing="false" text="If there are no authors, treat editor(s) as author(s)" />
+        <CheckBox fx:id="chkAddInitial" mnemonicParsing="false" text="Add first initial if author last name is not unique (not yet implemented)" />
+        <CheckBox fx:id="chkYearLetter" mnemonicParsing="false" text="Add letter to year if there are multiple works for that author/year (not yet implemented)" />
+        <CheckBox fx:id="chkPosix" mnemonicParsing="false" text="Enforce POSIX compatibility (other than filename length)" />
+        <CheckBox fx:id="chkLowercase" mnemonicParsing="false" text="Enforce lowercase" />
+        <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
+          <children>
+            <Label layoutY="4.0" text="Maximum number of characters (usually 255):" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
+            <TextField fx:id="tfMaxChar" layoutX="246.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="255" AnchorPane.leftAnchor="246.0" AnchorPane.topAnchor="0.0" />
+          </children>
+        </AnchorPane>
+        <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
+          <children>
+            <Label fx:id="lblExample" layoutX="-4.0" layoutY="4.0" text="Example:" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
+            <TextField fx:id="tfExample" editable="false" layoutX="51.0" prefHeight="25.0" prefWidth="957.0" AnchorPane.leftAnchor="51.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+          </children>
+        </AnchorPane>
+      </VBox>
+               <Button fx:id="btnRevert" mnemonicParsing="false" text="Revert Changes in Table" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0" />
+        </children>
+      </AnchorPane>
+    </items>
+  </SplitPane>
 </AnchorPane>

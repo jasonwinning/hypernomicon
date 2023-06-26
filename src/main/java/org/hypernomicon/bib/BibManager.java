@@ -62,6 +62,7 @@ import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -76,6 +77,7 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -84,6 +86,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
@@ -101,6 +104,7 @@ import javafx.util.StringConverter;
 public class BibManager extends HyperDlg
 {
   @FXML private Button btnCreateNew, btnAutofill, btnViewOnWeb, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
+  @FXML private CheckBox chkRequireByDefault;
   @FXML private ComboBox<EntryType> cbNewType;
   @FXML private Label lblSelect;
   @FXML private SplitPane spMain;
@@ -133,7 +137,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected boolean isValid()  { return true; }
+  @Override protected boolean isValid()               { return true; }
 
   private void hideBottomControls()                   { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
   private void viewOnWeb()                            { viewOnWeb(tableView.getSelectionModel().getSelectedItem().getEntry()); }
@@ -238,8 +242,7 @@ public class BibManager extends HyperDlg
 
     MainTextUtil.webViewAddZoom(webView, PREF_KEY_BIBMGR_ZOOM);
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     onShown = () ->
     {
@@ -260,10 +263,11 @@ public class BibManager extends HyperDlg
         refresh();
 
       ui.windows.push(dialogStage);
+
+      safeFocus(searchField);
     };
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldTreeItem, newTreeItem) ->
     {
@@ -280,20 +284,22 @@ public class BibManager extends HyperDlg
       }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false)) return;
+      if (ui.windows.getCyclingFocus())
+        return;
+
+      if (Boolean.TRUE.equals(newValue) == false)
+        return;
 
       ui.windows.push(dialogStage);
 
       refresh();
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
   }
@@ -304,7 +310,7 @@ public class BibManager extends HyperDlg
   private CustomTextField setupSearchField()
   {
     CustomTextField ctf = (CustomTextField) TextFields.createClearableTextField();
-    ctf.setPromptText("Title, Author, Year, Published In");
+    ctf.setPromptText("Title, Author, Year, Published In, Publisher");
     ImageView imageView = imgViewFromRelPath("resources/images/magnifier.png");
     imageView.setFitHeight(16);
     imageView.setPreserveRatio(true);
@@ -315,7 +321,15 @@ public class BibManager extends HyperDlg
     toolBar2.getItems().remove(tfSearch);
     toolBar2.getItems().add(ctf);
 
-    ctf.textProperty().addListener((obs, ov, nv) -> entryTable.filter(nv));
+    ctf.textProperty().addListener((obs, ov, nv) -> entryTable.filter(nv, chkRequireByDefault.isSelected()));
+
+    chkRequireByDefault.setSelected(app.prefs.getBoolean(PREF_KEY_BIB_SRCH_REQUIRE_BY_DEFAULT, false));
+
+    chkRequireByDefault.setOnAction(event ->
+    {
+      app.prefs.putBoolean(PREF_KEY_BIB_SRCH_REQUIRE_BY_DEFAULT, chkRequireByDefault.isSelected());
+      entryTable.filter(ctf.getText(), chkRequireByDefault.isSelected());
+    });
 
     KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
     dialogStage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
@@ -323,6 +337,21 @@ public class BibManager extends HyperDlg
       if (keyComb.match(event))
         safeFocus(ctf);
     });
+
+    Tooltip tooltip = new WebTooltip(
+
+        "Use this search field to search entries in your reference manager.<br><br>" +
+        "In order to match a phrase, put it in double quotes.<br><br>" +
+        "If a search term should be required, prefix it with + (plus sign).<br><br>" +
+        "If a search term should be excluded, prefix it with - (minus sign).<br><br>" +
+        "For example, if you want to find all entries that include Smith and the phrase Journal of,<br>" +
+        "and that don't include Philosophy, you can enter:<br>" +
+        "<blockquote><code>+Smith +&quot;Journal of&quot; -Philosophy</code></blockquote>" +
+        "Select [Implicit +] to treat all terms as required unless prefixed by minus sign.<br><br>" +
+        "The search is not case-sensitive.");
+
+    ctf.setTooltip(tooltip);
+    chkRequireByDefault.setTooltip(tooltip);
 
     return ctf;
   }
@@ -897,6 +926,14 @@ public class BibManager extends HyperDlg
 
     getDividerPosition(spMain, PREF_KEY_BIB_LEFT_HORIZ, 0);
     getDividerPosition(spMain, PREF_KEY_BIB_RIGHT_HORIZ, 1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void focusOnSearchField()
+  {
+    safeFocus(searchField);
   }
 
 //---------------------------------------------------------------------------

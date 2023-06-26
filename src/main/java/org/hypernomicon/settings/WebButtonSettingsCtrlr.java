@@ -390,7 +390,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void save()
+  @Override public void save(boolean noDB)
   {
     Preferences node = app.prefs.node(PREF_KEY_WEB_BUTTONS);
 

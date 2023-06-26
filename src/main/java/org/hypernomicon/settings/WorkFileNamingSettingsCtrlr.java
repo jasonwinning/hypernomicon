@@ -20,27 +20,38 @@ package org.hypernomicon.settings;
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.Map.Entry;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsControl;
+import org.hypernomicon.util.SplitString;
+import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.populators.Populator.CellValueType;
+import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
+import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
@@ -48,58 +59,175 @@ import javafx.stage.Window;
 
 public class WorkFileNamingSettingsCtrlr implements SettingsControl
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public enum WorkFileNameComponentType
+  {
+    fncAuthorLastNames("Author last names", AUTHOR_FN_COMPONENT),
+    fncYear("Year", YEAR_FN_COMPONENT),
+    fncTitleNoSub("Title (no subtitle)", TITLE_FN_COMPONENT),
+    fncTranslators("Translators", TRANS_FN_COMPONENT),
+    fncEditors("Editors", EDITOR_FN_COMPONENT),
+    fncContainerNoSub("Container title (no subtitle)", CONTAINER_FN_COMPONENT),
+    fncPublisher("Publisher", PUBLISHER_FN_COMPONENT),
+    fncBlank("", BLANK_FN_COMPONENT);
+
+    private final String caption;
+    final int prefValue;
+
+//---------------------------------------------------------------------------
+
+    WorkFileNameComponentType(String caption, int prefValue)
+    {
+      this.caption = caption;
+      this.prefValue = prefValue;
+    }
+
+//---------------------------------------------------------------------------
+
+    static WorkFileNameComponentType forInteger(int prefValue)
+    {
+      return Arrays.stream(values()).filter(type -> type.prefValue == prefValue).findFirst().orElse(fncBlank);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class WorkFileNameComponent
+  {
+    public final WorkFileNameComponentType type;
+    public final String beforeSep, withinSep, afterSep, testStr;
+    public final Set<HDT_WorkType> excludedWorkTypes = new HashSet<>();
+
+//---------------------------------------------------------------------------
+
+    /**
+     *
+     * @param prefNdx 1-based index used for preference keys
+     */
+    public WorkFileNameComponent(int prefNdx)
+    {
+      type = WorkFileNameComponentType.forInteger(db.prefs.getInt(PREF_KEY_FN_COMPONENT + prefNdx, 0));
+      beforeSep = db.prefs.get(PREF_KEY_FN_BEFORE_SEP + prefNdx, "");
+      withinSep = db.prefs.get(PREF_KEY_FN_WITHIN_SEP + prefNdx, "");
+      afterSep  = db.prefs.get(PREF_KEY_FN_AFTER_SEP  + prefNdx, "");
+      testStr   = db.prefs.get(PREF_KEY_FN_TEST       + prefNdx, "");
+
+      excludedWorkTypes.clear();
+
+      new SplitString(db.prefs.get(PREF_KEY_FN_EXCL_WORK_TYPES + prefNdx, ""), ';').forEach(workTypeStr ->
+      {
+        String trimmedWorkTypeStr = ultraTrim(workTypeStr);
+        HDT_WorkType workType = db.workTypes.getByID(parseInt(trimmedWorkTypeStr, -1));
+        if (HDT_Record.isEmpty(workType) == false)
+          excludedWorkTypes.add(workType);
+      });
+    }
+
+//---------------------------------------------------------------------------
+
+    private WorkFileNameComponent(WorkFileNameComponentType type, String exclTypesStr, String beforeSep, String withinSep, String afterSep, String testStr)
+    {
+      this.type      = type;
+      this.beforeSep = beforeSep;
+      this.withinSep = withinSep;
+      this.afterSep  = afterSep;
+      this.testStr   = testStr;
+
+      excludedWorkTypes.clear();
+
+      new SplitString(exclTypesStr, ';').forEach(workTypeStr ->
+      {
+        String trimmedWorkTypeStr = ultraTrim(workTypeStr);
+
+        db.workTypes.forEach(workType ->
+        {
+          if (trimmedWorkTypeStr.equalsIgnoreCase(workType.name()))
+            excludedWorkTypes.add(workType);
+        });
+      });
+    }
+
+//---------------------------------------------------------------------------
+
+    private void saveToPrefs(int prefNdx)
+    {
+      db.prefs.putInt(PREF_KEY_FN_COMPONENT    + prefNdx, type.prefValue);
+      db.prefs.put(PREF_KEY_FN_BEFORE_SEP      + prefNdx, beforeSep     );
+      db.prefs.put(PREF_KEY_FN_WITHIN_SEP      + prefNdx, withinSep     );
+      db.prefs.put(PREF_KEY_FN_AFTER_SEP       + prefNdx, afterSep      );
+      db.prefs.put(PREF_KEY_FN_TEST            + prefNdx, testStr       );
+
+      String prefStr = excludedWorkTypes.stream().map(workType -> String.valueOf(workType.getID())).reduce((s1, s2) -> s1 + ";" + s2).orElse("");
+      db.prefs.put(PREF_KEY_FN_EXCL_WORK_TYPES + prefNdx, prefStr);
+    }
+
+//---------------------------------------------------------------------------
+
+    public static List<WorkFileNameComponent> loadFromPrefs()
+    {
+      int componentCount = db.prefs.getInt(PREF_KEY_FN_COMPONENT_COUNT, 5);  // Before a TableView was used, there were always 5 components
+
+      return IntStream.range(1, componentCount + 1).boxed().map(WorkFileNameComponent::new).collect(Collectors.toList());
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private Button btnRevert;
   @FXML private CheckBox chkAddInitial, chkLowercase, chkPosix, chkTreatEdAsAuthor, chkYearLetter;
-  @FXML private ComboBox<String> cbComponent1, cbComponent2, cbComponent3, cbComponent4, cbComponent5;
   @FXML private Label lblExample;
-  @FXML private TextField tfExample, tfMaxChar, tfTest1, tfTest2, tfTest3, tfTest4, tfTest5,
-                tfSepAfter1, tfSepAfter2, tfSepAfter3, tfSepAfter4, tfSepAfter5,
-                tfSepBefore1, tfSepBefore2, tfSepBefore3, tfSepBefore4, tfSepBefore5,
-                tfSepWithin1, tfSepWithin2, tfSepWithin3, tfSepWithin4, tfSepWithin5;
+  @FXML private TextField tfExample, tfMaxChar;
   @FXML private VBox vbox;
+  @FXML private TableView<HyperTableRow> tv;
 
-  private final Map<String, Integer> componentMap = new LinkedHashMap<>();
-
-  @Override public void save() { return; }
+  private HyperTable hyperTable;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void init(Window owner, boolean noDB)
   {
-    componentMap.put("Author last names", AUTHOR_FN_COMPONENT);
-    componentMap.put("Year", YEAR_FN_COMPONENT);
-    componentMap.put("Title (no subtitle)", TITLE_FN_COMPONENT);
-    componentMap.put("Translators", TRANS_FN_COMPONENT);
-    componentMap.put("Editors", EDITOR_FN_COMPONENT);
-    componentMap.put("", BLANK_FN_COMPONENT);
+    hyperTable = new HyperTable(tv, 0, true, "");
 
-    lblExample.setOnMouseClicked(event -> refreshExample());
+    Populator pop = Populator.create(CellValueType.cvtFileNameComponent,
+        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new HyperTableCell(type.prefValue, type.caption, hdtNone)).collect(Collectors.toList()));
+
+    hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDown, pop, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
+
+    hyperTable.addLabelEditCol((row, colNdx) ->
+    {
+      ExclWorkTypesDlgCtrlr extdc = new ExclWorkTypesDlgCtrlr(getComponentFromRow(row).excludedWorkTypes, row.getText(0));
+      extdc.showModal();
+
+      setExclWorkTypesCellValue(extdc.exclTypes(), row);
+      row.setCellValue(1, extdc.exclTypes().map(HDT_WorkType::name).reduce((s1, s2) -> s1 + "; " + s2).orElse(""), hdtNone);
+    });
+
+    initColumn(2);
+    initColumn(3);
+    initColumn(4);
+    initColumn(5);
 
     if (noDB) return;
 
-    initDBTextField(tfSepWithin1, PREF_KEY_FN_WITHIN_SEP_1);
-    initDBTextField(tfSepWithin2, PREF_KEY_FN_WITHIN_SEP_2);
-    initDBTextField(tfSepWithin3, PREF_KEY_FN_WITHIN_SEP_3);
-    initDBTextField(tfSepWithin4, PREF_KEY_FN_WITHIN_SEP_4);
-    initDBTextField(tfSepWithin5, PREF_KEY_FN_WITHIN_SEP_5);
+    btnRevert.setOnAction(event -> reloadFromPrefs());
 
-    initDBTextField(tfSepBefore1, PREF_KEY_FN_BEFORE_SEP_1);
-    initDBTextField(tfSepBefore2, PREF_KEY_FN_BEFORE_SEP_2);
-    initDBTextField(tfSepBefore3, PREF_KEY_FN_BEFORE_SEP_3);
-    initDBTextField(tfSepBefore4, PREF_KEY_FN_BEFORE_SEP_4);
-    initDBTextField(tfSepBefore5, PREF_KEY_FN_BEFORE_SEP_5);
+    hyperTable.setDefaultValue(3, new HyperTableCell(" ", hdtNone)); // Default within-separator is space
+    hyperTable.addRemoveMenuItem(row ->
+    {
+      HyperTableRow lastRow = hyperTable.getRows().get(hyperTable.getRows().size() - 1);
+      return lastRow != row;
 
-    initDBTextField(tfSepAfter1, PREF_KEY_FN_AFTER_SEP_1);
-    initDBTextField(tfSepAfter2, PREF_KEY_FN_AFTER_SEP_2);
-    initDBTextField(tfSepAfter3, PREF_KEY_FN_AFTER_SEP_3);
-    initDBTextField(tfSepAfter4, PREF_KEY_FN_AFTER_SEP_4);
-    initDBTextField(tfSepAfter5, PREF_KEY_FN_AFTER_SEP_5);
+    }, row -> refreshExample());
 
-    initDBTextField(tfTest1, PREF_KEY_FN_TEST_1);
-    initDBTextField(tfTest2, PREF_KEY_FN_TEST_2);
-    initDBTextField(tfTest3, PREF_KEY_FN_TEST_3);
-    initDBTextField(tfTest4, PREF_KEY_FN_TEST_4);
-    initDBTextField(tfTest5, PREF_KEY_FN_TEST_5);
+    hyperTable.addChangeOrderMenuItem(true, () -> refreshExample());
+
+    lblExample.setOnMouseClicked(event -> refreshExample());
 
     initCheckBox(chkTreatEdAsAuthor, PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true);
     initCheckBox(chkAddInitial, PREF_KEY_FN_ADD_INITIAL, false);
@@ -109,16 +237,47 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     initMaxChar(tfMaxChar, PREF_KEY_FN_MAX_CHAR);
 
-    initComponentCB(cbComponent1, PREF_KEY_FN_COMPONENT_1, AUTHOR_FN_COMPONENT);
-    initComponentCB(cbComponent2, PREF_KEY_FN_COMPONENT_2, EDITOR_FN_COMPONENT);
-    initComponentCB(cbComponent3, PREF_KEY_FN_COMPONENT_3, TRANS_FN_COMPONENT);
-    initComponentCB(cbComponent4, PREF_KEY_FN_COMPONENT_4, YEAR_FN_COMPONENT);
-    initComponentCB(cbComponent5, PREF_KEY_FN_COMPONENT_5, TITLE_FN_COMPONENT);
-
     if (app.debugging == false)
       vbox.getChildren().remove(1, 3);
 
+    reloadFromPrefs();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void reloadFromPrefs()
+  {
+    hyperTable.clear();
+
+    hyperTable.buildRows(WorkFileNameComponent.loadFromPrefs(), (row, component) ->
+    {
+      row.setCellValue(0, new HyperTableCell(component.type.prefValue, component.type.caption, hdtNone));
+
+      setExclWorkTypesCellValue(component.excludedWorkTypes.stream(), row);
+
+      row.setCellValue(2, new HyperTableCell(component.beforeSep, hdtNone));
+      row.setCellValue(3, new HyperTableCell(component.withinSep, hdtNone));
+      row.setCellValue(4, new HyperTableCell(component.afterSep , hdtNone));
+      row.setCellValue(5, new HyperTableCell(component.testStr  , hdtNone));
+    });
+
     refreshExample();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initColumn(int colNdx)
+  {
+    hyperTable.addTextEditColWithUpdateHandler(hdtNone, true, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
+
+    Platform.runLater(() ->
+    {
+      TableColumnHeader header = (TableColumnHeader) tv.getColumns().get(colNdx).getStyleableNode();
+      Label label = (Label) header.lookup(".label");
+      label.setTextAlignment(TextAlignment.CENTER);
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -139,29 +298,33 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initComponentCB(ComboBox<String> cb, String prefKey, int defValue)
+  @Override public void save(boolean noDB)
   {
-    ObservableList<String> choices = FXCollections.observableArrayList(componentMap.keySet());
+    if (noDB) return;
 
-    cb.setItems(null);
-    cb.setItems(choices);
+    int componentCount = db.prefs.getInt(PREF_KEY_FN_COMPONENT_COUNT, 5);  // Before a TableView was used, there were always 5 components
 
-    int selNdx = 0, selCode = db.prefs.getInt(prefKey, defValue);
-    db.prefs.putInt(prefKey, selCode);
-
-    for (Entry<String, Integer> entry : componentMap.entrySet())
-      if (entry.getValue() == selCode)
-        selNdx = cb.getItems().indexOf(entry.getKey());
-
-    cb.getSelectionModel().select(selNdx);
-
-    cb.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    for (int prefNdx = 1; prefNdx <= componentCount; prefNdx++)
     {
-      if (newValue == null) return;
+      db.prefs.remove(PREF_KEY_FN_COMPONENT );
+      db.prefs.remove(PREF_KEY_FN_EXCL_WORK_TYPES);
+      db.prefs.remove(PREF_KEY_FN_BEFORE_SEP);
+      db.prefs.remove(PREF_KEY_FN_WITHIN_SEP);
+      db.prefs.remove(PREF_KEY_FN_AFTER_SEP );
+      db.prefs.remove(PREF_KEY_FN_TEST      );
+    }
 
-      db.prefs.putInt(prefKey, componentMap.get(newValue));
-      refreshExample();
-    });
+    List<WorkFileNameComponent> components = saveComponentsFromTableToList();
+
+    int prefNdx = 0;
+
+    for (WorkFileNameComponent component : components)
+    {
+      prefNdx++;
+      component.saveToPrefs(prefNdx);
+    }
+
+    db.prefs.putInt(PREF_KEY_FN_COMPONENT_COUNT, prefNdx);
   }
 
 //---------------------------------------------------------------------------
@@ -204,50 +367,59 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private List<WorkFileNameComponent> saveComponentsFromTableToList()
+  {
+    List<WorkFileNameComponent> components = new ArrayList<>();
+
+    for (HyperTableRow row : hyperTable.dataRows())
+    {
+      WorkFileNameComponent component = getComponentFromRow(row);
+      if (component.type == WorkFileNameComponentType.fncBlank)
+        continue;
+
+      components.add(component);
+    }
+
+    return components;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private WorkFileNameComponent getComponentFromRow(HyperTableRow row)
+  {
+    return new WorkFileNameComponent(WorkFileNameComponentType.forInteger(row.getID(0)), row.getText(1), row.getText(2), row.getText(3), row.getText(4), row.getText(5));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setExclWorkTypesCellValue(Stream<HDT_WorkType> workTypes, HyperTableRow row)
+  {
+    row.setCellValue(1, workTypes.map(HDT_WorkType::name).reduce((s1, s2) -> s1 + "; " + s2).orElse(""), hdtNone);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void refreshExample()
   {
-    String author = "", title = "", year = "", trans = "", editor = "";
+    String author = "", title = "", year = "", trans = "", editor = "", publisher = "", container = "";
+    List<WorkFileNameComponent> components = saveComponentsFromTableToList();
 
-    for (int ndx = 1; ndx <= 5; ndx++)
+    for (WorkFileNameComponent component : components)
     {
-      int code = BLANK_FN_COMPONENT;
-      String value = "";
-
-      switch (ndx)
+      switch (component.type)
       {
-        case 1 :
-          code = db.prefs.getInt(PREF_KEY_FN_COMPONENT_1, BLANK_FN_COMPONENT);
-          value = db.prefs.get(PREF_KEY_FN_TEST_1, "");
-          break;
+        case fncAuthorLastNames : author    = ultraTrim(component.testStr); break;
+        case fncTitleNoSub      : title     = ultraTrim(component.testStr); break;
+        case fncYear            : year      = ultraTrim(component.testStr); break;
+        case fncTranslators     : trans     = ultraTrim(component.testStr); break;
+        case fncEditors         : editor    = ultraTrim(component.testStr); break;
+        case fncPublisher       : publisher = ultraTrim(component.testStr); break;
+        case fncContainerNoSub  : container = ultraTrim(component.testStr); break;
 
-        case 2 :
-          code = db.prefs.getInt(PREF_KEY_FN_COMPONENT_2, BLANK_FN_COMPONENT);
-          value = db.prefs.get(PREF_KEY_FN_TEST_2, "");
-          break;
-
-        case 3 :
-          code = db.prefs.getInt(PREF_KEY_FN_COMPONENT_3, BLANK_FN_COMPONENT);
-          value = db.prefs.get(PREF_KEY_FN_TEST_3, "");
-          break;
-
-        case 4 :
-          code = db.prefs.getInt(PREF_KEY_FN_COMPONENT_4, BLANK_FN_COMPONENT);
-          value = db.prefs.get(PREF_KEY_FN_TEST_4, "");
-          break;
-
-        case 5 :
-          code = db.prefs.getInt(PREF_KEY_FN_COMPONENT_5, BLANK_FN_COMPONENT);
-          value = db.prefs.get(PREF_KEY_FN_TEST_5, "");
-          break;
-      }
-
-      switch (code)
-      {
-        case AUTHOR_FN_COMPONENT : author = ultraTrim(value); break;
-        case TITLE_FN_COMPONENT  : title  = ultraTrim(value); break;
-        case YEAR_FN_COMPONENT   : year   = ultraTrim(value); break;
-        case TRANS_FN_COMPONENT  : trans  = ultraTrim(value); break;
-        case EDITOR_FN_COMPONENT : editor = ultraTrim(value); break;
+        default                 : break;
       }
     }
 
@@ -274,22 +446,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
         authors.add(new FileNameAuthor(trEdStr, true, false));
     }
 
-    tfExample.setText(HDT_WorkFile.makeFileName(authors, year, title, "pdf"));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void initDBTextField(TextField tf, String prefKey)
-  {
-    tf.setText(db.prefs.get(prefKey, ""));
-
-    tf.textProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-      db.prefs.put(prefKey, newValue);
-      refreshExample();
-    });
+    tfExample.setText(HDT_WorkFile.makeFileName(authors, null, year, title, container, publisher, "pdf", Collections.unmodifiableList(components)));
   }
 
 //---------------------------------------------------------------------------

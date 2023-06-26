@@ -19,9 +19,11 @@ package org.hypernomicon.view.wrappers;
 
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableRow;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -46,7 +48,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
 //---------------------------------------------------------------------------
 
-  public enum ButtonAction { baEdit, baNew, baGo, baWeb, baBrowse, baCustom, baNone }
+  public enum ButtonAction { baEdit, baLabelEdit, baNew, baGo, baWeb, baBrowse, baCustom, baNone }
 
 //---------------------------------------------------------------------------
 
@@ -72,9 +74,10 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
         setAction(ctrlType == ctGoBtn ? ButtonAction.baGo : ButtonAction.baNew); break;
 
-      case ctCustomBtn : setAction(ButtonAction.baCustom); break;
-      case ctUrlBtn    : setAction(ButtonAction.baWeb   ); break;
-      case ctBrowseBtn : setAction(ButtonAction.baBrowse); break;
+      case ctCustomBtn : setAction(ButtonAction.baCustom   ); break;
+      case ctLabelEdit : setAction(ButtonAction.baLabelEdit); break;
+      case ctUrlBtn    : setAction(ButtonAction.baWeb      ); break;
+      case ctBrowseBtn : setAction(ButtonAction.baBrowse   ); break;
       default          : break;
     }
   }
@@ -115,6 +118,21 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
         btn.setText("");
 
         ImageView iv = imgViewFromRelPath("resources/images/form-pencil.png");
+
+        iv.setFitWidth(16);
+        iv.setFitHeight(16);
+        btn.setGraphic(iv);
+
+        setOnAction(null);
+
+        break;
+
+      case baLabelEdit :
+
+        btn.setText("");
+
+        iv = imgViewFromRelPath("resources/images/pencil.png");
+
         iv.setFitWidth(16);
         iv.setFitHeight(16);
         btn.setGraphic(iv);
@@ -164,9 +182,9 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void updateItem(HyperTableCell c, boolean empty)
+  @Override protected void updateItem(HyperTableCell cell, boolean empty)
   {
-    super.updateItem(c, empty);
+    super.updateItem(cell, empty);
 
     if (empty)
     {
@@ -176,8 +194,27 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
       return;
     }
 
-    setGraphic(btn);
     btn.setDisable(false);
+
+    if (this.ctrlType == ctLabelEdit)
+    {
+      String text = HyperTableCell.getCellText(cell);
+
+      AnchorPane ap = new AnchorPane();
+      ap.setMinWidth(0.0);
+      setGraphic(ap);
+
+      Label label = new Label(text);
+      label.prefWidthProperty().bind(widthProperty().subtract(btn.widthProperty()).subtract(6.0));
+      AnchorPane.setLeftAnchor(label, 0.0);
+
+      AnchorPane.setRightAnchor(btn, 0.0);
+      ap.getChildren().add(btn);
+      ap.getChildren().add(label);
+      setToolTip(this, text);
+    }
+    else
+      setGraphic(btn);
 
     if (colNdxOfTarget < 0) return;
 

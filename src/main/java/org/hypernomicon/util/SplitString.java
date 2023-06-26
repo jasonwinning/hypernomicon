@@ -20,6 +20,8 @@ package org.hypernomicon.util;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -47,6 +49,8 @@ public class SplitString implements Iterable<String>, Iterator<String>
 
   @Override public Iterator<String> iterator() { return this; }
   @Override public boolean hasNext()           { return hasNext; }
+
+  public Stream<String> stream()               { return StreamSupport.stream(spliterator(), false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

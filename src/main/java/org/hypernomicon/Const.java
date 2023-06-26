@@ -47,7 +47,9 @@ public final class Const
     TITLE_FN_COMPONENT = 2,
     YEAR_FN_COMPONENT = 3,
     TRANS_FN_COMPONENT = 4,
-    EDITOR_FN_COMPONENT = 5;
+    EDITOR_FN_COMPONENT = 5,
+    CONTAINER_FN_COMPONENT = 6,
+    PUBLISHER_FN_COMPONENT = 7;
 
   public static final String
 
@@ -212,35 +214,13 @@ public final class Const
     PREF_KEY_BIB_LEFT_HORIZ      = "bibLeftHoriz",
     PREF_KEY_BIB_RIGHT_HORIZ     = "bibRightHoriz",
 
-    PREF_KEY_FN_COMPONENT_1 = "fnComponent1",
-    PREF_KEY_FN_COMPONENT_2 = "fnComponent2",
-    PREF_KEY_FN_COMPONENT_3 = "fnComponent3",
-    PREF_KEY_FN_COMPONENT_4 = "fnComponent4",
-    PREF_KEY_FN_COMPONENT_5 = "fnComponent5",
-
-    PREF_KEY_FN_WITHIN_SEP_1 = "fnWithinSep1",
-    PREF_KEY_FN_WITHIN_SEP_2 = "fnWithinSep2",
-    PREF_KEY_FN_WITHIN_SEP_3 = "fnWithinSep3",
-    PREF_KEY_FN_WITHIN_SEP_4 = "fnWithinSep4",
-    PREF_KEY_FN_WITHIN_SEP_5 = "fnWithinSep5",
-
-    PREF_KEY_FN_BEFORE_SEP_1 = "fnBeforeSep1",
-    PREF_KEY_FN_BEFORE_SEP_2 = "fnBeforeSep2",
-    PREF_KEY_FN_BEFORE_SEP_3 = "fnBeforeSep3",
-    PREF_KEY_FN_BEFORE_SEP_4 = "fnBeforeSep4",
-    PREF_KEY_FN_BEFORE_SEP_5 = "fnBeforeSep5",
-
-    PREF_KEY_FN_AFTER_SEP_1 = "fnAfterSep1",
-    PREF_KEY_FN_AFTER_SEP_2 = "fnAfterSep2",
-    PREF_KEY_FN_AFTER_SEP_3 = "fnAfterSep3",
-    PREF_KEY_FN_AFTER_SEP_4 = "fnAfterSep4",
-    PREF_KEY_FN_AFTER_SEP_5 = "fnAfterSep5",
-
-    PREF_KEY_FN_TEST_1 = "fnTest1",
-    PREF_KEY_FN_TEST_2 = "fnTest2",
-    PREF_KEY_FN_TEST_3 = "fnTest3",
-    PREF_KEY_FN_TEST_4 = "fnTest4",
-    PREF_KEY_FN_TEST_5 = "fnTest5",
+    PREF_KEY_FN_COMPONENT_COUNT = "fnComponentCount",
+    PREF_KEY_FN_COMPONENT = "fnComponent",
+    PREF_KEY_FN_EXCL_WORK_TYPES = "fnExclWorkTypes",
+    PREF_KEY_FN_WITHIN_SEP = "fnWithinSep",
+    PREF_KEY_FN_BEFORE_SEP = "fnBeforeSep",
+    PREF_KEY_FN_AFTER_SEP = "fnAfterSep",
+    PREF_KEY_FN_TEST = "fnTest",
 
     PREF_KEY_FN_TREAT_ED_AS_AUTHOR = "fnTreatEdAsAuthor",
     PREF_KEY_FN_ADD_INITIAL = "fnAddInitial",
@@ -256,6 +236,7 @@ public final class Const
     PREF_KEY_BIB_ACCESS_TOKEN = "bibAccessToken",
     PREF_KEY_BIB_REFRESH_TOKEN = "bibRefreshToken",
     PREF_KEY_BIB_LIBRARY_TYPE = "bibType",
+    PREF_KEY_BIB_SRCH_REQUIRE_BY_DEFAULT = "bibRequireByDefault",
 
     PREF_KEY_KEY_WORK_SORT_BY_NAME = "keyWorkSortByName",
     PREF_KEY_RIGHT_CLICK_TO_LAUNCH = "rtClkToLaunch",

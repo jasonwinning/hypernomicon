@@ -700,7 +700,7 @@ public class WorkDlgCtrlr extends HyperDlg
           authors.add(new FileNameAuthor(row.getText(0), row.getCheckboxValue(3), row.getCheckboxValue(4)));
     });
 
-    String newFileName = "", fileName = HDT_WorkFile.makeFileName(authors, tfYear.getText(), tfFileTitle.getText(), ext);
+    String newFileName = "", fileName = HDT_WorkFile.makeFileName(authors, hcbType.selectedRecord(), tfYear.getText(), tfFileTitle.getText(), curBD.getStr(bfContainerTitle), curBD.getStr(bfPublisher), ext);
 
     if (fileName.isBlank())
     {
@@ -1178,15 +1178,6 @@ public class WorkDlgCtrlr extends HyperDlg
 
     return curBD;
   }
-
-////---------------------------------------------------------------------------
-////---------------------------------------------------------------------------
-//
-//  private void populateFieldsFromWebBD(BibData bdToUse)
-//  {
-//
-//    populateFieldsFromBibData(bdToUse, true);
-//  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

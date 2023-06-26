@@ -479,7 +479,7 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
       .add(new Symbol(8866, "&#8866;", "Proves; turnstile"))  // ⊢
       .add(new Symbol(8876, "&#8876;", "Does not prove"))  // ⊬
       .add(new Symbol(8872, "&#8872;", "Models; double turnstile"))  // ⊨
-      .add(new Symbol(8877, "&#8877;", "Does not model"))  //
+      .add(new Symbol(8877, "&#8877;", "Does not model"))  // ⊭
       .add(new Symbol(8594, "&rarr;", "Right arrow"))   // →
       .add(new Symbol(8595, "&darr;", "Down arrow"))   // ↓
       .add(new Symbol(8596, "&harr;", "Left right arrow"))   // ↔

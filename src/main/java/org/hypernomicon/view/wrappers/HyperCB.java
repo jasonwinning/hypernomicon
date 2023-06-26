@@ -447,54 +447,54 @@ public class HyperCB implements CommitableWrapper
       }
     }
 
-    if (dontCreateNewRecord == false)
+    if (dontCreateNewRecord)
+      return null;
+
+    switch (populator.getRecordType(row))
     {
-      switch (populator.getRecordType(row))
-      {
-        case hdtPerson :
+      case hdtPerson :
 
-          HDT_Person otherPerson = HDT_Person.lookUpByName(new PersonName(cb.getEditor().getText()));
+        HDT_Person otherPerson = HDT_Person.lookUpByName(new PersonName(cb.getEditor().getText()));
 
-          if (otherPerson != null)
-            for (HyperTableCell cell : cb.getItems())
-              if (cell.getID() == otherPerson.getID())
-                return cell;
+        if (otherPerson != null)
+          for (HyperTableCell cell : cb.getItems())
+            if (cell.getID() == otherPerson.getID())
+              return cell;
 
-          NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(table == null, cb.getEditor().getText(), null);
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(table == null, cb.getEditor().getText(), null);
 
-          if (npdc.showModal())
+        if (npdc.showModal())
+        {
+          if (table == null)
           {
-            if (table == null)
-            {
-              populate(true);                  // A new record has been created so force it to repopulate
-              return populator.getChoiceByID(row, npdc.getPerson().getID());
-            }
-
-            Populator pop = table.getPopulator(colNdx);
-
-            if (npdc.getPerson() != null)    // By the time we get back here, the ComboBox is gone
-            {                                // and the table is already out of edit mode
-              pop.setChanged(row);           // A new record has been created so force it to repopulate
-              table.selectID(colNdx, row, npdc.getPerson().getID());
-            }
-            else
-            {
-              pop.populate(row, false);
-              row.setCellValue(colNdx, pop.addEntry(row, npdc.getNameLastFirst()));
-
-              table.cancelEditing(); // For some reason in this case the keystroke event from earlier causes
-            }                        // the table to enter edit mode again
+            populate(true);                  // A new record has been created so force it to repopulate
+            return populator.getChoiceByID(row, npdc.getPerson().getID());
           }
 
-          break;
+          Populator pop = table.getPopulator(colNdx);
 
-        case hdtInstitution :
+          if (npdc.getPerson() != null)    // By the time we get back here, the ComboBox is gone
+          {                                // and the table is already out of edit mode
+            pop.setChanged(row);           // A new record has been created so force it to repopulate
+            table.selectID(colNdx, row, npdc.getPerson().getID());
+          }
+          else
+          {
+            pop.populate(row, false);
+            row.setCellValue(colNdx, pop.addEntry(row, npdc.getNameLastFirst()));
 
-          ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
-          break;
+            table.cancelEditing(); // For some reason in this case the keystroke event from earlier causes
+          }                        // the table to enter edit mode again
+        }
 
-        default: break;
-      }
+        break;
+
+      case hdtInstitution :
+
+        ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
+        break;
+
+      default: break;
     }
 
     return null;

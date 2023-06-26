@@ -117,6 +117,8 @@ public enum EntryType
 
   public static HDT_WorkType toWorkType(EntryType et)
   {
+    if (et == null) return null;
+
     switch (et)
     {
       case etBook : case etBooklet: case etBookVolume: case etJournalIssue : case etMagazine : case etManual : case etMonograph :

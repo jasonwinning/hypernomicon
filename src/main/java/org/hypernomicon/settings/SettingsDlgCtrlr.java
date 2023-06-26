@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import com.github.scribejava.core.exceptions.OAuthException;
@@ -102,7 +103,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   private final HyperCB hcbDefaultChapterWorkType;
   private final StringProperty authUrl;
   private final boolean noDB;
-  private final SettingsControl webBtnSettingsCtrlr;
+  private final Set<SettingsControl> settingsCtrlrs;
   private final Map<SettingsPage, Tab> pageToTab = new EnumMap<>(SettingsPage.class);
   private final Map<SettingsPage, TreeItem<SettingsPage>> pageToTreeItem = new EnumMap<>(SettingsPage.class);
 
@@ -153,9 +154,12 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     setExtFileTooltip();
 
-    webBtnSettingsCtrlr = initControl(tabWebButtons, "WebButtonSettings");
-    initControl(tabFolders, "FolderSettings");
-    initControl(tabNaming, "WorkFileNamingSettings");
+    settingsCtrlrs = Set.of
+    (
+      initControl(tabWebButtons, "WebButtonSettings"     ),
+      initControl(tabFolders   , "FolderSettings"        ),
+      initControl(tabNaming    , "WorkFileNamingSettings")
+    );
 
     btnVerify.setOnAction(event ->
     {
@@ -259,7 +263,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       initDefaultChapterWorkType();
     }
 
-    dialogStage.setOnHiding(event -> webBtnSettingsCtrlr.save());
+    dialogStage.setOnHiding(event -> settingsCtrlrs.forEach(ctrlr -> ctrlr.save(noDB)));
 
     onShown = () -> treeView.getSelectionModel().select(pageToTreeItem.get(page));
   }
@@ -315,7 +319,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  interface SettingsControl { void init(Window owner, boolean noDB); void save(); }
+  interface SettingsControl { void init(Window owner, boolean noDB); void save(boolean noDB); }
 
   private SettingsControl initControl(Tab tab, String fxmlName)
   {

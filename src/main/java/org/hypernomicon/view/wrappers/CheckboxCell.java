@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.wrappers;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableCell;
 
@@ -60,6 +61,7 @@ class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
     }
 
     setGraphic(chk);
+    setAlignment(Pos.CENTER);
     chk.setSelected(HyperTableCell.getCellID(val) == 1);
 
     chk.setDisable(HyperTableCell.isEmpty(nullSwitch(getTableRow(), null, tableRow ->

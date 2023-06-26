@@ -402,7 +402,7 @@ public final class MainCtrlr
     omniFinder = new OmniFinder(htFind);
 
     btnFileMgr.setOnAction(event -> runFileMgr());
-    btnBibMgr .setOnAction(event -> runBibMgr());
+    btnBibMgr .setOnAction(event -> runBibMgr(true));
 
     btnGoTo.setOnAction        (event -> btnGoToClick(false));
     mnuRecordSelect.setOnAction(event -> btnGoToClick(true));
@@ -1158,16 +1158,19 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void runBibMgr()
+  private void runBibMgr(boolean focusOnSearchField)
   {
     if (bibManagerDlg.getStage().isShowing())
     {
       bibManagerDlg.refresh();
       windows.focusStage(bibManagerDlg.getStage());
-      return;
+    }
+    else
+    {
+      bibManagerDlg.showNonmodal();
     }
 
-    bibManagerDlg.showNonmodal();
+    if (focusOnSearchField) Platform.runLater(() -> bibManagerDlg.focusOnSearchField());
   }
 
 //---------------------------------------------------------------------------
@@ -2466,7 +2469,7 @@ public final class MainCtrlr
 
   public void goToWorkInBibManager(HDT_Work work)
   {
-    runBibMgr();
+    runBibMgr(false);
     bibManagerDlg.goToWork(work);
   }
 

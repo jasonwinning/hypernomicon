@@ -127,13 +127,13 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public Iterable<HyperTableRow> dataRows()                        { return new DataRowIterator(); }
   public Stream<HyperTableRow> dataRowStream()                     { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
   public int dataRowCount()                                        { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
-  public void addRefreshHandler(Runnable hndlr)                    { refreshHandler = hndlr; }
+  public void addRefreshHandler(Runnable handler)                  { refreshHandler = handler; }
   public HyperTableRow selectRowByRecord(HDT_Record record)        { return nullSwitch(getRowByRecord(record), null, this::selectRow); }
   public boolean removeRowsIf(Predicate<HyperTableRow> filter)     { return rows.removeIf(filter); }
   public void setDefaultValue(int colNdx, HyperTableCell value)    { colNdxToDefaultValue.put(colNdx, value); }
 
   @SuppressWarnings("unused")
-  public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr) { dblClickHandler = hndlr; }
+  public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> handler) { dblClickHandler = handler; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -476,6 +476,10 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, ButtonCellHandler handler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, handler, btnCaption)); }
 
+  public HyperTableColumn addLabelEditCol(ButtonCellHandler handler ) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctLabelEdit, null, -1, handler, null));
+  }
+
   public HyperTableColumn addIconCol() {
     return addCol(new HyperTableColumn(this, hdtNone, ctIcon, null, -1)); }
 
@@ -707,25 +711,28 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addRemoveMenuItem(Predicate<HyperTableRow> condRowHandler)
+  public void addRemoveMenuItem(Predicate<HyperTableRow> condRowHandler) { addRemoveMenuItem(condRowHandler, null); }
+
+  public void addRemoveMenuItem(Predicate<HyperTableRow> condRowHandler, Consumer<HyperTableRow> completeHandler)
   {
     addContextMenuItem("Remove this row", condRowHandler, row ->
     {
       rows.remove(row);
       doExternalRefresh();
+      if (completeHandler != null) completeHandler.accept(row);
     });
   }
 
   public void addRemoveMenuItem() { addRemoveMenuItem((Consumer<HyperTableRow>)null); }
 
-  public void addRemoveMenuItem(Consumer<HyperTableRow> handler)
+  public void addRemoveMenuItem(Consumer<HyperTableRow> completeHandler)
   {
     addContextMenuItem("Remove this row", cols.get(mainCol).getObjType().getRecordClass(), record -> canAddRows, record ->
     {
       HyperTableRow row = tv.getSelectionModel().getSelectedItem();
       rows.remove(row);
       doExternalRefresh();
-      if (handler != null) handler.accept(row);
+      if (completeHandler != null) completeHandler.accept(row);
     });
   }
 
@@ -734,7 +741,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void addChangeOrderMenuItem(boolean onlyIfCanAddRows) { addChangeOrderMenuItem(onlyIfCanAddRows, null); }
 
-  public void addChangeOrderMenuItem(boolean onlyIfCanAddRows, Runnable handler)
+  public void addChangeOrderMenuItem(boolean onlyIfCanAddRows, Runnable completeHandler)
   {
     addContextMenuItem("Change order",
       row ->
@@ -744,13 +751,13 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         return (onlyIfCanAddRows == false) || canAddRows;
       },
 
-      row -> triggerChangeOrder(onlyIfCanAddRows, handler));
+      row -> triggerChangeOrder(onlyIfCanAddRows, completeHandler));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void triggerChangeOrder(boolean onlyIfCanAddRows, Runnable completeHndlr)
+  public void triggerChangeOrder(boolean onlyIfCanAddRows, Runnable completeHandler)
   {
     if (onlyIfCanAddRows && (canAddRows == false)) return;
 
@@ -759,15 +766,17 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     boolean couldAddRows = canAddRows;
 
-    canAddRows = false;
+    canAddRows = false; // Blank row at the bottom is removed while the dialog is open
 
     if (ui.windows.getOutermostModality() == Modality.NONE)
       ui.update();
+    else if (couldAddRows)
+      rows.remove(rows.size() - 1);
 
     new ObjectOrderDlgCtrlr(this, rows).showModal();
 
-    if (completeHndlr != null)
-      completeHndlr.run();
+    if (completeHandler != null)
+      completeHandler.run();
     else
     {
       if (ui.windows.getOutermostModality() == Modality.NONE)
@@ -778,6 +787,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     if (ui.windows.getOutermostModality() == Modality.NONE)
       ui.update();
+    else if (canAddRows)
+      newRow(false);
   }
 
 //---------------------------------------------------------------------------

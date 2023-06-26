@@ -59,8 +59,8 @@ public class HyperTableColumn
 {
   public enum HyperCtrlType
   {
-    ctNone,     ctIncremental, ctDropDownList, ctDropDown, ctEdit, ctUrlBtn,   ctBrowseBtn, ctGoBtn,
-    ctGoNewBtn, ctEditNewBtn,  ctCustomBtn,    ctCheckbox, ctIcon, ctInvSelect
+    ctNone,     ctIncremental, ctDropDownList, ctDropDown,  ctEdit,     ctUrlBtn, ctBrowseBtn, ctGoBtn,
+    ctGoNewBtn, ctEditNewBtn,  ctLabelEdit,    ctCustomBtn, ctCheckbox, ctIcon,   ctInvSelect
   }
 
   public enum CellSortMethod
@@ -186,9 +186,11 @@ public class HyperTableColumn
 
     TableColumn<HyperTableRow, HyperTableCell> htcCol = (TableColumn<HyperTableRow, HyperTableCell>) tc;
 
+    htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
+
     switch (ctrlType)
     {
-      case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn :
+      case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn : case ctLabelEdit :
 
         htcCol.setCellFactory(tableCol -> new ButtonCell(ctrlType, table, this, targetCol, btnHandler, btnCaption));
         break;
@@ -196,7 +198,6 @@ public class HyperTableColumn
       case ctEdit :
 
         htcCol.setEditable(true);
-        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
         htcCol.setCellFactory(tableCol -> new TextFieldCell(table, canEditIfEmpty, sortMethod));
 
         htcCol.setOnEditCommit(event ->
@@ -207,7 +208,6 @@ public class HyperTableColumn
       case ctCheckbox :
 
         htcCol.setEditable(true);
-        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
         htcCol.setCellFactory(tableCol -> new CheckboxCell(table));
 
         break;
@@ -215,7 +215,6 @@ public class HyperTableColumn
       case ctNone : case ctIncremental :
 
         htcCol.setEditable(false);
-        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
         htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, this, graphicProvider));
 
         break;
@@ -225,7 +224,6 @@ public class HyperTableColumn
         sortMethod.set(smIcon);
 
         htcCol.setEditable(false);
-        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
         htcCol.setCellFactory(tableCol -> new TableCell<>()
         {
           @Override public void updateItem(HyperTableCell cell, boolean empty)
@@ -267,7 +265,6 @@ public class HyperTableColumn
 
       case ctDropDownList : case ctDropDown :
 
-        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
         htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, ctrlType, populator, onAction, dontCreateNewRecord, textHndlr));
         htcCol.setOnEditStart(event -> populator.populate(event.getRowValue(), false));
 
@@ -275,7 +272,6 @@ public class HyperTableColumn
 
       case ctInvSelect :
 
-        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
         htcCol.setCellFactory(tableCol -> new TableCell<>()
         {
           @Override public void startEdit()

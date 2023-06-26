@@ -47,7 +47,7 @@ public class BasicTextMatcher
 
   //---------------------------------------------------------------------------
 
-    private Term(String newText, boolean caseSensitive)
+    private Term(String newText, boolean caseSensitive, boolean requireByDefault)
     {
       if (caseSensitive == false)
         newText = newText.toLowerCase();
@@ -63,7 +63,7 @@ public class BasicTextMatcher
         newText = newText.substring(1);
       }
       else
-        modifier = TermModifier.none;
+        modifier = requireByDefault ? TermModifier.required : TermModifier.none;
 
       this.text = newText.replace("\"", "");
     }
@@ -77,14 +77,14 @@ public class BasicTextMatcher
 
 //---------------------------------------------------------------------------
 
-  public BasicTextMatcher(String query, boolean caseSensitive)
+  public BasicTextMatcher(String query, boolean caseSensitive, boolean requireByDefault)
   {
     this.caseSensitive = caseSensitive;
 
     Matcher m = Pattern.compile("(\\+?\\-?\\\"([^\"\\s]+ )+[^\"\\s]+\\\")|(\\+?\\-?\\\"?[^\"\\s]+\\\"?)").matcher(query);
 
     while (m.find())
-      terms.add(new Term(m.group(), caseSensitive));
+      terms.add(new Term(m.group(), caseSensitive, requireByDefault));
   }
 
 //---------------------------------------------------------------------------

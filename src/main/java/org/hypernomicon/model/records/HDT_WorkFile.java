@@ -26,12 +26,15 @@ import org.apache.commons.io.FilenameUtils;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponent;
+import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponentType;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
@@ -81,56 +84,29 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
 //---------------------------------------------------------------------------
 
-  private static final class FileNameComponentConfig
+  public static String makeFileName(List<FileNameAuthor> authors, HDT_WorkType workType, String year, String title, String container, String publisher, String ext)
   {
-    private final int code;
-    private final String beforeSep, withinSep, afterSep;
-
-    private FileNameComponentConfig(int code, String beforeSep, String withinSep, String afterSep)
-    {
-      this.code = code;
-      this.beforeSep = beforeSep;
-      this.withinSep = withinSep;
-      this.afterSep = afterSep;
-    }
+    return makeFileName(authors, workType, year, title, container, publisher, ext, null);
   }
 
-//---------------------------------------------------------------------------
-
-  public static String makeFileName(List<FileNameAuthor> authors, String year, String title, String ext)
+  public static String makeFileName(List<FileNameAuthor> authors, HDT_WorkType workType, String year, String title, String container, String publisher, String ext, List<WorkFileNameComponent> components)
   {
-    List<FileNameComponentConfig> configList = new ArrayList<>();
+    if (components == null)
+      components = WorkFileNameComponent.loadFromPrefs();
 
-    configList.add(new FileNameComponentConfig(db.prefs.getInt(PREF_KEY_FN_COMPONENT_1, BLANK_FN_COMPONENT),
-                                               db.prefs.get(PREF_KEY_FN_BEFORE_SEP_1, ""),
-                                               db.prefs.get(PREF_KEY_FN_WITHIN_SEP_1, " "),
-                                               db.prefs.get(PREF_KEY_FN_AFTER_SEP_1, "")));
-
-    configList.add(new FileNameComponentConfig(db.prefs.getInt(PREF_KEY_FN_COMPONENT_2, BLANK_FN_COMPONENT),
-                                               db.prefs.get(PREF_KEY_FN_BEFORE_SEP_2, ""),
-                                               db.prefs.get(PREF_KEY_FN_WITHIN_SEP_2, " "),
-                                               db.prefs.get(PREF_KEY_FN_AFTER_SEP_2, "")));
-
-    configList.add(new FileNameComponentConfig(db.prefs.getInt(PREF_KEY_FN_COMPONENT_3, BLANK_FN_COMPONENT),
-                                               db.prefs.get(PREF_KEY_FN_BEFORE_SEP_3, ""),
-                                               db.prefs.get(PREF_KEY_FN_WITHIN_SEP_3, " "),
-                                               db.prefs.get(PREF_KEY_FN_AFTER_SEP_3, "")));
-
-    configList.add(new FileNameComponentConfig(db.prefs.getInt(PREF_KEY_FN_COMPONENT_4, BLANK_FN_COMPONENT),
-                                               db.prefs.get(PREF_KEY_FN_BEFORE_SEP_4, ""),
-                                               db.prefs.get(PREF_KEY_FN_WITHIN_SEP_4, " "),
-                                               db.prefs.get(PREF_KEY_FN_AFTER_SEP_4, "")));
-
-    configList.add(new FileNameComponentConfig(db.prefs.getInt(PREF_KEY_FN_COMPONENT_5, BLANK_FN_COMPONENT),
-                                               db.prefs.get(PREF_KEY_FN_BEFORE_SEP_5, ""),
-                                               db.prefs.get(PREF_KEY_FN_WITHIN_SEP_5, " "),
-                                               db.prefs.get(PREF_KEY_FN_AFTER_SEP_5, "")));
-
-    FileNameComponentConfig authConfig = findFirst(configList, config -> config.code == AUTHOR_FN_COMPONENT);
+    WorkFileNameComponent authComponent = findFirst(components, component -> component.type == WorkFileNameComponentType.fncAuthorLastNames);
     String fileName = "";
 
-    for (FileNameComponentConfig config : configList)
-      fileName = fileName + getFNComponent(config, authConfig, authors, year, title);
+    EnumSet<WorkFileNameComponentType> usedComponentTypes = EnumSet.noneOf(WorkFileNameComponentType.class);
+
+    for (WorkFileNameComponent component : components)
+    {
+      if ((component.type == WorkFileNameComponentType.fncBlank) || (component.type == null) || usedComponentTypes.contains(component.type) || ((workType != null) && component.excludedWorkTypes.contains(workType)))
+        continue;
+
+      fileName = fileName + getFNComponent(component, authComponent, authors, year, title, container, publisher);
+      usedComponentTypes.add(component.type);
+    }
 
     fileName = fileName.trim();
 
@@ -205,45 +181,60 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getFNComponent(FileNameComponentConfig config, FileNameComponentConfig authConfig, List<FileNameAuthor> authors, String year, String title)
+  private static String getFNComponent(WorkFileNameComponent component,  WorkFileNameComponent authComponent, List<FileNameAuthor> authors, String year, String title, String container, String publisher)
   {
-    String comp = "";
+    String compStr = "";
     int pos;
 
-    switch (config.code)
+    switch (component.type)
     {
-      case AUTHOR_FN_COMPONENT :
+      case fncAuthorLastNames :
 
-        comp = getAuthorStr(authors, false, false);
+        compStr = getAuthorStr(authors, false, false);
         break;
 
-      case EDITOR_FN_COMPONENT :
+      case fncEditors :
 
-        if (db.prefs.getBoolean(PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true) && (authConfig != null) &&
+        if (db.prefs.getBoolean(PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true) && (authComponent != null) &&
             authors.stream().allMatch(author -> author.isEditor || author.isTrans))
-          config = authConfig;
+          component = authComponent;
 
-        comp = getAuthorStr(authors, true, false);
+        compStr = getAuthorStr(authors, true, false);
         break;
 
-      case TRANS_FN_COMPONENT :
+      case fncTranslators :
 
-        comp = getAuthorStr(authors, false, true);
+        compStr = getAuthorStr(authors, false, true);
         break;
 
-      case TITLE_FN_COMPONENT :
+      case fncTitleNoSub : // similar to fncContainerNoSub case
 
-        comp = title;
-        pos = indexOfAny(":?*|\"<>/\\", comp);
+        compStr = title;
+        pos = indexOfAny(":?*|\"<>/\\", compStr);
 
         if (pos >= 0)
-          comp = comp.substring(0, pos);
+          compStr = compStr.substring(0, pos);
 
         break;
 
-      case YEAR_FN_COMPONENT :
+      case fncContainerNoSub: // similar to fncTitleNoSub case
 
-        comp = year;
+        compStr = container;
+        pos = indexOfAny(":?*|\"<>/\\", compStr);
+
+        if (pos >= 0)
+          compStr = compStr.substring(0, pos);
+
+        break;
+
+      case fncYear :
+
+        compStr = year;
+        break;
+
+      case fncPublisher:
+
+        compStr = publisher;
         break;
 
       default :
@@ -251,12 +242,12 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
         break;
     }
 
-    comp = ultraTrim(comp).replace(" ", config.withinSep);
+    compStr = ultraTrim(compStr).replace(" ", component.withinSep);
 
-    if (comp.length() > 0)
-      comp = config.beforeSep + comp + config.afterSep;
+    if (compStr.length() > 0)
+      compStr = component.beforeSep + compStr + component.afterSep;
 
-    return comp;
+    return compStr;
   }
 
 //---------------------------------------------------------------------------
