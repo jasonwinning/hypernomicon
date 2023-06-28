@@ -108,7 +108,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
      *
      * @param prefNdx 1-based index used for preference keys
      */
-    public WorkFileNameComponent(int prefNdx)
+    private WorkFileNameComponent(int prefNdx)
     {
       type = WorkFileNameComponentType.forInteger(db.prefs.getInt(PREF_KEY_FN_COMPONENT + prefNdx, 0));
       beforeSep = db.prefs.get(PREF_KEY_FN_BEFORE_SEP + prefNdx, "");
@@ -161,7 +161,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       db.prefs.put(PREF_KEY_FN_AFTER_SEP       + prefNdx, afterSep      );
       db.prefs.put(PREF_KEY_FN_TEST            + prefNdx, testStr       );
 
-      String prefStr = excludedWorkTypes.stream().map(workType -> String.valueOf(workType.getID())).reduce((s1, s2) -> s1 + ";" + s2).orElse("");
+      String prefStr = excludedWorkTypes.stream().map(workType -> String.valueOf(workType.getID())).reduce((s1, s2) -> s1 + ';' + s2).orElse("");
       db.prefs.put(PREF_KEY_FN_EXCL_WORK_TYPES + prefNdx, prefStr);
     }
 
@@ -225,7 +225,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     }, row -> refreshExample());
 
-    hyperTable.addChangeOrderMenuItem(true, () -> refreshExample());
+    hyperTable.addChangeOrderMenuItem(true, this::refreshExample);
 
     lblExample.setOnMouseClicked(event -> refreshExample());
 
@@ -386,7 +386,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private WorkFileNameComponent getComponentFromRow(HyperTableRow row)
+  private static WorkFileNameComponent getComponentFromRow(HyperTableRow row)
   {
     return new WorkFileNameComponent(WorkFileNameComponentType.forInteger(row.getID(0)), row.getText(1), row.getText(2), row.getText(3), row.getText(4), row.getText(5));
   }
@@ -394,7 +394,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setExclWorkTypesCellValue(Stream<HDT_WorkType> workTypes, HyperTableRow row)
+  private static void setExclWorkTypesCellValue(Stream<HDT_WorkType> workTypes, HyperTableRow row)
   {
     row.setCellValue(1, workTypes.map(HDT_WorkType::name).reduce((s1, s2) -> s1 + "; " + s2).orElse(""), hdtNone);
   }

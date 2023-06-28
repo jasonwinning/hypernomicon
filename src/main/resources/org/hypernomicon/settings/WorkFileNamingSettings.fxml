@@ -34,12 +34,12 @@
         <children>
           <TableView fx:id="tv" editable="true" layoutX="119.0" layoutY="-2.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columns>
-              <TableColumn prefWidth="169.0" text="Component" />
-              <TableColumn prefWidth="151.0" text="Exclude work types" />
-              <TableColumn prefWidth="151.0" text="Before-component&#10;separator" />
-              <TableColumn prefWidth="151.0" text="Within-component&#10;separator" />
-              <TableColumn prefWidth="151.0" style="-fx-text-alignment: center;" text="After-component&#10;separator" />
-              <TableColumn prefWidth="244.0" text="Test value (separate by semicolons)" />
+              <TableColumn prefWidth="169.0" sortable="false" text="Component" />
+              <TableColumn prefWidth="151.0" sortable="false" text="Exclude work types" />
+              <TableColumn prefWidth="151.0" sortable="false" text="Before-component&#10;separator" />
+              <TableColumn prefWidth="151.0" sortable="false" text="Within-component&#10;separator" />
+              <TableColumn prefWidth="151.0" sortable="false" style="-fx-text-alignment: center;" text="After-component&#10;separator" />
+              <TableColumn prefWidth="244.0" sortable="false" text="Test value (separate by semicolons)" />
             </columns>
           </TableView>
         </children>

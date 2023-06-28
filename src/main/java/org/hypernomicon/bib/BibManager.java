@@ -288,10 +288,7 @@ public class BibManager extends HyperDlg
 
     dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (ui.windows.getCyclingFocus())
-        return;
-
-      if (Boolean.TRUE.equals(newValue) == false)
+      if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
         return;
 
       ui.windows.push(dialogStage);

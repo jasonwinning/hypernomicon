@@ -36,6 +36,7 @@ import com.google.common.collect.Ordering;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.records.HDT_Institution.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -232,7 +233,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       row.setCellValue(3, subInst, subInst.getURL());
     });
 
-    if (curInst.isDeptOrFaculty() && curInst.parentInst.isNotNull())
+    if (((curInst.instType.getID() == FACULTY_INST_TYPE_ID) || (curInst.instType.getID() == DEPARTMENT_INST_TYPE_ID)) && curInst.parentInst.isNotNull())
     {
       curInst.parentInst.get().subInstitutions.forEach(sibInst ->
       {
@@ -288,13 +289,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     :
       subInst -> addPersonsFromInst(nearestChildInst, subInst, peopleMap));
 
-    inst.persons.forEach(person ->
-    {
-      if (peopleMap.containsKey(person) == false)
-        peopleMap.put(person, new HashSet<>());
-
-      peopleMap.get(person).add(nearestChildInst);
-    });
+    inst.persons.forEach(person -> peopleMap.computeIfAbsent(person, _person -> new HashSet<>()).add(nearestChildInst));
   }
 
 //---------------------------------------------------------------------------
@@ -303,7 +298,12 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   public static final Predicate<Integer> parentPopFilter = id ->
   {
     HDT_Institution inst = db.institutions.getByID(id);
-    if (inst.isDeptOrFaculty() == false) return true;
+    int typeID = inst.instType.getID();
+
+    if ((typeID != FACULTY_INST_TYPE_ID   )  &&
+        (typeID != DEPARTMENT_INST_TYPE_ID)  &&
+        (typeID != SCHOOL_INST_TYPE_ID    ))
+          return true;
 
     return inst.parentInst.isNull() || (inst.subInstitutions.size() > 0);
   };

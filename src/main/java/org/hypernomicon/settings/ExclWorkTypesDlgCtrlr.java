@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -41,7 +42,7 @@ public class ExclWorkTypesDlgCtrlr extends HyperDlg
 
   @FXML private TableView<HyperTableRow> tv;
 
-  private HyperTable hyperTable;
+  private final HyperTable hyperTable;
 
 //---------------------------------------------------------------------------
 
@@ -54,7 +55,7 @@ public class ExclWorkTypesDlgCtrlr extends HyperDlg
     hyperTable.addCheckboxCol();
     hyperTable.addLabelCol(hdtWorkType);
 
-    hyperTable.buildRows(db.workTypes, (row, workType) ->
+    hyperTable.buildRows(db.workTypes.stream().filter(workType -> workType.enumVal() != WorkTypeEnum.wtUnenteredSet), (row, workType) ->
     {
       row.setCheckboxValue(0, set.contains(workType));
       row.setCellValue(1, workType, workType.name());
@@ -72,7 +73,7 @@ public class ExclWorkTypesDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<HDT_WorkType> exclTypes()
+  Stream<HDT_WorkType> exclTypes()
   {
     return hyperTable.dataRowStream().filter(row -> row.getCheckboxValue(0)).map(HyperTableRow::getRecord);
   }

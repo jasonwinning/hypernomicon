@@ -206,11 +206,13 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
       Label label = new Label(text);
       label.prefWidthProperty().bind(widthProperty().subtract(btn.widthProperty()).subtract(6.0));
-      AnchorPane.setLeftAnchor(label, 0.0);
 
+      AnchorPane.setLeftAnchor(label, 0.0);
       AnchorPane.setRightAnchor(btn, 0.0);
+
       ap.getChildren().add(btn);
       ap.getChildren().add(label);
+
       setToolTip(this, text);
     }
     else

@@ -24,8 +24,8 @@
    <children>
       <TableView fx:id="tv" layoutX="161.0" layoutY="81.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columns>
-          <TableColumn maxWidth="130.0" minWidth="130.0" prefWidth="130.0" text="Excluded" />
-          <TableColumn prefWidth="468.0" text="Work Type" />
+          <TableColumn maxWidth="130.0" minWidth="130.0" prefWidth="130.0" sortable="false" text="Excluded" />
+          <TableColumn prefWidth="468.0" sortable="false" text="Work Type" />
         </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
