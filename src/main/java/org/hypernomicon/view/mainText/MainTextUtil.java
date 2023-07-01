@@ -71,6 +71,8 @@ import com.google.common.collect.Ordering;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -935,18 +937,44 @@ public final class MainTextUtil
     {
       double deltaY = event.getDeltaY();
       if ((event.isControlDown() == false) || (deltaY == 0)) return;
+
       event.consume();
 
-      int ndx = app.prefs.getInt(prefID, zoomFactors.indexOf(100)) + (deltaY > 0 ? 1 : -1);
+      doWebViewZoom(view, prefID, deltaY > 0 ? 1 : -1);
+    });
 
-      if ((ndx < 0) || (ndx == zoomFactors.size())) return;
+    view.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    {
+      if (shortcutKeyIsDown(event))
+      {
+        if ((event.getCode() == KeyCode.PLUS    ) ||
+            (event.getCode() == KeyCode.EQUALS  ) ||
+            (event.getCode() == KeyCode.MINUS   ) ||
+            (event.getCode() == KeyCode.SUBTRACT) ||
+            (event.getCode() == KeyCode.ADD)    )
+        {
+          event.consume();
 
-      app.prefs.putInt(prefID, ndx);
-      view.setZoom(zoomFactors.get(ndx) / 100.0);
-      ui.lblStatus.setText("Zoom: " + zoomFactors.get(ndx) + '%');
+          doWebViewZoom(view, prefID, ((event.getCode() == KeyCode.MINUS) || (event.getCode() == KeyCode.SUBTRACT)) ? -1 : 1);
+        }
+      }
     });
 
     view.setZoom(zoomFactors.get(app.prefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void doWebViewZoom(WebView view, String prefID, int delta)
+  {
+    int ndx = app.prefs.getInt(prefID, zoomFactors.indexOf(100)) + delta;
+
+    if ((ndx < 0) || (ndx == zoomFactors.size())) return;
+
+    app.prefs.putInt(prefID, ndx);
+    view.setZoom(zoomFactors.get(ndx) / 100.0);
+    ui.lblStatus.setText("Zoom: " + zoomFactors.get(ndx) + '%');
   }
 
 //---------------------------------------------------------------------------

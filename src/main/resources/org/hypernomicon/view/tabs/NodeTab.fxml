@@ -74,7 +74,7 @@
             <Insets right="4.0" top="4.0" />
           </GridPane.margin>
         </Label>
-        <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" GridPane.rowIndex="1">
+        <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" styleClass="noScale" GridPane.rowIndex="1">
           <graphic>
             <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
               <Image url="@../../resources/images/treeview.png" />

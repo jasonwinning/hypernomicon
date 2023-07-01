@@ -529,16 +529,10 @@ public final class UIUtil
 
     setIsScaled(node, true);
 
-    boolean childrenOnly = false;
+    if (node.getStyleClass().contains("noScale"))
+      return;
 
-    if (node.getId() != null)
-    {
-      if ("noScale".equals(node.getId()))
-        return;
-
-      if ("childrenOnly".equals(node.getId()))
-        childrenOnly = true;
-    }
+    boolean childrenOnly = node.getStyleClass().contains("childrenOnly");
 
     if (childrenOnly == false)
     {

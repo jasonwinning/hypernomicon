@@ -35,7 +35,6 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="500.0" minWidth="400.0" prefHeight="700.0" prefWidth="712.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.previewWindow.PreviewWindow">
   <GridPane prefHeight="280.0" prefWidth="712.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -52,14 +51,14 @@
     </rowConstraints>
     <TitledPane animated="false" collapsible="false" focusTraversable="false" graphicTextGap="0.0" text="Switch To Window">
       <AnchorPane minHeight="0.0" minWidth="0.0">
-        <Button fx:id="btnGoToMain" layoutX="-7.199999999999996" layoutY="8.0" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" prefWidth="100.0" text="Main" AnchorPane.leftAnchor="-7.199999999999996">
+        <Button fx:id="btnGoToMain" layoutX="-7.0" layoutY="8.0" maxHeight="25.0" maxWidth="100.0" minHeight="25.0" minWidth="100.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Main" AnchorPane.leftAnchor="-7.199999999999996">
           <graphic>
             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
               <Image url="@../resources/images/switch_window.png" />
             </ImageView>
           </graphic>
         </Button>
-        <Button fx:id="btnGoToManager" layoutX="94.8" layoutY="8.0" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" prefWidth="100.0" text="File Manager" AnchorPane.leftAnchor="94.8">
+        <Button fx:id="btnGoToManager" layoutX="95.0" layoutY="8.0" maxHeight="25.0" maxWidth="100.0" minHeight="25.0" minWidth="100.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="File Manager" AnchorPane.leftAnchor="94.8">
           <graphic>
             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
               <Image url="@../resources/images/folders_explorer.png" />
@@ -82,7 +81,7 @@
           <Insets bottom="1.0" />
         </padding>
         <AnchorPane prefHeight="200.0" prefWidth="200.0">
-          <ToggleButton fx:id="btnPerson" layoutX="2.0" layoutY="2.0" maxWidth="100.0" minWidth="98.0" mnemonicParsing="false" prefWidth="100.0" selected="true" text="Person Tab" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="2.0">
+          <ToggleButton fx:id="btnPerson" layoutX="2.0" layoutY="2.0" maxHeight="25.0" maxWidth="100.0" minHeight="25.0" minWidth="98.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" selected="true" text="Person Tab" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="2.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../resources/images/people.png" />
@@ -92,7 +91,7 @@
               <ToggleGroup fx:id="grpTab" />
             </toggleGroup>
           </ToggleButton>
-          <ToggleButton fx:id="btnWorks" layoutX="104.0" layoutY="2.0" maxWidth="100.0" minWidth="98.0" mnemonicParsing="false" prefWidth="100.0" text="Works Tab" toggleGroup="$grpTab" AnchorPane.leftAnchor="104.0" AnchorPane.topAnchor="2.0">
+          <ToggleButton fx:id="btnWorks" layoutX="104.0" layoutY="2.0" maxHeight="25.0" maxWidth="100.0" minHeight="25.0" minWidth="98.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Works Tab" toggleGroup="$grpTab" AnchorPane.leftAnchor="104.0" AnchorPane.topAnchor="2.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../resources/images/paper.png" />
@@ -101,14 +100,14 @@
           </ToggleButton>
         </AnchorPane>
         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-          <ToggleButton fx:id="btnQueries" layoutX="2.0" layoutY="2.0" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" prefWidth="100.0" text="Queries Tab" toggleGroup="$grpTab" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="2.0">
+          <ToggleButton fx:id="btnQueries" layoutX="2.0" layoutY="2.0" maxHeight="25.0" maxWidth="100.0" minHeight="25.0" minWidth="100.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Queries Tab" toggleGroup="$grpTab" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="2.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../resources/images/glasses-db.png" />
               </ImageView>
             </graphic>
           </ToggleButton>
-          <ToggleButton fx:id="btnManager" layoutX="104.0" layoutY="2.0" maxWidth="100.0" minWidth="98.0" mnemonicParsing="false" prefWidth="100.0" text="File Manager" toggleGroup="$grpTab" AnchorPane.leftAnchor="104.0" AnchorPane.topAnchor="2.0">
+          <ToggleButton fx:id="btnManager" layoutX="104.0" layoutY="2.0" maxHeight="25.0" maxWidth="100.0" minHeight="25.0" minWidth="98.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="File Manager" toggleGroup="$grpTab" AnchorPane.leftAnchor="104.0" AnchorPane.topAnchor="2.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../resources/images/folders_explorer.png" />
@@ -117,14 +116,14 @@
           </ToggleButton>
         </AnchorPane>
         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-          <ToggleButton fx:id="btnTree" layoutX="2.0" layoutY="2.0" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" prefWidth="100.0" text="Tree Tab" toggleGroup="$grpTab" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="2.0">
+          <ToggleButton fx:id="btnTree" layoutX="2.0" layoutY="2.0" maxHeight="25.0" maxWidth="100.0" minHeight="25.0" minWidth="100.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Tree Tab" toggleGroup="$grpTab" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="2.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../resources/images/treeview-small.png" />
               </ImageView>
             </graphic>
           </ToggleButton>
-          <ToggleButton fx:id="btnOther" layoutX="104.0" layoutY="2.0" maxWidth="100.0" minWidth="100.0" mnemonicParsing="false" prefWidth="100.0" text="Other" toggleGroup="$grpTab" AnchorPane.leftAnchor="104.0" AnchorPane.topAnchor="2.0" />
+          <ToggleButton fx:id="btnOther" layoutX="104.0" layoutY="2.0" maxHeight="25.0" maxWidth="100.0" minHeight="25.0" minWidth="100.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Other" toggleGroup="$grpTab" AnchorPane.leftAnchor="104.0" AnchorPane.topAnchor="2.0" />
         </AnchorPane>
       </GridPane>
     </TitledPane>
@@ -134,10 +133,7 @@
           <Cursor fx:constant="HAND" />
         </cursor>
       </Pane>
-      <Label fx:id="lblRecord" alignment="TOP_LEFT" layoutX="25.0" layoutY="7.0" prefHeight="77.0" prefWidth="183.0" text="dtsthdfth" underline="true" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <font>
-          <Font name="System Bold" size="11.0" />
-        </font>
+      <Label fx:id="lblRecord" alignment="TOP_LEFT" layoutX="25.0" layoutY="7.0" prefHeight="77.0" prefWidth="183.0" style="-fx-font-weight: bold;" text="dtsthdfth" underline="true" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <cursor>
           <Cursor fx:constant="HAND" />
         </cursor>
@@ -232,14 +228,14 @@
           </Button>
         </AnchorPane>
         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-          <Button fx:id="btnRefresh" layoutX="96.0" layoutY="6.0" maxHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="32.0" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
+          <Button fx:id="btnRefresh" layoutX="96.0" layoutY="6.0" maxHeight="24.0" maxWidth="32.0" minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../resources/images/refresh.png" />
               </ImageView>
             </graphic>
           </Button>
-          <Button fx:id="btnLaunch" layoutX="140.0" layoutY="4.0" maxHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="32.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="4.0">
+          <Button fx:id="btnLaunch" layoutX="140.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0" minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="4.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../resources/images/rocket-fly.png" />
@@ -249,7 +245,7 @@
               <Tooltip text="Open this file in external viewer" />
             </tooltip>
           </Button>
-          <ToggleButton fx:id="btnLock" layoutX="174.0" layoutY="3.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="4.0">
+          <ToggleButton fx:id="btnLock" layoutX="174.0" layoutY="3.0" maxHeight="24.0" maxWidth="32.0" minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="4.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                 <Image url="@../resources/images/lock_open.png" />

@@ -114,7 +114,7 @@ public abstract class HyperDlg
       Scene scene = new Scene(tmpStagePane);
       tmpDialogStage.setScene(scene);
 
-      if ("SpecialUI".equals(tmpStagePane.getId()) == false)
+      if (tmpStagePane.getStyleClass().contains("SpecialUI") == false)
         scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
       tmpDialogStage.setOnShown(event -> doOnShown());
@@ -216,6 +216,9 @@ public abstract class HyperDlg
   {
     rescale();
 
+    if (initHeight <= 0)
+      dialogStage.centerOnScreen();
+
     if (onShown != null) onShown.run();
 
     shownAlready = true;
@@ -226,13 +229,10 @@ public abstract class HyperDlg
 
   private void rescale()
   {
-    if (shownAlready == false)
+    if ((shownAlready == false) && (stagePane.getStyleClass().contains("SpecialUI") == false))
     {
-      if ("SpecialUI".equals(stagePane.getId()) == false)
-      {
-        scaleNodeForDPI(stagePane);
-        setFontSize(stagePane);
-      }
+      scaleNodeForDPI(stagePane);
+      setFontSize(stagePane);
     }
 
     double diff = dialogStage.getHeight() - stagePane.getHeight();

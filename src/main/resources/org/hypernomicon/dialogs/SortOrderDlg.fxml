@@ -26,7 +26,6 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.text.Font?>
 
 <AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="697.0" prefWidth="773.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.SortOrderDlgCtrlr">
   <TableView fx:id="tvRecords" editable="true" AnchorPane.bottomAnchor="28.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" GridPane.rowIndex="1">
@@ -50,13 +49,10 @@
     <Button fx:id="btnOK" defaultButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" text="OK" GridPane.halignment="RIGHT" />
     <Button fx:id="btnCancel" cancelButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" text="Cancel" GridPane.columnIndex="1" />
   </GridPane>
-   <Label alignment="TOP_LEFT" layoutX="21.0" layoutY="14.0" prefHeight="44.0" prefWidth="745.0" text="Edit the values in the Sort Key column to change the order in which records will be listed." wrapText="true" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="8.0">
-      <font>
-         <Font size="14.0" />
-      </font>
+   <Label layoutX="21.0" layoutY="14.0" prefHeight="50.0" prefWidth="745.0" style="-fx-font-weight: bold;" text="Edit the values in the Sort Key column to change the order in which records will be listed." wrapText="true" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="0.0">
       <graphic>
         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-          <Image url="@../resources/images/information-italic.png"/>
+          <Image url="@../resources/images/information-italic.png" />
         </ImageView>
       </graphic>
    </Label>

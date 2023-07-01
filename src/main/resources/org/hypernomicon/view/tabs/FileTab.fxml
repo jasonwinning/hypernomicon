@@ -46,7 +46,7 @@
       <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowSpan="2">
-      <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
+      <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" styleClass="noScale" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
         <graphic>
           <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
             <Image url="@../../resources/images/treeview.png" />

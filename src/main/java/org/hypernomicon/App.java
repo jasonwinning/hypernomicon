@@ -259,7 +259,7 @@ public final class App extends Application
     if (prefs.getBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, true)) checkForNewVersion(new AsyncHttpClient(), newVersion ->
     {
       if (newVersion.compareTo(appVersion) > 0)
-        new NewVersionDlgCtrlr().showModal();
+        noOp(new NewVersionDlgCtrlr());
     }, Util::noOp);
 
     if (db.viewTestingInProgress && hdbExists)

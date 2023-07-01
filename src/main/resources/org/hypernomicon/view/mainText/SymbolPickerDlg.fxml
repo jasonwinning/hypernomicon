@@ -27,65 +27,38 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="562.0" prefWidth="1291.0" xmlns="http://javafx.com/javafx/11.0.1"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.mainText.SymbolPickerDlgCtrlr">
-  <Label layoutX="14.0" layoutY="20.0" prefHeight="17.0" text="Font:" AnchorPane.leftAnchor="6.0"
-         AnchorPane.topAnchor="20.0"/>
-  <ComboBox fx:id="cbFont" layoutX="41.0" layoutY="14.0" prefHeight="28.0" prefWidth="388.0"
-            AnchorPane.leftAnchor="41.0" AnchorPane.rightAnchor="862.0" AnchorPane.topAnchor="14.0"/>
-  <CheckBox fx:id="chkUseFont" layoutX="440.0" layoutY="20.0" mnemonicParsing="false"
-            text="Use this font when inserting symbol into text" AnchorPane.rightAnchor="593.0"
-            AnchorPane.topAnchor="20.0"/>
-  <Label layoutX="6.0" layoutY="56.0" prefHeight="20.0" prefWidth="498.0"
-         text="Select a character and click Insert to insert the character into the text at the cursor."
-         textOverrun="CLIP" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="56.0">
+<AnchorPane prefHeight="562.0" prefWidth="1291.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.mainText.SymbolPickerDlgCtrlr">
+  <Label layoutX="14.0" layoutY="20.0" prefHeight="17.0" text="Font:" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="20.0" />
+  <ComboBox fx:id="cbFont" layoutX="41.0" layoutY="14.0" prefHeight="28.0" prefWidth="388.0" AnchorPane.leftAnchor="41.0" AnchorPane.rightAnchor="862.0" AnchorPane.topAnchor="14.0" />
+  <CheckBox fx:id="chkUseFont" layoutX="440.0" layoutY="20.0" mnemonicParsing="false" text="Use this font when inserting symbol into text" AnchorPane.rightAnchor="593.0" AnchorPane.topAnchor="20.0" />
+  <Label layoutX="6.0" layoutY="56.0" prefHeight="20.0" prefWidth="498.0" style="-fx-font-weight: bold;" text="Select a character and click Insert to insert the character into the text at the cursor." textOverrun="CLIP" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="56.0">
     <graphic>
       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-        <Image url="@../../resources/images/information-italic.png"/>
+        <Image url="@../../resources/images/information-italic.png" />
       </ImageView>
     </graphic>
-    <font>
-      <Font name="System Bold" size="14.0"/>
-    </font>
   </Label>
-  <GridPane fx:id="gp" gridLinesVisible="true" layoutX="6.0" layoutY="91.0" maxHeight="1242.0" prefHeight="388.0"
-            AnchorPane.bottomAnchor="83.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0"
-            AnchorPane.topAnchor="91.0">
+  <GridPane fx:id="gp" gridLinesVisible="true" layoutX="6.0" layoutY="91.0" maxHeight="1242.0" prefHeight="388.0" AnchorPane.bottomAnchor="83.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="91.0">
 
 
   </GridPane>
-  <Label layoutX="6.0" layoutY="509.0" text="Character:" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="6.0"/>
-  <TextField fx:id="tfChar" layoutX="65.0" layoutY="505.0" prefHeight="25.0" prefWidth="43.0"
-             AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="65.0"/>
-  <Label layoutX="121.0" layoutY="551.0" text="Description:" AnchorPane.bottomAnchor="12.0"
-         AnchorPane.leftAnchor="121.0"/>
-  <TextField fx:id="tfDesc" layoutX="194.0" layoutY="547.0" prefHeight="25.0" prefWidth="336.0"
-             AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="194.0" AnchorPane.rightAnchor="761.0"/>
-  <Label alignment="CENTER_RIGHT" layoutX="536.0" layoutY="533.0" prefHeight="17.0" prefWidth="106.0"
-         text="Unicode (Decimal):" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="649.0"/>
-  <TextField fx:id="tfCodePoint" layoutX="647.0" layoutY="529.0" prefHeight="25.0" prefWidth="100.0"
-             AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="544.0"/>
-  <Label layoutX="760.0" layoutY="533.0" text="Unicode (Hex):" AnchorPane.bottomAnchor="12.0"
-         AnchorPane.rightAnchor="453.0"/>
-  <TextField fx:id="tfHex" layoutX="842.0" layoutY="529.0" prefHeight="25.0" prefWidth="100.0"
-             AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="349.0"/>
-  <Label layoutX="951.0" layoutY="533.0" text="HTML:" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="306.0"/>
-  <TextField fx:id="tfHTML" layoutX="989.0" layoutY="529.0" prefHeight="25.0" prefWidth="118.0"
-             AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="184.0"/>
-  <Button fx:id="btnInsert" layoutX="1115.0" layoutY="529.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="82.0"
-          text="Insert" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="94.0"/>
-  <Button fx:id="btnCancel" layoutX="1203.0" layoutY="529.0" mnemonicParsing="false" onAction="#btnCancelClick"
-          prefHeight="25.0" prefWidth="82.0" text="Done" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="6.0"/>
-  <Label layoutX="14.0" layoutY="493.0" prefHeight="20.0"
-         text="The bottom row is for user-defined symbols. To edit cells in the bottom row, click on a cell and edit its fields."
-         AnchorPane.bottomAnchor="49.0" AnchorPane.leftAnchor="6.0">
+  <Label layoutX="6.0" layoutY="509.0" text="Character:" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="6.0" />
+  <TextField fx:id="tfChar" layoutX="65.0" layoutY="505.0" prefHeight="25.0" prefWidth="43.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="65.0" />
+  <Label layoutX="121.0" layoutY="551.0" text="Description:" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="121.0" />
+  <TextField fx:id="tfDesc" layoutX="194.0" layoutY="547.0" prefHeight="25.0" prefWidth="336.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="194.0" AnchorPane.rightAnchor="761.0" />
+  <Label alignment="CENTER_RIGHT" layoutX="536.0" layoutY="533.0" prefHeight="17.0" prefWidth="106.0" text="Unicode (Decimal):" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="649.0" />
+  <TextField fx:id="tfCodePoint" layoutX="647.0" layoutY="529.0" prefHeight="25.0" prefWidth="100.0" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="544.0" />
+  <Label layoutX="760.0" layoutY="533.0" text="Unicode (Hex):" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="453.0" />
+  <TextField fx:id="tfHex" layoutX="842.0" layoutY="529.0" prefHeight="25.0" prefWidth="100.0" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="349.0" />
+  <Label layoutX="951.0" layoutY="533.0" text="HTML:" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="306.0" />
+  <TextField fx:id="tfHTML" layoutX="989.0" layoutY="529.0" prefHeight="25.0" prefWidth="118.0" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="184.0" />
+  <Button fx:id="btnInsert" layoutX="1115.0" layoutY="529.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="82.0" text="Insert" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="94.0" />
+  <Button fx:id="btnCancel" layoutX="1203.0" layoutY="529.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="82.0" text="Done" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="6.0" />
+  <Label layoutX="14.0" layoutY="493.0" prefHeight="20.0" style="-fx-font-weight: bold;" text="The bottom row is for user-defined symbols. To edit cells in the bottom row, click on a cell and edit its fields." AnchorPane.bottomAnchor="49.0" AnchorPane.leftAnchor="6.0">
     <graphic>
       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-        <Image url="@../../resources/images/information-italic.png"/>
+        <Image url="@../../resources/images/information-italic.png" />
       </ImageView>
     </graphic>
-    <font>
-      <Font name="System Bold" size="14.0"/>
-    </font>
   </Label>
 </AnchorPane>

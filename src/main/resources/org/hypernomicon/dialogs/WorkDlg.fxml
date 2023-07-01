@@ -137,13 +137,9 @@
     </SplitMenuButton>
     <TextField fx:id="tfDOI" layoutX="235.0" layoutY="268.0" prefHeight="22.0" prefWidth="166.0"
                AnchorPane.leftAnchor="235.0" AnchorPane.topAnchor="268.0"/>
-    <Label fx:id="lblAutoPopulated" alignment="CENTER_RIGHT" layoutX="407.0" layoutY="272.0" prefHeight="17.0"
+    <Label fx:id="lblAutoPopulated" style="-fx-font-weight: bold;" alignment="CENTER_RIGHT" layoutX="407.0" layoutY="272.0" prefHeight="17.0"
            prefWidth="463.0" text="Data has been auto-populated from PDF." textFill="RED"
-           AnchorPane.leftAnchor="407.0" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="272.0">
-      <font>
-        <Font name="System Bold" size="12.0"/>
-      </font>
-    </Label>
+           AnchorPane.leftAnchor="407.0" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="272.0" />
     <ProgressBar fx:id="progressBar" layoutX="666.0" layoutY="275.0" prefWidth="200.0" visible="false"
                  AnchorPane.rightAnchor="51.0" AnchorPane.topAnchor="275.0"/>
     <Button fx:id="btnStop" layoutX="873.0" layoutY="271.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="5.0"

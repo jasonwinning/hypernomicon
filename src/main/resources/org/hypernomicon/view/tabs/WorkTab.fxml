@@ -53,9 +53,9 @@
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
   <AnchorPane GridPane.rowSpan="2">
-    <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
+    <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" styleClass="noScale" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
       <graphic>
-        <ImageView id="noScale" fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+        <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
           <viewport>
             <Rectangle2D />
           </viewport>

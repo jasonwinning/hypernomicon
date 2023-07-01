@@ -3357,7 +3357,7 @@ public final class MainCtrlr
       openDB(wdc.getOpenPath());
 
     if (db.isLoaded() == false)
-      Platform.runLater(this::showWelcomeWindow);
+      windows.runInFXThreadAfterModalPopups(250, this::showWelcomeWindow);
   }
 
 //---------------------------------------------------------------------------

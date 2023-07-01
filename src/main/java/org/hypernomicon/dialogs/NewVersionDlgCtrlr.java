@@ -49,6 +49,8 @@ public class NewVersionDlgCtrlr extends HyperDlg
 
       btnOkClick();
     });
+
+    ui.windows.runInFXThreadAfterModalPopups(3000, this::showModal);
   }
 
 //---------------------------------------------------------------------------

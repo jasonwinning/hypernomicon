@@ -22,6 +22,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.Map;
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.util.filePath.FilePath;
 
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.stage.DirectoryChooser;
@@ -114,6 +116,7 @@ public final class WindowStack
   private final LinkedList<WindowWrapper> windows = new LinkedList<>();
   private final Map<MenuItem, Boolean> itemsDisabled = new HashMap<>();
   private boolean cyclingFocus = false;
+  private volatile Modality outermostModality;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -121,18 +124,18 @@ public final class WindowStack
   public void push(Alert dlg)            { push(new AlertWrapper(dlg)); }
   public void push(Stage stage)          { push(new StageWrapper(stage)); }
   public boolean getCyclingFocus()       { return cyclingFocus; }
-  public Modality getOutermostModality() { return peek().getModality(); }
-  private WindowWrapper peek()           { return windows.isEmpty() ? null : windows.getFirst(); }
+  public Modality getOutermostModality() { return outermostModality; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void push(WindowWrapper window)
   {
+    Modality newModality = window.getModality();
+
     if (windows.isEmpty() == false)
     {
-      Modality oldModality = getOutermostModality(),
-               newModality = window.getModality();
+      Modality oldModality = getOutermostModality();
 
       if ((oldModality != Modality.NONE) &&    // This happens when focus returns from a modal window
           (newModality == Modality.NONE))      // back to the non-modal window that created it.
@@ -149,6 +152,8 @@ public final class WindowStack
       windows.getFirst().saveDimensions();
 
     windows.addFirst(window);
+
+    outermostModality = newModality;
   }
 
 //---------------------------------------------------------------------------
@@ -200,10 +205,18 @@ public final class WindowStack
 
   public void pop()
   {
-    if (windows.isEmpty()) return;
+    if (windows.isEmpty())
+      return;
+
     WindowWrapper closingWindow = windows.removeFirst(), focusingWindow = windows.getFirst();
 
-    if (focusingWindow == null) return;
+    if (focusingWindow == null)
+    {
+      outermostModality = null;
+      return;
+    }
+
+    outermostModality = focusingWindow.getModality();
 
     if ((closingWindow.getModality() != Modality.NONE) && (focusingWindow.getModality() == Modality.NONE))
     {
@@ -211,7 +224,8 @@ public final class WindowStack
       itemsDisabled.clear();
     }
 
-    if (focusingWindow.isStage() == false) return;
+    if (focusingWindow.isStage() == false)
+      return;
 
     focusingWindow.restoreDimensions();
 
@@ -284,6 +298,47 @@ public final class WindowStack
     return rv;
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Run code after no modal windows have been open for a certain amount of time
+   * @param intervalMS The amount of time that has to go by with no modal popups
+   * @param runnable The code to run after the interval
+   */
+  public void runInFXThreadAfterModalPopups(int intervalMS, Runnable runnable)
+  {
+    runOutsideFXThread(() ->
+    {
+      tryNonmodalInterval(intervalMS); // Wait until no modal windows have been open for a certain amount of time
+      Platform.runLater(runnable);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void tryNonmodalInterval(int intervalMS)
+  {
+    Modality tmpOutermostModality;
+
+    do
+    {
+      while (outermostModality != Modality.NONE)
+        sleepForMillis(50);
+
+      long startTime = Instant.now().toEpochMilli();
+
+      tmpOutermostModality = outermostModality; // set local variable for thread safety
+
+      while ((tmpOutermostModality == Modality.NONE) && ((Instant.now().toEpochMilli() - startTime) < intervalMS))
+      {
+        sleepForMillis(50);
+        tmpOutermostModality = outermostModality;
+      }
+
+    } while (tmpOutermostModality != Modality.NONE);
+  }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

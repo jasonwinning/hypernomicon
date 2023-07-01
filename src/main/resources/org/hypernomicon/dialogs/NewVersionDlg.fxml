@@ -25,39 +25,32 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-
-<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.hypernomicon.dialogs.NewVersionDlgCtrlr">
-  <BorderPane prefHeight="112.0" prefWidth="480.0">
+<AnchorPane prefHeight="112.0" prefWidth="480.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewVersionDlgCtrlr">
+  <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <center>
       <BorderPane maxHeight="90.0" maxWidth="-Infinity" minHeight="50.0" prefHeight="50.0" prefWidth="400.0">
         <top>
-          <Label text="A new version of Hypernomicon is available!" BorderPane.alignment="CENTER"/>
+          <Label text="A new version of Hypernomicon is available!" BorderPane.alignment="CENTER" />
         </top>
         <center>
           <GridPane maxHeight="35.0" prefHeight="35.0" BorderPane.alignment="CENTER">
             <columnConstraints>
-              <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
-              <ColumnConstraints hgrow="SOMETIMES"/>
+              <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+              <ColumnConstraints hgrow="SOMETIMES" />
             </columnConstraints>
             <rowConstraints>
-              <RowConstraints maxHeight="35.0" prefHeight="35.0" vgrow="SOMETIMES"/>
+              <RowConstraints maxHeight="35.0" prefHeight="35.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <AnchorPane>
-              <Button fx:id="btnDownload" layoutX="44.0" layoutY="6.0" mnemonicParsing="false"
-                      prefHeight="25.0" prefWidth="148.0" text="Download New Version"
-                      AnchorPane.rightAnchor="8.0"/>
+              <Button fx:id="btnDownload" layoutX="44.0" layoutY="6.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="148.0" text="Download New Version" AnchorPane.rightAnchor="8.0" />
             </AnchorPane>
             <AnchorPane GridPane.columnIndex="1">
-              <Button layoutX="8.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnOkClick"
-                      prefHeight="25.0" prefWidth="148.0" text="OK" AnchorPane.leftAnchor="8.0"/>
+              <Button layoutX="8.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="148.0" text="OK" AnchorPane.leftAnchor="8.0" />
             </AnchorPane>
           </GridPane>
         </center>
         <bottom>
-          <CheckBox fx:id="chkNoShow" mnemonicParsing="false"
-                    text="Stop notifiying me about available updates on application start"
-                    BorderPane.alignment="CENTER"/>
+          <CheckBox fx:id="chkNoShow" mnemonicParsing="false" text="Stop notifiying me about available updates on application start" BorderPane.alignment="CENTER" />
         </bottom>
       </BorderPane>
     </center>
