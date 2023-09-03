@@ -42,6 +42,7 @@ import static org.apache.commons.text.StringEscapeUtils.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Tag;
@@ -263,7 +264,7 @@ public final class MainTextUtil
       if (link.hasAttr("hypncon")) return;
 
       String url = link.hasAttr("href") ? link.attr("href") : "javascript:void(0);";
-      link.attributes().put(new Attribute("onclick", "openURL('" + url + "'); return false;"));
+      link.attributes().put(new Attribute("onclick", "openURL('" + StringEscapeUtils.escapeEcmaScript(url) + "'); return false;"));
     });
 
     return doc;
@@ -316,7 +317,7 @@ public final class MainTextUtil
 
           if (kind == LinkKind.web)
           {
-            textNode.before("<a href=\"\" onclick=\"openURL('" + displayText + "'); return false;\">" + displayText + "</a>"); // 4. Insert anchor
+            textNode.before("<a href=\"\" onclick=\"openURL('" + StringEscapeUtils.escapeEcmaScript(displayText) + "'); return false;\">" + htmlEscaper.escape(displayText) + "</a>"); // 4. Insert anchor
           }
           else
           {

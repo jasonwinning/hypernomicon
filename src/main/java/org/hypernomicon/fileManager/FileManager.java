@@ -1456,7 +1456,7 @@ public class FileManager extends HyperDlg
     {
       webView.getEngine().loadContent("");
 
-      hasMore = db.getRelatives(folderRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS);
+      hasMore = db.getRelatives(folderRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, false);
     }
     else
     {
@@ -1464,14 +1464,18 @@ public class FileManager extends HyperDlg
       if (fileRecord == null)
       {
         webView.getEngine().loadContent("");
-        return;
+
+        folderRecord = fileRow.getFolder();
+        hasMore = db.getRelatives(folderRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, true);
       }
+      else
+      {
+        hasMore = db.getRelatives(fileRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, true);
 
-      hasMore = db.getRelatives(fileRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS);
-
-      HyperTableRow row = recordTable.newDataRow();
-      row.setCellValue(0, fileRecord, getTypeName(fileRecord.getType()));
-      row.setCellValue(1, fileRecord, fileRecord.listName());
+        HyperTableRow row = recordTable.newDataRow();
+        row.setCellValue(0, fileRecord, getTypeName(fileRecord.getType()));
+        row.setCellValue(1, fileRecord, fileRecord.listName());
+      }
     }
 
     Iterator<HDT_Record> relIt = relatives.iterator();

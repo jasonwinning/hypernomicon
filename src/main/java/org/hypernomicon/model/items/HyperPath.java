@@ -429,7 +429,7 @@ public class HyperPath
     }
 
     LinkedHashSet<HDT_Record> set = new LinkedHashSet<>();
-    db.getRelatives(getRecord(), set, 10);
+    db.getRelatives(getRecord(), set, 10, false);
 
     set.forEach(relative ->
     {

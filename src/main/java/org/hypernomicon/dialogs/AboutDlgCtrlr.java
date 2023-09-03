@@ -32,7 +32,7 @@ import static org.hypernomicon.util.Util.*;
 import java.text.DecimalFormat;
 
 import org.apache.commons.lang3.SystemUtils;
-
+import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -136,7 +136,7 @@ public class AboutDlgCtrlr extends HyperDlg
 
   private static String anchorTag(String text, String url)
   {
-    return "<a href=\"\" onclick=\"openURL('" + url + "'); return false;\">" + text + "</a>";
+    return "<a href=\"\" onclick=\"openURL('" + StringEscapeUtils.escapeEcmaScript(url) + "'); return false;\">" + htmlEscaper.escape(text) + "</a>";
   }
 
 //---------------------------------------------------------------------------

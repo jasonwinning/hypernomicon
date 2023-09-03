@@ -85,6 +85,8 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
   {
     super(noteTabEnum, tab);
 
+    lblParentCaption.setText("Parent Notes:");
+
     tvParents.getColumns().remove(2);
 
     tvParents.getColumns().get(2).setPrefWidth(300.0);

@@ -17,11 +17,14 @@
 
 package org.hypernomicon.bib.reports;
 
+import static org.hypernomicon.util.Util.*;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.view.mainText.MainTextUtil;
 
 public final class HtmlReportGenerator extends ReportGenerator
@@ -62,7 +65,7 @@ public final class HtmlReportGenerator extends ReportGenerator
 
   @Override public String getUrlContent(String url)
   {
-    return "<a href=\"\" onclick=\"openURL('" + url + "'); return false;\">" + url + "</a>";
+    return "<a href=\"\" onclick=\"openURL('" + StringEscapeUtils.escapeEcmaScript(url) + "'); return false;\">" + htmlEscaper.escape(url) + "</a>";
   }
 
 //---------------------------------------------------------------------------

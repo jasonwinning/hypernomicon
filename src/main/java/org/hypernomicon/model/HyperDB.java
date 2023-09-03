@@ -2344,9 +2344,46 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean getRelatives(HDT_Record record, LinkedHashSet<HDT_Record> set, int max)
+  public boolean getRelatives(HDT_RecordWithPath record, LinkedHashSet<HDT_Record> set, int max, boolean gettingNotesForFile)
   {
     set.clear();
+
+    if (gettingNotesForFile)
+    {
+      // If gettingNotesForFile is true, then there are two scenarios.
+      //   1. If "record" is a folder, then we are getting the "relatives" for a file with no associated record, i.e., any note record associated with the parent folder.
+      //   2. If "record" is NOT a folder, then we are getting relatives of a file with an associated record in the File Manager and want to include any notes associated with the parent folder,
+      //      as well as the record's other relatives.
+
+      if (record.getType() == hdtFolder)
+      {
+        HDT_Folder folder = (HDT_Folder)record;
+
+        for (HDT_Note note : folder.notes)
+        {
+          if (set.size() == max)
+            return true;
+
+          set.add(note);
+        }
+
+        return false; // We are getting "relatives" of a file row with no associated record; only the parent folder's notes should be returned in this case.
+      }
+      else
+      {
+        HDT_Folder folder = record.parentFolder();
+        if ((folder != null) && (folder.notes.size() > 0))
+        {
+          for (HDT_Note note : folder.notes)
+          {
+            if (set.size() == max)
+              return true;
+
+            set.add(note);
+          }
+        }
+      }
+    }
 
     for (RelationType relType : getRelationsForSubjType(record.getType(), false))
     {

@@ -27,6 +27,8 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
 
@@ -267,8 +269,31 @@ public final class DesktopUtil
       return;
     }
 
-    if (url.contains(":") == false)
+    if (url.contains(":"))
+    {
+      // Check to see if it is a file system path
+
+      boolean validFileSystemPath = true;
+
+      try
+      {
+        Paths.get(url);
+      }
+      catch (InvalidPathException e)
+      {
+        validFileSystemPath = false;
+      }
+
+      if (validFileSystemPath)
+      {
+        launchFile(new FilePath(url));
+        return;
+      }
+    }
+    else
+    {
       url = "http://" + url;
+    }
 
     if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
     {

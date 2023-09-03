@@ -47,6 +47,7 @@ import com.sun.webkit.WebPage;
 import org.w3c.dom.html.HTMLAnchorElement;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
@@ -774,9 +775,9 @@ public class MainTextCtrlr
 
     if (dlg.showModal() == false) return;
 
-    String urlText = dlg.tfURL.getText().trim();
+    String urlText = StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfURL.getText().trim()));
 
-    String anchorTag = "<a title=\"" + htmlEscaper.escape(urlText) + "\" href=\"" + urlText + "\">" + htmlEscaper.escape(dlg.tfDisplayText.getText()) + "</a>";
+    String anchorTag = "<a title=\"" + urlText + "\" href=\"" + urlText + "\">" + StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfDisplayText.getText())) + "</a>";
 
     engine.executeScript("insertHtmlAtCursor('" + anchorTag + "')");
   }
@@ -806,7 +807,7 @@ public class MainTextCtrlr
                  .replaceAll("\\v", "<br>");
     }
 
-    engine.executeScript("insertHtmlAtCursor('" + text + "')");
+    engine.executeScript("insertHtmlAtCursor('" + StringEscapeUtils.escapeEcmaScript(text) + "')");
   }
 
 //---------------------------------------------------------------------------
