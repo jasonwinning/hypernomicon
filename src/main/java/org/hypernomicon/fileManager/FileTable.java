@@ -167,7 +167,9 @@ public class FileTable extends DragNDropContainer<FileRow>
         }
         else
         {
-          setText(item.getFileName());
+          String fileName = item.getFileName();
+          setText(fileName);
+          setToolTip(this, fileName.length() >= FILENAME_LENGTH_TO_SHOW_TOOLTIP ? fileName : null);
           setGraphic(item.getGraphic());
         }
       }

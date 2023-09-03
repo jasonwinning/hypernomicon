@@ -40,6 +40,7 @@ public final class Const
     INITIAL_NAV_LIST_SIZE = 150,
     BUTTON_MENU_DELAY_MS = 300,
     IGNORE_ARROW_KEYS_IN_TAB_PANE_MS = 300,
+    FILENAME_LENGTH_TO_SHOW_TOOLTIP = 30,
     HDB_MRU_SIZE = 4,
 
     BLANK_FN_COMPONENT = 0,
@@ -93,7 +94,6 @@ public final class Const
     PREF_KEY_NOTE_ID = "noteID",
     PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID = "defaultChapterWorkTypeID",
     PREF_KEY_SENTENCE_CASE = "sentenceCase",
-    PREF_KEY_LOWER_CASE_TARGET_NAMES = "lowerCaseTargetNames",
     PREF_KEY_CHECK_INTERNET = "checkInternet",
     PREF_KEY_CHECK_FOR_NEW_VERSION = "checkForNewVersion",
     PREF_KEY_AUTO_OPEN_PDF = "autoOpenWorkFile",
@@ -105,6 +105,14 @@ public final class Const
     PREF_KEY_DEF_DESC_FONT_SIZE = "defDescFontSize",
     PREF_KEY_DEF_DESC_FONT_FAMILY = "defDescFontFamily",
     PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS = "openEmptyKeyWorks",
+
+    PREF_KEY_LOWER_CASE_TARGET_NAMES = "lowerCaseTargetNames",
+    PREF_KEY_ARG_NAMING_MULTIPLE_AUTHORS = "multipleAuthorsInArgNames",
+    PREF_KEY_ARG_NAMING_OXFORD_COMMA = "oxfordCommaInArgNames",
+    PREF_KEY_ARG_TRUNCATE_NUM = "authorNumToTruncateInArgNames",
+    PREF_KEY_ARG_AUTHORS_TO_SHOW = "authorsToShowWhenTruncatingInArgNames",
+    PREF_KEY_ARG_TRUNCATION_INDICATOR = "truncationIndicatorInArgNames",
+    PREF_KEY_ARG_FINAL_CONJ_SYMBOL = "finalConjSymbolInArgNames",
 
     PREF_KEY_IMPORT_ACTION_MOVE = "move",
     PREF_KEY_IMPORT_ACTION_COPY = "copy",

@@ -267,7 +267,7 @@
       </GridPane>
     </AnchorPane>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowSpan="2147483647">
-      <TabPane fx:id="tpPreview" layoutX="-153.0" layoutY="-103.0" minHeight="0.0" minWidth="0.0" prefHeight="396.0" prefWidth="712.0" styleClass="wizard" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <TabPane fx:id="tpPreview" layoutX="-153.0" layoutY="-103.0" minHeight="0.0" minWidth="0.0" prefHeight="396.0" prefWidth="712.0" side="TOP" styleClass="wizard" tabMaxHeight="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <Tab fx:id="tabPerson" closable="false" text="Person Tab">
           <AnchorPane fx:id="apPerson" minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" />
         </Tab>

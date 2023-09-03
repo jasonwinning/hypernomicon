@@ -42,11 +42,6 @@
   -fx-background-color: #d4d4d4;
 }
 
-.wizard
-{
-  -fx-tab-max-height: 0;
-}
-
 .wizard .tab-header-area
 {
   visibility: hidden;

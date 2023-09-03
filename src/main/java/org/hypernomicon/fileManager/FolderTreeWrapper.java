@@ -17,6 +17,7 @@
 
 package org.hypernomicon.fileManager;
 
+import static org.hypernomicon.Const.FILENAME_LENGTH_TO_SHOW_TOOLTIP;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -98,7 +99,10 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
         if (newValue.getFilePath() == null) // happens right before a filerow is deleted sometimes
           return;
 
-        row.setText(newValue.getFileName());
+        String fileName = newValue.getFileName();
+        row.setText(fileName);
+        setToolTip(row, fileName.length() >= FILENAME_LENGTH_TO_SHOW_TOOLTIP ? fileName : null);
+
         if (row.getGraphic() == null)
           row.setGraphic(openImage);
 

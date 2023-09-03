@@ -25,12 +25,13 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane prefHeight="495.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.WorkFileNamingSettingsCtrlr">
   <SplitPane dividerPositions="0.5" layoutX="214.0" layoutY="100.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <items>
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+      <AnchorPane minHeight="0.0" minWidth="100.0" prefHeight="100.0" prefWidth="160.0">
         <children>
           <TableView fx:id="tv" editable="true" layoutX="119.0" layoutY="-2.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columns>
@@ -55,12 +56,12 @@
         <CheckBox fx:id="chkYearLetter" mnemonicParsing="false" text="Add letter to year if there are multiple works for that author/year (not yet implemented)" />
         <CheckBox fx:id="chkPosix" mnemonicParsing="false" text="Enforce POSIX compatibility (other than filename length)" />
         <CheckBox fx:id="chkLowercase" mnemonicParsing="false" text="Enforce lowercase" />
-        <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
-          <children>
-            <Label layoutY="4.0" text="Maximum number of characters (usually 255):" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
-            <TextField fx:id="tfMaxChar" layoutX="246.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="255" AnchorPane.leftAnchor="246.0" AnchorPane.topAnchor="0.0" />
-          </children>
-        </AnchorPane>
+                  <HBox alignment="CENTER_LEFT" spacing="6.0">
+                     <children>
+            <Label text="Maximum number of characters (usually 255):" />
+            <TextField fx:id="tfMaxChar" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="255" />
+                     </children>
+                  </HBox>
         <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
           <children>
             <Label fx:id="lblExample" layoutX="-4.0" layoutY="4.0" text="Example:" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />

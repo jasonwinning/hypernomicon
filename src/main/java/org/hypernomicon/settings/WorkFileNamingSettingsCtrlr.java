@@ -21,6 +21,7 @@ import static org.hypernomicon.App.app;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.settings.SettingsDlgCtrlr.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
@@ -54,7 +55,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Window;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 public class WorkFileNamingSettingsCtrlr implements SettingsControl
@@ -229,11 +229,11 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     lblExample.setOnMouseClicked(event -> refreshExample());
 
-    initCheckBox(chkTreatEdAsAuthor, PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true);
-    initCheckBox(chkAddInitial, PREF_KEY_FN_ADD_INITIAL, false);
-    initCheckBox(chkYearLetter, PREF_KEY_FN_YEAR_LETTER, false);
-    initCheckBox(chkPosix, PREF_KEY_FN_POSIX, false);
-    initCheckBox(chkLowercase, PREF_KEY_FN_LOWERCASE, false);
+    initCheckBox(db.prefs, chkTreatEdAsAuthor, PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true , nv -> refreshExample());
+    initCheckBox(db.prefs, chkAddInitial     , PREF_KEY_FN_ADD_INITIAL       , false, nv -> refreshExample());
+    initCheckBox(db.prefs, chkYearLetter     , PREF_KEY_FN_YEAR_LETTER       , false, nv -> refreshExample());
+    initCheckBox(db.prefs, chkPosix          , PREF_KEY_FN_POSIX             , false, nv -> refreshExample());
+    initCheckBox(db.prefs, chkLowercase      , PREF_KEY_FN_LOWERCASE         , false, nv -> refreshExample());
 
     initMaxChar(tfMaxChar, PREF_KEY_FN_MAX_CHAR);
 
@@ -277,21 +277,6 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       TableColumnHeader header = (TableColumnHeader) tv.getColumns().get(colNdx).getStyleableNode();
       Label label = (Label) header.lookup(".label");
       label.setTextAlignment(TextAlignment.CENTER);
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void initCheckBox(CheckBox chk, String prefKey, boolean defValue)
-  {
-    chk.setSelected(db.prefs.getBoolean(prefKey, defValue));
-    chk.selectedProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-
-      db.prefs.putBoolean(prefKey, newValue);
-      refreshExample();
     });
   }
 

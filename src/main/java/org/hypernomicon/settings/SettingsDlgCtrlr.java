@@ -24,6 +24,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.prefs.Preferences;
 
 import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.model.OAuth1AccessToken;
@@ -31,6 +33,8 @@ import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth10aService;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
@@ -51,6 +55,7 @@ import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
@@ -89,13 +94,13 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnClearExtPath, btnExtFilesHelp;
-  @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLowerCaseTargetNames, chkDefaultChapterWorkType, chkLinuxWorkaround,
+  @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkDefaultChapterWorkType, chkLinuxWorkaround,
                          chkCompDontExpandKeyWorks, chkDBDontExpandKeyWorks;
   @FXML private ComboBox<HyperTableCell> cbDefaultChapterWorkType;
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
+  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
   @FXML TreeView<SettingsPage> treeView;
   @FXML private TabPane tpMain;
   @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfVerificationCode;
@@ -116,6 +121,8 @@ public class SettingsDlgCtrlr extends HyperDlg
     DBSpecific("Settings applying to this database"),
     Folders("Default Folders"),
     WorkNaming("Work File Naming"),
+    WorkSearchKey("Work Search Key Generation"),
+    ArgNaming("Argument Naming"),
     BibMgr("Bibliography Manager");
 
     private final String caption;
@@ -156,9 +163,11 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     settingsCtrlrs = Set.of
     (
-      initControl(tabWebButtons, "WebButtonSettings"     ),
-      initControl(tabFolders   , "FolderSettings"        ),
-      initControl(tabNaming    , "WorkFileNamingSettings")
+      initControl(tabWebButtons   , "WebButtonSettings"     ),
+      initControl(tabFolders      , "FolderSettings"        ),
+      initControl(tabNaming       , "WorkFileNamingSettings"),
+      initControl(tabWorkSearchKey, "WorkSearchKeys"        ),
+      initControl(tabArgNaming    , "ArgumentNaming"        )
     );
 
     btnVerify.setOnAction(event ->
@@ -203,9 +212,9 @@ public class SettingsDlgCtrlr extends HyperDlg
     lblStep4            .visibleProperty().bind(authUrl.isNotEmpty());
     lblStep4Instructions.visibleProperty().bind(authUrl.isNotEmpty());
 
-    initAppTextField(tfImageEditor, PREF_KEY_IMAGE_EDITOR);
-    initAppTextField(tfPDFReader, PREF_KEY_PDF_READER);
-    initAppTextField(tfExtFiles, PREF_KEY_EXT_FILES_1);
+    initTextField(app.prefs, tfImageEditor, PREF_KEY_IMAGE_EDITOR, "");
+    initTextField(app.prefs, tfPDFReader  , PREF_KEY_PDF_READER  , "");
+    initTextField(app.prefs, tfExtFiles   , PREF_KEY_EXT_FILES_1 , "");
 
     btnImgEditorAdvanced.setOnAction(event ->
     {
@@ -239,17 +248,17 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     setToolTip(sliderFontSize, "Base font size");
 
-    initAppCheckBox(chkInternet              , PREF_KEY_CHECK_INTERNET           , true );
-    initAppCheckBox(chkNewVersionCheck       , PREF_KEY_CHECK_FOR_NEW_VERSION    , true );
-    initAppCheckBox(chkAutoOpenPDF           , PREF_KEY_AUTO_OPEN_PDF            , true );
-    initAppCheckBox(chkAutoRetrieveBib       , PREF_KEY_AUTO_RETRIEVE_BIB        , true );
-    initAppCheckBox(chkCompDontExpandKeyWorks, PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
+    initCheckBox(app.prefs, chkInternet              , PREF_KEY_CHECK_INTERNET           , true );
+    initCheckBox(app.prefs, chkNewVersionCheck       , PREF_KEY_CHECK_FOR_NEW_VERSION    , true );
+    initCheckBox(app.prefs, chkAutoOpenPDF           , PREF_KEY_AUTO_OPEN_PDF            , true );
+    initCheckBox(app.prefs, chkAutoRetrieveBib       , PREF_KEY_AUTO_RETRIEVE_BIB        , true );
+    initCheckBox(app.prefs, chkCompDontExpandKeyWorks, PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
 
     chkLinuxWorkaround.setVisible(SystemUtils.IS_OS_LINUX);
 
-    initAppCheckBox(chkLinuxWorkaround, PREF_KEY_LINUX_WORKAROUND, false);
+    initCheckBox(app.prefs, chkLinuxWorkaround, PREF_KEY_LINUX_WORKAROUND, false);
 
-    disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming);
+    disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming, tabArgNaming);
 
     hcbDefaultChapterWorkType = new HyperCB(cbDefaultChapterWorkType, ctDropDownList, new StandardPopulator(hdtWorkType));
 
@@ -257,9 +266,8 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     if (noDB == false)
     {
-      initDBCheckBox(chkUseSentenceCase     , PREF_KEY_SENTENCE_CASE            , false);
-      initDBCheckBox(chkLowerCaseTargetNames, PREF_KEY_LOWER_CASE_TARGET_NAMES  , false);
-      initDBCheckBox(chkDBDontExpandKeyWorks, PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
+      initCheckBox(db.prefs, chkUseSentenceCase     , PREF_KEY_SENTENCE_CASE            , false);
+      initCheckBox(db.prefs, chkDBDontExpandKeyWorks, PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
       initDefaultChapterWorkType();
     }
 
@@ -290,12 +298,14 @@ public class SettingsDlgCtrlr extends HyperDlg
     TreeItem<SettingsPage> root = new TreeItem<>(null);
     treeView.setRoot(root);
 
-    addTreeItem(CompGeneral, tabComputerSpecific, null       );
-    addTreeItem(DBSpecific , tabDBSpecific      , null       );
-    addTreeItem(WebSearch  , tabWebButtons      , CompGeneral);
-    addTreeItem(Folders    , tabFolders         , DBSpecific );
-    addTreeItem(WorkNaming , tabNaming          , DBSpecific );
-    addTreeItem(BibMgr     , tabLinkToExtBibMgr , DBSpecific );
+    addTreeItem(CompGeneral  , tabComputerSpecific, null       );
+    addTreeItem(DBSpecific   , tabDBSpecific      , null       );
+    addTreeItem(WebSearch    , tabWebButtons      , CompGeneral);
+    addTreeItem(Folders      , tabFolders         , DBSpecific );
+    addTreeItem(WorkNaming   , tabNaming          , DBSpecific );
+    addTreeItem(WorkSearchKey, tabWorkSearchKey   , DBSpecific );
+    addTreeItem(ArgNaming    , tabArgNaming       , DBSpecific );
+    addTreeItem(BibMgr       , tabLinkToExtBibMgr , DBSpecific );
 
     root.getChildren().add(pageToTreeItem.get(CompGeneral));
 
@@ -343,29 +353,66 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void initAppTextField(TextField tf, String prefKey)
+  static void initTextField(Preferences prefs, TextField tf, String prefKey, String defValue)
   {
-    tf.setText(app.prefs.get(prefKey, ""));
+    initTextField(prefs, tf, prefKey, defValue, null);
+  }
+
+  static void initTextField(Preferences prefs, TextField tf, String prefKey, String defValue, Consumer<String> handler)
+  {
+    tf.setText(prefs.get(prefKey, defValue));
 
     tf.textProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue != null)
-        app.prefs.put(prefKey, newValue);
+      if (newValue == null) return;
+
+      prefs.put(prefKey, newValue);
+      if (handler != null) handler.accept(newValue);
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void initDBCheckBox(CheckBox chk, String prefKey, boolean defValue)
+  static void initCheckBox(Preferences prefs, CheckBox chk, String prefKey, boolean defValue)
   {
-    chk.setSelected(db.prefs.getBoolean(prefKey, defValue));
+    initCheckBox(prefs, chk, prefKey, defValue, null);
+  }
+
+  static void initCheckBox(Preferences prefs, CheckBox chk, String prefKey, boolean defValue, Consumer<Boolean> handler)
+  {
+    chk.setSelected(prefs.getBoolean(prefKey, defValue));
     chk.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
-      db.prefs.putBoolean(prefKey, newValue);
+      prefs.putBoolean(prefKey, newValue);
+      if (handler != null) handler.accept(newValue);
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void initToggleButtons(Preferences prefs, String prefKey, Runnable refreshHandler, ToggleButton defValue, Map<String, ToggleButton> map)
+  {
+    BiMap<String, ToggleButton> biMap = HashBiMap.create(map);
+
+    String startStr = prefs.get(prefKey, "");
+    ToggleButton startButton = startStr.isBlank() ? defValue : map.get(startStr);
+    if (startButton == null) startButton = defValue;
+
+    if (startButton != null)
+      startButton.setSelected(true);
+    else
+      map.values().forEach(toggleButton -> toggleButton.setSelected(false));
+
+    map.values().forEach(toggleButton -> toggleButton.setOnAction(event -> Platform.runLater(() ->
+    {
+      prefs.put(prefKey, nullSwitch(toggleButton.getToggleGroup().getSelectedToggle(), "", biMap.inverse()::get));
+
+      if (refreshHandler != null) refreshHandler.run();
+    })));
   }
 
 //---------------------------------------------------------------------------
@@ -397,19 +444,6 @@ public class SettingsDlgCtrlr extends HyperDlg
     {
       int workTypeID = nullSwitch(HyperTableCell.getRecord(nv), -1, HDT_Record::getID);
       db.prefs.putInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, workTypeID);
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void initAppCheckBox(CheckBox chk, String prefKey, boolean defValue)
-  {
-    chk.setSelected(app.prefs.getBoolean(prefKey, defValue));
-    chk.selectedProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue != null)
-        app.prefs.putBoolean(prefKey, newValue);
     });
   }
 
