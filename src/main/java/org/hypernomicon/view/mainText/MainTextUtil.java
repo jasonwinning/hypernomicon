@@ -317,7 +317,7 @@ public final class MainTextUtil
 
           if (kind == LinkKind.web)
           {
-            textNode.before("<a href=\"\" onclick=\"openURL('" + StringEscapeUtils.escapeEcmaScript(displayText) + "'); return false;\">" + htmlEscaper.escape(displayText) + "</a>"); // 4. Insert anchor
+            textNode.before("<a href=\"\" onclick=\"openURL('" + StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(displayText)) + "'); return false;\">" + htmlEscaper.escape(displayText) + "</a>"); // 4. Insert anchor
           }
           else
           {
@@ -359,21 +359,21 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getKeywordLink(String text, KeywordLink link)
+  private static String getKeywordLink(String html, KeywordLink link)
   {
-    return getKeywordLink(text, link, "", "");
+    return getKeywordLink(html, link, "", "");
   }
 
-  static String getKeywordLink(String text, KeywordLink link, String style)
+  static String getKeywordLink(String html, KeywordLink link, String style)
   {
-    return getKeywordLink(text, link, style, "");
+    return getKeywordLink(html, link, style, "");
   }
 
-  private static String getKeywordLink(String text, KeywordLink link, String style, String klass)
+  private static String getKeywordLink(String html, KeywordLink link, String style, String klass)
   {
     HDT_Record record = link.key.record;
 
-    if (record == null) return text;
+    if (record == null) return html;
 
     if (record.getType() == hdtHub)
     {
@@ -382,7 +382,7 @@ public final class MainTextUtil
       if (record == null)
       {
         messageDialog("Internal error #28587", mtError);
-        return text;
+        return html;
       }
     }
 
@@ -391,10 +391,10 @@ public final class MainTextUtil
     if (klass.length() > 0) klass = " class=\"" + klass + '"';
 
     if (record.getType() == hdtMiscFile)
-      return getGoToRecordAnchor(record, style + klass, text) + "&nbsp;" +
+      return getGoToRecordAnchor(record, style + klass, html) + "&nbsp;" +
         "<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(record) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/view-form.png") + "\"></img></a>";
 
-    return getGoToRecordAnchor(record, style + klass, text);
+    return getGoToRecordAnchor(record, style + klass, html);
   }
 
 //---------------------------------------------------------------------------
@@ -599,12 +599,12 @@ public final class MainTextUtil
 
           authorBibStr = work.getShortAuthorsStr(true);
           if (authorBibStr.length() > 0)
-            innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(authorBibStr).append("</span>");
+            innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(htmlEscaper.escape(authorBibStr)).append("</span>");
 
           if (work.getYear().length() > 0)
-            innerHtml.append("&nbsp;(").append(work.getYear()).append(')');
+            innerHtml.append("&nbsp;(").append(htmlEscaper.escape(work.getYear())).append(')');
 
-          innerHtml.append("&nbsp;").append(getGoToRecordAnchor(work, "", work.name()));
+          innerHtml.append("&nbsp;").append(getGoToRecordAnchor(work, "", htmlEscaper.escape(work.name())));
 
           break;
 
@@ -614,9 +614,9 @@ public final class MainTextUtil
 
           authorBibStr = miscFile.getShortAuthorsStr(true);
           if (authorBibStr.length() > 0)
-            innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(authorBibStr).append("</span>");
+            innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(htmlEscaper.escape(authorBibStr)).append("</span>");
 
-          innerHtml.append("&nbsp;").append(getGoToRecordAnchor(miscFile, "", miscFile.name())).append("&nbsp;")
+          innerHtml.append("&nbsp;").append(getGoToRecordAnchor(miscFile, "", htmlEscaper.escape(miscFile.name()))).append("&nbsp;")
                    .append("<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(").append(getOpenRecordParms(miscFile)).append("); return false;\">").append("<img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/view-form.png")).append("\"></img></a>");
 
           break;
@@ -669,7 +669,7 @@ public final class MainTextUtil
   {
     uRecord = uRecord.mainSpoke();
 
-    String recordName = uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).extendedName() : uRecord.name();
+    String recordName = htmlEscaper.escape(uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).extendedName() : uRecord.name());
 
     return getKeywordLink(recordName, new KeywordLink(0, uRecord.name().length(), new SearchKeyword(uRecord.name(), uRecord)), "text-decoration: none;");
   }
@@ -766,11 +766,11 @@ public final class MainTextUtil
 
     keyWorks.forEach(keyWork ->
     {
-      String searchKey = keyWork.getSearchKey(true).replace(" ", "&nbsp;");
+      String searchKeyHtml = htmlEscaper.escape(keyWork.getSearchKey(true)).replace(" ", "&nbsp;");
 
-      linkMap.put(searchKey, getKeywordLink(searchKey, new KeywordLink(0, searchKey.length(), new SearchKeyword(searchKey, keyWork.getRecord()))));
-      keyToKeyWork.put(searchKey, keyWork);
-      sortedKeys.add(searchKey);
+      linkMap.put(searchKeyHtml, getKeywordLink(searchKeyHtml, new KeywordLink(0, searchKeyHtml.length(), new SearchKeyword(searchKeyHtml, keyWork.getRecord()))));
+      keyToKeyWork.put(searchKeyHtml, keyWork);
+      sortedKeys.add(searchKeyHtml);
     });
 
     sortedKeys.sort(sortByName ? String::compareToIgnoreCase : Comparator.comparing(keyToKeyWork::get));

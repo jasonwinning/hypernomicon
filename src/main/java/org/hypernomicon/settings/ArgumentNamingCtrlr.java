@@ -44,11 +44,11 @@ public class ArgumentNamingCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML CheckBox chkLowerCaseTargetNames, chkMultipleAuthors, chkOxfordComma;
-  @FXML TextArea taExamples;
-  @FXML TextField tfTruncateNum, tfTruncationIndicator, tfNumToShowWhenTruncating;
-  @FXML ToggleButton btnAnd, btnAmpersand;
-  @FXML ToggleGroup grpConj;
+  @FXML private CheckBox chkLowerCaseTargetNames, chkMultipleAuthors, chkOxfordComma;
+  @FXML private TextArea taExamples;
+  @FXML private TextField tfTruncateNum, tfTruncationIndicator, tfNumToShowWhenTruncating;
+  @FXML private ToggleButton btnAnd, btnAmpersand;
+  @FXML private ToggleGroup grpConj;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -129,15 +129,11 @@ public class ArgumentNamingCtrlr implements SettingsControl
       List<String> strList = new ArrayList<>();
       strList.add("1 author: " + settings.format(List.of("Smith")) + lastPart);
 
-      boolean hasMultiple = false;
-
-      if (settings.multipleAuthors) hasMultiple = true;
-
-      if (hasMultiple)
+      if (settings.multipleAuthors)
       {
-        strList.add("2 authors: " + settings.format(List.of("Smith", "Jones")) + lastPart);
-        strList.add("3 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen")) + lastPart);
-        strList.add("4 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen", "Garcia")) + lastPart);
+        strList.add("2 authors: " + settings.format(List.of("Smith", "Jones"                           )) + lastPart);
+        strList.add("3 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen"                 )) + lastPart);
+        strList.add("4 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen", "Garcia"       )) + lastPart);
         strList.add("5 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen", "Garcia", "Kim")) + lastPart);
       }
 

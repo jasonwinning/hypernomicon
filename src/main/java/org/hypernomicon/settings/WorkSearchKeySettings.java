@@ -146,11 +146,13 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
     {
       node.put(beforeYearSepPrefKey         , beforeYearSep);
       node.put(afterNameSepPrefKey          , afterNameSep);
-      node.putBoolean(multipleAuthorsPrefKey, multipleAuthors);
-      node.putBoolean(oxfordSeparatorPrefKey, oxfordSeparator);
       node.put(truncationIndicatorPrefKey   , truncationIndicator);
 
-      node.putInt(authorNumToTruncatePrefKey,         authorNumToTruncate);
+      node.putBoolean(multipleAuthorsPrefKey, multipleAuthors);
+      node.putBoolean(oxfordSeparatorPrefKey, oxfordSeparator);
+
+
+      node.putInt(authorNumToTruncatePrefKey        , authorNumToTruncate);
       node.putInt(authorsToShowWhenTruncatingPrefKey, authorsToShowWhenTruncating);
 
       node.put(finalConjSymbolPrefKey, finalConjSymbol.prefVal);

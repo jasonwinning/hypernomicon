@@ -544,7 +544,7 @@ public final class MainTextWrapper
 
           if (innerHtml.length() > 0) innerHtml.append("<br>");
 
-          String cbText = item.record.getCBText();
+          String cbText = htmlEscaper.escape(item.record.getCBText());
 
           if (firstOpen.isTrue())
           {
@@ -758,6 +758,7 @@ public final class MainTextWrapper
 
     mainText.setHtml(html);
     mainText.setDisplayItemsFromList(displayItems);
+
     if (curRecord.getType() != hdtInvestigation) mainText.setKeyWorksFromList(keyWorks);
   }
 

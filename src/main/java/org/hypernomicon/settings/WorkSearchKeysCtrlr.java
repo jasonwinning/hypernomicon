@@ -155,9 +155,9 @@ public class WorkSearchKeysCtrlr implements SettingsControl
 
       if (hasMultiple)
       {
-        strList.add("2 authors: " + settings.format(List.of("Smith", "Jones"), "1989"));
-        strList.add("3 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen"), "1989"));
-        strList.add("4 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen", "Garcia"), "1989"));
+        strList.add("2 authors: " + settings.format(List.of("Smith", "Jones"                           ), "1989"));
+        strList.add("3 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen"                 ), "1989"));
+        strList.add("4 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen", "Garcia"       ), "1989"));
         strList.add("5 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen", "Garcia", "Kim"), "1989"));
       }
 

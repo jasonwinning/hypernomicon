@@ -17,13 +17,15 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.Const.PREF_KEY_LOWER_CASE_TARGET_NAMES;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -38,6 +40,7 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.settings.ArgumentNamingSettings;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
 import org.hypernomicon.view.populators.Populator;
@@ -125,6 +128,8 @@ public class NewArgDlgCtrlr extends HyperDlg
       }
 
       programmaticWorkChange = false;
+
+      reviseSuggestions();
     });
 
     String noun = target.getType() == hdtPosition ? "Position" : "Target argument";
@@ -175,10 +180,11 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), view.getEngine());
 
-    reviseSuggestions();
-
-    rbExisting.setSelected(false);
     rbNew.setSelected(true);
+
+    rbExisting.getToggleGroup().selectedToggleProperty().addListener((ob, ov, nv) -> reviseSuggestions());
+
+    reviseSuggestions();
 
     alreadyChangingTitle.setTrue();
     tfTitle.setText(target.name() + (target.getType() == hdtPosition ? " Argument Stem" : " Counterargument Stem"));
@@ -243,11 +249,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     revising = true;
 
     if (chkIncludeAuth.isSelected())
-    {
-      HDT_Person person = hcbPerson.selectedRecord();
-
-      if (person != null) part1 = person.getLastName() + "'s ";
-    }
+      part1 = getAuthorNamesForSuggestions();
 
     String targetName = target.name();
     if (targetName.startsWith("The "))
@@ -294,6 +296,24 @@ public class NewArgDlgCtrlr extends HyperDlg
     }
 
     revising = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String getAuthorNamesForSuggestions()
+  {
+    HDT_Person person = hcbPerson.selectedRecord();
+    HDT_Work work = hcbWork.selectedRecord();
+
+    ArgumentNamingSettings settings = new ArgumentNamingSettings();
+
+    if ((settings.multipleAuthors == false) || (rbExisting.isSelected() == false) || (work == null))
+      return person == null ? "" : person.getLastName() + "'s ";
+
+    if (work.getAuthors().isEmpty()) return "";
+
+    return settings.format(work.getAuthors().stream().map(Author::getLastName).collect(Collectors.toList())) + "'s ";
   }
 
 //---------------------------------------------------------------------------

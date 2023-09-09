@@ -291,7 +291,7 @@
         <TableView fx:id="tvKeyMentions" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <columns>
             <TableColumn prefWidth="62.0" text="Type" />
-            <TableColumn prefWidth="246.0" text="Records Having This as Key Work" />
+            <TableColumn prefWidth="246.0" text="Records Displaying or Having This as Key Work" />
             <TableColumn prefWidth="300.0" text="Description" />
           </columns>
         </TableView>

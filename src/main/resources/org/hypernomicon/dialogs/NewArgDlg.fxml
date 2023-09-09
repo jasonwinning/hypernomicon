@@ -112,7 +112,7 @@
       <TextField fx:id="tfArgName8" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="8">
-      <CheckBox fx:id="chkIncludeAuth" layoutY="10.0" mnemonicParsing="false" text="Include author's name in name of argument" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" />
+      <CheckBox fx:id="chkIncludeAuth" layoutY="10.0" mnemonicParsing="false" text="Include author name(s) in name of argument" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" />
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="9">
       <GridPane layoutX="-431.0" layoutY="3.0" prefHeight="22.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
