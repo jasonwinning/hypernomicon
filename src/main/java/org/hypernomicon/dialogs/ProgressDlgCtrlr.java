@@ -17,6 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
+import javafx.application.Platform;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -73,13 +74,13 @@ public final class ProgressDlgCtrlr extends HyperDlg
 
     task.runWhenFinalStateSet(state -> getStage().close());
 
-    onShown = () ->
-    {
-      ownThread = (task.isRunning() == false);
+    onShown = () -> Platform.runLater(() ->       // This needs to be done in a runLater because the task may have been started so recently that
+    {                                             // the task's running property has not yet been set to true. It gets set to true by a runnable
+      ownThread = (task.isRunning() == false);    // queued to run on the FX thread, so this runnable will run after that one.
 
       if (ownThread)
         task.startWithNewThread();
-    };
+    });
 
     dialogStage.setOnHiding(event ->
     {
