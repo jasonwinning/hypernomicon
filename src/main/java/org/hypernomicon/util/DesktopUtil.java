@@ -290,10 +290,10 @@ public final class DesktopUtil
         return;
       }
     }
+    else if (url.startsWith("\\\\"))
+      url = "file:" + url.replace('\\', '/');  // Universal Naming Convention (UNC) path
     else
-    {
       url = "http://" + url;
-    }
 
     if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
     {
