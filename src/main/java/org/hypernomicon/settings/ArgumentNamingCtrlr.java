@@ -110,7 +110,7 @@ public class ArgumentNamingCtrlr implements SettingsControl
 
     int authorsToShowWhenTruncating = parseInt(tfNumToShowWhenTruncating.getText(), -1);
     if (authorsToShowWhenTruncating < 1)
-      authorsToShowWhenTruncating = 1;
+      authorsToShowWhenTruncating = 2;
 
     return new ArgumentNamingSettings(truncationIndicator, lowerCaseTargetNames, multipleAuthors, oxfordSeparator, finalConjSymbol, authorNumToTruncate, authorsToShowWhenTruncating);
   }
@@ -161,10 +161,6 @@ public class ArgumentNamingCtrlr implements SettingsControl
     {
       if (newValue == null) return;
 
-      int intVal = parseInt(newValue, -1);
-      if (intVal < 1)
-        intVal = 1;
-
       refreshHandler.run();
     });
 
@@ -173,6 +169,9 @@ public class ArgumentNamingCtrlr implements SettingsControl
       if (Boolean.FALSE.equals(nv))
       {
         int intVal = parseInt(tf.getText(), 2);
+        if (intVal < 1)
+          intVal = 2;
+
         tf.setText(String.valueOf(intVal));
       }
     });
@@ -196,10 +195,6 @@ public class ArgumentNamingCtrlr implements SettingsControl
     tf.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
-
-      int intVal = parseInt(newValue, -1);
-      if (intVal < 2)
-        intVal = -1;
 
       refreshHandler.run();
     });

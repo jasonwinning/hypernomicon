@@ -39,6 +39,7 @@ import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.WorkBibData;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
@@ -50,6 +51,9 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.settings.WorkSearchKeySettings;
+import org.hypernomicon.settings.WorkSearchKeySettings.WorkSearchKeyConfig;
+import org.hypernomicon.util.SplitString;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
@@ -556,6 +560,99 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     if (cResult != 0) return cResult;
 
     return getSortKey().compareTo(otherWork.getSortKey());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static Author getSingleAuthorForSearchKey(List<Author> authors)
+  {
+    for (Author author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
+    for (Author author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
+    for (Author author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
+    for (Author author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
+    for (Author author : authors) if                                                                       (author.getPerson() != null)  return author;
+    for (Author author : authors) if                                                                       (author.getPerson() == null)  return author;
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public String makeWorkSearchKey(boolean addLetter, boolean keyWorkLink)
+  {
+    return makeWorkSearchKey(getAuthors().asList(), getYear(), addLetter, keyWorkLink);
+  }
+
+  public String makeWorkSearchKey(List<Author> authorsToUse, String yearToUse, boolean addLetter, boolean keyWorkLink)
+  {
+    if ((authorsToUse == null) || authorsToUse.isEmpty() || safeStr(yearToUse).isBlank())
+      return "";
+
+    WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
+    String singleAuthorName = getSingleAuthorForSearchKey(authorsToUse).singleName();
+
+    return settings.format(authorsToUse.stream().map(Author::singleName).collect(Collectors.toList()), singleAuthorName, yearToUse, addLetter, this, keyWorkLink);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public String makeKeyWorkSearchKey()
+  {
+    String searchKey = makeWorkSearchKey(true, true);
+
+    if (searchKey.isEmpty() == false)
+      return searchKey;
+
+    String title = ultraTrim(new SplitString(name(), ':').next());
+    if (title.isBlank())
+      return "Work ID=" + getID();
+
+    if ((getYear().isBlank() == false) || largerWork.isNull())
+      return makeKeyFromYearAndTitle();
+
+    String lwTitle = ultraTrim(new SplitString(largerWork.get().name(), ':').next());
+    if (lwTitle.isBlank())
+      return makeKeyFromYearAndTitle();
+
+    String lwSearchKey = largerWork.get().makeWorkSearchKey(true, true);
+
+    if (lwSearchKey.isEmpty())
+      lwSearchKey = new SplitString(largerWork.get().getSearchKey(), ';').next();
+
+    if (lwSearchKey.isEmpty())
+      lwSearchKey = largerWork.get().makeKeyFromYearAndTitle();
+
+    return title + " in " + lwSearchKey;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String makeKeyFromYearAndTitle()
+  {
+    String title = ultraTrim(new SplitString(name(), ':').next());
+
+    if (title.isBlank())
+      return "";
+
+    if (getYear().isBlank())
+      return title;
+
+    WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
+    WorkSearchKeyConfig configToUse = settings.stream().filter(keyConfig -> keyConfig.multipleAuthors == false).findFirst().orElse(settings.get(0));
+
+    switch (configToUse.parentheses)
+    {
+      case aroundAll  : return '(' + getYear() + ' '  + title + ')';
+      case aroundYear : return '(' + getYear() + ") " + title;
+
+      default : break;
+    }
+
+    return getYear() + ' ' + title;
   }
 
 //---------------------------------------------------------------------------

@@ -55,10 +55,12 @@ import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.KeyWork;
@@ -582,7 +584,7 @@ public class MainTextCtrlr
     RecordType keyType = hcbKeyType.selectedType();
     List<KeyWork> keyWorks = curRecord.getMainText().getKeyWorksCopy();
 
-    HDT_RecordWithPath keyRecord = db.createNewBlankRecord(keyType);
+    HDT_RecordWithAuthors<? extends Authors> keyRecord = db.createNewBlankRecord(keyType);
     keyWorks.add(new KeyWork(keyRecord));
 
     curRecord.getMainText().setKeyWorksFromList(keyWorks);
@@ -617,7 +619,8 @@ public class MainTextCtrlr
     if (list.stream().anyMatch(keyWork -> (keyWork.getRecordID() == keyID) && (keyWork.getRecordType() == keyType)))
       return;
 
-    KeyWork keyWork = new KeyWork((HDT_RecordWithPath) db.records(keyType).getByID(keyID));
+    @SuppressWarnings("unchecked")
+    KeyWork keyWork = new KeyWork((HDT_RecordWithAuthors<? extends Authors>) db.records(keyType).getByID(keyID));
 
     String keyText = taKeyWorks.getText();
     keyText = keyText.isEmpty() ? keyWork.getEditorText() : (keyText + ", " + keyWork.getEditorText());

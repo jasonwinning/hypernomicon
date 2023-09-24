@@ -32,8 +32,6 @@ import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.SearchKeys;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
@@ -86,6 +84,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -616,7 +615,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private List<Author> getAuthorsFromUI()      { return WorkAuthors.getListFromObjectGroups(getAuthorGroups(), curWork); }
   public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI().stream(), false, true, true); }
   private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
-  private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }
+  private void lblSearchKeyClick()             { tfSearchKey.setText(curWork.makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), true, false)); }
   public String getTitle()                     { return tfTitle.getText(); }
   private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ')'); }
   private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList())); }
@@ -848,8 +847,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (tfSearchKey.getText().isEmpty())
       if (curWork.getYear().length() > 0)
         if (curWork.authorRecords.size() > 0)
-          if (curWork.authorRecords.get(0).getLastName().length() > 0)
-            tfSearchKey.setText(makeWorkSearchKey(curWork.getAuthors(), curWork.getYear(), curWork));
+          if (curWork.authorRecords.get(0).getName().getSingle().isBlank() == false)
+            tfSearchKey.setText(curWork.makeWorkSearchKey(true, false));
 
     FilePath filePath = curWork.filePathIncludeExt();
     boolean updatePreview = true;
@@ -947,7 +946,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable table)
+  static void populateDisplayersAndKeyMentioners(HDT_RecordWithAuthors<? extends Authors> record, HyperTable table)
   {
     Set<HDT_RecordWithMainText> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
 
@@ -1432,111 +1431,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String makeWorkSearchKey(Iterable<Author> authors, String year, HDT_Work work)
-  {
-    for (Author author : authors)
-    {
-      if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() != null))
-      {
-        String key = makeWorkSearchKey(author, year, work);
-        if (key.length() > 0) return key;
-      }
-    }
-
-    for (Author author : authors)
-    {
-      if ((author.getIsTrans() == false) && (author.getPerson() != null))
-      {
-        String key = makeWorkSearchKey(author, year, work);
-        if (key.length() > 0) return key;
-      }
-    }
-
-    for (Author author : authors)
-    {
-      if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() == null))
-      {
-        String key = makeWorkSearchKey(author, year, work);
-        if (key.length() > 0) return key;
-      }
-    }
-
-    for (Author author : authors)
-    {
-      if ((author.getIsTrans() == false) && (author.getPerson() == null))
-      {
-        String key = makeWorkSearchKey(author, year, work);
-        if (key.length() > 0) return key;
-      }
-    }
-
-    for (Author author : authors)
-    {
-      if (author.getPerson() != null)
-      {
-        String key = makeWorkSearchKey(author, year, work);
-        if (key.length() > 0) return key;
-      }
-    }
-
-    for (Author author : authors)
-    {
-      if (author.getPerson() == null)
-      {
-        String key = makeWorkSearchKey(author, year, work);
-        if (key.length() > 0) return key;
-      }
-    }
-
-    return "";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeWorkSearchKey(Author author, String year, HDT_Work work)
-  {
-    return makeWorkSearchKey(author.getName().getSingle(), year, work);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeWorkSearchKey(String name, String year, HDT_Work work)
-  {
-    return name.isEmpty() || year.isEmpty() ? "" : makeWorkSearchKey(name + ' ' + year, work);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeWorkSearchKey(String searchKey, HDT_Work work)
-  {
-    char keyLetter = ' ';
-    boolean keyTaken;
-
-    do
-    {
-      SearchKeyword hyperKey = db.getKeyByKeyword((searchKey + keyLetter).trim());
-      keyTaken = false;
-
-      if ((hyperKey != null) && (hyperKey.record != work))
-      {
-        keyTaken = true;
-
-        if (keyLetter == 'z') return "";
-
-        keyLetter = keyLetter == ' ' ? 'a' : (char)(keyLetter + 1);
-      }
-
-    } while (keyTaken);
-
-    return SearchKeys.prepSearchKey(searchKey + keyLetter);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public boolean saveToRecord()
   {
     WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(hcbType.selectedID());
@@ -1549,10 +1443,16 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (workTypeEnumVal != wtUnenteredSet)
           if (tfYear.getText().equals(curWork.getYear()) == false)
             if (confirmDialog("Year has been modified. Update search key?"))
-              tfSearchKey.setText(tfSearchKey.getText().endsWith(curWork.getYear()) ?
-                makeWorkSearchKey(tfSearchKey.getText().replace(curWork.getYear(), tfYear.getText()), curWork)
-              :
-                makeWorkSearchKey(getFirstAuthorSingleName(), tfYear.getText(), curWork));
+              if (tfSearchKey.getText().matches(".*" + Pattern.quote(curWork.getYear()) + "[a-z].*"))
+                lblSearchKeyClick();
+              else
+              {
+                String key = tfSearchKey.getText().replace(curWork.getYear(), tfYear.getText());
+                if (key.equals(curWork.makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), false, false)))
+                  lblSearchKeyClick();  // Search key is same as what would be automatically generated minus letter(s) so use automatically generated search key with letter(s) added
+                else
+                  tfSearchKey.setText(key);  // User has customized search key so it is different from what would be automatically generated, so let them deal with duplicates manually
+              }
     }
 
     if (saveSearchKey(curWork, tfSearchKey) == false) return false;

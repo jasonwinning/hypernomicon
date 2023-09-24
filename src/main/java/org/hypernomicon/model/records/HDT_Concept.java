@@ -27,8 +27,9 @@ import java.util.List;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
+import org.hypernomicon.model.Exceptions.DuplicateSearchKeyException;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjPointer;
@@ -101,7 +102,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setSearchKey(String newKey) throws SearchKeyException
+  @Override public void setSearchKey(String newKey) throws DuplicateSearchKeyException, SearchKeyTooShortException
   {
     if (term.isNotNull())
       term.get().setSearchKey(newKey);
@@ -110,7 +111,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
+  @Override public void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws DuplicateSearchKeyException, SearchKeyTooShortException
   {
     if (term.isNotNull())
       term.get().setSearchKey(newKey, noMod, rebuildMentions);

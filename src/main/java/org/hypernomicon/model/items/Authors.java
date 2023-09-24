@@ -29,6 +29,7 @@ import java.util.stream.StreamSupport;
 
 import org.hypernomicon.model.records.HDT_Person;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
@@ -66,6 +67,7 @@ public abstract class Authors implements Iterable<Author>
 
   public boolean isEmpty()                     { return size() == 0; }
   public Collection<Author> asCollection()     { return Sets.newLinkedHashSet(this); }
+  public List<Author> asList()                 { return ImmutableList.copyOf(this); }
   public Stream<Author> stream()               { return StreamSupport.stream(spliterator(), false); }
   void expire()                                { clearNoMod(); }
 

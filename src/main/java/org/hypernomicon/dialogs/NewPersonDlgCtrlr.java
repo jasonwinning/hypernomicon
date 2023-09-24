@@ -19,6 +19,7 @@ package org.hypernomicon.dialogs;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
@@ -634,10 +635,10 @@ public class NewPersonDlgCtrlr extends HyperDlg
         person = null;
       }
 
-      return e.getTooShort() ?
-        falseWithErrorMessage("Unable to modify record: search key must be at least 3 characters.", tfSearchKey)
+      return e instanceof SearchKeyTooShortException ?
+        falseWithErrorMessage("Unable to modify record. Search key must be at least 3 characters: " + e.getKey(), tfSearchKey)
       :
-        falseWithErrorMessage("Unable to modify record: search key already exists.", tfSearchKey);
+        falseWithErrorMessage("Unable to modify record. Search key already exists: " + e.getKey(), tfSearchKey);
     }
 
     if (rbMerge.isSelected())

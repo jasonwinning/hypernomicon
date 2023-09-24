@@ -63,13 +63,14 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
 
   public boolean setAuthors(List<HDT_Person> list) { return updateObjectsFromList(rtAuthorOfFile, list); }
 
-  public boolean getAnnotated()              { return getTagBoolean(tagAnnotated); }
-  public void setAnnotated(boolean val)      { updateTagBoolean(tagAnnotated, val); }
-  public Stream<HDT_WorkLabel> labelStream() { return db.keyWorkMentionerStream(this, HDT_WorkLabel.class); }
+  public boolean getAnnotated()                  { return getTagBoolean(tagAnnotated); }
+  public void setAnnotated(boolean val)          { updateTagBoolean(tagAnnotated, val); }
+  public Stream<HDT_WorkLabel> labelStream()     { return db.keyWorkMentionerStream(this, HDT_WorkLabel.class); }
 
-  @Override public HyperPath getPath()  { return path; }
-  @Override public Authors getAuthors() { return nullSwitch(work.get(), new FileAuthors(getObjList(rtAuthorOfFile), this), HDT_Work::getAuthors); }
-  @Override public String listName()    { return name(); }
+  @Override public HyperPath getPath()           { return path; }
+  @Override public Authors getAuthors()          { return nullSwitch(work.get(), new FileAuthors(getObjList(rtAuthorOfFile), this), HDT_Work::getAuthors); }
+  @Override public String listName()             { return name(); }
+  @Override public String makeKeyWorkSearchKey() { return ultraTrim(name()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

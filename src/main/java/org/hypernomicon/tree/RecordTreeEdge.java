@@ -29,12 +29,13 @@ import java.util.stream.Collectors;
 import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB;
+import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
@@ -143,9 +144,12 @@ class RecordTreeEdge
       }
       else if (relType == rtKeyWork)
       {
-        Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream((HDT_RecordWithPath) subj, obj.getType()).collect(Collectors.toSet());
+        @SuppressWarnings("unchecked")
+        HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
+
+        Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream(kwRecord, obj.getType()).collect(Collectors.toSet());
         mentioners.add((HDT_RecordWithMainText) obj);
-        MainText.setKeyWorkMentioners((HDT_RecordWithPath)subj, mentioners, obj.getType());
+        MainText.setKeyWorkMentioners(kwRecord, mentioners, obj.getType());
       }
       else
       {
@@ -184,7 +188,10 @@ class RecordTreeEdge
 
     if (relType == rtKeyWork)
     {
-      if (db.keyWorkMentionerStream((HDT_RecordWithPath) subj).anyMatch(mentioner -> mentioner == obj))
+      @SuppressWarnings("unchecked")
+      HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
+
+      if (db.keyWorkMentionerStream(kwRecord).anyMatch(mentioner -> mentioner == obj))
         return falseWithErrMsgCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
     }
     else if (db.getObjectList(relType, subj, true).contains(obj))
@@ -208,9 +215,12 @@ class RecordTreeEdge
   {
     if (relType == rtKeyWork)
     {
-      Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream((HDT_RecordWithPath) subj, obj.getType()).collect(Collectors.toSet());
+      @SuppressWarnings("unchecked")
+      HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
+
+      Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream(kwRecord, obj.getType()).collect(Collectors.toSet());
       mentioners.remove(obj);
-      MainText.setKeyWorkMentioners((HDT_RecordWithPath)subj, mentioners, obj.getType());
+      MainText.setKeyWorkMentioners(kwRecord, mentioners, obj.getType());
       return;
     }
 

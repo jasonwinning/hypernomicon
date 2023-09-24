@@ -32,15 +32,18 @@ public class ArgumentNamingSettings
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final String truncationIndicator;
-  public final boolean lowerCaseTargetNames, multipleAuthors, oxfordSeparator;
-  public final FinalConjunctionSymbol finalConjSymbol;
-  public final int authorNumToTruncate, authorsToShowWhenTruncating;
+  final String truncationIndicator;
+  final boolean lowerCaseTargetNames;
+  final boolean oxfordSeparator;
+  final FinalConjunctionSymbol finalConjSymbol;
+  final int authorNumToTruncate, authorsToShowWhenTruncating;
+
+  public final boolean multipleAuthors;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ArgumentNamingSettings(String truncationIndicator, boolean lowerCaseTargetNames, boolean multipleAuthors, boolean oxfordSeparator, FinalConjunctionSymbol finalConjSymbol, int authorNumToTruncate, int authorsToShowWhenTruncating)
+  ArgumentNamingSettings(String truncationIndicator, boolean lowerCaseTargetNames, boolean multipleAuthors, boolean oxfordSeparator, FinalConjunctionSymbol finalConjSymbol, int authorNumToTruncate, int authorsToShowWhenTruncating)
   {
     this.truncationIndicator = truncationIndicator;
     this.lowerCaseTargetNames = lowerCaseTargetNames;

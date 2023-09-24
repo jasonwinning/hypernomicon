@@ -92,7 +92,7 @@ public class WorkSearchKeyCtrlr extends Tab
     FinalConjunctionSymbol    finalConjSymbol = nullSwitch(grpConj .getSelectedToggle(), FinalConjunctionSymbol   .none, Map.of(btnAnd      , FinalConjunctionSymbol   .and      , btnAmpersand , FinalConjunctionSymbol   .ampersand )::get);
     CitationParenthesesOption parentheses     = nullSwitch(grpParen.getSelectedToggle(), CitationParenthesesOption.none, Map.of(btnAroundAll, CitationParenthesesOption.aroundAll, btnAroundYear, CitationParenthesesOption.aroundYear)::get);
 
-    boolean multipleAuthors = chkMultipleAuthors.isSelected(),
+    boolean multipleAuthors = chkMultipleAuthors    .isSelected(),
             oxfordSeparator = chkSepAfterPenultimate.isSelected();
 
     int authorNumToTruncate = parseInt(tfTruncateNum.getText(), -1);
@@ -101,7 +101,7 @@ public class WorkSearchKeyCtrlr extends Tab
 
     int authorsToShowWhenTruncating = parseInt(tfNumToShowWhenTruncating.getText(), -1);
     if (authorsToShowWhenTruncating < 1)
-      authorsToShowWhenTruncating = 1;
+      authorsToShowWhenTruncating = 2;
 
     return new WorkSearchKeyConfig(beforeYearSep, afterNameSep, truncationIndicator, multipleAuthors, oxfordSeparator, finalConjSymbol, parentheses, authorNumToTruncate, authorsToShowWhenTruncating);
   }

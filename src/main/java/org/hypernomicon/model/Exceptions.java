@@ -60,17 +60,38 @@ public final class Exceptions
 
   public static class SearchKeyException extends HyperDataException
   {
-    private final boolean tooShort;
+    private final String key;
 
-    SearchKeyException(boolean tooShort, HDT_Record record, String key)
+    SearchKeyException(String msg, String key)
     {
-      super(tooShort ? "Search key: \"" + key + "\" is too short. Record type: " + getTypeName(record.getType()) + " ID: " + record.getID() :
-                       "Duplicate search key: \"" + key + "\". Record type: " + getTypeName(record.getType()) + " ID: " + record.getID());
+      super(msg);
 
-      this.tooShort = tooShort;
+      this.key = key;
     }
 
-    public boolean getTooShort() { return tooShort; }
+    public String getKey() { return key; }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class SearchKeyTooShortException extends SearchKeyException
+  {
+    SearchKeyTooShortException(HDT_Record record, String key)
+    {
+      super("Search key: \"" + key + "\" is too short. Record type: " + getTypeName(record.getType()) + " ID: " + record.getID(), key);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class DuplicateSearchKeyException extends SearchKeyException
+  {
+    DuplicateSearchKeyException(HDT_Record record, String key)
+    {
+      super("Duplicate search key: \"" + key + "\". Record type: " + getTypeName(record.getType()) + " ID: " + record.getID(), key);
+    }
   }
 
 //---------------------------------------------------------------------------

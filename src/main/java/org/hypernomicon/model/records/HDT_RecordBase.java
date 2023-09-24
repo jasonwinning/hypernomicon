@@ -115,9 +115,10 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public String firstActiveKeyWord()             { return db.firstActiveKeyWord(this); }
 
   @Override public final void writeStoredStateToXML(StringBuilder xml)        { xmlState.writeToXML(xml); }
-  @Override public void setSearchKey(String newKey) throws SearchKeyException { setSearchKey(newKey, false, true); }
+  @Override public void setSearchKey(String newKey) throws DuplicateSearchKeyException, SearchKeyTooShortException
+  { setSearchKey(newKey, false, true); }
 
-  @Override public void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
+  @Override public void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws DuplicateSearchKeyException, SearchKeyTooShortException
   { db.setSearchKey(this, newKey, noMod, rebuildMentions); }
 
   @SuppressWarnings("unchecked")

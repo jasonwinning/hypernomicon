@@ -21,15 +21,20 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.List;
+
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.util.SplitString;
-import org.hypernomicon.view.tabs.WorkTabCtrlr;
+import org.hypernomicon.settings.WorkSearchKeySettings;
+import org.hypernomicon.settings.WorkSearchKeySettings.CitationParenthesesOption;
+import org.hypernomicon.settings.WorkSearchKeySettings.WorkSearchKeyConfig;
 
 //---------------------------------------------------------------------------
 
@@ -143,9 +148,9 @@ public class KeyWork implements Comparable<KeyWork>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public KeyWork(HDT_RecordWithPath recordWithPath)
+  public KeyWork(HDT_RecordWithAuthors<? extends Authors> recordWithAuthors)
   {
-    recordPtr = new OnlineRecordPointer(recordWithPath);
+    recordPtr = new OnlineRecordPointer(recordWithAuthors);
   }
 
 //---------------------------------------------------------------------------
@@ -167,47 +172,14 @@ public class KeyWork implements Comparable<KeyWork>
 
   public RecordType getRecordType()     { return recordPtr.getType(); }
   public int getRecordID()              { return recordPtr.getID(); }
-  public HDT_RecordWithPath getRecord() { return (HDT_RecordWithPath) recordPtr.getRecord(); }
   boolean isExpired()                   { return (recordPtr == null) || recordPtr.isExpired(); }
   KeyWork getOnlineCopy()               { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), true); }
   KeyWork getOfflineCopy()              { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), false); }
 
   @Override public int hashCode()       { return recordPtr.hashCode(); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void makeSearchKey()
-  {
-    if (recordPtr.getType() == hdtWork)
-    {
-      HDT_Work work = (HDT_Work) recordPtr.getRecord();
-      searchKey = WorkTabCtrlr.makeWorkSearchKey(work.getAuthors(), work.getYear(), work);
-
-      if (searchKey.isEmpty())
-      {
-        if (work.largerWork.isNotNull())
-        {
-          String lwSearchKey = new SplitString(work.largerWork.get().getSearchKey(), ';').next();
-
-          if (lwSearchKey.isEmpty())
-            lwSearchKey = WorkTabCtrlr.makeWorkSearchKey(work.largerWork.get().getAuthors(), work.largerWork.get().getYear(), work);
-
-          if (lwSearchKey.isEmpty())
-            lwSearchKey = (work.largerWork.get().getYear() + ' ' + work.largerWork.get().name()).trim();
-
-          searchKey = new SplitString(work.name(), ':').next() + " in " +
-                      new SplitString(lwSearchKey, ':').next();
-        }
-        else
-          searchKey = (work.getYear() + ' ' + work.name()).trim();
-      }
-
-      searchKey = new SplitString(searchKey, ':').next();
-    }
-    else
-      searchKey = recordPtr.getRecord().name();
-  }
+  @SuppressWarnings("unchecked")
+  public HDT_RecordWithAuthors<? extends Authors> getRecord() { return (HDT_RecordWithAuthors<? extends Authors>) recordPtr.getRecord(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -228,12 +200,29 @@ public class KeyWork implements Comparable<KeyWork>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public String getEditorText()
+  {
+    return updateSearchKeyAndCheckIfActive() ?
+      searchKey
+    :
+      "<a id=\"" + recordPtr.getID() + "\" type=\"" + Tag.getTypeTagStr(recordPtr.getType()) + "\">" + htmlEscaper.escape(searchKey) + "</a>";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Generate the search key string if it is currently empty and check whether that string would actually link to this record.
+   * @return True if the search key string would link to this record; false otherwise
+   */
   private boolean updateSearchKeyAndCheckIfActive()
   {
     searchKeyInitialized = true;
 
+    HDT_RecordWithAuthors<? extends Authors> record = getRecord();
+
     if (searchKey.isEmpty())
-      makeSearchKey(); // Try using the author and year and see if that is a keyword match
+      searchKey = record.makeKeyWorkSearchKey(); // Try using the author and year and see if that is a keyword match
 
     if (searchKey.length() > 0)
     {
@@ -241,37 +230,74 @@ public class KeyWork implements Comparable<KeyWork>
 
       if (hyperKey != null)
       {
-        if (hyperKey.record.getID() == recordPtr.getID())
-          if (hyperKey.record.getType() == recordPtr.getType())
-            return true;
+        if (hyperKey.record.getID() == record.getID())
+          if (hyperKey.record.getType() == record.getType())
+            return true; // Return true if the search key would link to this record
 
         searchKey = "";
       }
     }
 
-    String activeKeyWord = recordPtr.getRecord().firstActiveKeyWord();
+    // If we got here, the value set to searchKey would *not* link to this record
+    // so use first active keyword that matches one of the single author search key patterns
+
+    if (record.getType() == hdtWork)
+    {
+      HDT_Work work = (HDT_Work)record;
+
+      if ((work.getAuthors().isEmpty() == false) && (work.getYear().isEmpty() == false))
+      {
+        WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
+
+        // Loop through active keywords
+
+        for (SearchKeyword keyObj : work.getSearchKeys())
+        {
+          // Loop through single author search key patterns
+
+          for (WorkSearchKeyConfig keyConfig : settings)
+          {
+            if (keyConfig.multipleAuthors)
+              continue;
+
+            String keyStr = keyObj.text;
+
+            // Remove letter from active keyword if one was added
+
+            int letterPos = keyConfig.parentheses == CitationParenthesesOption.none ? keyStr.length() - 1 : keyStr.length() - 2;
+
+            if (safeSubstring(keyStr, letterPos - work.getYear().length(), letterPos).equals(work.getYear()))
+              keyStr = keyStr.substring(0, letterPos) + safeSubstring(keyStr, letterPos + 1, keyStr.length());
+
+            // Loop through authors and see if key generated by the pattern matches the active key
+
+            for (Author author : work.getAuthors())
+            {
+              if (keyStr.equals(keyConfig.format(List.of(author.singleName()), work.getYear())))
+              {
+                searchKey = keyObj.text;
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Now try getting the first active searchKey for the record instead
+
+    String activeKeyWord = record.firstActiveKeyWord();
 
     if (activeKeyWord.isEmpty())
     {
       if (searchKey.isEmpty())
-        makeSearchKey(); // Use the author and year; the only reason why it wasn't a keyword match is because there are no active keywords
+        searchKey = record.makeKeyWorkSearchKey(); // Use the author and year; the only reason why it wasn't a keyword match is because there are no active keywords
 
       return false;
     }
 
     searchKey = activeKeyWord;
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getEditorText()
-  {
-    return updateSearchKeyAndCheckIfActive() ?
-      searchKey
-    :
-      "<a id=\"" + recordPtr.getID() + "\" type=\"" + Tag.getTypeTagStr(recordPtr.getType()) + "\">" + htmlEscaper.escape(searchKey) + "</a>";
   }
 
 //---------------------------------------------------------------------------

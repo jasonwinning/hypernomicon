@@ -151,7 +151,7 @@ public final class HyperDB
   private final MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
   private final List<HDT_Record> initialNavList = new ArrayList<>();
   private final EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
-  private final Map<HDT_RecordWithPath, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
+  private final Map<HDT_RecordWithAuthors<? extends Authors>, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
   private final BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
   private final Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
   private final Map<String, String> xmlChecksums = new HashMap<>();
@@ -201,7 +201,7 @@ public final class HyperDB
   public boolean reindexingMentioners()                             { return mentionsIndex.isRebuilding(); }
   public BibEntry<?, ?> getBibEntryByKey(String key)                { return bibLibrary.getEntryByKey(key); }
 
-  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
+  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws DuplicateSearchKeyException, SearchKeyTooShortException
   { searchKeys.setSearchKey(record, newKey, noMod, rebuildMentions); }
 
   public LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> getBibLibrary()  { return bibLibrary; }
@@ -2434,7 +2434,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithPath keyWorkRecord, boolean affirm)
+  public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithAuthors<? extends Authors> keyWorkRecord, boolean affirm)
   {
     if (affirm)
       keyWorkIndex.computeIfAbsent(keyWorkRecord, _keyWorkRecord -> new HashSet<>()).add(record);
@@ -2471,7 +2471,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithPath record)
+  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends Authors> record)
   {
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),
@@ -2481,7 +2481,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public <HDT_MT extends HDT_RecordWithMainText> Stream<HDT_MT> keyWorkMentionerStream(HDT_RecordWithPath record, Class<HDT_MT> klazz)
+  public <HDT_MT extends HDT_RecordWithMainText> Stream<HDT_MT> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends Authors> record, Class<HDT_MT> klazz)
   {
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),
@@ -2491,7 +2491,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithPath record, RecordType mentionerType)
+  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends Authors> record, RecordType mentionerType)
   {
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),

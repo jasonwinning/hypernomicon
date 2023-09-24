@@ -32,8 +32,9 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub.DisplayItem;
+import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OnlineBase;
 
 //---------------------------------------------------------------------------
@@ -119,7 +120,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
             return;
           }
 
-          HDT_RecordWithPath keyWorkRecord = keyWork.getRecord();
+          HDT_RecordWithAuthors<? extends Authors> keyWorkRecord = keyWork.getRecord();
           mainText.keyWorks.add(keyWork.getOnlineCopy());
 
           RecordState recordState = val.getRecordState();

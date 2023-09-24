@@ -44,6 +44,7 @@ import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -633,7 +634,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
+  private static void addMentioners(HDT_RecordWithAuthors<? extends Authors> mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
   {
     Consumer<HDT_WorkLabel> consumer = label ->
     {
@@ -1284,7 +1285,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       {
         tpPerson.getSelectionModel().select(iV.tab);
 
-        String msg = "Unable to save investigation \"" + iV.tfName.getText() + "\": search key " + (e.getTooShort() ? "must be at least 3 characters." : "already exists.");
+        String msg = "Unable to save investigation \"" + iV.tfName.getText() + "\". Search key " + (e instanceof SearchKeyTooShortException ? "must be at least 3 characters: " : "already exists: ") + e.getKey();
 
         return falseWithErrorMessage(msg, iV.tfSearchKey);
       }

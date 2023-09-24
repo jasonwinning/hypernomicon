@@ -151,7 +151,11 @@ public class WorkSearchKeysCtrlr implements SettingsControl
       boolean hasMultiple = false;
 
       for (WorkSearchKeyConfig setting : settings)
-        if (setting.multipleAuthors) hasMultiple = true;
+        if (setting.multipleAuthors)
+        {
+          hasMultiple = true;
+          break;
+        }
 
       if (hasMultiple)
       {

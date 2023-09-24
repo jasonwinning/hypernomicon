@@ -67,6 +67,14 @@ public final class SimpleRecordTypes
   {
     AuthorsType getAuthors();
 
+    /**
+     * <p>Sets the search key to a generated string instead of using one of the record's active search keys.</p>
+     * <p>Tries to create a search key based on information from the work record; if unable to do that,
+     * makes one that includes information from the parent work.</p>
+     * <p>For a non-work record, just sets it to the record name.</p>
+     */
+    String makeKeyWorkSearchKey();
+
     default String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
     default String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
   }

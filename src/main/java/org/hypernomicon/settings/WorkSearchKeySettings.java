@@ -20,13 +20,17 @@ package org.hypernomicon.settings;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import org.hypernomicon.model.SearchKeys;
+import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.records.HDT_Work;
+
 import com.google.common.collect.ForwardingList;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Map.Entry;
 
 //---------------------------------------------------------------------------
 
@@ -44,15 +48,11 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
     FinalConjunctionSymbol(String prefVal) { this.prefVal = prefVal; }
 
-    public final String prefVal;
+    final String prefVal;
 
     static FinalConjunctionSymbol fromPrefVal(String prefVal)
     {
-      for (FinalConjunctionSymbol enumVal : FinalConjunctionSymbol.values())
-        if (prefVal.equals(enumVal.prefVal))
-          return enumVal;
-
-      return none;
+      return Arrays.stream(values()).filter(enumVal -> prefVal.equals(enumVal.prefVal)).findFirst().orElse(none);
     }
   }
 
@@ -67,15 +67,11 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
     CitationParenthesesOption(String prefVal) { this.prefVal = prefVal; }
 
-    public final String prefVal;
+    final String prefVal;
 
     static CitationParenthesesOption fromPrefVal(String prefVal)
     {
-      for (CitationParenthesesOption enumVal : CitationParenthesesOption.values())
-        if (prefVal.equals(enumVal.prefVal))
-          return enumVal;
-
-      return none;
+      return Arrays.stream(values()).filter(enumVal -> prefVal.equals(enumVal.prefVal)).findFirst().orElse(none);
     }
   }
 
@@ -84,28 +80,30 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
   public static class WorkSearchKeyConfig
   {
-    public final String beforeYearSep, afterNameSep, truncationIndicator;
-    public final boolean multipleAuthors, oxfordSeparator;
-    public final FinalConjunctionSymbol finalConjSymbol;
-    public final CitationParenthesesOption parentheses;
-    public final int authorNumToTruncate, authorsToShowWhenTruncating;
+    final String beforeYearSep, afterNameSep, truncationIndicator;
+    final boolean oxfordSeparator;
+    final FinalConjunctionSymbol finalConjSymbol;
+    final int authorNumToTruncate, authorsToShowWhenTruncating;
 
-    private final String beforeYearSepPrefKey = "beforeYearSep",
-                         afterNameSepPrefKey = "afterNameSep",
-                         truncationIndicatorPrefKey = "truncationIndicator",
-                         multipleAuthorsPrefKey = "multipleAuthors",
-                         oxfordSeparatorPrefKey = "oxfordSeparator",
-                         finalConjSymbolPrefKey = "finalConjSymbol",
-                         parenthesesPrefKey = "parentheses",
-                         authorNumToTruncatePrefKey = "authorNumToTruncate",
-                         authorsToShowWhenTruncatingPrefKey = "authorsToShowWhenTruncating";
+    public final CitationParenthesesOption parentheses;
+    public final boolean multipleAuthors;
+
+    private static final String beforeYearSepPrefKey = "beforeYearSep",
+                                afterNameSepPrefKey = "afterNameSep",
+                                truncationIndicatorPrefKey = "truncationIndicator",
+                                multipleAuthorsPrefKey = "multipleAuthors",
+                                oxfordSeparatorPrefKey = "oxfordSeparator",
+                                finalConjSymbolPrefKey = "finalConjSymbol",
+                                parenthesesPrefKey = "parentheses",
+                                authorNumToTruncatePrefKey = "authorNumToTruncate",
+                                authorsToShowWhenTruncatingPrefKey = "authorsToShowWhenTruncating";
 
 //---------------------------------------------------------------------------
 
-    public WorkSearchKeyConfig(String beforeYearSep, String afterNameSep, String truncationIndicator,
-                               boolean multipleAuthors, boolean oxfordSeparator,
-                               FinalConjunctionSymbol finalConjSymbol, CitationParenthesesOption parentheses,
-                               int authorNumToTruncate, int authorsToShowWhenTruncating)
+    WorkSearchKeyConfig(String beforeYearSep, String afterNameSep, String truncationIndicator,
+                        boolean multipleAuthors, boolean oxfordSeparator,
+                        FinalConjunctionSymbol finalConjSymbol, CitationParenthesesOption parentheses,
+                        int authorNumToTruncate, int authorsToShowWhenTruncating)
     {
       this.beforeYearSep = beforeYearSep;
       this.afterNameSep = afterNameSep;
@@ -120,11 +118,11 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
 //---------------------------------------------------------------------------
 
-    public WorkSearchKeyConfig() { this(db.prefs.node("workSearchKeys")); }   // This node won't have any values so the config object will be populated with defaults
+    WorkSearchKeyConfig() { this(db.prefs.node("workSearchKeys")); }   // This node won't have any values so the config object will be populated with defaults
 
 //---------------------------------------------------------------------------
 
-    public WorkSearchKeyConfig(Preferences node)
+    private WorkSearchKeyConfig(Preferences node)
     {
       beforeYearSep       = node.get(beforeYearSepPrefKey, " ");
       afterNameSep        = node.get(afterNameSepPrefKey, ", ");
@@ -142,7 +140,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
 //---------------------------------------------------------------------------
 
-    public void saveToPrefNode(Preferences node)
+    private void saveToPrefNode(Preferences node)
     {
       node.put(beforeYearSepPrefKey         , beforeYearSep);
       node.put(afterNameSepPrefKey          , afterNameSep);
@@ -150,7 +148,6 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
       node.putBoolean(multipleAuthorsPrefKey, multipleAuthors);
       node.putBoolean(oxfordSeparatorPrefKey, oxfordSeparator);
-
 
       node.putInt(authorNumToTruncatePrefKey        , authorNumToTruncate);
       node.putInt(authorsToShowWhenTruncatingPrefKey, authorsToShowWhenTruncating);
@@ -173,12 +170,12 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
           str.append(beforeYearSep);
 
         if (parentheses == CitationParenthesesOption.aroundYear)
-          str.append("(");
+          str.append('(');
 
         str.append(ultraTrim(year));
 
         if (parentheses == CitationParenthesesOption.aroundYear)
-          str.append(")");
+          str.append(')');
       }
 
       return (parentheses == CitationParenthesesOption.aroundAll ? (str + ")") : str.toString()).replaceAll("  ", " ");
@@ -186,7 +183,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
 //---------------------------------------------------------------------------
 
-    public static int appendCitationAuthors(StringBuilder str, List<String> authors, String truncationIndicator, boolean multipleAuthors, boolean oxfordSeparator, int authorNumToTruncate, int authorsToShowWhenTruncating, FinalConjunctionSymbol finalConjSymbol)
+    static int appendCitationAuthors(StringBuilder str, List<String> authors, String truncationIndicator, boolean multipleAuthors, boolean oxfordSeparator, int authorNumToTruncate, int authorsToShowWhenTruncating, FinalConjunctionSymbol finalConjSymbol)
     {
       int authorsToShow = authors.size();
 
@@ -225,7 +222,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private List<WorkSearchKeyConfig> keyConfigList = new ArrayList<>();
+  private final List<WorkSearchKeyConfig> keyConfigList = new ArrayList<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -278,14 +275,105 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
   public String format(List<String> authors, String year)
   {
-    List<String> strList = new ArrayList<>();
+    return format(authors, authors.get(0), year, false, null, false);
+  }
+
+  public String format(List<String> authors, String singleAuthorName, String year, boolean addLetter, HDT_Work work, boolean keyWorkLink)
+  {
+    Map<String, Boolean> keyToMultipleAuthors = new LinkedHashMap<>();
+
+    String singleAuthorKey = "";
 
     for (WorkSearchKeyConfig keyConfig : this)
-      strList.add(keyConfig.format(authors, year));
+    {
+      List<String> keyAuthors = keyConfig.multipleAuthors ? authors : List.of(singleAuthorName);
+      String key = keyConfig.format(keyAuthors, year);
+      if (singleAuthorKey.isBlank() && (keyConfig.multipleAuthors == false))
+        singleAuthorKey = key;
 
-    removeDupsInStrList(strList);
+      keyToMultipleAuthors.put(key, keyAuthors.size() > 1);
+    }
 
-    return strList.stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+    if (addLetter)
+    {
+      keyToMultipleAuthors = addLetterToKeys(keyToMultipleAuthors, year, work, true );
+      keyToMultipleAuthors = addLetterToKeys(keyToMultipleAuthors, year, work, false);
+    }
+
+    if (keyWorkLink == false)
+      return SearchKeys.prepSearchKey(keyToMultipleAuthors.keySet().stream().reduce((s1, s2) -> s1 + "; " + s2).orElse(""));
+
+    // Use first key configured as single author
+
+    if (singleAuthorKey.isBlank() == false)
+      return singleAuthorKey;
+
+    // No keys are configured as single author so just return the first key
+
+    return SearchKeys.prepSearchKey(keyToMultipleAuthors.keySet().iterator().next());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * <p>We want to make sure the same letter is added to all single-author key, and the same letter is added to all multiple-author keys.</p>
+   *
+   * <p>This function figures out if adding a certain letter will result in a duplicate key for any of the keys that have the same mulitipleAuthors value
+   * for their corresponding WorkSearchKeyConfig. If so, it tries a different letter. Otherwise, it returns a new map with the key strings updated
+   * to have the new letter appended to the year.</p>
+   *
+   * @param oldMap  Mapping of key strings with their corresponding WorkSearchKeyConfig objects
+   * @param year  Updated year for the work in question
+   * @param work  The work that these search keys are for
+   * @param multipleAuthors  Whether we are adding a letter to single-author or mult-author search keys this time around
+   * @return  The original map if no letter is being added to the years, or a new version with letter added
+   */
+  private static Map<String, Boolean> addLetterToKeys(Map<String, Boolean> oldMap, String year, HDT_Work work, boolean multipleAuthors)
+  {
+    char keyLetter = ' ';
+    boolean keyTaken;
+
+    do
+    {
+      keyTaken = false;
+
+      for (Entry<String, Boolean> entry : oldMap.entrySet())
+      {
+        if (entry.getValue() != multipleAuthors)
+          continue;
+
+        SearchKeyword hyperKey = db.getKeyByKeyword(entry.getKey().replace(year, (year + keyLetter).trim()));
+
+        if ((hyperKey != null) && (hyperKey.record != work))
+        {
+          keyTaken = true;
+
+          if (keyLetter == 'z')
+            return oldMap;  // Unlikely scenario. If every letter of the alphabet was already used, let user come up with non-duplicate keys manually.
+
+          keyLetter = keyLetter == ' ' ? 'a' : (char)(keyLetter + 1);
+
+          break;
+        }
+      }
+
+    } while (keyTaken);
+
+    if (keyLetter == ' ')
+      return oldMap;
+
+    Map<String, Boolean> newMap = new LinkedHashMap<>();
+
+    for (Entry<String, Boolean> entry : oldMap.entrySet())
+    {
+      if (entry.getValue() != multipleAuthors)
+        newMap.put(entry.getKey(), entry.getValue());
+      else
+        newMap.put(entry.getKey().replace(year, (year + keyLetter).trim()), entry.getValue());
+    }
+
+    return newMap;
   }
 
 //---------------------------------------------------------------------------

@@ -313,7 +313,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     if (work.getAuthors().isEmpty()) return "";
 
-    return settings.format(work.getAuthors().stream().map(Author::getLastName).collect(Collectors.toList())) + "'s ";
+    return settings.format(work.getAuthors().stream().map(Author::singleName).collect(Collectors.toList())) + "'s ";
   }
 
 //---------------------------------------------------------------------------

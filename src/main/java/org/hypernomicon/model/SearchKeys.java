@@ -26,7 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.Exceptions.DuplicateSearchKeyException;
+import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.util.SplitString;
 
@@ -140,14 +141,14 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
+  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws DuplicateSearchKeyException, SearchKeyTooShortException
   {
     newKey = prepSearchKey(newKey);
 
     if (newKey.equals(getStringForRecord(record))) return;
 
     if ((newKey.length() == 1) || (newKey.length() == 2))
-      throw new SearchKeyException(true, record, newKey);
+      throw new SearchKeyTooShortException(record, newKey);
 
     LinkedHashSet<SearchKeyword> oldKeywordObjs = unassignKeywordsFromRecord(record);
 
@@ -164,7 +165,7 @@ public final class SearchKeys
       if (keyword.text.length() < 3)
       {
         assignKeywordsToRecord(record, oldKeywordObjs);
-        throw new SearchKeyException(true, record, keyword.text);
+        throw new SearchKeyTooShortException(record, keyword.text);
       }
 
       HDT_Record existingRecord = nullSwitch(getKeywordObjByKeywordStr(keyword.text), null, SearchKeyword::getRecord);
@@ -174,7 +175,7 @@ public final class SearchKeys
       if ((existingRecord != null) && (existingRecord != record))
       {
         assignKeywordsToRecord(record, oldKeywordObjs);
-        throw new SearchKeyException(false, record, keyword.text);
+        throw new DuplicateSearchKeyException(record, keyword.text);
       }
 
   // Add new substring

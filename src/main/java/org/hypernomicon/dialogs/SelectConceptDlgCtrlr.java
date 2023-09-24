@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Term;
@@ -170,10 +171,10 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     }
     catch (SearchKeyException e)
     {
-      falseWithErrorMessage(e.getTooShort() ?
-        "Unable to create term record: search key must be at least 3 characters."
+      falseWithErrorMessage(e instanceof SearchKeyTooShortException ?
+        "Unable to create term record. Search key must be at least 3 characters: " + e.getKey()
       :
-        "Unable to create term record: search key already exists.");
+        "Unable to create term record. Search key already exists: " + e.getKey());
 
       db.deleteRecord(term);
       term = null;
