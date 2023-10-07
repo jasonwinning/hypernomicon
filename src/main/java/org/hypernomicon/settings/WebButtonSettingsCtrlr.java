@@ -278,19 +278,19 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("WorldCat", "WorldCat");
 
-    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "+ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced",
+    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "+AND+ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
         Title, NumericYear, SingleName);
 
-    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "+ti%3A" + Title + "&qt=advanced",
+    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "+AND+ti%3A" + Title + "&qt=advanced",
         Title, SingleName);
 
-    btn.addPattern("http://www.worldcat.org/search?q=ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced",
+    btn.addPattern("http://www.worldcat.org/search?q=ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
         Title, NumericYear);
 
     btn.addPattern("http://www.worldcat.org/search?q=ti%3A" + Title + "&qt=advanced",
         Title);
 
-    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced",
+    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
         NumericYear, SingleName);
 
     btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "&qt=advanced",

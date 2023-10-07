@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -117,7 +119,15 @@ public final class DesktopUtil
       }
       catch (URISyntaxException e)
       {
-        return new URI(scheme, ssp, "");
+        try
+        {
+          URL urlObj = new URL(url);
+          return new URI(urlObj.getProtocol(), urlObj.getUserInfo(), urlObj.getHost(), urlObj.getPort(), urlObj.getPath(), urlObj.getQuery(), urlObj.getRef());
+        }
+        catch (URISyntaxException | MalformedURLException e1)
+        {
+          return new URI(scheme, ssp, "");
+        }
       }
     }
 
