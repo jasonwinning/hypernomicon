@@ -24,7 +24,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -59,7 +58,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
       if (HyperTableCell.getCellType(oldValue) == newType) return;
 
-      ((RecordByTypePopulator) hcbCompare.getPopulator()).setRecordType(Populator.dummyRow, newType);
+      ((RecordByTypePopulator) hcbCompare.getPopulator()).setRecordType(newType);
       hcbCompare.selectID(-1);
 
       tfNewID.setText(newType == hdtNone ? "" : String.valueOf(db.getNextID(newType)));

@@ -140,7 +140,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
       if (getCellID(oldValue) != getCellID(newValue))
       {
-        ((SubjectPopulator)hcbRegion.getPopulator()).setObj(null, getRecord(newValue));
+        ((SubjectPopulator)hcbRegion.getPopulator()).setObj(getRecord(newValue));
         if (getCellID(oldValue) > 0)
           hcbRegion.selectID(-1);
       }

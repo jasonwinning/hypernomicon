@@ -78,7 +78,6 @@ import org.hypernomicon.view.HyperFavorites.RecordFavorite;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.mainText.SymbolPickerDlgCtrlr;
-import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.tabs.*;
 import org.hypernomicon.view.wrappers.*;
@@ -2092,8 +2091,18 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HDT_Record getActiveOrViewRecord(HDT_Record activeRecord, HDT_Record viewRecord)
+  private HDT_Record selectedRecord()
   {
+    HDT_Record activeRecord = activeRecord(), viewRecord = null;
+
+    switch (activeTabEnum())
+    {
+      case termTabEnum   : viewRecord = viewRecord();                           break;
+      case personTabEnum : viewRecord = personHyperTab().getCurInvestigation(); break;
+
+      default            : break;
+    }
+
     if ((activeRecord == null) || (viewRecord == null) || (activeRecord == viewRecord))
       return activeRecord;
 
@@ -2124,14 +2133,7 @@ public final class MainCtrlr
       return;
     }
 
-    HDT_Record record;
-
-    switch (activeTabEnum())
-    {
-      case termTabEnum   : record = getActiveOrViewRecord(activeRecord(), viewRecord());                           break;
-      case personTabEnum : record = getActiveOrViewRecord(activeRecord(), personHyperTab().getCurInvestigation()); break;
-      default            : record = activeRecord();                                                                break;
-    }
+    HDT_Record record = selectedRecord();
 
     if (record == null)
     {
@@ -2155,7 +2157,11 @@ public final class MainCtrlr
     if (db.isLoaded() == false)
       return falseWithErrorMessage("No database is currently loaded.");
 
-    HDT_Record record = activeRecord();
+    if ((activeTabEnum() == termTabEnum) || (activeTabEnum() == personTabEnum))
+      if (cantSaveRecord())
+        return false;  // Need to save if it might only be a partial reversion
+
+    HDT_Record record = selectedRecord();
 
     if (record == null)
       return falseWithErrorMessage("No record is currently selected.");
@@ -2163,18 +2169,28 @@ public final class MainCtrlr
     if (record.hasStoredState() == false)
       return falseWithErrorMessage("Unable to revert: the record may not have been previously saved to XML.");
 
-    HDT_Record viewRecordToRevert = viewRecord();
+    String msg = "Are you sure you want to revert this record to the last version saved to XML?",
+           additionalMsg = "";
 
-    if ((viewRecordToRevert == record) || (activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum))
-      viewRecordToRevert = null;
+    RecordType type = record.getType();
 
-    if ((viewRecordToRevert != null) && (viewRecordToRevert.hasStoredState() == false))
-      return falseWithErrorMessage("Unable to revert: the record may not have been previously saved to XML.");
+    switch (type)
+    {
+      case hdtTerm   : additionalMsg = "\n\nNote: Reverting a Term record does not automatically revert the associated Concept records.";         break;
+      case hdtPerson : if (((HDT_Person)record).investigations.size() > 0) additionalMsg = "\n\nNote: Reverting a Person record does not automatically revert associated Investigation records."; break;
 
-    if (confirmDialog("Are you sure you want to revert this record to the last version saved to XML?") == false) return false;
+      default : break;
+    }
 
-    if (revertToDiskCopy(record) && (viewRecordToRevert != null))
-      revertToDiskCopy(viewRecordToRevert);
+    String name = record.getCBText();
+    if (ultraTrim(name).isEmpty())
+      name = activeTab().recordName();
+
+    if (confirmDialog("Type: " + getTypeName(type) + '\n' +
+                      "Name: " + name + '\n' +
+                      "ID: " + record.getID() + "\n\n" + msg + additionalMsg) == false) return false;
+
+    revertToDiskCopy(record);
 
     update();
     return true;
@@ -2708,7 +2724,7 @@ public final class MainCtrlr
 
         tfSelector = cbGoTo.getEditor();
         hcbGoTo.clear();
-        ((RecordByTypePopulator) hcbGoTo.getPopulator()).setRecordType(Populator.dummyRow, selectorType());
+        ((RecordByTypePopulator) hcbGoTo.getPopulator()).setRecordType(selectorType());
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
 
         if (count > 0)

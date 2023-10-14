@@ -54,9 +54,11 @@ public class VariablePopulator extends Populator
 //---------------------------------------------------------------------------
 
   public void initRow(HyperTableRow row)                           { if (defaultPop != null) setPopulator(row, defaultPop.get()); }
+  public final void setPopulator(Populator populator)              { setPopulator(dummyRow, populator); }
   public void setPopulator(HyperTableRow row, Populator populator) { rowToPop.put(row, populator); rowToRestricted.put(row, true); }
   public void setRestricted(HyperTableRow row, boolean restrict)   { rowToRestricted.put(row, restrict); }
   public boolean getRestricted(HyperTableRow row)                  { return rowToRestricted.getOrDefault(row, true); }
+  public final <PopType extends Populator> PopType getPopulator()  { return getPopulator(dummyRow); }
 
   @SuppressWarnings("unchecked")
   public <PopType extends Populator> PopType getPopulator(HyperTableRow row)       { return (PopType) rowToPop.get(row); }

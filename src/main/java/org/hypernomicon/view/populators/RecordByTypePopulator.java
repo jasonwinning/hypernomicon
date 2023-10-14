@@ -58,10 +58,13 @@ public class RecordByTypePopulator extends RecordPopulator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public final void setRecordType(RecordType newType)
+  {
+    setRecordType(dummyRow, newType);
+  }
+
   public void setRecordType(HyperTableRow row, RecordType newType)
   {
-    if (row == null) row = dummyRow;
-
     if (rowToRecordType.put(row, newType) != newType)
       rowToChanged.put(row, true);
   }
@@ -71,8 +74,6 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    if (row == null) row = dummyRow;
-
     if (rowToRecordType.containsKey(row) == false)
       rowToRecordType.put(row, hdtNone);
 
@@ -104,7 +105,6 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (row == null) row = dummyRow;
     if (hasChanged(row) == false) return equalMatch(row, cell);
 
     if (rowToRecordType.containsKey(row) == false)
@@ -126,7 +126,6 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
   {
-    if (row == null) row = dummyRow;
     if (hasChanged(row) == false) return super.getChoiceByID(row, id);
 
     if (rowToRecordType.containsKey(row) == false)
@@ -145,8 +144,6 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public boolean hasChanged(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-
     rowToChanged.putIfAbsent(row, true);
     return rowToChanged.get(row);
   }
@@ -156,14 +153,14 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public void setChanged(HyperTableRow row)
   {
-    rowToChanged.put(nullSwitch(row, dummyRow), true);
+    rowToChanged.put(row, true);
   }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public RecordType getRecordType(HyperTableRow row)
   {
-    return rowToRecordType.getOrDefault(nullSwitch(row, dummyRow), hdtNone);
+    return rowToRecordType.getOrDefault(row, hdtNone);
   }
 
 //---------------------------------------------------------------------------
@@ -181,8 +178,6 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
-    if (row == null) row = dummyRow;
-
     RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
 
     HyperTableCell cell = new HyperTableCell(id, text, type);

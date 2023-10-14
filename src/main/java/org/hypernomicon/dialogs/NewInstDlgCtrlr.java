@@ -64,7 +64,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
       rbExistingInst.setSelected(true);
 
-      ((SubjectPopulator)hcbExisting.getPopulator()).setObj(null, getRecord(newValue));
+      ((SubjectPopulator)hcbExisting.getPopulator()).setObj(getRecord(newValue));
       if (getCellID(oldValue) > 0)
         hcbExisting.selectID(-1);
     });

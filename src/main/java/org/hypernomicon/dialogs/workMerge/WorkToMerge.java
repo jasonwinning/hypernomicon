@@ -122,8 +122,8 @@ class WorkToMerge
       if (authorRecord == null)
       {
         Populator pop = htAuthors.getPopulator(0);
-        pop.populate(null, false);
-        pop.addEntry(null, author.getNameLastFirst());
+        pop.populate(false);
+        pop.addEntry(author.getNameLastFirst());
         row.setCellValue(0, author.getNameLastFirst(), hdtPerson);
       }
       else
@@ -148,7 +148,7 @@ class WorkToMerge
       rbType.setSelected(true);
     });
 
-    htAuthors.getPopulator(0).populate(null, false);
+    htAuthors.getPopulator(0).populate(false);
 
     loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork);
   }

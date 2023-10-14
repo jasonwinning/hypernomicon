@@ -43,7 +43,6 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.settings.ArgumentNamingSettings;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
-import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -199,7 +198,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     {
       if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
 
-      ((HybridSubjectPopulator) hcbWork.getPopulator()).setObj(Populator.dummyRow, HyperTableCell.getRecord(newCell));
+      ((HybridSubjectPopulator) hcbWork.getPopulator()).setObj(HyperTableCell.getRecord(newCell));
       hcbWork.selectID(-1);
       rbNew.setSelected(true);
 

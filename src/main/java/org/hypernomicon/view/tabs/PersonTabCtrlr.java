@@ -270,7 +270,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
       if (getCellID(oldValue) != getCellID(newValue))
       {
-        ((SubjectPopulator)hcbSubfield.getPopulator()).setObj(null, getRecord(newValue));
+        ((SubjectPopulator)hcbSubfield.getPopulator()).setObj(getRecord(newValue));
         if (getCellID(oldValue) > 0)
           hcbSubfield.selectID(-1);
       }

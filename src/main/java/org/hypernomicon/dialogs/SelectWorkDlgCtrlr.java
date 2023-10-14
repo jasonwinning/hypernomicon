@@ -48,7 +48,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.view.populators.BibEntryPopulator;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
-import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -216,7 +215,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     {
       if ((newValue == null) || (getCellID(oldValue) == getCellID(newValue))) return;
 
-      ((HybridSubjectPopulator)hcbWork.getPopulator()).setObj(Populator.dummyRow, getRecord(newValue));
+      ((HybridSubjectPopulator)hcbWork.getPopulator()).setObj(getRecord(newValue));
       hcbWork.selectID(-1);
     });
 

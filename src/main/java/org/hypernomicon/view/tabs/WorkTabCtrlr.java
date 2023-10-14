@@ -760,8 +760,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (authorRecord == null)
       {
         Populator pop = htAuthors.getPopulator(1);
-        pop.populate(null, false);
-        pop.addEntry(null, author.getNameLastFirst());
+        pop.populate(false);
+        pop.addEntry(author.getNameLastFirst());
         row.setCellValue(1, author.getNameLastFirst(), hdtPerson);
       }
       else

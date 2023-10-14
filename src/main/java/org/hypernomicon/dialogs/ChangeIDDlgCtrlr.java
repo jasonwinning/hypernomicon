@@ -26,7 +26,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -64,7 +63,7 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 
       if (oldType == newType) return;
 
-      ((RecordByTypePopulator) hcbRecord.getPopulator()).setRecordType(Populator.dummyRow, newType);
+      ((RecordByTypePopulator) hcbRecord.getPopulator()).setRecordType(newType);
       hcbRecord.selectID(-1);
     });
 

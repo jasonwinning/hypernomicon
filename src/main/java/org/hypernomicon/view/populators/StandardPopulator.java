@@ -36,7 +36,15 @@ public class StandardPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public StandardPopulator(RecordType objType) { this(objType, null, DisplayKind.cbText); }
+  public StandardPopulator(RecordType objType)
+  {
+    this(objType, null);
+  }
+
+  public StandardPopulator(RecordType objType, Predicate<Integer> filter)
+  {
+    this(objType, filter, DisplayKind.cbText);
+  }
 
   public StandardPopulator(RecordType objType, Predicate<Integer> filter, DisplayKind displayKind)
   {
@@ -44,20 +52,20 @@ public class StandardPopulator extends Populator
 
     rtp = new RecordByTypePopulator(filter, displayKind);
 
-    rtp.setRecordType(dummyRow, objType);
+    rtp.setRecordType(objType);
   }
 
 //---------------------------------------------------------------------------
 
   @Override public CellValueType getValueType()                                    { return cvtRecord; }
-  @Override public boolean hasChanged(HyperTableRow row)                           { return rtp.hasChanged(dummyRow); }
-  @Override public void setChanged(HyperTableRow row)                              { rtp.setChanged(dummyRow); }
-  @Override public RecordType getRecordType(HyperTableRow row)                     { return rtp.getRecordType(dummyRow); }
-  @Override public void clear()                                                    { rtp.clear(); rtp.setRecordType(dummyRow, objType); }
-  @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return rtp.populate(dummyRow, force); }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return rtp.match(dummyRow, cell); }
-  @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)         { return rtp.getChoiceByID(dummyRow, id); }
-  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text) { return rtp.addEntry(dummyRow, id, text); }
+  @Override public boolean hasChanged(HyperTableRow row)                           { return rtp.hasChanged(); }
+  @Override public void setChanged(HyperTableRow row)                              { rtp.setChanged(); }
+  @Override public RecordType getRecordType(HyperTableRow row)                     { return rtp.getRecordType(); }
+  @Override public void clear()                                                    { rtp.clear(); rtp.setRecordType(objType); }
+  @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return rtp.populate(force); }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return rtp.match(cell); }
+  @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)         { return rtp.getChoiceByID(id); }
+  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text) { return rtp.addEntry(id, text); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -74,9 +74,14 @@ public class RecordTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public final HyperTableCell getChoiceByType(RecordType type)
+  {
+    return getChoiceByType(dummyRow, type);
+  }
+
   public HyperTableCell getChoiceByType(HyperTableRow row, RecordType type)
   {
-    return findFirst(populate(nullSwitch(row, dummyRow), false), cell -> HyperTableCell.getCellType(cell) == type);
+    return findFirst(populate(row, false), cell -> HyperTableCell.getCellType(cell) == type);
   }
 
 //---------------------------------------------------------------------------

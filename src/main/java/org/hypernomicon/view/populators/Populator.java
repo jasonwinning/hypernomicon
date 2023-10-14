@@ -111,6 +111,17 @@ public abstract class Populator
   @SuppressWarnings("unused")
   public CellValueType getValueType(HyperTableRow row)                   { return getValueType(); }
 
+  public final List<HyperTableCell> populate(boolean force) { return populate(dummyRow, force); }
+  public final boolean hasChanged()                         { return hasChanged(dummyRow); }
+  public final void setChanged()                            { setChanged(dummyRow); }
+  public final RecordType getRecordType()                   { return getRecordType(dummyRow); }
+  public final HyperTableCell addEntry(int id, String text) { return addEntry(dummyRow, id, text); }
+  public final HyperTableCell addEntry(String text)         { return addEntry(dummyRow, text); }
+  public final HyperTableCell match(HyperTableCell cell)    { return match(dummyRow, cell); }
+  public final HyperTableCell getChoiceByID(int id)         { return getChoiceByID(dummyRow, id); }
+
+  final HyperTableCell equalMatch(HyperTableCell cell)      { return equalMatch(dummyRow, cell); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -124,7 +135,7 @@ public abstract class Populator
 
   HyperTableCell equalMatch(HyperTableRow row, HyperTableCell cell)
   {
-    return populate(nullSwitch(row, dummyRow), false).contains(cell) ? cell : null;
+    return populate(row, false).contains(cell) ? cell : null;
   }
 
 //---------------------------------------------------------------------------
@@ -132,7 +143,7 @@ public abstract class Populator
 
   public HyperTableCell getChoiceByID(HyperTableRow row, int id)
   {
-    return findFirst(populate(nullSwitch(row, dummyRow), false), cell -> HyperTableCell.getCellID(cell) == id);
+    return findFirst(populate(row, false), cell -> HyperTableCell.getCellID(cell) == id);
   }
 
 //---------------------------------------------------------------------------

@@ -20,7 +20,6 @@ package org.hypernomicon.dialogs;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
@@ -52,7 +51,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
   {
     super("RecordDropdownDlg", "Select a Term Record to Merge With", true);
 
-    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, idFilter, DisplayKind.cbText));
+    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, idFilter));
     typeName = getTypeName(recordType);
   }
 

@@ -27,7 +27,6 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
-import static org.hypernomicon.view.populators.Populator.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.io.IOException;
@@ -52,6 +51,7 @@ import org.hypernomicon.App;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
 import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
+import org.hypernomicon.dialogs.SearchKeySelectDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.Tag;
@@ -176,7 +176,7 @@ public class MainTextCtrlr
       {
         app.prefs.put(PREF_KEY_DISPLAY_RECORD_TYPE, Tag.getTypeTagStr(newType));
 
-        ((RecordByTypePopulator)hcbName.getPopulator()).setRecordType(dummyRow, newType);
+        ((RecordByTypePopulator)hcbName.getPopulator()).setRecordType(newType);
         if (oldType != hdtNone)
           hcbName.selectID(-1);
       }
@@ -217,7 +217,7 @@ public class MainTextCtrlr
 
       if (HyperTableCell.getCellType(oldValue) != HyperTableCell.getCellType(newValue))
       {
-        ((RecordByTypePopulator)hcbKeyName.getPopulator()).setRecordType(dummyRow, HyperTableCell.getCellType(newValue));
+        ((RecordByTypePopulator)hcbKeyName.getPopulator()).setRecordType(HyperTableCell.getCellType(newValue));
         if (HyperTableCell.getCellType(oldValue) != hdtNone)
           hcbKeyName.selectID(-1);
       }
@@ -381,9 +381,9 @@ public class MainTextCtrlr
     MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
     setToolTip(btnPaste, "Paste");
 
-    Button btnLink = new Button("", imgViewFromRelPath("resources/images/world_link.png"));
-    setToolTip(btnLink, "Insert/edit web link");
-    btnLink.setOnAction(event ->
+    Button btnWebLink = new Button("", imgViewFromRelPath("resources/images/world_link.png"));
+    setToolTip(btnWebLink, "Insert/edit web link");
+    btnWebLink.setOnAction(event ->
     {
       HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
 
@@ -392,6 +392,10 @@ public class MainTextCtrlr
       else
         editLink(anchor);
     });
+
+    Button btnKeywordLink = new Button("", imgViewFromRelPath("resources/images/keyword-link-add.png"));
+    setToolTip(btnKeywordLink, "Insert a search key to link to a record");
+    btnKeywordLink.setOnAction(event -> btnKeywordLinkClick());
 
     Button btnPicture = new Button("", imgViewFromRelPath("resources/images/picture_add.png"));
     setToolTip(btnPicture, "Insert picture");
@@ -427,7 +431,7 @@ public class MainTextCtrlr
 
     ObservableList<Node> topBarItems = ((ToolBar) he.lookup(".top-toolbar")).getItems();
 
-    topBarItems.addAll(btnLink, btnPicture, btnClear, btnEditLayout, btnSubscript, btnSuperscript, btnSymbol, btnPaste);
+    topBarItems.addAll(btnWebLink, btnKeywordLink, btnPicture, btnClear, btnEditLayout, btnSubscript, btnSuperscript, btnSymbol, btnPaste);
 
     topBarItems.addListener((Change<? extends Node> c) ->
     {
@@ -720,6 +724,19 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void btnKeywordLinkClick()
+  {
+    SearchKeySelectDlgCtrlr dlg = new SearchKeySelectDlgCtrlr();
+
+    if (dlg.showModal())
+      engine.executeScript("insertHtmlAtCursor('" + StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.getKeyword())) + "')");
+
+    safeFocus(he);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void btnPictureClick()
   {
     InsertMiscFileDlgCtrlr imfd = new InsertMiscFileDlgCtrlr();
@@ -776,13 +793,16 @@ public class MainTextCtrlr
 
     NewLinkDlgCtrlr dlg = new NewLinkDlgCtrlr(convertToSingleLine(selText));
 
-    if (dlg.showModal() == false) return;
+    if (dlg.showModal())
+    {
+      String urlText = StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfURL.getText().trim()));
 
-    String urlText = StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfURL.getText().trim()));
+      String anchorTag = "<a title=\"" + urlText + "\" href=\"" + urlText + "\">" + StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfDisplayText.getText())) + "</a>";
 
-    String anchorTag = "<a title=\"" + urlText + "\" href=\"" + urlText + "\">" + StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfDisplayText.getText())) + "</a>";
+      engine.executeScript("insertHtmlAtCursor('" + anchorTag + "')");
+    }
 
-    engine.executeScript("insertHtmlAtCursor('" + anchorTag + "')");
+    safeFocus(he);
   }
 
 //---------------------------------------------------------------------------

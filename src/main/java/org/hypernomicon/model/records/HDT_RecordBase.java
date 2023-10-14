@@ -290,7 +290,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
   public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
   {
-    boolean wasOnline = online;
+    boolean revertingConcept = online && (type == hdtConcept);
     online = true;
 
     if (type.getDisregardDates() == false)
@@ -304,8 +304,8 @@ public abstract class HDT_RecordBase implements HDT_Record
     {
       Tag tag = backupEntry.getKey();
 
-      if (wasOnline && (type == hdtConcept) && ((tag == tagGlossary) || (tag == tagParentConcept)))
-        return;
+      if (revertingConcept && ((tag == tagGlossary) || (tag == tagParentConcept) || (tag == nameTag)))
+        continue;
 
       HDI_OnlineBase liveValue = items.get(tag);
       HDI_OfflineBase backupValue = backupEntry.getValue();
@@ -320,7 +320,8 @@ public abstract class HDT_RecordBase implements HDT_Record
         liveValue.setFromOfflineValue(backupValue, tag);
     }
 
-    setSearchKey(backupState.searchKey, true, rebuildMentions);
+    if (revertingConcept == false)
+      setSearchKey(backupState.searchKey, true, rebuildMentions);
   }
 
 //---------------------------------------------------------------------------

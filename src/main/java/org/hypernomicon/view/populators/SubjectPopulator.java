@@ -80,24 +80,32 @@ public class SubjectPopulator extends RecordPopulator
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
   @Override public RecordType getRecordType(HyperTableRow row)                  { return db.getSubjType(relType); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
-  @Override public void setChanged(HyperTableRow row)                           { rowToChanged.put(nullSwitch(row, dummyRow), true); }
+  @Override public void setChanged(HyperTableRow row)                           { rowToChanged.put(row, true); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  final HDT_Record getObj()
+  {
+    return getObj(dummyRow);
+  }
 
   HDT_Record getObj(HyperTableRow row)
   {
-    return trackObjByRow ? rowToObj.get(nullSwitch(row, dummyRow)) : obj;
+    return trackObjByRow ? rowToObj.get(row) : obj;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public final void setObj(HDT_Record newObj)
+  {
+    setObj(dummyRow, newObj);
+  }
+
   public void setObj(HyperTableRow row, HDT_Record newObj)
   {
     HDT_Record oldObj;
-
-    if (row == null) row = dummyRow;
 
     if (trackObjByRow)
       oldObj = rowToObj.put(row, newObj);
@@ -115,8 +123,6 @@ public class SubjectPopulator extends RecordPopulator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    if (row == null) row = dummyRow;
-
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());
 
@@ -154,8 +160,6 @@ public class SubjectPopulator extends RecordPopulator
 
   @Override public boolean hasChanged(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-
     rowToChanged.putIfAbsent(row, true);
     return rowToChanged.get(row);
   }
@@ -179,8 +183,6 @@ public class SubjectPopulator extends RecordPopulator
 
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
-    if (row == null) row = dummyRow;
-
     RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? db.getSubjType(relType) : hdtNone;
 
     HyperTableCell cell = new HyperTableCell(id, text, type);

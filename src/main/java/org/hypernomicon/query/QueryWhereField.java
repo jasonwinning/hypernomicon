@@ -64,7 +64,7 @@ public class QueryWhereField extends RecordQuery
   {
     CellValueType valueType = vp1.getValueType(row);
 
-    if ((valueType != cvtTagItem) || (vp1.getPopulator(row).getRecordType(null) != row.getRecordType(QueryCtrlr.QUERY_TYPE_COL_NDX)))
+    if ((valueType != cvtTagItem) || (vp1.getPopulator(row).getRecordType() != row.getRecordType(QueryCtrlr.QUERY_TYPE_COL_NDX)))
     {
       clearOperands(row, 1);
       vp1.setPopulator(row, new TagItemPopulator(row.getRecordType(QueryCtrlr.QUERY_TYPE_COL_NDX)));

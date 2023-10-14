@@ -36,6 +36,7 @@ import org.hypernomicon.view.WindowStack;
 import com.google.common.collect.HashBasedTable;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.event.EventTarget;
 import javafx.geometry.Orientation;
@@ -728,7 +729,7 @@ public final class UIUtil
   private static boolean falseWithMessage(String msg, MessageDialogType mt, Node nodeToFocus)
   {
     messageDialog(msg, mt);
-    if (nodeToFocus != null) safeFocus(nodeToFocus);
+    if (nodeToFocus != null) Platform.runLater(() -> safeFocus(nodeToFocus));
     return false;
   }
 

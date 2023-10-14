@@ -81,7 +81,7 @@ public class HyperCB implements CommitableWrapper
   @FunctionalInterface
   public interface HTCListener { void changed(HyperTableCell oldValue, HyperTableCell newValue); }
 
-  public void setChoicesChanged()                { populator.setChanged(null); }
+  public void setChoicesChanged()                { populator.setChanged(row); }
   public ComboBox<HyperTableCell> getComboBox()  { return cb; }
   public void addListener(HTCListener listener)  { listeners.add(listener); }
   public void triggerOnAction()                  { internalOnAction.handle(new ActionEvent(null, cb)); }

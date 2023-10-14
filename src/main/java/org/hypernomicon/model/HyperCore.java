@@ -94,7 +94,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
   String getKeyByID(int id)    { return idToKey.get(id); }
   int getIDbyIDNdx(int ndx)    { return sortedIDs.get(ndx); }
   int getIDbyKeyNdx(int ndx)   { return sortedKeys.get(ndx).getID(); }
-  boolean containsID(int id)   { return sortedIDs.contains(id); }
+  boolean containsID(int id)   { return idToRecord.containsKey(id); }
   HDT_DT getRecordByID(int id) { return idToRecord.get(id); }
   int getIDNdxByID(int id)     { return Math.max(-1, binarySearch(sortedIDs, id)); }
   int getKeyNdxByID(int id)    { return Math.max(-1, binarySearch(sortedKeys, new KeyIDpair(id, idToKey.get(id)))); }

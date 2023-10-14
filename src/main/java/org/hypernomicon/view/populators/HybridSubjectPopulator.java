@@ -58,7 +58,7 @@ public class HybridSubjectPopulator extends Populator
     rowToChanged = new HashMap<>();
     rowToPop = new HashMap<>();
 
-    standardPop = new StandardPopulator(db.getSubjType(relType), idFilter, DisplayKind.cbText);
+    standardPop = new StandardPopulator(db.getSubjType(relType), idFilter);
     subjPop = new SubjectPopulator(relType, true, idFilter);
 
     this.relType = relType;
@@ -67,10 +67,13 @@ public class HybridSubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public final HDT_Record getObj()
+  {
+    return getObj(dummyRow);
+  }
+
   public HDT_Record getObj(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-
     if (rowToPop.get(row) == subjPop) return subjPop.getObj(row);
 
     return null;
@@ -79,10 +82,13 @@ public class HybridSubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public final void setObj(HDT_Record obj)
+  {
+    setObj(dummyRow, obj);
+  }
+
   public void setObj(HyperTableRow row, HDT_Record obj)
   {
-    if (row == null) row = dummyRow;
-
     rowToPop.putIfAbsent(row, standardPop);
 
     if (obj == null)
@@ -112,8 +118,6 @@ public class HybridSubjectPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    if (row == null) row = dummyRow;
-
     rowToChanged.put(row, false);
 
     rowToPop.putIfAbsent(row, standardPop);
@@ -125,8 +129,6 @@ public class HybridSubjectPopulator extends Populator
 
   @Override public boolean hasChanged(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-
     rowToChanged.putIfAbsent(row, true);
     rowToPop.putIfAbsent(row, standardPop);
 
@@ -138,8 +140,6 @@ public class HybridSubjectPopulator extends Populator
 
   @Override public void setChanged(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-
     rowToChanged.put(row, true);
     rowToPop.putIfAbsent(row, standardPop);
     rowToPop.get(row).setChanged(row);
@@ -162,8 +162,6 @@ public class HybridSubjectPopulator extends Populator
 
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
-    if (row == null) row = dummyRow;
-
     standardPop.addEntry(row, id, text);
     return subjPop.addEntry(row, id, text);
   }

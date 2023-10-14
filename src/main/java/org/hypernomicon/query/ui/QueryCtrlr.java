@@ -308,9 +308,9 @@ public final class QueryCtrlr
         if ((op1ID >= 0) && (nextPop != null) && (nextPop.getValueType() == cvtOperand))
         {
           HyperTableCell operandCell = row.getPopulator(OPERAND_1_COL_NDX).getValueType(row) == cvtBibField ?
-            nextPop.getChoiceByID(null, Query.CONTAINS_OPERAND_ID)
+            nextPop.getChoiceByID(Query.CONTAINS_OPERAND_ID)
           :
-            nextPop.getChoiceByID(null, Query.EQUAL_TO_OPERAND_ID);
+            nextPop.getChoiceByID(Query.EQUAL_TO_OPERAND_ID);
 
           row.setCellValue(nextColNdx, operandCell.clone());
           if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 3, cellVal, operandCell))

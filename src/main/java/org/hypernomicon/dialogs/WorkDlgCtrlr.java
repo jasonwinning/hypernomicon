@@ -58,7 +58,6 @@ import org.hypernomicon.previewWindow.PreviewWrapper;
 
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -241,7 +240,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
 
     htAuthors.clear();
-    htAuthors.getPopulator(0).populate(null, false);
+    htAuthors.getPopulator(0).populate(false);
 
     boolean atLeastOneInFilename = false;
 
@@ -255,7 +254,7 @@ public class WorkDlgCtrlr extends HyperDlg
         isInFileName = curWork.personIsInFileName(origRow.getRecord());
       else
       {
-        htAuthors.getPopulator(0).addEntry(null, authName);
+        htAuthors.getPopulator(0).addEntry(authName);
         Author auth = curWork.getAuthors().getAuthor(new PersonName(authName));
         if (auth != null)
           isInFileName = auth.getInFileName();
@@ -307,7 +306,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
   private HyperCB initWorkTypeHCB()
   {
-    StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet, DisplayKind.cbText);
+    StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet);
     HyperCB hyperCB = new HyperCB(cbType, ctDropDownList, pop);
 
     hyperCB.addListener((oldValue, newValue) ->
@@ -1064,7 +1063,7 @@ public class WorkDlgCtrlr extends HyperDlg
   private static void clearAuthors(HyperTable htAuthors)
   {
     htAuthors.clear();
-    htAuthors.getPopulator(0).populate(null, false);
+    htAuthors.getPopulator(0).populate(false);
   }
 
 //---------------------------------------------------------------------------
@@ -1123,7 +1122,7 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       String authorStr = authorName.getLastFirst();
 
-      htAuthors.getPopulator(0).addEntry(null, authorStr);
+      htAuthors.getPopulator(0).addEntry(authorStr);
       row.setCellValue(0, authorStr, hdtPerson);
     }
 
