@@ -58,10 +58,11 @@ public class HDT_Argument extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()           { return name(); }
+  @Override public String listName()                      { return name(); }
 
-  public String pagesInWork(HDT_Work work)     { return db.getNestedString(this, work, tagPages); }
-  public boolean setWorks(List<HDT_Work> list) { return updateObjectsFromList(rtWorkOfArgument, list); }
+  public String pagesInWork(HDT_Work work)                { return db.getNestedString(this, work, tagPages); }
+  public void setPagesInWork(HDT_Work work, String pages) { db.updateNestedString(this, work, tagPages, pages); }
+  public boolean setWorks(List<HDT_Work> list)            { return updateObjectsFromList(rtWorkOfArgument, list); }
 
   public static final int truePositionVerdictID  = 1,
                           falsePositionVerdictID = 2,

@@ -141,10 +141,12 @@
           <ToggleGroup fx:id="radioGroup" />
         </toggleGroup>
       </RadioButton>
-      <TextField fx:id="tfTitle" layoutX="149.4" layoutY="11.0" prefHeight="22.0" prefWidth="588.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
+      <TextField fx:id="tfTitle" layoutX="103.6" layoutY="11.0" prefHeight="25.0" prefWidth="782.0" AnchorPane.leftAnchor="94.0" AnchorPane.rightAnchor="175.0" />
       <RadioButton fx:id="rbExisting" layoutX="14.0" layoutY="46.0" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
-      <ComboBox fx:id="cbWork" layoutX="79.0" layoutY="42.0" prefHeight="22.0" prefWidth="594.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
-      <RadioButton layoutX="14.0" layoutY="80.0" mnemonicParsing="false" text="None" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
+      <ComboBox fx:id="cbWork" layoutX="113.6" layoutY="42.0" prefHeight="25.0" prefWidth="847.0" AnchorPane.leftAnchor="94.0" AnchorPane.rightAnchor="175.0" />
+         <TextField fx:id="tfPages" layoutX="914.0" layoutY="42.0" prefWidth="148.0" AnchorPane.rightAnchor="8.0" />
+      <RadioButton layoutX="14.0" layoutY="78.0" mnemonicParsing="false" text="None" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
+         <Label layoutX="933.0" layoutY="21.0" prefWidth="148.0" text="Pages:" AnchorPane.rightAnchor="8.0" />
     </AnchorPane>
   </TitledPane>
   <GridPane layoutX="25.0" layoutY="286.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">

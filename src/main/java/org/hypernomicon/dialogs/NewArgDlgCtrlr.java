@@ -62,7 +62,7 @@ public class NewArgDlgCtrlr extends HyperDlg
   @FXML private ComboBox<HyperTableCell> cbPerson, cbVerdict, cbWork;
   @FXML private Label lblTargetName, lblTargetDesc;
   @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;
-  @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfTargetName, tfTitle;
+  @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfTargetName, tfTitle, tfPages;
   @FXML private WebView view;
 
   private final HDT_RecordWithMainText target;
@@ -361,7 +361,10 @@ public class NewArgDlgCtrlr extends HyperDlg
       work = null;
 
     if (work != null)
+    {
       argument.works.add(work);
+      argument.setPagesInWork(work, tfPages.getText());
+    }
 
     return true;
   }
