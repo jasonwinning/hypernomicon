@@ -145,21 +145,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     });
 
     col = htWhereMade.addTextEditCol(hdtWork, false); // Pages column
-    col.comparator.set((cell1, cell2) ->
-    {
-      String text1 = ultraTrim(cell1.text), text2 = ultraTrim(cell2.text);
-      int num1 = extractLeadingNumber(text1), num2 = extractLeadingNumber(text2);
-      if ((num1 < 0) && (num2 < 0))
-        return text1.compareTo(text2);
-
-      if (num1 < 0)
-        return -1;
-
-      if (num2 < 0)
-        return 1;
-
-      return Integer.compare(num1, num2);
-    });
+    col.comparator.set(HyperTableCell.leadingNumberComparator());
 
     col = htWhereMade.addLabelCol(hdtArgument); // Year column
     col.comparator.set((cell1, cell2) -> compareYears(cell1.text, cell2.text));

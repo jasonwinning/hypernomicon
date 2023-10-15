@@ -24,6 +24,8 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
+import java.util.Comparator;
+
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -208,6 +210,28 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
     if (key2.isEmpty()) key2 = makeSortKeyByType(cell2.text, cell2.type);
 
     return key1.compareTo(key2);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Comparator<HyperTableCell> leadingNumberComparator()
+  {
+    return(cell1, cell2) ->
+    {
+      String text1 = ultraTrim(cell1.text), text2 = ultraTrim(cell2.text);
+      int num1 = extractLeadingNumber(text1), num2 = extractLeadingNumber(text2);
+      if ((num1 < 0) && (num2 < 0))
+        return text1.compareTo(text2);
+
+      if (num1 < 0)
+        return -1;
+
+      if (num2 < 0)
+        return 1;
+
+      return Integer.compare(num1, num2);
+    };
   }
 
 //---------------------------------------------------------------------------

@@ -284,6 +284,7 @@
             <TableColumn prefWidth="197.0" text="Target of Argument" />
             <TableColumn prefWidth="202.0" text="Verdict" />
             <TableColumn prefWidth="300.0" text="Argument name" />
+            <TableColumn prefWidth="120.0" text="Pages" />
           </columns>
         </TableView>
       </AnchorPane>

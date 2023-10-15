@@ -275,6 +275,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htArguments.addLabelCol(hdtNone);
     htArguments.addLabelCol(hdtNone, smTextSimple);
     htArguments.addLabelCol(hdtArgument);
+    col = htArguments.addLabelCol(hdtWork);
+    col.comparator.set(HyperTableCell.leadingNumberComparator());
 
     htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
 
@@ -815,6 +817,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
 
       row.setCellValue(3, arg, arg.listName());
+      row.setCellValue(4, arg, arg.pagesInWork(curWork));
     });
 
   // Populate work files
