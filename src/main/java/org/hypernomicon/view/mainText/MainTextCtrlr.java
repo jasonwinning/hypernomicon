@@ -165,7 +165,7 @@ public class MainTextCtrlr
     hcbType = new HyperCB(cbType, ctDropDownList, rtp);
     hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator());
 
-    hcbType.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbType.addListener((oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -211,7 +211,7 @@ public class MainTextCtrlr
       }
     });
 
-    hcbKeyType.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbKeyType.addListener((oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -764,7 +764,7 @@ public class MainTextCtrlr
       }
 
       miscFile.setName(fdc.tfRecordName.getText());
-      HyperTableCell cell = fdc.cbType.getValue();
+      HyperTableCell cell = fdc.hcbType.selectedHTC();
       int fileTypeID = HyperTableCell.getCellID(cell);
 
       if ((fileTypeID < 1) && (HyperTableCell.getCellText(cell).length() > 0))

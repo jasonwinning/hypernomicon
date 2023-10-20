@@ -285,13 +285,17 @@ public class HyperCB implements CommitableWrapper
   public void addEntry(int id, String text, boolean select)
   {
     HyperTableCell cell = populator.addEntry(row, id, text);
-    if (select && (id > 0))
+    if (select && ((id > 0) || (text.isBlank() == false)))
       select(cell);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This not only clears the text box and selected item, but also calls the populator's clear method
+   * so that the list of choices will also be blank.
+   */
   public void clear()
   {
     cb.getSelectionModel().clearSelection();
@@ -361,7 +365,10 @@ public class HyperCB implements CommitableWrapper
 
   public void selectID(int objID)
   {
-    nullSwitch(populator.getChoiceByID(row, objID), this::select);
+    if (objID < 1)
+      select(null);
+    else
+      select(populator.getChoiceByID(row, objID));
   }
 
 //---------------------------------------------------------------------------
@@ -371,7 +378,7 @@ public class HyperCB implements CommitableWrapper
   {
     populate(false);
 
-    nullSwitch(findFirst(cb.getItems(), choice -> choice.type == objType), this::select);
+    select(findFirst(cb.getItems(), choice -> choice.type == objType));
   }
 
 //---------------------------------------------------------------------------

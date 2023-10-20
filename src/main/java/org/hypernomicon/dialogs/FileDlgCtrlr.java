@@ -57,14 +57,16 @@ public class FileDlgCtrlr extends HyperDlg
   @FXML private Label lblName;
   @FXML private RadioButton rbCopy, rbMove, rbNeither;
   @FXML private TextField tfCurrentPath, tfFileName, tfNewPath;
+  @FXML private ComboBox<HyperTableCell> cbType;
+
   @FXML public Button btnCancel;
-  @FXML public ComboBox<HyperTableCell> cbType;
   @FXML public TextField tfRecordName;
 
   private final RecordType recordType;
   private final HDT_Work curWork;
-  private final HyperCB hcbType;
   private final boolean canBrowseToExistingMiscFileRecord;
+
+  public final HyperCB hcbType;
 
   private FilePath srcFilePath;
   private HDT_RecordWithPath curFileRecord;

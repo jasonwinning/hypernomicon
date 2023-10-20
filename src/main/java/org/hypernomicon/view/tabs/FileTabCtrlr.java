@@ -320,7 +320,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       tfName.setText(fdc.tfRecordName.getText());
 
       hcbType.clear();
-      HyperTableCell cell = fdc.cbType.getValue();
+      HyperTableCell cell = fdc.hcbType.selectedHTC();
       if (HyperTableCell.isEmpty(cell) == false)
       {
         hcbType.addEntry(cell.getID(), cell.text, false);

@@ -197,7 +197,7 @@ public class PictureDlgCtrlr extends HyperDlg
         .first(WebButtonField.FirstName , first)
         .next (WebButtonField.LastName  , last)
         .next (WebButtonField.SingleName, last.length() > 0 ? last : first)
-        .next (WebButtonField.Field     , HyperTableCell.getCellText(personHyperTab.cbField.getSelectionModel().getSelectedItem()))
+        .next (WebButtonField.Field     , HyperTableCell.getCellText(personHyperTab.hcbField.selectedHTC()))
         .go();
     });
 

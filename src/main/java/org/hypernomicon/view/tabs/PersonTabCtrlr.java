@@ -113,7 +113,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 {
   @FXML private AnchorPane apOverview;
   @FXML private Button btnWebSrch1, btnWebSrch2, btnWebsitePaste, btnOrcidPaste, btnNewWork;
-  @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
+  @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield, cbField;
   @FXML private ImageView ivPerson;
   @FXML private Label lblORCID, lblWebsite, lblPicture, lblSearchKey, lblInvHelp;
   @FXML private SplitMenuButton smbWebSrch1;
@@ -123,13 +123,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   @FXML private TableView<HyperTableRow> tvArguments, tvPersonDept, tvWorks;
   @FXML private TextField tfORCID, tfWebsite, tfSearchKey;
 
-  @FXML public ComboBox<HyperTableCell> cbField;
   @FXML public TextField tfFirst, tfLast;
 
   private final List<InvestigationView> invViews = new ArrayList<>();
   private final HyperTable htPersonInst, htWorks, htArguments;
-  private final HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
+  private final HyperCB hcbRank, hcbStatus, hcbSubfield;
   private final MainTextWrapper mainText;
+
+  public final HyperCB hcbField;
 
   private static final String TOOLTIP_PREFIX = "Search for this person using ";
 
@@ -1066,7 +1067,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
                                   .next (WebButtonField.QueryName, tfFirst.getText())
                                   .next (WebButtonField.LastName, tfLast.getText())
                                   .next (WebButtonField.SingleName, tfLast.getText().length() > 0 ? tfLast.getText() : tfFirst.getText())
-                                  .next (WebButtonField.Field, getCellText(cbField.getSelectionModel().getSelectedItem()))
+                                  .next (WebButtonField.Field, getCellText(hcbField.selectedHTC()))
                                   .go();
   }
 

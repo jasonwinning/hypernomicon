@@ -133,10 +133,10 @@ public class SelectConceptDlgCtrlr extends HyperDlg
         }
 
         if (selectedGlossary == false)
-          cbGlossary.getSelectionModel().select(glossaryCells.isEmpty() ? null : glossaryCells.get(0));
+          hcbGlossary.select(glossaryCells.isEmpty() ? null : glossaryCells.get(0));
       }
       else
-        cbGlossary.getSelectionModel().select(null);
+        hcbGlossary.select(null);
 
       alreadyChanging = false;
     });

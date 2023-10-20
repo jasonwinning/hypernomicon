@@ -61,7 +61,7 @@ public class SearchKeySelectDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-    hcbType.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbType.addListener((oldValue, newValue) ->
     {
       if (newValue == null) return;
 
