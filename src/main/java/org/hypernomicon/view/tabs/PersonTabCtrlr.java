@@ -353,7 +353,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Tooltip invHelpTooltip()
+  private static Tooltip invHelpTooltip()
   {
     return new WebTooltip(
 

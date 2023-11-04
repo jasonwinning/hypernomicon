@@ -67,8 +67,8 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 {
-  private final String CREATE_FOLDER_CAPTION = "Create Folder",
-                       CREATE_FOLDER_TOOLTIP = "Create a new folder and assign it to this note";
+  private static final String CREATE_FOLDER_CAPTION = "Create Folder",
+                              CREATE_FOLDER_TOOLTIP = "Create a new folder and assign it to this note";
 
   private final SplitMenuButton btnFolder = new SplitMenuButton();
   private final Button btnBrowse = new Button("..."), btnCreateFolder = new Button(CREATE_FOLDER_CAPTION);
@@ -281,7 +281,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateRelativeRow(HyperTableRow row, HDT_Note relativeNote, int startColNdx, boolean showAncestor)
+  private static void updateRelativeRow(HyperTableRow row, HDT_Note relativeNote, int startColNdx, boolean showAncestor)
   {
     if (relativeNote == null)
     {

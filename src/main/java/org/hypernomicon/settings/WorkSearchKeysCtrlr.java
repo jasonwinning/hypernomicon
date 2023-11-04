@@ -148,16 +148,7 @@ public class WorkSearchKeysCtrlr implements SettingsControl
       List<String> strList = new ArrayList<>();
       strList.add("1 author: " + settings.format(List.of("Smith"), "1989"));
 
-      boolean hasMultiple = false;
-
-      for (WorkSearchKeyConfig setting : settings)
-        if (setting.multipleAuthors)
-        {
-          hasMultiple = true;
-          break;
-        }
-
-      if (hasMultiple)
+      if (settings.stream().anyMatch(setting -> setting.multipleAuthors))
       {
         strList.add("2 authors: " + settings.format(List.of("Smith", "Jones"                           ), "1989"));
         strList.add("3 authors: " + settings.format(List.of("Smith", "Jones", "Nguyen"                 ), "1989"));

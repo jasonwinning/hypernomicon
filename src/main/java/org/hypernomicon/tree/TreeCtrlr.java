@@ -29,10 +29,10 @@ public class TreeCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML public TreeTableView<TreeRow> ttv;
-  @FXML public TreeTableColumn<TreeRow, TreeCellValue> tcName;
-  @FXML public TreeTableColumn<TreeRow, TreeRow> tcLinked;
-  @FXML public TreeTableColumn<TreeRow, String> tcDesc;
+  @FXML TreeTableView<TreeRow> ttv;
+  @FXML TreeTableColumn<TreeRow, TreeCellValue> tcName;
+  @FXML TreeTableColumn<TreeRow, TreeRow> tcLinked;
+  @FXML TreeTableColumn<TreeRow, String> tcDesc;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -169,25 +169,28 @@
       </Tab>
       <Tab fx:id="tabDBSpecific" text="Database">
         <AnchorPane minHeight="0.0" minWidth="0.0">
-               <VBox layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="908.0" spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                  <children>
-              <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" text="Use sentence case instead of title case for titles" />
-                     <HBox alignment="CENTER_LEFT" spacing="8.0">
-                        <children>
-                   <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false" text="Default work type when reference manager entry type is Book Section:" />
-                    <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
-                      <HBox.margin>
-                        <Insets top="4.0" />
-                      </HBox.margin>
-                    </ComboBox>
-                        </children>
-                     </HBox>
-              <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false" text="Don't expand key works when editing record description and there are no key works yet" />
-                  </children>
-                  <padding>
-                     <Insets bottom="6.0" left="12.0" right="6.0" top="12.0" />
-                  </padding>
-               </VBox>
+          <VBox layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="908.0" spacing="4.0"
+                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                AnchorPane.topAnchor="0.0">
+            <padding>
+              <Insets bottom="6.0" left="12.0" right="6.0" top="12.0"/>
+            </padding>
+            <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false"
+                      text="Use sentence case instead of title case for titles"/>
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+              <children>
+                <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false"
+                          text="Default work type when reference manager entry type is Book Section:"/>
+                <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
+                  <HBox.margin>
+                    <Insets top="4.0"/>
+                  </HBox.margin>
+                </ComboBox>
+              </children>
+            </HBox>
+            <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false"
+                      text="Don't expand key works when editing record description and there are no key works yet"/>
+          </VBox>
         </AnchorPane>
       </Tab>
       <Tab fx:id="tabFolders" text="Default Folders">

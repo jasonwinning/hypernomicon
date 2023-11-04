@@ -100,7 +100,12 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TreeModel(AbstractTreeWrapper<RowType> treeWrapper, TreeCB tcb)
+  public TreeModel(AbstractTreeWrapper<RowType> treeWrapper)
+  {
+    this(treeWrapper, null);
+  }
+
+  TreeModel(AbstractTreeWrapper<RowType> treeWrapper, TreeCB tcb)
   {
     parentToChildren = new BidiOneToManyRecordMap();
     recordToRows = new MappingFromRecordToRows(tcb);

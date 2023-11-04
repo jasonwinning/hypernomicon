@@ -33,8 +33,8 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsControl;
 import org.hypernomicon.util.SplitString;
+import org.hypernomicon.util.Util;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -96,11 +96,11 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class WorkFileNameComponent
+  public static final class WorkFileNameComponent
   {
     public final WorkFileNameComponentType type;
     public final String beforeSep, withinSep, afterSep, testStr;
-    public final Set<HDT_WorkType> excludedWorkTypes = new HashSet<>();
+    public final Set<HDT_WorkType> excludedWorkTypes;
 
 //---------------------------------------------------------------------------
 
@@ -116,7 +116,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       afterSep  = db.prefs.get(PREF_KEY_FN_AFTER_SEP  + prefNdx, "");
       testStr   = db.prefs.get(PREF_KEY_FN_TEST       + prefNdx, "");
 
-      excludedWorkTypes.clear();
+      excludedWorkTypes = new HashSet<>();
 
       new SplitString(db.prefs.get(PREF_KEY_FN_EXCL_WORK_TYPES + prefNdx, ""), ';').forEach(workTypeStr ->
       {
@@ -137,7 +137,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       this.afterSep  = afterSep;
       this.testStr   = testStr;
 
-      excludedWorkTypes.clear();
+      excludedWorkTypes  = new HashSet<>();
 
       new SplitString(exclTypesStr, ';').forEach(workTypeStr ->
       {
@@ -410,28 +410,21 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     List<FileNameAuthor> authors = new ArrayList<>();
 
-    for (String authorStr : author.split(";"))
-    {
-      String trAuthorStr = ultraTrim(authorStr);
-      if (trAuthorStr.length() > 0)
-        authors.add(new FileNameAuthor(trAuthorStr, false, false));
-    }
-
-    for (String transStr : trans.split(";"))
-    {
-      String trTransStr = ultraTrim(transStr);
-      if (trTransStr.length() > 0)
-        authors.add(new FileNameAuthor(trTransStr, false, true));
-    }
-
-    for (String edStr : editor.split(";"))
-    {
-      String trEdStr = ultraTrim(edStr);
-      if (trEdStr.length() > 0)
-        authors.add(new FileNameAuthor(trEdStr, true, false));
-    }
+    addAuthorsToList(authors, author, false, false);
+    addAuthorsToList(authors, trans , false, true );
+    addAuthorsToList(authors, editor, true , false);
 
     tfExample.setText(HDT_WorkFile.makeFileName(authors, null, year, title, container, publisher, "pdf", Collections.unmodifiableList(components)));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addAuthorsToList(List<FileNameAuthor> authors, String authorsStr, boolean isEditor, boolean isTrans)
+  {
+    new SplitString(authorsStr, ';').stream().map(Util::ultraTrim)
+                                             .filter(str -> str.length() > 0)
+                                             .forEach(str -> authors.add(new FileNameAuthor(str, isEditor, isTrans)));
   }
 
 //---------------------------------------------------------------------------

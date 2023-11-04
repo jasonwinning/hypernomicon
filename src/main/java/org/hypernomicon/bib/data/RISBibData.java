@@ -65,13 +65,8 @@ public final class RISBibData extends BibDataStandalone
 
           case "ER":
 
-            if (gotType)
-            {
-              setJournalTitle(jf, jo, t2, singleTitle);
-              return;
-            }
-
-            throw new RISException();
+            setJournalTitle(jf, jo, t2, singleTitle);
+            return;
 
           case "TY": setEntryType(parseRISType(val)); gotType = true; break;
 

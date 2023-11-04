@@ -25,7 +25,9 @@ import static org.hypernomicon.util.Util.*;
 
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
@@ -128,8 +130,8 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
   {
     if (isOnline())
     {
-      List<Integer> offlineIDs = ((HDI_OfflinePointerMulti)backupState.items.get(tagConcept)).getObjIDs(),
-                    onlineIDs = concepts.stream().map(HDT_Record::getID).collect(Collectors.toList());
+      Set<Integer> offlineIDs = new HashSet<>(((HDI_OfflinePointerMulti)backupState.items.get(tagConcept)).getObjIDs()),
+                   onlineIDs = concepts.stream().map(HDT_Record::getID).collect(Collectors.toCollection(HashSet::new));
 
       if ((offlineIDs.containsAll(onlineIDs) && onlineIDs.containsAll(offlineIDs)) == false)
         throw new ConceptChangedException();

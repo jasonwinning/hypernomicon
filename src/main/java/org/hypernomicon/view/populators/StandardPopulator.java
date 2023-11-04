@@ -57,8 +57,9 @@ public class StandardPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
+  @Override protected boolean hasChanged(HyperTableRow row)                        { return rtp.hasChanged(); }
+
   @Override public CellValueType getValueType()                                    { return cvtRecord; }
-  @Override public boolean hasChanged(HyperTableRow row)                           { return rtp.hasChanged(); }
   @Override public void setChanged(HyperTableRow row)                              { rtp.setChanged(); }
   @Override public RecordType getRecordType(HyperTableRow row)                     { return rtp.getRecordType(); }
   @Override public void clear()                                                    { rtp.clear(); rtp.setRecordType(objType); }

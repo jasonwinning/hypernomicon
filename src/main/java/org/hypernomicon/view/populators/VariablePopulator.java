@@ -102,7 +102,7 @@ public class VariablePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean hasChanged(HyperTableRow row)
+  @Override protected boolean hasChanged(HyperTableRow row)
   {
     return nullSwitch(rowToPop.get(row), true, pop -> pop.hasChanged(row));
   }

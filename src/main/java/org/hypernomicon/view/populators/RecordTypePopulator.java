@@ -46,15 +46,16 @@ public class RecordTypePopulator extends Populator
     types.removeAll(noHubs ? EnumSet.of(hdtNone, hdtAuxiliary, hdtHub) : EnumSet.of(hdtNone, hdtAuxiliary));
   }
 
-  public RecordTypePopulator(Collection<RecordType> set) { setTypes(set); }
+  public RecordTypePopulator(Collection<RecordType> set)    { setTypes(set); }
 
-  public RecordTypePopulator(RecordType... types)        { setTypes(Arrays.asList(types)); }
+  public RecordTypePopulator(RecordType... types)           { setTypes(Arrays.asList(types)); }
 
-  public Set<RecordType> getTypes()                      { return types; }
+  public Set<RecordType> getTypes()                         { return types; }
 
-  @Override public boolean hasChanged(HyperTableRow row) { return changed; }
-  @Override public void setChanged(HyperTableRow row)    { changed = true; }
-  @Override public CellValueType getValueType()          { return cvtRecordType; }
+  @Override protected boolean hasChanged(HyperTableRow row) { return changed; }
+
+  @Override public void setChanged(HyperTableRow row)       { changed = true; }
+  @Override public CellValueType getValueType()             { return cvtRecordType; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

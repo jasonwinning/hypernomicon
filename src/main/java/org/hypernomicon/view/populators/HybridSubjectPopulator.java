@@ -127,7 +127,7 @@ public class HybridSubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean hasChanged(HyperTableRow row)
+  @Override protected boolean hasChanged(HyperTableRow row)
   {
     rowToChanged.putIfAbsent(row, true);
     rowToPop.putIfAbsent(row, standardPop);

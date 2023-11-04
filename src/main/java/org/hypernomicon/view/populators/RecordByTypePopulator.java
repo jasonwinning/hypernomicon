@@ -142,7 +142,7 @@ public class RecordByTypePopulator extends RecordPopulator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean hasChanged(HyperTableRow row)
+  @Override protected boolean hasChanged(HyperTableRow row)
   {
     rowToChanged.putIfAbsent(row, true);
     return rowToChanged.get(row);

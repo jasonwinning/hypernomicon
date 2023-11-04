@@ -19,20 +19,15 @@ package org.hypernomicon.bib.zotero;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.builder.api.DefaultApi10a;
-import com.github.scribejava.core.builder.api.OAuth1SignatureType;
 import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.model.ParameterList;
 import com.github.scribejava.core.oauth.OAuth10aService;
-import com.github.scribejava.core.services.HMACSha1SignatureService;
-import com.github.scribejava.core.services.SignatureService;
 
 public class ZoteroOAuthApi extends DefaultApi10a
 {
   private static OAuth10aService service = null;
 
-  @Override public SignatureService getSignatureService() { return new HMACSha1SignatureService(); }
-  @Override public OAuth1SignatureType getSignatureType() { return OAuth1SignatureType.HEADER; }
   @Override public String getAccessTokenEndpoint()        { return "https://www.zotero.org/oauth/access"; }
   @Override public String getRequestTokenEndpoint()       { return "https://www.zotero.org/oauth/request"; }
   @Override protected String getAuthorizationBaseUrl()    { return "https://www.zotero.org/oauth/authorize"; }

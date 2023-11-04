@@ -971,10 +971,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     List<HDT_Value> existingValueList = map.get(key);
 
-    if (existingValueList.size() != newValueList.size()) return false;
+    if ((existingValueList.size() != newValueList.size()) || (existingValueList.size() < 2)) return false;
 
-    if ((existingValueList.containsAll(newValueList     ) == false) ||
-        (newValueList     .containsAll(existingValueList) == false))
+    if ((new HashSet<>(existingValueList).containsAll(newValueList) == false) ||
+        (new HashSet<>(newValueList).containsAll(existingValueList) == false))
       return false;
 
     boolean changed = false;

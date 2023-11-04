@@ -93,7 +93,7 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  public boolean hasChanged(HyperTableRow row)                           { return true; }
+  protected boolean hasChanged(HyperTableRow row)                        { return true; }
 
   @SuppressWarnings("unused")
   public void setChanged(HyperTableRow row)                              { return; }
@@ -112,13 +112,14 @@ public abstract class Populator
   public CellValueType getValueType(HyperTableRow row)                   { return getValueType(); }
 
   public final List<HyperTableCell> populate(boolean force) { return populate(dummyRow, force); }
-  public final boolean hasChanged()                         { return hasChanged(dummyRow); }
   public final void setChanged()                            { setChanged(dummyRow); }
   public final RecordType getRecordType()                   { return getRecordType(dummyRow); }
   public final HyperTableCell addEntry(int id, String text) { return addEntry(dummyRow, id, text); }
   public final HyperTableCell addEntry(String text)         { return addEntry(dummyRow, text); }
   public final HyperTableCell match(HyperTableCell cell)    { return match(dummyRow, cell); }
   public final HyperTableCell getChoiceByID(int id)         { return getChoiceByID(dummyRow, id); }
+
+  protected final boolean hasChanged()                      { return hasChanged(dummyRow); }
 
   final HyperTableCell equalMatch(HyperTableCell cell)      { return equalMatch(dummyRow, cell); }
 
