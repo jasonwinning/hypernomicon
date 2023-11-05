@@ -35,8 +35,10 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.robot.Robot;
+import javafx.scene.Node;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -300,7 +302,17 @@ public abstract class HyperDlg
 
   @FXML protected void btnOkClick()
   {
-    if (isValid() == false) return;
+    Node node = dialogStage.getScene().getFocusOwner();
+
+    // The next check is necessary due to https://bugs.openjdk.org/browse/JDK-8229924
+    // If you hit enter in the combobox, the key event gets consumed by the Scene before it ever gets to the text edit control. The HyperCB onaction gets
+    // triggered in that case because the Scene did not mark the event as consumed after processing it (which is also a related JavaFX bug).
+
+    if ((node instanceof ComboBox) && (getNodeUserObj(ComboBox.class.cast(node), NodeUserDataType.HypercCB) != null))
+      return;
+
+    if (isValid() == false)
+      return;
 
     okClicked = true;
     dialogStage.close();

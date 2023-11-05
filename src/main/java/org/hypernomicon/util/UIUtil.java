@@ -474,13 +474,14 @@ public final class UIUtil
 
   public enum NodeUserDataType
   {
-    Scaled          // Data type: Boolean
+    Scaled,          // Data type: Boolean
+    HypercCB         // Data type: HyperCB
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void setNodeUserObj(Node node, NodeUserDataType dataType, Object obj)
+  public static void setNodeUserObj(Node node, NodeUserDataType dataType, Object obj)
   {
     @SuppressWarnings("unchecked")
     Map<NodeUserDataType, Object> objMap = (Map<NodeUserDataType, Object>) node.getUserData();
@@ -497,7 +498,7 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static Object getNodeUserObj(Node node, NodeUserDataType dataType)
+  public static Object getNodeUserObj(Node node, NodeUserDataType dataType)
   {
     @SuppressWarnings("unchecked")
     Map<NodeUserDataType, Object> objMap = (Map<NodeUserDataType, Object>) node.getUserData();

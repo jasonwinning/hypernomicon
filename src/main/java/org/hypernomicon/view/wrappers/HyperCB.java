@@ -123,6 +123,7 @@ public class HyperCB implements CommitableWrapper
       return;
     }
 
+    setNodeUserObj(cb, NodeUserDataType.HypercCB, this);
     somethingWasTyped = false;
 
     if (addToRegistry)
