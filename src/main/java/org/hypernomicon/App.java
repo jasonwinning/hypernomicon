@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Jason Winning
+ * Copyright 2015-2024 Jason Winning
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,9 +93,11 @@ public final class App extends Application
   public static FileManager fileManagerDlg = null;
   public static MainCtrlr ui;
   public static PreviewWindow previewWindow = null;
+
+  public static double displayScale;
   public static boolean jxBrowserInitialized = false,
                         jxBrowserDisabled    = false;
-  public static double displayScale;
+
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
   public static final String appTitle = "Hypernomicon";
 

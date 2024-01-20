@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 Jason Winning
+ * Copyright 2017-2024 Jason Winning
  *
  * This file is new with Hypernomicon and is not part of PDF.js
  *
