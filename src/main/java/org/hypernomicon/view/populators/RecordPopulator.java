@@ -17,7 +17,9 @@
 
 package org.hypernomicon.view.populators;
 
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,6 +50,8 @@ public abstract class RecordPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final int NUM_RECENTS = 5;
+
   protected void populateRecordCells(List<HyperTableCell> choices, Iterable<? extends HDT_Record> recordIt, RecordType recordType)
   {
     choices.clear();
@@ -55,28 +59,35 @@ public abstract class RecordPopulator extends Populator
     List<HDT_Record> recordsSortedByViewDate = new ArrayList<>(),
                      recordsSortedByKey = new ArrayList<>();
 
+    Comparator<HyperTableCell> comparator = (recordType == hdtWork) && (displayKind == DisplayKind.cbText) ?
+      (cell1, cell2) -> HyperTableCell.compareCells(cell1, cell2, smWork)
+    :
+      HyperTableCell::compareTo;
+
     for (HDT_Record record : recordIt)
     {
       HyperTableCell choice = getCell(record, recordType);
 
       if (choice != null)
       {
-        int ndx = addToSortedList(choices, choice);
+        int ndx = addToSortedList(choices, choice, comparator);
 
         if (recordType.getDisregardDates() == false)
         {
           recordsSortedByKey.add(ndx, record);
           addToSortedList(recordsSortedByViewDate, record, Comparator.comparing(HDT_Record::getViewDate).reversed());
 
-          if (recordsSortedByViewDate.size() > 5)
-            recordsSortedByViewDate.remove(5);
+          if (recordsSortedByViewDate.size() > NUM_RECENTS)
+            recordsSortedByViewDate.remove(NUM_RECENTS);
         }
       }
     }
 
     if ((recordType.getDisregardDates() == false) && (choices.size() > 25))
     {
-      for (int newNdx = 0; newNdx < 5; newNdx++)
+      int numRecents = Math.min(NUM_RECENTS, recordsSortedByViewDate.size());
+
+      for (int newNdx = 0; newNdx < numRecents; newNdx++)
       {
         HDT_Record record = recordsSortedByViewDate.get(newNdx);
         int oldNdx = recordsSortedByKey.indexOf(record);
