@@ -21,6 +21,9 @@ import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
+
+import org.hypernomicon.util.UIUtil.NodeUserDataType;
 
 //---------------------------------------------------------------------------
 
@@ -47,9 +50,9 @@ import static org.hypernomicon.util.Util.*;
 
     if (node instanceof ComboBox)
     {
-      HyperCB hcb = HyperCB.cbRegistry.get(node);
+      HyperCB hcb = (HyperCB) getNodeUserObj(node, NodeUserDataType.HypercCB);
 
-      if (hcb != null)
+      if ((hcb != null) && hcb.autoCommitBeforeRecordSave)
       {
         hcb.commit();
         return;

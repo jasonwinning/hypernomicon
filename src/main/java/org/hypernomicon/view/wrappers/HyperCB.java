@@ -18,9 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -63,6 +61,10 @@ public class HyperCB implements CommitableWrapper
   private final Populator populator;
   private final HyperTableRow row;
   private final EventHandler<ActionEvent> internalOnAction;
+  private final List<HTCListener> listeners = new ArrayList<>();
+  private final int colNdx;
+
+  final boolean autoCommitBeforeRecordSave;
 
   public HyperTableCell typedMatch;
   private HyperTableCell preShowingValue;
@@ -70,10 +72,6 @@ public class HyperCB implements CommitableWrapper
   private MutableBoolean adjusting;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
   private boolean silentMode = false;
-
-  private final List<HTCListener> listeners = new ArrayList<>();
-
-  static final Map<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -86,8 +84,9 @@ public class HyperCB implements CommitableWrapper
   public void addListener(HTCListener listener)  { listeners.add(listener); }
   public void triggerOnAction()                  { internalOnAction.handle(new ActionEvent(null, cb)); }
   public void triggerOnAction(ActionEvent event) { internalOnAction.handle(event); }
-  private boolean isInTable()                    { return (cb != null) && (cb.getParent() instanceof ComboBoxCell); }
   public void addBlankEntry()                    { addEntry(-1, "", false); }
+
+  private boolean isInTable()                    { return (cb != null) && (cb.getParent() instanceof ComboBoxCell); }
 
   public void setOnAction(EventHandler<ActionEvent> onAction) { if (onAction != null) this.onAction = onAction; }
 
@@ -97,22 +96,37 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Constructor for dropdown entry field wrapper
+   * @param cb The combobox control to use
+   * @param ctrlType Should be ctDropDownList (user can edit) or ctDropDown
+   * @param newPopulator The Populator to use
+   */
   public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator)
   {
-    this(cb, ctrlType, newPopulator, null, false, null);
+    this(cb, ctrlType, newPopulator, null, false, null, -1);
   }
 
-  public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, boolean addToRegistry)
+  /**
+   * Constructor for dropdown entry field wrapper
+   * @param cb The combobox control to use
+   * @param ctrlType Should be ctDropDownList (user can edit) or ctDropDown
+   * @param newPopulator The Populator to use
+   * @param autoCommitBeforeRecordSave Whether the field should be auto-committed (basically, this is like the user hitting enter; could cause popup window to show) when record save is triggered.
+   */
+  public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, boolean autoCommitBeforeRecordSave)
   {
-    this(cb, ctrlType, newPopulator, null, addToRegistry, null);
+    this(cb, ctrlType, newPopulator, null, autoCommitBeforeRecordSave, null, -1);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row, boolean addToRegistry, HyperTable table)
+  HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row, boolean autoCommitBeforeRecordSave, HyperTable table, int colNdx)
   {
     this.cb = cb;
+    this.autoCommitBeforeRecordSave = autoCommitBeforeRecordSave;
+    this.colNdx = colNdx;
     populator = newPopulator;
     this.row = nullSwitch(row, Populator.dummyRow);
 
@@ -125,9 +139,6 @@ public class HyperCB implements CommitableWrapper
 
     setNodeUserObj(cb, NodeUserDataType.HypercCB, this);
     somethingWasTyped = false;
-
-    if (addToRegistry)
-      cbRegistry.put(cb, this);
 
   //---------------------------------------------------------------------------
 
@@ -391,8 +402,9 @@ public class HyperCB implements CommitableWrapper
     {
       somethingWasTyped = false;
       selectID(typedMatch.getID());
-      triggerOnAction();
     }
+
+    cb.commitValue();
   }
 
 //---------------------------------------------------------------------------
@@ -418,16 +430,11 @@ public class HyperCB implements CommitableWrapper
     if (selection != null)
       return selection;
 
-    int colNdx = (table != null) && (cb.getParent() instanceof ComboBoxCell) ?
-      table.getTV().getColumns().indexOf(((ComboBoxCell)cb.getParent()).getTableColumn())
-    :
-      -1;
-
     // There was no exact match
 
     if (atLeastOneStrongMatch.isTrue())
     {
-      if (cells.size() > 1)
+      if ((cells.size() > 1) && (ui.isShuttingDown() == false))
       {
         if (populator.getValueType(row) == CellValueType.cvtRecord)
         {
@@ -455,7 +462,7 @@ public class HyperCB implements CommitableWrapper
       }
     }
 
-    if (dontCreateNewRecord)
+    if (dontCreateNewRecord || ui.isShuttingDown())
       return null;
 
     switch (populator.getRecordType(row))
@@ -499,7 +506,9 @@ public class HyperCB implements CommitableWrapper
 
       case hdtInstitution :
 
-        ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
+        if (table != null)
+          ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
+
         break;
 
       default: break;

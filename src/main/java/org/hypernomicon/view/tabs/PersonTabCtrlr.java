@@ -879,7 +879,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private boolean saveNameToRecord(PersonName personName)
   {
-    if (db.viewTestingInProgress)
+    if (db.viewTestingInProgress || ui.dontInteract())
     {
       curPerson.setName(personName);
       return true;

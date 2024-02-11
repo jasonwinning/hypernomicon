@@ -308,7 +308,7 @@ public abstract class HyperDlg
     // If you hit enter in the combobox, the key event gets consumed by the Scene before it ever gets to the text edit control. The HyperCB onaction gets
     // triggered in that case because the Scene did not mark the event as consumed after processing it (which is also a related JavaFX bug).
 
-    if ((node instanceof ComboBox) && (getNodeUserObj(ComboBox.class.cast(node), NodeUserDataType.HypercCB) != null))
+    if ((node instanceof ComboBox) && (getNodeUserObj(node, NodeUserDataType.HypercCB) != null))
       return;
 
     if (isValid() == false)

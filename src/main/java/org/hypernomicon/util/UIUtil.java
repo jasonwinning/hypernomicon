@@ -667,6 +667,8 @@ public final class UIUtil
 
   public static DialogResult abortRetryIgnoreDialog(String msg)
   {
+    if (ui.dontInteract()) return mrIgnore;
+
     return new PopupDialog(msg)
 
       .addButton("Abort" , mrAbort)
@@ -681,6 +683,8 @@ public final class UIUtil
 
   public static DialogResult yesNoCancelDialog(String msg)
   {
+    if (ui.dontInteract()) return mrCancel;
+
     return new PopupDialog(msg)
 
       .addButton("Yes"   , mrYes)
@@ -695,6 +699,8 @@ public final class UIUtil
 
   public static DialogResult seriesConfirmDialog(String msg)
   {
+    if (ui.dontInteract()) return mrNoToAll;
+
     return new PopupDialog(msg)
 
       .addButton("Yes"       , mrYes)
@@ -710,6 +716,8 @@ public final class UIUtil
 
   public static boolean confirmDialog(String msg)
   {
+    if (ui.dontInteract()) return false;
+
     return new PopupDialog(msg)
 
       .addButton("Yes", mrYes)
@@ -750,6 +758,8 @@ public final class UIUtil
 
   public static void messageDialog(String msg, MessageDialogType mt)
   {
+    if (ui.dontInteract()) return;
+
     if (mt  == null) throw new NullPointerException("messageDialog type");
     if (msg == null) throw new NullPointerException("messageDialog msg" );
 

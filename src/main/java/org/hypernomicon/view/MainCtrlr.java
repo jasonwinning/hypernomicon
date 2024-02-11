@@ -199,7 +199,8 @@ public final class MainCtrlr
   private ComboBox<ResultRow> cbResultGoTo = null;
   private TextField tfSelector = null;
 
-  private boolean selectorTabChangeIsProgrammatic = false, dontShowOmniTable = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
+  private boolean selectorTabChangeIsProgrammatic = false, dontShowOmniTable = false, maximized = false,
+                  internetNotCheckedYet = true, shuttingDown = false, dontInteract = false;
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
   private long lastImportTime = 0L;
   private FilePath lastImportFilePath = null;
@@ -216,6 +217,7 @@ public final class MainCtrlr
   public TreeWrapper tree()                   { return treeHyperTab().getTree(); }
   public Stage getStage()                     { return stage; }
   public boolean isShuttingDown()             { return shuttingDown; }
+  public boolean dontInteract()               { return dontInteract; }
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
@@ -1279,15 +1281,26 @@ public final class MainCtrlr
     {
       if (save)
       {
+        if (prompt == false)
+        {
+          shuttingDown = true; // This should only happen when there is an inter-computer request to shut down
+          dontInteract = true;
+        }
+
         if (cantSaveRecord() && prompt)
           if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?"))
             return;
 
-        if (app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
+        dontInteract = false;
+
+        if ((shuttingDown == false) && app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
           return;
 
         if (saveAllToDisk(false, false, false) == false)
+        {
+          shuttingDown = false;
           return;
+        }
       }
 
       shuttingDown = true;
@@ -2432,12 +2445,13 @@ public final class MainCtrlr
 
   public boolean cantSaveRecord()
   {
-    if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null) || shuttingDown)
+    if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null))
       return false;
 
-    CommitableWrapper.commitWrapper(stage.getScene().getFocusOwner());
+    if (shuttingDown == false)
+      CommitableWrapper.commitWrapper(stage.getScene().getFocusOwner());
 
-    return activeTab().saveToRecord() == false;
+    return (activeTab().saveToRecord() == false) && (shuttingDown == false);
   }
 
 //---------------------------------------------------------------------------

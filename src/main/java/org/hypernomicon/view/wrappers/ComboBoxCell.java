@@ -74,7 +74,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     if (isEmpty()) return;
 
     super.startEdit();
-    createComboBox();
+
+    createComboBox(table.getTV().getColumns().indexOf(this.getTableColumn()));
 
     hcb.populate(false);
 
@@ -148,7 +149,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void createComboBox()
+  private void createComboBox(int colNdx)
   {
     cb = new ComboBox<>();
     cb.setMaxWidth(Double.MAX_VALUE);
@@ -161,7 +162,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     if (populator.getValueType() == cvtVaries)
       ctrlType = ((VariablePopulator)populator).getRestricted(row) ? ctDropDownList : ctDropDown;
 
-    hcb = new HyperCB(cb, ctrlType, populator, row, false, table);
+    hcb = new HyperCB(cb, ctrlType, populator, row, false, table, colNdx);
 
     hcb.dontCreateNewRecord = dontCreateNewRecord.booleanValue();
 
@@ -202,7 +203,10 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   @Override public void commit()
   {
     if (getGraphic() == cb)
+    {
       commitEdit(hcb.selectedHTC());
+      cb.commitValue();
+    }
   }
 
 //---------------------------------------------------------------------------
