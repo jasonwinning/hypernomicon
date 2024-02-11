@@ -481,10 +481,15 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setNodeUserObj(Node node, NodeUserDataType dataType, Object obj)
+  @SuppressWarnings("unchecked")
+  public static void setNodeUserObj(Node node, NodeUserDataType dataType, Object newObj)
   {
-    @SuppressWarnings("unchecked")
-    Map<NodeUserDataType, Object> objMap = (Map<NodeUserDataType, Object>) node.getUserData();
+    Object currentUserData = node.getUserData();
+
+    if ((currentUserData != null) && (currentUserData instanceof Map) == false)
+      return;
+
+    Map<NodeUserDataType, Object> objMap = (Map<NodeUserDataType, Object>) currentUserData;
 
     if (objMap == null)
     {
@@ -492,18 +497,22 @@ public final class UIUtil
       node.setUserData(objMap);
     }
 
-    objMap.put(dataType, obj);
+    objMap.put(dataType, newObj);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("unchecked")
   public static Object getNodeUserObj(Node node, NodeUserDataType dataType)
   {
-    @SuppressWarnings("unchecked")
-    Map<NodeUserDataType, Object> objMap = (Map<NodeUserDataType, Object>) node.getUserData();
+    Object obj = node.getUserData();
 
-    return objMap == null ? null : objMap.get(dataType);
+    if ((obj instanceof Map) == false)
+      return null;
+
+    Map<NodeUserDataType, Object> objMap = (Map<NodeUserDataType, Object>)obj;
+    return objMap.get(dataType);
   }
 
 //---------------------------------------------------------------------------
