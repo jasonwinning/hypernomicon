@@ -22,6 +22,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -154,58 +155,78 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static boolean canUnite(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2, StringBuilder errorMsg)
+  {
+    if (record2.getType() == record1.getType())
+      return assignSBandReturnFalse(errorMsg, "You cannot unite records of the same type.");
+
+    if ((record1.isUnitable() == false) || (record2.isUnitable() == false))
+      return assignSBandReturnFalse(errorMsg, "One or more of the records are not of a unitable type.");
+
+    if (((record1.getType() == hdtPosition) && (record2.getType() == hdtDebate)) ||
+        ((record2.getType() == hdtPosition) && (record1.getType() == hdtDebate)))
+      return assignSBandReturnFalse(errorMsg, "A position record and a problem/debate record cannot be united.");
+
+    if (isUnstoredRecord(record1))
+      return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record1.getType()) + " record cannot be united with another record.");
+
+    if (isUnstoredRecord(record2))
+      return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record2.getType()) + " record cannot be united with another record.");
+
+    if (record2.hasHub())
+    {
+      if (record2.getHub().getSpoke(record1.getType()) != null)
+        return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(record1.getType()) + " record.");
+
+      if ((record1.getType() == hdtDebate) && (record2.getHub().getSpoke(hdtPosition) != null))
+        return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(hdtPosition) + " record.");
+
+      if ((record1.getType() == hdtPosition) && (record2.getHub().getSpoke(hdtDebate) != null))
+        return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(hdtDebate) + " record.");
+
+      if (record1.hasHub())
+        return assignSBandReturnFalse(errorMsg, "Both records are already united with other records.");
+    }
+
+    if (record1.hasHub())
+    {
+      if (record1.getHub().getSpoke(record2.getType()) != null)
+        return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(record2.getType()) + " record.");
+
+      if ((record2.getType() == hdtDebate) && (record1.getHub().getSpoke(hdtPosition) != null))
+        return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(hdtPosition) + " record.");
+
+      if ((record2.getType() == hdtPosition) && (record1.getHub().getSpoke(hdtDebate) != null))
+        return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(hdtDebate) + " record.");
+    }
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean assignSBandReturnFalse(StringBuilder sb, String str)
+  {
+    assignSB(sb, str);
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static boolean uniteRecords(HDT_RecordWithMainText spoke1, HDT_RecordWithMainText spoke2, String newDesc)
   {
-    if ((spoke1.getType() == hdtPosition) && (spoke2.getType() == hdtDebate))  // Sanity checks
-      return falseWithErrorMessage("A position record and a problem/debate record cannot be united.");
-    if ((spoke2.getType() == hdtPosition) && (spoke1.getType() == hdtDebate))
-      return falseWithErrorMessage("A position record and a problem/debate record cannot be united.");
-    if (spoke1.getType() == spoke2.getType())
-      return falseWithErrorMessage("Two records of the same type cannot be united.");
-    if ((spoke1.isUnitable() == false) || (spoke2.isUnitable() == false))
-      return falseWithErrorMessage("One or more of the records are not of a unitable type.");
-    if (isUnstoredRecord(spoke1))
-      return falseWithErrorMessage("That " + getTypeName(spoke1.getType()) + " record cannot be united to another record.");
-    if (isUnstoredRecord(spoke2))
-      return falseWithErrorMessage("That " + getTypeName(spoke2.getType()) + " record cannot be united to another record.");
+    StringBuilder sb = new StringBuilder();
+
+    if (canUnite(spoke1, spoke2, sb) == false)
+      return falseWithErrorMessage(sb.toString());
 
     HDT_Hub hub;
 
-    if (spoke1.hasHub())
-    {
-      if (spoke2.hasHub())
-        return falseWithErrorMessage("Both records are already united to another record.");
-
-      hub = spoke1.getHub();
-
-      if ((hub.getPosition() != null) || (hub.getDebate() != null))
-        if ((spoke2.getType() == hdtPosition) || (spoke2.getType() == hdtDebate))
-        {
-          return falseWithErrorMessage(hub.getSpoke(spoke2.getType()) == null ?
-            "A position record and a problem/debate record cannot be united."
-          :
-            "Two records of the same type cannot be united.");
-        }
-    }
-
-    else if (spoke2.hasHub())
-    {
-      hub = spoke2.getHub();
-
-      if ((hub.getPosition() != null) || (hub.getDebate() != null))
-        if ((spoke1.getType() == hdtPosition) || (spoke1.getType() == hdtDebate))
-        {
-          return falseWithErrorMessage(hub.getSpoke(spoke1.getType()) == null ?
-            "A position record and a problem/debate record cannot be united."
-          :
-            "Two records of the same type cannot be united.");
-        }
-    }
-
-    else
-    {
-      hub = db.createNewBlankRecord(hdtHub);
-    }
+    if (spoke1.hasHub())      hub = spoke1.getHub();
+    else if (spoke2.hasHub()) hub = spoke2.getHub();
+    else                      hub = db.createNewBlankRecord(hdtHub);
 
     MainText mainText = new MainText(spoke1.getMainText(), spoke2.getMainText(), hub, newDesc);
 

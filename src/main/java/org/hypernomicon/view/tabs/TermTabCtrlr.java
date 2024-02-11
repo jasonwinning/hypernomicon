@@ -790,7 +790,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     HDT_Concept concept = curConcept;
 
-    SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(concept);
+    SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(concept, null);
 
     if (frmSelectConcept.showModal() == false)
     {

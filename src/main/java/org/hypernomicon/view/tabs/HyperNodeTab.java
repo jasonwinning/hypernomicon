@@ -386,11 +386,12 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   {
     if (ui.cantSaveRecord()) return;
 
-    SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(null);
+    HDT_RecordWithMainText source = (HDT_RecordWithMainText) ui.activeRecord();
+
+    SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(null, source);
 
     if ((frmSelectConcept.showModal() == false) || (frmSelectConcept.getGlossary() == null)) return;
 
-    HDT_RecordWithMainText source = (HDT_RecordWithMainText) ui.activeRecord();
     HDT_Term term = frmSelectConcept.getTerm();
     HDT_Concept concept = term.getConcept(frmSelectConcept.getGlossary(), frmSelectConcept.getSense());
 

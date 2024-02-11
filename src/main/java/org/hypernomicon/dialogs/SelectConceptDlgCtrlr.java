@@ -24,6 +24,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
@@ -32,6 +33,8 @@ import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
+import org.hypernomicon.model.unities.HDT_Hub;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.CustomPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -69,20 +72,40 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public SelectConceptDlgCtrlr(HDT_Concept oldConcept)
+  public SelectConceptDlgCtrlr(HDT_Concept oldConcept, HDT_RecordWithMainText unitingWith)
   {
     super("SelectConceptDlg", "Term Select", true);
 
     this.oldConcept = oldConcept;
 
-    hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm));
+    StringBuilder sb = new StringBuilder();
+
+    Predicate<Integer> termIDFilter = termID ->
+    {
+      if ((oldConcept != null) && (oldConcept.term.getID() == termID))
+        return false;
+
+      if (unitingWith == null)
+        return true;
+
+      for (HDT_Concept concept : db.terms.getByID(termID).concepts)
+      {
+        if (HDT_Hub.canUnite(concept, unitingWith, sb))
+          return true;
+      }
+
+      return false;
+    };
+
+    hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm, termIDFilter));
 
     CustomPopulator glossaryPop = new CustomPopulator(hdtGlossary, (row, force) ->
     {
       HDT_Term tempTerm = hcbTerm.selectedRecord();
       if (tempTerm == null) return Stream.empty();
 
-      return tempTerm.concepts.stream().map(curConcept -> curConcept.glossary.get()).distinct();
+      return tempTerm.concepts.stream().filter(curConcept -> unitingWith == null ? true : HDT_Hub.canUnite(curConcept, unitingWith, sb))
+                                       .map(curConcept -> curConcept.glossary.get()).distinct();
     });
 
     hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, oldConcept == null ? glossaryPop : new StandardPopulator(hdtGlossary));
@@ -97,6 +120,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
       if (oldConcept == null)
         return tempTerm.concepts.stream().filter(curConcept -> curConcept.glossary.get() == tempGlossary)
+                                         .filter(curConcept -> unitingWith == null ? true : HDT_Hub.canUnite(curConcept, unitingWith, sb))
                                          .map(curConcept -> curConcept.sense.get());
 
       return db.conceptSenses.stream().filter(curSense -> tempTerm.getConcept(tempGlossary, curSense) == null);
