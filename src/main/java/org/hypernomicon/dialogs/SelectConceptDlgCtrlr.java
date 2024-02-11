@@ -89,10 +89,8 @@ public class SelectConceptDlgCtrlr extends HyperDlg
         return true;
 
       for (HDT_Concept concept : db.terms.getByID(termID).concepts)
-      {
         if (HDT_Hub.canUnite(concept, unitingWith, sb))
           return true;
-      }
 
       return false;
     };

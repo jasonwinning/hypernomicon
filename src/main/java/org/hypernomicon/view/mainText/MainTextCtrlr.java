@@ -155,6 +155,7 @@ public class MainTextCtrlr
 
     webView = (WebView) he.lookup("WebView");
     engine = webView.getEngine();
+    webViewAddZoom(webView, PREF_KEY_MAINTEXT_ZOOM);
     highlighter = new Highlighter(engine);
 
     GridPane.setHgrow(webView, Priority.ALWAYS);
