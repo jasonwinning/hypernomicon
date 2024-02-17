@@ -41,7 +41,7 @@
   <Label layoutX="12.0" layoutY="151.0" text="Person:" AnchorPane.bottomAnchor="141.0" AnchorPane.leftAnchor="12.0">
   </Label>
   <TextField fx:id="tfTargetName" editable="false" layoutX="125.0" layoutY="9.0" prefHeight="22.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0" />
-  <WebView fx:id="view" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
+  <WebView fx:id="webView" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
   <GridPane layoutX="111.0" layoutY="170.0" prefHeight="281.0" prefWidth="1003.0" AnchorPane.bottomAnchor="167.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0">
     <columnConstraints>
       <ColumnConstraints hgrow="NEVER" maxWidth="21.0" minWidth="21.0" prefWidth="21.0" />

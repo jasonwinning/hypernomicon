@@ -57,6 +57,7 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Worker;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.CheckBox;
@@ -207,6 +208,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         textToHilite = "";
       }
     });
+
+    webView.setOnDragOver(Event::consume);
+    webView.setOnDragDropped(Event::consume);
 
     MainTextUtil.webViewAddZoom(webView, PREF_KEY_TREETAB_ZOOM);
 

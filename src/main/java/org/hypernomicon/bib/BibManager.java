@@ -75,6 +75,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -239,6 +240,9 @@ public class BibManager extends HyperDlg
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) -> MainTextUtil.handleJSEvent("", webView.getEngine()));
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
+
+    webView.setOnDragOver(Event::consume);
+    webView.setOnDragDropped(Event::consume);
 
     MainTextUtil.webViewAddZoom(webView, PREF_KEY_BIBMGR_ZOOM);
 

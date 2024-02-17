@@ -18,6 +18,7 @@
 package org.hypernomicon.dialogs;
 
 import javafx.application.Platform;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -75,6 +76,9 @@ public class AboutDlgCtrlr extends HyperDlg
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) -> MainTextUtil.handleJSEvent("", webView.getEngine()));
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
+
+    webView.setOnDragOver(Event::consume);
+    webView.setOnDragDropped(Event::consume);
 
     tabContributorsHtml = htmlStart + "Original design and development: " + anchorTag("Jason Winning", "http://jasonwinning.com") + "<br>" +
                                       "Design ideas and testing: " + anchorTag("Danny Weltman", "https://dannyweltman.com/") + "<br><br>" +

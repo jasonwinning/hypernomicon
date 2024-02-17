@@ -22,6 +22,7 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
 import javafx.scene.web.HTMLEditor;
@@ -55,6 +56,12 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
 
     view1.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText1).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
     view2.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText2).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
+
+    view1.setOnDragOver(Event::consume);
+    view1.setOnDragDropped(Event::consume);
+
+    view2.setOnDragOver(Event::consume);
+    view2.setOnDragDropped(Event::consume);
 
     if (extractTextFromHTML(mainText1).trim().isEmpty())
       if (extractTextFromHTML(mainText2).trim().length() > 0)

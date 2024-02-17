@@ -48,6 +48,7 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.application.Platform;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -63,7 +64,7 @@ public class NewArgDlgCtrlr extends HyperDlg
   @FXML private Label lblTargetName, lblTargetDesc;
   @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;
   @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfTargetName, tfTitle, tfPages;
-  @FXML private WebView view;
+  @FXML private WebView webView;
 
   private final HDT_RecordWithMainText target;
   private final HyperCB hcbPerson, hcbVerdict, hcbWork;
@@ -177,7 +178,10 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     tfTargetName.setText(target.name());
 
-    MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), view.getEngine());
+    MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), webView.getEngine());
+
+    webView.setOnDragOver(Event::consume);
+    webView.setOnDragDropped(Event::consume);
 
     rbNew.setSelected(true);
 

@@ -897,7 +897,7 @@ public final class MainCtrlr
         return;
 
       if (event.getDragboard().hasFiles())
-        event.acceptTransferModes(TransferMode.MOVE);
+        event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
 
       event.consume();
     });

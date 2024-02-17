@@ -140,7 +140,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
     {
       if ((cell.getItem() == null) || event.isBackButtonDown() || event.isForwardButtonDown()) return;
 
-      Dragboard dragBoard = cell.startDragAndDrop(TransferMode.ANY);
+      Dragboard dragBoard = cell.startDragAndDrop(TransferMode.COPY, TransferMode.MOVE);
       startDrag(cell.getItem());
       ClipboardContent content = new ClipboardContent();
       content.put(HYPERNOMICON_DATA_FORMAT, "");
@@ -161,7 +161,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       treeCell.setOnDragOver(event ->
       {
         if (isValidDragTarget(treeCell.getItem(), event, treeCell.getTreeItem()))
-          event.acceptTransferModes(TransferMode.ANY);
+          event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
 
         event.consume();
       });
@@ -173,7 +173,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       treeTableRow.setOnDragOver(event ->
       {
         if (isValidDragTarget(treeTableRow.getItem(), event, treeTableRow.getTreeItem()))
-          event.acceptTransferModes(TransferMode.ANY);
+          event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
 
         event.consume();
       });
@@ -183,7 +183,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       cell.setOnDragOver(event ->
       {
         if (isValidDragTarget(cell.getItem(), event, null))
-          event.acceptTransferModes(TransferMode.ANY);
+          event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
 
         event.consume();
       });

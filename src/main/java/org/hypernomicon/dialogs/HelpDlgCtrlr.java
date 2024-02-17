@@ -24,6 +24,7 @@ import static org.hypernomicon.util.Util.*;
 import java.io.IOException;
 
 import javafx.application.Platform;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.web.WebView;
 
@@ -44,6 +45,9 @@ public class HelpDlgCtrlr extends HyperDlg
     super("HelpDlg", "Hypernomicon", true);
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
+
+    webView.setOnDragOver(Event::consume);
+    webView.setOnDragDropped(Event::consume);
 
     StringBuilder html = new StringBuilder();
 

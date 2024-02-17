@@ -33,6 +33,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.concurrent.Worker.State;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -204,6 +205,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           highlighter.hilite(true);
       }
     });
+
+    webView.setOnDragOver(Event::consume);
+    webView.setOnDragDropped(Event::consume);
 
     MainTextUtil.webViewAddZoom(webView, PREF_KEY_QUERYTAB_ZOOM);
 

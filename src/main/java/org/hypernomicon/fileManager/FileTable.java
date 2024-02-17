@@ -32,8 +32,8 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.hypernomicon.fileManager.FileManager.MarkedRowInfo;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.util.PopupDialog;
@@ -53,6 +53,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
 
 public class FileTable extends DragNDropContainer<FileRow>
@@ -105,7 +106,7 @@ public class FileTable extends DragNDropContainer<FileRow>
   private final FileManager dlg;
   private final TableView<FileRow> fileTV;
   private final ObservableList<FileRow> rows;
-  List<MarkedRowInfo> draggingRows;
+  List<? extends AbstractEntityWithPath> draggingItems;
 
   void clear() { rows.clear(); }
 
@@ -173,6 +174,26 @@ public class FileTable extends DragNDropContainer<FileRow>
           setGraphic(item.getGraphic());
         }
       }
+    });
+
+    fileTV.setOnDragDone(event ->
+    {
+      dragDone();
+      event.consume();
+    });
+
+    fileTV.setOnDragDropped(event ->
+    {
+      dragDroppedOnto(dlg.getFolderRow());
+      event.consume();
+    });
+
+    fileTV.setOnDragOver(event ->
+    {
+      if (isValidDragTarget(dlg.getFolderRow(), event, null))
+        event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+
+      event.consume();
     });
   }
 
@@ -251,7 +272,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   @Override public void startDrag(FileRow fileRow)
   {
-    draggingRows = dlg.getMarkedRows(fileRow);
+    draggingItems = dlg.getMarkedRows(fileRow);
   }
 
 //---------------------------------------------------------------------------
@@ -259,7 +280,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   void startDragFromFolderTree(FileRow fileRow)
   {
-    draggingRows = List.of(new MarkedRowInfo(fileRow));
+    draggingItems = List.of(new EntityWithRow(fileRow));
   }
 
 //---------------------------------------------------------------------------
@@ -267,7 +288,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   @Override public void dragDone()
   {
-    draggingRows = null;
+    draggingItems = null;
     dragReset();
   }
 
@@ -278,15 +299,18 @@ public class FileTable extends DragNDropContainer<FileRow>
   {
     scroll(dragEvent);
 
-    if (draggingRows == null) return false;
+    if ((draggingItems == null) && (dragEvent.getDragboard().hasFiles() == false)) return false;
     if ((targetRow == null) || (targetRow.isDirectory() == false))
       targetRow = dlg.getFolderRow();
 
     if (targetRow == null) return false;
 
-    if (draggingRows.size() != 1) return true;
+    if (dragEvent.getDragboard().hasFiles())
+      draggingItems = dragEvent.getDragboard().getFiles().stream().map(EntityWithPath::new).collect(Collectors.toList());
 
-    FilePath srcPath = draggingRows.get(0).row.getFilePath();
+    if ((draggingItems == null) || (draggingItems.size() != 1)) return true;
+
+    FilePath srcPath = draggingItems.get(0).getFilePath();
 
     return (srcPath             .equals(targetRow.getFilePath()) == false) &&
            (srcPath.getDirOnly().equals(targetRow.getFilePath()) == false);
@@ -309,7 +333,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
     boolean copying = (result == mrCopy);
 
-    if (dlg.moveCopy(draggingRows, copying, true) == false) return;
+    if (dlg.moveCopy(draggingItems, copying, true) == false) return;
 
     dlg.paste(targetRow, copying, true);
   }

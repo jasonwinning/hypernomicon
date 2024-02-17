@@ -69,6 +69,7 @@ import org.hypernomicon.view.wrappers.ReadOnlyCell;
 
 import javafx.application.Platform;
 import javafx.concurrent.Worker.State;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -183,7 +184,8 @@ public class FileManager extends HyperDlg
 
   private final MenuItemSchema<HDT_RecordWithPath, FileRow> pasteMenuItem;
 
-  private List<MarkedRowInfo> markedRows = null, dragRows = null;
+  private List<AbstractEntityWithPath> dragPaths = null;
+  private List<EntityWithRow> markedRows = null;
   private FilePath srcPathToHilite = null;
   private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false;
   private HDT_Folder curFolder;
@@ -200,7 +202,7 @@ public class FileManager extends HyperDlg
   public void setNeedRefresh()          { if (suppressNeedRefresh == false) needRefresh = true; }
   @Override protected boolean isValid() { return true; }
 
-  private List<MarkedRowInfo> getSrcRows(boolean dragging) { return dragging ? dragRows : markedRows; }
+  private List<? extends AbstractEntityWithPath> getSrcPaths(boolean dragging) { return dragging ? dragPaths : markedRows; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -295,6 +297,9 @@ public class FileManager extends HyperDlg
 
       event.consume();
     });
+
+    webView.setOnDragOver(Event::consume);
+    webView.setOnDragDropped(Event::consume);
 
     Scene scene = dialogStage.getScene();
 
@@ -453,7 +458,7 @@ public class FileManager extends HyperDlg
   private void clearSrcRows(boolean dragging)
   {
     if (dragging)
-      dragRows = null;
+      dragPaths = null;
     else
     {
       markedRows = null;
@@ -465,15 +470,16 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setSrcRows(List<MarkedRowInfo> rows, boolean dragging)
+  @SuppressWarnings("unchecked")
+  private void setSrcPaths(List<? extends AbstractEntityWithPath> paths, boolean dragging)
   {
     if (dragging)
     {
-      dragRows = rows;
+      dragPaths = (List<AbstractEntityWithPath>) paths;
       return;
     }
 
-    markedRows = rows;
+    markedRows = (List<EntityWithRow>) paths;
     btnPaste.setDisable(false);
     pasteMenuItem.disabled = false;
   }
@@ -489,13 +495,13 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean moveCopy(List<MarkedRowInfo> rows, boolean copying, boolean dragging)
+  boolean moveCopy(List<? extends AbstractEntityWithPath> items, boolean copying, boolean dragging)
   {
     //---------------------------------------------------------------------------
     // Determine what is to be moved/copied
     //---------------------------------------------------------------------------
 
-    if (rows.isEmpty())
+    if (items.isEmpty())
     {
       clearSrcRows(dragging);
       return false;
@@ -507,8 +513,8 @@ public class FileManager extends HyperDlg
 
     if (copying == false)
     {
-      for (MarkedRowInfo rowInfo : rows)
-        if (canCutRow(rowInfo, false) == false)
+      for (AbstractEntityWithPath dragItem : items)
+        if (canCutRow(dragItem, false) == false)
         {
           clearSrcRows(dragging);
           return false;
@@ -518,7 +524,7 @@ public class FileManager extends HyperDlg
     if (dragging == false)
       clipboardCopying = copying;
 
-    setSrcRows(rows, dragging);
+    setSrcPaths(items, dragging);
     return true;
   }
 
@@ -537,15 +543,15 @@ public class FileManager extends HyperDlg
       updateMessage("Building list of files...");
       updateProgress(-1, -1);
 
-      for (MarkedRowInfo rowInfo : getSrcRows(dragging))
+      for (AbstractEntityWithPath pathItem : getSrcPaths(dragging))
       {
         if (FilePath.isEmpty(srcPathToHilite))
-          srcPathToHilite = rowInfo.row.getFilePath();
+          srcPathToHilite = pathItem.getFilePath();
 
-        if (rowInfo.row.isDirectory())
-          rowInfo.row.getFilePath().addDirContentsToSet(srcSet);
+        if (pathItem.isDirectory())
+          pathItem.getFilePath().addDirContentsToSet(srcSet);
 
-        srcSet.add(rowInfo.row.getFilePath());
+        srcSet.add(pathItem.getFilePath());
       }
     }};
 
@@ -559,7 +565,7 @@ public class FileManager extends HyperDlg
       totalTaskCount = srcSet.size() * 2L;
       curTaskCount = 0;
 
-      FilePath baseDir = getSrcRows(dragging).get(0).row.getFilePath().getParent();
+      FilePath baseDir = getSrcPaths(dragging).get(0).getFilePath().getParent();
 
       for (FilePath srcFilePath : srcSet)
       {
@@ -812,10 +818,13 @@ public class FileManager extends HyperDlg
             if (isCancelled())
               throw new CancelledTaskException();
 
-            FilePath srcFilePath = entry.getKey();
+            FilePath srcFilePath = entry.getKey(),
+                     destFilePath = entry.getValue();
 
             if (srcFilePath.isDirectory() == false)
               srcFilePath.copyTo(entry.getValue(), false);
+
+            HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
           }
         }
 
@@ -828,15 +837,20 @@ public class FileManager extends HyperDlg
           {
             updateProgress(curTaskCount++, totalTaskCount);
 
+            if (isCancelled())
+              throw new CancelledTaskException();
+
             FilePath srcFilePath = entry.getKey(),
                      destFilePath = entry.getValue();
+
             HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
 
             Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(srcFilePath);
 
             if (set.isEmpty())
             {
-              srcFilePath.moveTo(destFilePath, false);
+              if (srcFilePath.isDirectory() == false)
+                srcFilePath.moveTo(destFilePath, false);
             }
             else
             {
@@ -857,7 +871,8 @@ public class FileManager extends HyperDlg
 
             HDT_Folder folder = HyperPath.getFolderFromFilePath(srcFilePath, false);
 
-            List.copyOf(folder.notes).forEach(note -> note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false)));
+            if (folder != null)
+              List.copyOf(folder.notes).forEach(note -> note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false)));
           });
 
       // If moving, remove source directories that are now empty
@@ -867,8 +882,13 @@ public class FileManager extends HyperDlg
           {
             updateProgress(curTaskCount++, totalTaskCount);
 
-            if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false))
-              HyperPath.getFolderFromFilePath(srcFilePath, false).delete(false);
+            if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false) && (srcFilePath.isSubpath(db.getRootPath()) == false))
+            {
+              if (db.getRootPath().isSubpath(srcFilePath))
+                HyperPath.getFolderFromFilePath(srcFilePath, false).delete(false);
+              else
+                srcFilePath.deleteDirectory(false);
+            }
           }
         }
       }
@@ -893,6 +913,7 @@ public class FileManager extends HyperDlg
     Platform.runLater(() ->
     {
       pruneAndRefresh();
+
       folderTreeWatcher.createNewWatcherAndStart();
 
       ui.update();
@@ -905,36 +926,26 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static class MarkedRowInfo
-  {
-    MarkedRowInfo(FileRow row) { this.row = row; }
-
-    final FileRow row;
-    private boolean related = false;
-
-    private boolean isRelated() { return related; }
-  }
-
   // srcRow is non-null when invoked from right-clicking a column or dragging
   // srcRow is null when clicking a toolbar button
 
-  List<MarkedRowInfo> getMarkedRows(FileRow srcRow)
+  List<EntityWithRow> getMarkedRows(FileRow srcRow)
   {
     List<FileRow> rowList = fileTV.getSelectionModel().getSelectedItems();
 
     if (collEmpty(rowList) == false)
-      return rowList.stream().map(MarkedRowInfo::new).collect(Collectors.toList());
+      return rowList.stream().map(EntityWithRow::new).collect(Collectors.toList());
 
     if (srcRow != null)
-      return List.of(new MarkedRowInfo(srcRow));
+      return List.of(new EntityWithRow(srcRow));
 
     FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
 
     if (fileRow != null)
-      return List.of(new MarkedRowInfo(fileRow));
+      return List.of(new EntityWithRow(fileRow));
 
     if (curFolder != null)
-      return List.of(new MarkedRowInfo(getFolderRow()));
+      return List.of(new EntityWithRow(getFolderRow()));
 
     return Collections.emptyList();
   }
@@ -950,7 +961,7 @@ public class FileManager extends HyperDlg
   // Determine what is to be deleted
   //---------------------------------------------------------------------------
 
-    List<MarkedRowInfo> rowInfoList = getMarkedRows(fileRow);
+    List<EntityWithRow> rowInfoList = getMarkedRows(fileRow);
 
     if (rowInfoList.isEmpty()) return;
 
@@ -967,10 +978,10 @@ public class FileManager extends HyperDlg
 
     if (rowInfoList.size() == 1)
     {
-      MarkedRowInfo rowInfo = rowInfoList.get(0);
-      HyperPath hyperPath = rowInfo.row.getHyperPath();
+      EntityWithRow rowInfo = rowInfoList.get(0);
+      HyperPath hyperPath = rowInfo.getHyperPath();
 
-      if (rowInfo.related)
+      if (rowInfo.isRelated())
       {
         RecordType recordType = hyperPath.getRecord().getType();
 
@@ -989,7 +1000,7 @@ public class FileManager extends HyperDlg
       }
       else
       {
-        if (rowInfo.row.isDirectory())
+        if (rowInfo.isDirectory())
         {
           if (confirmDialog("Are you sure you want to delete the folder \"" + hyperPath.getNameStr() + "\" and all the files/subfolders it contains?") == false)
             return;
@@ -1003,7 +1014,7 @@ public class FileManager extends HyperDlg
     }
     else
     {
-      if (rowInfoList.stream().anyMatch(MarkedRowInfo::isRelated))
+      if (rowInfoList.stream().anyMatch(EntityWithRow::isRelated))
       {
         if (confirmDialog("One or more of the selected items is associated with a database record. Okay to delete the " + rowInfoList.size() + " items and associated record(s)?") == false)
           return;
@@ -1040,15 +1051,15 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean deleteRow(MarkedRowInfo rowInfo)
+  private static boolean deleteRow(EntityWithRow rowInfo)
   {
-    HyperPath hyperPath = rowInfo.row.getHyperPath();
+    HyperPath hyperPath = rowInfo.getHyperPath();
     HDT_RecordWithPath fileRecord = hyperPath.getRecord();
     FilePath filePath = hyperPath.filePath();
 
-    if (rowInfo.related == false)
+    if (rowInfo.isRelated() == false)
     {
-      if (rowInfo.row.isDirectory())
+      if (rowInfo.isDirectory())
         return ((HDT_Folder) fileRecord).delete(true);
 
       try { Files.delete(filePath.toPath()); }
@@ -1084,25 +1095,28 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean canCutRow(MarkedRowInfo rowInfo, boolean deleting)
+  private static boolean canCutRow(AbstractEntityWithPath item, boolean deleting)
   {
     String opPast = deleting ? "deleted" : "moved";
-    HyperPath hyperPath = rowInfo.row.getHyperPath();
-    HDT_RecordWithPath fileRecord = hyperPath.getRecord();
 
-    if (hyperPath.getRecordsString().length() > 0)
-      rowInfo.related = true;
-
-    FilePath filePath = hyperPath.filePath();
+    FilePath filePath = item.getFilePath();
     boolean isDir = filePath.isDirectory();
+
+    if (item instanceof EntityWithRow)
+    {
+      EntityWithRow rowItem = (EntityWithRow)item;
+
+      HyperPath hyperPath = rowItem.getHyperPath();
+      HDT_RecordWithPath fileRecord = hyperPath.getRecord();
+
+      if (isDir && ((HDT_Folder) fileRecord).containsFilesThatAreInUse())
+        return falseWithInfoMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
+    }
 
     if (db.isProtectedFile(filePath, true))
       return falseWithInfoMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
 
     if (deleting == false) return true;
-
-    if (isDir && ((HDT_Folder) fileRecord).containsFilesThatAreInUse())
-      return falseWithInfoMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
 
     return true;
   }
