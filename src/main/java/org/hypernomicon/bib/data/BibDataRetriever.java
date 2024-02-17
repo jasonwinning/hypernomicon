@@ -24,7 +24,6 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,7 +81,7 @@ public class BibDataRetriever
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while extracting metadata: " + e.getMessage(), mtError);
+      messageDialog("An error occurred while extracting metadata: " + getThrowableMessage(e), mtError);
     }
 
     this.workBD = workBD;
@@ -142,19 +141,9 @@ public class BibDataRetriever
         queryBD = null;
         messageShown = true;
       }
-      else if (e instanceof UnknownHostException)
-      {
-        messageDialog("Unable to connect to host: " + e.getMessage(), mtError);
-        messageShown = true;
-      }
-      else if (e instanceof HttpResponseException)
-      {
-        messageDialog(e.getMessage(), mtError);
-        messageShown = true;
-      }
       else
       {
-        messageDialog("Error: " + e.getMessage(), mtError);
+        messageDialog("Error: " + getThrowableMessage(e), mtError);
         messageShown = true;
       }
     }
@@ -264,7 +253,7 @@ public class BibDataRetriever
             if ((e instanceof HttpResponseException) && (((HttpResponseException) e).getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
             {
               searchedCrossref = true;
-              messageDialog(e.getMessage(), mtError);
+              messageDialog(getThrowableMessage(e), mtError);
               doStage(4);
             }
             else

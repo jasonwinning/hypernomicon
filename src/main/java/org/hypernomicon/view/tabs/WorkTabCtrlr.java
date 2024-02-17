@@ -1120,7 +1120,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     catch (IOException | HDB_InternalError e)
     {
-      messageDialog("An error occurred while moving the files: " + e.getMessage(), mtError);
+      messageDialog("An error occurred while moving the files: " + getThrowableMessage(e), mtError);
     }
 
     if (startWatcher)
@@ -1235,7 +1235,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred: " + e.getMessage(), mtError);
+      messageDialog("An error occurred: " + getThrowableMessage(e), mtError);
       return;
     }
 
@@ -1259,7 +1259,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         }
         catch (IOException e)
         {
-          messageDialog("Unable to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + "\". Reason: " + e.getMessage(), mtError);
+          messageDialog("Unable to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + "\". Reason: " + getThrowableMessage(e), mtError);
           ui.update();
           fileManagerDlg.setNeedRefresh();
 
@@ -1665,7 +1665,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     catch (IOException e)
     {
-      taPdfMetadata.setText("[Error: " + e.getMessage() + ']');
+      taPdfMetadata.setText("[Error: " + getThrowableMessage(e) + ']');
     }
 
     updateBibButtons();

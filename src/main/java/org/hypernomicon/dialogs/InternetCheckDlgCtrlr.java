@@ -57,7 +57,7 @@ public final class InternetCheckDlgCtrlr extends HyperDlg
       if (ctrlr.showModal())
         return true;
 
-      String msg = "Warning: Internet connection check failed" + (ctrlr.lastException == null ? '.' : ": " + ctrlr.lastException.getMessage());
+      String msg = "Warning: Internet connection check failed" + (ctrlr.lastException == null ? '.' : ": " + getThrowableMessage(ctrlr.lastException));
       result = abortRetryIgnoreDialog(msg);
     }
 

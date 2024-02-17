@@ -214,7 +214,7 @@ class CharacterGrid
       }
       catch (BackingStoreException e)
       {
-        messageDialog("An error occurred while accessing user-defined symbol preferences: " + e.getMessage(), mtError);
+        messageDialog("An error occurred while accessing user-defined symbol preferences: " + getThrowableMessage(e), mtError);
       }
 
       return;

@@ -19,6 +19,7 @@ package org.hypernomicon.query;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
@@ -207,7 +208,7 @@ public abstract class Query<HDT_T extends HDT_Record>
       }
       catch (HyperDataException e)
       {
-        messageDialog(e.getMessage(), mtError);
+        messageDialog(getThrowableMessage(e), mtError);
         records.clear();
       }
 

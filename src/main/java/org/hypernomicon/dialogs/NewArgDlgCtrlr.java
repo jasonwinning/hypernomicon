@@ -337,7 +337,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     {
       HDT_Argument counteredArg = (HDT_Argument)target;
 
-      try { argument.addCounteredArg(counteredArg, (HDT_ArgumentVerdict)verdict); } catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
+      try { argument.addCounteredArg(counteredArg, (HDT_ArgumentVerdict)verdict); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
       counteredArg.positions.forEach(position -> argument.addPosition(position, null));
     }
 

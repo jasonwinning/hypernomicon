@@ -638,7 +638,7 @@ public class PictureDlgCtrlr extends HyperDlg
   private void exceptionHappened(Exception e)
   {
     if ((e instanceof CancelledTaskException) == false)
-      messageDialog("An error occurred while trying to display the picture: " + e.getMessage(), mtError);
+      messageDialog("An error occurred while trying to display the picture: " + getThrowableMessage(e), mtError);
 
     stopClicked();
   }
@@ -705,7 +705,7 @@ public class PictureDlgCtrlr extends HyperDlg
     picture = new Image(path.toURI().toString());
     if (picture.isError())
     {
-      messageDialog("An error occurred while trying to display the picture: " + picture.getException().getMessage(), mtError);
+      messageDialog("An error occurred while trying to display the picture: " + getThrowableMessage(picture.getException()), mtError);
       ivPicture.setImage(null);
       picture = null;
       return;
@@ -748,7 +748,7 @@ public class PictureDlgCtrlr extends HyperDlg
     }
     else
     {
-      messageDialog("An error occurred while trying to display the picture: " + picture.getException().getMessage(), mtError);
+      messageDialog("An error occurred while trying to display the picture: " + getThrowableMessage(picture.getException()), mtError);
       ivPicture.setImage(null);
       picture = null;
       rbNone.setSelected(true);
@@ -866,7 +866,7 @@ public class PictureDlgCtrlr extends HyperDlg
         }
         catch (IOException e)
         {
-          return falseWithErrorMessage("File cannot be overwritten: " + e.getMessage());
+          return falseWithErrorMessage("File cannot be overwritten: " + getThrowableMessage(e));
         }
       }
     }
@@ -920,7 +920,7 @@ public class PictureDlgCtrlr extends HyperDlg
       }
       catch (IOException ex)
       {
-        return falseWithErrorMessage("An error occurred while saving the file: " + ex.getMessage());
+        return falseWithErrorMessage("An error occurred while saving the file: " + getThrowableMessage(ex));
       }
     }
     else
@@ -972,7 +972,7 @@ public class PictureDlgCtrlr extends HyperDlg
             }
             catch (IOException e)
             {
-              return falseWithErrorMessage("An error occurred while moving the file: " + e.getMessage());
+              return falseWithErrorMessage("An error occurred while moving the file: " + getThrowableMessage(e));
             }
 
             db.unmapFilePath(newFileSrc);
@@ -985,7 +985,7 @@ public class PictureDlgCtrlr extends HyperDlg
             }
             catch (IOException e)
             {
-              return falseWithErrorMessage("An error occurred while copying the file: " + e.getMessage());
+              return falseWithErrorMessage("An error occurred while copying the file: " + getThrowableMessage(e));
             }
           }
         }
@@ -1002,7 +1002,7 @@ public class PictureDlgCtrlr extends HyperDlg
             }
             catch (IOException | HDB_InternalError e)
             {
-              return falseWithErrorMessage("An error occurred while moving the file: " + e.getMessage());
+              return falseWithErrorMessage("An error occurred while moving the file: " + getThrowableMessage(e));
             }
           }
         }

@@ -771,7 +771,7 @@ public final class MainTextWrapper
     String tempHtml = editCtrlr.getHtmlAndKeyWorks(keyWorks);
     if (tempHtml.contains("hypernomiconHilite"))
     {
-      messageDialog(new HDB_InternalError(28469).getMessage(), mtError);
+      messageDialog(getThrowableMessage(new HDB_InternalError(28469)), mtError);
       return;
     }
 

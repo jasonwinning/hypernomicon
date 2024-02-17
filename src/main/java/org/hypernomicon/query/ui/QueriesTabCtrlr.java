@@ -472,7 +472,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       fileManagerDlg.pruneAndRefresh();
     }
-    catch (IOException e) { messageDialog("One or more files were not deleted. Reason: " + e.getMessage(), mtError); }
+    catch (IOException e) { messageDialog("One or more files were not deleted. Reason: " + getThrowableMessage(e), mtError); }
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();

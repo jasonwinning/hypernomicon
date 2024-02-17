@@ -18,8 +18,8 @@
 package org.hypernomicon.query.ui;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
@@ -217,11 +217,7 @@ class SearchResultFileList
       }
       catch (Throwable e)
       {
-        String msg = e.getMessage();
-        if ("null".equals(String.valueOf(msg)))
-          msg = e.getClass().getName();
-
-        errList.add("Error: Unable to copy \"" + filePath + "\". Reason: " + msg);
+        errList.add("Error: Unable to copy \"" + filePath + "\". Reason: " + getThrowableMessage(e));
       }
     }
   }

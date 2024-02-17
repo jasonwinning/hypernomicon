@@ -34,7 +34,9 @@ import static java.nio.charset.StandardCharsets.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
@@ -82,6 +84,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.http.client.HttpResponseException;
 
 import com.google.common.collect.Lists;
 import com.google.common.escape.Escaper;
@@ -499,14 +502,37 @@ public final class Util
   public static String camelToTitle(String in)
   {
     String out = "";
+    int len = in.length();
 
-    for (int ndx = 0; ndx < in.length(); ndx++)
+    char currentChar = len > 0 ? Character.toUpperCase(in.charAt(0)) : ' ',
+         nextChar = ' ';
+
+    for (int ndx = 0; ndx < len; ndx++)
     {
-      char c = in.charAt(ndx);
-      out = out + (Character.isUpperCase(c) ? " " + c : c);
+      boolean nextIsUpper = false,
+              nextIsLower = false;
+
+      if (ndx < (len - 1))
+      {
+        nextChar = in.charAt(ndx + 1);
+        nextIsUpper =  Character.isUpperCase(nextChar);
+        nextIsLower =  Character.isLowerCase(nextChar);
+      }
+
+      boolean isUpper = Character.isUpperCase(currentChar),
+              isLower = Character.isLowerCase(currentChar);
+
+      if (isUpper && nextIsLower)
+        out = out + " " + currentChar;
+      else if (isLower && nextIsUpper)
+        out = out + currentChar + " ";
+      else
+        out = out + currentChar;
+
+      currentChar = nextChar;
     }
 
-    return titleCase(out);
+    return out.replace("  ", " ").trim();
   }
 
 //---------------------------------------------------------------------------
@@ -1326,6 +1352,52 @@ public final class Util
   public static String underlinedChar(char c)
   {
     return c + "\u0332";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String getThrowableMessage(Throwable e)
+  {
+    String msg = e.getMessage();
+
+    if (safeStr(msg).isBlank() || "null".equals(String.valueOf(msg)))
+      msg = "";
+
+    if (e instanceof UnknownHostException)
+      return "Unable to connect to host" + (msg.isEmpty() ? "" :  ": ") + msg;
+
+    if (e instanceof HttpResponseException)
+      return ((HttpResponseException)e).getStatusCode() + (msg.isEmpty() ? "" : " ") + msg;
+
+    if (e instanceof AccessDeniedException)
+      return "Access denied" + (msg.isEmpty() ? "" : ". ") + msg;
+
+    if (e instanceof IOException)
+      return userFriendlyThrowableName(e) + (msg.isEmpty() ? "" :  ": ") + msg;
+
+    return msg.isEmpty() ? userFriendlyThrowableName(e) : msg;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String userFriendlyClassName(Class<?> klass)
+  {
+    return camelToTitle(klass.getSimpleName()).trim();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String userFriendlyThrowableName(Throwable e)
+  {
+    String className = userFriendlyClassName(e.getClass());
+
+    return className.endsWith(" Exception") ?
+      className.substring(0, className.length() - 10)
+    :
+      className;
   }
 
 //---------------------------------------------------------------------------

@@ -22,6 +22,7 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -111,7 +112,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
     HDI_OfflinePath offlinePath = new HDI_OfflinePath(getSchema(), recordWithPath.getRecordStateBackup());
     offlinePath.folderID = db.getPicturesFolder().getID();
-    try { setFromOfflineValue(offlinePath, Tag.tagPictureFolder); } catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
+    try { setFromOfflineValue(offlinePath, Tag.tagPictureFolder); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
   }
 
 //---------------------------------------------------------------------------

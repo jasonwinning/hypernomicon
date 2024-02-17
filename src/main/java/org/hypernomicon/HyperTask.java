@@ -17,6 +17,7 @@
 
 package org.hypernomicon;
 
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
@@ -91,7 +92,7 @@ public abstract class HyperTask
       Throwable ex = getException();
 
       if (ex instanceof HyperDataException)
-        Platform.runLater(() -> messageDialog(ex.getMessage(), mtError));
+        Platform.runLater(() -> messageDialog(getThrowableMessage(ex), mtError));
       else if (ex != null)
         ex.printStackTrace();
     }

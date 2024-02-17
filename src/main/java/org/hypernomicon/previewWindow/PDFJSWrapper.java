@@ -217,14 +217,12 @@ public class PDFJSWrapper
     }
     catch (ExceptionInInitializerError e)
     {
-      String msg = safeStr(e.getCause().getMessage());
-      messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError);
+      messageDialog("Unable to initialize preview window: " + getThrowableMessage(e.getCause()), mtError);
       disable();
     }
     catch (IOException | LinkageError e)
     {
-      String msg = safeStr(e.getMessage());
-      messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError);
+      messageDialog("Unable to initialize preview window: " + getThrowableMessage(e), mtError);
       disable();
     }
 
@@ -379,7 +377,7 @@ public class PDFJSWrapper
       catch (IPCException e)
       {
         disposing = false;
-        messageDialog("An error occurred while disposing preview pane: " + e.getMessage(), mtError);
+        messageDialog("An error occurred while disposing preview pane: " + getThrowableMessage(e), mtError);
       }
     };
 

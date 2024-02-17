@@ -19,7 +19,6 @@ package org.hypernomicon.settings;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
@@ -502,13 +501,9 @@ public class SettingsDlgCtrlr extends HyperDlg
         }
       }
     }
-    catch (UnknownHostException e)
-    {
-      messageDialog("Unable to connect to host: " + e.getMessage(), mtError);
-    }
     catch (IOException | InterruptedException | ExecutionException e)
     {
-      messageDialog("Error: " + e.getMessage(), mtError);
+      messageDialog("Error: " + getThrowableMessage(e), mtError);
     }
   }
 
@@ -533,9 +528,8 @@ public class SettingsDlgCtrlr extends HyperDlg
       accessToken = service.getAccessToken(verificationCode);
       success = true;
     }
-    catch (UnknownHostException e)                                    { messageDialog("Unable to connect to host: " + e.getMessage(), mtError);  }
     catch (OAuthException e)                                          { messageDialog("Verification code was rejected by the server.", mtError); }
-    catch (IOException | InterruptedException | ExecutionException e) { messageDialog("Verification failed: " + e.getMessage(), mtError); }
+    catch (IOException | InterruptedException | ExecutionException e) { messageDialog("Verification failed: " + getThrowableMessage(e), mtError); }
 
     if (success == false) return;
 
@@ -545,7 +539,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     }
     catch (Exception e)
     {
-      messageDialog("Verification failed: " + e.getMessage(), mtError);
+      messageDialog("Verification failed: " + getThrowableMessage(e), mtError);
       return;
     }
 
@@ -576,9 +570,8 @@ public class SettingsDlgCtrlr extends HyperDlg
       accessToken = service.getAccessToken(requestToken, verificationCode);
       success = true;
     }
-    catch (UnknownHostException e)                                    { messageDialog("Unable to connect to host: " + e.getMessage(), mtError);  }
     catch (OAuthException e)                                          { messageDialog("Verification code was rejected by the server.", mtError); }
-    catch (IOException | InterruptedException | ExecutionException e) { messageDialog("Verification failed: " + e.getMessage(), mtError); }
+    catch (IOException | InterruptedException | ExecutionException e) { messageDialog("Verification failed: " + getThrowableMessage(e), mtError); }
 
     if (success == false) return;
 
@@ -588,7 +581,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     }
     catch (Exception e)
     {
-      messageDialog("Verification failed: " + e.getMessage(), mtError);
+      messageDialog("Verification failed: " + getThrowableMessage(e), mtError);
       return;
     }
 

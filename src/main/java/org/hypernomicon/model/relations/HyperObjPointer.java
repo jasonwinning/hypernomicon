@@ -80,7 +80,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
     }
     catch (RelationCycleException e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
 
       lastException = e;
       return false;

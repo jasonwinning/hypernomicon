@@ -108,7 +108,7 @@ public final class InterProcClient
     }
     catch (IOException e)
     {
-      messageDialog("Unable to write to temporary file: " + e.getMessage(), mtError);
+      messageDialog("Unable to write to temporary file: " + getThrowableMessage(e), mtError);
     }
   }
 

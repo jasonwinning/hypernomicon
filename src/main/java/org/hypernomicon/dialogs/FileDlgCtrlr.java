@@ -20,6 +20,7 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -415,7 +416,7 @@ public class FileDlgCtrlr extends HyperDlg
       }
       catch (IOException e)
       {
-        return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + e.getMessage());
+        return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + getThrowableMessage(e));
       }
     }
     else if (srcFilePath.equals(destFilePath) == false)
@@ -431,7 +432,7 @@ public class FileDlgCtrlr extends HyperDlg
       }
       catch (IOException e)
       {
-        return falseWithErrorMessage("Unable to rename the file: " + e.getMessage());
+        return falseWithErrorMessage("Unable to rename the file: " + getThrowableMessage(e));
       }
     }
 

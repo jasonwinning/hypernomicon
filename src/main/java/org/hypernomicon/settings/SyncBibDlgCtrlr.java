@@ -18,6 +18,7 @@
 package org.hypernomicon.settings;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
@@ -63,7 +64,7 @@ public final class SyncBibDlgCtrlr extends HyperDlg
             Throwable ex = syncTask.getException();
 
             if (ex instanceof HyperDataException)
-              messageDialog(ex.getMessage(), mtError);
+              messageDialog(getThrowableMessage(ex), mtError);
           }
 
           getStage().close();

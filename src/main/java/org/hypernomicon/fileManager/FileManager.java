@@ -743,7 +743,7 @@ public class FileManager extends HyperDlg
       }
       catch (IOException e)
       {
-        throw new HyperDataException("Unable to obtain lock: " + e.getMessage(), e);
+        throw new HyperDataException("Unable to obtain lock: " + getThrowableMessage(e), e);
       }
     }};
 
@@ -895,7 +895,7 @@ public class FileManager extends HyperDlg
       catch (IOException e)
       {
         suppressNeedRefresh = false;
-        throw new HyperDataException("An error occurred while trying to " + (copying ? "copy" : "move") + " the item(s): " + e.getMessage(), e);
+        throw new HyperDataException("An error occurred while trying to " + (copying ? "copy" : "move") + " the item(s): " + getThrowableMessage(e), e);
       }
 
       suppressNeedRefresh = false;
@@ -1065,7 +1065,7 @@ public class FileManager extends HyperDlg
       try { Files.delete(filePath.toPath()); }
       catch (IOException e)
       {
-        return falseWithErrorMessage("Unable to delete the file: " + e.getMessage());
+        return falseWithErrorMessage("Unable to delete the file: " + getThrowableMessage(e));
       }
 
       db.unmapFilePath(filePath);
@@ -1085,7 +1085,7 @@ public class FileManager extends HyperDlg
       }
       catch (IOException e)
       {
-        return falseWithErrorMessage("An error occurred while trying to delete \"" + setPath.filePath() + "\": " + e.getMessage());
+        return falseWithErrorMessage("An error occurred while trying to delete \"" + setPath.filePath() + "\": " + getThrowableMessage(e));
       }
     }
 
@@ -1145,7 +1145,7 @@ public class FileManager extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("Unable to create the folder: " + e.getMessage(), mtError);
+      messageDialog("Unable to create the folder: " + getThrowableMessage(e), mtError);
       return;
     }
     finally
@@ -1225,7 +1225,7 @@ public class FileManager extends HyperDlg
     }
     catch (IOException | HDB_InternalError e)
     {
-      messageDialog("Unable to rename the " + noun.toLowerCase() + ": " + e.getMessage(), mtError);
+      messageDialog("Unable to rename the " + noun.toLowerCase() + ": " + getThrowableMessage(e), mtError);
       return;
     }
     finally

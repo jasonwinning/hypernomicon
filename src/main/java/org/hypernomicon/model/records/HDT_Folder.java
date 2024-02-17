@@ -117,7 +117,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorMessage("Unable to rename the folder: " + e.getMessage());
+      return falseWithErrorMessage("Unable to rename the folder: " + getThrowableMessage(e));
     }
 
     db.unmapFilePath(srcFilePath);
@@ -163,7 +163,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorMessage("An error occurred while attempting to delete the folder \"" + filePath + "\": " + e.getMessage());
+      return falseWithErrorMessage("An error occurred while attempting to delete the folder \"" + filePath + "\": " + getThrowableMessage(e));
     }
 
     deleteFolderRecordTree(this);
@@ -259,7 +259,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     }
     catch (IOException | InvalidPathException e)
     {
-      messageDialog("Unable to create the folder: " + e.getMessage(), mtError);
+      messageDialog("Unable to create the folder: " + getThrowableMessage(e), mtError);
     }
 
     if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();

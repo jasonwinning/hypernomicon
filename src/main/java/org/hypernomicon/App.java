@@ -135,7 +135,7 @@ public final class App extends Application
     }
     catch (SecurityException e)
     {
-      messageDialog("Initialization error: " + e.getMessage(), mtError);
+      messageDialog("Initialization error: " + getThrowableMessage(e), mtError);
 
       prefs = null;
       Platform.exit();
@@ -152,7 +152,7 @@ public final class App extends Application
     }
     catch (HDB_InternalError e)
     {
-      messageDialog("Initialization error: " + e.getMessage(), mtError);
+      messageDialog("Initialization error: " + getThrowableMessage(e), mtError);
 
       Platform.exit();
       return;
@@ -202,7 +202,7 @@ public final class App extends Application
     }
     catch(IOException e)
     {
-      messageDialog("Initialization error: " + e.getMessage(), mtError);
+      messageDialog("Initialization error: " + getThrowableMessage(e), mtError);
 
       if (ui != null)
         ui.shutDown(false, false, false);

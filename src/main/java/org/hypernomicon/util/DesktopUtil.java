@@ -95,7 +95,7 @@ public final class DesktopUtil
     }
     catch (IOException | URISyntaxException e)
     {
-      return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
+      return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e));
     }
   }
 
@@ -158,7 +158,7 @@ public final class DesktopUtil
     }
     catch (IOException e)
     {
-      return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath + ". " + e.getMessage());
+      return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath + ". " + getThrowableMessage(e));
     }
   }
 
@@ -180,7 +180,7 @@ public final class DesktopUtil
     }
     catch (IOException e)
     {
-      return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ". " + e.getMessage());
+      return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ". " + getThrowableMessage(e));
     }
   }
 
@@ -219,7 +219,7 @@ public final class DesktopUtil
     }
     catch (IOException | InterruptedException e)
     {
-      return falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + e.getMessage());
+      return falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + getThrowableMessage(e));
     }
 
     return (exitValue == 0) || falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + errorSB);
@@ -317,7 +317,7 @@ public final class DesktopUtil
     }
     catch (URISyntaxException e)
     {
-      falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
+      falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e));
       return;
     }
 
@@ -380,7 +380,7 @@ public final class DesktopUtil
     }
     catch (IOException | InterruptedException e)
     {
-      messageDialog("An error occurred while trying to show the file: " + filePath + ". " + e.getMessage(), mtError);
+      messageDialog("An error occurred while trying to show the file: " + filePath + ". " + getThrowableMessage(e), mtError);
     }
   }
 

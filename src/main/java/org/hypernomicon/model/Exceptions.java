@@ -18,6 +18,7 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
@@ -138,9 +139,9 @@ public final class Exceptions
 
   public static class HyperDataException extends Exception
   {
-    public HyperDataException(String msg, Throwable e) { super(msg, e);            }
-    public HyperDataException(Throwable e)             { super(e.getMessage(), e); }
-    public HyperDataException(String msg)              { super(msg);               }
+    public HyperDataException(String msg, Throwable e) { super(msg, e);                    }
+    public HyperDataException(Throwable e)             { super(getThrowableMessage(e), e); }
+    public HyperDataException(String msg)              { super(msg);                       }
   }
 
 //---------------------------------------------------------------------------

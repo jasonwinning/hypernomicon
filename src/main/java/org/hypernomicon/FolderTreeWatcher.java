@@ -123,7 +123,7 @@ public class FolderTreeWatcher
       catch (IOException e)
       {
         e.printStackTrace();
-        messageDialog("Unable to start watch service: " + e.getMessage(), mtError);
+        messageDialog("Unable to start watch service: " + getThrowableMessage(e), mtError);
         return;
       }
 
@@ -219,7 +219,7 @@ public class FolderTreeWatcher
           }
           catch (IOException e)
           {
-            messageDialog("Unable to process watcher event list: " + e.getMessage(), mtError);
+            messageDialog("Unable to process watcher event list: " + getThrowableMessage(e), mtError);
           }
         }
       }
@@ -612,7 +612,7 @@ public class FolderTreeWatcher
     catch (IOException e)
     {
       e.printStackTrace();
-      return falseWithErrorMessage("Unable to start watch service: " + e.getMessage());
+      return falseWithErrorMessage("Unable to start watch service: " + getThrowableMessage(e));
     }
 
     start();

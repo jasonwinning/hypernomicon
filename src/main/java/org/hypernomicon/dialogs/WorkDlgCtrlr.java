@@ -934,7 +934,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     catch (IOException e)
     {
-      falseWithErrorMessage("An error occurred while extracting metadata from PDF file: " + e.getMessage());
+      falseWithErrorMessage("An error occurred while extracting metadata from PDF file: " + getThrowableMessage(e));
       return;
     }
 
@@ -1424,7 +1424,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     catch (IOException | HDB_InternalError e)
     {
-      return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file. Reason: " + e.getMessage());
+      return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file. Reason: " + getThrowableMessage(e));
     }
 
     if (success == false)

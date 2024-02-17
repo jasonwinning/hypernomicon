@@ -282,7 +282,7 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
       }
       catch (BackingStoreException e)
       {
-        messageDialog("An error occurred while reading user-defined symbols: " + e.getMessage(), mtError);
+        messageDialog("An error occurred while reading user-defined symbols: " + getThrowableMessage(e), mtError);
       }
     });
 

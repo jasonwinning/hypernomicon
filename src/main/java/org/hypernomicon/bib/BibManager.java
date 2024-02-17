@@ -430,7 +430,7 @@ public class BibManager extends HyperDlg
         Throwable ex = syncTask.getException();
 
         if (ex instanceof HyperDataException)
-          messageDialog(ex.getMessage(), mtError);
+          messageDialog(getThrowableMessage(ex), mtError);
       }
 
       boolean changed = syncTask.getChanged();

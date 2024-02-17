@@ -19,6 +19,7 @@ package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -95,7 +96,7 @@ public class DragConceptDlgCtrlr extends HyperDlg
     }
     catch (RelationCycleException e)
     {
-      throw new AssertionError(e.getMessage(), e);
+      throw new AssertionError(getThrowableMessage(e), e);
     }
     finally
     {
@@ -127,7 +128,7 @@ public class DragConceptDlgCtrlr extends HyperDlg
     }
     catch (RelationCycleException e)
     {
-      throw new AssertionError(e.getMessage(), e);
+      throw new AssertionError(getThrowableMessage(e), e);
     }
     finally
     {

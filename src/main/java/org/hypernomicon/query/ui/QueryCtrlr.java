@@ -810,7 +810,7 @@ public final class QueryCtrlr
       }
       catch (ParseException e)
       {
-        messageDialog("Error while parsing custom logic expression: " + e.getMessage(), mtError);
+        messageDialog("Error while parsing custom logic expression: " + getThrowableMessage(e), mtError);
         return false;
       }
     }
@@ -919,7 +919,7 @@ public final class QueryCtrlr
         }
         catch (ParseException e)
         {
-          throw new HyperDataException("Error while evaluating custom logic expression: " + e.getMessage(), e);
+          throw new HyperDataException("Error while evaluating custom logic expression: " + getThrowableMessage(e), e);
         }
       }
 

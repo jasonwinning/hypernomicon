@@ -93,7 +93,7 @@ public final class MediaUtil
     }
     catch (IOException e)
     {
-      messageDialog("Error: " + e.getMessage(), mtError);
+      messageDialog("Error: " + getThrowableMessage(e), mtError);
       return "";
     }
   }

@@ -742,7 +742,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     }
     catch (SearchKeyException e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
 
       try
       {
@@ -751,7 +751,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       }
       catch (SearchKeyException e1)
       {
-        throw new AssertionError(e1.getMessage(), e1);
+        throw new AssertionError(getThrowableMessage(e1), e1);
       }
       finally
       {

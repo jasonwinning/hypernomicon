@@ -223,7 +223,7 @@ public class HyperPath
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
       return null;
     }
 

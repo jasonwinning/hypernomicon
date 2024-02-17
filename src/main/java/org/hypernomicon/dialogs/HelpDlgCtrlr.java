@@ -60,7 +60,7 @@ public class HelpDlgCtrlr extends HyperDlg
     {
       onShown = () ->
       {
-        messageDialog("Unable to show help content: " + e.getMessage(), mtError);
+        messageDialog("Unable to show help content: " + getThrowableMessage(e), mtError);
         Platform.runLater(dialogStage::close);
       };
     }

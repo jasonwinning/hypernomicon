@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.time.Instant;
@@ -227,7 +226,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             }
             catch (Exception e)
             {
-              messageDialog("An error occurred while saving access token: " + e.getMessage(), mtError);
+              messageDialog("An error occurred while saving access token: " + getThrowableMessage(e), mtError);
             }
           }
           catch (InterruptedException | ExecutionException e)
@@ -487,19 +486,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
           changed = true;
         });
       }
-      catch (HttpResponseException e)
-      {
-        String msg = "An error occurred while syncing: " + e.getStatusCode() + ' ' + e.getMessage();
-        throw new HyperDataException(msg, e);
-      }
-      catch (UnknownHostException e)
-      {
-        String msg = "Unable to connect to host: " + e.getMessage();
-        throw new HyperDataException(msg, e);
-      }
       catch (UnsupportedOperationException | IOException | ParseException e)
       {
-        String msg = "An error occurred while syncing: " + e.getMessage();
+        String msg = "An error occurred while syncing: " + getThrowableMessage(e);
         throw new HyperDataException(msg, e);
       }
     }
@@ -694,19 +683,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
           assignSB(emailAddress, profile.getStrSafe("email"));
         }
-        catch (HttpResponseException e)
-        {
-          String msg = "An error occurred while retrieving username from server: " + e.getStatusCode() + ' ' + e.getMessage();
-          throw new HyperDataException(msg, e);
-        }
-        catch (UnknownHostException e)
-        {
-          String msg = "Unable to connect to host: " + e.getMessage();
-          throw new HyperDataException(msg, e);
-        }
         catch (UnsupportedOperationException | IOException | ParseException e)
         {
-          String msg = "An error occurred while retrieving username from server: " + e.getMessage();
+          String msg = "An error occurred while retrieving username from server: " + getThrowableMessage(e);
           throw new HyperDataException(msg, e);
         }
       }

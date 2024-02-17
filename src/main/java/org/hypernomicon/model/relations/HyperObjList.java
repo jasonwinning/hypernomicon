@@ -30,6 +30,7 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.Util.*;
 
 public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements List<HDT_ObjType>
 {
@@ -190,7 +191,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     modStart();
 
     try { relSet.setObject(subj, obj, -1, false); }
-    catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
+    catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
     modEnd();
 
@@ -447,7 +448,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     modStart();
 
     try { relSet.setObject(subj, obj, index, false); }
-    catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
+    catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
     modEnd();
 

@@ -443,7 +443,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     }
     catch (RelationCycleException e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
       return false;
     }
 
@@ -464,7 +464,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     }
     catch (RelationCycleException e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
       return false;
     }
 

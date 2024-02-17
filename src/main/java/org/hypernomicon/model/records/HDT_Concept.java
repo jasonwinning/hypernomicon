@@ -20,6 +20,7 @@ package org.hypernomicon.model.records;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -144,7 +145,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
     HDT_Term newTerm = HDT_Term.create(glossary.get());
     HDT_Concept childConcept = newTerm.getConcept(glossary.get(), null);
 
-    try { childConcept.addParentConcept(this); } catch (RelationCycleException e) { throw new AssertionError(e.getMessage(), e); }
+    try { childConcept.addParentConcept(this); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
     return childConcept;
   }

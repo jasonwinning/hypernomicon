@@ -85,7 +85,6 @@ import org.hypernomicon.view.wrappers.*;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -1311,7 +1310,7 @@ public final class MainCtrlr
       try { db.close(null); }
       catch (HDB_InternalError e)
       {
-        messageDialog(e.getMessage(), mtError);
+        messageDialog(getThrowableMessage(e), mtError);
       }
     }
 
@@ -1638,7 +1637,7 @@ public final class MainCtrlr
       try { success = db.newDB(rootPath, dlg.getChoices(), dlg.getFolders()); }
       catch (HDB_InternalError e)
       {
-        messageDialog("Unable to create new database: " + e.getMessage(), mtError);
+        messageDialog("Unable to create new database: " + getThrowableMessage(e), mtError);
         shutDown(false, true, false); // An error in db.close is unrecoverable.
         return;
       }
@@ -1692,14 +1691,9 @@ public final class MainCtrlr
           }
         }
       }
-      catch (AccessDeniedException e)
-      {
-        messageDialog("Unable to create new database. Reason: Access denied. " + e.getMessage(), mtError);
-        return;
-      }
       catch (IOException e)
       {
-        messageDialog("Unable to create new database: " + e.getMessage(), mtError);
+        messageDialog("Unable to create new database: " + getThrowableMessage(e), mtError);
         return;
       }
 
@@ -1837,7 +1831,7 @@ public final class MainCtrlr
     try { db.close(null); }
     catch (HDB_InternalError e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
       shutDown(false, true, false); // An error in db.close is unrecoverable.
       return false;
     }
@@ -1932,7 +1926,7 @@ public final class MainCtrlr
     }
     catch (HyperDataException e)
     {
-      messageDialog("An error occurred while creating the record: " + e.getMessage(), mtError);
+      messageDialog("An error occurred while creating the record: " + getThrowableMessage(e), mtError);
       return null;
     }
 
@@ -2235,7 +2229,7 @@ public final class MainCtrlr
     }
     catch (RestoreException | SearchKeyException | HDB_InternalError e)
     {
-      messageDialog("Unable to revert " + recordStr + ": " + e.getMessage(), mtError);
+      messageDialog("Unable to revert " + recordStr + ": " + getThrowableMessage(e), mtError);
       success = false;
     }
 
@@ -2379,7 +2373,7 @@ public final class MainCtrlr
     try { success = db.loadAllFromDisk(creatingNew, favorites); }
     catch (HDB_InternalError e)
     {
-      messageDialog("Unable to load database. Reason: " + e.getMessage(), mtError);
+      messageDialog("Unable to load database. Reason: " + getThrowableMessage(e), mtError);
       shutDown(false, true, false); // An error in db.close is unrecoverable.
       return false;
     }
@@ -3321,7 +3315,7 @@ public final class MainCtrlr
       falseWithErrorMessage(ex == null ?
         "Unable to parse bibliographic information."
       :
-        "An error occurred while trying to parse BibTex file" + pathStr + ": " + ex.getMessage());
+        "An error occurred while trying to parse BibTex file" + pathStr + ": " + getThrowableMessage(ex));
 
       return;
     }

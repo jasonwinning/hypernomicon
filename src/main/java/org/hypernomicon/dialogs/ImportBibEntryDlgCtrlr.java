@@ -119,7 +119,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while trying to read the file " + filePath + ": " + e.getMessage(), mtError);
+      messageDialog("An error occurred while trying to read the file " + filePath + ": " + getThrowableMessage(e), mtError);
       failedToLoad = true;
       return;
     }

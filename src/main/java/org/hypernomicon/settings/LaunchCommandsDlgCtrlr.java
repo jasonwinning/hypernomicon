@@ -219,7 +219,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
         }
         catch (IOException e)
         {
-          messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
+          messageDialog("An error occurred while trying to start application: " + getThrowableMessage(e), mtError);
         }
 
         return;

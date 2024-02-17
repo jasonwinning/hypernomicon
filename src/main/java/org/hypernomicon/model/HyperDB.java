@@ -869,7 +869,7 @@ public final class HyperDB
       }
       catch (IOException | HDB_InternalError e)
       {
-        throw new HyperDataException("An error occurred while saving to XML files. " + e.getMessage(), e);
+        throw new HyperDataException("An error occurred while saving to XML files. " + getThrowableMessage(e), e);
       }
     }};
 
@@ -891,7 +891,7 @@ public final class HyperDB
     catch (IOException | BackingStoreException e)
     {
       messageDialog("An error occurred while attempting to save database options to " + SETTINGS_FILE_NAME +
-                    ". Record data has been saved to XML files, however." + System.lineSeparator() + e.getMessage(), mtError);
+                    ". Record data has been saved to XML files, however." + System.lineSeparator() + getThrowableMessage(e), mtError);
 
       return true;
     }
@@ -1083,7 +1083,7 @@ public final class HyperDB
         try { resolvePointers(); }
         catch (HDB_InternalError e)
         {
-          messageDialog(e.getMessage(), mtError);
+          messageDialog(getThrowableMessage(e), mtError);
 
           close(null);
           return false;
@@ -1115,13 +1115,13 @@ public final class HyperDB
           }
           catch (Exception e)
           {
-            throw new HyperDataException("Unable to initialize link to " + libType.getUserFriendlyName() + ": " + e.getMessage(), e);
+            throw new HyperDataException("Unable to initialize link to " + libType.getUserFriendlyName() + ": " + getThrowableMessage(e), e);
           }
         }
       }
       catch (IOException | InvalidPreferencesFormatException e)
       {
-        throw new HyperDataException("An error occurred while attempting to read database settings: " + e.getMessage(), e);
+        throw new HyperDataException("An error occurred while attempting to read database settings: " + getThrowableMessage(e), e);
       }
 
       if (workIDtoInvIDs.isEmpty() == false)
@@ -1139,13 +1139,13 @@ public final class HyperDB
         }
         catch (HyperDataException e)
         {
-          throw new HyperDataException("Internal error while creating thesis work type record: " + e.getMessage(), e);
+          throw new HyperDataException("Internal error while creating thesis work type record: " + getThrowableMessage(e), e);
         }
       }
     }
     catch (HyperDataException e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
 
       close(null);
       return false;
@@ -1177,7 +1177,7 @@ public final class HyperDB
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while writing lock file: " + e.getMessage(), mtWarning);
+      messageDialog("An error occurred while writing lock file: " + getThrowableMessage(e), mtWarning);
     }
 
     return true;
@@ -1387,7 +1387,7 @@ public final class HyperDB
         mentionsIndex.removeRecord(record);
 
       if (record.getType() != hdtConcept)
-        try { record.setSearchKey(""); } catch (SearchKeyException e) { throw new AssertionError(e.getMessage(), e); }
+        try { record.setSearchKey(""); } catch (SearchKeyException e) { throw new AssertionError(getThrowableMessage(e), e); }
     }
 
     if (deletionInProgress)
@@ -1408,7 +1408,7 @@ public final class HyperDB
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
     }
 
     deletionInProgress = false;
@@ -1618,7 +1618,7 @@ public final class HyperDB
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
     }
     catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { throw new AssertionError(e); }
 
@@ -1844,7 +1844,7 @@ public final class HyperDB
           if (isUnstoredRecord(xmlRecord.id, xmlRecord.type) == false)
             createNewRecordFromState(xmlRecord, false);
         }
-        catch (RelationCycleException | SearchKeyException e) { throw new AssertionError(e.getMessage(), e); }
+        catch (RelationCycleException | SearchKeyException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
         if (event != null)
           task.updateProgress(curTaskCount + event.getLocation().getCharacterOffset(), totalTaskCount);
@@ -1860,7 +1860,7 @@ public final class HyperDB
     }
     catch (XMLStreamException e)
     {
-      throw new HyperDataException("File: " + filePath + System.lineSeparator() + e.getMessage(), e);
+      throw new HyperDataException("File: " + filePath + System.lineSeparator() + getThrowableMessage(e), e);
     }
     catch (RestoreException e)
     {
@@ -2206,7 +2206,7 @@ public final class HyperDB
     }
 
     try { resolvePointers(); }
-    catch (HDB_InternalError e) { return falseWithErrorMessage(e.getMessage()); }
+    catch (HDB_InternalError e) { return falseWithErrorMessage(getThrowableMessage(e)); }
 
     loaded = true;
     InterProcClient.refresh(rootFilePath);
@@ -2606,7 +2606,7 @@ public final class HyperDB
       try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
       catch (IOException e)
       {
-        messageDialog("An error occurred while trying to read description template files: " + e.getMessage(), mtError);
+        messageDialog("An error occurred while trying to read description template files: " + getThrowableMessage(e), mtError);
         return;
       }
 

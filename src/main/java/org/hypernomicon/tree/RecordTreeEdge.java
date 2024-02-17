@@ -21,6 +21,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.Set;
@@ -169,7 +170,7 @@ class RecordTreeEdge
     }
     catch (RelationCycleException e)
     {
-      return falseWithErrMsgCond(showErrMsg, e.getMessage());
+      return falseWithErrMsgCond(showErrMsg, getThrowableMessage(e));
     }
 
     return true;

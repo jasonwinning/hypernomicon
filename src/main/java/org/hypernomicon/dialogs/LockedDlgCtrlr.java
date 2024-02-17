@@ -242,7 +242,7 @@ public class LockedDlgCtrlr extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("Error while writing message file: " + e.getMessage(), mtError);
+      messageDialog("Error while writing message file: " + getThrowableMessage(e), mtError);
       return;
     }
 

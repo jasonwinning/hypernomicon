@@ -571,11 +571,11 @@ public class MainTextCtrlr
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while saving to the template file: " + e.getMessage(), mtError);
+      messageDialog("An error occurred while saving to the template file: " + getThrowableMessage(e), mtError);
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
     }
   }
 

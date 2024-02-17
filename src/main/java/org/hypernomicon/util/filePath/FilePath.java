@@ -163,7 +163,7 @@ public class FilePath implements Comparable<FilePath>
     try { delete(noExistOK); }
     catch (IOException e)
     {
-      if (errorSB != null) assignSB(errorSB, e.getMessage());
+      if (errorSB != null) assignSB(errorSB, getThrowableMessage(e));
       return false;
     }
 
@@ -488,7 +488,7 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (IOException e)
     {
-      messageDialog(e.getMessage(), mtError);
+      messageDialog(getThrowableMessage(e), mtError);
       return true;
     }
 
