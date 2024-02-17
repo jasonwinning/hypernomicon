@@ -17,18 +17,38 @@
 
 package org.hypernomicon.fileManager;
 
+import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.util.filePath.FilePath;
+
+import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 public abstract class AbstractEntityWithPath
 {
+  private boolean related, relatedSet = false;
 
 //---------------------------------------------------------------------------
 
   public abstract FilePath getFilePath();
   public abstract boolean isDirectory();
+  public abstract HyperPath getHyperPath();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean isRelated()
+  {
+    if (relatedSet == false)
+    {
+      related = nullSwitch(getHyperPath(), false, hyperPath -> hyperPath.getRecordsString().length() > 0);
+
+      relatedSet = true;
+    }
+
+    return related;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

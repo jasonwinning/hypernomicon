@@ -26,25 +26,10 @@ import org.hypernomicon.util.filePath.FilePath;
 public class EntityWithRow extends AbstractEntityWithPath
 {
   private final FileRow row;
-  private boolean related = false, relatedSet = false;
 
 //---------------------------------------------------------------------------
 
   public EntityWithRow(FileRow row) { this.row = row; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean isRelated()
-  {
-    if (relatedSet == false)
-    {
-      related = row.getHyperPath().getRecordsString().length() > 0;
-      relatedSet = true;
-    }
-
-    return related;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -57,7 +42,7 @@ public class EntityWithRow extends AbstractEntityWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperPath getHyperPath()
+  @Override public HyperPath getHyperPath()
   {
     return row.getHyperPath();
   }

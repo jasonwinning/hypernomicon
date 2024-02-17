@@ -138,19 +138,35 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   {
     cell.setOnDragDetected(event ->
     {
-      if ((cell.getItem() == null) || event.isBackButtonDown() || event.isForwardButtonDown()) return;
+      try
+      {
+        if ((cell.getItem() == null) || event.isBackButtonDown() || event.isForwardButtonDown()) return;
 
-      Dragboard dragBoard = cell.startDragAndDrop(TransferMode.COPY, TransferMode.MOVE);
-      startDrag(cell.getItem());
-      ClipboardContent content = new ClipboardContent();
-      content.put(HYPERNOMICON_DATA_FORMAT, "");
-      dragBoard.setContent(content);
+        Dragboard dragBoard = cell.startDragAndDrop(TransferMode.COPY, TransferMode.MOVE);
+        startDrag(cell.getItem());
+        ClipboardContent content = new ClipboardContent();
+        content.put(HYPERNOMICON_DATA_FORMAT, "");
+        dragBoard.setContent(content);
+      }
+      catch (Throwable th)
+      {
+        th.printStackTrace();
+      }
+
       event.consume();
     });
 
     cell.setOnDragDone(event ->
     {
-      dragDone();
+      try
+      {
+        dragDone();
+      }
+      catch (Throwable th)
+      {
+        th.printStackTrace();
+      }
+
       event.consume();
     });
 
@@ -160,8 +176,15 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
       treeCell.setOnDragOver(event ->
       {
-        if (isValidDragTarget(treeCell.getItem(), event, treeCell.getTreeItem()))
-          event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+        try
+        {
+          if (isValidDragTarget(treeCell.getItem(), event, treeCell.getTreeItem()))
+            event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+        }
+        catch (Throwable th)
+        {
+          th.printStackTrace();
+        }
 
         event.consume();
       });
@@ -172,8 +195,15 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
       treeTableRow.setOnDragOver(event ->
       {
-        if (isValidDragTarget(treeTableRow.getItem(), event, treeTableRow.getTreeItem()))
-          event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+        try
+        {
+          if (isValidDragTarget(treeTableRow.getItem(), event, treeTableRow.getTreeItem()))
+            event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+        }
+        catch (Throwable th)
+        {
+          th.printStackTrace();
+        }
 
         event.consume();
       });
@@ -182,8 +212,15 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
     {
       cell.setOnDragOver(event ->
       {
-        if (isValidDragTarget(cell.getItem(), event, null))
-          event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+        try
+        {
+          if (isValidDragTarget(cell.getItem(), event, null))
+            event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+        }
+        catch (Throwable th)
+        {
+          th.printStackTrace();
+        }
 
         event.consume();
       });
@@ -191,7 +228,15 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
     cell.setOnDragDropped(event ->
     {
-      dragDroppedOnto(cell.getItem());
+      try
+      {
+        dragDroppedOnto(cell.getItem());
+      }
+      catch (Throwable th)
+      {
+        th.printStackTrace();
+      }
+
       event.consume();
     });
   }

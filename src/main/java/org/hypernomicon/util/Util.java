@@ -37,6 +37,7 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
@@ -860,10 +861,12 @@ public final class Util
   /**
    * Operation having no side effects that the compiler will not know how to optimize away, so
    * you can always break on it.
+   * @return Always returns null
    */
-  public static void noOp()
+  public static Object noOp()
   {
     assert Boolean.TRUE;
+    return null;
   }
 
 //---------------------------------------------------------------------------
@@ -872,10 +875,12 @@ public final class Util
   /**
    * Consume an object by doing nothing to it, to avoid compiler warnings and such.
    * @param obj The object to which nothing will be done.
+   * @return Always returns null
    */
-  public static void noOp(Object obj)
+  public static Object noOp(Object obj)
   {
     assert Boolean.TRUE;
+    return null;
   }
 
 //---------------------------------------------------------------------------
@@ -1374,7 +1379,12 @@ public final class Util
       return "Access denied" + (msg.isEmpty() ? "" : ". ") + msg;
 
     if (e instanceof IOException)
+    {
+      if (e.getClass().equals(FileSystemException.class))
+        return msg.isEmpty() ? "File system error" : msg;
+
       return userFriendlyThrowableName(e) + (msg.isEmpty() ? "" :  ": ") + msg;
+    }
 
     return msg.isEmpty() ? userFriendlyThrowableName(e) : msg;
   }

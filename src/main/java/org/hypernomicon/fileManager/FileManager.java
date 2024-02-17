@@ -185,7 +185,7 @@ public class FileManager extends HyperDlg
   private final MenuItemSchema<HDT_RecordWithPath, FileRow> pasteMenuItem;
 
   private List<AbstractEntityWithPath> dragPaths = null;
-  private List<EntityWithRow> markedRows = null;
+  private List<? extends AbstractEntityWithPath> markedRows = null;
   private FilePath srcPathToHilite = null;
   private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false;
   private HDT_Folder curFolder;
@@ -479,7 +479,7 @@ public class FileManager extends HyperDlg
       return;
     }
 
-    markedRows = (List<EntityWithRow>) paths;
+    markedRows = paths;
     btnPaste.setDisable(false);
     pasteMenuItem.disabled = false;
   }
@@ -929,7 +929,7 @@ public class FileManager extends HyperDlg
   // srcRow is non-null when invoked from right-clicking a column or dragging
   // srcRow is null when clicking a toolbar button
 
-  List<EntityWithRow> getMarkedRows(FileRow srcRow)
+  List<? extends AbstractEntityWithPath> getMarkedRows(FileRow srcRow)
   {
     List<FileRow> rowList = fileTV.getSelectionModel().getSelectedItems();
 
@@ -961,7 +961,7 @@ public class FileManager extends HyperDlg
   // Determine what is to be deleted
   //---------------------------------------------------------------------------
 
-    List<EntityWithRow> rowInfoList = getMarkedRows(fileRow);
+    List<? extends AbstractEntityWithPath> rowInfoList = getMarkedRows(fileRow);
 
     if (rowInfoList.isEmpty()) return;
 
@@ -978,10 +978,10 @@ public class FileManager extends HyperDlg
 
     if (rowInfoList.size() == 1)
     {
-      EntityWithRow rowInfo = rowInfoList.get(0);
-      HyperPath hyperPath = rowInfo.getHyperPath();
+      AbstractEntityWithPath item = rowInfoList.get(0);
+      HyperPath hyperPath = item.getHyperPath();
 
-      if (rowInfo.isRelated())
+      if (item.isRelated())
       {
         RecordType recordType = hyperPath.getRecord().getType();
 
@@ -989,10 +989,10 @@ public class FileManager extends HyperDlg
 
         switch (recordType)
         {
-          case hdtPerson   : confirmMsg += "is assigned as a picture file for a person record. Delete it anyway?"; break;
-          case hdtMiscFile : confirmMsg += "is assigned to a misc. file record. Okay to delete the file as well as the associated record?"; break;
-          case hdtWorkFile : confirmMsg += "is assigned to a work file record. Delete it anyway?"; break;
-          case hdtFolder   : confirmMsg += "is assigned to a note record. Delete it anyway?"; break;
+          case hdtPerson   : confirmMsg += "is assigned as a picture file for a person record. Permanently delete it anyway?"; break;
+          case hdtMiscFile : confirmMsg += "is assigned to a misc. file record. Okay to permanently delete the file as well as the associated record?"; break;
+          case hdtWorkFile : confirmMsg += "is assigned to a work file record. Permanently delete it anyway?"; break;
+          case hdtFolder   : confirmMsg += "is assigned to a note record. Permanently delete it anyway?"; break;
           default          : messageDialog("Internal error #21292", mtError); return;
         }
 
@@ -1000,28 +1000,28 @@ public class FileManager extends HyperDlg
       }
       else
       {
-        if (rowInfo.isDirectory())
+        if (item.isDirectory())
         {
-          if (confirmDialog("Are you sure you want to delete the folder \"" + hyperPath.getNameStr() + "\" and all the files/subfolders it contains?") == false)
+          if (confirmDialog("Are you sure you want to permanently delete the folder \"" + hyperPath.getNameStr() + "\" and all the files/subfolders it contains?") == false)
             return;
         }
         else
         {
-          if (confirmDialog("Are you sure you want to delete the file \"" + hyperPath.getNameStr() + "\"?") == false)
+          if (confirmDialog("Are you sure you want to permanently delete the file \"" + hyperPath.getNameStr() + "\"?") == false)
             return;
         }
       }
     }
     else
     {
-      if (rowInfoList.stream().anyMatch(EntityWithRow::isRelated))
+      if (rowInfoList.stream().anyMatch(AbstractEntityWithPath::isRelated))
       {
-        if (confirmDialog("One or more of the selected items is associated with a database record. Okay to delete the " + rowInfoList.size() + " items and associated record(s)?") == false)
+        if (confirmDialog("One or more of the selected items is associated with a database record. Okay to permanently delete the " + rowInfoList.size() + " items and associated record(s)?") == false)
           return;
       }
       else
       {
-        if (confirmDialog("Are you sure you want to delete these " + rowInfoList.size() + " items?") == false)
+        if (confirmDialog("Are you sure you want to permanently delete these " + rowInfoList.size() + " items?") == false)
           return;
       }
     }
@@ -1051,15 +1051,15 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean deleteRow(EntityWithRow rowInfo)
+  private static boolean deleteRow(AbstractEntityWithPath item)
   {
-    HyperPath hyperPath = rowInfo.getHyperPath();
+    HyperPath hyperPath = item.getHyperPath();
     HDT_RecordWithPath fileRecord = hyperPath.getRecord();
     FilePath filePath = hyperPath.filePath();
 
-    if (rowInfo.isRelated() == false)
+    if (item.isRelated() == false)
     {
-      if (rowInfo.isDirectory())
+      if (item.isDirectory())
         return ((HDT_Folder) fileRecord).delete(true);
 
       try { Files.delete(filePath.toPath()); }
@@ -1102,21 +1102,16 @@ public class FileManager extends HyperDlg
     FilePath filePath = item.getFilePath();
     boolean isDir = filePath.isDirectory();
 
-    if (item instanceof EntityWithRow)
-    {
-      EntityWithRow rowItem = (EntityWithRow)item;
-
-      HyperPath hyperPath = rowItem.getHyperPath();
-      HDT_RecordWithPath fileRecord = hyperPath.getRecord();
-
-      if (isDir && ((HDT_Folder) fileRecord).containsFilesThatAreInUse())
-        return falseWithInfoMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
-    }
+    HyperPath hyperPath = item.getHyperPath();
+    HDT_RecordWithPath fileRecord = hyperPath == null ? null : hyperPath.getRecord();
 
     if (db.isProtectedFile(filePath, true))
       return falseWithInfoMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
 
     if (deleting == false) return true;
+
+    if (isDir && ((HDT_Folder) fileRecord).containsFilesThatAreInUse())
+      return falseWithInfoMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
 
     return true;
   }

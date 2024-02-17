@@ -501,59 +501,52 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   @Override public void dragDroppedOnto(TreeRow targetRow)
   {
-    try
+    dragReset();
+
+    RecordTreeEdge dragSourceEdge = new RecordTreeEdge(draggingRow.treeItem.getParent().getValue().getRecord(), draggingRow.getRecord()),
+                   dragTargetEdge = new RecordTreeEdge(targetRow.getRecord(), draggingRow.getRecord()),
+                   otherEdgeToDetach = dragTargetEdge.edgeToDetach();
+
+    if (dragSourceEdge.equals(otherEdgeToDetach))
+      otherEdgeToDetach = null;
+
+    if (dragTargetEdge.canAttach(true) == false)
+      return;
+
+    if (dragSourceEdge.equals(dragTargetEdge))
     {
-      dragReset();
-
-      RecordTreeEdge dragSourceEdge = new RecordTreeEdge(draggingRow.treeItem.getParent().getValue().getRecord(), draggingRow.getRecord()),
-                     dragTargetEdge = new RecordTreeEdge(targetRow.getRecord(), draggingRow.getRecord()),
-                     otherEdgeToDetach = dragTargetEdge.edgeToDetach();
-
-      if (dragSourceEdge.equals(otherEdgeToDetach))
-        otherEdgeToDetach = null;
-
-      if (dragTargetEdge.canAttach(true) == false)
-        return;
-
-      if (dragSourceEdge.equals(dragTargetEdge))
-      {
-        messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
-        return;
-      }
-
-      if (dragTargetEdge.relType == rtNone)
-      {
-        messageDialog("Unable to copy or move source record: Internal error #33948.", mtError);
-        return;
-      }
-
-      if ((draggingRow.getRecord().getType() == hdtConcept) && (dragTargetEdge.isConceptsInSameGlossary() == false))
-      {
-        DragConceptDlgCtrlr dcdc = new DragConceptDlgCtrlr(draggingRow.getRecord(), dragTargetEdge.parent);
-
-        if (dcdc.showModal() == false)
-          return;
-      }
-      else
-      {
-        ChangeParentDlgCtrlr cpdc = new ChangeParentDlgCtrlr(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
-
-        if (cpdc.showModal() == false)
-          return;
-
-        dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null, true);
-      }
-
-      Platform.runLater(() ->
-      {
-        sort();
-        ttv.getSelectionModel().select(getTreeItem(targetRow));
-      });
+      messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
+      return;
     }
-    catch (Throwable th)
+
+    if (dragTargetEdge.relType == rtNone)
     {
-      th.printStackTrace();
+      messageDialog("Unable to copy or move source record: Internal error #33948.", mtError);
+      return;
     }
+
+    if ((draggingRow.getRecord().getType() == hdtConcept) && (dragTargetEdge.isConceptsInSameGlossary() == false))
+    {
+      DragConceptDlgCtrlr dcdc = new DragConceptDlgCtrlr(draggingRow.getRecord(), dragTargetEdge.parent);
+
+      if (dcdc.showModal() == false)
+        return;
+    }
+    else
+    {
+      ChangeParentDlgCtrlr cpdc = new ChangeParentDlgCtrlr(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
+
+      if (cpdc.showModal() == false)
+        return;
+
+      dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null, true);
+    }
+
+    Platform.runLater(() ->
+    {
+      sort();
+      ttv.getSelectionModel().select(getTreeItem(targetRow));
+    });
   }
 
 //---------------------------------------------------------------------------

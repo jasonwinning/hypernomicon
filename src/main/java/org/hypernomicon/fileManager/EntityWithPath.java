@@ -18,7 +18,9 @@
 package org.hypernomicon.fileManager;
 
 import java.io.File;
+import java.util.Set;
 
+import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.util.filePath.FilePath;
 
 //---------------------------------------------------------------------------
@@ -30,7 +32,8 @@ public class EntityWithPath extends AbstractEntityWithPath
 //---------------------------------------------------------------------------
 
   private final FilePath filePath;
-  private boolean isDir, isDirSet = false;
+  private HyperPath hyperPath;
+  private boolean isDir, isDirSet = false, isHyperPathSet = false;
 
 //---------------------------------------------------------------------------
 
@@ -59,6 +62,24 @@ public class EntityWithPath extends AbstractEntityWithPath
     }
 
     return isDir;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public HyperPath getHyperPath()
+  {
+    if (isHyperPathSet == false)
+    {
+      Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
+
+      if (set.size() > 0)
+        hyperPath = set.iterator().next();
+
+      isHyperPathSet = true;
+    }
+
+    return hyperPath;
   }
 
 //---------------------------------------------------------------------------

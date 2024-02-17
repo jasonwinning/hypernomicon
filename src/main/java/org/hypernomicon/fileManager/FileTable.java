@@ -178,20 +178,43 @@ public class FileTable extends DragNDropContainer<FileRow>
 
     fileTV.setOnDragDone(event ->
     {
-      dragDone();
+      try
+      {
+        dragDone();
+      }
+      catch (Throwable th)
+      {
+        th.printStackTrace();
+      }
+
       event.consume();
     });
 
     fileTV.setOnDragDropped(event ->
     {
-      dragDroppedOnto(dlg.getFolderRow());
+      try
+      {
+        dragDroppedOnto(dlg.getFolderRow());
+      }
+      catch (Throwable th)
+      {
+        th.printStackTrace();
+      }
+
       event.consume();
     });
 
     fileTV.setOnDragOver(event ->
     {
-      if (isValidDragTarget(dlg.getFolderRow(), event, null))
-        event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+      try
+      {
+        if (isValidDragTarget(dlg.getFolderRow(), event, null))
+          event.acceptTransferModes(TransferMode.COPY, TransferMode.MOVE);
+      }
+      catch (Throwable th)
+      {
+        th.printStackTrace();
+      }
 
       event.consume();
     });
@@ -334,6 +357,9 @@ public class FileTable extends DragNDropContainer<FileRow>
     boolean copying = (result == mrCopy);
 
     if (dlg.moveCopy(draggingItems, copying, true) == false) return;
+
+    if ((targetRow == null) || (targetRow.isDirectory() == false))
+      targetRow = dlg.getFolderRow();
 
     dlg.paste(targetRow, copying, true);
   }

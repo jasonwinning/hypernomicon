@@ -482,7 +482,7 @@ public class PictureDlgCtrlr extends HyperDlg
     if (FilePath.isEmpty(personHyperTab.getCurPicture()))
       return;
 
-    if (confirmDialog("Are you sure you want to delete the file \"" + personHyperTab.getCurPicture().getNameOnly() + "\"?") == false)
+    if (confirmDialog("Are you sure you want to permanently delete the file \"" + personHyperTab.getCurPicture().getNameOnly() + "\"?") == false)
       return;
 
     if (personHyperTab.getCurPicture().deletePromptOnFail(false) == false)
