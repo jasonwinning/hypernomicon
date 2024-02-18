@@ -143,6 +143,7 @@ public class MainTextCtrlr
   void hilite()                       { highlighter.hilite(); }
   public void nextSearchResult()      { highlighter.nextSearchResult(); }
   public void previousSearchResult()  { highlighter.previousSearchResult(); }
+  public void updateZoom()            { updateZoomFromPref(webView, PREF_KEY_MAINTEXT_ZOOM); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

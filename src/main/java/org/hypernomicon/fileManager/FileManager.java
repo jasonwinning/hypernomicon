@@ -763,6 +763,7 @@ public class FileManager extends HyperDlg
     {
       if (folderTreeWatcher.isRunning() == false)
         folderTreeWatcher.createNewWatcherAndStart();
+
       return;
     }
 

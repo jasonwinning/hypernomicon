@@ -232,6 +232,8 @@ public final class MainTextWrapper
 
     parentPane.getChildren().setAll(view);
 
+    updateZoomFromPref(view, PREF_KEY_MAINTEXT_ZOOM);
+
     if (curRecord == null)
     {
       we.loadContent("");
@@ -726,6 +728,8 @@ public final class MainTextWrapper
       editCtrlr.setFromMainText(curRecord.getMainText());
     else
       editCtrlr.clear();
+
+    editCtrlr.updateZoom();
 
     if (focus) editCtrlr.focus();
 

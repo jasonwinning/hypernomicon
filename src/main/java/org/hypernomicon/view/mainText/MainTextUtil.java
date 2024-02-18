@@ -961,6 +961,14 @@ public final class MainTextUtil
       }
     });
 
+    updateZoomFromPref(view, prefID);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void updateZoomFromPref(WebView view, String prefID)
+  {
     view.setZoom(zoomFactors.get(app.prefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);
   }
 
