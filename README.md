@@ -93,8 +93,8 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
 
 * Icons:
 
-  * [FatCow](http://www.fatcow.com/free-icons)
-  * [Fugue](http://p.yusukekamiyamane.com/)
+  * [FatCow Farm-Fresh Web Icons](http://www.fatcow.com/free-icons) [(Archived copy)](https://web.archive.org/web/20160323032439/http://www.fatcow.com/free-icons)
+  * [Fugue Icons](http://p.yusukekamiyamane.com/)
 
 * Additional third-party libraries used:
   * Apache [Commons](https://commons.apache.org/), [PDFBox](https://pdfbox.apache.org/), [Tika](https://tika.apache.org/), [HttpClient](https://hc.apache.org/httpcomponents-client-ga/)

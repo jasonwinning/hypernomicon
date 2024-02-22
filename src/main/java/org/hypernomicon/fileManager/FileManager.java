@@ -757,6 +757,8 @@ public class FileManager extends HyperDlg
   {
     if ((destRow == null) && ((destRow = getFolderRow()) == null)) return;
 
+    if (ui.cantSaveRecord()) return;
+
     Map<FilePath, FilePath> srcToDest = new HashMap<>();
 
     if (doPasteChecks(destRow, srcToDest, copying, dragging) == false)
@@ -1149,7 +1151,7 @@ public class FileManager extends HyperDlg
       suppressNeedRefresh = false;
     }
 
-    ui.update();
+    refresh();
   }
 
 //---------------------------------------------------------------------------
