@@ -111,7 +111,11 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
         setText("");
 
-        if (empty || (treeRow == null) || (getTableRow().getItem() == null)) { setGraphic(null); return; }
+        if (empty || (treeRow == null) || (getTableRow().getItem() == null))
+        {
+          setGraphic(null);
+          return;
+        }
 
         HDT_Record rowRecord = treeRow.getRecord();
 
@@ -126,15 +130,23 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
             else
               indicator = titleCase(indicator) + " file";
 
-            super.setGraphic(new Label(indicator));
+            setGraphic(new Label(indicator));
             return;
           }
         }
 
-        if (rowRecord.isUnitable() == false) { setGraphic(null); return; }
+        if (rowRecord.isUnitable() == false)
+        {
+          setGraphic(null);
+          return;
+        }
 
         HDT_RecordWithMainText uRecord = (HDT_RecordWithMainText)rowRecord;
-        if (uRecord.hasHub() == false) { setGraphic(null); return; }
+        if (uRecord.hasHub() == false)
+        {
+          setGraphic(null);
+          return;
+        }
 
         TreeWrapper treeWrapper = (TreeWrapper) treeRow.getTreeWrapper();
 
@@ -151,7 +163,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
           hBox.getChildren().add(label);
         });
 
-        super.setGraphic(hBox);
+        setGraphic(hBox);
       }
     };
   }

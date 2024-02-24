@@ -2485,7 +2485,7 @@ public final class MainCtrlr
     if (FilePath.isEmpty(filePath)) return;
 
     runFileMgr();
-    fileManagerDlg.goToFilePath(filePath);
+    fileManagerDlg.goToFilePath(filePath, false);
   }
 
 //---------------------------------------------------------------------------

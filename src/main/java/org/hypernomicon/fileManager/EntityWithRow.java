@@ -34,26 +34,9 @@ public class EntityWithRow extends AbstractEntityWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public FilePath getFilePath()
-  {
-    return row.getFilePath();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperPath getHyperPath()
-  {
-    return row.getHyperPath();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean isDirectory()
-  {
-    return row.isDirectory();
-  }
+  @Override public FilePath getFilePath  () { return row.getFilePath (); }
+  @Override public HyperPath getHyperPath() { return row.getHyperPath(); }
+  @Override public boolean isDirectory   () { return row.isDirectory (); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

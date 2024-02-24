@@ -43,12 +43,8 @@ public class EntityWithPath extends AbstractEntityWithPath
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  @Override public FilePath getFilePath()
-  {
-    return filePath;
-  }
+  @Override public FilePath getFilePath() { return filePath; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

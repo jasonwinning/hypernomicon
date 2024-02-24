@@ -165,6 +165,7 @@ public class FileTable extends DragNDropContainer<FileRow>
         {
           setText(null);
           setGraphic(null);
+          setTooltip(null);
         }
         else
         {

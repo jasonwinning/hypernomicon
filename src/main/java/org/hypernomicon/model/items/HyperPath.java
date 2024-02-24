@@ -174,7 +174,7 @@ public class HyperPath
 
     if (FilePath.isEmpty(fileName)) return null;
 
-    return nullSwitch(parentFolder()   , fileName, pFolder   ->
+    return nullSwitch(parentFolder()    , fileName, pFolder  ->
            nullSwitch(pFolder.filePath(), fileName, parentFP -> parentFP.resolve(fileName)));
   }
 

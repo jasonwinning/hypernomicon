@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -264,7 +265,7 @@ public class FilePath implements Comparable<FilePath>
     {
       return true;
     }
-    catch (IOException e)
+    catch (IOException | InvalidPathException e)
     {
       return false;
     }

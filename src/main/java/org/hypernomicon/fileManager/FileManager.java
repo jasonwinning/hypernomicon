@@ -922,7 +922,7 @@ public class FileManager extends HyperDlg
       ui.update();
 
       if (FilePath.isEmpty(pathToHilite) == false)
-        goToFilePath(pathToHilite);
+        goToFilePath(pathToHilite, true);
     });
   }
 
@@ -1130,11 +1130,14 @@ public class FileManager extends HyperDlg
 
     if (dlg.showModal() == false) return;
 
+    FilePath newFilePath = null;
+
     suppressNeedRefresh = true;
 
     try
     {
-      parentFolder.filePath().resolve(dlg.getNewName()).createDirectory();
+      newFilePath = parentFolder.filePath().resolve(dlg.getNewName());
+      newFilePath.createDirectory();
     }
     catch (FileAlreadyExistsException e)
     {
@@ -1151,7 +1154,8 @@ public class FileManager extends HyperDlg
       suppressNeedRefresh = false;
     }
 
-    refresh();
+    pruneAndRefresh();
+    goToFilePath(newFilePath, true);
   }
 
 //---------------------------------------------------------------------------
@@ -1247,9 +1251,9 @@ public class FileManager extends HyperDlg
 
     folderTree.prune();
 
-    if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
-
     refresh();
+
+    if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
   }
 
 //---------------------------------------------------------------------------
@@ -1520,14 +1524,25 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void goToFilePath(FilePath filePath)
+  public void goToFilePath(FilePath filePath, boolean hiliteIfFolder)
   {
     if (FilePath.isEmpty(filePath)) return;
 
-    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath.getDirOnly(), false);
+    boolean justEnteringFolder = false;
+
+    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath.getDirOnly(), true);
+
+    if (filePath.isDirectory())
+    {
+      if (hiliteIfFolder && (filePath.equals(db.getRootPath()) == false))
+        folder = folder.parentFolder();
+      else
+        justEnteringFolder = true;
+    }
+
     folderTree.selectRecord(folder, 0, false);
 
-    if (filePath.isDirectory()) return;
+    if (justEnteringFolder) return;
 
     fileTable.selectByFileName(filePath.getNameOnly());
     fileTV.requestFocus();
