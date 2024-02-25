@@ -169,7 +169,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     mainText.loadFromRecord(curMiscFile, true, getView().getTextInfo());
 
-    hcbType.addAndSelectEntry(curMiscFile.fileType, HDT_Record::getCBText);
+    hcbType.selectIDofRecord(curMiscFile.fileType);
 
   // Populate key mentioners
   // -----------------------
@@ -179,7 +179,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
  // populate authors
  // ----------------
 
-    hcbWork.addAndSelectEntry(curMiscFile.work, HDT_Record::getCBText);
+    hcbWork.selectIDofRecord(curMiscFile.work);
 
     cbWorkChange();
 
@@ -323,9 +323,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       HyperTableCell cell = fdc.hcbType.selectedHTC();
       if (HyperTableCell.isEmpty(cell) == false)
       {
-        hcbType.addEntry(cell.getID(), cell.text, false);
-        cbType.setValue(cell);
-        cbType.getSelectionModel().select(cell);
+        hcbType.populate(false);
+        hcbType.addEntry(cell.getID(), cell.text, true);
       }
     }
 

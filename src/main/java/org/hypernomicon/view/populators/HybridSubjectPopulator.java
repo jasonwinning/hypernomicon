@@ -141,6 +141,7 @@ public class HybridSubjectPopulator extends Populator
   @Override public void setChanged(HyperTableRow row)
   {
     rowToChanged.put(row, true);
+
     rowToPop.putIfAbsent(row, standardPop);
     rowToPop.get(row).setChanged(row);
   }

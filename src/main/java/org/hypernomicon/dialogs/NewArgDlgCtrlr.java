@@ -146,12 +146,9 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     chkLowerCaseTargetName.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions());
 
-    hcbPerson.addBlankEntry();
-
     int verdictID = verdictType == hdtPositionVerdict ? HDT_Argument.truePositionVerdictID : HDT_Argument.failsArgumentVerdictID;
-    hcbVerdict.addAndSelectEntry(db.records(verdictType).getByID(verdictID), HDT_Record::getCBText);
-    hcbVerdict.populate(false);
-    hcbWork.addBlankEntry();
+
+    hcbVerdict.selectID(verdictID);
 
     if (verdictType == hdtPositionVerdict) hcbVerdict.addListener((ov, nv) ->
     {

@@ -62,8 +62,6 @@ public class VerdictDlgCtrlr extends HyperDlg
     {
       messageDialog("Internal Error: 90902", mtError);
     }
-
-    hcbVerdict.addBlankEntry();
   }
 
 //---------------------------------------------------------------------------

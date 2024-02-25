@@ -126,8 +126,6 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     hcbSense = new HyperCB(cbSense, oldConcept == null ? ctDropDownList : ctDropDown, sensePop);
 
-    hcbTerm.addBlankEntry();
-
     hcbTerm.addListener((oldCell, newCell) ->
     {
       if (alreadyChanging) return;

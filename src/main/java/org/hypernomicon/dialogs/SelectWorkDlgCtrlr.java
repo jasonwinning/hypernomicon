@@ -26,7 +26,6 @@ import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.GUIBibData;
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -417,12 +416,8 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       :
         HDT_Person.lookUpByName(bibAuthor.getName()));
 
-    hcbAuthor.addAndSelectEntryOrBlank(author, HDT_Record::getCBText);
-
-    if (author != null)
-      hcbWork.selectID(nullSwitch(work, -1, HDT_Record::getID));
-    else
-      hcbWork.addAndSelectEntryOrBlank(work, HDT_Record::getCBText);
+    hcbAuthor.selectIDofRecord(author);
+    hcbWork.selectIDofRecord(work);
 
     if (((work == null) || bibEntryIsConstant) && (bibEntry != null))
       hcbBibEntry.selectID(bibEntry.numericID());

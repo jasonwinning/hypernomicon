@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -109,7 +108,7 @@ class WorkToMerge
   {
     if (creatingNewWork) // Work type row is removed when creatingNewWork is false
     {
-      hcbType.addAndSelectEntryOrBlank(workRecord.workType, HDT_Record::name);
+      hcbType.selectIDofRecord(workRecord.workType);
 
       if (workRecord.workType.isNotNull())
         rbType.setSelected(true);
@@ -144,7 +143,7 @@ class WorkToMerge
   {
     nullSwitch(bibData.getWorkType(), workType ->
     {
-      hcbType.addAndSelectEntry(workType, HDT_Record::name);
+      hcbType.selectIDofRecord(workType);
       rbType.setSelected(true);
     });
 

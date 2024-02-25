@@ -19,7 +19,6 @@ package org.hypernomicon.view.wrappers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -84,7 +83,6 @@ public class HyperCB implements CommitableWrapper
   public void addListener(HTCListener listener)  { listeners.add(listener); }
   public void triggerOnAction()                  { internalOnAction.handle(new ActionEvent(null, cb)); }
   public void triggerOnAction(ActionEvent event) { internalOnAction.handle(event); }
-  public void addBlankEntry()                    { addEntry(-1, "", false); }
 
   private boolean isInTable()                    { return (cb != null) && (cb.getParent() instanceof ComboBoxCell); }
 
@@ -254,46 +252,6 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntry(HyperObjPointer<? extends HDT_Record, ? extends HDT_Record> pntr, Function<HDT_Record, String> rs)
-  {
-    if (pntr.isNotNull())
-      addAndSelectEntry(pntr.get(), rs);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void addAndSelectEntryOrBlank(HyperObjPointer<? extends HDT_Record, ? extends HDT_Record> pntr, Function<HDT_Record, String> rs)
-  {
-    if (pntr.isNotNull())
-      addAndSelectEntry(pntr.get(), rs);
-    else
-      addBlankEntry();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void addAndSelectEntry(HDT_Record record, Function<HDT_Record, String> rs)
-  {
-    if (record != null)
-      addEntry(record.getID(), rs.apply(record), true);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void addAndSelectEntryOrBlank(HDT_Record record, Function<HDT_Record, String> rs)
-  {
-    if (record != null)
-      addEntry(record.getID(), rs.apply(record), true);
-    else
-      addBlankEntry();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void addEntry(int id, String text, boolean select)
   {
     HyperTableCell cell = populator.addEntry(row, id, text);
@@ -370,6 +328,19 @@ public class HyperCB implements CommitableWrapper
       cb.getSelectionModel().clearSelection();
     else
       cb.getSelectionModel().select(cell);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void selectIDofRecord(HyperObjPointer<? extends HDT_Record, ? extends HDT_Record> pntr)
+  {
+    selectID(pntr.getID());
+  }
+
+  public void selectIDofRecord(HDT_Record record)
+  {
+    selectID(record == null ? -1 : record.getID());
   }
 
 //---------------------------------------------------------------------------

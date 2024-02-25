@@ -2736,10 +2736,7 @@ public final class MainCtrlr
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
 
         if (count > 0)
-        {
-          HDT_Record record = nullSwitch(hyperTab, null, HyperTab::activeRecord);  // Save to variable to avoid Maven false-positive build errors
-          hcbGoTo.addAndSelectEntryOrBlank(record, HDT_Record::listName);
-        }
+          hcbGoTo.selectIDofRecord(hyperTab == null ? null : hyperTab.activeRecord());
 
         break;
     }

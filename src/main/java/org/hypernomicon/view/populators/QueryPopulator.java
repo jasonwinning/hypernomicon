@@ -52,8 +52,7 @@ public class QueryPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    if (rowToChoices.containsKey(row) == false)
-      rowToChoices.put(row, new ArrayList<>());
+    rowToChoices.putIfAbsent(row, new ArrayList<>());
 
     return rowToChoices.get(row);
   }
@@ -82,8 +81,7 @@ public class QueryPopulator extends Populator
 
     if (newType == oldType) return;
 
-    if (rowToChoices.containsKey(row) == false)
-      rowToChoices.put(row, new ArrayList<>());
+    rowToChoices.putIfAbsent(row, new ArrayList<>());
 
     rowToChoices.get(row).clear();
     addQueriesToPopulator(this, row, newType);
@@ -121,11 +119,9 @@ public class QueryPopulator extends Populator
   {
     HyperTableCell cell = new HyperTableCell(id, text, getRecordType(row));
 
-    if (rowToChoices.containsKey(row) == false)
-      rowToChoices.put(row, new ArrayList<>());
+    rowToChoices.putIfAbsent(row, new ArrayList<>());
 
-    rowToChoices.get(row).add(cell);
-    return cell;
+    return addEntryToList(rowToChoices.get(row), cell);
   }
 
 //---------------------------------------------------------------------------
@@ -135,11 +131,9 @@ public class QueryPopulator extends Populator
   {
     QueryCell cell = new QueryCell(query, getRecordType(row));
 
-    if (rowToChoices.containsKey(row) == false)
-      rowToChoices.put(row, new ArrayList<>());
+    rowToChoices.putIfAbsent(row, new ArrayList<>());
 
-    rowToChoices.get(row).add(cell);
-    return cell;
+    return (QueryCell) addEntryToList(rowToChoices.get(row), cell);
   }
 
 //---------------------------------------------------------------------------

@@ -179,7 +179,7 @@ public class FileDlgCtrlr extends HyperDlg
 
       if (curFileRecord != null)
       {
-        hcbType.addAndSelectEntry(((HDT_MiscFile) curFileRecord).fileType, HDT_Record::getCBText);
+        hcbType.selectIDofRecord(((HDT_MiscFile) curFileRecord).fileType);
 
         tfRecordName.setText(curFileRecord.name());
       }

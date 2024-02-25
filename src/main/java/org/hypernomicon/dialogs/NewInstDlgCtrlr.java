@@ -23,7 +23,6 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -92,7 +91,7 @@ public class NewInstDlgCtrlr extends HyperDlg
     tfNewParentName.textProperty().addListener((ob, oldValue, newValue) -> rbNewInst.setSelected(true));
     tfName         .textProperty().addListener((ob, oldValue, newValue) -> rbNewDiv .setSelected(true));
 
-    hcbParent.addAndSelectEntryOrBlank(parent, HDT_Record::name);
+    hcbParent.selectIDofRecord(parent);
 
     if (newName.length() > 0)
     {

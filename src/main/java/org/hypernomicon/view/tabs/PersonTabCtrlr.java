@@ -447,12 +447,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     viewPort = curPerson.getViewPort();
     refreshPicture();
 
-    hcbRank.addAndSelectEntry(curPerson.rank, HDT_Record::name);
-    hcbStatus.addAndSelectEntry(curPerson.status,  HDT_Record::name);
+    hcbRank.selectIDofRecord(curPerson.rank);
+    hcbStatus.selectIDofRecord(curPerson.status);
 
     if (curPerson.field.isNotNull())
     {
-      hcbField.addAndSelectEntry(curPerson.field, HDT_Record::name);
+      hcbField.selectIDofRecord(curPerson.field);
       hcbSubfield.selectID(curPerson.subfield.getID());
     }
 

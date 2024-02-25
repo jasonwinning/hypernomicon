@@ -213,10 +213,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     tfCity.setText(curInst.getCity());
     tfURL .setText(curInst.getURL ());
 
-    hcbCountry   .addAndSelectEntryOrBlank(curInst.country    , HDT_Record::name);
-    hcbRegion    .addAndSelectEntryOrBlank(curInst.region     , HDT_Record::name);
-    hcbType      .addAndSelectEntryOrBlank(curInst.instType   , HDT_Record::name);
-    hcbParentInst.addAndSelectEntryOrBlank(curInst.parentInst , HDT_Record::name);
+    hcbCountry   .selectIDofRecord(curInst.country);
+    hcbRegion    .selectIDofRecord(curInst.region);
+    hcbType      .selectIDofRecord(curInst.instType);
+    hcbParentInst.selectIDofRecord(curInst.parentInst);
 
  // Populate departments and people
  // -------------------------------

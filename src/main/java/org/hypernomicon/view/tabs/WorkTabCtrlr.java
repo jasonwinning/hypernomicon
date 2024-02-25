@@ -748,7 +748,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (curWork.workType.isNotNull())
     {
-      hcbType.addAndSelectEntry(curWork.workType, HDT_Record::name);
+      hcbType.selectIDofRecord(curWork.workType);
       getTab().setGraphic(imgViewForRecord(curWork));
     }
 
@@ -781,7 +781,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Populate works
   // ----------------------
 
-    hcbLargerWork.addAndSelectEntry(curWork.largerWork, HDT_Record::getCBText);
+    hcbLargerWork.selectIDofRecord(curWork.largerWork);
 
     htSubworks.buildRows(curWork.subWorks, (row, subWork) ->
     {

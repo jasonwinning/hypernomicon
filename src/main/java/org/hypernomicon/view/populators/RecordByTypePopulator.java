@@ -74,11 +74,9 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    if (rowToRecordType.containsKey(row) == false)
-      rowToRecordType.put(row, hdtNone);
+    rowToRecordType.putIfAbsent(row, hdtNone);
 
-    if (rowToChoices.containsKey(row) == false)
-      rowToChoices.put(row, new ArrayList<>());
+    rowToChoices.putIfAbsent(row, new ArrayList<>());
 
     List<HyperTableCell> choices = rowToChoices.get(row);
 
@@ -107,8 +105,7 @@ public class RecordByTypePopulator extends RecordPopulator
   {
     if (hasChanged(row) == false) return equalMatch(row, cell);
 
-    if (rowToRecordType.containsKey(row) == false)
-      rowToRecordType.put(row, hdtNone);
+    rowToRecordType.putIfAbsent(row, hdtNone);
 
     RecordType recordType = rowToRecordType.get(row);
 
@@ -118,7 +115,7 @@ public class RecordByTypePopulator extends RecordPopulator
     if (recordType != HyperTableCell.getCellType(cell))
       return null;
 
-    return getCell(cell.getRecord(), recordType);
+    return getCell(cell.getRecord());
   }
 
 //---------------------------------------------------------------------------
@@ -128,15 +125,14 @@ public class RecordByTypePopulator extends RecordPopulator
   {
     if (hasChanged(row) == false) return super.getChoiceByID(row, id);
 
-    if (rowToRecordType.containsKey(row) == false)
-      rowToRecordType.put(row, hdtNone);
+    rowToRecordType.putIfAbsent(row, hdtNone);
 
     RecordType recordType = rowToRecordType.get(row);
 
     return (recordType == hdtNone) || (id < 1) ?
       HyperTableCell.blankCell()
     :
-      getCell(db.records(recordType).getByID(id), recordType);
+      getCell(db.records(recordType).getByID(id));
   }
 
 //---------------------------------------------------------------------------
@@ -182,11 +178,9 @@ public class RecordByTypePopulator extends RecordPopulator
 
     HyperTableCell cell = new HyperTableCell(id, text, type);
 
-    if (rowToChoices.containsKey(row) == false)
-      rowToChoices.put(row, new ArrayList<>());
+    rowToChoices.putIfAbsent(row, new ArrayList<>());
 
-    rowToChoices.get(row).add(cell);
-    return cell;
+    return addEntryToList(rowToChoices.get(row), cell);
   }
 
 //---------------------------------------------------------------------------

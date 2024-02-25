@@ -163,4 +163,22 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static HyperTableCell addEntryToList(List<HyperTableCell> list, HyperTableCell cell)
+  {
+    if ((cell.equals(HyperTableCell.blankCell()) == false) && (list.size() > 0))
+    {
+      if (list.get(list.size() - 1).equals(HyperTableCell.blankCell()))
+      {
+        list.add(list.size() - 1, cell);
+        return cell;
+      }
+    }
+
+    list.add(cell);
+    return cell;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

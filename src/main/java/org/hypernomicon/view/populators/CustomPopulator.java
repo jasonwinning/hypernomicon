@@ -59,7 +59,7 @@ public class CustomPopulator extends RecordPopulator
     super(null, DisplayKind.cbText, true);
 
     this.recordType = recordType;
-    this.handler = (row, force) -> handler.handle(row, force).map(record -> getCell(record, recordType));
+    this.handler = (row, force) -> handler.handle(row, force).map(this::getCell);
     this.cellValueType = cvtRecord;
   }
 

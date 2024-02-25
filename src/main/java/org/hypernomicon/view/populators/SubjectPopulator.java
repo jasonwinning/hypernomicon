@@ -123,8 +123,7 @@ public class SubjectPopulator extends RecordPopulator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    if (rowToChoices.containsKey(row) == false)
-      rowToChoices.put(row, new ArrayList<>());
+    rowToChoices.putIfAbsent(row, new ArrayList<>());
 
     List<HyperTableCell> choices = rowToChoices.get(row);
 
@@ -187,11 +186,9 @@ public class SubjectPopulator extends RecordPopulator
 
     HyperTableCell cell = new HyperTableCell(id, text, type);
 
-    if (rowToChoices.containsKey(row) == false)
-      rowToChoices.put(row, new ArrayList<>());
+    rowToChoices.putIfAbsent(row, new ArrayList<>());
 
-    rowToChoices.get(row).add(cell);
-    return cell;
+    return addEntryToList(rowToChoices.get(row), cell);
   }
 
 //---------------------------------------------------------------------------

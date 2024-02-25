@@ -66,7 +66,7 @@ public abstract class RecordPopulator extends Populator
 
     for (HDT_Record record : recordIt)
     {
-      HyperTableCell choice = getCell(record, recordType);
+      HyperTableCell choice = getCell(record);
 
       if (choice != null)
       {
@@ -102,23 +102,30 @@ public abstract class RecordPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected HyperTableCell getCell(HDT_Record record, RecordType recordType)
+  protected HyperTableCell getCell(HDT_Record record)
   {
-    if (record == null) return nullOkay ? new HyperTableCell("", recordType) : null;
+    if (record == null)
+      return nullOkay ? HyperTableCell.blankCell() : null;
 
     if ((idFilter != null) && (idFilter.test(record.getID()) == false))
       return null;
 
-    String text;
+    return new HyperTableCell(record, getCellText(record));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public String getCellText(HDT_Record record)
+  {
+    if (record == null) return "";
 
     switch (displayKind)
     {
-      case cbText   : text = record.getCBText(); break;
-      case listName : text = record.listName();  break;
-      default       : text = record.name();
+      case cbText   : return record.getCBText();
+      case listName : return record.listName();
+      default       : return record.name();
     }
-
-    return new HyperTableCell(record, text);
   }
 
 //---------------------------------------------------------------------------
