@@ -152,7 +152,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       if (country == null) return;
 
       hcbCountry.populate(true);
-      hcbCountry.selectID(country.getID());
+      hcbCountry.selectIDofRecord(country);
     });
 
     setToolTip(btnNewCountry, "Add new Country record to the list");
@@ -172,7 +172,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       if (nrdc.showModal() == false) return;
 
       hcbRegion.populate(true);
-      hcbRegion.selectID(nrdc.getRegion().getID());
+      hcbRegion.selectIDofRecord(nrdc.getRegion());
     });
 
     setToolTip(btnNewRegion, "Add new State/Region record for the currently selected Country");

@@ -36,15 +36,13 @@ public abstract class RecordPopulator extends Populator
 {
   private final DisplayKind displayKind;
   private final Predicate<Integer> idFilter;
-  private final boolean nullOkay;
 
 //---------------------------------------------------------------------------
 
-  protected RecordPopulator(Predicate<Integer> idFilter, DisplayKind displayKind, boolean nullOkay)
+  protected RecordPopulator(Predicate<Integer> idFilter, DisplayKind displayKind)
   {
     this.idFilter = idFilter;
     this.displayKind = displayKind;
-    this.nullOkay = nullOkay;
   }
 
 //---------------------------------------------------------------------------
@@ -66,9 +64,9 @@ public abstract class RecordPopulator extends Populator
 
     for (HDT_Record record : recordIt)
     {
-      HyperTableCell choice = getCell(record);
+      HyperTableCell choice = generateCell(record);
 
-      if (choice != null)
+      if (HyperTableCell.getCellType(choice) != hdtNone)
       {
         int ndx = addToSortedList(choices, choice, comparator);
 
@@ -102,21 +100,18 @@ public abstract class RecordPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected HyperTableCell getCell(HDT_Record record)
+  protected HyperTableCell generateCell(HDT_Record record)
   {
-    if (record == null)
-      return nullOkay ? HyperTableCell.blankCell() : null;
-
-    if ((idFilter != null) && (idFilter.test(record.getID()) == false))
-      return null;
-
-    return new HyperTableCell(record, getCellText(record));
+    return (record == null) || ((idFilter != null) && (idFilter.test(record.getID()) == false)) ?
+      HyperTableCell.blankCell()
+    :
+      new HyperTableCell(record, getCellText(record));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getCellText(HDT_Record record)
+  private String getCellText(HDT_Record record)
   {
     if (record == null) return "";
 

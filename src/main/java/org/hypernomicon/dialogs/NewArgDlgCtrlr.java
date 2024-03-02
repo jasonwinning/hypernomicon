@@ -115,15 +115,17 @@ public class NewArgDlgCtrlr extends HyperDlg
         HDT_Person person = findFirst(work.getAuthors(), author -> (author.getPerson() != null) && author.getInFileName().isTrue(), Author::getPerson);
 
         if (person == null)
+        {
           person = findFirst(work.getAuthors(), author -> (author.getPerson() != null) && (author.getInFileName() != Ternary.False), Author::getPerson);
 
-        if (person == null)
-          person = findFirst(work.getAuthors(), author -> author.getPerson() != null, Author::getPerson);
+          if (person == null)
+            person = findFirst(work.getAuthors(), author -> author.getPerson() != null, Author::getPerson);
+        }
 
         if (person != null)
         {
-          hcbPerson.selectID(person.getID());
-          Platform.runLater(() -> hcbWork.selectID(work.getID()));
+          hcbPerson.selectIDofRecord(person);
+          Platform.runLater(() -> hcbWork.selectIDofRecord(work));
         }
       }
 

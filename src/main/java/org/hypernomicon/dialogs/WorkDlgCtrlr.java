@@ -42,7 +42,6 @@ import org.hypernomicon.bib.data.GoogleBibData;
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Person;
@@ -1232,7 +1231,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     taMisc.setText(curBD.getStr(bfMisc));
 
-    hcbType.selectID(nullSwitch(curBD.getWorkType(), -1, HDT_Record::getID));
+    hcbType.selectIDofRecord(curBD.getWorkType());
 
     tfDOI.setText(curBD.getStr(bfDOI));
 

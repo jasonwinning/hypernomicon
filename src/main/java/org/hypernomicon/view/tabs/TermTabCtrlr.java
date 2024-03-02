@@ -236,7 +236,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     tvRightChildren.getColumns().get(0).setText("Type");
     tvRightChildren.getColumns().get(1).setText("Name of record showing this definition");
-    tvRightChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Description"));
+    tvRightChildren.getColumns().add(new TableColumn<>("Description"));
     spMain.setDividerPosition(1, 0.85);
 
     htGlossaries = new HyperTable(tvParents, 2, true, PREF_KEY_HT_TERM_GLOSSARIES);
@@ -559,7 +559,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         db.glossaries.getByID(1);
 
       editedRow.setCellValue(2, glossary, glossary.name());
-      Platform.runLater(() -> editedRow.setCellValue(3, newCell == null ? null : newCell.clone()));
+      Platform.runLater(() -> editedRow.setCellValue(3, newCell));
 
       return;
     }

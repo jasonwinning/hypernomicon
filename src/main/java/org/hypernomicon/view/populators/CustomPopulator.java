@@ -47,7 +47,7 @@ public class CustomPopulator extends RecordPopulator
 
   public CustomPopulator(CellValueType cellValueType, PopulateHandler handler)
   {
-    super(null, DisplayKind.cbText, true);
+    super(null, DisplayKind.cbText);
 
     this.recordType = RecordType.hdtNone;
     this.handler = handler;
@@ -56,10 +56,10 @@ public class CustomPopulator extends RecordPopulator
 
   public CustomPopulator(RecordType recordType, RecordPopulateHandler handler)
   {
-    super(null, DisplayKind.cbText, true);
+    super(null, DisplayKind.cbText);
 
     this.recordType = recordType;
-    this.handler = (row, force) -> handler.handle(row, force).map(this::getCell);
+    this.handler = (row, force) -> handler.handle(row, force).map(this::generateCell);
     this.cellValueType = cvtRecord;
   }
 
@@ -68,7 +68,7 @@ public class CustomPopulator extends RecordPopulator
 
   @Override public CellValueType getValueType()                                 { return cellValueType; }
   @Override public RecordType getRecordType(HyperTableRow row)                  { return recordType; }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return matchFromList(row, cell); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

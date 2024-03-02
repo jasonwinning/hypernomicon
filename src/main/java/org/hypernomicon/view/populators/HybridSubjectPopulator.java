@@ -43,7 +43,7 @@ public class HybridSubjectPopulator extends Populator
 
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
   @Override public RecordType getRecordType(HyperTableRow row)                  { return db.getSubjType(relType); }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return matchFromList(row, cell); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

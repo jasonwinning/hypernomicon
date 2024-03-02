@@ -576,7 +576,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       rows.add(row);
       settingDefaultValue = true;
-      colNdxToDefaultValue.forEach((ndx, cell) -> row.setCellValue(ndx, cell.clone()));
+      colNdxToDefaultValue.forEach(row::setCellValue);
       settingDefaultValue = false;
     }
 
@@ -624,7 +624,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void selectID(int colNdx, HyperTableRow row, int newID)
   {
-    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getID() == newID), cell -> row.setCellValue(colNdx, cell.clone()));
+    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getID() == newID), cell -> row.setCellValue(colNdx, cell));
   }
 
 //---------------------------------------------------------------------------
@@ -632,7 +632,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void selectType(int colNdx, HyperTableRow row, RecordType newType)
   {
-    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.type == newType), cell -> row.setCellValue(colNdx, cell.clone()));
+    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.type == newType), cell -> row.setCellValue(colNdx, cell));
   }
 
 //---------------------------------------------------------------------------

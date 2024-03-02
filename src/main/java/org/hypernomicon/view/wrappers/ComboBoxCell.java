@@ -112,7 +112,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     if (hcb.somethingWasTyped && (hcb.typedMatch != null))
       newValue = hcb.typedMatch;
 
-    row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue == null ? null : newValue.clone());
+    row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
   }
 
 //---------------------------------------------------------------------------
@@ -179,7 +179,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
       if (event.getCode() == KeyCode.ESCAPE)
       {
         HyperTableCell item = getItem();
-        hcb.selectID(item.getID());
+        hcb.select(item);
         commitEdit(item);
         event.consume();
       }

@@ -78,13 +78,14 @@ public class HyperCB implements CommitableWrapper
   @FunctionalInterface
   public interface HTCListener { void changed(HyperTableCell oldValue, HyperTableCell newValue); }
 
-  public void setChoicesChanged()                { populator.setChanged(row); }
-  public ComboBox<HyperTableCell> getComboBox()  { return cb; }
-  public void addListener(HTCListener listener)  { listeners.add(listener); }
-  public void triggerOnAction()                  { internalOnAction.handle(new ActionEvent(null, cb)); }
-  public void triggerOnAction(ActionEvent event) { internalOnAction.handle(event); }
+  public void setChoicesChanged()                    { populator.setChanged(row); }
+  public ComboBox<HyperTableCell> getComboBox()      { return cb; }
+  public void addListener(HTCListener listener)      { listeners.add(listener); }
+  public void triggerOnAction()                      { internalOnAction.handle(new ActionEvent(null, cb)); }
+  public void triggerOnAction(ActionEvent event)     { internalOnAction.handle(event); }
+  public void addAndSelectEntry(int id, String text) { select(populator.addEntry(row, id, text)); }
 
-  private boolean isInTable()                    { return (cb != null) && (cb.getParent() instanceof ComboBoxCell); }
+  private boolean isInTable()                        { return (cb != null) && (cb.getParent() instanceof ComboBoxCell); }
 
   public void setOnAction(EventHandler<ActionEvent> onAction) { if (onAction != null) this.onAction = onAction; }
 
@@ -252,16 +253,6 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addEntry(int id, String text, boolean select)
-  {
-    HyperTableCell cell = populator.addEntry(row, id, text);
-    if (select && ((id > 0) || (text.isBlank() == false)))
-      select(cell);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   /**
    * This not only clears the text box and selected item, but also calls the populator's clear method
    * so that the list of choices will also be blank.
@@ -419,7 +410,7 @@ public class HyperCB implements CommitableWrapper
         }
 
         if ((table != null) && (selection != null))     // By the time we get back here, the ComboBox is gone
-          row.setCellValue(colNdx, selection.clone());  // and the table is already out of edit mode
+          row.setCellValue(colNdx, selection);          // and the table is already out of edit mode
 
         return selection;
       }

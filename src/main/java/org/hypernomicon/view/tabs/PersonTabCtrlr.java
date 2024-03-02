@@ -453,7 +453,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     if (curPerson.field.isNotNull())
     {
       hcbField.selectIDofRecord(curPerson.field);
-      hcbSubfield.selectID(curPerson.subfield.getID());
+      hcbSubfield.selectIDofRecord(curPerson.subfield);
     }
 
     htPersonInst.buildRows(curPerson.institutions, (row, inst) ->

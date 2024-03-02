@@ -312,7 +312,7 @@ public final class QueryCtrlr
           :
             nextPop.getChoiceByID(Query.EQUAL_TO_OPERAND_ID);
 
-          row.setCellValue(nextColNdx, operandCell.clone());
+          row.setCellValue(nextColNdx, operandCell);
           if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 3, cellVal, operandCell))
             htFields.edit(row, OPERAND_3_COL_NDX);
         }
@@ -540,7 +540,7 @@ public final class QueryCtrlr
           else if (getCellText(op1).isEmpty())
             htFields.selectType(OPERAND_1_COL_NDX, row, getCellType(op1));
           else
-            row.setCellValue(OPERAND_1_COL_NDX, op1.clone());
+            row.setCellValue(OPERAND_1_COL_NDX, op1);
         }
 
         if (op2 != null)
@@ -550,7 +550,7 @@ public final class QueryCtrlr
           else if (getCellText(op2).isEmpty())
             htFields.selectType(OPERAND_2_COL_NDX, row, getCellType(op2));
           else
-            row.setCellValue(OPERAND_2_COL_NDX, op2.clone());
+            row.setCellValue(OPERAND_2_COL_NDX, op2);
         }
       }
 
@@ -633,7 +633,7 @@ public final class QueryCtrlr
     htFields.buildRows(fav.rows, (row, queryRow) ->
     {
       for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
-        row.setCellValue(colNdx, queryRow.cells[colNdx - QUERY_TYPE_COL_NDX].clone());
+        row.setCellValue(colNdx, queryRow.cells[colNdx - QUERY_TYPE_COL_NDX]);
     });
 
     programmaticCustomLogicChange = true;

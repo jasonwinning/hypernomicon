@@ -54,7 +54,7 @@ public abstract class Populator
 
     @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return choices; }
     @Override public CellValueType getValueType()                                    { return cellValueType; }
-    @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return equalMatch(row, cell); }
+    @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return matchFromList(row, cell); }
 
   //---------------------------------------------------------------------------
 
@@ -116,25 +116,32 @@ public abstract class Populator
   public final RecordType getRecordType()                   { return getRecordType(dummyRow); }
   public final HyperTableCell addEntry(int id, String text) { return addEntry(dummyRow, id, text); }
   public final HyperTableCell addEntry(String text)         { return addEntry(dummyRow, text); }
-  public final HyperTableCell match(HyperTableCell cell)    { return match(dummyRow, cell); }
   public final HyperTableCell getChoiceByID(int id)         { return getChoiceByID(dummyRow, id); }
 
   protected final boolean hasChanged()                      { return hasChanged(dummyRow); }
 
-  final HyperTableCell equalMatch(HyperTableCell cell)      { return equalMatch(dummyRow, cell); }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Find or generate a choice that matches (in relevant respects for this populator) the input cell
+   * @param row The table row
+   * @param cell The input cell
+   * @return The choice in this populator matching the input
+   */
   public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
     return getChoiceByID(row, HyperTableCell.getCellID(cell));
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  HyperTableCell equalMatch(HyperTableRow row, HyperTableCell cell)
+  /**
+   * Populate the list of choices and find a choice that exactly matches (in terms of the HyperTableCell "equals" method)
+   * the input cell from the list of choices
+   * @param row The table row
+   * @param cell The input cell
+   * @return The choice in this populator matching the input
+   */
+  final HyperTableCell matchFromList(HyperTableRow row, HyperTableCell cell)
   {
     return populate(row, false).contains(cell) ? cell : null;
   }
@@ -163,18 +170,13 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HyperTableCell addEntryToList(List<HyperTableCell> list, HyperTableCell cell)
+  protected static HyperTableCell addEntryToList(List<HyperTableCell> list, HyperTableCell cell)
   {
-    if ((cell.equals(HyperTableCell.blankCell()) == false) && (list.size() > 0))
-    {
-      if (list.get(list.size() - 1).equals(HyperTableCell.blankCell()))
-      {
-        list.add(list.size() - 1, cell);
-        return cell;
-      }
-    }
+    if ((cell.equals(HyperTableCell.blankCell()) == false) && (list.size() > 0) && list.get(list.size() - 1).equals(HyperTableCell.blankCell()))
+      list.add(list.size() - 1, cell);
+    else
+      list.add(cell);
 
-    list.add(cell);
     return cell;
   }
 

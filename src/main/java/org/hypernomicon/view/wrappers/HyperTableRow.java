@@ -129,16 +129,17 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       HyperTableCell matchedCell = populator.match(this, newCell);
 
-      if (matchedCell != null)
-        newCell = matchedCell.clone();
+      if (HyperTableCell.isEmpty(matchedCell) == false)
+        newCell = matchedCell;
       else if (HyperTableCell.getCellText(newCell).length() > 0)
       {
         if (isNotCheckBox) table.refresh();
         return false;
       }
     }
-    else
-      newCell = newCell.clone(); // Cells in a TableView always need to be unique so we can determine whether a cell is in the bottom row and if so, make sure it sorts to the bottom
+
+    if (newCell != null)
+      newCell = newCell.clone();  // Cells in a TableView always need to be unique so we can determine whether a cell is in the bottom row and if so, make sure it sorts to the bottom
 
     cells.set(colNdx, newCell);
 

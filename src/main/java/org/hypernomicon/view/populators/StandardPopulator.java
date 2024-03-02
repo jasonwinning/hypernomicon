@@ -64,7 +64,7 @@ public class StandardPopulator extends Populator
   @Override public RecordType getRecordType(HyperTableRow row)                     { return rtp.getRecordType(); }
   @Override public void clear()                                                    { rtp.clear(); rtp.setRecordType(objType); }
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return rtp.populate(force); }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return rtp.match(cell); }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return rtp.match(dummyRow, cell); }
   @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)         { return rtp.getChoiceByID(id); }
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text) { return rtp.addEntry(id, text); }
 

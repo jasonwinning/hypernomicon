@@ -423,8 +423,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     chkDefaultChapterWorkType.setSelected(workType != null);
 
-    if (workType != null)
-      hcbDefaultChapterWorkType.selectID(workType.getID());
+    hcbDefaultChapterWorkType.selectIDofRecord(workType);
 
     chkDefaultChapterWorkType.selectedProperty().addListener((ob, ov, nv) ->
     {

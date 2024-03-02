@@ -67,7 +67,7 @@ public class SubjectPopulator extends RecordPopulator
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow, Predicate<Integer> idFilter, DisplayKind displayKind)
   {
-    super(idFilter, displayKind, false);
+    super(idFilter, displayKind);
 
     this.relType = relType;
     this.trackObjByRow = trackObjByRow;
@@ -79,7 +79,7 @@ public class SubjectPopulator extends RecordPopulator
 
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
   @Override public RecordType getRecordType(HyperTableRow row)                  { return db.getSubjType(relType); }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return matchFromList(row, cell); }
   @Override public void setChanged(HyperTableRow row)                           { rowToChanged.put(row, true); }
 
 //---------------------------------------------------------------------------

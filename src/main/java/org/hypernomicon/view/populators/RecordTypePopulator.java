@@ -60,7 +60,7 @@ public class RecordTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setTypes(Collection<RecordType> collection)
+  private void setTypes(Collection<RecordType> collection)
   {
     if (collection == null)
       types = EnumSet.noneOf(RecordType.class);

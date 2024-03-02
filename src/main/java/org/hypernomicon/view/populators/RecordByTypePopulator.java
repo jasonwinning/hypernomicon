@@ -45,12 +45,12 @@ public class RecordByTypePopulator extends RecordPopulator
 
   public RecordByTypePopulator()
   {
-    super(null, DisplayKind.cbText, false);
+    super(null, DisplayKind.cbText);
   }
 
   public RecordByTypePopulator(Predicate<Integer> idFilter, DisplayKind displayKind)
   {
-    super(idFilter, displayKind, false);
+    super(idFilter, displayKind);
   }
 
   @Override public CellValueType getValueType() { return cvtRecord; }
@@ -103,19 +103,9 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (hasChanged(row) == false) return equalMatch(row, cell);
+    if (hasChanged(row) == false) return matchFromList(row, cell);
 
-    rowToRecordType.putIfAbsent(row, hdtNone);
-
-    RecordType recordType = rowToRecordType.get(row);
-
-    if ((recordType == hdtNone) || (HyperTableCell.getCellType(cell) == hdtNone) || (HyperTableCell.getCellID(cell) < 1))
-      return HyperTableCell.blankCell();
-
-    if (recordType != HyperTableCell.getCellType(cell))
-      return null;
-
-    return getCell(cell.getRecord());
+    return match(row, HyperTableCell.getCellID(cell), HyperTableCell.getCellType(cell), false);
   }
 
 //---------------------------------------------------------------------------
@@ -125,14 +115,24 @@ public class RecordByTypePopulator extends RecordPopulator
   {
     if (hasChanged(row) == false) return super.getChoiceByID(row, id);
 
+    return match(row, id, hdtNone, true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private HyperTableCell match(HyperTableRow row, int id, RecordType recordType, boolean ignoreRecordType)
+  {
     rowToRecordType.putIfAbsent(row, hdtNone);
 
-    RecordType recordType = rowToRecordType.get(row);
+    RecordType rowRecordType = rowToRecordType.get(row);
 
-    return (recordType == hdtNone) || (id < 1) ?
+    return ((rowRecordType == hdtNone) ||
+            (id < 1) ||
+            ((ignoreRecordType == false) && (rowRecordType != recordType))) ?
       HyperTableCell.blankCell()
     :
-      getCell(db.records(recordType).getByID(id));
+      generateCell(db.records(rowRecordType).getByID(id));
   }
 
 //---------------------------------------------------------------------------
