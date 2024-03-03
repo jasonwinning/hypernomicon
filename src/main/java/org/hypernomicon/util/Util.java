@@ -1138,6 +1138,62 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Splits a string into the beginning of the string and a positive whole number that is at the end of the string.<br>
+   * The part of the string before the number is output into the second parameter.<br>
+   * Examples:<br>
+   * "Hello" -> "", -1<br>
+   * "Hello 2" -> "Hello ", 2<br>
+   * "Hello.2" -> "Hello.", 2<br>
+   * "Hello2.2" -> "", -1<br>
+   * "Hello2..2" -> "Hello..", 2<br>
+   * "Hello-2" -> "Hello-", 2<br>
+   * @param str The input
+   * @param prefix If there was a number at the end, this will be set to the part of the string before the number, and will be blank otherwise.
+   * @return The number at the end if there was one; -1 otherwise
+   */
+  public static int splitIntoPrefixAndNumber(String str, StringBuilder prefix)
+  {
+    int ndx;
+    boolean lastWasDot = false;
+
+    for (ndx = str.length() - 1; ndx >= 0; ndx--)
+    {
+      char c = str.charAt(ndx);
+
+      if (c == '.')
+      {
+        if (lastWasDot) break;
+
+        lastWasDot = true;
+        continue;
+      }
+
+      if (Character.digit(c, 10) < 0) break;
+
+      if (lastWasDot)
+      {
+        assignSB(prefix, "");
+        return -1;  // The name ends with a decimal number, not a whole number
+      }
+    }
+
+    ndx = ndx + (lastWasDot ? 2 : 1);  // Now ndx is the starting index of the numeric portion
+
+    if ((ndx < 1) || (ndx >= str.length()))
+    {
+      assignSB(prefix, "");
+      return -1;
+    }
+
+    assignSB(prefix, str.substring(0, ndx));
+
+    return parseInt(str.substring(ndx), -1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 // DOI legal characters according to Crossref: "a-z", "A-Z", "0-9" and "-._;()/"
 // But I've seen at least one Crossref DOI that included a colon
 

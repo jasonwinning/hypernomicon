@@ -18,6 +18,7 @@
 package org.hypernomicon.fileManager;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
 
 import org.apache.commons.io.FilenameUtils;
@@ -169,8 +170,33 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     FilePath  fileName =   hyperPath.getFileName(),
              oFileName = o.hyperPath.getFileName();
 
-    if (FilePath.isEmpty(fileName )) return FilePath.isEmpty(oFileName) ? 0 : -1;
+    if (FilePath.isEmpty( fileName)) return FilePath.isEmpty(oFileName) ? 0 : -1;
     if (FilePath.isEmpty(oFileName)) return 1;
+
+    if (  isDirectory() && (o.isDirectory() == false)) return -1;
+    if (o.isDirectory() && (  isDirectory() == false)) return 1;
+
+    String fileNameStr1 =  fileName.toString(),
+           fileNameStr2 = oFileName.toString();
+
+    if (Character.isDigit(fileNameStr1.charAt(fileNameStr1.length() - 1)) &&
+        Character.isDigit(fileNameStr2.charAt(fileNameStr2.length() - 1)))
+    {
+      StringBuilder prefix1 = new StringBuilder(),
+                    prefix2 = new StringBuilder();
+
+      int num1 = splitIntoPrefixAndNumber(fileNameStr1, prefix1),
+          num2 = splitIntoPrefixAndNumber(fileNameStr2, prefix2);
+
+      if ((num1 >= 0) && (num2 >= 0))
+      {
+        prefix1.append('A');  // Adding 'A' to
+        prefix2.append('A');  // avoid InvalidPathException
+
+        if (Path.of(prefix1.toString()).equals(Path.of(prefix2.toString())))
+          return num1 - num2;
+      }
+    }
 
     return fileName.toPath().compareTo(oFileName.toPath());
   }

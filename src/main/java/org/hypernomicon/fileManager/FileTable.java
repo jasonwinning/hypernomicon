@@ -145,7 +145,7 @@ public class FileTable extends DragNDropContainer<FileRow>
     TableColumn<FileRow, String>                 recordsCol = (TableColumn<FileRow, String>)                 fileTV.getColumns().get(4);
 
     nameCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
-    nameCol.setComparator((v1, v2) -> v1.getFileName().compareToIgnoreCase(v2.getFileName()));
+    nameCol.setComparator(FileRow::compareTo);
 
     modDateCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getModifiedDateCellValue()));
 
@@ -232,8 +232,6 @@ public class FileTable extends DragNDropContainer<FileRow>
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder.filePath().toPath(), "**"))
     {
-      int nextDirNdx = 0;
-
       for (Path entry: stream)
       {
         FilePath filePath = new FilePath(entry);
@@ -246,28 +244,26 @@ public class FileTable extends DragNDropContainer<FileRow>
 
           if (filePath.isDirectory())
           {
-            rows.add(nextDirNdx++, row);
+            addToSortedList(rows, row);
 
             for (TreeItem<FileRow> childTreeItem : parentTreeItem.getChildren())
             {
               FileRow fileRow = childTreeItem.getValue();
               if (fileRow.getRecord().getID() > 0)  // a deleted folder might still be in the tree at this point; the delete recordHandler gets called
                                                     // in a Platform.runLater call
-              {
                 if (fileRow.getFilePath().equals(filePath))
                 {
                   row.setFolderTreeItem(childTreeItem);
                   break;
                 }
-              }
             }
           }
           else
-            rows.add(row);
+            addToSortedList(rows, row);
         }
         else
         {
-          rows.add(new FileRow(new HyperPath(filePath), null));
+          addToSortedList(rows, new FileRow(new HyperPath(filePath), null));
         }
       }
     }
