@@ -281,23 +281,26 @@ public final class DesktopUtil
 
     if (url.contains(":"))
     {
-      // Check to see if it is a file system path
-
-      boolean validFileSystemPath = true;
-
-      try
+      if (SystemUtils.IS_OS_WINDOWS)
       {
-        Paths.get(url);
-      }
-      catch (InvalidPathException e)
-      {
-        validFileSystemPath = false;
-      }
-
-      if (validFileSystemPath)
-      {
-        launchFile(new FilePath(url));
-        return;
+        // Check to see if it is a file system path
+  
+        boolean validFileSystemPath = true;
+  
+        try
+        {
+          Paths.get(url);
+        }
+        catch (InvalidPathException e)
+        {
+          validFileSystemPath = false;
+        }
+  
+        if (validFileSystemPath)
+        {
+          launchFile(new FilePath(url));
+          return;
+        }
       }
     }
     else if (url.startsWith("\\\\"))

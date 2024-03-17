@@ -53,7 +53,7 @@
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
   <AnchorPane GridPane.rowSpan="2">
-    <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" styleClass="noScale" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
+    <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
       <graphic>
         <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
           <viewport>
@@ -130,7 +130,7 @@
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                 <TableView fx:id="tvWorkFiles" editable="true" layoutX="338.0" layoutY="-34.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                   <columns>
-                    <TableColumn editable="false" prefWidth="44.0" resizable="false" sortable="false" />
+                    <TableColumn editable="false" prefWidth="48.0" resizable="false" sortable="false" />
                     <TableColumn prefWidth="74.0" text="Annotated?" />
                     <TableColumn editable="false" prefWidth="338.0" text="File name" />
                     <TableColumn minWidth="0.0" prefWidth="64.0" text="Start pg." />

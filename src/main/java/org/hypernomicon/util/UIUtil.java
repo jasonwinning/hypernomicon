@@ -758,7 +758,7 @@ public final class UIUtil
 
   public static void messageDialog(String msg, MessageDialogType mt)
   {
-    if (ui.dontInteract()) return;
+    if ((ui != null) && ui.dontInteract()) return;
 
     if (mt  == null) throw new NullPointerException("messageDialog type");
     if (msg == null) throw new NullPointerException("messageDialog msg" );
