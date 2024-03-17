@@ -92,10 +92,12 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
     {
       gotKeyPressedYet = true;
 
-      if ((event.getCode() == KeyCode.ENTER) && (hcb.somethingWasTyped == false))
+      if (event.getCode() == KeyCode.ENTER)
       {
         hcb.triggerOnAction();
         event.consume();
+
+        hcb.triggerEnterKeyHandler();
       }
     });
 
@@ -104,9 +106,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       if ((hcb.listenForActionEvents == false) || (hcb.somethingWasTyped == false))
         return;
 
-      hcb.listenForActionEvents = false;
       hcb.triggerOnAction(event);
-      hcb.listenForActionEvents = true;
 
       hcb.somethingWasTyped = false;
     });

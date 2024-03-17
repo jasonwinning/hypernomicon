@@ -55,8 +55,8 @@ public class HyperCB implements CommitableWrapper
 {
   private final ComboBox<HyperTableCell> cb;
   private final Populator populator;
+  private final HyperTable table;
   private final HyperTableRow row;
-  private final EventHandler<ActionEvent> internalOnAction;
   private final List<HTCListener> listeners = new ArrayList<>();
   private final int colNdx;
 
@@ -65,6 +65,7 @@ public class HyperCB implements CommitableWrapper
   public HyperTableCell typedMatch;
   private HyperTableCell preShowingValue;
   private EventHandler<ActionEvent> onAction;
+  private Runnable enterKeyHandler;
   private MutableBoolean adjusting;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
   private boolean silentMode = false;
@@ -78,13 +79,13 @@ public class HyperCB implements CommitableWrapper
   public void setChoicesChanged()                    { populator.setChanged(row); }
   public ComboBox<HyperTableCell> getComboBox()      { return cb; }
   public void addListener(HTCListener listener)      { listeners.add(listener); }
-  public void triggerOnAction()                      { internalOnAction.handle(new ActionEvent(null, cb)); }
-  public void triggerOnAction(ActionEvent event)     { internalOnAction.handle(event); }
   public void addAndSelectEntry(int id, String text) { select(populator.addEntry(row, id, text)); }
+  public void triggerEnterKeyHandler()               { if (enterKeyHandler != null) enterKeyHandler.run(); }
 
   private boolean isInTable()                        { return (cb != null) && (cb.getParent() instanceof ComboBoxCell); }
 
   public void setOnAction(EventHandler<ActionEvent> onAction) { if (onAction != null) this.onAction = onAction; }
+  public void setEnterKeyHandler(Runnable handler)            { enterKeyHandler = handler; }
 
   @SuppressWarnings("unchecked")
   public <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
@@ -124,36 +125,17 @@ public class HyperCB implements CommitableWrapper
     this.autoCommitBeforeRecordSave = autoCommitBeforeRecordSave;
     this.colNdx = colNdx;
     populator = newPopulator;
+    this.table = table;
     this.row = nullSwitch(row, Populator.dummyRow);
 
     if ((ctrlType != ctDropDown) && (ctrlType != ctDropDownList))
     {
       messageDialog("Internal error #42852", mtError);
-      internalOnAction = null;
       return;
     }
 
     setNodeUserObj(cb, NodeUserDataType.HypercCB, this);
     somethingWasTyped = false;
-
-  //---------------------------------------------------------------------------
-
-    internalOnAction = event ->
-    {
-      if (somethingWasTyped && (HyperTableCell.getCellID(typedMatch) >= 1))
-      {
-        select(typedMatch);
-      }
-      else
-      {
-        String str = convertToEnglishChars(cb.getEditor().getText()).trim().toLowerCase();
-
-        if (str.length() > 0)
-          nullSwitch(selectedCellByText(str, table), this::select);
-      }
-
-      endEditModeIfInTable(event);
-    };
 
   //---------------------------------------------------------------------------
 
@@ -380,7 +362,38 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HyperTableCell selectedCellByText(String str, HyperTable table)
+  public void triggerOnAction()
+  {
+    triggerOnAction(new ActionEvent(null, cb));
+  }
+
+  public void triggerOnAction(ActionEvent event)
+  {
+    if (listenForActionEvents == false) return;
+
+    listenForActionEvents = false;
+
+    if (somethingWasTyped && (HyperTableCell.getCellID(typedMatch) >= 1))
+    {
+      select(typedMatch);
+    }
+    else
+    {
+      String str = convertToEnglishChars(cb.getEditor().getText()).trim().toLowerCase();
+
+      if (str.length() > 0)
+        nullSwitch(selectedCellByText(str), this::select);
+    }
+
+    endEditModeIfInTable(event);
+
+    listenForActionEvents = true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private HyperTableCell selectedCellByText(String str)
   {
     List<HyperTableCell> cells = new ArrayList<>();
     MutableBoolean atLeastOneStrongMatch = new MutableBoolean((populator.getRecordType(row) != hdtPerson) || dontCreateNewRecord);

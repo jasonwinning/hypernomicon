@@ -1146,7 +1146,7 @@ public final class Util
    * "Hello 2" -> "Hello ", 2<br>
    * "Hello.2" -> "Hello.", 2<br>
    * "Hello2.2" -> "", -1<br>
-   * "Hello2..2" -> "Hello..", 2<br>
+   * "Hello2..2" -> "Hello2..", 2<br>
    * "Hello-2" -> "Hello-", 2<br>
    * @param str The input
    * @param prefix If there was a number at the end, this will be set to the part of the string before the number, and will be blank otherwise.

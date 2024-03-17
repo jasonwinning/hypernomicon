@@ -407,7 +407,7 @@ public final class MainCtrlr
     btnGoTo.setOnAction        (event -> btnGoToClick(false));
     mnuRecordSelect.setOnAction(event -> btnGoToClick(true));
 
-    hcbGoTo.setOnAction(event -> recordLookup());
+    hcbGoTo.setEnterKeyHandler(this::recordLookup);
     hcbGoTo.dontCreateNewRecord = true;
 
     mnuImportWork        .setOnAction(event -> importWorkFile(null, null, false));
