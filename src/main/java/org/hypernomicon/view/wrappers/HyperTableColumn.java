@@ -101,7 +101,6 @@ public class HyperTableColumn
   RecordType getObjType()                            { return objType; }
   void setCanEditIfEmpty(boolean newVal)             { canEditIfEmpty.setValue(newVal); }
   void setSortMethod(CellSortMethod newSM)           { sortMethod.setValue(newSM); }
-  CellSortMethod getSortMethod()                     { return sortMethod.get(); }
   public void setDontCreateNewRecord(boolean newVal) { dontCreateNewRecord.setValue(newVal); }
   void setTooltip(ButtonAction ba, String text)      { tooltips.put(ba, text); }
   void clear()                                       { if (populator != null) populator.clear(); }
@@ -243,7 +242,7 @@ public class HyperTableColumn
 
             String relPath = cell.getImgRelPath();
 
-            super.updateItem(cell, empty);
+            super.updateItem(cell, false);
             setGraphic(imgViewFromRelPath(relPath));
 
             if ((type == hdtWork) && (record != null))

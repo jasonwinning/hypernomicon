@@ -25,7 +25,7 @@ import static org.hypernomicon.util.Util.*;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public abstract class AbstractEntityWithPath
+abstract class AbstractEntityWithPath
 {
   private boolean related, relatedSet = false;
 

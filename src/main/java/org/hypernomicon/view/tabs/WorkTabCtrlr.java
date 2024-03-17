@@ -496,6 +496,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     initArgContextMenu();
     btnTree.setOnAction(event -> ui.goToTreeRecord(curWork));
 
+    setToolTip(btnTree, "Go to this record in Tree tab");
+
     hcbType.addListener((oldValue, newValue) ->
     {
       if (programmaticTypeChange || (newValue == null)) return;
@@ -973,21 +975,28 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void changeToNormalMode()
   {
-    if (inNormalMode) return;
-
     btnTopAutofill.setVisible(true);
 
     tfYear.setDisable(false);
+
     btnNewChapter.setText("New Chapter");
+    setToolTip(btnNewChapter, "Create new work record having this work record as parent");
+
     cbLargerWork.setDisable(false);
-    GridPane.setColumnSpan(apLowerMid, 1);
+
     btnLargerWork.setText("Larger Work:");
+    setToolTip(btnLargerWork, "Go to parent record");
 
     btnFolder.setVisible(false);
 
     setAllVisible(true, cbLargerWork, apLowerRight, btnURL);
 
     tfURL.setEditable(true);
+
+    if (inNormalMode) return;
+
+    GridPane.setColumnSpan(apLowerMid, 1);
+
     AnchorPane.setLeftAnchor(btnURL, btnURLLeftAnchor);
     AnchorPane.setLeftAnchor(tfURL, tfURLLeftAnchor);
     AnchorPane.setRightAnchor(tfURL, tfURLRightAnchor);
@@ -1025,8 +1034,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     cbLargerWork.setDisable(true);
 
     btnNewChapter.setText("Add Multiple Files");
+    setToolTip(btnNewChapter, "Choose multiple files to add to this work record");
+
     GridPane.setColumnSpan(apLowerMid, GridPane.REMAINING);
+
     btnLargerWork.setText("Move All Files");
+    setToolTip(btnLargerWork, "Select location where to move all files linked to this work record");
 
     tfURL.setEditable(false);
 

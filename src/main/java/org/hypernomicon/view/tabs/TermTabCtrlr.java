@@ -292,11 +292,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         if (curTerm.concepts.size() > 1)
           return true;
 
-        for (GlossaryRow otherGlossaryRow : glossaryRows.values())
-          if ((otherGlossaryRow.childConcept == glossaryRow.childConcept) && (otherGlossaryRow.parentConcept != glossaryRow.parentConcept))
-            return true;
-
-        return false;
+        return glossaryRows.values().stream().anyMatch(otherGlossaryRow -> (otherGlossaryRow.childConcept  == glossaryRow.childConcept ) &&
+                                                                           (otherGlossaryRow.parentConcept != glossaryRow.parentConcept));
       },
 
       this::removeRow);

@@ -22,7 +22,7 @@ import java.util.Set;
 import org.hypernomicon.model.records.HDT_Investigation;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.view.tabs.PersonTabCtrlr.InvestigationView;
+import org.hypernomicon.view.tabs.InvestigationView;
 
 import static org.hypernomicon.util.Util.*;
 

@@ -230,10 +230,9 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
   public HDT_RT activeRecord()
   {
-    return (HDT_RT) getActiveRecordForViewRecord(viewRecord());
+    return getActiveRecordForViewRecord(viewRecord());
   }
 
 //---------------------------------------------------------------------------

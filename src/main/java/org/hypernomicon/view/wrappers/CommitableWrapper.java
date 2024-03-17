@@ -23,8 +23,6 @@ import javafx.scene.control.ComboBox;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
-import org.hypernomicon.util.UIUtil.NodeUserDataType;
-
 //---------------------------------------------------------------------------
 
 @FunctionalInterface public interface CommitableWrapper

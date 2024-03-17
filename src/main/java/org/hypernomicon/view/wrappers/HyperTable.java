@@ -851,7 +851,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<ObjectGroup> getObjectGroupList(HDT_Record subj, RelationType relType, int objColNdx, Map<Integer, Tag> colNdxToTag)
+  private List<ObjectGroup> getObjectGroupList(HDT_Record subj, RelationType relType, int objColNdx, Map<Integer, Tag> colNdxToTag)
   {
     List<ObjectGroup> list = new ArrayList<>();
     RecordType objType = db.getObjType(relType);

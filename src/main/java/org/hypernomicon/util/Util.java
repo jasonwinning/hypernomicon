@@ -524,9 +524,9 @@ public final class Util
               isLower = Character.isLowerCase(currentChar);
 
       if (isUpper && nextIsLower)
-        out = out + " " + currentChar;
+        out = out + ' ' + currentChar;
       else if (isLower && nextIsUpper)
-        out = out + currentChar + " ";
+        out = out + currentChar + ' ';
       else
         out = out + currentChar;
 
@@ -786,18 +786,18 @@ public final class Util
   {
     selText = ultraTrim(selText);
 
-    return (selText.contains("www." )) || (selText.contains("http" )) ||
-           (selText.contains(".com" )) || (selText.contains(".htm" )) ||
-           (selText.contains(".org" )) || (selText.contains(".net" )) ||
-           (selText.contains(".us"  )) || (selText.contains(".uk"  )) ||
-           (selText.contains(".ca"  )) || (selText.contains(".au"  )) ||
-           (selText.contains(".edu" )) || (selText.contains(".de"  )) ||
-           (selText.contains(".org" )) || (selText.contains(".me"  )) ||
-           (selText.contains(".info")) || (selText.contains(".site")) ||
-           (selText.contains(".gov" )) || (selText.contains("://"  )) ||
+    return selText.contains("www." ) || selText.contains("http" ) ||
+           selText.contains(".com" ) || selText.contains(".htm" ) ||
+           selText.contains(".org" ) || selText.contains(".net" ) ||
+           selText.contains(".us"  ) || selText.contains(".uk"  ) ||
+           selText.contains(".ca"  ) || selText.contains(".au"  ) ||
+           selText.contains(".edu" ) || selText.contains(".de"  ) ||
+           selText.contains(".me"  ) || selText.contains(".info") ||
+           selText.contains(".site") || selText.contains(".gov" ) ||
+           selText.contains("://"  ) ||
 
-           (selText.matches("^[A-Za-z\\-]+(\\.[A-Za-z\\-]+)+/?$")) ||
-           (selText.matches(".*/\\w.*") && selText.matches(".*\\.[a-zA-Z].*") && !selText.matches(".*\\.\\h.*"));
+           selText.matches("^[A-Za-z\\-]+(\\.[A-Za-z\\-]+)+/?$") ||
+           selText.matches(".*/\\w.*") && selText.matches(".*\\.[a-zA-Z].*") && !selText.matches(".*\\.\\h.*");
   }
 
 //---------------------------------------------------------------------------

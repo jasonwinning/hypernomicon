@@ -17,7 +17,7 @@
 
 package org.hypernomicon.fileManager;
 
-import static org.hypernomicon.Const.FILENAME_LENGTH_TO_SHOW_TOOLTIP;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.tree.AbstractTreeWrapper;
 import org.hypernomicon.tree.TreeModel;
 import org.hypernomicon.model.records.HDT_Folder;
@@ -149,7 +150,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   @Override public FileRow newRow(HDT_Record record, TreeModel<FileRow> treeModel)
   {
     if (record.getType() == hdtFolder)
-      return new FileRow(((HDT_Folder)record).getPath(), treeModel);
+      return new FileRow(((HDT_RecordWithPath)record).getPath(), treeModel);
 
     messageDialog("Internal error #18726", mtError);
     return null;

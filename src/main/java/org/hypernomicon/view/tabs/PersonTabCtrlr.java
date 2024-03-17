@@ -101,10 +101,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 
 //---------------------------------------------------------------------------
@@ -953,7 +949,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     if (ui.cantSaveRecord()) return;
 
-    HDT_Institution parentInst = null, subInst = null, oldParent = row.getRecord(2);
+    HDT_Institution parentInst, subInst, oldParent = row.getRecord(2);
     if ((newName.length() > 0) && (colNdx == 2))
       oldParent = null;
 
@@ -1089,74 +1085,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   /**                                                                                                                            **/
   /********************************************************************************************************************************/
 
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public final class InvestigationView
-  {
-    private InvestigationView(HDT_Investigation record)
-    {
-      this(record, new TextViewInfo(record));
-    }
-
-    private InvestigationView(HDT_Investigation record, TextViewInfo textViewInfo)
-    {
-      assert(record == textViewInfo.record);
-
-      this.record = record;
-
-      BorderPane bPane = new BorderPane();
-      GridPane gPane = new GridPane();
-
-      tfName = new TextField();
-
-      gPane.add(new Label("Investigation name:"), 0, 0); // column=2 row=1
-      bPane.setTop(gPane);
-      gPane.add(tfName, 1, 0);
-
-      tfSearchKey = new TextField(record.getSearchKey());
-      MainCtrlr.setSearchKeyToolTip(tfSearchKey);
-
-      gPane.add(new Label("Search key:"), 2, 0);
-      gPane.add(tfSearchKey, 3, 0);
-
-      ColumnConstraints cc2 = new ColumnConstraints(),
-                        cc4 = new ColumnConstraints();
-
-      cc2.setHgrow(Priority.ALWAYS);
-      cc4.setHgrow(Priority.ALWAYS);
-
-      gPane.getColumnConstraints().addAll(new ColumnConstraints(), cc2, new ColumnConstraints(), cc4);
-
-      gPane.setHgap(3);
-
-      AnchorPane aPane = new AnchorPane();
-      bPane.setCenter(aPane);
-
-      textWrapper = new MainTextWrapper(aPane);
-      textWrapper.loadFromRecord(record, false, textViewInfo);
-
-      tab = new Tab();
-
-      tfName.textProperty().addListener((ob, oldText, newText) ->
-      {
-        tab.setText(newText);
-        updateInvInWorkTable();
-      });
-
-      tfName.setText(record.listName());
-
-      tab.setContent(bPane);
-    }
-
-    public final HDT_Investigation record;
-    public final TextField tfName;
-
-    private final TextField tfSearchKey;
-    private final MainTextWrapper textWrapper;
-    private final Tab tab;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1353,7 +1281,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateInvInWorkTable()
+  void updateInvInWorkTable()
   {
     htWorks.dataRows().forEach(row ->
     {

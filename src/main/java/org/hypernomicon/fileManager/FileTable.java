@@ -56,7 +56,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
 
-public class FileTable extends DragNDropContainer<FileRow>
+class FileTable extends DragNDropContainer<FileRow>
 {
 
 //---------------------------------------------------------------------------
