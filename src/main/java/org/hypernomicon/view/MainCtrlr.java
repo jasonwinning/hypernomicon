@@ -407,6 +407,8 @@ public final class MainCtrlr
     btnGoTo.setOnAction        (event -> btnGoToClick(false));
     mnuRecordSelect.setOnAction(event -> btnGoToClick(true));
 
+    setToolTip(btnGoTo, this::btnGoToTooltip);
+
     hcbGoTo.setEnterKeyHandler(this::recordLookup);
     hcbGoTo.dontCreateNewRecord = true;
 
@@ -1194,6 +1196,27 @@ public final class MainCtrlr
         double diff = ((p2.getX() - toolBarWidth) - p1.getX()) - 36;
         topToolBar.setMaxWidth(toolBarWidth + diff);
       }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String btnGoToTooltip()
+  {
+    if (selectorTabEnum() != listTabEnum)
+    {
+      return "Go to selected record or find " + (selectorTabEnum() == omniTabEnum ?
+        "records with matching text in any field"
+      :
+        getTypeName(selectorType()) + " records with matching text");
+    }
+
+    switch (activeTabEnum())
+    {
+      case queryTabEnum : return "Go record selected in query results";
+      case treeTabEnum  : return "Go to next/previous match, or go to selected record";
+      default           : return "In this context, this button has no effect.";
     }
   }
 

@@ -25,6 +25,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.function.Supplier;
 
 import javafx.beans.value.ObservableDoubleValue;
 import org.apache.commons.lang3.SystemUtils;
@@ -177,6 +178,29 @@ public final class UIUtil
     ctrl.setTooltip(makeTooltip(str));
   }
 
+  public static void setToolTip(Control ctrl, Supplier<String> supplier)
+  {
+    ctrl.setTooltip(makeTooltip(supplier));
+  }
+
+  public static void setToolTip(Tab ctrl, Supplier<String> supplier)
+  {
+    ctrl.setTooltip(makeTooltip(supplier));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Tooltip makeTooltip(Supplier<String> supplier)
+  {
+    Tooltip tooltip = new Tooltip();
+
+    tooltip.setOnShowing(event -> tooltip.setText(safeStr(supplier.get())));
+    tooltip.setMaxWidth(MAX_TOOLTIP_WIDTH);
+
+    return tooltip;
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -187,7 +211,7 @@ public final class UIUtil
 
     Tooltip tooltip = new Tooltip(str); // Font size is set in css file
 
-    tooltip.setMaxWidth(1100);
+    tooltip.setMaxWidth(MAX_TOOLTIP_WIDTH);
 
     return tooltip;
   }
