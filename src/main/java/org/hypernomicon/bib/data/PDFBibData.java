@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
@@ -381,7 +382,7 @@ public class PDFBibData extends BibDataStandalone
 
   public PDFBibData(FilePath filePath) throws IOException
   {
-    try (PDDocument pdfDoc = PDDocument.load(filePath.toFile()))
+    try (PDDocument pdfDoc = Loader.loadPDF(filePath.toFile()))
     {
       setDocInfo(pdfDoc.getDocumentInformation());
       PDMetadata metadata = pdfDoc.getDocumentCatalog().getMetadata();

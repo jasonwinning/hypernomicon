@@ -284,9 +284,9 @@ public final class DesktopUtil
       if (SystemUtils.IS_OS_WINDOWS)
       {
         // Check to see if it is a file system path
-  
+
         boolean validFileSystemPath = true;
-  
+
         try
         {
           Paths.get(url);
@@ -295,7 +295,7 @@ public final class DesktopUtil
         {
           validFileSystemPath = false;
         }
-  
+
         if (validFileSystemPath)
         {
           launchFile(new FilePath(url));
@@ -365,7 +365,7 @@ public final class DesktopUtil
     try
     {
       if (SystemUtils.IS_OS_WINDOWS)
-        Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + '"').waitFor();
+        Runtime.getRuntime().exec(new String[] {"explorer.exe", "/select,\"" + filePath + '"'}).waitFor();
 
       else if (SystemUtils.IS_OS_MAC)
         Runtime.getRuntime().exec(new String[] {"open", "-R", filePath.toString()}).waitFor();
@@ -433,7 +433,7 @@ public final class DesktopUtil
 
       if (SystemUtils.IS_OS_WINDOWS)
       {
-        output = execReadToString("wmic csproduct get UUID");
+        output = execReadToString(new String[] {"wmic", "csproduct", "get", "UUID"});
 
         SplitString ss = new SplitString(output, '\n');
         ss.next();
@@ -441,14 +441,14 @@ public final class DesktopUtil
       }
       else if (SystemUtils.IS_OS_MAC)
       {
-        output = execReadToString("system_profiler SPHardwareDataType");
+        output = execReadToString(new String[] {"system_profiler", "SPHardwareDataType"});
 
         String[] arr = output.split("UUID: ", 2);
         uuid = arr.length < 2 ? "" : new SplitString(arr[1], '\n').next();
       }
       else if (SystemUtils.IS_OS_LINUX)
       {
-        uuid = execReadToString("cat /etc/machine-id");
+        uuid = execReadToString(new String[] {"cat", "/etc/machine-id"});
       }
     }
     catch (IOException | InterruptedException e) { noOp(); }
@@ -473,7 +473,7 @@ public final class DesktopUtil
 
     try
     {
-      hostName = formatName(execReadToString("hostname"));
+      hostName = formatName(execReadToString(new String[] {"hostname"}));
       if (hostName.length() > 0) return hostName;
     }
     catch (IOException | InterruptedException e) { noOp(); }
@@ -500,7 +500,7 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String execReadToString(String execCommand) throws IOException, InterruptedException
+  private static String execReadToString(String[] execCommand) throws IOException, InterruptedException
   {
     Process process = Runtime.getRuntime().exec(execCommand);
     String output = "";

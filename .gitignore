@@ -7,7 +7,7 @@ sh.exe.stackdump
 .idea
 target
 bin
-pom2.xml
+pom2*.xml
 *.bak
 *.log
 *.iml
