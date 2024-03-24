@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.multipdf.PDFCloneUtility;
@@ -152,6 +154,19 @@ class SearchResultFileList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+    // This class is necessary because the PDFBox developers decided to reduce
+    // the visibility of the PDFCloneUtility constructor without providing an
+    // alternate way to clone a PDF page in memory.
+
+    private class PDFCloneUtility2 extends PDFCloneUtility
+    {
+      public PDFCloneUtility2(PDDocument dest) { super(dest); }  // Increase visibility
+
+      @Override public <TCOSBase extends COSBase> TCOSBase cloneForNewDocument(TCOSBase base) throws IOException { return super.cloneForNewDocument(base); }  // Increase visibility
+    }
+
+//---------------------------------------------------------------------------
+
     private void copyToResultsFolder(boolean excludeAnnots, List<String> errList)
     {
       try
@@ -166,7 +181,7 @@ class SearchResultFileList
         {
           filePath.copyTo(destFilePath, false);
         }
-        else try (PDDocument srcPdf = PDDocument.load(filePath.toFile()))
+        else try (PDDocument srcPdf = Loader.loadPDF(filePath.toFile()))
         {
           int numPages = srcPdf.getNumberOfPages();
 
@@ -187,11 +202,12 @@ class SearchResultFileList
             }
             else try (PDDocument destPdf = new PDDocument())
             {
-              PDFCloneUtility cloneUtil = new PDFCloneUtility(destPdf);
+              PDFCloneUtility cloneUtil = new PDFCloneUtility2(destPdf);
 
               for (int curPageNdx = startPage - 1; curPageNdx < endPage; curPageNdx++)
               {
-                COSDictionary dict = (COSDictionary) cloneUtil.cloneForNewDocument(srcPdf.getPage(curPageNdx));
+                COSDictionary dict = cloneUtil.cloneForNewDocument(srcPdf.getPage(curPageNdx).getCOSObject());
+
                 if (excludeAnnots)
                 {
                   COSArray annots = (COSArray) dict.getItem(COSName.ANNOTS);

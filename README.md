@@ -50,9 +50,9 @@ Contributions can be submitted via [Pull requests](https://github.com/jasonwinni
 
 ### Prerequisites
 
-* [JDK 11](https://adoptium.net/temurin/releases/?version=11) or later for building 'master' branch
+* [JDK 17](https://adoptium.net/temurin/releases/?version=17) or later for building 'master' branch
 * A recent version of [Git](https://git-scm.com/downloads)
-* [Maven](https://maven.apache.org/download.cgi) version 3.2.5 or greater
+* [Maven](https://maven.apache.org/download.cgi) version 3.6.3 or greater
 
 ### How to build Hypernomicon ###
 
