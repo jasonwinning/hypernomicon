@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -1170,7 +1169,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     curBD.setWorkType(hcbType.selectedRecord());
 
-    curBD.setMultiStr(bfISBNs, htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList()));
+    curBD.setMultiStr(bfISBNs, htISBN.dataRowStream().map(row -> row.getText(0)).toList());
 
     curBD.getAuthors().setAllFromTable(getAuthorGroups());
 
@@ -1443,13 +1442,11 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     EntryType entryType = cbEntryType.getValue();
 
-    if (entryType == null) return null;
-
-    switch (entryType)
+    return entryType == null ? null : switch (entryType)
     {
-      case etUnentered : case etOther : case etNone : return null;
-      default: return entryType;
-    }
+      case etUnentered, etOther, etNone -> null;
+      default                           -> entryType;
+    };
   }
 
 //---------------------------------------------------------------------------

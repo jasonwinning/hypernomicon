@@ -37,15 +37,12 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
     public boolean isFalse() { return this == False; }
     public boolean isUnset() { return this == Unset; }
 
-    @Override public String toString()
+    @Override public String toString() { return switch (this)
     {
-      switch (this)
-      {
-        case False : return "False";
-        case True  : return "True";
-        default    : return "Unset";
-      }
-    }
+      case False -> "False";
+      case True  -> "True";
+      default    -> "Unset";
+    };}
   }
 
 //---------------------------------------------------------------------------

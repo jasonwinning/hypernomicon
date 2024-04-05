@@ -41,7 +41,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -249,20 +248,16 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       }
     }
 
-    RequestBuilder rb;
-
-    switch (requestType)
+    RequestBuilder rb = switch (requestType)
     {
-      case post : rb = RequestBuilder.post()
-                                     .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
-                                     .setEntity(new StringEntity(postJsonData, UTF_8));
-                  break;
+      case post -> RequestBuilder.post()
+                                 .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
+                                 .setEntity(new StringEntity(postJsonData, UTF_8));
 
-      case get  : rb = RequestBuilder.get();
-                  break;
+      case get  -> RequestBuilder.get();
 
-      default : throw new UnsupportedOperationException(requestType.name());
-    }
+      default   -> throw new UnsupportedOperationException(requestType.name());
+    };
 
     request = rb
       .setUri(url)
@@ -527,7 +522,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       List<ZoteroItem> uploadQueue; // implemented as array because indices are returned by server
       JsonArray jArr = new JsonArray();
 
-      uploadQueue = getAllEntries().stream().filter(entry -> entry.isSynced() == false).collect(Collectors.toList());
+      uploadQueue = getAllEntries().stream().filter(entry -> entry.isSynced() == false).toList();
 
       if (uploadQueue.isEmpty()) return false;
 

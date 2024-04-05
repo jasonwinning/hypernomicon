@@ -88,16 +88,14 @@ public class NestedValue
 
     NestedValue other = (NestedValue) obj;
 
-    if (hdc != other.hdc) return false;
-
-    switch (hdc)
+    return hdc != other.hdc ? false : switch (hdc)
     {
-      case hdcString        : return str.equals(other.str);
-      case hdcBoolean       : return bool == other.bool;
-      case hdcTernary       : return ternary == other.ternary;
-      case hdcNestedPointer : return target == other.target;
-      default               : return false;
-    }
+      case hdcString        -> str.equals(other.str);
+      case hdcBoolean       -> bool == other.bool;
+      case hdcTernary       -> ternary == other.ternary;
+      case hdcNestedPointer -> target == other.target;
+      default               -> false;
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -112,17 +110,14 @@ public class NestedValue
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean isEmpty()
+  public boolean isEmpty() { return switch (hdc)
   {
-    switch (hdc)
-    {
-      case hdcString        : return isEmpty(str);
-      case hdcBoolean       : return isEmpty(bool);
-      case hdcTernary       : return isEmpty(ternary);
-      case hdcNestedPointer : return HDT_Record.isEmpty(target);
-      default               : return true;
-    }
-  }
+    case hdcString        -> isEmpty(str);
+    case hdcBoolean       -> isEmpty(bool);
+    case hdcTernary       -> isEmpty(ternary);
+    case hdcNestedPointer -> HDT_Record.isEmpty(target);
+    default               -> true;
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

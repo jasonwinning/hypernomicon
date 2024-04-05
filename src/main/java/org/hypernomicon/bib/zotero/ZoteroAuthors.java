@@ -66,20 +66,17 @@ public class ZoteroAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean ignoreEditors()
+  boolean ignoreEditors() { return switch (entryType)
   {
-    switch (entryType)
-    {
-      case etBookChapter : case etEncyclopediaArticle : case etConferencePaper : case etDictionaryEntry :
+    case etBookChapter, etEncyclopediaArticle, etConferencePaper, etDictionaryEntry
 
-        return true; // Zotero stores the editor of work X's parent as the editor of X. Hypernomicon doesn't do that.
-                     // The best way to avoid most problems that can result from this is probably for Hypernomicon to just ignore
-                     // editors for work types where the parent's editor will often appear in the child's bibliography entry.
-      default :
+      -> true; // Zotero stores the editor of work X's parent as the editor of X. Hypernomicon doesn't do that.
+               // The best way to avoid most problems that can result from this is probably for Hypernomicon to just ignore
+               // editors for work types where the parent's editor will often appear in the child's bibliography entry.
+    default
 
-        return false;
-    }
-  }
+      -> false;
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -95,14 +92,12 @@ public class ZoteroAuthors extends BibAuthors
       AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
       if ((aType == null) || ((aType == editor) && ignoreEditors())) return;
 
-      List<BibAuthor> list = null;
-
-      switch (aType)
+      List<BibAuthor> list = switch (aType)
       {
-        case author     : list = authorList;     break;
-        case editor     : list = editorList;     break;
-        case translator : list = translatorList; break;
-      }
+        case author     -> authorList;
+        case editor     -> editorList;
+        case translator -> translatorList;
+      };
 
       String firstName = creatorObj.getStrSafe("firstName"),
              lastName  = creatorObj.getStrSafe("lastName");

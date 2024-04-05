@@ -297,17 +297,11 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean typeHasKeyWorks(RecordType type)
+  public static boolean typeHasKeyWorks(RecordType type) { return switch (type)
   {
-    switch (type)
-    {
-      case hdtWork : case hdtMiscFile : case hdtArgument :
-        return false;
-
-      default :
-        return true;
-    }
-  }
+    case hdtWork, hdtMiscFile, hdtArgument -> false;
+    default                                -> true;
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

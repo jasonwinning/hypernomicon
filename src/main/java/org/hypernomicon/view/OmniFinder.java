@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
@@ -257,7 +256,7 @@ public class OmniFinder
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private HDT_Record getResultRecord(HDT_Record input)
+    private static HDT_Record getResultRecord(HDT_Record input)
     {
       return input.getType() != hdtHub ? input : ((HDT_Hub)input).mainSpoke(true);
     }
@@ -297,7 +296,7 @@ public class OmniFinder
 
             if (otherPersonRecord != null)
               for (KeywordLink keyLink : linkList)
-                if (keyLink.key.record == otherPersonRecord)
+                if (keyLink.key().record == otherPersonRecord)
                   return true;
           }
 
@@ -356,7 +355,7 @@ public class OmniFinder
         case tierKeyword:
 
           for (KeywordLink keyLink : linkList)
-            if (keyLink.key.record == record)
+            if (keyLink.key().record == record)
               return true;
 
           return false;
@@ -613,7 +612,7 @@ public class OmniFinder
             case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
               List<PersonForDupCheck> personList = recordToPersonList.get(record);
               if (personList == null)
-                recordToPersonList.put(record, personList = ((HDT_RecordWithAuthors<?>)record).getAuthors().stream().map(PersonForDupCheck::new).collect(Collectors.toList()));
+                recordToPersonList.put(record, personList = ((HDT_RecordWithAuthors<?>)record).getAuthors().stream().map(PersonForDupCheck::new).toList());
 
               return personList;
 

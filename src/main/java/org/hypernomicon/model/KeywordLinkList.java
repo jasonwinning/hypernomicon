@@ -32,22 +32,8 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class KeywordLink
-  {
-    public final int offset, length;
-    public final SearchKeyword key;
+  public record KeywordLink(int offset, int length, SearchKeyword key) { }
 
-  //---------------------------------------------------------------------------
-
-    public KeywordLink(int offset, int length, SearchKeyword key)
-    {
-      this.offset = offset;
-      this.length = length;
-      this.key = key;
-    }
-  }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private KeywordLinkList() { throw new UnsupportedOperationException(); }

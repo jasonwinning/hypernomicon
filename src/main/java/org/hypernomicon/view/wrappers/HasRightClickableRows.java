@@ -174,7 +174,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
                        work ->
                        {
                          PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
+                         previewWindow.setPreview(src, work);
                          ui.openPreviewWindow(src);
                        });
 
@@ -184,7 +184,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
                        workFile ->
                        {
                          PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, workFile.filePath(), workFile);
+                         previewWindow.setPreview(src, workFile);
                          ui.openPreviewWindow(src);
                        });
 
@@ -199,7 +199,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
                        miscFile ->
                        {
                          PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, miscFile.filePath(), miscFile);
+                         previewWindow.setPreview(src, miscFile);
                          ui.openPreviewWindow(src);
                        });
 

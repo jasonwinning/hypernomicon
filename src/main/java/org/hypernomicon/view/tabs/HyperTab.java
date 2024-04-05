@@ -181,25 +181,22 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static TabEnum getTabEnumByRecordType(RecordType recordType)
+  public static TabEnum getTabEnumByRecordType(RecordType recordType) { return switch (recordType)
   {
-    switch (recordType)
-    {
-      case hdtTerm        :
-      case hdtConcept     : return termTabEnum;
+    case hdtTerm,
+         hdtConcept     -> termTabEnum;
 
-      case hdtInstitution : return instTabEnum;
-      case hdtDebate      : return debateTabEnum;
-      case hdtPosition    : return positionTabEnum;
-      case hdtArgument    : return argumentTabEnum;
-      case hdtWork        : return workTabEnum;
-      case hdtMiscFile    : return fileTabEnum;
-      case hdtNote        : return noteTabEnum;
-      case hdtWorkLabel   : return treeTabEnum;
+    case hdtInstitution -> instTabEnum;
+    case hdtDebate      -> debateTabEnum;
+    case hdtPosition    -> positionTabEnum;
+    case hdtArgument    -> argumentTabEnum;
+    case hdtWork        -> workTabEnum;
+    case hdtMiscFile    -> fileTabEnum;
+    case hdtNote        -> noteTabEnum;
+    case hdtWorkLabel   -> treeTabEnum;
 
-      default             : return personTabEnum;
-    }
-  }
+    default             -> personTabEnum;
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -241,22 +238,13 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   @SuppressWarnings("unchecked")
   public static <ActiveType extends HDT_Record> ActiveType getActiveRecordForViewRecord(HDT_Record viewRecord)
   {
-    if (viewRecord == null) return null;
-
-    switch (viewRecord.getType())
+    return viewRecord == null ? null : (ActiveType) switch (viewRecord.getType())
     {
-      case hdtConcept :
+      case hdtConcept       -> ((HDT_Concept) viewRecord).term.get();
+      case hdtInvestigation -> ((HDT_Investigation) viewRecord).person.get();
 
-        return (ActiveType) ((HDT_Concept) viewRecord).term.get();
-
-      case hdtInvestigation :
-
-        return (ActiveType) ((HDT_Investigation) viewRecord).person.get();
-
-      default :
-
-        return (ActiveType) viewRecord;
-    }
+      default               -> viewRecord;
+    };
   }
 
 //---------------------------------------------------------------------------

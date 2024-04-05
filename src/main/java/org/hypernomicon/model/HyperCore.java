@@ -38,29 +38,14 @@ final class HyperCore<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class KeyIDpair implements Comparable<KeyIDpair>, Cloneable
+  private record KeyIDpair(int id, String key) implements Comparable<KeyIDpair>, Cloneable
   {
-    private final int id;
-    private final String key;
-
-    private KeyIDpair(int id, String key) { this.id = id; this.key = key; }
-    private int getID()                   { return id; }
-
-//---------------------------------------------------------------------------
-
-    @Override public int hashCode()
-    {
-      return (31 * (31 + id)) + (key == null ? 0 : key.hashCode());
-    }
-
-//---------------------------------------------------------------------------
-
     @Override public KeyIDpair clone()
     {
       try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException ex) { throw new AssertionError(ex); }
     }
 
-//---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
 
     @Override public boolean equals(Object obj)
     {
@@ -68,11 +53,11 @@ final class HyperCore<HDT_DT extends HDT_Record>
       if (obj == null) return false;
       if (getClass() != obj.getClass()) return false;
 
-      KeyIDpair otherPair = (KeyIDpair)obj;
+      KeyIDpair otherPair = (KeyIDpair) obj;
       return (otherPair.id == id) && otherPair.key.equals(key);
     }
 
-//---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
 
     @Override public int compareTo(KeyIDpair otherPair)
     {
@@ -93,7 +78,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
   Stream<HDT_DT> stream()      { return sortedIDs.stream().map(idToRecord::get); }
   String getKeyByID(int id)    { return idToKey.get(id); }
   int getIDbyIDNdx(int ndx)    { return sortedIDs.get(ndx); }
-  int getIDbyKeyNdx(int ndx)   { return sortedKeys.get(ndx).getID(); }
+  int getIDbyKeyNdx(int ndx)   { return sortedKeys.get(ndx).id(); }
   boolean containsID(int id)   { return idToRecord.containsKey(id); }
   HDT_DT getRecordByID(int id) { return idToRecord.get(id); }
   int getIDNdxByID(int id)     { return Math.max(-1, binarySearch(sortedIDs, id)); }

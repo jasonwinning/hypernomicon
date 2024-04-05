@@ -134,17 +134,12 @@ public class QueryWhereRelative extends RecordQuery
       }
     }
 
-    switch (opID)
+    return switch (opID)
     {
-      case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
-        return opID == NOT_EQUAL_TO_OPERAND_ID;
-
-      case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
-        return opID == DOES_NOT_CONTAIN_OPERAND_ID;
-
-      default :
-        return false;
-    }
+      case EQUAL_TO_OPERAND_ID, NOT_EQUAL_TO_OPERAND_ID     -> opID == NOT_EQUAL_TO_OPERAND_ID;
+      case CONTAINS_OPERAND_ID, DOES_NOT_CONTAIN_OPERAND_ID -> opID == DOES_NOT_CONTAIN_OPERAND_ID;
+      default                                               -> false;
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -152,17 +147,11 @@ public class QueryWhereRelative extends RecordQuery
 
   @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2)
   {
-    if (opNum < 3)
-      return true;
-
-    switch (op2.getID())
+    return opNum < 3 ? true : switch (op2.getID())
     {
-      case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
-        return false;
-
-      default :
-        return true;
-    }
+      case IS_EMPTY_OPERAND_ID, IS_NOT_EMPTY_OPERAND_ID -> false;
+      default                                           -> true;
+    };
   }
 
 //---------------------------------------------------------------------------

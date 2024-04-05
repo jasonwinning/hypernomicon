@@ -158,42 +158,36 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       "publicationTitle", "bookTitle"   , "encyclopediaTitle", "proceedingsTitle", "dictionaryTitle",
       "forumTitle",       "programTitle", "websiteTitle"     , "blogTitle"       , "seriesTitle");
 
-  private String getFieldKey(BibFieldEnum bibFieldEnum)
+  private String getFieldKey(BibFieldEnum bibFieldEnum) { return switch (bibFieldEnum)
   {
-    switch (bibFieldEnum)
+    case bfEntryType -> entryTypeKey;
+    case bfDOI       -> "DOI";
+    case bfURL       -> "url";
+    case bfVolume    -> "volume";
+    case bfIssue     -> "issue";
+    case bfPages     -> "pages";
+    case bfPublisher -> "publisher";
+    case bfPubLoc    -> "place";
+    case bfEdition   -> "edition";
+    case bfLanguage  -> "language";
+    case bfYear      -> "date";
+
+    case bfContainerTitle ->
     {
-      case bfEntryType : return entryTypeKey;
-      case bfDOI       : return "DOI";
-      case bfURL       : return "url";
-      case bfVolume    : return "volume";
-      case bfIssue     : return "issue";
-      case bfPages     : return "pages";
-      case bfPublisher : return "publisher";
-      case bfPubLoc    : return "place";
-      case bfEdition   : return "edition";
-      case bfLanguage  : return "language";
-      case bfYear      : return "date";
-
-      case bfContainerTitle :
-
-        JsonObj template = ZoteroWrapper.getTemplate(getEntryType());
-        return template == null ? "" : safeStr(findFirst(titleKeyList, template::containsKey));
-
-      case bfISBNs : return "ISBN";
-      case bfISSNs : return "ISSN";
-
-      case bfTitle : return "title";
-      case bfMisc  : return "extra";
-
-      case bfAuthors: case bfEditors: case bfTranslators:
-
-        return "creators";
-
-      case bfWorkType: return "";
+      JsonObj template = ZoteroWrapper.getTemplate(getEntryType());
+      yield template == null ? "" : safeStr(findFirst(titleKeyList, template::containsKey));
     }
 
-    return "";
-  }
+    case bfISBNs -> "ISBN";
+    case bfISSNs -> "ISSN";
+
+    case bfTitle -> "title";
+    case bfMisc  -> "extra";
+
+    case bfAuthors, bfEditors, bfTranslators -> "creators";
+
+    case bfWorkType -> "";
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

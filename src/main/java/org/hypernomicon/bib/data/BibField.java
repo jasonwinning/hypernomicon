@@ -115,23 +115,19 @@ public class BibField
 
   public String getStr()
   {
-    if (type == bftString)
-      return safeStr(str);
-
-    switch (bibFieldEnum)
+    return type == bftString ? safeStr(str) : switch (bibFieldEnum)
     {
-      case bfContainerTitle: case bfTitle:
+      case bfContainerTitle,
+           bfTitle           -> buildTitle(strList);
 
-        return buildTitle(strList);
+      case bfMisc            -> strListToStr(strList, false, true);
 
-      case bfMisc:
-
-        return strListToStr(strList, false, true);
-
-      default:
+      default ->
+      {
         messageDialog("Internal error #90227", mtError);
-        return null;
-    }
+        yield null;
+      }
+    };
   }
 
 //---------------------------------------------------------------------------

@@ -129,28 +129,24 @@ public final class BibTexBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static EntryType parseBibTexType(String btType)
+  private static EntryType parseBibTexType(String btType) { return switch (btType.toLowerCase())
   {
-    switch (btType.toLowerCase())
-    {
-      case "article"       : return etJournalArticle;
-      case "book"          : return etBook;
-      case "booklet"       : return etBooklet;
-      case "conference"    : // fall through
-      case "inproceedings" : return etConferencePaper;
-      case "inbook"        : // fall through
-      case "incollection"  : return etBookChapter;
-      case "manual"        : return etManual;
-      case "mastersthesis" : return etMastersThesis;
-      case "phdthesis"     : return etDoctoralThesis;
-      case "proceedings"   : return etConferenceProceedings;
-      case "techreport"    : return etTechnicalReport;
-      case "unpublished"   : return etUnpublishedWork;
-      case "misc"          : // fall through
+    case "article"       -> etJournalArticle;
+    case "book"          -> etBook;
+    case "booklet"       -> etBooklet;
+    case "conference",
+         "inproceedings" -> etConferencePaper;
+    case "inbook",
+         "incollection"  -> etBookChapter;
+    case "manual"        -> etManual;
+    case "mastersthesis" -> etMastersThesis;
+    case "phdthesis"     -> etDoctoralThesis;
+    case "proceedings"   -> etConferenceProceedings;
+    case "techreport"    -> etTechnicalReport;
+    case "unpublished"   -> etUnpublishedWork;
 
-      default              : return etOther;
-    }
-  }
+    default              -> etOther;    // applies to "misc"
+  }; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

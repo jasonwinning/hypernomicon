@@ -225,21 +225,18 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getResultTextForTag(Tag tag)
+  @Override public String getResultTextForTag(Tag tag) { return switch (tag)
   {
-    switch (tag)
-    {
-      case tagDisplayRecord : return getMainText().getDisplayItemsString();
-      case tagKeyWork       :
+    case tagDisplayRecord -> getMainText().getDisplayItemsString();
+    case tagKeyWork       ->
 
-        return getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
-                                              .filter(Predicate.not(String::isBlank))
-                                              .limit(20)
-                                              .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
-      case tagHub           : return "";
-      default               : return getMainText().getPlain();
-    }
-  }
+      getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
+                                     .filter(Predicate.not(String::isBlank))
+                                     .limit(20)
+                                     .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+    case tagHub           -> "";
+    default               -> getMainText().getPlain();
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

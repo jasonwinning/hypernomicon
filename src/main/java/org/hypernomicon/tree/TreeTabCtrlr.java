@@ -29,6 +29,7 @@ import org.hypernomicon.App;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.Highlighter;
@@ -371,17 +372,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
               break;
 
-            case hdtWork :
+            case hdtWork : case hdtMiscFile :
 
-              HDT_Work work = (HDT_Work)record;
-              previewWindow.setPreview(pvsTreeTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
-              clearPreview = false;
-              break;
-
-            case hdtMiscFile :
-
-              HDT_MiscFile miscFile = (HDT_MiscFile)record;
-              previewWindow.setPreview(pvsTreeTab, miscFile.filePath(), miscFile);
+              previewWindow.setPreview(pvsTreeTab, (HDT_RecordWithPath)record);
               clearPreview = false;
               break;
 

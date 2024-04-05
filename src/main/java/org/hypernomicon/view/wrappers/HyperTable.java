@@ -250,19 +250,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class ColumnSettings
-  {
-    private ColumnSettings(int oldNdx, double oldWidth, boolean defVisible)
-    {
-      this.oldNdx = oldNdx;
-      this.oldWidth = oldWidth;
-      this.defVisible = defVisible;
-    }
-
-    private final int oldNdx;
-    private final double oldWidth;
-    private final boolean defVisible;
-  }
+  private record ColumnSettings(int oldNdx, double oldWidth, boolean defVisible) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

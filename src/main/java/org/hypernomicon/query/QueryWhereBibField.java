@@ -140,17 +140,11 @@ public class QueryWhereBibField extends WorkQuery
 
   @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2)
   {
-    if (opNum < 3)
-      return true;
-
-    switch (op2.getID())
+    return opNum < 3 ? true : switch (op2.getID())
     {
-      case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
-        return false;
-
-      default :
-        return true;
-    }
+      case IS_EMPTY_OPERAND_ID, IS_NOT_EMPTY_OPERAND_ID -> false;
+      default                                           -> true;
+    };
   }
 
 //---------------------------------------------------------------------------

@@ -245,7 +245,7 @@ public class FolderTreeWatcher
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private String deletedMsg(FilePath filePath)
+    private static String deletedMsg(FilePath filePath)
     {
       return "A file that is in use by the database, \"" + filePath.getNameOnly() +
              "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. " +
@@ -255,7 +255,7 @@ public class FolderTreeWatcher
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private String changedFolderMsg()
+    private static String changedFolderMsg()
     {
       return "There has been a change to a folder that is in use by the database. " +
              "This may or may not cause a data integrity problem. Changes to database folders should be made using the " + appTitle + " File Manager instead.";

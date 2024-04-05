@@ -42,7 +42,6 @@ import static org.apache.commons.text.StringEscapeUtils.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Tag;
@@ -53,6 +52,7 @@ import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.KeyWork;
@@ -197,16 +197,7 @@ public final class MainTextUtil
 
       case JS_EVENT_OPEN_PREVIEW :
 
-        if (recordType == hdtWork)
-        {
-          HDT_Work work = db.works.getByID(recordID);
-          previewWindow.setPreview(pvsOther, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
-        }
-        else
-        {
-          HDT_MiscFile miscFile = db.miscFiles.getByID(recordID);
-          previewWindow.setPreview(pvsOther, miscFile.filePath(), miscFile);
-        }
+        previewWindow.setPreview(pvsOther, (HDT_RecordWithPath) db.records(recordType).getByID(recordID));
 
         ui.openPreviewWindow(pvsOther);
         break;
@@ -264,7 +255,7 @@ public final class MainTextUtil
       if (link.hasAttr("hypncon")) return;
 
       String url = link.hasAttr("href") ? link.attr("href") : "javascript:void(0);";
-      link.attributes().put(new Attribute("onclick", "openURL('" + StringEscapeUtils.escapeEcmaScript(url) + "'); return false;"));
+      link.attributes().put(new Attribute("onclick", "openURL('" + escapeEcmaScript(url) + "'); return false;"));
     });
 
     return doc;
@@ -299,12 +290,12 @@ public final class MainTextUtil
 
       if ("http".equalsIgnoreCase(safeSubstring(entirePlainText, curMatchNdx, curMatchNdx + 4)))
         kind = LinkKind.web;
-      else if ((keywordLink != null) && (curMatchNdx == keywordLink.offset))
+      else if ((keywordLink != null) && (curMatchNdx == keywordLink.offset()))
         kind = LinkKind.keyword;
 
       if (kind != LinkKind.none) // Got a match
       {
-        int linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : keywordLink.length;
+        int linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : keywordLink.length();
 
         for (HtmlTextNode node : nodes.getLinkNodes(curMatchNdx, curMatchNdx + linkTextLen)) // 1. Get list of node objects corresponding to matching text
         {
@@ -317,11 +308,11 @@ public final class MainTextUtil
 
           if (kind == LinkKind.web)
           {
-            textNode.before("<a href=\"\" onclick=\"openURL('" + StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(displayText)) + "'); return false;\">" + htmlEscaper.escape(displayText) + "</a>"); // 4. Insert anchor
+            textNode.before("<a href=\"\" onclick=\"openURL('" + escapeEcmaScript(htmlEscaper.escape(displayText)) + "'); return false;\">" + htmlEscaper.escape(displayText) + "</a>"); // 4. Insert anchor
           }
           else
           {
-            String klass = keywordLink.key.record.equals(recordToHilite) ? "hypernomiconHilite" : "";
+            String klass = keywordLink.key().record.equals(recordToHilite) ? "hypernomiconHilite" : "";
 
             textNode.before(getKeywordLink(displayText, keywordLink, "", klass));  // 4. Insert anchor
           }
@@ -371,7 +362,7 @@ public final class MainTextUtil
 
   private static String getKeywordLink(String html, KeywordLink link, String style, String klass)
   {
-    HDT_Record record = link.key.record;
+    HDT_Record record = link.key().record;
 
     if (record == null) return html;
 

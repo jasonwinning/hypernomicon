@@ -162,71 +162,71 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   private static RelationSet<? extends HDT_Record, ? extends HDT_Record> createSet(RelationType relType) throws HDB_InternalError
   {
-    switch (relType)
+    return switch (relType)
     {
-      case rtParentWorkOfWork         : return new RelationSet<>(relType, HDT_Work         .class, HDT_Work           .class);
-      case rtParentGroupOfGroup       : return new RelationSet<>(relType, HDT_PersonGroup  .class, HDT_PersonGroup    .class, true );
-      case rtParentLabelOfLabel       : return new RelationSet<>(relType, HDT_WorkLabel    .class, HDT_WorkLabel      .class, true );
-      case rtCounterOfArgument        : return new RelationSet<>(relType, HDT_Argument     .class, HDT_Argument       .class,
+      case rtParentWorkOfWork         -> new RelationSet<>(relType, HDT_Work         .class, HDT_Work           .class);
+      case rtParentGroupOfGroup       -> new RelationSet<>(relType, HDT_PersonGroup  .class, HDT_PersonGroup    .class, true );
+      case rtParentLabelOfLabel       -> new RelationSet<>(relType, HDT_WorkLabel    .class, HDT_WorkLabel      .class, true );
+      case rtCounterOfArgument        -> new RelationSet<>(relType, HDT_Argument     .class, HDT_Argument       .class,
 
         new HDI_Schema(hdcNestedPointer, relType, hdtArgumentVerdict, tagArgumentVerdict));
 
-      case rtParentDebateOfDebate     : return new RelationSet<>(relType, HDT_Debate       .class, HDT_Debate         .class, true );
-      case rtParentNoteOfNote         : return new RelationSet<>(relType, HDT_Note         .class, HDT_Note           .class, true );
-      case rtParentPosOfPos           : return new RelationSet<>(relType, HDT_Position     .class, HDT_Position       .class, true );
-      case rtWorkOfArgument           : return new RelationSet<>(relType, HDT_Argument     .class, HDT_Work           .class,
+      case rtParentDebateOfDebate     -> new RelationSet<>(relType, HDT_Debate       .class, HDT_Debate         .class, true );
+      case rtParentNoteOfNote         -> new RelationSet<>(relType, HDT_Note         .class, HDT_Note           .class, true );
+      case rtParentPosOfPos           -> new RelationSet<>(relType, HDT_Position     .class, HDT_Position       .class, true );
+      case rtWorkOfArgument           -> new RelationSet<>(relType, HDT_Argument     .class, HDT_Work           .class,
 
           new HDI_Schema(hdcString, relType, tagPages));
 
-      case rtParentDebateOfPos        : return new RelationSet<>(relType, HDT_Position     .class, HDT_Debate         .class, true );
-      case rtParentPosOfDebate        : return new RelationSet<>(relType, HDT_Debate       .class, HDT_Position       .class, true );
-      case rtPositionOfArgument       : return new RelationSet<>(relType, HDT_Argument     .class, HDT_Position       .class,
+      case rtParentDebateOfPos        -> new RelationSet<>(relType, HDT_Position     .class, HDT_Debate         .class, true );
+      case rtParentPosOfDebate        -> new RelationSet<>(relType, HDT_Debate       .class, HDT_Position       .class, true );
+      case rtPositionOfArgument       -> new RelationSet<>(relType, HDT_Argument     .class, HDT_Position       .class,
 
         new HDI_Schema(hdcNestedPointer, relType, hdtPositionVerdict, tagPositionVerdict));
 
-      case rtAuthorOfWork             : return new RelationSet<>(relType, HDT_Work         .class, HDT_Person         .class,
+      case rtAuthorOfWork             -> new RelationSet<>(relType, HDT_Work         .class, HDT_Person         .class,
 
         new HDI_Schema(hdcTernary, relType, tagInFileName),
         new HDI_Schema(hdcBoolean, relType, tagEditor),
         new HDI_Schema(hdcBoolean, relType, tagTranslator));
 
-      case rtAuthorOfFile             : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Person         .class);
-      case rtStatusOfPerson           : return new RelationSet<>(relType, HDT_Person       .class, HDT_PersonStatus   .class);
-      case rtFieldOfPerson            : return new RelationSet<>(relType, HDT_Person       .class, HDT_Field          .class);
-      case rtSubfieldOfPerson         : return new RelationSet<>(relType, HDT_Person       .class, HDT_Subfield       .class);
-      case rtFieldOfSubfield          : return new RelationSet<>(relType, HDT_Subfield     .class, HDT_Field          .class);
-      case rtRankOfPerson             : return new RelationSet<>(relType, HDT_Person       .class, HDT_Rank           .class);
-      case rtPersonOfInv              : return new RelationSet<>(relType, HDT_Investigation.class, HDT_Person         .class);
-      case rtInstOfPerson             : return new RelationSet<>(relType, HDT_Person       .class, HDT_Institution    .class,
+      case rtAuthorOfFile             -> new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Person         .class);
+      case rtStatusOfPerson           -> new RelationSet<>(relType, HDT_Person       .class, HDT_PersonStatus   .class);
+      case rtFieldOfPerson            -> new RelationSet<>(relType, HDT_Person       .class, HDT_Field          .class);
+      case rtSubfieldOfPerson         -> new RelationSet<>(relType, HDT_Person       .class, HDT_Subfield       .class);
+      case rtFieldOfSubfield          -> new RelationSet<>(relType, HDT_Subfield     .class, HDT_Field          .class);
+      case rtRankOfPerson             -> new RelationSet<>(relType, HDT_Person       .class, HDT_Rank           .class);
+      case rtPersonOfInv              -> new RelationSet<>(relType, HDT_Investigation.class, HDT_Person         .class);
+      case rtInstOfPerson             -> new RelationSet<>(relType, HDT_Person       .class, HDT_Institution    .class,
 
         new HDI_Schema(hdcBoolean, relType, tagPast));
 
-      case rtTypeOfInst               : return new RelationSet<>(relType, HDT_Institution  .class, HDT_InstitutionType.class);
-      case rtParentInstOfInst         : return new RelationSet<>(relType, HDT_Institution  .class, HDT_Institution    .class);
-      case rtCountryOfRegion          : return new RelationSet<>(relType, HDT_Region       .class, HDT_Country        .class);
-      case rtRegionOfInst             : return new RelationSet<>(relType, HDT_Institution  .class, HDT_Region         .class);
-      case rtCountryOfInst            : return new RelationSet<>(relType, HDT_Institution  .class, HDT_Country        .class);
-      case rtTypeOfWork               : return new RelationSet<>(relType, HDT_Work         .class, HDT_WorkType       .class);
-      case rtTypeOfFile               : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_FileType       .class);
-      case rtConceptOfTerm            : return new RelationSet<>(relType, HDT_Term         .class, HDT_Concept        .class);
-      case rtGlossaryOfConcept        : return new RelationSet<>(relType, HDT_Concept      .class, HDT_Glossary       .class);
-      case rtParentGlossaryOfGlossary : return new RelationSet<>(relType, HDT_Glossary     .class, HDT_Glossary       .class, true);
-      case rtParentConceptOfConcept   : return new RelationSet<>(relType, HDT_Concept      .class, HDT_Concept        .class);
-      case rtSenseOfConcept           : return new RelationSet<>(relType, HDT_Concept      .class, HDT_ConceptSense   .class);
-      case rtWorkOfMiscFile           : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Work           .class);
-      case rtWorkFileOfWork           : return new RelationSet<>(relType, HDT_Work         .class, HDT_WorkFile       .class,
+      case rtTypeOfInst               -> new RelationSet<>(relType, HDT_Institution  .class, HDT_InstitutionType.class);
+      case rtParentInstOfInst         -> new RelationSet<>(relType, HDT_Institution  .class, HDT_Institution    .class);
+      case rtCountryOfRegion          -> new RelationSet<>(relType, HDT_Region       .class, HDT_Country        .class);
+      case rtRegionOfInst             -> new RelationSet<>(relType, HDT_Institution  .class, HDT_Region         .class);
+      case rtCountryOfInst            -> new RelationSet<>(relType, HDT_Institution  .class, HDT_Country        .class);
+      case rtTypeOfWork               -> new RelationSet<>(relType, HDT_Work         .class, HDT_WorkType       .class);
+      case rtTypeOfFile               -> new RelationSet<>(relType, HDT_MiscFile     .class, HDT_FileType       .class);
+      case rtConceptOfTerm            -> new RelationSet<>(relType, HDT_Term         .class, HDT_Concept        .class);
+      case rtGlossaryOfConcept        -> new RelationSet<>(relType, HDT_Concept      .class, HDT_Glossary       .class);
+      case rtParentGlossaryOfGlossary -> new RelationSet<>(relType, HDT_Glossary     .class, HDT_Glossary       .class, true);
+      case rtParentConceptOfConcept   -> new RelationSet<>(relType, HDT_Concept      .class, HDT_Concept        .class);
+      case rtSenseOfConcept           -> new RelationSet<>(relType, HDT_Concept      .class, HDT_ConceptSense   .class);
+      case rtWorkOfMiscFile           -> new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Work           .class);
+      case rtWorkFileOfWork           -> new RelationSet<>(relType, HDT_Work         .class, HDT_WorkFile       .class,
 
         new HDI_Schema(hdcString, relType, tagStartPageNum),   // Non-nested versions of these items also exist for
         new HDI_Schema(hdcString, relType, tagEndPageNum));    // works with an external file path
 
-      case rtFolderOfWorkFile         : return new RelationSet<>(relType, HDT_WorkFile     .class, HDT_Folder         .class);
-      case rtFolderOfMiscFile         : return new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Folder         .class);
-      case rtParentFolderOfFolder     : return new RelationSet<>(relType, HDT_Folder       .class, HDT_Folder         .class);
-      case rtFolderOfNote             : return new RelationSet<>(relType, HDT_Note         .class, HDT_Folder         .class);
-      case rtPictureFolderOfPerson    : return new RelationSet<>(relType, HDT_Person       .class, HDT_Folder         .class);
+      case rtFolderOfWorkFile         -> new RelationSet<>(relType, HDT_WorkFile     .class, HDT_Folder         .class);
+      case rtFolderOfMiscFile         -> new RelationSet<>(relType, HDT_MiscFile     .class, HDT_Folder         .class);
+      case rtParentFolderOfFolder     -> new RelationSet<>(relType, HDT_Folder       .class, HDT_Folder         .class);
+      case rtFolderOfNote             -> new RelationSet<>(relType, HDT_Note         .class, HDT_Folder         .class);
+      case rtPictureFolderOfPerson    -> new RelationSet<>(relType, HDT_Person       .class, HDT_Folder         .class);
 
-      default                         : throw new HDB_InternalError(84723);
-    }
+      default                         -> throw new HDB_InternalError(84723);
+    };
   }
 
 //---------------------------------------------------------------------------

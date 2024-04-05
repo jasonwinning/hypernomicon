@@ -210,20 +210,12 @@ public class QueryWhereField extends RecordQuery
 
       case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
 
-        switch (valueType)
+        return switch (valueType)
         {
-          case cvtRecord :
-
-            return (db.getObjectList(schema.getRelType(), record, true).size() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
-
-          case cvtBoolean :
-
-            return getCellID(op2) == IS_EMPTY_OPERAND_ID;
-
-          default :
-
-            return (record.resultTextForTag(tag).length() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
-        }
+          case cvtRecord  -> (db.getObjectList(schema.getRelType(), record, true).size() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
+          case cvtBoolean -> getCellID(op2) == IS_EMPTY_OPERAND_ID;
+          default         -> (record.resultTextForTag(tag).length() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
+        };
 
       default : return false;
     }
@@ -234,17 +226,11 @@ public class QueryWhereField extends RecordQuery
 
   @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2)
   {
-    if (opNum < 3)
-      return true;
-
-    switch (op2.getID())
+    return opNum < 3 ? true : switch (op2.getID())
     {
-      case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
-        return false;
-
-      default :
-        return true;
-    }
+      case IS_EMPTY_OPERAND_ID, IS_NOT_EMPTY_OPERAND_ID -> false;
+      default                                           -> true;
+    };
   }
 
 //---------------------------------------------------------------------------

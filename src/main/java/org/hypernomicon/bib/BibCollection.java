@@ -46,12 +46,11 @@ public abstract class BibCollection implements BibEntity
   @SuppressWarnings("unchecked")
   public static <Collection_T extends BibCollection> Collection_T create(LibraryType lType, JsonObj jObj)
   {
-    switch (lType)
+    return (Collection_T) switch (lType)
     {
-      case ltMendeley : return (Collection_T) new MendeleyFolder  (jObj);
-      case ltZotero   : return (Collection_T) new ZoteroCollection(jObj);
-      default         : return null;
-    }
+      case ltMendeley -> new MendeleyFolder(jObj);
+      case ltZotero   -> new ZoteroCollection(jObj);
+    };
   }
 
 //---------------------------------------------------------------------------

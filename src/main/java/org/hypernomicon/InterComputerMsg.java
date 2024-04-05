@@ -88,21 +88,17 @@ public class InterComputerMsg
     try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
     catch (IOException e) { return null; }
 
-    if ((s.size() != 3) || s.get(0).equals(DesktopUtil.getComputerName()))
-      return null;
-
-    HDB_MessageType type;
-
-    switch (s.get(2))
-    {
-      case "echo request"    : type = hmtEchoRequest;    break;
-      case "echo reply"      : type = hmtEchoReply;      break;
-      case "unlock request"  : type = hmtUnlockRequest;  break;
-      case "unlock complete" : type = hmtUnlockComplete; break;
-      default                : type = hmtNone;
-    }
-
-    return new InterComputerMsg(s.get(0), s.get(1), type);
+    return ((s.size() != 3) || s.get(0).equals(DesktopUtil.getComputerName())) ?
+      null
+    :
+      new InterComputerMsg(s.get(0), s.get(1), switch (s.get(2))
+      {
+        case "echo request"    -> hmtEchoRequest;
+        case "echo reply"      -> hmtEchoReply;
+        case "unlock request"  -> hmtUnlockRequest;
+        case "unlock complete" -> hmtUnlockComplete;
+        default                -> hmtNone;
+      });
   }
 
 //---------------------------------------------------------------------------

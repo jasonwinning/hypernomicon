@@ -87,12 +87,11 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   @SuppressWarnings("unchecked")
   public static <Entry_T extends BibEntry<Entry_T, Collection_T>, Collection_T extends BibCollection> Entry_T create(LibraryWrapper<Entry_T, Collection_T> libWrapper, JsonObj jObj, boolean thisIsBackup)
   {
-    switch (libWrapper.type())
+    return (Entry_T) switch (libWrapper.type())
     {
-      case ltMendeley : return (Entry_T) new MendeleyDocument((MendeleyWrapper) libWrapper, jObj, thisIsBackup);
-      case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) libWrapper, jObj, thisIsBackup);
-      default         : return null;
-    }
+      case ltMendeley -> new MendeleyDocument((MendeleyWrapper) libWrapper, jObj, thisIsBackup);
+      case ltZotero   -> new ZoteroItem      ((ZoteroWrapper  ) libWrapper, jObj, thisIsBackup);
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -101,12 +100,11 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   @SuppressWarnings("unchecked")
   public static <Entry_T extends BibEntry<Entry_T, Collection_T>, Collection_T extends BibCollection> Entry_T create(LibraryWrapper<Entry_T, Collection_T> libWrapper, EntryType entryType)
   {
-    switch (libWrapper.type())
+    return (Entry_T) switch (libWrapper.type())
     {
-      case ltMendeley : return (Entry_T) new MendeleyDocument((MendeleyWrapper) libWrapper, entryType);
-      case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) libWrapper, entryType);
-      default         : return null;
-    }
+      case ltMendeley -> new MendeleyDocument((MendeleyWrapper) libWrapper, entryType);
+      case ltZotero   -> new ZoteroItem      ((ZoteroWrapper  ) libWrapper, entryType);
+    };
   }
 
 //---------------------------------------------------------------------------

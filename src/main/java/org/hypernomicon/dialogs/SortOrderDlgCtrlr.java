@@ -97,20 +97,16 @@ public class SortOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String typeName(RecordType recordType)
+  private static String typeName(RecordType recordType) { return switch (recordType)
   {
-    switch (recordType)
-    {
-      case hdtPersonStatus    : return "Person Status";
-      case hdtField           : return "Academic Field";
-      case hdtRank            : return "Academic Rank";
-      case hdtWorkType        : return "Work Type";
-      case hdtArgumentVerdict : return "Argument Verdict";
-      case hdtPositionVerdict : return "Position Verdict";
-
-      default                 : return HyperDB.getTypeName(recordType);
-    }
-  }
+    case hdtPersonStatus    -> "Person Status";
+    case hdtField           -> "Academic Field";
+    case hdtRank            -> "Academic Rank";
+    case hdtWorkType        -> "Work Type";
+    case hdtArgumentVerdict -> "Argument Verdict";
+    case hdtPositionVerdict -> "Position Verdict";
+    default                 -> HyperDB.getTypeName(recordType);
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

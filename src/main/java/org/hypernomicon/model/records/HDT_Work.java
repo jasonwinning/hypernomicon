@@ -593,7 +593,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
     String singleAuthorName = getSingleAuthorForSearchKey(authorsToUse).singleName();
 
-    return settings.format(authorsToUse.stream().map(Author::singleName).collect(Collectors.toList()), singleAuthorName, yearToUse, addLetter, this, keyWorkLink);
+    return settings.format(authorsToUse.stream().map(Author::singleName).toList(), singleAuthorName, yearToUse, addLetter, this, keyWorkLink);
   }
 
 //---------------------------------------------------------------------------

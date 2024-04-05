@@ -75,12 +75,12 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
     {
       String auth = bibAuthor.getName().getLastFirst();
 
-      switch (bibAuthor.getType())
+      return switch (bibAuthor.getType())
       {
-        case editor:     return auth + " (ed)";
-        case translator: return auth + " (tr)";
-        default:         return auth;
-      }
+        case editor     -> auth + " (ed)";
+        case translator -> auth + " (tr)";
+        default         -> auth;
+      };
     };
 
     return stream().map(mapper)

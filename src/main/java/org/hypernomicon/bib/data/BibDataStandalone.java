@@ -76,9 +76,8 @@ public abstract class BibDataStandalone extends BibData
 
   public void setYear(String text, YearType yearType)
   {
-    if ((this.yearType != null) && (this.yearType.ordinal() > yearType.ordinal())) return;
-
-    setStr(bfYear, extractYear(text));
+    if ((this.yearType == null) || (this.yearType.ordinal() <= yearType.ordinal()))
+      setStr(bfYear, extractYear(text));
   }
 
 //---------------------------------------------------------------------------
@@ -113,24 +112,25 @@ public abstract class BibDataStandalone extends BibData
 
   @Override public String getStr(BibFieldEnum bibFieldEnum)
   {
-    if (bibFieldEnum.getType() == bftString)
-      return bibFieldEnumToBibField.get(bibFieldEnum).getStr();
-
-    switch (bibFieldEnum)
-    {
-      case bfEntryType      : return entryType == null ? "" : entryType.getUserFriendlyName();
-      case bfWorkType       : return nullSwitch(getWorkType(), "", HDT_WorkType::getCBText);
-      case bfContainerTitle : // fall through
-      case bfMisc           : // fall through
-      case bfTitle          : return bibFieldEnumToBibField.get(bibFieldEnum).getStr();
-      case bfAuthors        : return authors.getStr(AuthorType.author);
-      case bfEditors        : return authors.getStr(AuthorType.editor);
-      case bfTranslators    : return authors.getStr(AuthorType.translator);
-
-      default:
-        messageDialog("Internal error #90227", mtError);
-        return null;
-    }
+    return (bibFieldEnum.getType() == bftString) ?
+      bibFieldEnumToBibField.get(bibFieldEnum).getStr()
+    :
+      switch (bibFieldEnum)
+      {
+        case bfEntryType       -> entryType == null ? "" : entryType.getUserFriendlyName();
+        case bfWorkType        -> nullSwitch(getWorkType(), "", HDT_WorkType::getCBText); // fall through
+        case bfContainerTitle,
+             bfMisc,
+             bfTitle           -> bibFieldEnumToBibField.get(bibFieldEnum).getStr();
+        case bfAuthors         -> authors.getStr(AuthorType.author);
+        case bfEditors         -> authors.getStr(AuthorType.editor);
+        case bfTranslators     -> authors.getStr(AuthorType.translator);
+        default                ->
+        {
+          messageDialog("Internal error #90227", mtError);
+          yield null;
+        }
+      };
   }
 
 //---------------------------------------------------------------------------

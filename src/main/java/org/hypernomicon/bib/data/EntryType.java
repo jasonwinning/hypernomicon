@@ -152,19 +152,18 @@ public enum EntryType
 
   public static EntryType fromWorkType(WorkTypeEnum workTypeEnum)
   {
-    switch (workTypeEnum)
+    return switch (workTypeEnum)
     {
-      case wtBook         : return etBook;
-      case wtChapter      : return etBookChapter;
-      case wtPaper        : return etJournalArticle;
-      case wtRecording    : return etAudiovisualMaterial;
-      case wtThesis       : return etThesis;
-      case wtUnenteredSet : return etNone;
-      case wtWebPage      : return etWebPage;
-      case wtNone         : // fall through
+      case wtBook         -> etBook;
+      case wtChapter      -> etBookChapter;
+      case wtPaper        -> etJournalArticle;
+      case wtRecording    -> etAudiovisualMaterial;
+      case wtThesis       -> etThesis;
+      case wtUnenteredSet -> etNone;
+      case wtWebPage      -> etWebPage;
 
-      default             : return etUnentered;
-    }
+      default             -> etUnentered;   // Applies to wtNone
+    };
   }
 
 //---------------------------------------------------------------------------

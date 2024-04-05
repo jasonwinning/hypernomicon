@@ -22,6 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
@@ -75,8 +76,8 @@ public class HDT_Position extends HDT_RecordWithMainText
 
   public LinkedHashSet<ArgumentAuthor> getPeople()
   {
-    LinkedHashSet<ArgumentAuthor> people = new LinkedHashSet<>();
-    subPositions.forEach(subPos -> people.addAll(subPos.getPeople()));
+    LinkedHashSet<ArgumentAuthor> people = subPositions.stream().flatMap(subPos -> subPos.getPeople().stream())
+                                                                .collect(Collectors.toCollection(LinkedHashSet::new));
 
     arguments.stream().filter(arg -> arg.isInFavor(this)).forEachOrdered(arg -> arg.getPeople().forEachOrdered(people::add));
 

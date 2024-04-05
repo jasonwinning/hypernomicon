@@ -300,19 +300,18 @@ public final class HyperDB
 
   public HDT_Folder getSpecialFolder(String prefKey)
   {
-    switch (prefKey)
+    return switch (prefKey)
     {
-      case PREF_KEY_PICTURES_FOLDER_ID   : return picturesFolder;
-      case PREF_KEY_BOOKS_FOLDER_ID      : return booksFolder;
-      case PREF_KEY_PAPERS_FOLDER_ID     : return papersFolder;
-      case PREF_KEY_RESULTS_FOLDER_ID    : return resultsFolder;
-      case PREF_KEY_UNENTERED_FOLDER_ID  : return unenteredFolder;
-      case PREF_KEY_MISC_FILES_FOLDER_ID : return miscFilesFolder;
-      case PREF_KEY_TOPICAL_FOLDER_ID    : return topicalFolder;
-      case PREF_KEY_XML_FOLDER_ID        : return xmlFolder;
-
-      default                            : return null;
-    }
+      case PREF_KEY_PICTURES_FOLDER_ID   -> picturesFolder;
+      case PREF_KEY_BOOKS_FOLDER_ID      -> booksFolder;
+      case PREF_KEY_PAPERS_FOLDER_ID     -> papersFolder;
+      case PREF_KEY_RESULTS_FOLDER_ID    -> resultsFolder;
+      case PREF_KEY_UNENTERED_FOLDER_ID  -> unenteredFolder;
+      case PREF_KEY_MISC_FILES_FOLDER_ID -> miscFilesFolder;
+      case PREF_KEY_TOPICAL_FOLDER_ID    -> topicalFolder;
+      case PREF_KEY_XML_FOLDER_ID        -> xmlFolder;
+      default                            -> null;
+    };
   }
 
   public FilePath getHdbPath   () { return hdbFilePath; }
@@ -1192,7 +1191,7 @@ public final class HyperDB
 
     for (Entry<Integer, Collection<Integer>> entry : workIDtoInvIDs.asMap().entrySet())
     {
-      List<HDT_Investigation> invList = entry.getValue().stream().map(investigations::getByID).collect(Collectors.toList());
+      List<HDT_Investigation> invList = entry.getValue().stream().map(investigations::getByID).toList();
 
       invList.forEach(inv -> inv.getMainText().addKeyworksIfNotPresent());
 
@@ -1279,15 +1278,11 @@ public final class HyperDB
            bibAccessToken  = bibEncAccessToken .isBlank() ? "" : CryptoUtil.decrypt("", bibEncAccessToken ),
            bibRefreshToken = bibEncRefreshToken.isBlank() ? "" : CryptoUtil.decrypt("", bibEncRefreshToken);
 
-    LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bLibrary;
-
-    switch (libType)
+    LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bLibrary = switch (libType)
     {
-      case ltZotero   : bLibrary = new ZoteroWrapper(bibApiKey, bibUserID); break;
-      case ltMendeley : bLibrary = new MendeleyWrapper(bibAccessToken, bibRefreshToken); break;
-
-      default       : throw new HDB_InternalError(21175);
-    }
+      case ltZotero   -> new ZoteroWrapper(bibApiKey, bibUserID);
+      case ltMendeley -> new MendeleyWrapper(bibAccessToken, bibRefreshToken);
+    };
 
     bLibrary.loadFromDisk(xmlPath(BIB_FILE_NAME));
 
@@ -1347,13 +1342,11 @@ public final class HyperDB
 
   public static boolean isUnstoredRecord(int id, RecordType type)
   {
-    switch (type)
+    return switch (type)
     {
-      case hdtNote : case hdtDebate : case hdtWorkLabel : case hdtPersonGroup : case hdtFolder : case hdtGlossary :
-        return id == 1;
-      default:
-        return false;
-    }
+      case hdtNote, hdtDebate, hdtWorkLabel, hdtPersonGroup, hdtFolder, hdtGlossary -> id == 1;
+      default -> false;
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -2369,18 +2362,16 @@ public final class HyperDB
 
         return false; // We are getting "relatives" of a file row with no associated record; only the parent folder's notes should be returned in this case.
       }
-      else
-      {
-        HDT_Folder folder = record.parentFolder();
-        if ((folder != null) && (folder.notes.size() > 0))
-        {
-          for (HDT_Note note : folder.notes)
-          {
-            if (set.size() == max)
-              return true;
 
-            set.add(note);
-          }
+      HDT_Folder folder = record.parentFolder();
+      if ((folder != null) && (folder.notes.size() > 0))
+      {
+        for (HDT_Note note : folder.notes)
+        {
+          if (set.size() == max)
+            return true;
+
+          set.add(note);
         }
       }
     }
@@ -2521,14 +2512,14 @@ public final class HyperDB
 
   public HDT_Folder getImportFolderForWorkType(WorkTypeEnum workTypeEnum)
   {
-    switch (workTypeEnum)
+    return switch (workTypeEnum)
     {
-      case wtBook    : // fall through
-      case wtChapter : return booksFolder;
-      case wtPaper   : return papersFolder;
-      case wtThesis  : return prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
-      default        : return miscFilesFolder;
-    }
+      case wtBook,
+           wtChapter -> booksFolder;
+      case wtPaper   -> papersFolder;
+      case wtThesis  -> prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
+      default        -> miscFilesFolder;
+    };
   }
 
 //---------------------------------------------------------------------------

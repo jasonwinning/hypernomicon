@@ -34,7 +34,6 @@ import static java.util.Objects.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.collect.EnumHashBiMap;
@@ -222,7 +221,7 @@ public class BibManager extends HyperDlg
     entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canPreview, work ->
     {
       PreviewSource src = ui.determinePreviewContext();
-      previewWindow.setPreview(src, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
+      previewWindow.setPreview(src, work);
       ui.openPreviewWindow(src);
     });
 
@@ -485,7 +484,7 @@ public class BibManager extends HyperDlg
     {
       pdfFilePaths = entry.getWork().workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
                                                        .map(HDT_WorkFile::filePath)
-                                                       .collect(Collectors.toList());
+                                                       .toList();
       if (collEmpty(pdfFilePaths))
         pdfFilePaths = safeListOf(resolveExtFilePath(entry.getWork().getURL()));
     }
@@ -808,17 +807,15 @@ public class BibManager extends HyperDlg
     BibCollectionRow row = nullSwitch(item, null, TreeItem::getValue);
     BibCollectionType type = nullSwitch(row, null, BibCollectionRow::getType);
 
-    if (type == null) return Stream.empty();
-
-    switch (type)
+    return type == null ? Stream.empty() : switch (type)
     {
-      case bctAll           : return libraryWrapper.getNonTrashEntries();
-      case bctAllAssigned   : return libraryWrapper.getNonTrashEntries().filter(BibEntry::linkedToWork);
-      case bctAllUnassigned : return libraryWrapper.getNonTrashEntries().filter(Predicate.not(BibEntry::linkedToWork));
-      case bctTrash         : return libraryWrapper.getTrash().stream();
-      case bctUser          : return libraryWrapper.getCollectionEntries(row.getKey());
-      default               : return libraryWrapper.getUnsorted();
-    }
+      case bctAll           -> libraryWrapper.getNonTrashEntries();
+      case bctAllAssigned   -> libraryWrapper.getNonTrashEntries().filter(BibEntry::linkedToWork);
+      case bctAllUnassigned -> libraryWrapper.getNonTrashEntries().filter(Predicate.not(BibEntry::linkedToWork));
+      case bctTrash         -> libraryWrapper.getTrash().stream();
+      case bctUser          -> libraryWrapper.getCollectionEntries(row.getKey());
+      default               -> libraryWrapper.getUnsorted();
+    };
   }
 
 //---------------------------------------------------------------------------

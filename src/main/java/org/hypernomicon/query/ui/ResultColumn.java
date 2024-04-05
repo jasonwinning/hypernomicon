@@ -253,25 +253,12 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
     static NonGeneralColumn create(NonGeneralColumnGroupItem firstItem, EnumMap<RecordType, NonGeneralColumnGroupItem> recordTypeToItem)
     {
-      NonGeneralColumn col;
-
-      switch (firstItem.tag)
+      NonGeneralColumn col = switch (firstItem.tag)
       {
-        case tagTitle :
-
-          col = new NonGeneralColumn(firstItem.caption, str -> makeSortKeyByType(str, hdtWork));
-          break;
-
-        case tagYear :
-
-          col = new NonGeneralColumn(firstItem.caption, Util::compareYears, String.class);
-          break;
-
-        default :
-
-          col = new NonGeneralColumn(firstItem.caption);
-          break;
-      }
+        case tagTitle -> new NonGeneralColumn(firstItem.caption, str -> makeSortKeyByType(str, hdtWork));
+        case tagYear  -> new NonGeneralColumn(firstItem.caption, Util::compareYears, String.class);
+        default       -> new NonGeneralColumn(firstItem.caption);
+      };
 
       // Only subject columns have a relType set. They are invisible by default.
       col.setVisible(recordTypeToItem.values().stream().anyMatch(item -> item.relType == RelationType.rtNone));

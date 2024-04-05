@@ -91,21 +91,9 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  private static final class Preset
+  private record Preset(OperatingSystemEnum opSys, String name, LaunchCommandTypeEnum commandType,
+                        String commandsPrefKey, String commands)
   {
-    private Preset(OperatingSystemEnum opSys, String name, LaunchCommandTypeEnum commandType, String commandsPrefKey, String commands)
-    {
-      this.opSys = opSys;
-      this.name = name;
-      this.commandType = commandType;
-      this.commandsPrefKey = commandsPrefKey;
-      this.commands = commands;
-    }
-
-    final private OperatingSystemEnum opSys;
-    final private LaunchCommandTypeEnum commandType;
-    final private String commandsPrefKey, commands, name;
-
     private boolean isCompatible() { return opSys == OperatingSystemEnum.determine(); }
   }
 

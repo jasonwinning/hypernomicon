@@ -38,16 +38,7 @@ public abstract class ReportGenerator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class ReportField
-  {
-    private final String name, content;
-
-    private ReportField(String name, String content)
-    {
-      this.name = name;
-      this.content = content;
-    }
-  }
+  private record ReportField(String name, String content) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

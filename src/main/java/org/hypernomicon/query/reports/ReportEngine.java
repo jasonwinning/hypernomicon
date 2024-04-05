@@ -61,17 +61,14 @@ public abstract class ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ReportEngine createEngine(int report)
+  public static ReportEngine createEngine(int report) { return switch (report)
   {
-    switch (report)
-    {
-      case QUERY_DUPLICATE_AUTHORS  : return new DupAuthorsReportEngine();
-      case QUERY_LICENSE_AND_NOTICE : return new LicenseReportEngine();
-      case QUERY_DANGLING_LABELS    : return new DanglingLabelsReportEngine();
-    }
+    case QUERY_DUPLICATE_AUTHORS  -> new DupAuthorsReportEngine();
+    case QUERY_LICENSE_AND_NOTICE -> new LicenseReportEngine();
+    case QUERY_DANGLING_LABELS    -> new DanglingLabelsReportEngine();
 
-    return null;
-  }
+    default                       -> null;
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

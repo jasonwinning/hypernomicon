@@ -82,7 +82,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 
   public List<HDT_Glossary> getGlossaries()
   {
-    return concepts.stream().map(concept -> concept.glossary.get()).distinct().collect(Collectors.toList());
+    return concepts.stream().map(concept -> concept.glossary.get()).distinct().toList();
   }
 
 //---------------------------------------------------------------------------

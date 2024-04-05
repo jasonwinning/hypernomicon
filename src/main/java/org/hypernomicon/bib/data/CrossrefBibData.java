@@ -228,39 +228,38 @@ public final class CrossrefBibData extends BibDataStandalone
 
   private static EntryType parseCrossrefType(String crType)
   {
-    switch (crType)
+    return switch (crType)
     {
-      case "book"                : return etBook;
-      case "book-chapter"        : return etBookChapter;
-      case "book-part"           : return etBookPart;
-      case "book-section"        : return etBookSection;
-      case "book-series"         : return etBookSeries;
-      case "book-set"            : return etBookSet;
-      case "book-track"          : return etBookTrack;
-      case "component"           : return etComponent;
-      case "dataset"             : return etDataSet;
-      case "dissertation"        : return etThesis;
-      case "edited-book"         : return etEditedBook;
-      case "journal"             : return etJournal;
-      case "journal-article"     : return etJournalArticle;
-      case "journal-issue"       : return etJournalIssue;
-      case "journal-volume"      : return etJournalVolume;
-      case "monograph"           : return etMonograph;
-      case "peer-review"         : return etPeerReview;
-      case "posted-content"      : return etPostedContent;
-      case "proceedings"         : return etConferenceProceedings;
-      case "proceedings-article" : return etConferencePaper;
-      case "proceedings-series"  : return etProceedingsSeries;
-      case "reference-book"      : return etReferenceBook;
-      case "reference-entry"     : return etReferenceEntry;
-      case "report"              : return etReport;
-      case "report-series"       : return etReportSeries;
-      case "standard"            : return etStandard;
-      case "standard-series"     : return etStandardSeries;
-      case "other"               : // fall through
+      case "book"                -> etBook;
+      case "book-chapter"        -> etBookChapter;
+      case "book-part"           -> etBookPart;
+      case "book-section"        -> etBookSection;
+      case "book-series"         -> etBookSeries;
+      case "book-set"            -> etBookSet;
+      case "book-track"          -> etBookTrack;
+      case "component"           -> etComponent;
+      case "dataset"             -> etDataSet;
+      case "dissertation"        -> etThesis;
+      case "edited-book"         -> etEditedBook;
+      case "journal"             -> etJournal;
+      case "journal-article"     -> etJournalArticle;
+      case "journal-issue"       -> etJournalIssue;
+      case "journal-volume"      -> etJournalVolume;
+      case "monograph"           -> etMonograph;
+      case "peer-review"         -> etPeerReview;
+      case "posted-content"      -> etPostedContent;
+      case "proceedings"         -> etConferenceProceedings;
+      case "proceedings-article" -> etConferencePaper;
+      case "proceedings-series"  -> etProceedingsSeries;
+      case "reference-book"      -> etReferenceBook;
+      case "reference-entry"     -> etReferenceEntry;
+      case "report"              -> etReport;
+      case "report-series"       -> etReportSeries;
+      case "standard"            -> etStandard;
+      case "standard-series"     -> etStandardSeries; // fall through
 
-      default                    : return etOther;
-    }
+      default                    -> etOther;   // Applies to "other"
+    };
   }
 
 //---------------------------------------------------------------------------

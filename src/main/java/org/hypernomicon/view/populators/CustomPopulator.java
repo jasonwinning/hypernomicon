@@ -20,7 +20,6 @@ package org.hypernomicon.view.populators;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -75,7 +74,7 @@ public class CustomPopulator extends RecordPopulator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    return handler.handle(row, force).collect(Collectors.toList());
+    return handler.handle(row, force).toList();
   }
 
 //---------------------------------------------------------------------------

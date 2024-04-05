@@ -25,8 +25,6 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.items.Author;
@@ -315,7 +313,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     if (work.getAuthors().isEmpty()) return "";
 
-    return settings.format(work.getAuthors().stream().map(Author::singleName).collect(Collectors.toList())) + "'s ";
+    return settings.format(work.getAuthors().stream().map(Author::singleName).toList()) + "'s ";
   }
 
 //---------------------------------------------------------------------------

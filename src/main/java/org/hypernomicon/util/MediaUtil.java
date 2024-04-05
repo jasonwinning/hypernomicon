@@ -204,17 +204,17 @@ public final class MediaUtil
 
         WorkTypeEnum workType = ((HDT_Work) record).getWorkTypeEnum();
 
-        switch (workType)
+        return switch (workType)
         {
-          case wtBook         : return "resources/images/book.png";
-          case wtChapter      : return "resources/images/chapter.png";
-          case wtPaper        : return "resources/images/paper.png";
-          case wtRecording    : return "resources/images/recording.png";
-          case wtThesis       : return "resources/images/thesis.png";
-          case wtWebPage      : return "resources/images/text-html.png";
-          case wtUnenteredSet : return "resources/images/inbox-document-text.png";
-          default             : return "resources/images/unknown.png";
-        }
+          case wtBook         -> "resources/images/book.png";
+          case wtChapter      -> "resources/images/chapter.png";
+          case wtPaper        -> "resources/images/paper.png";
+          case wtRecording    -> "resources/images/recording.png";
+          case wtThesis       -> "resources/images/thesis.png";
+          case wtWebPage      -> "resources/images/text-html.png";
+          case wtUnenteredSet -> "resources/images/inbox-document-text.png";
+          default             -> "resources/images/unknown.png";
+        };
 
       case hdtMiscFile :
 
@@ -251,27 +251,25 @@ public final class MediaUtil
 
   public static String imgRelPathByType(RecordType type)
   {
-    if (type == null) return "";
-
-    switch (type)
+    return type == null ? "" : switch (type)
     {
-      case hdtWorkLabel     : return labelImgPath;
-      case hdtMiscFile      : return "resources/images/file.png";
-      case hdtGlossary      : return glossaryImgPath;
-      case hdtConcept       : // Fall through
-      case hdtTerm          : return termImgPath;
-      case hdtNote          : return noteImgPath;
-      case hdtWork          : // Fall through
-      case hdtWorkFile      : return "resources/images/paper.png";
-      case hdtPerson        : return personImgPath;
-      case hdtInstitution   : return institutionImgPath;
-      case hdtDebate        : return debateImgPath;
-      case hdtPosition      : return positionImgPath;
-      case hdtArgument      : return argumentImgPath;
-      case hdtInvestigation : return investigationImgPath;
-      case hdtFolder        : return folderImgPath;
-      default               : return "";
-    }
+      case hdtWorkLabel     -> labelImgPath;
+      case hdtMiscFile      -> "resources/images/file.png";
+      case hdtGlossary      -> glossaryImgPath;
+      case hdtConcept,
+           hdtTerm          -> termImgPath;
+      case hdtNote          -> noteImgPath;
+      case hdtWork,
+           hdtWorkFile      -> "resources/images/paper.png";
+      case hdtPerson        -> personImgPath;
+      case hdtInstitution   -> institutionImgPath;
+      case hdtDebate        -> debateImgPath;
+      case hdtPosition      -> positionImgPath;
+      case hdtArgument      -> argumentImgPath;
+      case hdtInvestigation -> investigationImgPath;
+      case hdtFolder        -> folderImgPath;
+      default               -> "";
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -279,24 +277,22 @@ public final class MediaUtil
 
   private static RecordType imgRelPathToType(String relPath)
   {
-    if (safeStr(relPath).isBlank()) return hdtNone;
-
-    switch (relPath)
+    return safeStr(relPath).isBlank() ? hdtNone : switch (relPath)
     {
-      case labelImgPath         : return hdtWorkLabel;
-      case glossaryImgPath      : return hdtGlossary;
-      case termImgPath          : return hdtTerm;
-      case noteImgPath          : return hdtNote;
-      case personImgPath        : return hdtPerson;
-      case institutionImgPath   : return hdtInstitution;
-      case debateImgPath        : return hdtDebate;
-      case positionImgPath      : return hdtPosition;
-      case argumentImgPath      : return hdtArgument;
-      case investigationImgPath : return hdtInvestigation;
-      case folderImgPath        : return hdtFolder;
+      case labelImgPath         -> hdtWorkLabel;
+      case glossaryImgPath      -> hdtGlossary;
+      case termImgPath          -> hdtTerm;
+      case noteImgPath          -> hdtNote;
+      case personImgPath        -> hdtPerson;
+      case institutionImgPath   -> hdtInstitution;
+      case debateImgPath        -> hdtDebate;
+      case positionImgPath      -> hdtPosition;
+      case argumentImgPath      -> hdtArgument;
+      case investigationImgPath -> hdtInvestigation;
+      case folderImgPath        -> hdtFolder;
 
-      default                   : return hdtNone;
-    }
+      default                   -> hdtNone;
+    };
   }
 
 //---------------------------------------------------------------------------

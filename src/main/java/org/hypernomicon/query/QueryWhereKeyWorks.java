@@ -19,7 +19,7 @@ package org.hypernomicon.query;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
-import static org.hypernomicon.view.populators.Populator.CellValueType.cvtOperand;
+import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.getCellID;
 
 import java.util.EnumSet;
@@ -130,17 +130,11 @@ public class QueryWhereKeyWorks extends RecordQuery
 
   @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2)
   {
-    if (opNum < 2)
-      return true;
-
-    switch (op1.getID())
+    return opNum < 2 ? true : switch (op1.getID())
     {
-      case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
-        return false;
-
-      default :
-        return true;
-    }
+      case IS_EMPTY_OPERAND_ID, IS_NOT_EMPTY_OPERAND_ID -> false;
+      default                                           -> true;
+    };
   }
 
 //---------------------------------------------------------------------------

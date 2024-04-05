@@ -58,15 +58,15 @@ class BibCollectionRow
 
   String getSortKey()
   {
-    switch (type)
+    return switch (type)
     {
-      case bctAll           : return "\u00001";
-      case bctAllAssigned   : return "\u00002";
-      case bctAllUnassigned : return "\u00003";
-      case bctUnsorted      : return "\u00004";
-      case bctTrash         : return "\uffff";
-      default               : return coll.getName();
-    }
+      case bctAll           -> "\u00001";
+      case bctAllAssigned   -> "\u00002";
+      case bctAllUnassigned -> "\u00003";
+      case bctUnsorted      -> "\u00004";
+      case bctTrash         -> "\uffff";
+      default               -> coll.getName();
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -74,15 +74,15 @@ class BibCollectionRow
 
   String getText()
   {
-    switch (type)
+    return switch (type)
     {
-      case bctAll           : return "All Entries";
-      case bctAllAssigned   : return "All Entries Assigned to Work Records";
-      case bctAllUnassigned : return "All Entries Not Assigned to Work Records";
-      case bctUnsorted      : return "Unsorted";
-      case bctTrash         : return "Trash";
-      default               : return coll.getName();
-    }
+      case bctAll           -> "All Entries";
+      case bctAllAssigned   -> "All Entries Assigned to Work Records";
+      case bctAllUnassigned -> "All Entries Not Assigned to Work Records";
+      case bctUnsorted      -> "Unsorted";
+      case bctTrash         -> "Trash";
+      default               -> coll.getName();
+    };
   }
 
 //---------------------------------------------------------------------------

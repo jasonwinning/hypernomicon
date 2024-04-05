@@ -501,33 +501,38 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   {
     String url = "https://api.mendeley.com/", mediaType = "";
 
-    switch (command)
+    mediaType = switch (command)
     {
-      case readFolders :
+      case readFolders ->
+      {
         url += "folders";
-        mediaType = "application/vnd.mendeley-folder.1+json";
-        break;
+        yield "application/vnd.mendeley-folder.1+json";
+      }
 
-      case readDocuments :
+      case readDocuments ->
+      {
         url += "documents?modified_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50&view=all";
-        mediaType = "application/vnd.mendeley-document.1+json";
-        break;
+        yield "application/vnd.mendeley-document.1+json";
+      }
 
-      case readDeletedDocuments :
+      case readDeletedDocuments ->
+      {
         url += "documents?deleted_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50";
-        mediaType = "application/vnd.mendeley-document.1+json";
-        break;
+        yield "application/vnd.mendeley-document.1+json";
+      }
 
-      case readTrash :
+      case readTrash ->
+      {
         url += "trash?modified_since=" + dateTimeToIso8601(lastSyncTime) + "&limit=50&view=all";
-        mediaType = "application/vnd.mendeley-document.1+json";
-        break;
+        yield "application/vnd.mendeley-document.1+json";
+      }
 
-      case readProfile :
+      case readProfile ->
+      {
         url += "profiles/me";
-        mediaType = "application/vnd.mendeley-profiles.1+json";
-        break;
-    }
+        yield "application/vnd.mendeley-profiles.1+json";
+      }
+    };
 
     StringBuilder nextUrl = new StringBuilder();
     JsonArray jsonArray = doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl);

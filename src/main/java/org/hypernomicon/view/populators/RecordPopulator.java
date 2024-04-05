@@ -113,14 +113,12 @@ public abstract class RecordPopulator extends Populator
 
   private String getCellText(HDT_Record record)
   {
-    if (record == null) return "";
-
-    switch (displayKind)
+    return record == null ? "" : switch (displayKind)
     {
-      case cbText   : return record.getCBText();
-      case listName : return record.listName();
-      default       : return record.name();
-    }
+      case cbText   -> record.getCBText();
+      case listName -> record.listName();
+      default       -> record.name();
+    };
   }
 
 //---------------------------------------------------------------------------

@@ -198,13 +198,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
       if (record == null)
         setDefaultWorkPreview();
-      else if (record.getType() == hdtWork)
-      {
-        HDT_Work work = (HDT_Work)record;
-        previewWindow.setPreview(pvsPersonTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
-      }
       else
-        previewWindow.setPreview(pvsPersonTab, record.filePath(), record);
+        previewWindow.setPreview(pvsPersonTab, record);
     });
 
     htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);
@@ -609,23 +604,22 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       for (HDT_MiscFile miscFile : curPerson.miscFiles)
         if (miscFile.pathNotEmpty())
         {
-          previewWindow.setPreview(pvsPersonTab, miscFile.filePath(), miscFile);
+          previewWindow.setPreview(pvsPersonTab, miscFile);
           return;
         }
 
-      previewWindow.setPreview(pvsPersonTab, curPerson.filePath(), curPerson);
+      previewWindow.setPreview(pvsPersonTab, curPerson);
       return;
     }
 
     for (HDT_Work work : curPerson.works)
       if (work.canPreview())
       {
-        previewWindow.setPreview(pvsPersonTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
+        previewWindow.setPreview(pvsPersonTab, work);
         return;
       }
 
-    HDT_Work work = curPerson.works.get(0);
-    previewWindow.setPreview(pvsPersonTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
+    previewWindow.setPreview(pvsPersonTab, curPerson.works.get(0));
   }
 
 //---------------------------------------------------------------------------
@@ -665,7 +659,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     if (argument.positions.size() > 0)
     {
-      List<HDT_Position> positions = argument.positions.stream().filter(argument::isInFavor).collect(Collectors.toList());
+      List<HDT_Position> positions = argument.positions.stream().filter(argument::isInFavor).toList();
 
       htArguments.buildRows(positions.isEmpty() ? argument.positions : positions, (row, position) ->
       {

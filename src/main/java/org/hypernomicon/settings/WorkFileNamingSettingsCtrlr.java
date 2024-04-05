@@ -25,7 +25,6 @@ import static org.hypernomicon.settings.SettingsDlgCtrlr.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -171,7 +170,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     {
       int componentCount = db.prefs.getInt(PREF_KEY_FN_COMPONENT_COUNT, 5);  // Before a TableView was used, there were always 5 components
 
-      return IntStream.range(1, componentCount + 1).boxed().map(WorkFileNameComponent::new).collect(Collectors.toList());
+      return IntStream.range(1, componentCount + 1).boxed().map(WorkFileNameComponent::new).toList();
     }
   }
 
@@ -195,7 +194,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     hyperTable = new HyperTable(tv, 0, true, "");
 
     Populator pop = Populator.create(CellValueType.cvtFileNameComponent,
-        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new HyperTableCell(type.prefValue, type.caption, hdtNone)).collect(Collectors.toList()));
+        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new HyperTableCell(type.prefValue, type.caption, hdtNone)).toList());
 
     hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDown, pop, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
 
@@ -420,7 +419,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addAuthorsToList(List<FileNameAuthor> authors, String authorsStr, boolean isEditor, boolean isTrans)
+  private static void addAuthorsToList(List<FileNameAuthor> authors, String authorsStr, boolean isEditor, boolean isTrans)
   {
     new SplitString(authorsStr, ';').stream().map(Util::ultraTrim)
                                              .filter(str -> str.length() > 0)

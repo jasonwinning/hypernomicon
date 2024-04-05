@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.App;
@@ -54,7 +53,6 @@ import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -382,7 +380,7 @@ public final class QueryCtrlr
 
     return Populator.create(cvtQueryType, queryTypes.stream()
       .map(queryType -> new HyperTableCell(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
-      .collect(Collectors.toList()));
+      .toList());
   }
 
 //---------------------------------------------------------------------------
@@ -458,15 +456,9 @@ public final class QueryCtrlr
 
     switch (curResult.getType())
     {
-      case hdtWork :
+      case hdtWork : case hdtMiscFile : case hdtWorkFile : case hdtPerson :
 
-        HDT_Work work = (HDT_Work) curResult;
-        previewWindow.setPreview(pvsQueriesTab, work.filePathIncludeExt(), work.getStartPageNum(), work.getEndPageNum(), work);
-        break;
-
-      case hdtMiscFile : case hdtWorkFile : case hdtPerson :
-
-        previewWindow.setPreview(pvsQueriesTab, ((HDT_RecordWithPath) curResult).filePath(), curResult);
+        previewWindow.setPreview(pvsQueriesTab, (HDT_RecordWithPath) curResult);
         break;
 
       default :
@@ -926,7 +918,7 @@ public final class QueryCtrlr
       //---------------------------------------------------------------------------
 
       @SuppressWarnings("unchecked")
-      private <HDT_T extends HDT_Record> boolean evaluate(Query<?> query, HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
+      private static <HDT_T extends HDT_Record> boolean evaluate(Query<?> query, HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
         return ((Query<HDT_T>)query).evaluate(record, row, op1, op2, op3);
       }

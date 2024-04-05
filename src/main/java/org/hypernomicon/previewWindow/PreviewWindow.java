@@ -95,7 +95,6 @@ public class PreviewWindow extends HyperDlg
   private final ClickHoldButton chbBack, chbForward;
 
   public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); clearControls(); }
-  public void clearPreview(PreviewSource src)    { setPreview(src, null, null); }
   public FilePath getFilePath(PreviewSource src) { return srcToWrapper.get(src).getFilePath(); }
   private PreviewWrapper curWrapper()            { return tabToWrapper.get(tpPreview.getSelectionModel().getSelectedItem()); }
   PreviewSource curSource()                      { return curWrapper().getSource(); }
@@ -107,20 +106,7 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class PreviewSetting
-  {
-    private PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
-    {
-      this.filePath = filePath;
-      this.startPageNum = startPageNum;
-      this.endPageNum = endPageNum;
-      this.record = record;
-    }
-
-    private final FilePath filePath;
-    private final int startPageNum, endPageNum;
-    private final HDT_Record record;
-  }
+  private record PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -224,7 +210,7 @@ public class PreviewWindow extends HyperDlg
       else
       {
         btnLock.setGraphic(imgViewFromRelPath("resources/images/lock_open.png"));
-        srcToSetting.forEach((src, setting) -> setPreview(src, setting.filePath, setting.startPageNum, setting.endPageNum, setting.record));
+        srcToSetting.forEach(this::setPreview);
         srcToSetting.clear();
       }
     });
@@ -436,10 +422,53 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void clearPreview(PreviewSource src)
+  {
+    setPreview(src, null, -1, -1, null);
+  }
+
+//---------------------------------------------------------------------------
+
+  public void setPreview(PreviewSource src, HDT_WorkFile workFile, HDT_Work work)
+  {
+    setPreview(src, workFile.filePath(), work.getStartPageNum(workFile), work.getEndPageNum(workFile), work);
+  }
+
+//---------------------------------------------------------------------------
+
+  public void setPreview(PreviewSource src, FilePath filePath)
+  {
+    setPreview(src, filePath, null);
+  }
+
+//---------------------------------------------------------------------------
+
   public void setPreview(PreviewSource src, FilePath filePath, HDT_Record record)
   {
-    setPreview(src, filePath, -1, -1, record);
+    if (record instanceof HDT_Work work)
+      setPreview(src, filePath, work.getStartPageNum(), work.getEndPageNum(), work);
+    else
+      setPreview(src, filePath, -1, -1, record);
   }
+
+//---------------------------------------------------------------------------
+
+  public void setPreview(PreviewSource src, HDT_RecordWithPath record)
+  {
+    if (record instanceof HDT_Work work)
+      setPreview(src, work.filePathIncludeExt(), work);
+    else
+      setPreview(src, record.filePath(), record);
+  }
+
+//---------------------------------------------------------------------------
+
+  private void setPreview(PreviewSource src, PreviewSetting setting)
+  {
+    setPreview(src, setting.filePath, setting.startPageNum, setting.endPageNum, setting.record);
+  }
+
+//---------------------------------------------------------------------------
 
   public void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
   {

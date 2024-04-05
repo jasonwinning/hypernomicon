@@ -571,10 +571,8 @@ public final class UIUtil
 
     if (childrenOnly == false)
     {
-      if (node instanceof Region)
+      if (node instanceof Region region)
       {
-        Region region = (Region)node;
-
         scalePropertiesForDPI(region.prefHeightProperty(), region.prefWidthProperty(),
                               region.maxHeightProperty (), region.maxWidthProperty (),
                               region.minHeightProperty (), region.minWidthProperty ());
@@ -603,10 +601,8 @@ public final class UIUtil
         AnchorPane.setRightAnchor(node, round(val * displayScale));
     }
 
-    if (node instanceof GridPane)
+    if (node instanceof GridPane gridPane)
     {
-      GridPane gridPane = (GridPane)node;
-
       gridPane.getColumnConstraints().forEach(cc -> scalePropertiesForDPI(cc.maxWidthProperty (), cc.minWidthProperty (), cc.prefWidthProperty ()));
       gridPane.getRowConstraints   ().forEach(rc -> scalePropertiesForDPI(rc.maxHeightProperty(), rc.minHeightProperty(), rc.prefHeightProperty()));
     }
@@ -616,21 +612,19 @@ public final class UIUtil
       (node instanceof TreeTableView ? ((TreeTableView<?>)node).getColumns() : ((TableView<?>)node).getColumns()).forEach(column ->
         scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty()));
     }
-    else if (node instanceof MasterDetailPane)
+    else if (node instanceof MasterDetailPane mdp)
     {
-      MasterDetailPane mdp = (MasterDetailPane)node;
-
       scaleNodeForDPI(mdp.getMasterNode());
       scaleNodeForDPI(mdp.getDetailNode());
     }
-    else if (node instanceof ToolBar)
-      ((ToolBar)node).getItems().forEach(UIUtil::scaleNodeForDPI);
-    else if (node instanceof TitledPane)
-      scaleNodeForDPI(((TitledPane)node).getContent());
-    else if (node instanceof TabPane)
-      ((TabPane)node).getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
-    else if (node instanceof Parent)
-      ((Parent)node).getChildrenUnmodifiable().forEach(UIUtil::scaleNodeForDPI);
+    else if (node instanceof ToolBar toolBar)
+      toolBar.getItems().forEach(UIUtil::scaleNodeForDPI);
+    else if (node instanceof TitledPane titledPane)
+      scaleNodeForDPI(titledPane.getContent());
+    else if (node instanceof TabPane tabPane)
+      tabPane.getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
+    else if (node instanceof Parent parent)
+      parent.getChildrenUnmodifiable().forEach(UIUtil::scaleNodeForDPI);
   }
 
 //---------------------------------------------------------------------------

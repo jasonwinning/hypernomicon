@@ -21,7 +21,6 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -44,7 +43,7 @@ public final class HtmlReportGenerator extends ReportGenerator
 
   @Override public String makeRows(String fieldName, Stream<String> stream)
   {
-    List<String> list = stream.filter(Objects::nonNull).collect(Collectors.toList());
+    List<String> list = stream.filter(Objects::nonNull).toList();
 
     if (list.isEmpty()) return "";
 

@@ -149,7 +149,7 @@ class MentionsIndex
     mentionedInDescToMentioners  .removeReverseKey(record);
 
     strList.forEach(str ->
-      KeywordLinkList.generate(str.toLowerCase()).forEach(link -> mentionedAnywhereToMentioners.addForward(link.key.record, record)));
+      KeywordLinkList.generate(str.toLowerCase()).forEach(link -> mentionedAnywhereToMentioners.addForward(link.key().record, record)));
 
     if (record.hasMainText())
     {
@@ -172,7 +172,7 @@ class MentionsIndex
       String plainText = mainText.getPlain();
 
       if (plainText.length() > 0)
-        KeywordLinkList.generate(plainText).forEach(link -> mentionedInDescToMentioners.addForward(link.key.record, record));
+        KeywordLinkList.generate(plainText).forEach(link -> mentionedInDescToMentioners.addForward(link.key().record, record));
 
       mainText.getDisplayItemsUnmod().forEach(displayItem ->
       {

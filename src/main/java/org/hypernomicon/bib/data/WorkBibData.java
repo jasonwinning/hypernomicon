@@ -128,14 +128,14 @@ public class WorkBibData extends BibData
 
   @Override public List<String> getMultiStr(BibFieldEnum bibFieldEnum)
   {
-    switch (bibFieldEnum)
+    return switch (bibFieldEnum)
     {
-      case bfTitle : return List.of(work.name());
-      case bfISBNs : return work.getISBNs();
-      case bfMisc  : return convertMultiLineStrToStrList(work.getMiscBib(), true);
+      case bfTitle -> List.of(work.name());
+      case bfISBNs -> work.getISBNs();
+      case bfMisc  -> convertMultiLineStrToStrList(work.getMiscBib(), true);
 
-      default      : return nullSwitch(getBibEntry(), new ArrayList<>(), bibEntry -> bibEntry.getMultiStr(bibFieldEnum));
-    }
+      default      -> nullSwitch(getBibEntry(), new ArrayList<>(), bibEntry -> bibEntry.getMultiStr(bibFieldEnum));
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -143,16 +143,16 @@ public class WorkBibData extends BibData
 
   @Override public String getStr(BibFieldEnum bibFieldEnum)
   {
-    switch (bibFieldEnum)
+    return switch (bibFieldEnum)
     {
-      case bfDOI   : return work.getDOI();
-      case bfYear  : return work.getYear();
-      case bfURL   : return work.getURL();
-      case bfTitle : return work.name();
-      case bfMisc  : return work.getMiscBib();
+      case bfDOI   -> work.getDOI();
+      case bfYear  -> work.getYear();
+      case bfURL   -> work.getURL();
+      case bfTitle -> work.name();
+      case bfMisc  -> work.getMiscBib();
 
-      default      : return nullSwitch(getBibEntry(), "", bibEntry -> bibEntry.getStr(bibFieldEnum));
-    }
+      default      -> nullSwitch(getBibEntry(), "", bibEntry -> bibEntry.getStr(bibFieldEnum));
+    };
   }
 
 //---------------------------------------------------------------------------

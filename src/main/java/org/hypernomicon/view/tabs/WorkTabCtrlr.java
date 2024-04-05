@@ -401,8 +401,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       if ((newValue == null) || (oldValue == newValue)) return;
 
-      HDT_Work subWork = newValue.getRecord();
-      previewWindow.setPreview(pvsWorkTab, subWork.filePathIncludeExt(), subWork.getStartPageNum(), subWork.getEndPageNum(), subWork);
+      previewWindow.setPreview(pvsWorkTab, (HDT_Work) newValue.getRecord());
     });
 
     htMiscFiles = new HyperTable(tvMiscFiles, 1, true, PREF_KEY_HT_WORK_MISC);
@@ -622,7 +621,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private void lblSearchKeyClick()             { tfSearchKey.setText(curWork.makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), true, false)); }
   public String getTitle()                     { return tfTitle.getText(); }
   private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ')'); }
-  private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList())); }
+  private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).toList()); }
   private void useDOIClick()                   { tfDOI.setText(getDoiFromBibTab()); }
   private void useISBNClick()                  { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, isbn, hdtNone)); }
 
@@ -893,7 +892,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
 
     if (updatePreview)
-      previewWindow.setPreview(pvsWorkTab, filePath, curWork.getStartPageNum(), curWork.getEndPageNum(), curWork);
+      previewWindow.setPreview(pvsWorkTab, filePath, curWork);
     else
       previewWindow.refreshControls(pvsWorkTab);
 
@@ -1663,7 +1662,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
                                                             .map(HDT_WorkFile::filePath)
-                                                            .collect(Collectors.toList());
+                                                            .toList();
     try
     {
       pdfBDprop.set(PDFBibData.createFromFiles(pdfFilePaths));
@@ -1777,7 +1776,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
                                                             .map(HDT_WorkFile::filePath)
-                                                            .collect(Collectors.toList());
+                                                            .toList();
     if (collEmpty(pdfFilePaths))
       pdfFilePaths = safeListOf(resolveExtFilePath(tfURL.getText()));
 
@@ -1887,7 +1886,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   public void getBibDataFromGUI(GUIBibData bd)
   {
-    List<String> isbns = htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList());
+    List<String> isbns = htISBN.dataRowStream().map(row -> row.getText(0)).toList();
 
     bd.setMultiStr(bfISBNs, isbns);
 

@@ -543,7 +543,7 @@ public class HyperCB implements CommitableWrapper
 
         if (linkList.size() > 0)
           for (KeywordLink keyLink : linkList)
-            if (keyLink.key.record == record)
+            if (keyLink.key().record == record)
             {
               cells.add(cell);
               continue cbItemsLoop;

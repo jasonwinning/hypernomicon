@@ -101,9 +101,8 @@ class HtmlTextNodeList
 
     for (Node child : element.childNodes())
     {
-      if (child instanceof TextNode)
+      if (child instanceof TextNode textNode)
       {
-        TextNode textNode = (TextNode)child;
         String nodeText = textNode.getWholeText();
 
         if (ultraTrim(nodeText).isBlank() == false)
@@ -121,8 +120,8 @@ class HtmlTextNodeList
           }
         }
       }
-      else if (child instanceof Element)
-        addNodes((Element)child, textNdx, skip);
+      else if (child instanceof Element childElement)
+        addNodes(childElement, textNdx, skip);
     }
   }
 

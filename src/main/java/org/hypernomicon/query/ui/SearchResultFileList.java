@@ -30,7 +30,6 @@ import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.multipdf.PDFCloneUtility;
@@ -158,11 +157,9 @@ class SearchResultFileList
     // the visibility of the PDFCloneUtility constructor without providing an
     // alternate way to clone a PDF page in memory.
 
-    private class PDFCloneUtility2 extends PDFCloneUtility
+    private static class PDFCloneUtility2 extends PDFCloneUtility
     {
-      public PDFCloneUtility2(PDDocument dest) { super(dest); }  // Increase visibility
-
-      @Override public <TCOSBase extends COSBase> TCOSBase cloneForNewDocument(TCOSBase base) throws IOException { return super.cloneForNewDocument(base); }  // Increase visibility
+      private PDFCloneUtility2(PDDocument dest) { super(dest); }  // Make callable from outer class
     }
 
 //---------------------------------------------------------------------------

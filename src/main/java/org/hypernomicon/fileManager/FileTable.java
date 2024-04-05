@@ -32,7 +32,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
@@ -326,7 +325,7 @@ class FileTable extends DragNDropContainer<FileRow>
     if (targetRow == null) return false;
 
     if (dragEvent.getDragboard().hasFiles())
-      draggingItems = dragEvent.getDragboard().getFiles().stream().map(EntityWithPath::new).collect(Collectors.toList());
+      draggingItems = dragEvent.getDragboard().getFiles().stream().map(EntityWithPath::new).toList();
 
     if ((draggingItems == null) || (draggingItems.size() != 1)) return true;
 

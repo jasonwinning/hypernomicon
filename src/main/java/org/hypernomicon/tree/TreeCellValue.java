@@ -74,23 +74,21 @@ class TreeCellValue implements Comparable<TreeCellValue>
 
   private String makeKey()
   {
-    String prefix;
-
-    switch (row.getRecordType())
+    String prefix = switch (row.getRecordType())
     {
-      case hdtDebate      : prefix = "JM."; break;
-      case hdtPosition    : prefix = "KM."; break;
-      case hdtArgument    : prefix = "LM."; break;
-      case hdtWorkLabel   : prefix = "MM."; break;
-      case hdtNote        : prefix = "NM."; break;
-      case hdtWork        : prefix = "OM."; break;
-      case hdtMiscFile    : prefix = "PM."; break;
-      case hdtPersonGroup : prefix = "QM."; break;
-      case hdtPerson      : prefix = "RM."; break;
-      case hdtGlossary    : prefix = "SM."; break;
-      case hdtConcept     : prefix = "TM."; break;
-      default             : prefix = "ZM.";
-    }
+      case hdtDebate      -> "JM.";
+      case hdtPosition    -> "KM.";
+      case hdtArgument    -> "LM.";
+      case hdtWorkLabel   -> "MM.";
+      case hdtNote        -> "NM.";
+      case hdtWork        -> "OM.";
+      case hdtMiscFile    -> "PM.";
+      case hdtPersonGroup -> "QM.";
+      case hdtPerson      -> "RM.";
+      case hdtGlossary    -> "SM.";
+      case hdtConcept     -> "TM.";
+      default             -> "ZM.";
+    };
 
     return prefix + toString().toLowerCase();
   }

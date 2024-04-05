@@ -58,15 +58,20 @@ public final class WindowStack
 
 //---------------------------------------------------------------------------
 
-  private static final class AlertWrapper implements WindowWrapper
+  private record AlertWrapper(Alert dlg) implements WindowWrapper
   {
-    private final Alert dlg;
-
-    private AlertWrapper(Alert dlg)         { this.dlg = dlg; }
-
     @Override public Modality getModality() { return dlg.getModality(); }
     @Override public boolean isStage()      { return false; }
     @Override public Object getWrappedObj() { return dlg; }
+  }
+
+//---------------------------------------------------------------------------
+
+  private record ChooserWrapper(Object chooser) implements WindowWrapper
+  {
+    @Override public Modality getModality() { return Modality.APPLICATION_MODAL; }
+    @Override public boolean isStage()      { return false; }
+    @Override public Object getWrappedObj() { return chooser; }
   }
 
 //---------------------------------------------------------------------------
@@ -95,19 +100,6 @@ public final class WindowStack
       if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage())) // In some Linux environments, the main window inexplicably gets
         stage.setHeight(height); stage.setWidth(width);        // resized when a window it is the owner of is opened
     }
-  }
-
-//---------------------------------------------------------------------------
-
-  private static final class ChooserWrapper implements WindowWrapper
-  {
-    private final Object chooser;
-
-    private ChooserWrapper(Object chooser)  { this.chooser = chooser; }
-
-    @Override public Modality getModality() { return Modality.APPLICATION_MODAL; }
-    @Override public boolean isStage()      { return false; }
-    @Override public Object getWrappedObj() { return chooser; }
   }
 
 //---------------------------------------------------------------------------

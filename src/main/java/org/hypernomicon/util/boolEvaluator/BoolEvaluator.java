@@ -61,26 +61,24 @@ public final class BoolEvaluator
   {
     boolean lhs = evaluateNottableAtCursor();
 
-    switch (tokenAtCursor.type)
+    return switch (tokenAtCursor.type)
     {
-      case AND :
-
+      case AND ->
+      {
         tokenAtCursor = it.next();
-        return evaluateNottableAtCursor() && lhs;
+        yield evaluateNottableAtCursor() && lhs;
+      }
 
-      case OR :
-
+      case OR ->
+      {
         tokenAtCursor = it.next();
-        return evaluateNottableAtCursor() || lhs;
+        yield evaluateNottableAtCursor() || lhs;
+      }
 
-      case RP : case END :
+      case RP, END -> lhs;
 
-        return lhs;
-
-      default :
-
-        throw new ParseException("Expected boolean expression, found " + tokenAtCursor, tokenAtCursor.offset);
-    }
+      default -> throw new ParseException("Expected boolean expression, found " + tokenAtCursor, tokenAtCursor.offset);
+    };
   }
 
 //---------------------------------------------------------------------------

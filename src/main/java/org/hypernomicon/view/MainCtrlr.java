@@ -96,7 +96,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -370,14 +369,11 @@ public final class MainCtrlr
 
     tabViewSelector.disableProperty().bind(BooleanExpression.booleanExpression(tabQueries.selectedProperty().or(tabTree.selectedProperty())).not());
 
-    tabViewSelector.tooltipProperty().bind(tabPane.getSelectionModel().selectedItemProperty().map(tab ->
+    tabViewSelector.tooltipProperty().bind(tabPane.getSelectionModel().selectedItemProperty().map(tab -> switch (getHyperTabByTab(tab).getTabEnum())
     {
-      switch (getHyperTabByTab(tab).getTabEnum())
-      {
-        case queryTabEnum : return makeTooltip("Populate dropdown with query results");
-        case treeTabEnum  : return makeTooltip("Search within Tree (additional actions become available in magnifying glass button dropdown menu)");
-        default           : return null;
-      }
+      case queryTabEnum -> makeTooltip("Populate dropdown with query results");
+      case treeTabEnum  -> makeTooltip("Search within Tree (additional actions become available in magnifying glass button dropdown menu)");
+      default           -> null;
     }));
 
     setSelectorTab(selectorTabPane.getTabs().get(selectorTabPane.getTabs().size() - 1));
@@ -567,7 +563,7 @@ public final class MainCtrlr
 
     stage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
                                   .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))
-                                  .collect(Collectors.toList()));
+                                  .toList());
     hideFindTable();
 
     setFontSize(rootNode);
@@ -739,7 +735,7 @@ public final class MainCtrlr
         if (miscFile == null)
           previewWindow.clearPreview(src);
         else
-          previewWindow.setPreview(src, miscFile.filePath(), miscFile);
+          previewWindow.setPreview(src, miscFile);
       }
 
       openPreviewWindow(src);
@@ -923,7 +919,7 @@ public final class MainCtrlr
           return;
         }
 
-        List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
+        List<String> args = board.getFiles().stream().map(File::getAbsolutePath).toList();
         Platform.runLater(() -> handleArgs(args));
         event.setDropCompleted(true);
       }
@@ -1092,14 +1088,14 @@ public final class MainCtrlr
   {
     if (stage.isFocused())
     {
-      switch (activeTabEnum())
+      return switch (activeTabEnum())
       {
-        case personTabEnum : return pvsPersonTab;
-        case workTabEnum   : return pvsWorkTab;
-        case queryTabEnum  : return pvsQueriesTab;
-        case treeTabEnum   : return pvsTreeTab;
-        default            : return pvsOther;
-      }
+        case personTabEnum -> pvsPersonTab;
+        case workTabEnum   -> pvsWorkTab;
+        case queryTabEnum  -> pvsQueriesTab;
+        case treeTabEnum   -> pvsTreeTab;
+        default            -> pvsOther;
+      };
     }
 
     return (fileManagerDlg != null) && fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused() ? pvsManager : pvsOther;
@@ -1212,12 +1208,12 @@ public final class MainCtrlr
         getTypeName(selectorType()) + " records with matching text");
     }
 
-    switch (activeTabEnum())
+    return switch (activeTabEnum())
     {
-      case queryTabEnum : return "Go record selected in query results";
-      case treeTabEnum  : return "Go to next/previous match, or go to selected record";
-      default           : return "In this context, this button has no effect.";
-    }
+      case queryTabEnum -> "Go record selected in query results";
+      case treeTabEnum  -> "Go to next/previous match, or go to selected record";
+      default           -> "In this context, this button has no effect.";
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -1968,21 +1964,21 @@ public final class MainCtrlr
     MenuItem item = (MenuItem)event.getSource();
     int code = parseInt(item.getId(), 0);
     boolean clipboard = (code % 10) == 1;
-    FilePath filePath = null;
 
     code = code / 10;
 
-    switch (code)
+    FilePath filePath = switch (code)
     {
-      case 1 : filePath = db.papersPath   (); break;
-      case 2 : filePath = db.booksPath    (); break;
-      case 3 : filePath = db.unenteredPath(); break;
-      case 4 : filePath = db.topicalPath  (); break;
-      case 5 : filePath = db.picturesPath (); break;
-      case 6 : filePath = db.miscFilesPath(); break;
-      case 7 : filePath = db.getRootPath  (); break;
-      case 8 : filePath = db.resultsPath  (); break;
-    }
+      case 1  -> db.papersPath();
+      case 2  -> db.booksPath();
+      case 3  -> db.unenteredPath();
+      case 4  -> db.topicalPath();
+      case 5  -> db.picturesPath();
+      case 6  -> db.miscFilesPath();
+      case 7  -> db.getRootPath();
+      case 8  -> db.resultsPath();
+      default -> null;
+    };
 
     if (FilePath.isEmpty(filePath)) return;
 

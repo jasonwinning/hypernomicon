@@ -61,18 +61,18 @@ public class GUIBibData extends BibDataStandalone
   {
     EnumSet<BibFieldEnum> set = EnumSet.allOf(BibFieldEnum.class);
 
-    set.removeIf(bibFieldEnum -> { switch (bibFieldEnum)
+    set.removeIf(bibFieldEnum -> switch (bibFieldEnum)
     {
-      case bfAuthors   : case bfEditors  : case bfTranslators : case bfTitle:
-      case bfDOI       : case bfISBNs    : case bfMisc        : case bfYear:
-      case bfEntryType : case bfWorkType : case bfURL         :
+      case bfAuthors,   bfEditors,  bfTranslators, bfTitle,
+           bfDOI,       bfISBNs,    bfMisc,        bfYear,
+           bfEntryType, bfWorkType, bfURL
 
-        return true;
+        -> true;
 
-      default:
+      default
 
-        return fieldNotEmpty(bibFieldEnum) == false;
-    }});
+        -> fieldNotEmpty(bibFieldEnum) == false;
+    });
 
     return set;
   }

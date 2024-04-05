@@ -168,43 +168,37 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
   private static final String entryTypeKey = "type";
 
-  private static String getFieldKey(BibFieldEnum bibFieldEnum)
+  private static String getFieldKey(BibFieldEnum bibFieldEnum) { return switch (bibFieldEnum)
   {
-    switch (bibFieldEnum)
-    {
-      case bfEntryType : return entryTypeKey;
-      case bfURL       : return "websites"; // array
-      case bfVolume    : return "volume";
-      case bfIssue     : return "issue";
-      case bfPages     : return "pages";
-      case bfPublisher : return "publisher";
-      case bfPubLoc    : return "city"; // There is also a "country" field
-      case bfEdition   : return "edition";
-      case bfLanguage  : return "language";
-      case bfYear      : return "year";
+    case bfEntryType -> entryTypeKey;
+    case bfURL       -> "websites"; // array
+    case bfVolume    -> "volume";
+    case bfIssue     -> "issue";
+    case bfPages     -> "pages";
+    case bfPublisher -> "publisher";
+    case bfPubLoc    -> "city"; // There is also a "country" field
+    case bfEdition   -> "edition";
+    case bfLanguage  -> "language";
+    case bfYear      -> "year";
 
-      case bfContainerTitle : return "source";
+    case bfContainerTitle -> "source";
 
-      case bfISBNs : return "isbn";
-      case bfISSNs : return "issn";
-      case bfDOI   : return "doi";
+    case bfISBNs -> "isbn";
+    case bfISSNs -> "issn";
+    case bfDOI   -> "doi";
 
-      case bfTitle : return "title";
-      case bfMisc  : return "notes";
+    case bfTitle -> "title";
+    case bfMisc  -> "notes";
 
-      // Acccording to the API, "Three types of annotations are available. Notes are scoped to documents and provide a
-      // high-level comments using styled text. Only a single note annotation can be attached to a document and
-      // subsequent attempts to create further note annotations will fail. Note annotations have a value of note for the member type."
+    // Acccording to the API, "Three types of annotations are available. Notes are scoped to documents and provide a
+    // high-level comments using styled text. Only a single note annotation can be attached to a document and
+    // subsequent attempts to create further note annotations will fail. Note annotations have a value of note for the member type."
 
-      case bfAuthors     : return "authors";
-      case bfEditors     : return "editors";
-      case bfTranslators : return "translators";
-
-      case bfWorkType : return "";
-    }
-
-    return "";
-  }
+    case bfAuthors     -> "authors";
+    case bfEditors     -> "editors";
+    case bfTranslators -> "translators";
+    case bfWorkType    -> "";
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -574,25 +568,18 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
           JsonObj idObj = jObj.getObj("identifiers");
           idObj.keySet().forEach(idType ->
           {
-            String typeStr;
-
-            switch (idType)
+            String typeStr = switch (idType)
             {
-              case "arxiv" :
+              case "arxiv" -> "ArXiv";
 
-                typeStr = "ArXiv";
-                break;
+              case "doi",
+                   "isbn",
+                   "issn",
+                   "pmid",
+                   "ssrn"  -> idType.toUpperCase();
 
-              case "doi" : case "isbn" : case "issn" : case "pmid" : case "ssrn" :
-
-                typeStr = idType.toUpperCase();
-                break;
-
-              default :
-
-                typeStr = formatMendeleyFieldName(idType);
-                break;
-            }
+              default      -> formatMendeleyFieldName(idType);
+            };
 
             report.addField(typeStr, makeReportString(report, typeStr, idObj.getStrSafe(idType)));
           });

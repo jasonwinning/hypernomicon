@@ -62,17 +62,17 @@ public class MendeleyAuthors extends BibAuthors
 
   boolean ignoreEditors()
   {
-    switch (entryType)
+    return switch (entryType)
     {
-      case etBookChapter : case etEncyclopediaArticle :
+      case etBookChapter, etEncyclopediaArticle
 
-        return true; // Mendeley stores the editor of work X's parent as the editor of X. Hypernomicon doesn't do that.
-                     // The best way to avoid most problems that can result from this is probably for Hypernomicon to just ignore
-                     // editors for work types where the parent's editor will often appear in the child's bibliography entry.
-      default :
+        -> true;  // Mendeley stores the editor of work X's parent as the editor of X. Hypernomicon doesn't do that.
+                  // The best way to avoid most problems that can result from this is probably for Hypernomicon to just ignore
+                  // editors for work types where the parent's editor will often appear in the child's bibliography entry.
+      default
 
-        return false;
-    }
+        -> false;
+    };
   }
 
 //---------------------------------------------------------------------------

@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.HyperTask;
@@ -369,7 +368,7 @@ public class FileManager extends HyperDlg
       history.updateCurrent(new HistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
 
       if (selectNonBlankRecordRow() == false)
-        previewWindow.setPreview(pvsManager, newValue.getFilePath(), null);
+        previewWindow.setPreview(pvsManager, newValue.getFilePath());
     });
 
     recordTable.setOnShowMore(() -> setCurrentFileRow(fileTV.getSelectionModel().getSelectedItem(), true));
@@ -937,7 +936,7 @@ public class FileManager extends HyperDlg
     List<FileRow> rowList = fileTV.getSelectionModel().getSelectedItems();
 
     if (collEmpty(rowList) == false)
-      return rowList.stream().map(EntityWithRow::new).collect(Collectors.toList());
+      return rowList.stream().map(EntityWithRow::new).toList();
 
     if (srcRow != null)
       return List.of(new EntityWithRow(srcRow));
@@ -1405,9 +1404,7 @@ public class FileManager extends HyperDlg
           HDT_WorkFile workFile = (HDT_WorkFile)record;
           if (workFile.works.size() > 0)
           {
-            HDT_Work work = workFile.works.get(0);
-
-            previewWindow.setPreview(pvsManager, workFile.filePath(), work.getStartPageNum(workFile), work.getEndPageNum(workFile), work);
+            previewWindow.setPreview(pvsManager, workFile, workFile.works.get(0));
             return;
           }
 
@@ -1430,9 +1427,7 @@ public class FileManager extends HyperDlg
 
           if (workFile != null)
           {
-            HDT_Work work = (HDT_Work) record;
-
-            previewWindow.setPreview(pvsManager, workFile.filePath(), work.getStartPageNum(workFile), work.getEndPageNum(workFile), work);
+            previewWindow.setPreview(pvsManager, workFile, (HDT_Work) record);
             return;
           }
 
@@ -1440,9 +1435,7 @@ public class FileManager extends HyperDlg
 
         case hdtMiscFile :
 
-          HDT_MiscFile miscFile = (HDT_MiscFile) record;
-
-          previewWindow.setPreview(pvsManager, miscFile.filePath(), miscFile);
+          previewWindow.setPreview(pvsManager, (HDT_MiscFile) record);
           return;
 
         default : break;
@@ -1517,7 +1510,7 @@ public class FileManager extends HyperDlg
     if (folderRecord != null)
     {
       if (selectNonBlankRecordRow() == false)
-        previewWindow.setPreview(pvsManager, folderRecord.filePath(), null);
+        previewWindow.setPreview(pvsManager, folderRecord.filePath());
     }
   }
 

@@ -439,9 +439,8 @@ public class MainTextCtrlr
     {
       while (c.next()) c.getAddedSubList().forEach(node ->
       {
-        if (node instanceof Button)
+        if (node instanceof Button button)
         {
-          Button button = (Button)node;
 
           button.addEventFilter(ActionEvent.ACTION, event -> highlighter.clear()); // Make sure user can't copy text with highlighting to clipboard
 
@@ -863,7 +862,7 @@ public class MainTextCtrlr
 
     KeywordLinkList.generate(kwText).forEach(link ->
     {
-      HDT_Record record = link.key.record;
+      HDT_Record record = link.key().record;
 
       if ((record.getType() == hdtWork) || (record.getType() == hdtMiscFile))
       {
@@ -871,7 +870,7 @@ public class MainTextCtrlr
 
         if (keyWorkRecords.contains(keyWorkRecord) == false)
         {
-          String str = kwText.substring(link.offset, link.offset + link.length);
+          String str = kwText.substring(link.offset(), link.offset() + link.length());
           keyWorksArg.add(new KeyWork(keyWorkRecord.getType(), keyWorkRecord.getID(), str, true));
           keyWorkRecords.add(keyWorkRecord);
         }

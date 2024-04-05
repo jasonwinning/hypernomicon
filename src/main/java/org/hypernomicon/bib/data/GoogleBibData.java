@@ -128,16 +128,12 @@ public final class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static EntryType parseGoogleBooksType(String gbType)
+  private static EntryType parseGoogleBooksType(String gbType) { return switch (gbType)
   {
-    switch (gbType)
-    {
-      case "BOOK"     : return etBook;
-      case "MAGAZINE" : return etMagazine;
-
-      default         : return etOther;
-    }
-  }
+    case "BOOK"     -> etBook;
+    case "MAGAZINE" -> etMagazine;
+    default         -> etOther;
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -199,6 +195,7 @@ public final class GoogleBibData extends BibDataStandalone
                             Set<String> alreadyCheckedIDs, Consumer<GoogleBibData> successHndlr, Consumer<Exception> failHndlr)
   {
     String isbn = "";
+
     if (isbnIt != null)
     {
       while ((isbn.isBlank() && isbnIt.hasNext()))

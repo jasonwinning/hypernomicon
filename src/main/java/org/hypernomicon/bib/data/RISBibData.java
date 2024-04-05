@@ -31,7 +31,7 @@ import org.hypernomicon.model.items.PersonName;
 
 public final class RISBibData extends BibDataStandalone
 {
-  private static class RISException extends Exception { private static final long serialVersionUID = -5457122244377661495L; }
+  private static class RISException extends Exception { @java.io.Serial private static final long serialVersionUID = -5457122244377661495L; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -187,40 +187,37 @@ public final class RISBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static EntryType parseRISType(String risType)
+  private static EntryType parseRISType(String risType) { return switch (risType)
   {
-    switch (risType)
-    {
-      case "ABST"    : return etAbstract;                  case "GOVDOC"  : return etGovernmentDocument;
-      case "ADVS"    : return etAudiovisualMaterial;       case "GRANT"   : return etGrant;
-      case "AGGR"    : return etAggregatedDatabase;        case "HEAR"    : return etHearing;
-      case "ANCIENT" : return etAncientText;               case "ICOMM"   : return etInternetCommunication;
-      case "ART"     : return etArtwork;                   case "INPR"    : return etInPress;
-      case "BILL"    : return etBill;                      case "JFULL"   : return etJournal;
-      case "BLOG"    : return etBlogPost;                  case "JOUR"    : return etJournalArticle;
-      case "BOOK"    : return etBook;                      case "LEGAL"   : return etRuling;
-      case "CASE"    : return etCase;                      case "MANSCPT" : return etManuscript;
-      case "CHAP"    : return etBookChapter;               case "MAP"     : return etMap;
-      case "CHART"   : return etChart;                     case "MGZN"    : return etMagazineArticle;
-      case "CLSWK"   : return etClassicalWork;             case "MPCT"    : return etFilm;
-      case "COMP"    : return etSoftware;                  case "MULTI"   : return etOnlineMultimedia;
-      case "CONF"    : return etConferenceProceedings;     case "MUSIC"   : return etMusicScore;
-      case "CPAPER"  : return etConferencePaper;           case "NEWS"    : return etNewspaperArticle;
-      case "CTLG"    : return etCatalog;                   case "PAMP"    : return etPamphlet;
-      case "DATA"    : return etDataFile;                  case "PAT"     : return etPatent;
-      case "DBASE"   : return etOnlineDatabase;            case "PCOMM"   : return etPersonalCommunication;
-      case "DICT"    : return etDictionaryEntry;           case "RPRT"    : return etReport;
-      case "EBOOK"   : return etElectronicBook;            case "SER"     : return etSerialPublication;
-      case "ECHAP"   : return etElectronicBookSection;     case "SLIDE"   : return etSlide;
-      case "EDBOOK"  : return etEditedBook;                case "SOUND"   : return etAudioRecording;
-      case "EJOUR"   : return etElectronicArticle;         case "STAND"   : return etStandard;
-      case "ELEC"    : return etWebPage;                   case "STAT"    : return etStatute;
-      case "ENCYC"   : return etEncyclopediaArticle;       case "THES"    : return etThesis;
-      case "EQUA"    : return etEquation;                  case "UNPB"    : return etUnpublishedWork;
-      case "FIGURE"  : return etFigure;                    case "VIDEO"   : return etVideoRecording;
-      case "GEN"     : return etUnentered;                 default        : return etOther;
-    }
-  }
+    case "ABST"    -> etAbstract;                  case "GOVDOC"  -> etGovernmentDocument;
+    case "ADVS"    -> etAudiovisualMaterial;       case "GRANT"   -> etGrant;
+    case "AGGR"    -> etAggregatedDatabase;        case "HEAR"    -> etHearing;
+    case "ANCIENT" -> etAncientText;               case "ICOMM"   -> etInternetCommunication;
+    case "ART"     -> etArtwork;                   case "INPR"    -> etInPress;
+    case "BILL"    -> etBill;                      case "JFULL"   -> etJournal;
+    case "BLOG"    -> etBlogPost;                  case "JOUR"    -> etJournalArticle;
+    case "BOOK"    -> etBook;                      case "LEGAL"   -> etRuling;
+    case "CASE"    -> etCase;                      case "MANSCPT" -> etManuscript;
+    case "CHAP"    -> etBookChapter;               case "MAP"     -> etMap;
+    case "CHART"   -> etChart;                     case "MGZN"    -> etMagazineArticle;
+    case "CLSWK"   -> etClassicalWork;             case "MPCT"    -> etFilm;
+    case "COMP"    -> etSoftware;                  case "MULTI"   -> etOnlineMultimedia;
+    case "CONF"    -> etConferenceProceedings;     case "MUSIC"   -> etMusicScore;
+    case "CPAPER"  -> etConferencePaper;           case "NEWS"    -> etNewspaperArticle;
+    case "CTLG"    -> etCatalog;                   case "PAMP"    -> etPamphlet;
+    case "DATA"    -> etDataFile;                  case "PAT"     -> etPatent;
+    case "DBASE"   -> etOnlineDatabase;            case "PCOMM"   -> etPersonalCommunication;
+    case "DICT"    -> etDictionaryEntry;           case "RPRT"    -> etReport;
+    case "EBOOK"   -> etElectronicBook;            case "SER"     -> etSerialPublication;
+    case "ECHAP"   -> etElectronicBookSection;     case "SLIDE"   -> etSlide;
+    case "EDBOOK"  -> etEditedBook;                case "SOUND"   -> etAudioRecording;
+    case "EJOUR"   -> etElectronicArticle;         case "STAND"   -> etStandard;
+    case "ELEC"    -> etWebPage;                   case "STAT"    -> etStatute;
+    case "ENCYC"   -> etEncyclopediaArticle;       case "THES"    -> etThesis;
+    case "EQUA"    -> etEquation;                  case "UNPB"    -> etUnpublishedWork;
+    case "FIGURE"  -> etFigure;                    case "VIDEO"   -> etVideoRecording;
+    case "GEN"     -> etUnentered;                 default        -> etOther;
+  };}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

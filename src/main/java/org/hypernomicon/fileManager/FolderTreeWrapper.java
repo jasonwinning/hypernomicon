@@ -25,7 +25,6 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
@@ -248,7 +247,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
     if (((fileTable.draggingItems == null) && (dragEvent.getDragboard().hasFiles() == false)) || (targetRow == null) || (targetRow.isDirectory() == false)) return false;
 
     if (dragEvent.getDragboard().hasFiles())
-      fileTable.draggingItems = dragEvent.getDragboard().getFiles().stream().map(EntityWithPath::new).collect(Collectors.toList());
+      fileTable.draggingItems = dragEvent.getDragboard().getFiles().stream().map(EntityWithPath::new).toList();
 
     if (fileTable.draggingItems.size() == 1)
     {

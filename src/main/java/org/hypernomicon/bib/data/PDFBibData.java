@@ -217,7 +217,7 @@ public class PDFBibData extends BibDataStandalone
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private String escape(String str) { return str.replace(",", "@&$"); }
+    private static String escape(String str) { return str.replace(",", "@&$"); }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -235,7 +235,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private boolean nameIsNotExcluded(String nameStr)
+    private static boolean nameIsNotExcluded(String nameStr)
     {
       nameStr = safeStr(nameStr).toLowerCase();
 
@@ -352,23 +352,19 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private EntryType parsePrismAggregationType(String paType)
+    private static EntryType parsePrismAggregationType(String paType) { return switch (paType.toLowerCase())
     {
-      switch (paType.toLowerCase())
-      {
-        case "book"       : return etBook;
-        case "catalog"    : return etCatalogItem;
-        case "feed"       : return etFeedItem;
-        case "journal"    : return etJournalArticle;
-        case "magazine"   : return etMagazineArticle;
-        case "manual"     : return etManual;
-        case "newsletter" : return etNewsletterArticle;
-        case "pamphlet"   : return etPamphlet;
-        case "other"      : // fall through
+      case "book"       -> etBook;
+      case "catalog"    -> etCatalogItem;
+      case "feed"       -> etFeedItem;
+      case "journal"    -> etJournalArticle;
+      case "magazine"   -> etMagazineArticle;
+      case "manual"     -> etManual;
+      case "newsletter" -> etNewsletterArticle;
+      case "pamphlet"   -> etPamphlet;
 
-        default           : return etOther;
-      }
-    }
+      default           -> etOther;  // Includes type "other"
+    };}
   }
 
 //---------------------------------------------------------------------------
