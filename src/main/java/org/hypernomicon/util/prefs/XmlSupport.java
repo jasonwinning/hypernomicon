@@ -169,31 +169,30 @@ public final class XmlSupport
   private static final String PREFS_DTD_URI = "http://java.sun.com/dtd/preferences.dtd";
 
   // The actual DTD corresponding to the URI
-  private static final String PREFS_DTD =
+  private static final String PREFS_DTD = """
+    <?xml version="1.0" encoding="UTF-8"?>
 
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+    <!-- DTD for preferences -->
 
-    "<!-- DTD for preferences -->" +
+    <!ELEMENT preferences (root) >
+    <!ATTLIST preferences
+     EXTERNAL_XML_VERSION CDATA "0.0" >
 
-    "<!ELEMENT preferences (root) >" +
-    "<!ATTLIST preferences" +
-    " EXTERNAL_XML_VERSION CDATA \"0.0\"  >" +
+    <!ELEMENT root (map, node*) >
+    <!ATTLIST root
+              type (system|user) #REQUIRED >
 
-    "<!ELEMENT root (map, node*) >" +
-    "<!ATTLIST root" +
-    "          type (system|user) #REQUIRED >" +
+    <!ELEMENT node (map, node*) >
+    <!ATTLIST node
+              name CDATA #REQUIRED >
 
-    "<!ELEMENT node (map, node*) >" +
-    "<!ATTLIST node" +
-    "          name CDATA #REQUIRED >" +
-
-    "<!ELEMENT map (entry*) >" +
-    "<!ATTLIST map" +
-    "  MAP_XML_VERSION CDATA \"0.0\"  >" +
-    "<!ELEMENT entry EMPTY >" +
-    "<!ATTLIST entry" +
-    "          key CDATA #REQUIRED" +
-    "          value CDATA #REQUIRED >";
+    <!ELEMENT map (entry*) >
+    <!ATTLIST map
+      MAP_XML_VERSION CDATA "0.0"  >
+    <!ELEMENT entry EMPTY >
+    <!ATTLIST entry
+              key CDATA #REQUIRED
+              value CDATA #REQUIRED >""";
 
   /**
    * Version number for the format exported preferences files.

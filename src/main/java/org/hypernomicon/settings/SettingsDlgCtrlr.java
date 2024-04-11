@@ -662,22 +662,21 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   private void setExtFileTooltip()
   {
-    tfExtFiles.setTooltip(new WebTooltip(
+    tfExtFiles.setTooltip(new WebTooltip("""
+      This setting should be used when you want multiple Hypernomicon databases to share PDF files<br>
+      so that you don't have to have multiple copies of the same file.<br><br>
 
-      "This setting should be used when you want multiple Hypernomicon databases to share PDF files<br>" +
-      "so that you don't have to have multiple copies of the same file.<br><br>" +
+      Use the [...] button to select the path where the shared PDF files are located. It is a good idea<br>
+      to select the root folder of another database that will be the &ldquo;owner&rdquo; of the files.<br><br>
 
-      "Use the [...] button to select the path where the shared PDF files are located. It is a good idea<br>" +
-      "to select the root folder of another database that will be the \"owner\" of the files.<br><br>" +
+      Once the external file path is set, you can drag and drop a file that lives under the external file<br>
+      path onto the URL field on the Works tab. Its URL will start with %s.<br><br>
 
-      "Once the external file path is set, you can drag and drop a file that lives under the external file<br>" +
-      "path onto the URL field on the Works tab. Its URL will start with " + EXT_1 + ".<br><br>" +
+      Page numbers for that work can be set in the Preview window or the Contents window (accessed from<br>
+      the &ldquo;Show contents&rdquo; button in the Preview window).<br><br>
 
-      "Page numbers for that work can be set in the Preview window or the Contents window (accessed from<br>" +
-      "the \"Show contents\" button in the Preview window).<br><br>" +
-
-      "Warning: If the file is moved or renamed, e.g. using the File Manager while the \"owner\" database<br>" +
-      "is open, the path will not be automatically updated in the corresponding work in this database."));
+      Warning: If the file is moved or renamed, e.g. using the File Manager while the &ldquo;owner&rdquo; database<br>
+      is open, the path will not be automatically updated in the corresponding work in this database.""".formatted(EXT_1)));
 
     btnExtFilesHelp.setOnMouseClicked(event ->
     {

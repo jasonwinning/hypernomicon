@@ -346,31 +346,30 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private static Tooltip invHelpTooltip()
   {
-    return new WebTooltip(
+    return new WebTooltip("""
+        Investigation records are a way of providing a description of a person&rsquo;s ongoing research<br>
+        project (i.e., what they are &ldquo;investigating&rdquo;), which can include a number of works they&rsquo;ve<br>
+        authored.<br><br>
 
-        "Investigation records are a way of providing a description of a person's ongoing research<br>" +
-        "project (i.e., what they are \"investigating\"), which can include a number of works they've<br>" +
-        "authored.<br><br>" +
+        Investigations can also be thought of as a way of grouping an author&rsquo;s works by topic.<br><br>
 
-        "Investigations can also be thought of as a way of grouping an author's works by topic.<br><br>" +
+        You add an Investigation record on the Persons tab by clicking the &ldquo;Add new investigation&rdquo;
+        sub-tab.<br><br>
 
-        "You add an Investigation record on the Persons tab by clicking the \"Add new investigation\" " +
-        "sub-tab.<br><br>" +
+        For example, a Person record for Daniel Dennett might have at least 3 Investigation records:<br>
+        &ldquo;Agency and Free Will&rdquo;, &ldquo;Intentional Stance&rdquo;, and &ldquo;Consciousness&rdquo;.<br><br>
 
-        "For example, a Person record for Daniel Dennett might have at least 3 Investigation records:<br>" +
-        "\"Agency and Free Will\", \"Intentional Stance\", and \"Consciousness\".<br><br>" +
+        You can assign an investigation to a work in the Persons tab by clicking in the &ldquo;Investigation(s)&rdquo;<br>
+        column in the list of works.<br><br>
 
-        "You can assign an investigation to a work in the Persons tab by clicking in the \"Investigation(s)\"<br>" +
-        "column in the list of works.<br><br>" +
+        When an Investigation sub-tab is selected on the Persons tab, you can enter a description for<br>
+        that Investigation in the text editor, and only works assigned to that Investigation are displayed<br>
+        in the list of works.<br><br>
 
-        "When an Investigation sub-tab is selected on the Persons tab, you can enter a description for<br>" +
-        "that Investigation in the text editor, and only works assigned to that Investigation are displayed<br>" +
-        "in the list of works.<br><br>" +
+        As with many other types of records, you can assign a search key to an Investigation on its sub-tab.<br><br>
 
-        "As with many other types of records, you can assign a search key to an Investigation on its sub-tab.<br><br>" +
-
-        "Overall, it is a way of grouping a given author's works and prevents you from needing to write<br>" +
-        "a large amount of text on the Person's main description field (the \"Overview\" sub-tab).");
+        Overall, it is a way of grouping a given author&rsquo;s works and prevents you from needing to write<br>
+        a large amount of text on the Person&rsquo;s main description field (the &ldquo;Overview&rdquo; sub-tab).""");
   }
 
 //---------------------------------------------------------------------------
