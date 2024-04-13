@@ -38,7 +38,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="400.0" minWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr">
+<AnchorPane minHeight="400.0" minWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr">
   <AnchorPane fx:id="apMain" minHeight="400.0" minWidth="600.0" prefHeight="646.0" prefWidth="1039.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="333.0" layoutY="150.0" vbarPolicy="ALWAYS" AnchorPane.bottomAnchor="32.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <AnchorPane>
@@ -257,10 +257,10 @@
               <AnchorPane GridPane.rowIndex="1">
                 <TableView fx:id="tvAuthors1" editable="true" layoutX="22.0" layoutY="-12.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                   <columns>
-                    <TableColumn minWidth="-1.0" prefWidth="-1.0" text="Name" />
-                    <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
-                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
-                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
+                    <TableColumn minWidth="39.0" prefWidth="1.0" sortable="false" text="Name" />
+                    <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" resizable="false" sortable="false" text="Rec." />
+                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" resizable="false" sortable="false" text="Ed." />
+                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" resizable="false" sortable="false" text="Tr." />
                   </columns>
                   <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -270,10 +270,10 @@
               <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
                 <TableView fx:id="tvAuthors2" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                   <columns>
-                    <TableColumn minWidth="-1.0" prefWidth="-1.0" text="Name" />
-                    <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
-                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
-                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
+                    <TableColumn minWidth="39.0" prefWidth="1.0" sortable="false" text="Name" />
+                    <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" resizable="false" sortable="false" text="Rec." />
+                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" resizable="false" sortable="false" text="Ed." />
+                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" resizable="false" sortable="false" text="Tr." />
                   </columns>
                   <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -283,10 +283,10 @@
               <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
                 <TableView fx:id="tvAuthors3" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                   <columns>
-                    <TableColumn minWidth="-1.0" prefWidth="-1.0" text="Name" />
-                    <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
-                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
-                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
+                    <TableColumn minWidth="39.0" prefWidth="1.0" sortable="false" text="Name" />
+                    <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" resizable="false" sortable="false" text="Rec." />
+                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" resizable="false" sortable="false" text="Ed." />
+                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" resizable="false" sortable="false" text="Tr." />
                   </columns>
                   <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -296,10 +296,10 @@
               <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
                 <TableView fx:id="tvAuthors4" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                   <columns>
-                    <TableColumn minWidth="-1.0" prefWidth="-1.0" text="Name" />
-                    <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
-                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
-                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
+                    <TableColumn minWidth="39.0" prefWidth="1.0" sortable="false" text="Name" />
+                    <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" resizable="false" sortable="false" text="Rec." />
+                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" resizable="false" sortable="false" text="Ed." />
+                    <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" resizable="false" sortable="false" text="Tr." />
                   </columns>
                   <columnResizePolicy>
                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

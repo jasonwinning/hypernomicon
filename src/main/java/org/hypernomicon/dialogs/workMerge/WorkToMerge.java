@@ -37,6 +37,7 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableView;
@@ -65,6 +66,8 @@ class WorkToMerge
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType));
 
     htAuthors = new HyperTable(tvAuthors, 0, true, "");
+
+    htAuthors.initConstrainedResize();
 
     htAuthors.addCol(hdtPerson, ctDropDownList);
 

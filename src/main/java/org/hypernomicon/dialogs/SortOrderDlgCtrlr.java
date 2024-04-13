@@ -66,9 +66,7 @@ public class SortOrderDlgCtrlr extends HyperDlg
       row.setCellValue(1, record, record.listName());
       row.setCellValue(2, record, record.getSortKeyAttr());
     });
-                                                         // There is a bug in JavaFX where initializing the column widths doesn't work
-    tvRecords.getColumns().get(0).setResizable(false);   // right when the column resize policy is CONSTRAINED_RESIZE_POLICY and one of
-  }                                                      // the columns is not resizable. So they all have to be resizable at first.
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

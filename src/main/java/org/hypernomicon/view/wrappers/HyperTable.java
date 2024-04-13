@@ -978,4 +978,24 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This can be called immediately after the constructor if the TableView is using a constrained resize policy
+   * and any of the columns are not intended to be resizable. Sometimes in that situation the table won't display correctly due to bugs
+   * in JavaFX; this function prevents that.
+   */
+  public void initConstrainedResize()
+  {
+    boolean colZeroVisible = tv.getColumns().get(0).isVisible();
+
+    Platform.runLater(() ->  // This has to be done because of bugginess of constrained resize policies. The column widths may not be correctly initialized until you force it to be redrawn.
+    {
+      tv.getColumns().get(0).setVisible(!colZeroVisible);
+
+      Platform.runLater(() -> tv.getColumns().get(0).setVisible(colZeroVisible));
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

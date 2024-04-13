@@ -153,10 +153,6 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);
 
-    lowerCtrlr.tvWhereMade.getColumns().get(0).setResizable(false); // There is a bug in JavaFX where initializing the column widths doesn't work
-    lowerCtrlr.tvWhereMade.getColumns().get(4).setResizable(false); // right when the column resize policy is CONSTRAINED_RESIZE_POLICY and one of
-                                                                    // the columns is not resizable. So they all have to be resizable at first.
-
     htCounters = new HyperTable(lowerCtrlr.tvCounters, 3, true, PREF_KEY_HT_ARG_COUNTERS);
 
     htCounters.addActionCol(ctGoNewBtn, 3);
