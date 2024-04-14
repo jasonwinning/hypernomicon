@@ -41,6 +41,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -522,7 +523,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       List<ZoteroItem> uploadQueue; // implemented as array because indices are returned by server
       JsonArray jArr = new JsonArray();
 
-      uploadQueue = getAllEntries().stream().filter(entry -> entry.isSynced() == false).toList();
+      uploadQueue = getAllEntries().stream().filter(entry -> entry.isSynced() == false).collect(Collectors.toCollection(ArrayList::new));
 
       if (uploadQueue.isEmpty()) return false;
 
@@ -567,6 +568,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
             if (item.getVersion() > onlineLibVersion)
               onlineLibVersion = item.getVersion();
           });
+
+          jUnchanged.keySet().forEach(queueNdx -> getEntryByKey(jUnchanged.getStr(queueNdx)).mergeWithBackupCopy());
 
           uploadQueue.subList(0, uploadCount).clear();
         }

@@ -110,6 +110,17 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This should be called if Hypernomicon says an entry changed but the server says it didn't.
+   */
+  public void mergeWithBackupCopy()
+  {
+    update(backupItem.jObj, true, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public final void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     updateJsonObj(jObj);
