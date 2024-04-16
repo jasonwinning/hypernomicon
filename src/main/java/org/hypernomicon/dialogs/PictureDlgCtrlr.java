@@ -150,10 +150,14 @@ public class PictureDlgCtrlr extends HyperDlg
     {
       if (tfName.isFocused() && !tfName.getText().isEmpty())
       {
-        if (FilenameUtils.indexOfExtension(tfName.getText()) >= 0)
-          tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
-        else
-          tfName.selectAll();
+        try
+        {
+          if (FilenameUtils.indexOfExtension(tfName.getText()) >= 0)
+            tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
+          else
+            tfName.selectAll();
+        }
+        catch (IllegalArgumentException e) { noOp(); }
       }
     }));
 
@@ -825,9 +829,6 @@ public class PictureDlgCtrlr extends HyperDlg
 
     final FilePath curFile = personHyperTab.getCurPicture();
 
-    FilePath newFileSrc = null,
-             newFileDest = getDestFilePath(tfName.getText());
-
     String newFileDestName = tfName.getText();
 
   //---------------------------------------------------------------------------
@@ -837,7 +838,13 @@ public class PictureDlgCtrlr extends HyperDlg
     if (newFileDestName.isBlank())
       return falseWithErrorMessage("Name cannot be blank.", tfName);
 
+    if (FilePath.isFilenameValid(newFileDestName) == false)
+      return falseWithErrorMessage("Invalid file name: \"" + newFileDestName + '"', tfName);
+
     Set<HyperPath> set;
+
+    FilePath newFileSrc = null,
+             newFileDest = getDestFilePath(tfName.getText());
 
     if (rbWeb.isSelected())
     {

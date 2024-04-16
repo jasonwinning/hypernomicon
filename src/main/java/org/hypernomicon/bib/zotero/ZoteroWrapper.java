@@ -123,16 +123,19 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     JsonArray jsonArray = doHttpRequest(url, HttpRequestType.post, jsonPostData);
 
-    switch (jsonClient.getStatusCode())
+    return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_OK :
-      case HttpStatus.SC_NOT_MODIFIED :
-      case HttpStatus.SC_PRECONDITION_FAILED :
+      case HttpStatus.SC_OK,
+           HttpStatus.SC_NOT_MODIFIED,
+           HttpStatus.SC_PRECONDITION_FAILED
 
-        return jsonArray;
-    }
+        -> jsonArray;
 
-    throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+      default
+
+        -> throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+    };
+
   }
 
 //---------------------------------------------------------------------------
@@ -187,16 +190,18 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     JsonArray jsonArray = doHttpRequest(url, HttpRequestType.get, null);
 
-    switch (jsonClient.getStatusCode())
+    return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_OK :
-      case HttpStatus.SC_NOT_MODIFIED :
-      case HttpStatus.SC_PRECONDITION_FAILED :
+      case HttpStatus.SC_OK,
+           HttpStatus.SC_NOT_MODIFIED,
+           HttpStatus.SC_PRECONDITION_FAILED
 
-        return jsonArray;
-    }
+        -> jsonArray;
 
-    throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+      default
+
+        -> throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+    };
   }
 
 //---------------------------------------------------------------------------

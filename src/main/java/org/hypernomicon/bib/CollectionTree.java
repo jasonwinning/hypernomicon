@@ -29,7 +29,7 @@ import javafx.scene.control.TreeView;
 import static org.hypernomicon.bib.CollectionTree.BibCollectionType.*;
 import static org.hypernomicon.util.Util.*;
 
-public class CollectionTree
+class CollectionTree
 {
   enum BibCollectionType { bctAll, bctAllAssigned, bctAllUnassigned, bctUnsorted, bctTrash, bctUser }
 

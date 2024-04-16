@@ -390,6 +390,9 @@ public class FileDlgCtrlr extends HyperDlg
         return falseWithErrorMessage("You must enter a file type.", cbType);
     }
 
+    if (FilePath.isFilenameValid(tfFileName.getText()) == false)
+      return falseWithErrorMessage("Invalid file name: \"" + tfFileName.getText() + '"', tfFileName);
+
     // check to see if destination file name currently points to a file in the database
 
     FilePath fileName = chkDontChangeFilename.isSelected() ? srcFilePath.getNameOnly() : new FilePath(tfFileName.getText()),

@@ -473,7 +473,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
         return falseWithErrorMessage("Unable to modify record: term cannot be zero-length.", tfName);
     }
 
-    if (HyperTab.saveSearchKey(nodeRecord, tfSearchKey) == false) return false;
+    if (saveSearchKey(nodeRecord, tfSearchKey) == false) return false;
 
     nodeRecord.setName(tfName.getText());
 
@@ -507,7 +507,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
   @Override void updateWebButtons(Preferences node)
   {
-    HyperTab.updateWebButtons(node, PREF_KEY_GEN_SRCH, 4, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
+    updateWebButtons(node, PREF_KEY_GEN_SRCH, 4, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
 
     btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '2').getCaption());
     btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '3').getCaption());

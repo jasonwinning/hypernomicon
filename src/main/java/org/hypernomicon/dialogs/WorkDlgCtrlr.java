@@ -1312,6 +1312,9 @@ public class WorkDlgCtrlr extends HyperDlg
       return true;
     }
 
+    if (FilePath.isFilenameValid(tfNewFile.getText()) == false)
+      return falseWithErrorMessage("Invalid file name: \"" + tfNewFile.getText() + '"', tfNewFile);
+
     FilePath newFilePath = rbCurrent.isSelected() ?
       (chkKeepFilenameUnchanged.isSelected() ?
         origFilePath

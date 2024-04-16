@@ -2755,7 +2755,7 @@ public final class MainCtrlr
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
 
         if (count > 0)
-          hcbGoTo.selectIDofRecord(hyperTab == null ? null : hyperTab.activeRecord());
+          hcbGoTo.selectIDofRecord(hyperTab.activeRecord());
 
         break;
     }
