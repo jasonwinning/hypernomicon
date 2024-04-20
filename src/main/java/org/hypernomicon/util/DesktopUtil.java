@@ -365,7 +365,13 @@ public final class DesktopUtil
     try
     {
       if (SystemUtils.IS_OS_WINDOWS)
-        Runtime.getRuntime().exec(new String[] {"explorer.exe", "/select,\"" + filePath + '"'}).waitFor();
+      {
+        // The deprecated method has to be used because otherwise, if any of the array elements contain a space
+        // (which they will if any path components contain a space), the command will not work right. The
+        // deprecated method uses spaces to separate the string into array elements.
+
+        Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + '"').waitFor();
+      }
 
       else if (SystemUtils.IS_OS_MAC)
         Runtime.getRuntime().exec(new String[] {"open", "-R", filePath.toString()}).waitFor();
