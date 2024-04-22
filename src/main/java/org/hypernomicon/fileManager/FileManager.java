@@ -359,6 +359,7 @@ public class FileManager extends HyperDlg
         previewWindow.clearPreview(pvsManager);
         return;
       }
+
       if (newValue == oldValue) return;
 
       previewWindow.disablePreviewUpdating = true;
@@ -1350,6 +1351,12 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Selects an appropriate record row based on the file row selected.
+   * <br>
+   * It will prefer a record with some content in its description.
+   * @return True if the record has a corresponding file (for displaying in the Preview window); false otherwise
+   */
   private boolean selectNonBlankRecordRow()
   {
     HyperTableRow rowToPick = null;
@@ -1362,7 +1369,18 @@ public class FileManager extends HyperDlg
       if (record.hasDesc() && (((HDT_RecordWithDescription) record).getDesc().getPlain().trim().length() > 0))
       {
         recordTable.selectRow(row);
-        return true;
+
+        if (record instanceof HDT_RecordWithPath recordWithPath)
+        {
+          FilePath filePath = recordWithPath.filePath();
+          if ((filePath != null) && filePath.isFile())
+          {
+            setPreviewFromRecordTable(); // This gets called by recordTable.selectRow but disablePreviewUpdating may have been true when recordTable.selectRow was first called;
+            return true;                 // the last time it was called, the row selection had not actually changed, so we need to call setPreviewFromRecordTable manually
+          }
+        }
+
+        return false;
       }
 
       if ((rowToPick == null) && (record instanceof HDT_RecordWithPath) && ((HDT_RecordWithPath) record).pathNotEmpty())
@@ -1373,7 +1391,15 @@ public class FileManager extends HyperDlg
       return false;
 
     recordTable.selectRow(rowToPick);
-    return true;
+
+    FilePath filePath = ((HDT_RecordWithPath)rowToPick.getRecord()).filePath();
+    if ((filePath != null) && filePath.isFile())
+    {
+      setPreviewFromRecordTable(); // This gets called by recordTable.selectRow but disablePreviewUpdating may have been true when recordTable.selectRow was first called;
+      return true;                 // the last time it was called, the row selection had not actually changed, so we need to call setPreviewFromRecordTable manually
+    }
+
+    return false;
   }
 
 //---------------------------------------------------------------------------
