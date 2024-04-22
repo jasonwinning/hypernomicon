@@ -489,8 +489,11 @@ public final class UIUtil
 
   public static void safeFocus(Node node)
   {
-    if (node.isDisabled() == false)
-      runInFXThread(node::requestFocus);
+    runInFXThread(() ->
+    {
+      if (node.isDisabled() == false)
+        node.requestFocus();
+    });
   }
 
 //---------------------------------------------------------------------------

@@ -28,7 +28,7 @@ import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.net.UnknownHostException;
 
 //---------------------------------------------------------------------------
@@ -75,7 +75,7 @@ public final class InternetCheckDlgCtrlr extends HyperDlg
     {
       try
       {
-        HttpURLConnection con = (HttpURLConnection) new URL("https://www.google.com/").openConnection();
+        HttpURLConnection con = (HttpURLConnection) URI.create("https://www.google.com/").toURL().openConnection();
         con.connect();
 
         if (con.getResponseCode() == HttpURLConnection.HTTP_OK)

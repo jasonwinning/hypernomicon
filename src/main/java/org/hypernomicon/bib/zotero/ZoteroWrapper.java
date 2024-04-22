@@ -515,8 +515,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       }
       catch (UnsupportedOperationException | IOException | ParseException e)
       {
-        String msg = "An error occurred while syncing: " + getThrowableMessage(e);
-        throw new HyperDataException(msg, e);
+        throw new HyperDataException("An error occurred while syncing: " + getThrowableMessage(e), e);
       }
     }
 

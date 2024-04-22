@@ -1470,7 +1470,7 @@ public final class HyperDB
     }
     catch (RestoreException e)
     {
-      throw new HyperDataException("Internal error #42837", e);
+      throw new HDB_InternalError(42837, e);
     }
   }
 
@@ -1857,7 +1857,7 @@ public final class HyperDB
     }
     catch (RestoreException e)
     {
-      throw new HyperDataException("Internal error #42837", e);
+      throw new HDB_InternalError(42838, e);
     }
 
     xmlChecksums.put(filePath.getNameOnly().toString(), digestHexStr(md));

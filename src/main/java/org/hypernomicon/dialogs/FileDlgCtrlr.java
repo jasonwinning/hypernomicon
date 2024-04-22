@@ -457,7 +457,7 @@ public class FileDlgCtrlr extends HyperDlg
 
       HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
       if (folder == null)
-        return falseWithErrorMessage("Internal error 22937");
+        return falseWithErrorMessage("Internal error #22937");
 
       curFileRecord.getPath().assign(folder, destFilePath.getNameOnly());
     }

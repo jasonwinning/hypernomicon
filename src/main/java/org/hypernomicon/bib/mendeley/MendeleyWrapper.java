@@ -488,8 +488,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       }
       catch (UnsupportedOperationException | IOException | ParseException e)
       {
-        String msg = "An error occurred while syncing: " + getThrowableMessage(e);
-        throw new HyperDataException(msg, e);
+        throw new HyperDataException("An error occurred while syncing: " + getThrowableMessage(e), e);
       }
     }
   }; }
@@ -690,8 +689,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
         }
         catch (UnsupportedOperationException | IOException | ParseException e)
         {
-          String msg = "An error occurred while retrieving username from server: " + getThrowableMessage(e);
-          throw new HyperDataException(msg, e);
+          throw new HyperDataException("An error occurred while retrieving username from server: " + getThrowableMessage(e), e);
         }
       }
     };

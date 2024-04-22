@@ -1086,7 +1086,7 @@ public final class QueryCtrlr
 
     if (startOpNum < 1)
     {
-      messageDialog("Internal error 90087", mtError);
+      messageDialog("Internal error #90087", mtError);
       return;
     }
 

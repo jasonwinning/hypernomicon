@@ -221,7 +221,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
       if (record.getType() != nodeRecordType)
       {
-        messageDialog("Internal Error #28788", mtError);
+        messageDialog("Internal error #28788", mtError);
         return;
       }
     }

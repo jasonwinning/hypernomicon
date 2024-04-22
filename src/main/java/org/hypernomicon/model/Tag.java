@@ -167,7 +167,7 @@ public enum Tag
       if (tag == tagNone) return;
 
       if (numToTag.containsKey(tag.num))
-        throw new AssertionError(new HDB_InternalError(99215, "Duplicate tag hash codes."));
+        throw new AssertionError(new HDB_InternalError(99215));  // Duplicate tag hash codes
 
       numToTag .put(tag.num , tag);
       nameToTag.put(tag.name, tag);

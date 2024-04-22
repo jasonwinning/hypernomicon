@@ -31,7 +31,9 @@ import java.io.OutputStreamWriter;
 
 import static java.nio.charset.StandardCharsets.*;
 
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
@@ -66,7 +68,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -763,18 +764,16 @@ public final class Util
 
   public static String manifestValue(String key)
   {
-    Class<App> theClass = App.class;
-    String classPath = theClass.getResource(theClass.getSimpleName() + ".class").toString();
+    URL url = App.class.getResource("/META-INF/MANIFEST.MF");
 
-    if (classPath.startsWith("jar") == false) return "";   // Class not from JAR
-
-    String manifestPath = classPath.substring(0, classPath.lastIndexOf('!') + 1) + "/META-INF/MANIFEST.MF";
-
-    try (InputStream is = new URL(manifestPath).openStream())
+    if (url != null) try
     {
-      return new Manifest(is).getMainAttributes().getValue(key);
+      URLConnection c = url.openConnection();
 
-    } catch (IOException e) { noOp(); }
+      if (c instanceof JarURLConnection jarURLConnection)
+        return safeStr(nullSwitch(jarURLConnection.getManifest(), "", manifest -> manifest.getMainAttributes().getValue(key)));
+    }
+    catch (IOException e) { noOp(); }
 
     return "";
   }

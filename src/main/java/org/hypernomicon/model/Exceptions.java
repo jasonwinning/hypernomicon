@@ -24,10 +24,15 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 @SuppressWarnings("serial")
 public final class Exceptions
 {
   private Exceptions() { throw new UnsupportedOperationException(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static class InvalidItemException extends HyperDataException
   {
@@ -59,11 +64,11 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class SearchKeyException extends HyperDataException
+  public static abstract class SearchKeyException extends HyperDataException
   {
     private final String key;
 
-    SearchKeyException(String msg, String key)
+    private SearchKeyException(String msg, String key)
     {
       super(msg);
 
@@ -139,9 +144,9 @@ public final class Exceptions
 
   public static class HyperDataException extends Exception
   {
-    public HyperDataException(String msg, Throwable e) { super(msg, e);                    }
-    public HyperDataException(Throwable e)             { super(getThrowableMessage(e), e); }
-    public HyperDataException(String msg)              { super(msg);                       }
+    public HyperDataException(String msg             ) { super(msg                      ); }
+    public HyperDataException(String msg, Throwable e) { super(msg                   , e); }
+    public HyperDataException(            Throwable e) { super(getThrowableMessage(e), e); }
   }
 
 //---------------------------------------------------------------------------
@@ -149,15 +154,8 @@ public final class Exceptions
 
   public static class HDB_InternalError extends HyperDataException
   {
-    public HDB_InternalError(int newNum)
-    {
-      super("Internal error #" + newNum);
-    }
-
-    HDB_InternalError(int newNum, String msg)
-    {
-      super("Internal error #" + newNum + ": " + msg);
-    }
+    public HDB_InternalError(int num             ) { super("Internal error #" + num   ); }
+    public HDB_InternalError(int num, Throwable e) { super("Internal error #" + num, e); }
   }
 
 //---------------------------------------------------------------------------

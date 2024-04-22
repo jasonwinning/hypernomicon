@@ -568,7 +568,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     RecordTreeEdge edge = new RecordTreeEdge(parent, child);
 
     if (edge.canDetach() == false)
-      return doDetach && falseWithErrorMessage("Internal error #33948.");
+      return doDetach && falseWithErrorMessage("Internal error #33949.");
 
     boolean rv = edge.canDetachWithoutAttaching(doDetach);
 
