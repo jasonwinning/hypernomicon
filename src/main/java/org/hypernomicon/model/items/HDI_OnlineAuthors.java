@@ -93,8 +93,8 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
       }
       else
       {
-        if (authors instanceof WorkAuthors)
-          ((WorkAuthors)authors).addNoMod(offlineAuthor.name, offlineAuthor.nestedItems);
+        if (authors instanceof WorkAuthors workAuthors)
+          workAuthors.addNoMod(offlineAuthor.name, offlineAuthor.nestedItems);
       }
     }
   }

@@ -56,20 +56,11 @@ public class CombinedUnfilteredQuerySource extends QuerySource
 
 //---------------------------------------------------------------------------
 
-  @Override public int size()                      { return types.stream().map(type -> db.records(type).size()).reduce(0, Integer::sum); }
-  @Override public QuerySourceType sourceType()    { return QuerySourceType.QST_combinedUnfilteredRecords; }
-  @Override public Iterator<HDT_Record> iterator() { return Iterators.concat(types.stream().map(type -> db.records(type).iterator()).iterator()); }
-  @Override public RecordType recordType()         { return types.size() == 1 ? (RecordType) types.toArray()[0] : hdtNone; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean contains(Object element)
-  {
-    if ((element instanceof HDT_Record) == false) return false;
-
-    return types.contains(((HDT_Record)element).getType());
-  }
+  @Override public int size()                       { return types.stream().map(type -> db.records(type).size()).reduce(0, Integer::sum); }
+  @Override public QuerySourceType sourceType()     { return QuerySourceType.QST_combinedUnfilteredRecords; }
+  @Override public Iterator<HDT_Record> iterator()  { return Iterators.concat(types.stream().map(type -> db.records(type).iterator()).iterator()); }
+  @Override public RecordType recordType()          { return types.size() == 1 ? (RecordType) types.toArray()[0] : hdtNone; }
+  @Override public boolean contains(Object element) { return (element instanceof HDT_Record record) && types.contains(record.getType()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

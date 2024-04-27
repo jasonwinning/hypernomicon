@@ -155,17 +155,8 @@ public class JsonHttpClient
       rc = httpclient.execute(request, responseHndlr);
     }
 
-    if (lastException instanceof ParseException e)
-    {
-      lastException = null;
-      throw e;
-    }
-
-    if (lastException instanceof UnsupportedOperationException e)
-    {
-      lastException = null;
-      throw e;
-    }
+    if (lastException instanceof ParseException e)                { lastException = null; throw e; }
+    if (lastException instanceof UnsupportedOperationException e) { lastException = null; throw e; }
 
     return rc;
   }
@@ -199,9 +190,9 @@ public class JsonHttpClient
       {
         Object obj = jsonParser.parse(new InputStreamReader(is, UTF_8));
 
-        if (obj instanceof JSONObject)
+        if (obj instanceof JSONObject jObj)
         {
-          jsonObj = new JsonObj((JSONObject) obj);
+          jsonObj = new JsonObj(jObj);
 
           if (successHndlr != null)
             runInFXThread(() -> successHndlr.accept(this));
@@ -209,9 +200,9 @@ public class JsonHttpClient
           return true;
         }
 
-        if (obj instanceof JSONArray)
+        if (obj instanceof JSONArray jArr)
         {
-          jsonArray = new JsonArray((JSONArray) obj);
+          jsonArray = new JsonArray(jArr);
 
           if (successHndlr != null)
             runInFXThread(() -> successHndlr.accept(this));

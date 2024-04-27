@@ -365,7 +365,7 @@ public final class CrossrefBibData extends BibDataStandalone
 
     }, e ->
     {
-      if ((e instanceof HttpResponseException) && (((HttpResponseException) e).getStatusCode() == HttpStatus.SC_NOT_FOUND))
+      if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatus.SC_NOT_FOUND))
       {
         if (doi.endsWith("."))
         {

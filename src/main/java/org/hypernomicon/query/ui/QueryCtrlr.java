@@ -151,6 +151,7 @@ public final class QueryCtrlr
   public boolean getSearchLinkedRecords() { return searchLinkedRecords; }
   TableView<ResultRow> getResultsTV()     { return tvResults; }
 
+  private static Query<?> getQuery(HyperTableRow row)      { return row.getCell(QUERY_COL_NDX) instanceof QueryCell queryCell ? queryCell.getQuery() : null; }
   private static QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(QUERY_TYPE_COL_NDX)); }
 
 //---------------------------------------------------------------------------
@@ -383,14 +384,6 @@ public final class QueryCtrlr
       .toList());
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static Query<?> getQuery(HyperTableRow row)
-  {
-    HyperTableCell cell = row.getCell(QUERY_COL_NDX);
-    return cell instanceof QueryCell ? ((QueryCell)cell).getQuery() : null;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

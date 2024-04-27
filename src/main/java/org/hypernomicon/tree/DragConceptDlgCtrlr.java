@@ -53,9 +53,9 @@ public class DragConceptDlgCtrlr extends HyperDlg
 
     HDT_Glossary oldGlossary = childConcept.glossary.get();
 
-    if (newParent instanceof HDT_Concept)
+    if (newParent instanceof HDT_Concept parentConcept)
     {
-      newParentConcept = (HDT_Concept) newParent;
+      newParentConcept = parentConcept;
       newGlossary = newParentConcept.glossary.get();
     }
     else

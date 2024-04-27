@@ -40,9 +40,9 @@ import static org.hypernomicon.util.UIUtil.*;
   {
     if (node == null) return;
 
-    if (node instanceof CommitableWrapper)
+    if (node instanceof CommitableWrapper commitableWrapper)
     {
-      ((CommitableWrapper)node).commit();
+      commitableWrapper.commit();
       return;
     }
 

@@ -250,7 +250,7 @@ public class BibDataRetriever
 
           }, e ->
           {
-            if ((e instanceof HttpResponseException) && (((HttpResponseException) e).getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
+            if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
             {
               searchedCrossref = true;
               messageDialog(getThrowableMessage(e), mtError);

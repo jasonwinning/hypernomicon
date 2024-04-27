@@ -52,6 +52,7 @@ public final class JsonObj implements Cloneable
 
   public JsonObj getObj(String key)         { return nullSwitch((JSONObject)jObj.get(key), null, JsonObj::new); }
   public String getStr(String key)          { return (String) jObj.get(key); }
+  public String getStrSafe(String key)      { return jObj.get(key) instanceof String str ? str : ""; }
   public String getAsStr(String key)        { return nullSwitch(jObj.get(key), "", Object::toString); }
   public JsonArray getArray(String key)     { return nullSwitch((JSONArray)jObj.get(key), null, JsonArray::new); }
 
@@ -87,16 +88,7 @@ public final class JsonObj implements Cloneable
     return obj instanceof String ?
       parseBoolean(getStr(key))
     :
-      (obj instanceof Boolean ? (Boolean) obj : def);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getStrSafe(String key)
-  {
-    Object obj = jObj.get(key);
-    return obj instanceof String ? (String)obj : "";
+      (obj instanceof Boolean boolVal ? boolVal : def);
   }
 
 //---------------------------------------------------------------------------
@@ -156,7 +148,7 @@ public final class JsonObj implements Cloneable
       return new JsonArray(jArr);
     }
 
-    return obj instanceof JSONArray ? new JsonArray((JSONArray) obj) : null;
+    return obj instanceof JSONArray jArr ? new JsonArray(jArr) : null;
   }
 
 //---------------------------------------------------------------------------

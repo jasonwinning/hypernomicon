@@ -59,13 +59,13 @@ public class WebTooltip extends Tooltip
       {
         Object result = webView.getEngine().executeScript("document.getElementById('" + DivID + "').offsetHeight");
 
-        if (result instanceof Integer)
-          webView.setPrefHeight((Integer) result + 15);
+        if (result instanceof Integer offsetHeight)
+          webView.setPrefHeight(offsetHeight + 15);
 
         result = webView.getEngine().executeScript("document.getElementById('" + DivID + "').scrollWidth");
 
-        if (result instanceof Integer)
-          webView.setPrefWidth((Integer) result + 25);
+        if (result instanceof Integer scrollWidth)
+          webView.setPrefWidth(scrollWidth + 25);
       }
     });
 

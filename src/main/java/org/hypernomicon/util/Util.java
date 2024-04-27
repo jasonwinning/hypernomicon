@@ -1427,8 +1427,8 @@ public final class Util
     if (e instanceof UnknownHostException)
       return "Unable to connect to host" + (msg.isEmpty() ? "" :  ": ") + msg;
 
-    if (e instanceof HttpResponseException)
-      return ((HttpResponseException)e).getStatusCode() + (msg.isEmpty() ? "" : " ") + msg;
+    if (e instanceof HttpResponseException httpResponseException)
+      return httpResponseException.getStatusCode() + (msg.isEmpty() ? "" : " ") + msg;
 
     if (e instanceof AccessDeniedException)
       return "Access denied" + (msg.isEmpty() ? "" : ". ") + msg;

@@ -1192,9 +1192,9 @@ public class WorkDlgCtrlr extends HyperDlg
       {
         lblAutoPopulated.setText("Fields auto-populated from Crossref, doi: " + bd.getStr(bfDOI));
       }
-      else if (bd instanceof GoogleBibData)
+      else if (bd instanceof GoogleBibData googleBibData)
       {
-        String isbn = ((GoogleBibData) bd).getQueryIsbn();
+        String isbn = googleBibData.getQueryIsbn();
         lblAutoPopulated.setText(isbn.isBlank() ?
           "Fields have been auto-populated from Google Books"
         :

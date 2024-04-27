@@ -49,10 +49,10 @@ public class FilePathSet implements Set<FilePath>
   {
     FilePath filePath;
 
-    if      (o instanceof String)   filePath = new FilePath((String)o);
-    else if (o instanceof Path)     filePath = new FilePath((Path)o);
-    else if (o instanceof File)     filePath = new FilePath((File)o);
-    else if (o instanceof FilePath) filePath = (FilePath)o;
+    if      (o instanceof String str)         filePath = new FilePath(str);
+    else if (o instanceof Path path)          filePath = new FilePath(path);
+    else if (o instanceof File file)          filePath = new FilePath(file);
+    else if (o instanceof FilePath oFilePath) filePath = oFilePath;
     else return false;
 
     Set<FilePath> set = nameToPaths.get(filePath.getNameOnly().toString());

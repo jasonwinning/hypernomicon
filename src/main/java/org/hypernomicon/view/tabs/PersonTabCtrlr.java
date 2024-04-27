@@ -396,14 +396,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @Override protected void setRecord(HDT_RecordWithMainText record)
   {
-    if (record instanceof HDT_Person)
+    if (record instanceof HDT_Person person)
     {
-      curPerson = (HDT_Person) record;
+      curPerson = person;
       curInvestigation = null;
       return;
     }
 
-    curInvestigation = record instanceof HDT_Investigation ? ((HDT_Investigation) record) : null;
+    curInvestigation = record instanceof HDT_Investigation inv ? inv : null;
 
     curPerson = curInvestigation == null ? null : curInvestigation.person.get();
   }

@@ -1383,7 +1383,7 @@ public class FileManager extends HyperDlg
         return false;
       }
 
-      if ((rowToPick == null) && (record instanceof HDT_RecordWithPath) && ((HDT_RecordWithPath) record).pathNotEmpty())
+      if ((rowToPick == null) && (record instanceof HDT_RecordWithPath recordWithPath) && recordWithPath.pathNotEmpty())
         rowToPick = row;
     }
 
@@ -1410,8 +1410,8 @@ public class FileManager extends HyperDlg
     FilePath filePath = null;
     HDT_Record record = recordTable.selectedRecord();
 
-    if (record instanceof HDT_RecordWithPath)
-      filePath = ((HDT_RecordWithPath) record).filePath();
+    if (record instanceof HDT_RecordWithPath recordWithPath)
+      filePath = recordWithPath.filePath();
 
     FilePath fileTablePath = nullSwitch(fileTV.getSelectionModel().getSelectedItem(), null, FileRow::getFilePath);
 

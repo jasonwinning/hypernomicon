@@ -227,9 +227,9 @@ public final class UIUtil
   {
     List.of(targets).forEach(target ->
     {
-      if      (target instanceof Node    ) ((Node    )target).setDisable(disable);
-      else if (target instanceof Tab     ) ((Tab     )target).setDisable(disable);
-      else if (target instanceof MenuItem) ((MenuItem)target).setDisable(disable);
+      if      (target instanceof Node node        ) node    .setDisable(disable);
+      else if (target instanceof Tab tab          ) tab     .setDisable(disable);
+      else if (target instanceof MenuItem menuItem) menuItem.setDisable(disable);
     });
   }
 
@@ -240,8 +240,8 @@ public final class UIUtil
   {
     List.of(targets).forEach(target ->
     {
-      if      (target instanceof Node    ) ((Node    )target).setVisible(visible);
-      else if (target instanceof MenuItem) ((MenuItem)target).setVisible(visible);
+      if      (target instanceof Node node)         node    .setVisible(visible);
+      else if (target instanceof MenuItem menuItem) menuItem.setVisible(visible);
     });
   }
 
@@ -332,8 +332,8 @@ public final class UIUtil
   {
     node.setCache(false);
 
-    if (node instanceof Parent)
-      ((Parent)node).getChildrenUnmodifiable().forEach(UIUtil::disableCache);
+    if (node instanceof Parent parent)
+      parent.getChildrenUnmodifiable().forEach(UIUtil::disableCache);
   }
 
 //---------------------------------------------------------------------------
@@ -351,8 +351,8 @@ public final class UIUtil
 
   private static List<Node> getChildren(Parent parent)
   {
-    if (parent instanceof Pane   ) return ((Pane)parent).getChildren();
-    if (parent instanceof ToolBar) return ((ToolBar)parent).getItems();
+    if (parent instanceof Pane pane      ) return pane.getChildren();
+    if (parent instanceof ToolBar toolBar) return toolBar.getItems();
 
     return null;
   }

@@ -52,7 +52,7 @@ public final class JsonArray implements Cloneable
   public String getLongAsStrSafe(int ndx) { return nullSwitch(jArr.get(ndx), "", obj -> String.valueOf(((Long)obj).longValue())); }
   public JsonObjIterator getObjs()        { return new JsonObjIterator(); }
   public Stream<JsonObj> objStream()      { return ((Stream<?>)jArr.stream()).map(obj -> new JsonObj((JSONObject) obj)); }
-  public Stream<String> strStream()       { return ((Stream<?>)jArr.stream()).map(obj -> obj instanceof String ? (String)obj : ""); }
+  public Stream<String> strStream()       { return ((Stream<?>)jArr.stream()).map(obj -> obj instanceof String str ? str : ""); }
 
 
   @SuppressWarnings("unchecked") public void set(int ndx, JsonObj element)   { jArr.set(ndx, element); }
@@ -127,8 +127,7 @@ public final class JsonArray implements Cloneable
 
   public String getStr(int ndx)
   {
-    Object obj = jArr.get(ndx);
-    return obj instanceof String ? (String)obj : "";
+    return jArr.get(ndx) instanceof String str ? str : "";
   }
 
 //---------------------------------------------------------------------------

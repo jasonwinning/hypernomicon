@@ -45,7 +45,7 @@ public class FilenameMap<T> implements Map<String, T>
   @Override public Set<Entry<String, T>> entrySet()                  { return nameToObject.entrySet(); }
   @Override public void clear()                                      { lowerToList.clear(); nameToObject.clear(); }
   @Override public void putAll(Map<? extends String, ? extends T> m) { m.forEach(this::put); }
-  @Override public boolean containsKey(Object key)                   { return (key instanceof String) && (findKey((String) key).length() > 0); }
+  @Override public boolean containsKey(Object key)                   { return (key instanceof String str) && (findKey(str).length() > 0); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

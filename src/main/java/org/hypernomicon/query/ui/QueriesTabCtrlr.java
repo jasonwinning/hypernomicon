@@ -414,8 +414,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       int ndx = 0; for (ResultRow row : resultRowList)
       {
         HDT_Record record = row.getRecord();
-        if (record instanceof HDT_RecordWithPath)
-          fileList.addRecord((HDT_RecordWithPath)record);
+        if (record instanceof HDT_RecordWithPath recordWithPath)
+          fileList.addRecord(recordWithPath);
 
         if (isCancelled())
           throw new CancelledTaskException();

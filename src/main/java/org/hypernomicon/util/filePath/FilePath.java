@@ -101,9 +101,10 @@ public class FilePath implements Comparable<FilePath>
 
   public static boolean isEmpty(FilePath filePath) { return (filePath == null) || safeStr(filePath.toString()).isEmpty(); }
 
-  @Override public int hashCode()            { return innerVal.hashCode(); }
-  @Override public String toString()         { return innerVal.getPathStr(); }
-  @Override public int compareTo(FilePath o) { return toPath().compareTo(o.toPath()); }
+  @Override public int hashCode()               { return innerVal.hashCode(); }
+  @Override public String toString()            { return innerVal.getPathStr(); }
+  @Override public int compareTo(FilePath o)    { return toPath().compareTo(o.toPath()); }
+  @Override public boolean equals(Object other) { return (other instanceof FilePath oFilePath) && innerVal.equals(oFilePath.innerVal); }
 
   /**
    * If this file is a directory, will return just the directory name. If it is not a directory, will return just the file name.
@@ -190,16 +191,6 @@ public class FilePath implements Comparable<FilePath>
     }
 
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean equals(Object other)
-  {
-    if ((other instanceof FilePath) == false) return false;
-
-    return innerVal.equals(((FilePath)other).innerVal);
   }
 
 //---------------------------------------------------------------------------

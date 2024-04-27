@@ -78,7 +78,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
   {
     lastException = null;
 
-    return (o instanceof HDT_Record) && (((HDT_Record) o).getType() == relSet.getObjType()) && relSet.alreadyHasAsObject(subj, (HDT_ObjType) o);
+    return (o instanceof HDT_Record oRecord) && (oRecord.getType() == relSet.getObjType()) && relSet.alreadyHasAsObject(subj, (HDT_ObjType) oRecord);
   }
 
 //---------------------------------------------------------------------------
@@ -575,8 +575,8 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   public void throwLastException() throws RelationCycleException
   {
-    if (lastException instanceof RelationCycleException)
-      throw (RelationCycleException) lastException;
+    if (lastException instanceof RelationCycleException rce)
+      throw rce;
   }
 
 //---------------------------------------------------------------------------
