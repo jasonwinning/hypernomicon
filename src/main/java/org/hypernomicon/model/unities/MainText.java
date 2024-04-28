@@ -92,7 +92,7 @@ public class MainText
   final List<DisplayItem> displayItems;
   final List<KeyWork> keyWorks = Collections.synchronizedList(new ArrayList<>());
 
-  final private HDT_RecordWithMainText recordWMT;
+  private final HDT_RecordWithMainText recordWMT;
 
   private HtmlAndPlainText htmlAndPlainText = new HtmlAndPlainText("");
 
@@ -206,8 +206,8 @@ public class MainText
     recordWMT = hub;
     displayItems = Collections.synchronizedList(new ArrayList<>(src1.displayItems));
 
-    List<HDT_RecordWithMainText> src1Spokes = src1.getRecord() == hub ? List.copyOf(hub.spokes.values()) : Collections.singletonList(src1.getRecord()),
-                                 src2Spokes = src2.getRecord() == hub ? List.copyOf(hub.spokes.values()) : Collections.singletonList(src2.getRecord());
+    List<HDT_RecordWithMainText> src1Spokes = src1.getRecord() == hub ? List.copyOf(hub.spokes.values()) : List.of(src1.getRecord()),
+                                 src2Spokes = src2.getRecord() == hub ? List.copyOf(hub.spokes.values()) : List.of(src2.getRecord());
 
     for (int ndx = 0; ndx < src2.displayItems.size(); ndx++)
     {

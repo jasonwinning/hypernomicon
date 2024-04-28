@@ -53,9 +53,6 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType exten
   @Override public int indexOf(Object o)                { return IntStream.range(startNdx, endNdx).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
   @Override public int lastIndexOf(Object o)            { return IntStream.iterate(endNdx - 1, ndx -> ndx >= startNdx, ndx -> ndx - 1).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
 
-  @Override public HDT_SubjType set(int index, HDT_SubjType element)      { throw uoe(); }
-  @Override public HDT_SubjType remove(int index)                         { throw uoe(); }
-
   @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex) { return new HyperSubjSubList<>(parentList, startNdx + fromIndex, startNdx + toIndex); }
 
 //---------------------------------------------------------------------------

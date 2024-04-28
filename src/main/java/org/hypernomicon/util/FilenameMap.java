@@ -29,8 +29,14 @@ import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.io.FilenameUtils;
 
+//---------------------------------------------------------------------------
+
 public class FilenameMap<T> implements Map<String, T>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Map<String, T> nameToObject = new ConcurrentHashMap<>();
   private final Map<String, List<String>> lowerToList = new ConcurrentHashMap<>();
 

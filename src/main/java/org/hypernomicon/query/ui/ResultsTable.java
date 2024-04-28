@@ -58,10 +58,8 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
   private final TableView<ResultRow> tv;
   private boolean datesAdded = false;
-  final static Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups = LinkedHashMultimap.create();  // Has to be a multimap because there are two ColumnGroups for hdtWork
+  static final Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups = LinkedHashMultimap.create();  // Has to be a multimap because there are two ColumnGroups for hdtWork
   private static ColumnGroup generalGroup;
-
-  public HDT_Record selectedRecord()  { return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultRow::getRecord); }
 
 //---------------------------------------------------------------------------
 

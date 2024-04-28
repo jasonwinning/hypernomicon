@@ -231,19 +231,12 @@ public class MainTextCtrlr
       {
         super.updateItem(item, empty);
 
-        if (empty || (item == null))
+        setText((empty || (item == null)) ? null : switch (item.type)
         {
-          setText(null);
-          return;
-        }
-
-        switch (item.type)
-        {
-          case diDescription : setText("This record's description"); break;
-          case diKeyWorks    : setText("Key works"); break;
-          case diRecord      : setText(getTypeName(item.record.getType()) + ": " + item.record.getCBText()); break;
-          default            : setText(""); break;
-        }
+          case diDescription -> "This record's description";
+          case diKeyWorks    -> "Key works";
+          case diRecord      -> getTypeName(item.record.getType()) + ": " + item.record.getCBText();
+        });
       }
     });
 

@@ -248,12 +248,11 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     {
       BibEntry_T entry = BibEntry.create(this, itemJsonObj, false);
 
-      if (entry != null)
-      {
-        keyToAllEntry.put(entry.getKey(), entry);
-        if (userName.isBlank())
-          userName = entry.getUserName();
-      }
+      if (entry == null) return;
+
+      keyToAllEntry.put(entry.getKey(), entry);
+      if (userName.isBlank())
+        userName = entry.getUserName();
     });
 
     nullSwitch(jObj.getArray("trash"), jArr -> jArr.getObjs().forEach(itemJsonObj ->

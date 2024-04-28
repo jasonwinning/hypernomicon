@@ -42,10 +42,10 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>>
 {
-  final private BidiOneToManyRecordMap parentToChildren;
-  final private MappingFromRecordToRows recordToRows;
-  final private AbstractTreeWrapper<RowType> treeWrapper;
-  final private Set<RecordType> recordTypes = EnumSet.noneOf(RecordType.class);
+  private final BidiOneToManyRecordMap parentToChildren;
+  private final MappingFromRecordToRows recordToRows;
+  private final AbstractTreeWrapper<RowType> treeWrapper;
+  private final Set<RecordType> recordTypes = EnumSet.noneOf(RecordType.class);
 
   private RowType rootRow;
   public boolean pruningOperationInProgress = false;
@@ -60,8 +60,8 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   private final class MappingFromRecordToRows
   {
-    final private SetMultimap<HDT_Record, RowType> recordToRowsMap = LinkedHashMultimap.create();
-    final private TreeCB tcb;
+    private final SetMultimap<HDT_Record, RowType> recordToRowsMap = LinkedHashMultimap.create();
+    private final TreeCB tcb;
 
     //---------------------------------------------------------------------------
 

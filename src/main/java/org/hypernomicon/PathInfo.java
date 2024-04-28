@@ -30,8 +30,14 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.filePath.FilePath;
 
+//---------------------------------------------------------------------------
+
 class PathInfo
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   enum FileKind
   {
     fkFileRecord,
@@ -43,11 +49,14 @@ class PathInfo
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final HDT_Folder parentFolder;
   private final HyperPath hyperPath;
   private final FileKind fileKind;
   private final FilePath filePath;
+
+//---------------------------------------------------------------------------
 
   HDT_Folder getParentFolder()        { return parentFolder; }
   HyperPath getHyperPath()            { return hyperPath; }
@@ -57,6 +66,7 @@ class PathInfo
 
   @Override public String toString()  { return filePath.toString(); }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   PathInfo(FilePath filePath)

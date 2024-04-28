@@ -68,14 +68,14 @@ public class HyperTableColumn
     smStandard, smTextSimple, smNumeric, smWork, smIcon
   }
 
-  final private Populator populator;
-  final private RecordType objType;
-  final private HyperCtrlType ctrlType;
-  final private TableColumn<HyperTableRow, ?> tc;
+  private final Populator populator;
+  private final RecordType objType;
+  private final HyperCtrlType ctrlType;
+  private final TableColumn<HyperTableRow, ?> tc;
   final EnumMap<ButtonAction, String> tooltips = new EnumMap<>(ButtonAction.class);
   final CellUpdateHandler updateHandler;
-  final private int colNdx;
-  final private MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
+  private final int colNdx;
+  private final MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
                                dontCreateNewRecord = new MutableBoolean(false);
 
   /**
@@ -85,9 +85,9 @@ public class HyperTableColumn
    * <br>
    * Note: updating this property does not cause the column to re-sort.
    */
-  final public ObjectProperty<Comparator<HyperTableCell>> comparator = new SimpleObjectProperty<>();
+  public final ObjectProperty<Comparator<HyperTableCell>> comparator = new SimpleObjectProperty<>();
 
-  final private ObjectProperty<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
+  private final ObjectProperty<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
 
   public Function<HyperTableRow, String> textHndlr = null;
 

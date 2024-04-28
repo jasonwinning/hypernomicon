@@ -17,9 +17,9 @@
 
 package org.hypernomicon.model.records;
 
+import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
@@ -40,12 +40,12 @@ import org.hypernomicon.model.unities.HDI_OfflineHubSpokes;
 
 public class RecordState
 {
-  final public Map<Tag, HDI_OfflineBase> items;
-  final public RecordType type;
+  public final Map<Tag, HDI_OfflineBase> items;
+  public final RecordType type;
   final String sortKeyAttr, searchKey;
   final boolean dummyFlag;
 
-  final private static String QUOTE = "\"";
+  private static final char QUOTE = '"';
 
   public int id;
   public String listName;
@@ -114,27 +114,29 @@ public class RecordState
 
     schemas.forEach(schema ->
     {
-      HDI_OfflineBase item;
-
-      switch (schema.getCategory())
+      HDI_OfflineBase item = switch (schema.category())
       {
-        case hdcBoolean        : item = new HDI_OfflineBoolean       (schema, this); break;
-        case hdcTernary        : item = new HDI_OfflineTernary       (schema, this); break;
-        case hdcMainTextAndHub : item = new HDI_OfflineMainTextAndHub(schema, this); break;
-        case hdcPersonName     : item = new HDI_OfflinePersonName    (schema, this); break;
-        case hdcPath           : item = new HDI_OfflinePath          (schema, this); break;
-        case hdcPointerMulti   : item = new HDI_OfflinePointerMulti  (schema, this); break;
-        case hdcPointerSingle  : item = new HDI_OfflinePointerSingle (schema, this); break;
-        case hdcBibEntryKey    : // fall through
-        case hdcString         : item = new HDI_OfflineString        (schema, this); break;
-        case hdcAuthors        : item = new HDI_OfflineAuthors       (schema, this); break;
-        case hdcHubSpokes      : item = new HDI_OfflineHubSpokes     (schema, this); break;
-        default:
-          messageDialog("Internal error #78934", mtError);
-          return;
-      }
+        case hdcBoolean        -> new HDI_OfflineBoolean       (schema, this);
+        case hdcTernary        -> new HDI_OfflineTernary       (schema, this);
+        case hdcMainTextAndHub -> new HDI_OfflineMainTextAndHub(schema, this);
+        case hdcPersonName     -> new HDI_OfflinePersonName    (schema, this);
+        case hdcPath           -> new HDI_OfflinePath          (schema, this);
+        case hdcPointerMulti   -> new HDI_OfflinePointerMulti  (schema, this);
+        case hdcPointerSingle  -> new HDI_OfflinePointerSingle (schema, this);
+        case hdcBibEntryKey,
+             hdcString         -> new HDI_OfflineString        (schema, this);
+        case hdcAuthors        -> new HDI_OfflineAuthors       (schema, this);
+        case hdcHubSpokes      -> new HDI_OfflineHubSpokes     (schema, this);
 
-      schema.getTags().forEach(tag -> items.put(tag, item));
+        default                ->
+        {
+          messageDialog("Internal error #78934", mtError);
+          yield null;
+        }
+      };
+
+      if (item != null)
+        schema.tags().forEach(tag -> items.put(tag, item));
     });
   }
 
@@ -164,7 +166,7 @@ public class RecordState
 
     if (ord != -1)
     {
-      if (item.getCategory() != hdcPointerSingle)
+      if (item.category() != hdcPointerSingle)
         throw new HyperDataException("Invalid attribute: ord. Record type: " + getTypeTagStr(type) + " ID : " + id);
 
       ((HDI_OfflinePointerSingle)item).setFromXml(objID, ord, nestedItems);

@@ -127,9 +127,9 @@ public enum Tag
 
   private final boolean isMainTagForObjType;
 
-  private final static Map<Integer   , Tag> numToTag;
-  private final static Map<String    , Tag> nameToTag;
-  private final static Map<RecordType, Tag> objTypeToTag;
+  private static final Map<Integer   , Tag> numToTag;
+  private static final Map<String    , Tag> nameToTag;
+  private static final Map<RecordType, Tag> objTypeToTag;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

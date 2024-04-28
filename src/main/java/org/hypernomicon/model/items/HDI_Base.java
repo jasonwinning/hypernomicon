@@ -18,7 +18,8 @@
 package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
+import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
+import org.hypernomicon.model.records.RecordType;
 
 //---------------------------------------------------------------------------
 
@@ -39,8 +40,9 @@ public class HDI_Base
 
 //---------------------------------------------------------------------------
 
-  public HyperDataCategory getCategory() { return schema.getCategory(); }
-  public HDI_Schema getSchema()          { return schema; }
+  public HyperDataCategory category()  { return schema.category(); }
+  public RecordType nestedTargetType() { return schema.nestedTargetType(); }
+  public HDI_Schema getSchema()        { return schema; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

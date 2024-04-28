@@ -58,7 +58,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
     appleScript("appleScript", "AppleScript"),
     opSysCmdAndArgs("opSysCmdAndArgs", "Operating system command and arguments");
 
-    final private String prefVal, name;
+    private final String prefVal, name;
 
     LaunchCommandTypeEnum(String prefVal, String name)
     {

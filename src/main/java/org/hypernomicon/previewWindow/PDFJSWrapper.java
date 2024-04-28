@@ -113,7 +113,12 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, Consumer<Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
+  public PDFJSWrapper(AnchorPane apBrowser)
+  {
+    this(apBrowser, null, null, null);
+  }
+
+  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, Consumer<Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
   {
     this.doneHndlr = doneHndlr;
     this.pageChangeHndlr = pageChangeHndlr;

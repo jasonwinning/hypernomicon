@@ -660,7 +660,7 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     if ((mdp.isShowDetailNode() == false) || jxBrowserDisabled) return;
 
-    if (previewInitialized == false) jsWrapper = new PDFJSWrapper(apPreview, null, null, null);
+    if (previewInitialized == false) jsWrapper = new PDFJSWrapper(apPreview);
 
     if (jxBrowserDisabled) return;
 

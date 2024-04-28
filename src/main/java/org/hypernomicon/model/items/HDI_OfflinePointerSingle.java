@@ -38,7 +38,7 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
   public HDI_OfflinePointerSingle(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
-    objType = db.getObjType(schema.getRelType());
+    objType = db.getObjType(schema.relType());
   }
 
 //---------------------------------------------------------------------------

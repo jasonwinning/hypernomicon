@@ -29,12 +29,12 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.ObjectOrderDlgCtrlr;
+import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
@@ -89,13 +89,13 @@ import javafx.stage.Modality;
 
 public class HyperTable extends HasRightClickableRows<HyperTableRow>
 {
-  final private int mainCol;
-  final private TableView<HyperTableRow> tv;
-  final private List<HyperTableColumn> cols = new ArrayList<>();
-  final private ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
-  final private List<HyperTableRow> unmodRows = Collections.unmodifiableList(rows);
-  final private FilteredList<HyperTableRow> filteredRows;
-  final private Map<Integer, HyperTableCell> colNdxToDefaultValue = new HashMap<>();
+  private final int mainCol;
+  private final TableView<HyperTableRow> tv;
+  private final List<HyperTableColumn> cols = new ArrayList<>();
+  private final ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
+  private final List<HyperTableRow> unmodRows = Collections.unmodifiableList(rows);
+  private final FilteredList<HyperTableRow> filteredRows;
+  private final Map<Integer, HyperTableCell> colNdxToDefaultValue = new HashMap<>();
 
   Consumer<? extends HDT_Record> dblClickHandler = null;
   Runnable onShowMore = null;
@@ -141,8 +141,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   private class DataRowIterator implements Iterable<HyperTableRow>, Iterator<HyperTableRow>
   {
     private int nextNdx = 0;
-    final private int dataRowCnt = dataRowCount();
-    final private Iterator<HyperTableRow> rowIt = rows.iterator();
+    private final int dataRowCnt = dataRowCount();
+    private final Iterator<HyperTableRow> rowIt = rows.iterator();
 
     @Override public Iterator<HyperTableRow> iterator() { return this; }
     @Override public boolean hasNext()                  { return nextNdx < dataRowCnt; }
@@ -868,7 +868,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
       colNdxToTag.forEach((colNdx, tag) ->
       {
-        HyperDataCategory hdc = db.getNestedSchema(relType, tag).getCategory();
+        HyperDataCategory hdc = db.getNestedSchema(relType, tag).category();
         NestedValue val = new NestedValue(hdc);
 
         if (colNdx < 0)

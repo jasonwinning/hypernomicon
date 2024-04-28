@@ -271,7 +271,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final public void copyAllFieldsFrom(BibData bd, boolean includeAuthors, boolean includeEntryType)
+  public final void copyAllFieldsFrom(BibData bd, boolean includeAuthors, boolean includeEntryType)
   {
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum.getType())
     {

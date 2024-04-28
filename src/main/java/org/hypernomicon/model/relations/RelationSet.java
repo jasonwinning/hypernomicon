@@ -59,7 +59,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
+import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
@@ -148,7 +148,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     for (HDI_Schema nestedSchema : nestedSchemas)
     {
-      Tag tag = nestedSchema.getTags().get(0);
+      Tag tag = nestedSchema.tags().get(0);
 
       if (tagToSchema.containsKey(tag))
         throw new HDB_InternalError(98925);
@@ -319,7 +319,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       HDI_OfflineBase offlineItem = null;
       HDI_Schema schema = getSchema(tag);
 
-      switch (schema.getCategory())
+      switch (schema.category())
       {
         case hdcString        : if (NestedValue.isEmpty(((HDI_OnlineString       ) onlineItem).get()) == false) offlineItem = new HDI_OfflineString       (schema, recordState); break;
         case hdcBoolean       : if (NestedValue.isEmpty(((HDI_OnlineBoolean      ) onlineItem).get()) == false) offlineItem = new HDI_OfflineBoolean      (schema, recordState); break;
@@ -345,7 +345,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     boolean isEmpty;
 
-    switch (value.getCategory())
+    switch (value.category())
     {
       case hdcBoolean       : isEmpty = NestedValue.isEmpty(((HDI_OfflineBoolean      ) value).get     ()); break;
       case hdcTernary       : isEmpty = NestedValue.isEmpty(((HDI_OfflineTernary      ) value).get     ()); break;
@@ -494,16 +494,16 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     if (items.containsKey(tag)) return (HDI_Online) items.get(tag);
     if (noCreate) return null;
 
-    HDI_OnlineBase<? extends HDI_OfflineBase> item;
-
-    switch (getSchema(tag).getCategory())
+    HDI_OnlineBase<? extends HDI_OfflineBase> item = switch (getSchema(tag).category())
     {
-      case hdcBoolean       : item = new HDI_OnlineBoolean      (getSchema(tag), subj); break;
-      case hdcTernary       : item = new HDI_OnlineTernary      (getSchema(tag), subj); break;
-      case hdcString        : item = new HDI_OnlineString       (getSchema(tag), subj); break;
-      case hdcNestedPointer : item = new HDI_OnlineNestedPointer(getSchema(tag), subj); break;
-      default               : return null;
-    }
+      case hdcBoolean       -> new HDI_OnlineBoolean      (getSchema(tag), subj);
+      case hdcTernary       -> new HDI_OnlineTernary      (getSchema(tag), subj);
+      case hdcString        -> new HDI_OnlineString       (getSchema(tag), subj);
+      case hdcNestedPointer -> new HDI_OnlineNestedPointer(getSchema(tag), subj);
+      default               -> null;
+    };
+
+    if (item == null) return null;
 
     items.put(tag, item);
     return (HDI_Online) item;
@@ -810,7 +810,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
         {
           HDI_OnlineBase<? extends HDI_OfflineBase> item = targetIt.next().getValue();
 
-          if ((item.getCategory() == hdcNestedPointer) && HDT_Record.isEmptyThrowsException(((HDI_OnlineNestedPointer)item).get()))
+          if ((item.category() == hdcNestedPointer) && HDT_Record.isEmptyThrowsException(((HDI_OnlineNestedPointer)item).get()))
             targetIt.remove();
         }
       }
@@ -907,7 +907,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     private final int code;
     private final String title, subjTitle;
     private final Tag subjTag;
-    private final static Map<Integer, RelationType> codeToVal;
+    private static final Map<Integer, RelationType> codeToVal;
 
   //---------------------------------------------------------------------------
 

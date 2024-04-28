@@ -25,9 +25,7 @@
   <TabPane fx:id="tpWorkSearchKeys" layoutX="137.0" layoutY="76.0" styleClass="nonwizard" tabClosingPolicy="ALL_TABS"
            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
            AnchorPane.topAnchor="0.0">
-    <tabs>
-      <Tab text="Key 1"/>
-      <Tab closable="false" text="Add key..."/>
-    </tabs>
+    <Tab text="Key 1"/>
+    <Tab closable="false" text="Add key..."/>
   </TabPane>
 </AnchorPane>

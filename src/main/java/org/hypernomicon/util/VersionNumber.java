@@ -27,13 +27,18 @@ import com.google.common.collect.Lists;
 
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class VersionNumber implements Magnitude<VersionNumber>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final List<Integer> parts;
   private final int minParts;
   private static final int minimumParts = 2;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public VersionNumber(Integer... parts)
@@ -48,6 +53,8 @@ public class VersionNumber implements Magnitude<VersionNumber>
     this.parts = Collections.unmodifiableList(tempParts);
   }
 
+//---------------------------------------------------------------------------
+
   public VersionNumber(String str)
   {
     List<Integer> tempParts = Arrays.stream(str.split("\\.")).map(partStr -> parseInt(partStr, 0))
@@ -59,6 +66,8 @@ public class VersionNumber implements Magnitude<VersionNumber>
 
     parts = Collections.unmodifiableList(tempParts);
   }
+
+//---------------------------------------------------------------------------
 
   public int numParts()       { return parts.size(); }
   public int getPart(int ndx) { return ndx >= parts.size() ? 0 : parts.get(ndx); }

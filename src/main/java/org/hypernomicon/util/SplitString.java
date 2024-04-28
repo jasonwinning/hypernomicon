@@ -24,18 +24,23 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 // Splits strings lazily
 
 public class SplitString implements Iterable<String>, Iterator<String>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final String wholeStr;
   private final char delim;
 
   private String nextPart;
   private int fromNdx = 0;
   private boolean hasNext = true;
+
+//---------------------------------------------------------------------------
 
   public SplitString(String wholeStr, char delim)
   {

@@ -228,7 +228,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     private boolean containsKey(String key)           { return keys.containsKey(key); }
     public boolean isSubsetOf(PotentialKeySet keySet) { return keys.keySet().stream().allMatch(keySet::containsKey); }
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     private void add(String newKey, boolean newUseForDupCheck)
     {
@@ -236,7 +236,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
         keys.put(lowerCase ? newKey.toLowerCase() : newKey, newUseForDupCheck);
     }
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     public boolean startsWith(String str)
     {
@@ -342,8 +342,8 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     return last;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static PotentialKeySet makeSearchKeySet(PersonName personName, boolean useAllInitials, boolean lowerCase, boolean noNicknames, boolean caretOnLastName)
   {
@@ -428,38 +428,44 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     }
 
     if ((noNicknames == false) && (nickNames.length() > 0))
-    {
-      String nickName = "";
-      List<String> nickNameList = new ArrayList<>();
-
-      for (int ndx = 0; ndx < nickNames.length(); ndx++)
-      {
-        char c = nickNames.charAt(ndx);
-
-        if ((c == ')') || (c == '(') || (c == ' ') || (c == ',') || (c == ';'))
-        {
-          if (nickName.length() > 0)
-          {
-            nickNameList.add(nickName);
-            nickName = "";
-          }
-        }
-        else
-          nickName = nickName + c;
-      }
-
-      if (nickName.length() > 0)
-        nickNameList.add(nickName);
-
-      for (String nName : nickNameList)
-        keySet.add(nName + ' ' + last, false);
-    }
+      for (String nickName : parseNickNames(nickNames))
+        keySet.add(nickName + ' ' + last, false);
 
     return keySet;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static List<String> parseNickNames(StringBuilder nickNames)
+  {
+    String nickName = "";
+    List<String> nickNameList = new ArrayList<>();
+
+    for (int ndx = 0; ndx < nickNames.length(); ndx++)
+    {
+      char c = nickNames.charAt(ndx);
+
+      if ((c == ')') || (c == '(') || (c == ' ') || (c == ',') || (c == ';'))
+      {
+        if (nickName.length() > 0)
+        {
+          nickNameList.add(nickName);
+          nickName = "";
+        }
+      }
+      else
+        nickName = nickName + c;
+    }
+
+    if (nickName.length() > 0)
+      nickNameList.add(nickName);
+
+    return nickNameList;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public Rectangle2D getViewPort()
   {
@@ -478,8 +484,8 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     return new Rectangle2D(x, y, width, height);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void setViewPort(Rectangle2D viewPort)
   {
@@ -497,7 +503,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     updateTagString(tagPictureCrop, x + ";" + y + ';' + width + ';' + height);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

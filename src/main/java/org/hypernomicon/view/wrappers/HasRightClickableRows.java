@@ -41,7 +41,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private class RowMenuItem extends MenuItem
+  private final class RowMenuItem extends MenuItem
   {
     private RowMenuItem(MenuItemSchema<? extends HDT_Record, RowType> schema)
     {
@@ -49,25 +49,25 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
       this.schema = schema;
     }
 
-    final private MenuItemSchema<? extends HDT_Record, RowType> schema;
+    private final MenuItemSchema<? extends HDT_Record, RowType> schema;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private List<MenuItemSchema<? extends HDT_Record, RowType>> contextMenuSchemata = new ArrayList<>();
+  private final List<MenuItemSchema<? extends HDT_Record, RowType>> contextMenuSchemata = new ArrayList<>();
 
-  final public List<MenuItemSchema<? extends HDT_Record, RowType>> getContextMenuSchemata() { return Collections.unmodifiableList(contextMenuSchemata); }
+  public final List<MenuItemSchema<? extends HDT_Record, RowType>> getContextMenuSchemata() { return Collections.unmodifiableList(contextMenuSchemata); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final protected ContextMenu createContextMenu(RowType row)
+  protected final ContextMenu createContextMenu(RowType row)
   {
     return createContextMenu(row, contextMenuSchemata);
   }
 
-  final public ContextMenu createContextMenu(RowType row, Iterable<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
+  public final ContextMenu createContextMenu(RowType row, Iterable<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
   {
     if (row == null) return null;
 
@@ -142,16 +142,16 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final public <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Consumer<RowType> rowHandler)
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Consumer<RowType> rowHandler)
   { return addSchema(new MenuItemSchema<>(caption, rowHandler)); }
 
-  final public <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
   { return addSchema(new MenuItemSchema<>(caption, condRowHandler, rowHandler)); }
 
-  final public <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
   { return addSchema(new MenuItemSchema<>(caption, klass, recordHandler)); }
 
-  final public <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
   { return addSchema(new MenuItemSchema<>(caption, klass, condRecordHandler, recordHandler)); }
 
 //---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final public void addDefaultMenuItems()
+  public final void addDefaultMenuItems()
   {
     addContextMenuItem("Launch work", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 

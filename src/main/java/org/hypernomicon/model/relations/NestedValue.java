@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model.relations;
 
+import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.items.HDI_OfflineBase;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.HDI_OnlineBase;
@@ -25,7 +26,6 @@ import org.hypernomicon.model.items.HDI_OnlineNestedPointer;
 import org.hypernomicon.model.items.HDI_OnlineString;
 import org.hypernomicon.model.items.HDI_OnlineTernary;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -42,7 +42,7 @@ public class NestedValue
 
   public NestedValue(HDI_OnlineBase<? extends HDI_OfflineBase> item)
   {
-    this(item.getCategory());
+    this(item.category());
 
     switch (hdc)
     {

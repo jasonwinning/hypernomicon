@@ -200,14 +200,12 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
         if ((ndx > 1) && (ndx == (authors.size() - 1)) && (finalConjSymbol != FinalConjunctionSymbol.none))
           str.append(finalConjSymbol == FinalConjunctionSymbol.and ? " and " : " & ");
         else if ((ndx == 1) && (authorsToShow == 2))
-        {
-          switch (finalConjSymbol)
+          str.append(switch (finalConjSymbol)
           {
-            case and       : str.append(" and "); break;
-            case ampersand : str.append(" & ");   break;
-            default        : str.append(", ");    break;
-          }
-        }
+            case and       -> " and ";
+            case ampersand -> " & ";
+            default        -> ", ";
+          });
 
         str.append(authors.get(ndx));
       }

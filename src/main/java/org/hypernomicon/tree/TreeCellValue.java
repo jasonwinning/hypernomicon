@@ -24,8 +24,8 @@ import static org.hypernomicon.model.records.RecordType.*;
 
 class TreeCellValue implements Comparable<TreeCellValue>
 {
-  final private TreeRow row;
-  final private String key;
+  private final TreeRow row;
+  private final String key;
 
 //---------------------------------------------------------------------------
 

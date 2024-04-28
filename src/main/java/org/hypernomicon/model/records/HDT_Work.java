@@ -644,15 +644,12 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
     WorkSearchKeyConfig configToUse = settings.stream().filter(keyConfig -> keyConfig.multipleAuthors == false).findFirst().orElse(settings.get(0));
 
-    switch (configToUse.parentheses)
+    return switch (configToUse.parentheses)
     {
-      case aroundAll  : return '(' + getYear() + ' '  + title + ')';
-      case aroundYear : return '(' + getYear() + ") " + title;
-
-      default : break;
-    }
-
-    return getYear() + ' ' + title;
+      case aroundAll  -> '(' + getYear() + ' '  + title + ')';
+      case aroundYear -> '(' + getYear() + ") " + title;
+      default         -> getYear() + ' ' + title;
+    };
   }
 
 //---------------------------------------------------------------------------

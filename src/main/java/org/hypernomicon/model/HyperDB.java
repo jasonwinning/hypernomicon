@@ -19,8 +19,8 @@ package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -107,11 +107,11 @@ import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -601,7 +601,7 @@ public final class HyperDB
     if (types.contains(recordType))
     {
       schema = datasets.get(recordType).getSchema(tags[0]);
-      if (schema.getCategory() != dataCat)
+      if (schema.category() != dataCat)
         throw new HDB_InternalError(78129);
     }
     else
@@ -1866,25 +1866,23 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initNestedItems(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relation)
+  private void initNestedItems(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relation) throws HDB_InternalError
   {
     ObjectProperty<HDI_OfflineBase> item = new SimpleObjectProperty<>();
 
     for (HDI_Schema schema : relationSets.get(relation).getSchemas())
     {
-      switch (schema.getCategory())
+      item.set(switch (schema.category())
       {
-        case hdcBoolean       : item.set(new HDI_OfflineBoolean      (schema, xmlRecord)); break;
-        case hdcTernary       : item.set(new HDI_OfflineTernary      (schema, xmlRecord)); break;
-        case hdcString        : item.set(new HDI_OfflineString       (schema, xmlRecord)); break;
-        case hdcNestedPointer : item.set(new HDI_OfflineNestedPointer(schema, xmlRecord)); break;
+        case hdcBoolean       -> new HDI_OfflineBoolean      (schema, xmlRecord);
+        case hdcTernary       -> new HDI_OfflineTernary      (schema, xmlRecord);
+        case hdcString        -> new HDI_OfflineString       (schema, xmlRecord);
+        case hdcNestedPointer -> new HDI_OfflineNestedPointer(schema, xmlRecord);
 
-        default :
-          messageDialog("Internal error #78936", mtError);
-          return;
-      }
+        default               -> throw new HDB_InternalError(78936);
+      });
 
-      schema.getTags().forEach(tag -> nestedItems.put(tag, item.get()));
+      schema.tags().forEach(tag -> nestedItems.put(tag, item.get()));
     }
   }
 

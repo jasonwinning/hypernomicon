@@ -57,15 +57,6 @@ import static org.hypernomicon.util.Util.*;
 
 public abstract class HDT_RecordBase implements HDT_Record
 {
-//---------------------------------------------------------------------------
-
-  public enum HyperDataCategory
-  {
-    hdcPointerSingle, hdcPointerMulti,   hdcNestedPointer,
-    hdcString,        hdcMainTextAndHub, hdcBoolean,
-    hdcTernary,       hdcPath,           hdcPersonName,
-    hdcBibEntryKey,   hdcAuthors,        hdcHubSpokes
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -191,29 +182,30 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     for (HDI_Schema schema : schemas)
     {
-      HDI_OnlineBase<? extends HDI_OfflineBase> item = null;
-
-      switch (schema.getCategory())
+      HDI_OnlineBase<? extends HDI_OfflineBase> item = switch (schema.category())
       {
-        case hdcMainTextAndHub : item = new HDI_OnlineMainTextAndHub(schema, (HDT_RecordWithMainText  ) this); break;
-        case hdcPath           : item = new HDI_OnlinePath          (schema, (HDT_RecordWithPath      ) this); break;
-        case hdcBibEntryKey    : item = new HDI_OnlineBibEntryKey   (schema, (HDT_Work                ) this); break;
-        case hdcAuthors        : item = new HDI_OnlineAuthors       (schema, (HDT_RecordWithAuthors<?>) this); break;
-        case hdcHubSpokes      : item = new HDI_OnlineHubSpokes     (schema, (HDT_Hub                 ) this); break;
-        case hdcPersonName     : item = new HDI_OnlinePersonName    (schema, (HDT_Person              ) this); break;
+        case hdcMainTextAndHub -> new HDI_OnlineMainTextAndHub(schema, (HDT_RecordWithMainText  ) this);
+        case hdcPath           -> new HDI_OnlinePath          (schema, (HDT_RecordWithPath      ) this);
+        case hdcBibEntryKey    -> new HDI_OnlineBibEntryKey   (schema, (HDT_Work                ) this);
+        case hdcAuthors        -> new HDI_OnlineAuthors       (schema, (HDT_RecordWithAuthors<?>) this);
+        case hdcHubSpokes      -> new HDI_OnlineHubSpokes     (schema, (HDT_Hub                 ) this);
+        case hdcPersonName     -> new HDI_OnlinePersonName    (schema, (HDT_Person              ) this);
 
-        case hdcBoolean        : item = new HDI_OnlineBoolean       (schema, this); break;
-        case hdcTernary        : item = new HDI_OnlineTernary       (schema, this); break;
-        case hdcPointerMulti   : item = new HDI_OnlinePointerMulti  (schema, this); break;
-        case hdcPointerSingle  : item = new HDI_OnlinePointerSingle (schema, this); break;
-        case hdcString         : item = new HDI_OnlineString        (schema, this); break;
+        case hdcBoolean        -> new HDI_OnlineBoolean       (schema, this);
+        case hdcTernary        -> new HDI_OnlineTernary       (schema, this);
+        case hdcPointerMulti   -> new HDI_OnlinePointerMulti  (schema, this);
+        case hdcPointerSingle  -> new HDI_OnlinePointerSingle (schema, this);
+        case hdcString         -> new HDI_OnlineString        (schema, this);
 
-        case hdcNestedPointer  :
+        case hdcNestedPointer  ->
+        {
           messageDialog("Internal error #78933", mtError); // Nested items are only created in RelationSet.getNestedItem
-          return;
-      }
+          yield null;
+        }
+      };
 
-      for (Tag tag : schema.getTags()) items.put(tag, item);
+      if (item != null)
+        for (Tag tag : schema.tags()) items.put(tag, item);
     }
   }
 

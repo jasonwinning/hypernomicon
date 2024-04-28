@@ -19,7 +19,6 @@ package org.hypernomicon.bib.zotero;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -301,7 +300,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     {
       switch (bibFieldEnum)
       {
-        case bfTitle : return Collections.singletonList(getWork().name());
+        case bfTitle : return List.of(safeStr(getWork().name()));
         case bfISBNs : return getWork().getISBNs();
         case bfMisc  : return convertMultiLineStrToStrList(getWork().getMiscBib(), true);
         default      : break;

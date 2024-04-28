@@ -41,7 +41,7 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
   public HDI_OfflinePointerMulti(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
-    objType = db.getObjType(schema.getRelType());
+    objType = db.getObjType(schema.relType());
   }
 
   public List<Integer> getObjIDs() { return Collections.unmodifiableList(objIDs); }

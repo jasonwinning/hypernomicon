@@ -42,9 +42,9 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
   private final HyperTable ht;
   private final int colNdxOfTarget;
   private final HyperCtrlType ctrlType;
-  final private HyperTableColumn col;
-  final private ButtonCellHandler handler;
-  final private String caption;
+  private final HyperTableColumn col;
+  private final ButtonCellHandler handler;
+  private final String caption;
 
 //---------------------------------------------------------------------------
 

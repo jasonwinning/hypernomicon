@@ -39,7 +39,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
   public HDI_OnlinePointerSingle(HDI_Schema schema, HDT_Record record)
   {
     super(schema, record);
-    relType = schema.getRelType();
+    relType = schema.relType();
   }
 
 //---------------------------------------------------------------------------

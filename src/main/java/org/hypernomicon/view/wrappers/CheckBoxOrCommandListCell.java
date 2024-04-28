@@ -83,7 +83,7 @@ public final class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private CheckBox checkBox;
+  private final CheckBox checkBox;
   private ObservableValue<Boolean> booleanProperty = null;
 
 //---------------------------------------------------------------------------

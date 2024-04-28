@@ -612,14 +612,15 @@ public final class Util
           {
             case "\u00e0": // Latin small letter a with grave accent, as in 'vis a vis' or 'a la'
 
-            case "a"    : case "also" : case "amid" : case "an"  : case "and"  :
-            case "as"   : case "at"   : case "atop" : case "but" : case "by"   :
-            case "for"  : case "from" : case "if"   : case "in"  : case "into" :
-            case "is"   : case "it"   : case "la"   : case "nor" : case "of"   :
-            case "off"  : case "on"   : case "onto" : case "or"  : case "out"  :
-            case "per"  : case "qua"  : case "sans" : case "so"  : case "than" :
-            case "that" : case "the"  : case "then" : case "to"  : case "unto" :
-            case "upon" : case "via"  : case "with" : case "yet" :
+            case "a"    : case "also" : case "amid" : case "an"   : case "and"  :
+            case "as"   : case "at"   : case "atop" : case "but"  : case "by"   :
+            case "for"  : case "from" : case "if"   : case "in"   : case "into" :
+            case "is"   : case "it"   : case "la"   : case "lieu" : case "nor"  :
+            case "of"   : case "off"  : case "on"   : case "onto" : case "or"   :
+            case "out"  : case "per"  : case "qua"  : case "sans" : case "so"   :
+            case "than" : case "that" : case "the"  : case "then" : case "til"  :
+            case "till" : case "to"   : case "unto" : case "upon" : case "via"  :
+            case "vis"  : case "with" : case "yet"  :
               break;
 
             default :

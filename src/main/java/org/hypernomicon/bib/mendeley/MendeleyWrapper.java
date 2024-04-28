@@ -48,7 +48,6 @@ import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.RequestBuilder;
@@ -72,6 +71,7 @@ import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.CryptoUtil;
+import org.hypernomicon.util.HttpHeader;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -117,8 +117,8 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     Link("Link"),
     None("None");
 
-    final private String name;
-    final private static Map<String, MendeleyHeader> map = new HashMap<>();
+    private final String name;
+    private static final Map<String, MendeleyHeader> map = new HashMap<>();
 
     MendeleyHeader(String name) { this.name = name; }
 
@@ -136,31 +136,24 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   {
     if (syncTaskIsCancelled()) throw new CancelledTaskException();
 
-    RequestBuilder rb;
-
-    switch (requestType)
+    RequestBuilder rb = switch (requestType)
     {
-      case get :
-        rb = RequestBuilder.get().setHeader(HttpHeaders.ACCEPT, mediaType);
-        break;
+      case get   -> RequestBuilder.get  ().setHeader(HttpHeader.Accept.toString(), mediaType);
 
-      case patch :
-        rb = RequestBuilder.patch().setEntity(new StringEntity(jsonData, UTF_8))
-                                   .setHeader(HttpHeaders.CONTENT_TYPE, mediaType)
-                                   .setHeader(HttpHeaders.IF_UNMODIFIED_SINCE, dateTimeToHttpDate(lastSyncTime));
-        break;
+      case patch -> RequestBuilder.patch().setEntity(new StringEntity(jsonData, UTF_8))
+                                          .setHeader(HttpHeader.Content_Type.toString(), mediaType)
+                                          .setHeader(HttpHeader.If_Unmodified_Since.toString(), dateTimeToHttpDate(lastSyncTime));
 
-      case post :
-        rb = RequestBuilder.post().setEntity(new StringEntity(jsonData, UTF_8))
-                                  .setHeader(HttpHeaders.CONTENT_TYPE, mediaType)
-                                  .setHeader(HttpHeaders.ACCEPT, mediaType);
-        break;
+      case post ->  RequestBuilder.post ().setEntity(new StringEntity(jsonData, UTF_8))
+                                          .setHeader(HttpHeader.Content_Type.toString(), mediaType)
+                                          .setHeader(HttpHeader.Accept.toString(), mediaType);
+      default -> null;
+    };
 
-      default : return null;
-    }
+    if (rb == null) return null;
 
     request = rb.setUri(url)
-                .setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .setHeader(HttpHeader.Authorization.toString(), "Bearer " + accessToken)
                 .build();
 
     JsonArray jsonArray;
@@ -498,9 +491,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   private JsonArray doReadCommand(MendeleyCmd command) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
   {
-    String url = "https://api.mendeley.com/", mediaType = "";
+    String url = "https://api.mendeley.com/";
 
-    mediaType = switch (command)
+    String mediaType = switch (command)
     {
       case readFolders ->
       {
@@ -543,16 +536,16 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl).getObjs().forEach(jsonArray::add);
     }
 
-    switch (jsonClient.getStatusCode())
+    return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_OK :
-      case HttpStatus.SC_NOT_MODIFIED :
-      case HttpStatus.SC_PRECONDITION_FAILED :
+      case HttpStatus.SC_OK,
+           HttpStatus.SC_NOT_MODIFIED,
+           HttpStatus.SC_PRECONDITION_FAILED ->
 
-        return jsonArray;
-    }
+        jsonArray;
 
-    throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+      default -> throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+    };
   }
 
 //---------------------------------------------------------------------------

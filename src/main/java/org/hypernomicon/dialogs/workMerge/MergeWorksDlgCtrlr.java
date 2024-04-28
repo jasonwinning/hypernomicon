@@ -129,7 +129,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
       WorkDlgCtrlr.accommodatePreview(dialogStage, apMain, mdp);
 
-      jsWrapper = new PDFJSWrapper(apPreview, null, null, null);
+      jsWrapper = new PDFJSWrapper(apPreview);
 
       if (jxBrowserDisabled) return;
 

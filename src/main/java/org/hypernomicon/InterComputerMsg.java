@@ -70,6 +70,7 @@ public class InterComputerMsg
       case hmtEchoReply      : lines.add("echo reply"     ); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
       case hmtUnlockRequest  : lines.add("unlock request" ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
       case hmtUnlockComplete : lines.add("unlock complete"); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
+
       default                : throw new UnsupportedOperationException("Attempt to write inter-computer message of invalid type.");
     }
 

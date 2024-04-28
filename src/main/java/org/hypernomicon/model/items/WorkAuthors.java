@@ -259,7 +259,7 @@ public class WorkAuthors extends Authors
     Author author = getAuthor(new PersonName(objGroup.getPrimaryStr()));
     if (author == null) return;
 
-    NestedValue val = new NestedValue(db.getNestedSchema(rtAuthorOfWork, tag).getCategory());
+    NestedValue val = new NestedValue(db.getNestedSchema(rtAuthorOfWork, tag).category());
 
     switch (tag)
     {

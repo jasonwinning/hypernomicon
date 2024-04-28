@@ -47,7 +47,6 @@ import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.RequestBuilder;
@@ -66,6 +65,7 @@ import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
+import org.hypernomicon.util.HttpHeader;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -219,8 +219,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     Retry_After("Retry-After"),
     None("None");
 
-    final private String name;
-    final private static Map<String, ZoteroHeader> headerMap = new HashMap<>();
+    private final String name;
+    private static final Map<String, ZoteroHeader> headerMap = new HashMap<>();
 
     ZoteroHeader(String name) { this.name = name; }
 
@@ -267,7 +267,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     request = rb
       .setUri(url)
-      .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+      .setHeader(HttpHeader.Content_Type.toString(), "application/json")
       .setHeader(Zotero_API_Version.toString(), "3")
       .setHeader(Zotero_API_Key.toString(), apiKey)
       .setHeader(Zotero_Write_Token.toString(), generateWriteToken())

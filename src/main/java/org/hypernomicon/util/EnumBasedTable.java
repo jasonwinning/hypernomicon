@@ -22,12 +22,20 @@ import java.util.EnumMap;
 
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final EnumMap<R, EnumMap<C, V>> rowToColumnToValue;
   private final EnumMap<C, EnumMap<R, V>> columnToRowToValue;
   private final Class<R> rowType;
   private final Class<C> columnType;
+
+//---------------------------------------------------------------------------
 
   public EnumBasedTable(Class<R> rowType, Class<C> columnType)
   {

@@ -30,14 +30,19 @@ import javax.crypto.spec.PBEParameterSpec;
 import static java.nio.charset.StandardCharsets.*;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public final class CryptoUtil
 {
-  private final static byte[] salt = { (byte) 0xA9, (byte) 0x9B, (byte) 0xC8, (byte) 0x32, (byte) 0x56, (byte) 0x35, (byte) 0xE3, (byte) 0x03 };
-  private final static int iterationCount = 19;
-  private final static String defaultK  = "pq0bJ2cYgC",
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final byte[] salt = { (byte) 0xA9, (byte) 0x9B, (byte) 0xC8, (byte) 0x32, (byte) 0x56, (byte) 0x35, (byte) 0xE3, (byte) 0x03 };
+  private static final int iterationCount = 19;
+  private static final String defaultK  = "pq0bJ2cYgC",
                               algorithm = "PBEWithMD5AndDES";
+
+//---------------------------------------------------------------------------
 
   private CryptoUtil() { throw new UnsupportedOperationException(); }
 

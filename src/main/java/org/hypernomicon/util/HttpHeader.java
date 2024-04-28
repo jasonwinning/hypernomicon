@@ -126,8 +126,8 @@ public enum HttpHeader
 
 //---------------------------------------------------------------------------
 
-  final private String name;
-  final private static Map<String, HttpHeader> map = new HashMap<>();
+  private final String name;
+  private static final Map<String, HttpHeader> map = new HashMap<>();
 
 //---------------------------------------------------------------------------
 

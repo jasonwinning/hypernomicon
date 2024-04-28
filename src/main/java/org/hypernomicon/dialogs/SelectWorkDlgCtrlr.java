@@ -493,7 +493,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   {
     if (jxBrowserDisabled) return;
 
-    if (previewInitialized == false) jsWrapper = new PDFJSWrapper(apPreview, null, null, null);
+    if (previewInitialized == false) jsWrapper = new PDFJSWrapper(apPreview);
 
     if (jxBrowserDisabled) return;
 

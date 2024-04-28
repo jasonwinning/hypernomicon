@@ -178,15 +178,13 @@
             <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false"
                       text="Use sentence case instead of title case for titles"/>
             <HBox alignment="CENTER_LEFT" spacing="8.0">
-              <children>
-                <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false"
-                          text="Default work type when reference manager entry type is Book Section:"/>
-                <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
-                  <HBox.margin>
-                    <Insets top="4.0"/>
-                  </HBox.margin>
-                </ComboBox>
-              </children>
+              <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false"
+                        text="Default work type when reference manager entry type is Book Section:"/>
+              <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
+                <HBox.margin>
+                  <Insets top="4.0"/>
+                </HBox.margin>
+              </ComboBox>
             </HBox>
             <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false"
                       text="Don't expand key works when editing record description and there are no key works yet"/>

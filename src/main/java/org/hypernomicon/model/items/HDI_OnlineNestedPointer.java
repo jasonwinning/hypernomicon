@@ -60,7 +60,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 
   @Override public void setFromOfflineValue(HDI_OfflineNestedPointer val, Tag tag)
   {
-    target = val.objID < 0 ? null : db.records(getSchema().getNestedTargetType()).getByID(val.objID);
+    target = val.objID < 0 ? null : db.records(nestedTargetType()).getByID(val.objID);
   }
 
 //---------------------------------------------------------------------------

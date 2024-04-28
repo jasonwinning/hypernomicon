@@ -36,7 +36,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
   public HDI_OnlineString(HDI_Schema schema, HDT_Record record)
   {
     super(schema, record);
-    tag = schema.getTags().get(0);
+    tag = schema.tags().get(0);
   }
 
   public void set(String strValue) { this.strValue = strValue; }

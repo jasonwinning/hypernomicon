@@ -438,19 +438,14 @@ public class FolderTreeWatcher
 
         }
 
-        if (app.debugging)
+        if (app.debugging) System.out.println(switch (watcherEvent.kind)
         {
-          switch (watcherEvent.kind)
-          {
-            case wekCreate : System.out.println("Created: \""       + watcherEvent.newPathInfo + '"'); break;
-            case wekDelete : System.out.println("Deleted: \""       + watcherEvent.oldPathInfo + '"'); break;
-            case wekModify : System.out.println("Modified: \""      + watcherEvent.newPathInfo + '"'); break;
-            case wekRename : System.out.println("Renamed: \""       + watcherEvent.oldPathInfo +
-                                                "\" to: \""         + watcherEvent.newPathInfo.getFilePath().getNameOnly() + '"'); break;
-
-            default        : System.out.println("Unknown event: \"" + watcherEvent.newPathInfo + '"'); break;
-          }
-        }
+          case wekCreate -> "Created: \""       + watcherEvent.newPathInfo + '"';
+          case wekDelete -> "Deleted: \""       + watcherEvent.oldPathInfo + '"';
+          case wekModify -> "Modified: \""      + watcherEvent.newPathInfo + '"';
+          case wekRename -> "Renamed: \""       + watcherEvent.oldPathInfo +
+                            "\" to: \""         + watcherEvent.newPathInfo.getFilePath().getNameOnly() + '"';
+        });
       }
     }
 

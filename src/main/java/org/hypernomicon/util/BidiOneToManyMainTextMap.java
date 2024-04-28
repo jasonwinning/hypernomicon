@@ -26,13 +26,12 @@ import org.hypernomicon.model.unities.MainText;
 
 public class BidiOneToManyMainTextMap
 {
-  private final Map<MainText, Set<MainText>> forwardMap, reverseMap;
 
-  public BidiOneToManyMainTextMap()
-  {
-    forwardMap = new ConcurrentHashMap<>();
-    reverseMap = new ConcurrentHashMap<>();
-  }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private final Map<MainText, Set<MainText>> forwardMap = new ConcurrentHashMap<>(),
+                                             reverseMap = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

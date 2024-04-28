@@ -110,21 +110,22 @@ public final class QueryCtrlr
   @FXML private TextField tfCustomLogic;
   @FXML private ToggleButton btnCustom, btnAnd, btnOr;
 
+  private final List<ResultRow> resultsBackingList = new ArrayList<>();
+  private final Map<HDT_Record, ResultRow> recordToRow = new HashMap<>();
+
   private final QueriesTabCtrlr queriesTabCtrlr;
   private final WebView webView;
   private final TabPane tabPane;
   private final TextField tfFavName;
+
   private HyperTable htFields;
   private ReportTable reportTable;
   private Tab tab;
   private QueryFavorite fav = null;
   private HDT_Record curResult = null;
-  private int scrollPos = 0;
+  private int scrollPosPriorToBeingDeactivated = 0;
 
-  ResultsTable resultsTable;
-
-  private final List<ResultRow> resultsBackingList = new ArrayList<>();
-  private final Map<HDT_Record, ResultRow> recordToRow = new HashMap<>();
+  private ResultsTable resultsTable;
 
   private boolean programmaticFavNameChange = false,
                   programmaticCustomLogicChange = false,
@@ -422,7 +423,7 @@ public final class QueryCtrlr
     {
       String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
 
-      int scrollPos = queriesTabCtrlr.getUseTextViewInfo() ? queriesTabCtrlr.getView().getTextInfo().scrollPos : (activatingTab ? this.scrollPos : 0);
+      int scrollPos = queriesTabCtrlr.getUseTextViewInfo() ? queriesTabCtrlr.getView().getTextInfo().scrollPos : (activatingTab ? scrollPosPriorToBeingDeactivated : 0);
 
       MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), scrollPos, ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
     }
@@ -1176,7 +1177,7 @@ public final class QueryCtrlr
     spMain .showDetailNodeProperty().unbind();
     spLower.showDetailNodeProperty().unbind();
 
-    scrollPos = MainTextUtil.webEngineScrollPos(webView.getEngine());
+    scrollPosPriorToBeingDeactivated = MainTextUtil.webEngineScrollPos(webView.getEngine());
 
     removeFromParent(webView);
   }

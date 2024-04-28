@@ -17,10 +17,10 @@
 
 package org.hypernomicon.model;
 
+import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.Exceptions.*;
@@ -305,7 +305,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
   void addSchema(HDI_Schema schema) throws HDB_InternalError
   {
-    for (Tag tag : schema.getTags())
+    for (Tag tag : schema.tags())
     {
       if (tagToSchema.containsKey(tag))
         throw new HDB_InternalError(98921);
@@ -313,7 +313,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       if (tag != tagMainText)
         tagToSchema.put(tag, schema);
 
-      if (schema.getCategory() == hdcMainTextAndHub)
+      if (schema.category() == hdcMainTextAndHub)
       {
         switch (tag)
         {

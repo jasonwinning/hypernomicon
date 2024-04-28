@@ -117,34 +117,29 @@ public enum EntryType
 
   public static HDT_WorkType toWorkType(EntryType et)
   {
-    if (et == null) return null;
-
-    switch (et)
+    return et == null ? null : switch (et)
     {
-      case etBook : case etBooklet: case etBookVolume: case etJournalIssue : case etMagazine : case etManual : case etMonograph :
-      case etMultiVolumeWork : case etReferenceBook : case etEditedBook : case etAncientText : case etClassicalWork : case etElectronicBook :
+      case etBook, etBooklet, etBookVolume, etJournalIssue, etMagazine, etManual, etMonograph, etMultiVolumeWork,
+           etReferenceBook, etEditedBook, etAncientText, etClassicalWork, etElectronicBook ->
 
-        return HDT_WorkType.get(WorkTypeEnum.wtBook);
+        HDT_WorkType.get(WorkTypeEnum.wtBook);
 
-      case etAbstract : case etArchivalDocument : case etCommentary : case etConferencePaper :
-      case etEncyclopediaArticle : case etJournalArticle : case etLetter : case etLetterToTheEditor :
-      case etMagazineArticle : case etNewsletterArticle : case etNewspaperArticle : case etUnpublishedWork :
-      case etReport : case etTechnicalReport : case etWorkingPaper : case etElectronicArticle : case etGovernmentDocument :
+      case etAbstract, etArchivalDocument, etCommentary, etConferencePaper, etEncyclopediaArticle, etJournalArticle,
+           etLetter, etLetterToTheEditor, etMagazineArticle, etNewsletterArticle, etNewspaperArticle, etUnpublishedWork,
+           etReport, etTechnicalReport, etWorkingPaper, etElectronicArticle, etGovernmentDocument ->
 
-        return HDT_WorkType.get(WorkTypeEnum.wtPaper);
+        HDT_WorkType.get(WorkTypeEnum.wtPaper);
 
-      case etThesis : case etDoctoralThesis : case etMastersThesis :
+      case etThesis, etDoctoralThesis, etMastersThesis ->
 
-        return HDT_WorkType.get(WorkTypeEnum.wtThesis);
+        HDT_WorkType.get(WorkTypeEnum.wtThesis);
 
-      case etBookChapter : case etBookPart: case etBookSection : case etElectronicBookSection :
+      case etBookChapter, etBookPart, etBookSection, etElectronicBookSection ->
 
-        return db.workTypes.getByID(db.prefs.getInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, -1));
+        db.workTypes.getByID(db.prefs.getInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, -1));
 
-      default : break;
-    }
-
-    return null;
+      default -> null;
+    };
   }
 
 //---------------------------------------------------------------------------

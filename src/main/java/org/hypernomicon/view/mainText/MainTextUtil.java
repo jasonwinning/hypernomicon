@@ -404,17 +404,17 @@ public final class MainTextUtil
     String parms = getOpenRecordParms(record),
            anchor = "<a title=\"" + recordTooltip(record) + '"' + extraAttribs + " hypncon=\"true\" ";
 
-    switch (record.getType())
+    return anchor + switch (record.getType())
     {
-      case hdtMiscFile :
-        return anchor + "href=\"\" onclick=\"javascript:openFile(" + parms + "); return false;\">" + content + "</a>";
+      case hdtMiscFile ->
+        "href=\"\" onclick=\"javascript:openFile(" + parms + "); return false;\">" + content + "</a>";
 
-      case hdtWork : case hdtNote :
-        return anchor + "oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+      case hdtWork, hdtNote ->
+        "oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
 
-      default :
-        return anchor + "href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
-    }
+      default ->
+        "href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+    };
   }
 
 //---------------------------------------------------------------------------

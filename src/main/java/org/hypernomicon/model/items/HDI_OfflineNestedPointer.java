@@ -61,7 +61,7 @@ public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    writePointerTag(xml, tag, objID, hdtNone, db.records(getSchema().getNestedTargetType()).getByID(objID).getXMLObjectName());
+    writePointerTag(xml, tag, objID, hdtNone, db.records(nestedTargetType()).getByID(objID).getXMLObjectName());
   }
 
   //---------------------------------------------------------------------------

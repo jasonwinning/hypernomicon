@@ -17,8 +17,8 @@
 
 package org.hypernomicon.query;
 
+import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.query.ui.QueriesTabCtrlr.*;
@@ -26,10 +26,10 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.query.ui.QueryCtrlr;
@@ -94,7 +94,7 @@ public class QueryWhereField extends RecordQuery
 
     for (HDI_Schema schema : db.getSchemasByTag(Tag.getTag(getCellID(op1))))
     {
-      RelationType relType = schema.getRelType();
+      RelationType relType = schema.relType();
 
       RecordType subjType = relType == rtNone ? hdtNone : db.getSubjType(relType);
 
@@ -102,7 +102,7 @@ public class QueryWhereField extends RecordQuery
       {
         if (catSet == false)
         {
-          cat = schema.getCategory();
+          cat = schema.category();
           catSet = true;
 
           if ((cat == hdcPointerMulti) || (cat == hdcPointerSingle) || (cat == hdcAuthors))
@@ -112,7 +112,7 @@ public class QueryWhereField extends RecordQuery
         {
           if ((cat == hdcPointerMulti) || (cat == hdcPointerSingle) || (cat == hdcAuthors))
           {
-            if ((schema.getCategory() != hdcPointerMulti) && (schema.getCategory() != hdcPointerSingle) && (schema.getCategory() != hdcAuthors))
+            if ((schema.category() != hdcPointerMulti) && (schema.category() != hdcPointerSingle) && (schema.category() != hdcAuthors))
               cat = hdcString;
             else
             {
@@ -120,7 +120,7 @@ public class QueryWhereField extends RecordQuery
                 cat = hdcString;
             }
           }
-          else if (cat != schema.getCategory())
+          else if (cat != schema.category())
             cat = hdcString;
         }
       }
@@ -177,7 +177,7 @@ public class QueryWhereField extends RecordQuery
         {
           case cvtRecord :
 
-            for (HDT_Record objRecord : db.getObjectList(schema.getRelType(), record, true))
+            for (HDT_Record objRecord : db.getObjectList(schema.relType(), record, true))
             {
               if ((objRecord.getID() == getCellID(op3)) && (objRecord.getType() == getCellType(op3)))
                 return getCellID(op2) == EQUAL_TO_OPERAND_ID;
@@ -212,7 +212,7 @@ public class QueryWhereField extends RecordQuery
 
         return switch (valueType)
         {
-          case cvtRecord  -> (db.getObjectList(schema.getRelType(), record, true).size() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
+          case cvtRecord  -> (db.getObjectList(schema.relType(), record, true).size() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
           case cvtBoolean -> getCellID(op2) == IS_EMPTY_OPERAND_ID;
           default         -> (record.resultTextForTag(tag).length() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
         };

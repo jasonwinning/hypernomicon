@@ -25,8 +25,8 @@ import static org.hypernomicon.util.Util.*;
 
 class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 {
-  final private HyperTable table;
-  final private CheckBox chk;
+  private final HyperTable table;
+  private final CheckBox chk;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

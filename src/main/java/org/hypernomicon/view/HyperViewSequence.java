@@ -365,14 +365,12 @@ public class HyperViewSequence
     }
     else
     {
-      String beforePart = "";
-
-      switch (view.getTabEnum())
+      String beforePart = switch (view.getTabEnum())
       {
-        case queryTabEnum : beforePart = "(Queries tab) "; break;
-        case treeTabEnum  : beforePart = "(Tree tab) ";    break;
-        default           :                                break;
-      }
+        case queryTabEnum -> "(Queries tab) ";
+        case treeTabEnum  -> "(Tree tab) ";
+        default           -> "";
+      };
 
       String typeName = getTypeName(record.getType());
 

@@ -55,8 +55,8 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   private final HyperCB hcbTerm, hcbGlossary, hcbSense;
   private final HDT_Concept oldConcept;
 
-  private HDT_Glossary glossary;
-  private HDT_ConceptSense sense;
+  private HDT_Glossary glossaryToUse;
+  private HDT_ConceptSense senseToUse;
   private boolean createNew, alreadyChanging = false;
   private HDT_Term term;
 
@@ -65,8 +65,8 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
   public HDT_Term         getTerm()      { return term; }
   public boolean          getCreateNew() { return createNew; }
-  public HDT_Glossary     getGlossary()  { return glossary != null ? glossary : hcbGlossary.selectedRecord(); }
-  public HDT_ConceptSense getSense()     { return sense != null ? sense : hcbSense.selectedRecord(); }
+  public HDT_Glossary     getGlossary()  { return glossaryToUse != null ? glossaryToUse : hcbGlossary.selectedRecord(); }
+  public HDT_ConceptSense getSense()     { return senseToUse != null ? senseToUse : hcbSense.selectedRecord(); }
   public String           getSenseText() { return ultraTrim(hcbSense.getText()); }
 
 //---------------------------------------------------------------------------
@@ -206,11 +206,11 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     if (oldConcept != null)
     {
-      glossary = oldConcept.glossary.get();
-      sense = oldConcept.sense.get();
+      glossaryToUse = oldConcept.glossary.get();
+      senseToUse = oldConcept.sense.get();
     }
     else
-      glossary = generalGlossary;
+      glossaryToUse = generalGlossary;
 
     okClicked = true;
     createNew = true;
@@ -225,9 +225,9 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     if (hcbTerm.selectedRecord() == null)
       return falseWithErrorMessage("You must select a term.", cbTerm);
 
-    glossary = hcbGlossary.selectedRecord();
+    glossaryToUse = hcbGlossary.selectedRecord();
 
-    if (glossary == null)
+    if (glossaryToUse == null)
       return falseWithErrorMessage("You must select a glossary.", cbGlossary);
 
     term = hcbTerm.selectedRecord();
@@ -238,7 +238,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
       if (senseText.isBlank())
       {
-        if (term.getConcept(glossary, null) != null)
+        if (term.getConcept(glossaryToUse, null) != null)
           return falseWithErrorMessage("The term already has a definition for that glossary and sense.", cbSense);
       }
       else

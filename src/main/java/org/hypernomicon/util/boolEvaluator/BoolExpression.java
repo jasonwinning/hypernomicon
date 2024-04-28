@@ -24,7 +24,7 @@ import java.util.Queue;
 
 import static org.hypernomicon.util.boolEvaluator.BoolExpressionToken.TokenType.*;
 
-public final class BoolExpression implements Iterable<BoolExpressionToken>
+public final class BoolExpression
 {
 
 //---------------------------------------------------------------------------
@@ -34,7 +34,7 @@ public final class BoolExpression implements Iterable<BoolExpressionToken>
   private final Queue<BoolExpressionToken> tokens;
   private int pos = 0;
 
-  @Override public Iterator<BoolExpressionToken> iterator() { return tokens.iterator(); }
+  Iterator<BoolExpressionToken> iterator() { return tokens.iterator(); }  // This class doesn't implement Iterable because the iterator doesn't need to be publicly accessible
 
   public static BoolExpression create(String string) throws ParseException  { return new BoolExpression(string); }
 

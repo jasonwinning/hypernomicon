@@ -185,7 +185,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         return;
       }
 
-      HDT_Record record = curQueryCtrlr.resultsTable.selectedRecord();
+      HDT_Record record = activeRecord();
       if (record == null) return;
 
       String mainText = record.hasDesc() ? ((HDT_RecordWithDescription) record).getDesc().getHtml() : "";

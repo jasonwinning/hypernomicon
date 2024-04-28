@@ -42,19 +42,32 @@ import org.hypernomicon.util.filePath.FilePath;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
+//---------------------------------------------------------------------------
+
 public final class FileDownloadUtility
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final int BUFFER_SIZE = 4096;
+
+//---------------------------------------------------------------------------
 
   private FileDownloadUtility() { throw new UnsupportedOperationException(); }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final class Buffer extends InputStream
   {
+
+  //---------------------------------------------------------------------------
+
     private final List<byte[]> buffers = new ArrayList<>();
     private final List<Integer> lengths = new ArrayList<>();
     private int curBufferNdx = 0, curPosition = 0;
 
-  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     private Buffer(InputStream inputStream) throws IOException
@@ -71,7 +84,6 @@ public final class FileDownloadUtility
     }
 
   //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
 
     public void saveToFile(FilePath saveFilePath) throws IOException
     {
@@ -82,7 +94,6 @@ public final class FileDownloadUtility
       }
     }
 
-  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     @Override public int read() throws IOException
@@ -100,6 +111,9 @@ public final class FileDownloadUtility
 
       return val + 128;
     }
+
+  //---------------------------------------------------------------------------
+
   }
 
 //---------------------------------------------------------------------------

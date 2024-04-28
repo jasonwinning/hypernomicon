@@ -2119,15 +2119,14 @@ public final class MainCtrlr
 
   private HDT_Record selectedRecord()
   {
-    HDT_Record activeRecord = activeRecord(), viewRecord = null;
+    HDT_Record activeRecord = activeRecord();
 
-    switch (activeTabEnum())
+    HDT_Record viewRecord = switch (activeTabEnum())
     {
-      case termTabEnum   : viewRecord = viewRecord();                           break;
-      case personTabEnum : viewRecord = personHyperTab().getCurInvestigation(); break;
-
-      default            : break;
-    }
+      case termTabEnum   -> viewRecord();
+      case personTabEnum -> personHyperTab().getCurInvestigation();
+      default            -> null;
+    };
 
     if ((activeRecord == null) || (viewRecord == null) || (activeRecord == viewRecord))
       return activeRecord;

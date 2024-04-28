@@ -47,7 +47,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
   {
     super(schema, recordWithPath);
 
-    relType = schema.getRelType();
+    relType = schema.relType();
     this.recordWithPath = recordWithPath;
     initPath();
   }
