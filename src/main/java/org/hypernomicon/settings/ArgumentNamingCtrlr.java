@@ -34,7 +34,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
 
@@ -53,7 +52,7 @@ public class ArgumentNamingCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void init(Window owner, boolean noDB)
+  @Override public void init(boolean noDB)
   {
     if (noDB) return;
 

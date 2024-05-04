@@ -408,7 +408,7 @@ public final class MainCtrlr
     hcbGoTo.setEnterKeyHandler(this::recordLookup);
     hcbGoTo.dontCreateNewRecord = true;
 
-    mnuImportWork        .setOnAction(event -> importWorkFile(null, null, false));
+    mnuImportWork        .setOnAction(event -> importWorkFile(null, null, true));
     mnuImportFile        .setOnAction(event -> importMiscFile(null, null));
     mnuImportBibFile     .setOnAction(event -> importBibFile(null, null));
     mnuImportBibClipboard.setOnAction(event -> importBibFile(convertMultiLineStrToStrList(getClipboardText(false), false), null));
@@ -1590,7 +1590,7 @@ public final class MainCtrlr
 
       fileChooser.setInitialDirectory(dir);
 
-      filePath = windows.showOpenDialog(fileChooser, stage);
+      filePath = showOpenDialog(fileChooser);
     }
 
     if (FilePath.isEmpty(filePath) || (close(true) == false) || db.isLoaded()) return;
@@ -1617,7 +1617,7 @@ public final class MainCtrlr
 
     dirChooser.setInitialDirectory(file.exists() && file.isDirectory() ? file : new File(userWorkingDir()));
 
-    FilePath rootPath = windows.showDirDialog(dirChooser, stage);
+    FilePath rootPath = showDirDialog(dirChooser);
     if (FilePath.isEmpty(rootPath)) return;
 
     String[] list = rootPath.toFile().list();
@@ -1908,7 +1908,7 @@ public final class MainCtrlr
         }
       });
     }
-    catch (DirectoryIteratorException | IOException ex) { ex.printStackTrace(); }
+    catch (DirectoryIteratorException | IOException e) { e.printStackTrace(); }
   }
 
 //---------------------------------------------------------------------------
@@ -3134,6 +3134,7 @@ public final class MainCtrlr
       SelectWorkDlgCtrlr swdc = new SelectWorkDlgCtrlr(person, filePathToUse);
       if (swdc.showModal() == false) return false;
 
+      filePathToUse = swdc.getFilePath();
       work = swdc.getWork();
       person = swdc.getAuthor();
       bdToUse = swdc.getBibData();

@@ -73,7 +73,6 @@ import javafx.scene.control.TreeView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import javafx.stage.Window;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -135,8 +134,8 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid() { return true; }
 
-  @FXML private void btnImageEditorBrowseClick() { browseClick(dialogStage, tfImageEditor); }
-  @FXML private void btnPDFReaderClick()         { browseClick(dialogStage, tfPDFReader); }
+  @FXML private void btnImageEditorBrowseClick() { browseClick(tfImageEditor); }
+  @FXML private void btnPDFReaderClick()         { browseClick(tfPDFReader); }
   @FXML private void btnClearExtPathClick()      { tfExtFiles.clear(); }
 
 //---------------------------------------------------------------------------
@@ -328,7 +327,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  interface SettingsControl { void init(Window owner, boolean noDB); void save(boolean noDB); }
+  interface SettingsControl { void init(boolean noDB); void save(boolean noDB); }
 
   private SettingsControl initControl(Tab tab, String fxmlName)
   {
@@ -338,7 +337,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       AnchorPane ap = loader.load();
       tab.setContent(ap);
       SettingsControl ctrlr = loader.getController();
-      ctrlr.init(dialogStage, noDB);
+      ctrlr.init(noDB);
       return ctrlr;
     }
     catch (IOException e)
@@ -470,7 +469,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     dirChooser.setInitialDirectory(startPath.toFile());
     dirChooser.setTitle("Select Folder");
 
-    nullSwitch(ui.windows.showDirDialog(dirChooser, dialogStage), filePath -> tfExtFiles.setText(filePath.toString()));
+    nullSwitch(showDirDialog(dirChooser), filePath -> tfExtFiles.setText(filePath.toString()));
   }
 
 //---------------------------------------------------------------------------
@@ -647,14 +646,14 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void browseClick(Window owner, TextField tf)
+  static void browseClick(TextField tf)
   {
     FileChooser fileChooser = new FileChooser();
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
     fileChooser.setInitialDirectory(new File(userWorkingDir()));
 
-    nullSwitch(ui.windows.showOpenDialog(fileChooser, owner), filePath -> tf.setText(filePath.toString()));
+    nullSwitch(showOpenDialog(fileChooser), filePath -> tf.setText(filePath.toString()));
   }
 
 //---------------------------------------------------------------------------

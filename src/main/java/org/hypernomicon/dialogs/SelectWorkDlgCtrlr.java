@@ -61,6 +61,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -84,11 +85,12 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   private AnchorPane apPreview;
   private FilePath filePath = null, previewFilePath = null;
   private PDFJSWrapper jsWrapper = null;
-  private HDT_Work work = null;
+  private HDT_Work work;
   private HDT_Person author = null;
-  private BibEntry<?, ?> bibEntry = null;
+  private BibEntry<?, ?> bibEntry;
   private boolean createNewClicked = false, previewInitialized = false;
 
+  public FilePath getFilePath()       { return filePath; }
   public HDT_Work getWork()           { return work; }
   public BibEntry<?, ?> getBibEntry() { return HDT_Work.isUnenteredSet(work) ? null : bibEntry; }
   public BibData getBibData()         { return bd; }
@@ -122,6 +124,14 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
     if (db.bibLibraryIsLinked() == false)
       cbBibEntry.setDisable(true);
+
+    if ((filePathToUse == null) && filePathIsConstant)
+    {
+      filePathToUse = promptForFilePath();
+
+      if (filePathToUse == null)
+        abort();
+    }
 
     if (work == null)
     {
@@ -400,6 +410,21 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     }
 
     updateFields();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private FilePath promptForFilePath()
+  {
+    FileChooser fileChooser = new FileChooser();
+
+    fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"),
+                                             new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
+
+    fileChooser.setInitialDirectory(db.unenteredPath().toFile());
+
+    return showOpenDialog(fileChooser);
   }
 
 //---------------------------------------------------------------------------

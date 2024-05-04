@@ -772,7 +772,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     fileChooser.setInitialDirectory(db.picturesPath().toFile());
 
-    FilePath filePath = ui.windows.showOpenDialog(fileChooser, getStage());
+    FilePath filePath = showOpenDialog(fileChooser);
 
     if (FilePath.isEmpty(filePath)) return;
 
@@ -925,9 +925,9 @@ public class PictureDlgCtrlr extends HyperDlg
           return false;
         }
       }
-      catch (IOException ex)
+      catch (IOException e)
       {
-        return falseWithErrorMessage("An error occurred while saving the file: " + getThrowableMessage(ex));
+        return falseWithErrorMessage("An error occurred while saving the file: " + getThrowableMessage(e));
       }
     }
     else

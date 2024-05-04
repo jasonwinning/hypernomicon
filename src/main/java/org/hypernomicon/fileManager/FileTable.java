@@ -266,9 +266,9 @@ class FileTable extends DragNDropContainer<FileRow>
         }
       }
     }
-    catch (DirectoryIteratorException | IOException ex)
+    catch (DirectoryIteratorException | IOException e)
     {
-      messageDialog("An error occurred while displaying the folder's contents: " + getThrowableMessage(ex), mtError);
+      messageDialog("An error occurred while displaying the folder's contents: " + getThrowableMessage(e), mtError);
     }
   }
 

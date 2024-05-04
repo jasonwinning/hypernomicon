@@ -228,7 +228,7 @@ public final class Util
   public static int parseInt(String value, int def)
   {
     try { return Integer.parseInt(value); }
-    catch (NumberFormatException nfe) { return def; }
+    catch (NumberFormatException e) { return def; }
   }
 
 //---------------------------------------------------------------------------
@@ -242,7 +242,7 @@ public final class Util
       value = value.substring(2);
 
     try { return Integer.parseInt(value, 16); }
-    catch (NumberFormatException nfe) { return def; }
+    catch (NumberFormatException e) { return def; }
   }
 
 //---------------------------------------------------------------------------
@@ -251,7 +251,7 @@ public final class Util
   public static long parseLong(String value, long def)
   {
     try { return Long.parseLong(value); }
-    catch (NumberFormatException nfe) { return def; }
+    catch (NumberFormatException e) { return def; }
   }
 
 //---------------------------------------------------------------------------
@@ -923,9 +923,9 @@ public final class Util
     {
       doneLatch.await();
     }
-    catch (InterruptedException ex)
+    catch (InterruptedException e)
     {
-      ex.printStackTrace();
+      e.printStackTrace();
     }
   }
 
@@ -948,9 +948,9 @@ public final class Util
         strBuilder.append(line);
       }
     }
-    catch (NullPointerException npe)
+    catch (NullPointerException e)
     {
-      throw new IOException(npe);
+      throw new IOException(e);
     }
   }
 
@@ -1109,10 +1109,10 @@ public final class Util
     int int1 = 0, int2 = 0;
 
     try { int1 = Integer.parseInt(safeStr(str1)); }
-    catch (NumberFormatException nfe) { numeric1 = false; }
+    catch (NumberFormatException e) { numeric1 = false; }
 
     try { int2 = Integer.parseInt(safeStr(str2)); }
-    catch (NumberFormatException nfe) { numeric2 = false; }
+    catch (NumberFormatException e) { numeric2 = false; }
 
     if (numeric1 && numeric2)
     {

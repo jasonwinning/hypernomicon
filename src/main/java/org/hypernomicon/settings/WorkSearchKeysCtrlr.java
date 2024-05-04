@@ -36,7 +36,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
 
@@ -53,7 +52,7 @@ public class WorkSearchKeysCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void init(Window owner, boolean noDB)
+  @Override public void init(boolean noDB)
   {
     if (noDB) return;
 

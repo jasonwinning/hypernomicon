@@ -42,7 +42,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
   {
     @Override public KeyIDpair clone()
     {
-      try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException ex) { throw new AssertionError(ex); }
+      try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }
     }
 
     //---------------------------------------------------------------------------

@@ -23,6 +23,7 @@ import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.function.Supplier;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.util.PopupDialog.DialogResult;
+import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.WindowStack;
 
 import com.google.common.collect.HashBasedTable;
@@ -73,6 +75,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -646,6 +650,13 @@ public final class UIUtil
       }
     }
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static FilePath   showDirDialog         (DirectoryChooser chooser) { return ui.windows.showDirDialog         (chooser); }
+  public static FilePath   showOpenDialog        (FileChooser      chooser) { return ui.windows.showOpenDialog        (chooser); }
+  public static List<File> showOpenMultipleDialog(FileChooser      chooser) { return ui.windows.showOpenMultipleDialog(chooser); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

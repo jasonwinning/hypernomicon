@@ -52,7 +52,6 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
-import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
 
@@ -189,7 +188,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void init(Window owner, boolean noDB)
+  @Override public void init(boolean noDB)
   {
     hyperTable = new HyperTable(tv, 0, true, "");
 

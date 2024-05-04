@@ -58,7 +58,7 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
   public static HyperTableCell falseCheckboxCell()               { return new HyperTableCell(0 , "", hdtNone); }
 
   @Override public HyperTableCell clone()
-  { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new AssertionError(ex); }}
+  { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
 
 //---------------------------------------------------------------------------
 

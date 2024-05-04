@@ -34,7 +34,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -45,8 +44,6 @@ public class FolderSettingsCtrlr implements SettingsControl
   @FXML private Button btnPapers, btnBooks, btnUnentered, btnPictures, btnTopical, btnMiscFiles, btnResults;
   @FXML private RadioButton rbPapers, rbBooks;
 
-  private Window owner;
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -55,10 +52,8 @@ public class FolderSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void init(Window owner, boolean noDB)
+  @Override public void init(boolean noDB)
   {
-    this.owner = owner;
-
     if (noDB) return;
 
     initRow(PREF_KEY_PICTURES_FOLDER_ID  , tfPictures , btnPictures );
@@ -100,7 +95,7 @@ public class FolderSettingsCtrlr implements SettingsControl
       dirChooser.setInitialDirectory(curFolder.filePath().toFile());
       dirChooser.setTitle("Select Folder");
 
-      FilePath filePath = ui.windows.showDirDialog(dirChooser, owner);
+      FilePath filePath = showDirDialog(dirChooser);
 
       if (FilePath.isEmpty(filePath)) return;
 

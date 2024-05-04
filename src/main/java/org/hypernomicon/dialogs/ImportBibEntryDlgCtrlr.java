@@ -17,7 +17,6 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -177,10 +176,9 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
                                              new FileChooser.ExtensionFilter("BibTeX File (*.bib)", "*.bib"),
                                              new FileChooser.ExtensionFilter("All Files (*.*)", "*.*"));
 
-
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
-    FilePath filePath = ui.windows.showOpenDialog(fileChooser, shownAlready() ? getStage() : ui.getStage());
+    FilePath filePath = showOpenDialog(fileChooser);
 
     if (FilePath.isEmpty(filePath))
     {

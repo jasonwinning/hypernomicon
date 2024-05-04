@@ -109,7 +109,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         {
           jObj.put(fieldKey, Long.parseLong(safeStr(newStr)));
         }
-        catch (NumberFormatException nfe)
+        catch (NumberFormatException e)
         {
           jObj.putNull(fieldKey);
         }

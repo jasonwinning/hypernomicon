@@ -36,7 +36,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.stage.Window;
 
 public class WebButtonSettingsCtrlr implements SettingsControl
 {
@@ -60,7 +59,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void init(Window owner, boolean noDB)
+  @Override public void init(boolean noDB)
   {
     webBtnCtrlList.addAll(List.of(
 

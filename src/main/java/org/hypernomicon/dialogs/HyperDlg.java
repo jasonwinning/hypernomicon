@@ -54,12 +54,14 @@ public abstract class HyperDlg
   protected final AnchorPane stagePane;
   protected Runnable onShown = null;
   private double initHeight = -1, initWidth = -1;
-  private boolean shownAlready = false;
+  private boolean shownAlready = false, doShow = true;
 
 //---------------------------------------------------------------------------
 
   public final Stage getStage()       { return dialogStage; }
   public final boolean shownAlready() { return shownAlready; }
+
+  protected void abort()              { doShow = false; }
 
   protected abstract boolean isValid();
 
@@ -288,11 +290,18 @@ public abstract class HyperDlg
 
   public boolean showModal()
   {
-    ui.windows.push(dialogStage);
+    if (doShow)
+    {
+      ui.windows.push(dialogStage);
 
-    dialogStage.showAndWait();
+      dialogStage.showAndWait();
 
-    ui.windows.pop();
+      ui.windows.pop();
+    }
+    else
+    {
+      okClicked = false;
+    }
 
     return okClicked;
   }

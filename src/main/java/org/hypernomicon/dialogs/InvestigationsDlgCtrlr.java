@@ -25,6 +25,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.tabs.InvestigationView;
 
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
@@ -92,7 +93,7 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 
     tfNew.textProperty().addListener((ob, ov, nv) -> chkNew.setSelected(nv.trim().length() > 0));
 
-    onShown = tfNew::requestFocus;
+    onShown = () -> safeFocus(tfNew);
   }
 
 //---------------------------------------------------------------------------

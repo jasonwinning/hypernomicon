@@ -17,7 +17,6 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -313,7 +312,7 @@ public class FileDlgCtrlr extends HyperDlg
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
-    setSrcFilePath(ui.windows.showOpenDialog(fileChooser, getStage()), initial);
+    setSrcFilePath(showOpenDialog(fileChooser), initial);
   }
 
 //---------------------------------------------------------------------------
@@ -355,7 +354,7 @@ public class FileDlgCtrlr extends HyperDlg
 
     dirChooser.setInitialDirectory(chosenFilePath.isDirectory() ? chosenFilePath.toFile() : db.getRootPath().toFile());
 
-    chosenFilePath = ui.windows.showDirDialog(dirChooser, dialogStage);
+    chosenFilePath = showDirDialog(dirChooser);
     if (FilePath.isEmpty(chosenFilePath)) return;
 
     if (db.getRootPath().isSubpath(chosenFilePath) == false)

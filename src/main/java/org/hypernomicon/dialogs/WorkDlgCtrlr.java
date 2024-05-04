@@ -746,7 +746,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     dirChooser.setTitle("Select Destination Folder");
 
-    FilePath filePath = ui.windows.showDirDialog(dirChooser, dialogStage);
+    FilePath filePath = showDirDialog(dirChooser);
 
     if (FilePath.isEmpty(filePath)) return;
 
@@ -776,7 +776,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
-    useChosenFile(ui.windows.showOpenDialog(fileChooser, getStage()), null);
+    useChosenFile(showOpenDialog(fileChooser), null);
   }
 
 //---------------------------------------------------------------------------

@@ -104,11 +104,11 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     tvLeftChildren.getColumns().get(1).setText("Sub-Notes Under This Note");
     tvLeftChildren.getColumns().get(2).setText("Text");
-    tvLeftChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Folder"));
+    tvLeftChildren.getColumns().add(new TableColumn<>("Folder"));
 
     tvRightChildren.getColumns().get(0).setText("Type");
     tvRightChildren.getColumns().get(1).setText("Name of Record Linking to This Note");
-    tvRightChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Description"));
+    tvRightChildren.getColumns().add(new TableColumn<>("Description"));
 
     spMain.setDividerPosition(1, 0.8);
 
@@ -407,7 +407,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     dirChooser.setTitle("Select Folder");
 
-    FilePath filePath = ui.windows.showDirDialog(dirChooser, ui.getStage());
+    FilePath filePath = showDirDialog(dirChooser);
 
     if (FilePath.isEmpty(filePath)) return;
 

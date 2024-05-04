@@ -251,8 +251,10 @@ public final class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath showDirDialog(DirectoryChooser chooser, Window owner)
+  public FilePath showDirDialog(DirectoryChooser chooser)
   {
+    Window owner = getOutermostStage();
+
     push(new ChooserWrapper(chooser));
 
     FilePath rv = nullSwitch(chooser.showDialog(owner), null, FilePath::new);
@@ -265,8 +267,10 @@ public final class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath showOpenDialog(FileChooser chooser, Window owner)
+  public FilePath showOpenDialog(FileChooser chooser)
   {
+    Window owner = getOutermostStage();
+
     push(new ChooserWrapper(chooser));
 
     FilePath rv = nullSwitch(chooser.showOpenDialog(owner), null, FilePath::new);
@@ -279,8 +283,10 @@ public final class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<File> showOpenMultipleDialog(FileChooser chooser, Window owner)
+  public List<File> showOpenMultipleDialog(FileChooser chooser)
   {
+    Window owner = getOutermostStage();
+
     push(new ChooserWrapper(chooser));
 
     List<File> rv = chooser.showOpenMultipleDialog(owner);
