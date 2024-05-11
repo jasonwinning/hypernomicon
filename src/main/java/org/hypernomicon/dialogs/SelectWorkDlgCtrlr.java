@@ -554,7 +554,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if ((hcbWork.selectedID() < 1) && (createNewClicked == false))
-      return falseWithInfoMessage("Select a work record.", cbWork);
+      return falseWithInfoPopup("Select a work record.", cbWork);
 
     work = createNewClicked ? null : hcbWork.selectedRecord();
     author = hcbAuthor.selectedRecord();

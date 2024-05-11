@@ -45,7 +45,6 @@ import com.google.common.collect.ImmutableList;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implements ZoteroEntity
@@ -139,7 +138,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
         break;
 
-      default : messageDialog("Internal error #90225", mtError); return;
+      default : internalErrorPopup(90225); return;
     }
 
     if (jData.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
@@ -482,8 +481,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     switch (relative.relation)
     {
-      case Child:
-
+      case Child :
+      {
         BibAuthors authors = getAuthors();
 
         List<BibAuthor> authorList     = new ArrayList<>(),
@@ -526,15 +525,16 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         }
 
         break;
+      }
 
       case Parent:
-
+      {
         JsonObj jDestObj  = dest.exportJsonObjForUploadToServer(true),
                 jDestData = nullSwitch(jDestObj.getObj("data"), jDestObj);
 
         JsonArray oldCreatorsArr = jDestData.getArray("creators"), newCreatorsArr = new JsonArray();
 
-        it = oldCreatorsArr.getObjs();
+        JsonObjIterator it = oldCreatorsArr.getObjs();
         while (it.hasNext())
         {
           JsonObj creator = it.next();
@@ -561,12 +561,13 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         dest.getWork().getAuthors().setAll(new ZoteroAuthors(newCreatorsArr, dest.getEntryType()));
 
         break;
+      }
 
       case Sibling:
-
+      {
         JsonArray destCreatorsArr = dest.jData.getArray("creators");
 
-        it = destCreatorsArr.getObjs();
+        JsonObjIterator it = destCreatorsArr.getObjs();
         while (it.hasNext())
         {
           JsonObj creator = it.next();
@@ -585,6 +586,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         });
 
         break;
+      }
     }
   }
 

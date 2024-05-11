@@ -365,10 +365,10 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       HDT_WorkType workType = getMergedWorkType();
 
       if (workType == null)
-        return falseWithWarningMessage("Select a work type.");
+        return falseWithWarningPopup("Select a work type.");
 
       if (workType.enumVal() == WorkTypeEnum.wtUnenteredSet)
-        return falseWithWarningMessage("Select a different work type.");
+        return falseWithWarningPopup("Select a different work type.");
     }
 
     if (chkNewEntry.isVisible())
@@ -396,7 +396,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
         }
 
         if (entryType == null)
-          return falseWithWarningMessage("Select an entry type.");
+          return falseWithWarningPopup("Select an entry type.");
       }
     }
 

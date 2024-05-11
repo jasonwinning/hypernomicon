@@ -263,7 +263,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     int fileTypeID = hcbType.selectedID();
     if ((fileTypeID < 1) && hcbType.getText().isEmpty())
-      return falseWithErrorMessage("You must enter a file type.", cbType);
+      return falseWithErrorPopup("You must enter a file type.", cbType);
 
     mainText.save();
 

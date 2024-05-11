@@ -117,7 +117,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     TreeRow selectedRow = nullSwitch(popupTree.selectedItem(), null, TreeItem::getValue);
 
     if ((selectedRow == null) || (types.contains(selectedRow.getRecordType()) == false))
-      return falseWithErrorMessage("You must " + title.toLowerCase() + '.');
+      return falseWithErrorPopup("You must " + title.toLowerCase() + '.');
 
     parent = selectedRow.getRecord();
 
@@ -129,8 +129,8 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     return edge.edgeToDetach() == null ?
       true
     :
-      falseWithErrorMessage("A " + getTypeName(child .getType()).toLowerCase() + " cannot have more than one parent " +
-                                   getTypeName(parent.getType()).toLowerCase() + " record.");
+      falseWithErrorPopup("A " + getTypeName(child .getType()).toLowerCase() + " cannot have more than one parent " +
+                                 getTypeName(parent.getType()).toLowerCase() + " record.");
   }
 
 //---------------------------------------------------------------------------

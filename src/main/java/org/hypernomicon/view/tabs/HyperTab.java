@@ -150,11 +150,11 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     }
     catch (SearchKeyTooShortException e)
     {
-      return falseWithErrorMessage("Unable to modify record. Search key must be at least 3 characters: " + e.getKey(), tfSearchKey);
+      return falseWithErrorPopup("Unable to modify record. Search key must be at least 3 characters: " + e.getKey(), tfSearchKey);
     }
     catch (DuplicateSearchKeyException e)
     {
-      return falseWithErrorMessage("Unable to modify record. Search key already exists: " + e.getKey(), tfSearchKey);
+      return falseWithErrorPopup("Unable to modify record. Search key already exists: " + e.getKey(), tfSearchKey);
     }
 
     return true;

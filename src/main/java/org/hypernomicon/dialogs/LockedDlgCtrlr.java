@@ -32,7 +32,6 @@ import org.hypernomicon.util.DesktopUtil;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -242,7 +241,7 @@ public class LockedDlgCtrlr extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("Error while writing message file: " + getThrowableMessage(e), mtError);
+      errorPopup("Error while writing message file: " + getThrowableMessage(e));
       return;
     }
 

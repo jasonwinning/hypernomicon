@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.HyperPath;
@@ -103,7 +102,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 
       if (folder == null)
       {
-        messageDialog("You must choose a subfolder of the main database folder.", mtError);
+        errorPopup("You must choose a subfolder of the main database folder.");
         return;
       }
 
@@ -114,7 +113,7 @@ public class FolderSettingsCtrlr implements SettingsControl
       {
         if (folder.isSpecial(false))
         {
-          messageDialog("That folder is already reserved for a different purpose.", mtError);
+          errorPopup("That folder is already reserved for a different purpose.");
           return;
         }
       }
@@ -122,7 +121,7 @@ public class FolderSettingsCtrlr implements SettingsControl
       {
         if (folder.isSpecial(true))
         {
-          messageDialog("That folder or a subfolder is already reserved for a different purpose.", mtError);
+          errorPopup("That folder or a subfolder is already reserved for a different purpose.");
           return;
         }
       }
@@ -131,7 +130,7 @@ public class FolderSettingsCtrlr implements SettingsControl
         if ((folder == db.getXmlFolder()) || (folder.getID() == HyperDB.ROOT_FOLDER_ID) || (folder == db.getResultsFolder()) ||
             ancestorIsResultsFolder(folder) || (folder == db.getUnenteredFolder()))
         {
-          messageDialog("That folder is already reserved for a different purpose.", mtError);
+          errorPopup("That folder is already reserved for a different purpose.");
           return;
         }
       }

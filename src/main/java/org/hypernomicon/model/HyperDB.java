@@ -26,7 +26,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
@@ -562,7 +561,7 @@ public final class HyperDB
     HyperDataset<? extends HDT_Record>.CoreAccessor accessor = accessors.get(type);
 
     if (accessor == null)
-      messageDialog("Internal error: null dataset", mtError);
+      errorPopup("Internal error: null dataset");
 
     return accessor;
   }
@@ -695,7 +694,7 @@ public final class HyperDB
   public void setResolvePointersAgain()
   {
     if ((deletionInProgress == false) && (pointerResolutionInProgress == false))
-      messageDialog("Internal error #44928", mtError);
+      internalErrorPopup(44928);
 
     resolveAgain = true;
   }
@@ -889,8 +888,8 @@ public final class HyperDB
     }
     catch (IOException | BackingStoreException e)
     {
-      messageDialog("An error occurred while attempting to save database options to " + SETTINGS_FILE_NAME +
-                    ". Record data has been saved to XML files, however." + System.lineSeparator() + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while attempting to save database options to " + SETTINGS_FILE_NAME +
+                 ". Record data has been saved to XML files, however." + System.lineSeparator() + getThrowableMessage(e));
 
       return true;
     }
@@ -954,7 +953,7 @@ public final class HyperDB
       FilePath filePath = xmlPath(fileName);
 
       if (filePath.exists() == false)
-        return falseWithErrorMessage("Unable to load database. Reason: File does not exist: " + filePath);
+        return falseWithErrorPopup("Unable to load database. Reason: File does not exist: " + filePath);
 
       xmlFileList.add(filePath);
     }
@@ -1082,7 +1081,7 @@ public final class HyperDB
         try { resolvePointers(); }
         catch (HDB_InternalError e)
         {
-          messageDialog(getThrowableMessage(e), mtError);
+          errorPopup(e);
 
           close(null);
           return false;
@@ -1144,7 +1143,7 @@ public final class HyperDB
     }
     catch (HyperDataException e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
 
       close(null);
       return false;
@@ -1176,7 +1175,7 @@ public final class HyperDB
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while writing lock file: " + getThrowableMessage(e), mtWarning);
+      warningPopup("An error occurred while writing lock file: " + getThrowableMessage(e));
     }
 
     return true;
@@ -1359,13 +1358,13 @@ public final class HyperDB
 
     if ((record != null) && record.isExpired())
     {
-      messageDialog("The record has already been deleted.", mtError);
+      errorPopup("The record has already been deleted.");
       return;
     }
 
     if (HDT_Record.isEmpty(record) || isProtectedRecord(record, true))
     {
-      messageDialog("Unable to delete record.", mtError);
+      errorPopup("Unable to delete record.");
       return;
     }
 
@@ -1401,7 +1400,7 @@ public final class HyperDB
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
     }
 
     deletionInProgress = false;
@@ -1611,7 +1610,7 @@ public final class HyperDB
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
     }
     catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { throw new AssertionError(e); }
 
@@ -1716,8 +1715,8 @@ public final class HyperDB
           newestTooOldAppVersion = entry.getKey();
     }
 
-    messageDialog("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with " + appTitle +
-                  " v" + newestTooOldAppVersion + " or older.", mtWarning);
+    warningPopup("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with " + appTitle +
+                 " v" + newestTooOldAppVersion + " or older.");
   }
 
 //---------------------------------------------------------------------------
@@ -2193,11 +2192,11 @@ public final class HyperDB
     }
     catch(RelationCycleException | DuplicateRecordException | HDB_InternalError | SearchKeyException | RestoreException e)
     {
-      return falseWithErrorMessage("Unable to create folder records for new database.");
+      return falseWithErrorPopup("Unable to create folder records for new database.");
     }
 
     try { resolvePointers(); }
-    catch (HDB_InternalError e) { return falseWithErrorMessage(getThrowableMessage(e)); }
+    catch (HDB_InternalError e) { return falseWithErrorPopup(e); }
 
     loaded = true;
     InterProcClient.refresh(rootFilePath);
@@ -2537,7 +2536,7 @@ public final class HyperDB
       case PREF_KEY_MISC_FILES_FOLDER_ID : miscFilesFolder = folder; break;
       case PREF_KEY_TOPICAL_FOLDER_ID    : topicalFolder   = folder; break;
 
-      default                            : messageDialog("Internal error #59294", mtError); break;
+      default                            : internalErrorPopup(59294); break;
     }
   }
 
@@ -2595,7 +2594,7 @@ public final class HyperDB
       try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
       catch (IOException e)
       {
-        messageDialog("An error occurred while trying to read description template files: " + getThrowableMessage(e), mtError);
+        errorPopup("An error occurred while trying to read description template files: " + getThrowableMessage(e));
         return;
       }
 

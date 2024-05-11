@@ -18,7 +18,6 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -60,7 +59,7 @@ public class HelpDlgCtrlr extends HyperDlg
     {
       onShown = () ->
       {
-        messageDialog("Unable to show help content: " + getThrowableMessage(e), mtError);
+        errorPopup("Unable to show help content: " + getThrowableMessage(e));
         Platform.runLater(dialogStage::close);
       };
     }

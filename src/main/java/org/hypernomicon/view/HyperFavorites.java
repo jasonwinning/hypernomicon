@@ -28,7 +28,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -222,7 +221,7 @@ public class HyperFavorites
           {
             if ((rowCount > 1) && (showedMessage == false) && node.node("queries").node("query" + ndx).node("row" + rowNdx).nodeExists("col" + QUERY_FAV_ROW_COLUMN_COUNT))
             {
-              messageDialog("You may need to review the logic settings for one or more query favorites. The logic settings may not have loaded properly because they were saved in an older format.", mtWarning);
+              warningPopup("You may need to review the logic settings for one or more query favorites. The logic settings may not have loaded properly because they were saved in an older format.");
               showedMessage = true;
             }
           }

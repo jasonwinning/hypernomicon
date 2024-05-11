@@ -88,7 +88,7 @@ public class NestedValue
 
     NestedValue other = (NestedValue) obj;
 
-    return hdc != other.hdc ? false : switch (hdc)
+    return (hdc == other.hdc) && switch (hdc)
     {
       case hdcString        -> str.equals(other.str);
       case hdcBoolean       -> bool == other.bool;

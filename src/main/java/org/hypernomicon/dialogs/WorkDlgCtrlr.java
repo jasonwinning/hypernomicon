@@ -76,7 +76,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -316,7 +315,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
       if ((oldEnumVal == wtUnenteredSet) && (workTypeEnumVal != wtUnenteredSet))
       {
-        messageDialog("You cannot change the work type after it has been set to Unentered Set of Work Files.", mtError);
+        errorPopup("You cannot change the work type after it has been set to Unentered Set of Work Files.");
         Platform.runLater(() -> cbType.setValue(oldValue));
         return;
       }
@@ -325,7 +324,7 @@ public class WorkDlgCtrlr extends HyperDlg
       {
         if ((oldEnumVal != wtUnenteredSet) && (oldEnumVal != wtNone))
         {
-          messageDialog("You cannot change a work with an existing work type into an unentered set of work files.", mtError);
+          errorPopup("You cannot change a work with an existing work type into an unentered set of work files.");
           Platform.runLater(() -> cbType.setValue(oldValue));
           return;
         }
@@ -754,7 +753,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if ((folder == null) || (folder.getID() == ROOT_FOLDER_ID))
     {
-      messageDialog("You must choose a subfolder of the main database folder.", mtError);
+      errorPopup("You must choose a subfolder of the main database folder.");
       return;
     }
 
@@ -788,7 +787,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (db.isProtectedFile(chosenFile, false))
     {
-      messageDialog("That file cannot be assigned to a work record.", mtError);
+      errorPopup("That file cannot be assigned to a work record.");
       return;
     }
 
@@ -800,7 +799,7 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       if ((file instanceof HDT_MiscFile) || (file instanceof HDT_Person))
       {
-        messageDialog(HyperPath.alreadyInUseMessage(chosenFile, file), mtError);
+        errorPopup(HyperPath.alreadyInUseMessage(chosenFile, file));
         return;
       }
 
@@ -932,7 +931,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     catch (IOException e)
     {
-      falseWithErrorMessage("An error occurred while extracting metadata from PDF file: " + getThrowableMessage(e));
+      errorPopup("An error occurred while extracting metadata from PDF file: " + getThrowableMessage(e));
       return;
     }
 
@@ -1003,7 +1002,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("Unable to initialize merge dialog window.", mtError);
+      errorPopup("Unable to initialize merge dialog window.");
     }
   }
 
@@ -1214,8 +1213,7 @@ public class WorkDlgCtrlr extends HyperDlg
       EntryType entryType = curBD.getEntryType();
       if (cbEntryType.getItems().contains(entryType) == false)
       {
-        messageDialog('"' + entryType.getUserFriendlyName() + "\" is not a valid " +
-                      db.getBibLibrary().type().getUserFriendlyName() + " entry type.", mtWarning);
+        warningPopup('"' + entryType.getUserFriendlyName() + "\" is not a valid " + db.getBibLibrary().type().getUserFriendlyName() + " entry type.");
         cbEntryType.getSelectionModel().select(null);
       }
       else
@@ -1293,27 +1291,27 @@ public class WorkDlgCtrlr extends HyperDlg
       newEntryChoice = promptToCreateBibEntry(curBD, chkCreateBibEntry, newEntryChoice, origBDtoUse);
 
       if (chkCreateBibEntry.isSelected() && (getEntryType() == null))
-        return falseWithWarningMessage("Select a bibliographic entry type.", cbEntryType);
+        return falseWithWarningPopup("Select a bibliographic entry type.", cbEntryType);
     }
 
     if (chkKeepFilenameUnchanged.isSelected() == false)
       if ((tfOrigFile.getText().length() > 0) && tfNewFile.getText().isBlank())
-        return falseWithWarningMessage("Enter destination file name.", tfNewFile);
+        return falseWithWarningPopup("Enter destination file name.", tfNewFile);
 
     if (hcbType.selectedID() < 1)
-      return falseWithWarningMessage("Select a work type.", cbType);
+      return falseWithWarningPopup("Select a work type.", cbType);
 
     if (tfOrigFile.getText().isEmpty())
     {
       if (oldWorkFile != null)
-        return falseWithErrorMessage("Internal error #82709");
+        return falseWithInternalErrorPopup(82709);
 
       updateImportActionDefault();
       return true;
     }
 
     if (FilePath.isFilenameValid(tfNewFile.getText()) == false)
-      return falseWithErrorMessage("Invalid file name: \"" + tfNewFile.getText() + '"', tfNewFile);
+      return falseWithErrorPopup("Invalid file name: \"" + tfNewFile.getText() + '"', tfNewFile);
 
     FilePath newFilePath = rbCurrent.isSelected() ?
       (chkKeepFilenameUnchanged.isSelected() ?
@@ -1331,14 +1329,14 @@ public class WorkDlgCtrlr extends HyperDlg
     if (existingFile != null)
     {
       if ((existingFile instanceof HDT_MiscFile) || (existingFile instanceof HDT_Person))
-        return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFilePath, existingFile));
+        return falseWithErrorPopup(HyperPath.alreadyInUseMessage(newFilePath, existingFile));
 
       HDT_WorkFile existingWorkFile = (HDT_WorkFile)existingFile;
 
       if (newWorkFile == null)
       {
         if (existingWorkFile.works.isEmpty())
-          return falseWithErrorMessage("Internal error #79002");
+          return falseWithInternalErrorPopup(79002);
 
         int oldWorkFileID = -1;
         if (oldWorkFile != null)
@@ -1347,12 +1345,12 @@ public class WorkDlgCtrlr extends HyperDlg
         if (oldWorkFileID == existingWorkFile.getID())
           newWorkFile = existingWorkFile;
         else
-          return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFilePath, existingWorkFile));
+          return falseWithErrorPopup(HyperPath.alreadyInUseMessage(newFilePath, existingWorkFile));
       }
       else
       {
         if (newWorkFile.getID() != existingFile.getID())
-          return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFilePath, existingFile));
+          return falseWithErrorPopup(HyperPath.alreadyInUseMessage(newFilePath, existingFile));
       }
     }
     else
@@ -1376,7 +1374,7 @@ public class WorkDlgCtrlr extends HyperDlg
           {
             newWorkFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, newFilePath);
             if (newWorkFile == null)
-              return falseWithErrorMessage("Internal error #67830");
+              return falseWithInternalErrorPopup(67830);
 
             curWork.addWorkFile(newWorkFile.getID());
           }
@@ -1399,7 +1397,7 @@ public class WorkDlgCtrlr extends HyperDlg
         {
           newWorkFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, newFilePath);
           if (newWorkFile == null)
-            return falseWithErrorMessage("Internal error #67830");
+            return falseWithInternalErrorPopup(67830);
 
           curWork.addWorkFile(newWorkFile.getID());
         }
@@ -1417,7 +1415,7 @@ public class WorkDlgCtrlr extends HyperDlg
       else
       {
         if (oldWorkFile != null)
-          return falseWithErrorMessage("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.");
+          return falseWithErrorPopup("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.");
 
         success = newWorkFile.getPath().moveToFolder(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true).getID(), true, true, newFilePath.getNameOnly().toString());
         if (success) curWork.addWorkFile(newWorkFile.getID());
@@ -1425,11 +1423,11 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     catch (IOException | HDB_InternalError e)
     {
-      return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file. Reason: " + getThrowableMessage(e));
+      return falseWithErrorPopup("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file. Reason: " + getThrowableMessage(e));
     }
 
     if (success == false)
-      return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file.");
+      return falseWithErrorPopup("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file.");
 
     if ((oldWorkFile != null) && (newWorkFile.getID() != oldWorkFile.getID()))
       db.getObjectList(rtWorkFileOfWork, curWork, true).remove(oldWorkFile);

@@ -117,21 +117,21 @@ public class NewInstDlgCtrlr extends HyperDlg
     if (rbNewInst.isSelected())
     {
       if (tfNewParentName.getText().isBlank())
-        return falseWithErrorMessage("You must enter a name for the new institution.", tfNewParentName);
+        return falseWithErrorPopup("You must enter a name for the new institution.", tfNewParentName);
     }
     else if (hcbParent.selectedRecord() == null)
-      return falseWithErrorMessage("Select an institution record.", cbParent);
+      return falseWithErrorPopup("Select an institution record.", cbParent);
 
     if (rbNewDiv.isSelected())
     {
       if (hcbType.selectedID() < 1)
-        return falseWithErrorMessage("You must select a type.", cbType);
+        return falseWithErrorPopup("You must select a type.", cbType);
 
       if (tfName.getText().isBlank())
-        return falseWithErrorMessage("You must enter a division name.", tfName);
+        return falseWithErrorPopup("You must enter a division name.", tfName);
     }
     else if (hcbExisting.selectedRecord() == null)
-      return falseWithErrorMessage("Select a division.", cbExisting);
+      return falseWithErrorPopup("Select a division.", cbExisting);
 
     return true;
   }

@@ -18,7 +18,6 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -82,13 +81,13 @@ public class HyperPath
 
     if (db.getRootPath().isSubpath(filePath) == false)
     {
-      messageDialog("Internal error: Hyperpath not in database folder tree", mtError);
+      errorPopup("Internal error: Hyperpath not in database folder tree");
       return;
     }
 
     if (getHyperPathSetForFilePath(filePath).size() > 0)
     {
-      messageDialog("Internal error #90178", mtError);
+      internalErrorPopup(90178);
       return;
     }
 
@@ -223,7 +222,7 @@ public class HyperPath
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
       return null;
     }
 
@@ -239,13 +238,13 @@ public class HyperPath
   {
     if ((type != hdtWorkFile) && (type != hdtMiscFile))
     {
-      messageDialog("Internal error #42221", mtError);
+      internalErrorPopup(42221);
       return null;
     }
 
     if (filePath.isDirectory())
     {
-      messageDialog("Internal error #42231", mtError);
+      internalErrorPopup(42231);
       return null;
     }
 
@@ -351,7 +350,7 @@ public class HyperPath
     if (folderPtr == null)
     {
       if (record != null)
-        messageDialog("Internal error #83902", mtError);
+        internalErrorPopup(83902);
 
       folder = parentFolder;
     }

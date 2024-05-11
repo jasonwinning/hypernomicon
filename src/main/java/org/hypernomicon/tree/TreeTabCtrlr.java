@@ -51,7 +51,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import javafx.application.Platform;
@@ -484,7 +483,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     if (isUnstoredRecord(record))
     {
-      messageDialog("That " + typeName + " cannot be renamed.", mtError);
+      errorPopup("That " + typeName + " cannot be renamed.");
       return;
     }
 

@@ -18,9 +18,7 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -103,7 +101,7 @@ public interface HDT_Record
   static boolean isEmpty(HDT_Record record)
   {
     try { return isEmptyThrowsException(record); }
-    catch (HDB_InternalError e) { messageDialog(getThrowableMessage(e), mtError); }
+    catch (HDB_InternalError e) { errorPopup(e); }
 
     return true;
   }

@@ -60,7 +60,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return (hcbRecord.selectedID() >= 1) || falseWithInfoMessage("Select a " + typeName + " record.", cbRecord);
+    return (hcbRecord.selectedID() >= 1) || falseWithInfoPopup("Select a " + typeName + " record.", cbRecord);
   }
 
 //---------------------------------------------------------------------------

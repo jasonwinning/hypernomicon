@@ -20,7 +20,6 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -109,17 +108,17 @@ public class ChangeIDDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (hcbRecord.selectedID() < 1)
-      return falseWithErrorMessage("You must select a record.", cbRecord);
+      return falseWithErrorPopup("You must select a record.", cbRecord);
 
     if ((parseInt(tfNewID.getText(), -1) < 1) || lblNotAvailable.isVisible())
-      return falseWithErrorMessage("You must enter a valid numeric ID.", tfNewID);
+      return falseWithErrorPopup("You must enter a valid numeric ID.", tfNewID);
 
     HDT_Record record = db.records(hcbRecord.selectedType()).getByID(parseInt(tfOldID.getText(), -1));
 
     if ((record == null) || (record.changeID(parseInt(tfNewID.getText(), -1)) == false))
-      return falseWithErrorMessage("Unable to change record ID.");
+      return falseWithErrorPopup("Unable to change record ID.");
 
-    messageDialog("The record ID was changed successfully.", mtInformation);
+    infoPopup("The record ID was changed successfully.");
     return true;
   }
 

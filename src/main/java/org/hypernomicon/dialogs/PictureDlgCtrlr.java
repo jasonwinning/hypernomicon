@@ -22,7 +22,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 
@@ -642,7 +641,7 @@ public class PictureDlgCtrlr extends HyperDlg
   private void exceptionHappened(Exception e)
   {
     if ((e instanceof CancelledTaskException) == false)
-      messageDialog("An error occurred while trying to display the picture: " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while trying to display the picture: " + getThrowableMessage(e));
 
     stopClicked();
   }
@@ -709,7 +708,7 @@ public class PictureDlgCtrlr extends HyperDlg
     picture = new Image(path.toURI().toString());
     if (picture.isError())
     {
-      messageDialog("An error occurred while trying to display the picture: " + getThrowableMessage(picture.getException()), mtError);
+      errorPopup("An error occurred while trying to display the picture: " + getThrowableMessage(picture.getException()));
       ivPicture.setImage(null);
       picture = null;
       return;
@@ -752,7 +751,7 @@ public class PictureDlgCtrlr extends HyperDlg
     }
     else
     {
-      messageDialog("An error occurred while trying to display the picture: " + getThrowableMessage(picture.getException()), mtError);
+      errorPopup("An error occurred while trying to display the picture: " + getThrowableMessage(picture.getException()));
       ivPicture.setImage(null);
       picture = null;
       rbNone.setSelected(true);
@@ -780,7 +779,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     if ((existingRecord != null) && (existingRecord != personHyperTab.activeRecord()))
     {
-      messageDialog(HyperPath.alreadyInUseMessage(filePath, existingRecord), mtInformation);
+      infoPopup(HyperPath.alreadyInUseMessage(filePath, existingRecord));
       return;
     }
 
@@ -836,10 +835,10 @@ public class PictureDlgCtrlr extends HyperDlg
   //---------------------------------------------------------------------------
 
     if (newFileDestName.isBlank())
-      return falseWithErrorMessage("Name cannot be blank.", tfName);
+      return falseWithErrorPopup("Name cannot be blank.", tfName);
 
     if (FilePath.isFilenameValid(newFileDestName) == false)
-      return falseWithErrorMessage("Invalid file name: \"" + newFileDestName + '"', tfName);
+      return falseWithErrorPopup("Invalid file name: \"" + newFileDestName + '"', tfName);
 
     Set<HyperPath> set;
 
@@ -849,7 +848,7 @@ public class PictureDlgCtrlr extends HyperDlg
     if (rbWeb.isSelected())
     {
       if (tfWeb.getText().isBlank())
-        return falseWithErrorMessage("Please enter a web address.", tfWeb);
+        return falseWithErrorPopup("Please enter a web address.", tfWeb);
 
       set = HyperPath.getHyperPathSetForFilePath(newFileDest);
 
@@ -858,7 +857,7 @@ public class PictureDlgCtrlr extends HyperDlg
         for (HyperPath hyperPath : set)
         {
           if (hyperPath.getRecord() != personHyperTab.activeRecord())
-            return falseWithErrorMessage("Destination file is already in use.");
+            return falseWithErrorPopup("Destination file is already in use.");
         }
       }
 
@@ -873,7 +872,7 @@ public class PictureDlgCtrlr extends HyperDlg
         }
         catch (IOException e)
         {
-          return falseWithErrorMessage("File cannot be overwritten: " + getThrowableMessage(e));
+          return falseWithErrorPopup("File cannot be overwritten: " + getThrowableMessage(e));
         }
       }
     }
@@ -886,13 +885,13 @@ public class PictureDlgCtrlr extends HyperDlg
       newFileSrc = new FilePath(tfFile.getText());
 
       if (FilePath.isEmpty(newFileSrc) || newFileSrc.getNameOnly().toString().isBlank())
-        return falseWithErrorMessage("Please specify a file from the local file system.", tfFile);
+        return falseWithErrorPopup("Please specify a file from the local file system.", tfFile);
 
       if (newFileSrc.exists() == false)
-        return falseWithErrorMessage("Please select an existing file.", tfFile);
+        return falseWithErrorPopup("Please select an existing file.", tfFile);
 
       if (newFileSrc.equals(curFile))
-        return falseWithErrorMessage("Previous file and new file are the same.", tfFile);
+        return falseWithErrorPopup("Previous file and new file are the same.", tfFile);
     }
 
   //---------------------------------------------------------------------------
@@ -927,7 +926,7 @@ public class PictureDlgCtrlr extends HyperDlg
       }
       catch (IOException e)
       {
-        return falseWithErrorMessage("An error occurred while saving the file: " + getThrowableMessage(e));
+        return falseWithErrorPopup("An error occurred while saving the file: " + getThrowableMessage(e));
       }
     }
     else
@@ -939,7 +938,7 @@ public class PictureDlgCtrlr extends HyperDlg
       if (existingRecord != null)
       {
         if (existingRecord != personHyperTab.activeRecord())
-          return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFileDest, existingRecord));
+          return falseWithErrorPopup(HyperPath.alreadyInUseMessage(newFileDest, existingRecord));
 
         replacingPictureForSamePerson = true;
       }
@@ -947,13 +946,13 @@ public class PictureDlgCtrlr extends HyperDlg
       if (newFileSrc.equals(newFileDest) == false)
       {
         if (newFileDest.exists() && (replacingPictureForSamePerson == false))
-          return falseWithErrorMessage("Unable to move/rename file: A file with that name already exists.");
+          return falseWithErrorPopup("Unable to move/rename file: A file with that name already exists.");
 
         if (newFileSrc.exists() == false)
-          return falseWithErrorMessage("Source file does not exist.");
+          return falseWithErrorPopup("Source file does not exist.");
 
         if (newFileSrc.isDirectory())
-          return falseWithErrorMessage("Source file cannot be a directory.");
+          return falseWithErrorPopup("Source file cannot be a directory.");
 
         set = HyperPath.getHyperPathSetForFilePath(newFileSrc);
 
@@ -979,7 +978,7 @@ public class PictureDlgCtrlr extends HyperDlg
             }
             catch (IOException e)
             {
-              return falseWithErrorMessage("An error occurred while moving the file: " + getThrowableMessage(e));
+              return falseWithErrorPopup("An error occurred while moving the file: " + getThrowableMessage(e));
             }
 
             db.unmapFilePath(newFileSrc);
@@ -992,7 +991,7 @@ public class PictureDlgCtrlr extends HyperDlg
             }
             catch (IOException e)
             {
-              return falseWithErrorMessage("An error occurred while copying the file: " + getThrowableMessage(e));
+              return falseWithErrorPopup("An error occurred while copying the file: " + getThrowableMessage(e));
             }
           }
         }
@@ -1005,11 +1004,11 @@ public class PictureDlgCtrlr extends HyperDlg
             try
             {
               if (hyperPath.moveToFolder(destFolder.getID(), false, true, newFileDestName) == false)
-                return falseWithErrorMessage("Unable to move the file.");
+                return falseWithErrorPopup("Unable to move the file.");
             }
             catch (IOException | HDB_InternalError e)
             {
-              return falseWithErrorMessage("An error occurred while moving the file: " + getThrowableMessage(e));
+              return falseWithErrorPopup("An error occurred while moving the file: " + getThrowableMessage(e));
             }
           }
         }

@@ -22,7 +22,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.io.IOException;
 import java.util.prefs.Preferences;
@@ -221,7 +220,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
       if (record.getType() != nodeRecordType)
       {
-        messageDialog("Internal error #28788", mtError);
+        internalErrorPopup(28788);
         return;
       }
     }
@@ -467,10 +466,10 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     if (nodeRecord.getType() == hdtConcept)
     {
       if (tfSearchKey.getText().isEmpty())
-        return falseWithErrorMessage("Unable to modify record: search key of term cannot be zero-length.", tfSearchKey);
+        return falseWithErrorPopup("Unable to modify record: search key of term cannot be zero-length.", tfSearchKey);
 
       if (tfName.getText().isEmpty())
-        return falseWithErrorMessage("Unable to modify record: term cannot be zero-length.", tfName);
+        return falseWithErrorPopup("Unable to modify record: term cannot be zero-length.", tfName);
     }
 
     if (saveSearchKey(nodeRecord, tfSearchKey) == false) return false;

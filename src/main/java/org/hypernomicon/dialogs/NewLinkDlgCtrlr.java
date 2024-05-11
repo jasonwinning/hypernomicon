@@ -90,10 +90,10 @@ public class NewLinkDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (tfDisplayText.getText().trim().isEmpty())
-      return falseWithErrorMessage("Enter the text to be displayed.", tfDisplayText);
+      return falseWithErrorPopup("Enter the text to be displayed.", tfDisplayText);
 
     if (tfURL.getText().trim().isEmpty())
-      return falseWithErrorMessage("Enter a web address (URL).", tfURL);
+      return falseWithErrorPopup("Enter a web address (URL).", tfURL);
 
     if (anchor != null)
     {

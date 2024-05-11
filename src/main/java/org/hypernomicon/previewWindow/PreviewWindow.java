@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 
@@ -741,7 +740,7 @@ public class PreviewWindow extends HyperDlg
       }
       catch (IPCException e)
       {
-        messageDialog("An error occurred while shutting down preview window: " + getThrowableMessage(e), mtError);
+        errorPopup("An error occurred while shutting down preview window: " + getThrowableMessage(e));
       }
 
       Platform.runLater(() ->

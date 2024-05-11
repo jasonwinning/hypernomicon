@@ -69,7 +69,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return (listView.getSelectionModel().getSelectedItem() != null) || falseWithWarningMessage("Select a record.", listView);
+    return (listView.getSelectionModel().getSelectedItem() != null) || falseWithWarningPopup("Select a record.", listView);
   }
 
 //---------------------------------------------------------------------------

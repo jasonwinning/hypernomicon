@@ -106,7 +106,7 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return (htFind.selectedRecord() != null) || falseWithWarningMessage("Select a record.");
+    return (htFind.selectedRecord() != null) || falseWithWarningPopup("Select a record.");
   }
 
 //---------------------------------------------------------------------------

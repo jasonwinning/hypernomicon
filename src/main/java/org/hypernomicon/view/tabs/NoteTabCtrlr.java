@@ -58,7 +58,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
@@ -414,7 +413,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
 
     if (folder == null)
-      messageDialog("You must choose a subfolder of the main database folder.", mtError);
+      errorPopup("You must choose a subfolder of the main database folder.");
     else
       assignFolder(folder);
   }

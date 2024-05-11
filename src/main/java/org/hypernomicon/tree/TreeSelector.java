@@ -28,6 +28,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -175,14 +176,14 @@ public class TreeSelector
   public boolean select(HDT_Record record, boolean showErrMsg)
   {
     if (base == null)
-      return falseWithErrMsgCond(showErrMsg, "Internal error #91827");
+      return falseWithErrPopupCond(showErrMsg, new HDB_InternalError(91827));
 
     if (record == null) return false;
 
     RelationType relType = getRelTypeForTargetType(record.getType());
 
     if (relType == rtNone)
-      return falseWithErrMsgCond(showErrMsg, "You must select a record of type: " + getTypesStr() + '.');
+      return falseWithErrPopupCond(showErrMsg, "You must select a record of type: " + getTypesStr() + '.');
 
     if (relType == rtUnited)
       return selectToUnite((HDT_RecordWithMainText) record, showErrMsg);
@@ -231,7 +232,7 @@ public class TreeSelector
                 otherConcept = concept.term.get().getConcept(glossary, concept.sense.get());
 
     if ((otherConcept != null) && (concept != otherConcept))
-      return falseWithErrMsgCond(showErrMsg, "The term is already in that glossary.");
+      return falseWithErrPopupCond(showErrMsg, "The term is already in that glossary.");
 
     return true;
   }
@@ -246,7 +247,7 @@ public class TreeSelector
     HDT_RecordWithMainText record1 = (HDT_RecordWithMainText) base;
 
     if (HDT_Hub.canUnite(record1, record2, sb) == false)
-      return falseWithErrMsgCond(showErrMsg, sb.toString());
+      return falseWithErrPopupCond(showErrMsg, sb.toString());
 
     ui.uniteRecords(record1, record2, showErrMsg == false);
     return true;

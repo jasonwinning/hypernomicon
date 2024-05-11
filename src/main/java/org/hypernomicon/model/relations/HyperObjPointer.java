@@ -19,7 +19,6 @@ package org.hypernomicon.model.relations;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Objects;
@@ -80,7 +79,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
       if (obj != null)
       {
         if (obj.getType() != relSet.getObjType())
-          return falseWithErrorMessage("Interal error #02055");
+          return falseWithInternalErrorPopup(02055);
 
         relSet.setObject(subj, obj, -1, true);
       }
@@ -89,7 +88,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
     }
     catch (RelationCycleException e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
 
       lastException = e;
       return false;

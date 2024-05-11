@@ -23,7 +23,6 @@ import org.hypernomicon.fileManager.FileManager;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
@@ -211,7 +210,7 @@ public class FilePath implements Comparable<FilePath>
           return false;
 
         if (destFilePath.toFile().delete() == false)
-          return falseWithErrorMessage("Unable to delete the file.");
+          return falseWithErrorPopup("Unable to delete the file.");
       }
 
       if (move)
@@ -480,7 +479,7 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (IOException e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
       return true;
     }
 

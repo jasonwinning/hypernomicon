@@ -25,7 +25,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
@@ -425,10 +424,10 @@ public class BibManager extends HyperDlg
 
       if ((syncTask.getState() == State.FAILED) || (syncTask.getState() == State.CANCELLED))
       {
-        Throwable ex = syncTask.getException();
+        Throwable e = syncTask.getException();
 
-        if (ex instanceof HyperDataException)
-          messageDialog(getThrowableMessage(ex), mtError);
+        if (e instanceof HyperDataException)
+          errorPopup(e);
       }
 
       boolean changed = syncTask.getChanged();
@@ -497,7 +496,7 @@ public class BibManager extends HyperDlg
       if ((pdfBD == null) && (queryBD == null))
       {
         if (messageShown == false)
-          messageDialog("Unable to find bibliographic information.", mtInformation);
+          infoPopup("Unable to find bibliographic information.");
 
         return;
       }
@@ -510,7 +509,7 @@ public class BibManager extends HyperDlg
       }
       catch (IOException e)
       {
-        messageDialog("Unable to initialize merge dialog window.", mtError);
+        errorPopup("Unable to initialize merge dialog window.");
         return;
       }
 
@@ -712,7 +711,7 @@ public class BibManager extends HyperDlg
     EntryType et = cbNewType.getValue();
     if (et == null)
     {
-      falseWithWarningMessage("You must select an entry type.", cbNewType);
+      falseWithWarningPopup("You must select an entry type.", cbNewType);
       return;
     }
 
@@ -783,7 +782,7 @@ public class BibManager extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("Unable to initialize merge dialog window.", mtError);
+      errorPopup("Unable to initialize merge dialog window.");
       return;
     }
 

@@ -23,7 +23,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
@@ -546,7 +545,7 @@ public class MainTextCtrlr
 
     msg = msg + (familyNotSet ? (sizeNotSet ? "family and size" : "family") : "size");
 
-    messageDialog(msg + " could not be determined", mtWarning);
+    warningPopup(msg + " could not be determined");
   }
 
 //---------------------------------------------------------------------------
@@ -564,11 +563,11 @@ public class MainTextCtrlr
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while saving to the template file: " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while saving to the template file: " + getThrowableMessage(e));
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
     }
   }
 

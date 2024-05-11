@@ -20,7 +20,6 @@ package org.hypernomicon.util;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
@@ -32,6 +31,7 @@ import javafx.beans.value.ObservableDoubleValue;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.WindowStack;
@@ -761,24 +761,32 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean falseWithErrMsgCond(boolean showErrMsg, String errMsg)
+  public static boolean falseWithErrPopupCond(boolean showErrMsg, String errMsg)
   {
-    return showErrMsg && falseWithErrorMessage(errMsg);
+    return showErrMsg && falseWithErrorPopup(errMsg);
   }
 
-  public static boolean falseWithErrorMessage  (String msg                  ) { return falseWithMessage(msg, mtError      , null       ); }
-  public static boolean falseWithErrorMessage  (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtError      , nodeToFocus); }
-  public static boolean falseWithWarningMessage(String msg                  ) { return falseWithMessage(msg, mtWarning    , null       ); }
-  public static boolean falseWithWarningMessage(String msg, Node nodeToFocus) { return falseWithMessage(msg, mtWarning    , nodeToFocus); }
-  public static boolean falseWithInfoMessage   (String msg                  ) { return falseWithMessage(msg, mtInformation, null       ); }
-  public static boolean falseWithInfoMessage   (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtInformation, nodeToFocus); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static boolean falseWithMessage(String msg, MessageDialogType mt, Node nodeToFocus)
+  public static boolean falseWithErrPopupCond(boolean showErrMsg, Throwable e)
   {
-    messageDialog(msg, mt);
+    return showErrMsg && falseWithErrorPopup(getThrowableMessage(e));
+  }
+
+  public static boolean falseWithInternalErrorPopup(int num) { return falseWithErrorPopup(new HDB_InternalError(num)); }
+  public static boolean falseWithErrorPopup(Throwable e)     { return falseWithErrorPopup(getThrowableMessage(e)); }
+
+  public static boolean falseWithErrorPopup  (String msg                  ) { return falseWithMessagePopup(msg, AlertType.ERROR      , null       ); }
+  public static boolean falseWithErrorPopup  (String msg, Node nodeToFocus) { return falseWithMessagePopup(msg, AlertType.ERROR      , nodeToFocus); }
+  public static boolean falseWithWarningPopup(String msg                  ) { return falseWithMessagePopup(msg, AlertType.WARNING    , null       ); }
+  public static boolean falseWithWarningPopup(String msg, Node nodeToFocus) { return falseWithMessagePopup(msg, AlertType.WARNING    , nodeToFocus); }
+  public static boolean falseWithInfoPopup   (String msg                  ) { return falseWithMessagePopup(msg, AlertType.INFORMATION, null       ); }
+  public static boolean falseWithInfoPopup   (String msg, Node nodeToFocus) { return falseWithMessagePopup(msg, AlertType.INFORMATION, nodeToFocus); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean falseWithMessagePopup(String msg, AlertType type, Node nodeToFocus)
+  {
+    messagePopup(msg, type);
     if (nodeToFocus != null) Platform.runLater(() -> safeFocus(nodeToFocus));
     return false;
   }
@@ -786,39 +794,40 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public enum MessageDialogType { mtWarning, mtError, mtInformation }
+  public static void errorPopup   (String msg)   { messagePopup(msg, AlertType.ERROR      ); }
+  public static void infoPopup    (String msg)   { messagePopup(msg, AlertType.INFORMATION); }
+  public static void warningPopup (String msg)   { messagePopup(msg, AlertType.WARNING    ); }
 
-  public static void messageDialog(String msg, MessageDialogType mt)
+  public static void errorPopup(Throwable e)     { errorPopup(getThrowableMessage(e)); }
+  public static void internalErrorPopup(int num) { errorPopup(new HDB_InternalError(num)); }
+
+  private static void messagePopup(String msg, AlertType type)
   {
-    if ((ui != null) && ui.dontInteract()) return;
+    Objects.requireNonNull(type, "Popup type");
+    Objects.requireNonNull(msg , "Popup msg" );
 
-    if (mt  == null) throw new NullPointerException("messageDialog type");
-    if (msg == null) throw new NullPointerException("messageDialog msg" );
+    if ((ui != null) && ui.dontInteract()) return;
 
     runInFXThread(() ->
     {
-      Alert alert;
+      String theMsg = msg;
+      AlertType theType = type;
 
-      switch (mt)
+      switch (type)
       {
-        case mtWarning :
-          alert = new Alert(AlertType.WARNING);
-          alert.setHeaderText("Warning");
-          break;
-
-        case mtInformation :
-          alert = new Alert(AlertType.INFORMATION);
-          alert.setHeaderText("Information");
+        case WARNING : case INFORMATION : case ERROR :
           break;
 
         default :
-          alert = new Alert(AlertType.ERROR);
-          alert.setHeaderText("Error");
+          theType = AlertType.ERROR;
+          theMsg = getThrowableMessage(new HDB_InternalError(10109));
           break;
       }
 
+      Alert alert = new Alert(theType);
+      alert.setHeaderText(Util.titleCase(theType.toString()));
       alert.setTitle(appTitle);
-      alert.setContentText(msg);
+      alert.setContentText(theMsg);
 
       showAndWait(alert);
 

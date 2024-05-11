@@ -39,7 +39,6 @@ import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -130,7 +129,7 @@ public class HyperCB implements CommitableWrapper
 
     if ((ctrlType != ctDropDown) && (ctrlType != ctDropDownList))
     {
-      messageDialog("Internal error #42852", mtError);
+      internalErrorPopup(42852);
       return;
     }
 

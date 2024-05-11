@@ -324,7 +324,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     HDT_Record verdict = hcbVerdict.selectedRecord();
 
     if (verdict == null)
-      return falseWithErrorMessage("You must select a verdict.", cbVerdict);
+      return falseWithErrorPopup("You must select a verdict.", cbVerdict);
 
     argument = db.createNewBlankRecord(hdtArgument);
 

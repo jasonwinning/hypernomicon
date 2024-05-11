@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.EnumMap;
@@ -123,7 +122,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
   @Override public final void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions)
   {
     if (newKey.length() > 0)
-      messageDialog("Internal error #72950", mtError);
+      internalErrorPopup(72950);
   }
 
 //---------------------------------------------------------------------------
@@ -220,7 +219,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
     StringBuilder sb = new StringBuilder();
 
     if (canUnite(spoke1, spoke2, sb) == false)
-      return falseWithErrorMessage(sb.toString());
+      return falseWithErrorPopup(sb.toString());
 
     HDT_Hub hub;
 

@@ -20,7 +20,6 @@ package org.hypernomicon.dialogs.workMerge;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -81,8 +80,7 @@ public class EntryTypeCtrlr extends BibFieldRow
       EntryType entryType = bd.getEntryType();
       if (cb.getItems().contains(entryType) == false)
       {
-        messageDialog('"' + entryType.getUserFriendlyName() + "\" is not a valid " +
-                      db.getBibLibrary().type().getUserFriendlyName() + " entry type.", mtWarning);
+        warningPopup('"' + entryType.getUserFriendlyName() + "\" is not a valid " + db.getBibLibrary().type().getUserFriendlyName() + " entry type.");
         cb.getSelectionModel().select(null);
       }
       else

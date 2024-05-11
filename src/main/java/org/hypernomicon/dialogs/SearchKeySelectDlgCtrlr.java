@@ -144,7 +144,7 @@ public class SearchKeySelectDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return (safeStr(getKeyword()).isBlank() == false) || falseWithErrorMessage("No search key is selected.");
+    return (safeStr(getKeyword()).isBlank() == false) || falseWithErrorPopup("No search key is selected.");
   }
 
 //---------------------------------------------------------------------------

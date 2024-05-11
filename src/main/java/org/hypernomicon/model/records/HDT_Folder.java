@@ -20,7 +20,6 @@ package org.hypernomicon.model.records;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
@@ -79,28 +78,28 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   public boolean renameTo(String newName)
   {
     if (getID() == ROOT_FOLDER_ID)
-      return falseWithErrorMessage("Unable to rename the folder: Root folder cannot be renamed.");
+      return falseWithErrorPopup("Unable to rename the folder: Root folder cannot be renamed.");
 
     if (this == db.getXmlFolder())
-      return falseWithErrorMessage("Unable to rename the folder: XML folder cannot be renamed.");
+      return falseWithErrorPopup("Unable to rename the folder: XML folder cannot be renamed.");
 
     if (parentFolder() == null)
-      return falseWithErrorMessage("Unable to rename the folder: parent folder record is null.");
+      return falseWithErrorPopup("Unable to rename the folder: parent folder record is null.");
 
     FilePath srcFilePath = filePath();
 
     if (srcFilePath.exists() == false)
-      return falseWithErrorMessage("Unable to rename the folder: it does not exist.");
+      return falseWithErrorPopup("Unable to rename the folder: it does not exist.");
 
     FilePath parentFilePath = parentFolder().filePath();
 
     if (parentFilePath.exists() == false)
-      return falseWithErrorMessage("Unable to rename the folder: parent folder does not exist.");
+      return falseWithErrorPopup("Unable to rename the folder: parent folder does not exist.");
 
     FilePath destFilePath = parentFilePath.resolve(newName);
 
     if (destFilePath.exists())
-      return falseWithErrorMessage("Unable to rename the folder: a file or folder already has that name.");
+      return falseWithErrorPopup("Unable to rename the folder: a file or folder already has that name.");
 
     folderTreeWatcher.stop();
 
@@ -117,7 +116,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorMessage("Unable to rename the folder: " + getThrowableMessage(e));
+      return falseWithErrorPopup("Unable to rename the folder: " + getThrowableMessage(e));
     }
 
     db.unmapFilePath(srcFilePath);
@@ -139,13 +138,13 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     FilePath filePath = filePath();
 
     if (db.isProtectedRecord(this, true))
-      return falseWithErrorMessage("The folder \"" + filePath + "\" is in use by the database and cannot be deleted.");
+      return falseWithErrorPopup("The folder \"" + filePath + "\" is in use by the database and cannot be deleted.");
 
     if (parentFolder() == null)
-      return falseWithErrorMessage("Unable to delete the folder \"" + filePath + "\": parent folder record is null.");
+      return falseWithErrorPopup("Unable to delete the folder \"" + filePath + "\": parent folder record is null.");
 
     if (filePath.exists() == false)
-      return falseWithErrorMessage("Unable to delete the folder \"" + filePath + "\": it does not exist.");
+      return falseWithErrorPopup("Unable to delete the folder \"" + filePath + "\": it does not exist.");
 
     boolean restartWatcher = folderTreeWatcher.stop();
 
@@ -163,7 +162,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorMessage("An error occurred while attempting to delete the folder \"" + filePath + "\": " + getThrowableMessage(e));
+      return falseWithErrorPopup("An error occurred while attempting to delete the folder \"" + filePath + "\": " + getThrowableMessage(e));
     }
 
     deleteFolderRecordTree(this);
@@ -202,8 +201,8 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (getID() != ROOT_FOLDER_ID)
       if (filePath().exists() == false)
         if (isSpecial(false) || (path.getRecordsString().length() > 0))
-          messageDialog("The folder: \"" + filePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
-                        "Next time, only use the " + appTitle + " File Manager to make changes to move, rename, or delete database folders.", mtWarning);
+          warningPopup("The folder: \"" + filePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
+                       "Next time, only use the " + appTitle + " File Manager to make changes to move, rename, or delete database folders.");
 
     childFolders.forEach(HDT_Folder::checkExists);
   }
@@ -255,11 +254,11 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     }
     catch (FileAlreadyExistsException e)
     {
-      messageDialog("Unable to create the folder: A file with that name already exists.", mtError);
+      errorPopup("Unable to create the folder: A file with that name already exists.");
     }
     catch (IOException | InvalidPathException e)
     {
-      messageDialog("Unable to create the folder: " + getThrowableMessage(e), mtError);
+      errorPopup("Unable to create the folder: " + getThrowableMessage(e));
     }
 
     if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();

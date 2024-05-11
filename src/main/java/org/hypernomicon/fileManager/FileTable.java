@@ -19,7 +19,6 @@ package org.hypernomicon.fileManager;
 
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -268,7 +267,7 @@ class FileTable extends DragNDropContainer<FileRow>
     }
     catch (DirectoryIteratorException | IOException e)
     {
-      messageDialog("An error occurred while displaying the folder's contents: " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while displaying the folder's contents: " + getThrowableMessage(e));
     }
   }
 

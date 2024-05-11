@@ -33,7 +33,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.App.*;
 
@@ -214,7 +213,7 @@ class CharacterGrid
       }
       catch (BackingStoreException e)
       {
-        messageDialog("An error occurred while accessing user-defined symbol preferences: " + getThrowableMessage(e), mtError);
+        errorPopup("An error occurred while accessing user-defined symbol preferences: " + getThrowableMessage(e));
       }
 
       return;

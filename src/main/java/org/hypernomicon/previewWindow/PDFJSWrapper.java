@@ -53,7 +53,6 @@ import com.teamdev.jxbrowser.chromium.javafx.internal.dialogs.MessageDialog;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static java.util.logging.Level.*;
 
@@ -222,12 +221,12 @@ public class PDFJSWrapper
     }
     catch (ExceptionInInitializerError e)
     {
-      messageDialog("Unable to initialize preview window: " + getThrowableMessage(e.getCause()), mtError);
+      errorPopup("Unable to initialize preview window: " + getThrowableMessage(e.getCause()));
       disable();
     }
     catch (IOException | LinkageError e)
     {
-      messageDialog("Unable to initialize preview window: " + getThrowableMessage(e), mtError);
+      errorPopup("Unable to initialize preview window: " + getThrowableMessage(e));
       disable();
     }
 
@@ -277,7 +276,7 @@ public class PDFJSWrapper
       try { initViewerHTML(); }
       catch (IOException e)
       {
-        messageDialog("Unable to initialize preview window: Unable to read HTML file", mtError);
+        errorPopup("Unable to initialize preview window: Unable to read HTML file");
         dispose(oldBrowser, false);
         disable();
         return;
@@ -382,7 +381,7 @@ public class PDFJSWrapper
       catch (IPCException e)
       {
         disposing = false;
-        messageDialog("An error occurred while disposing preview pane: " + getThrowableMessage(e), mtError);
+        errorPopup("An error occurred while disposing preview pane: " + getThrowableMessage(e));
       }
     };
 
@@ -654,7 +653,7 @@ public class PDFJSWrapper
 
       if (readyToOpen == false)
       {
-        messageDialog("An error occurred while trying to show PDF file preview.", mtError);
+        errorPopup("An error occurred while trying to show PDF file preview.");
         return;
       }
 

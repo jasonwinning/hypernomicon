@@ -20,7 +20,6 @@ package org.hypernomicon.bib.data;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -81,7 +80,7 @@ public class BibDataRetriever
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while extracting metadata: " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while extracting metadata: " + getThrowableMessage(e));
     }
 
     this.workBD = workBD;
@@ -143,16 +142,16 @@ public class BibDataRetriever
       }
       else
       {
-        messageDialog("Error: " + getThrowableMessage(e), mtError);
+        errorPopup("Error: " + getThrowableMessage(e));
         messageShown = true;
       }
     }
 
     if ((queryBD == null) && (pdfBD == null) && (messageShown == false) && queryCrossref && queryGoogle)
     {
-      falseWithWarningMessage("Unable to find bibliographic information in " +
-                              (collEmpty(pdfFiles) ? "" : "work file(s) or ") +
-                              "online sources.\n\nIt might work to add more information manually and then click Auto-Fill.");
+      warningPopup("Unable to find bibliographic information in " +
+                   (collEmpty(pdfFiles) ? "" : "work file(s) or ") +
+                   "online sources.\n\nIt might work to add more information manually and then click Auto-Fill.");
 
       messageShown = true;
     }
@@ -253,7 +252,7 @@ public class BibDataRetriever
             if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
             {
               searchedCrossref = true;
-              messageDialog(getThrowableMessage(e), mtError);
+              errorPopup(e);
               doStage(4);
             }
             else

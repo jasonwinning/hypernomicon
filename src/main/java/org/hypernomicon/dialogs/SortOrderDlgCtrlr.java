@@ -80,10 +80,10 @@ public class SortOrderDlgCtrlr extends HyperDlg
       String sortKey = row.getText(2);
 
       if (sortKey.isBlank())
-        return falseWithErrorMessage("One or more of the sort keys is blank.");
+        return falseWithErrorPopup("One or more of the sort keys is blank.");
 
       if (keys.add(sortKey) == false)
-        return falseWithErrorMessage("Multiple records cannot have the same sort key.");
+        return falseWithErrorPopup("Multiple records cannot have the same sort key.");
     }
 
     for (HyperTableRow row : htRecords.dataRows())

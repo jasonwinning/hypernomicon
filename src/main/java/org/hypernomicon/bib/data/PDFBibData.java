@@ -23,7 +23,6 @@ import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -388,8 +387,8 @@ public class PDFBibData extends BibDataStandalone
         try { setXmpRoot(metadata.toByteArray()); }
         catch (XMPException e)
         {
-          messageDialog("An error occurred while parsing XMP data from PDF file: " +
-                        nullSwitch(e.getCause(), getThrowableMessage(e), Throwable::getMessage), mtError);
+          errorPopup("An error occurred while parsing XMP data from PDF file: " +
+                     nullSwitch(e.getCause(), getThrowableMessage(e), Throwable::getMessage));
 
           xmpRoot = null;
         }

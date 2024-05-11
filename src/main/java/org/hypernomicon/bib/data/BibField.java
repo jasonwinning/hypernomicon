@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 
@@ -103,7 +102,7 @@ public class BibField
   {
     if (type != bftString)
     {
-      messageDialog("Internal error #90225", mtError);
+      internalErrorPopup(90225);
       return;
     }
 
@@ -124,7 +123,7 @@ public class BibField
 
       default ->
       {
-        messageDialog("Internal error #90227", mtError);
+        internalErrorPopup(90227);
         yield null;
       }
     };
@@ -164,7 +163,7 @@ public class BibField
   {
     if (type != bftMultiString)
     {
-      messageDialog("Internal error #90230", mtError);
+      internalErrorPopup(90230);
       return;
     }
 
@@ -179,7 +178,7 @@ public class BibField
   {
     if (type != bftMultiString)
     {
-      messageDialog("Internal error #90231", mtError);
+      internalErrorPopup(90231);
       return null;
     }
 
@@ -193,7 +192,7 @@ public class BibField
   {
     if (type != bftMultiString)
     {
-      messageDialog("Internal error #90229", mtError);
+      internalErrorPopup(90229);
       return;
     }
 

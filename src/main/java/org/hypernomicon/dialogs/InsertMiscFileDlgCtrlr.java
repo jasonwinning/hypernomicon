@@ -58,7 +58,7 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
 
       if (miscFile == null)
       {
-        falseWithWarningMessage("No record is selected.", cbExisting);
+        falseWithWarningPopup("No record is selected.", cbExisting);
         return;
       }
 

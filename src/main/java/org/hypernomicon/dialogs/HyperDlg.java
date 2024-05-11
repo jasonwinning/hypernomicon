@@ -19,7 +19,6 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
@@ -49,10 +48,12 @@ import javafx.stage.Window;
 
 public abstract class HyperDlg
 {
-  protected boolean okClicked = false;
   protected final Stage dialogStage;
   protected final AnchorPane stagePane;
+
+  protected boolean okClicked = false;
   protected Runnable onShown = null;
+
   private double initHeight = -1, initWidth = -1;
   private boolean shownAlready = false, doShow = true;
 
@@ -61,7 +62,7 @@ public abstract class HyperDlg
   public final Stage getStage()       { return dialogStage; }
   public final boolean shownAlready() { return shownAlready; }
 
-  protected void abort()              { doShow = false; }
+  protected final void abort()        { doShow = false; }
 
   protected abstract boolean isValid();
 
@@ -125,7 +126,7 @@ public abstract class HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("Internal error while initializing dialog window", mtError);
+      errorPopup("Internal error while initializing dialog window");
     }
     finally
     {

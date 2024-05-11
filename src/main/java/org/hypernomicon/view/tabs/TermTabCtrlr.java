@@ -40,7 +40,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
@@ -456,7 +455,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         for (HDT_Concept parentConcept : childConcept.parentConcepts)
         {
           if (childConcept.glossary.get() != parentConcept.glossary.get())
-            messageDialog("Internal error #38436", mtError);
+            internalErrorPopup(38436);
           else
             glossaryRowList.add(new GlossaryRow(childConcept, parentConcept));
         }
@@ -577,7 +576,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         HDT_Concept otherConcept = curTerm.getConcept(row.getRecord(2), row.getRecord(3));
         if ((concept != otherConcept) && (concept.glossary.get() == otherConcept.glossary.get()) && row.getText(3).equalsIgnoreCase(newText))
         {
-          messageDialog("This term already has a concept in the same glossary with the same sense.", mtError);
+          errorPopup("This term already has a concept in the same glossary with the same sense.");
           oldGlossaryRow.populateTableRow(editedRow);
           return;
         }
@@ -683,7 +682,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       }
       catch (RelationCycleException e)
       {
-        messageDialog("Unable to add parent concept: A cycle would result.", mtError);
+        errorPopup("Unable to add parent concept: A cycle would result.");
 
         oldGlossaryRow.populateTableRow(row);
         return;
@@ -722,7 +721,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
         msg = msg + "glossary \"" + concept.glossary.get().name() + '"';
 
-        messageDialog(msg, mtError);
+        errorPopup(msg);
         return;
       }
 
@@ -739,7 +738,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     }
     catch (SearchKeyException e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
 
       try
       {
@@ -779,7 +778,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     if (curTerm.concepts.size() < 2)
     {
-      messageDialog("There is only one definition for this term; click Merge command instead.", mtInformation);
+      infoPopup("There is only one definition for this term; click Merge command instead.");
       return;
     }
 

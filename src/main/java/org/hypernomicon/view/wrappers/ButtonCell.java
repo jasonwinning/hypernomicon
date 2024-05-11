@@ -106,15 +106,16 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     switch (newAction)
     {
       case baBrowse:
-
+      {
         btn.setText("...");
         btn.setGraphic(null);
         setOnAction(ht::browseClick);
 
         break;
+      }
 
       case baEdit:
-
+      {
         btn.setText("");
 
         ImageView iv = imgViewFromRelPath("resources/images/form-pencil.png");
@@ -126,12 +127,13 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
         setOnAction(null);
 
         break;
+      }
 
       case baLabelEdit :
-
+      {
         btn.setText("");
 
-        iv = imgViewFromRelPath("resources/images/pencil.png");
+        ImageView iv = imgViewFromRelPath("resources/images/pencil.png");
 
         iv.setFitWidth(16);
         iv.setFitHeight(16);
@@ -140,38 +142,43 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
         setOnAction(null);
 
         break;
+      }
 
       case baGo:
-
+      {
         btn.setText("Go:");
         btn.setGraphic(null);
         setOnAction((row, colNdx) -> ui.goToRecord(row.getRecord(colNdx), true));
 
         break;
+      }
 
       case baWeb:
-
+      {
         btn.setText("URL:");
         btn.setGraphic(null);
         setToolTip(btn, "Search for website (if not entered) or navigate to website (if entered) in browser");
         setOnAction((row, colNdx) -> DesktopUtil.openWebLink(row.getText(colNdx)));
 
         break;
+      }
 
       case baNew:
-
+      {
         btn.setText("New");
         btn.setGraphic(null);
         setOnAction((row, colNdx) -> ui.activeTab().newClick(ht.getTypeByCol(colNdx), row));
 
         break;
+      }
 
       case baCustom :
-
+      {
         btn.setText(caption);
         btn.setGraphic(null);
         setOnAction(null);            // There is no default recordHandler
         break;
+      }
 
       default: break;
     }

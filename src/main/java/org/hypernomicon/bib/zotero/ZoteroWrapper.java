@@ -22,7 +22,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
@@ -662,7 +661,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
                   {
                     int workID = zItem.getWork().getID();
                     zItem.unassignWork();
-                    messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning);
+                    warningPopup("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID);
                   }
                 }
               }
@@ -711,7 +710,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       errMsgList.add(item.getKey() + " code: " + jError.getLong("code", -1) + ' ' + jError.getStr("message"));
     });
 
-    messageDialog(strListToStr(errMsgList, false), mtError);
+    errorPopup(strListToStr(errMsgList, false));
   }
 
 //---------------------------------------------------------------------------

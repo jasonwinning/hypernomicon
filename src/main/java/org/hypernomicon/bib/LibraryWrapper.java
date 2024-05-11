@@ -47,7 +47,6 @@ import org.hypernomicon.util.json.JsonObj;
 import static org.hypernomicon.bib.data.EntryType.etOther;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, BibCollection_T>, BibCollection_T extends BibCollection>
@@ -178,7 +177,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       }
       catch (IOException e)
       {
-        messageDialog("Unable to initialize merge dialog window.", mtError);
+        errorPopup("Unable to initialize merge dialog window.");
         fxThreadReturnValue = false;
         return;
       }
@@ -320,7 +319,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while saving bibliographic data to disk.", mtError);
+      errorPopup("An error occurred while saving bibliographic data to disk.");
     }
   }
 

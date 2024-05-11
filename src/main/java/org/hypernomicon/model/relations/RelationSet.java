@@ -46,6 +46,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.collect.HashBasedTable;
@@ -57,7 +58,6 @@ import javafx.application.Platform;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -341,7 +341,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public <HDI_Offline extends HDI_OfflineBase> void setNestedItemFromOfflineValue(HDT_Subj subj, HDT_Obj obj, Tag tag, HDI_Offline value) throws RelationCycleException, HDB_InternalError
   {
-    if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49221"); return; }
+    if (hasNestedItems == false) { throw new HDB_InternalError(49221); }
 
     boolean isEmpty;
 
@@ -365,7 +365,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public boolean setNestedString(HDT_Subj subj, HDT_Obj obj, Tag tag, String str)
   {
-    if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49225");
+    if (hasNestedItems == false) return falseWithInternalErrorPopup(49225);
 
     str = safeStr(str);
     boolean isEmpty = NestedValue.isEmpty(str);
@@ -386,7 +386,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public boolean setNestedBoolean(HDT_Subj subj, HDT_Obj obj, Tag tag, boolean bool)
   {
-    if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49224");
+    if (hasNestedItems == false) return falseWithInternalErrorPopup(49224);
 
     boolean isEmpty = NestedValue.isEmpty(bool);
     if (isEmpty == false) addObjAndMod(subj, obj);
@@ -406,7 +406,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public boolean setNestedTernary(HDT_Subj subj, HDT_Obj obj, Tag tag, Ternary ternary)
   {
-    if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49220");
+    if (hasNestedItems == false) return falseWithInternalErrorPopup(49220);
 
     boolean isEmpty = NestedValue.isEmpty(ternary);
     if (isEmpty == false) addObjAndMod(subj, obj);
@@ -426,7 +426,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public boolean setNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag, HDT_Record target)
   {
-    if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49223");
+    if (hasNestedItems == false) return falseWithInternalErrorPopup(49223);
 
     boolean isEmpty = HDT_Record.isEmpty(target);
     if (isEmpty == false) addObjAndMod(subj, obj);
@@ -514,7 +514,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public String getNestedString(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
-    if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49226"); return ""; }
+    if (hasNestedItems == false) { internalErrorPopup(49226); return ""; }
 
     return nullSwitch(getNestedItem(subj, obj, tag, true), "", HDI_OnlineString::get);
   }
@@ -524,7 +524,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public boolean getNestedBoolean(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
-    if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49227");
+    if (hasNestedItems == false) return falseWithInternalErrorPopup(49227);
 
     return nullSwitch(getNestedItem(subj, obj, tag, true), false, HDI_OnlineBoolean::get);
   }
@@ -534,7 +534,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public Ternary getNestedTernary(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
-    if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49228"); return Ternary.Unset; }
+    if (hasNestedItems == false) { internalErrorPopup(49228); return Ternary.Unset; }
 
     return nullSwitch(getNestedItem(subj, obj, tag, true), Ternary.Unset, HDI_OnlineTernary::get);
   }
@@ -544,7 +544,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public HDT_Record getNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
-    if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49229"); return null; }
+    if (hasNestedItems == false) { internalErrorPopup(49229); return null; }
 
     return nullSwitch(getNestedItem(subj, obj, tag, true), null, HDI_OnlineNestedPointer::get);
   }
@@ -609,8 +609,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   {
     if ((subj == null) || (obj == null))
     {
-      messageDialog("Internal error #30299", mtError);
-      throw new NullPointerException();
+      internalErrorPopup(30299);
+      throw new NullPointerException(getThrowableMessage(new HDB_InternalError(30299)));
     }
 
     List<HDT_Obj> objList = subjToObjList.get(subj);
@@ -965,7 +965,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> boolean reorderList(HDT_Key key, List<HDT_Value> newValueList, ListMultimap<HDT_Key, HDT_Value> map)
   {
-    if (key == null) throw new NullPointerException();
+    Objects.requireNonNull(key);
 
     if (map.containsKey(key) == false) return false;
 

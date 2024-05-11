@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 
@@ -219,7 +218,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             }
             catch (Exception e)
             {
-              messageDialog("An error occurred while saving access token: " + getThrowableMessage(e), mtError);
+              errorPopup("An error occurred while saving access token: " + getThrowableMessage(e));
             }
           }
           catch (InterruptedException | ExecutionException e)
@@ -340,7 +339,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
               {
                 int workID = document.getWork().getID();
                 document.unassignWork();
-                messageDialog("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID, mtWarning);
+                warningPopup("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID);
               }
             }
           });

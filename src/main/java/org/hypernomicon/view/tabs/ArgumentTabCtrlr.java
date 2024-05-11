@@ -326,7 +326,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     }
 
     if (okToSave == false)
-      return falseWithErrorMessage("Unable to modify record: There must be a corresponding verdict for every position/argument targeted by this record.");
+      return falseWithErrorPopup("Unable to modify record: There must be a corresponding verdict for every position/argument targeted by this record.");
 
     if (htWhereMade.saveObjectsAndSingleNestedItem(curArgument, rtWorkOfArgument, tagPages, 2, 3) == false)
       return false;

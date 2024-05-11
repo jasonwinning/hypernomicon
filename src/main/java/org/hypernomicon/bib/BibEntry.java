@@ -71,7 +71,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   }
 
   public int numericID()                      { return getLibrary().numericID(getKey()); }
-  public boolean linkedToWork()               { return thisIsBackup ? false : getWork() != null; }
+  public boolean linkedToWork()               { return (thisIsBackup != true) && (getWork() != null); }
 
   @SuppressWarnings("unchecked")
   protected final <T extends LibraryWrapper<BibEntry_T, BibCollection_T>> T getLibrary() { return (T)libWrapper; }

@@ -33,7 +33,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import static java.util.Collections.*;
@@ -578,7 +577,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (grpAction.getSelectedToggle() == null)
-      return falseWithErrorMessage("Select which action to take.");
+      return falseWithErrorPopup("Select which action to take.");
 
     if (rbAddNoCreate.isSelected())
     {
@@ -601,7 +600,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     if (rbMerge.isSelected())
     {
       if ((rbUseDupName.isSelected() == false) && (rbUseName.isSelected() == false))
-        return falseWithErrorMessage("Select which name/search key should be used.");
+        return falseWithErrorPopup("Select which name/search key should be used.");
 
       if (dupPerson != null)
       {
@@ -609,7 +608,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
           person = dupPerson;
         else
         {
-          messageDialog("Unable to merge automatically; a person record already exists for both authors. You will need to merge them manually.", mtWarning);
+          warningPopup("Unable to merge automatically; a person record already exists for both authors. You will need to merge them manually.");
           rbCreateNoMerge.setSelected(true);
           return false;
         }
@@ -636,9 +635,9 @@ public class NewPersonDlgCtrlr extends HyperDlg
       }
 
       return e instanceof SearchKeyTooShortException ?
-        falseWithErrorMessage("Unable to modify record. Search key must be at least 3 characters: " + e.getKey(), tfSearchKey)
+        falseWithErrorPopup("Unable to modify record. Search key must be at least 3 characters: " + e.getKey(), tfSearchKey)
       :
-        falseWithErrorMessage("Unable to modify record. Search key already exists: " + e.getKey(), tfSearchKey);
+        falseWithErrorPopup("Unable to modify record. Search key already exists: " + e.getKey(), tfSearchKey);
     }
 
     if (rbMerge.isSelected())

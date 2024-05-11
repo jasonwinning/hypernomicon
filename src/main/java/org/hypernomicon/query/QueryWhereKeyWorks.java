@@ -130,7 +130,7 @@ public class QueryWhereKeyWorks extends RecordQuery
 
   @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2)
   {
-    return opNum < 2 ? true : switch (op1.getID())
+    return (opNum < 2) || switch (op1.getID())
     {
       case IS_EMPTY_OPERAND_ID, IS_NOT_EMPTY_OPERAND_ID -> false;
       default                                           -> true;

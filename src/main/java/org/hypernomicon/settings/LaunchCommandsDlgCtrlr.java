@@ -26,7 +26,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.settings.LaunchCommandsDlgCtrlr.LaunchCommandTypeEnum.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -207,7 +206,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
         }
         catch (IOException e)
         {
-          messageDialog("An error occurred while trying to start application: " + getThrowableMessage(e), mtError);
+          errorPopup("An error occurred while trying to start application: " + getThrowableMessage(e));
         }
 
         return;

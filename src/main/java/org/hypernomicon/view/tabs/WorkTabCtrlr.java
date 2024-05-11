@@ -64,7 +64,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
@@ -509,7 +508,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (oldEnumVal == wtUnenteredSet)
         {
           programmaticTypeChange = true;
-          messageDialog("You cannot change the work type after it has been set to Unentered Set of Work Files.", mtError);
+          errorPopup("You cannot change the work type after it has been set to Unentered Set of Work Files.");
           programmaticTypeChange = false;
 
           Platform.runLater(() -> cbType.setValue(oldValue));
@@ -526,7 +525,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (oldEnumVal != wtNone)
         {
           programmaticTypeChange = true;
-          messageDialog("You cannot change a work with an existing work type into an unentered set of work files.", mtError);
+          errorPopup("You cannot change a work with an existing work type into an unentered set of work files.");
           programmaticTypeChange = false;
 
           Platform.runLater(() -> cbType.setValue(oldValue));
@@ -536,7 +535,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (curWork.getBibEntryKey().length() > 0)
         {
           programmaticTypeChange = true;
-          messageDialog("You cannot change a work that is assigned to a " + db.getBibLibrary().type().getUserFriendlyName() + " entry into an unentered set of work files.", mtError);
+          errorPopup("You cannot change a work that is assigned to a " + db.getBibLibrary().type().getUserFriendlyName() + " entry into an unentered set of work files.");
           programmaticTypeChange = false;
 
           Platform.runLater(() -> cbType.setValue(oldValue));
@@ -634,7 +633,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (url.startsWith(EXT_1) && (extPath() == null))
     {
-      messageDialog(WorkTabCtrlr.NO_EXT_PATH_MESSAGE, mtWarning);
+      warningPopup(WorkTabCtrlr.NO_EXT_PATH_MESSAGE);
       return;
     }
 
@@ -1102,7 +1101,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (curWork.workFiles.isEmpty())
     {
-      messageDialog("There are no files to move.", mtWarning);
+      warningPopup("There are no files to move.");
       return;
     }
 
@@ -1117,7 +1116,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (allSame.isTrue())
     {
-      messageDialog("All of the files are already located in the destination folder.", mtWarning);
+      warningPopup("All of the files are already located in the destination folder.");
       return;
     }
 
@@ -1132,7 +1131,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     catch (IOException | HDB_InternalError e)
     {
-      messageDialog("An error occurred while moving the files: " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while moving the files: " + getThrowableMessage(e));
     }
 
     if (startWatcher)
@@ -1195,7 +1194,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       if (filePath.isDirectory())
       {
-        messageDialog("One of the selected files is a directory.", mtError);
+        errorPopup("One of the selected files is a directory.");
         return;
       }
 
@@ -1203,7 +1202,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       if (fileRecord != null)
       {
-        messageDialog(HyperPath.alreadyInUseMessage(filePath, fileRecord), mtError);
+        errorPopup(HyperPath.alreadyInUseMessage(filePath, fileRecord));
         return;
       }
     }
@@ -1232,7 +1231,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         if ((moveOrCopy == mrMove) && (srcFilePath.canObtainLock() == false))
         {
-          messageDialog("Unable to obtain lock on path: \"" + srcFilePath + '"', mtError);
+          errorPopup("Unable to obtain lock on path: \"" + srcFilePath + '"');
           return;
         }
 
@@ -1240,14 +1239,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
         if (destFilePath.canObtainLock() == false)
         {
-          messageDialog("Unable to obtain lock on path: \"" + destFilePath + '"', mtError);
+          errorPopup("Unable to obtain lock on path: \"" + destFilePath + '"');
           return;
         }
       }
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred: " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred: " + getThrowableMessage(e));
       return;
     }
 
@@ -1271,7 +1270,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         }
         catch (IOException e)
         {
-          messageDialog("Unable to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + "\". Reason: " + getThrowableMessage(e), mtError);
+          errorPopup("Unable to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + "\". Reason: " + getThrowableMessage(e));
           ui.update();
           fileManagerDlg.setNeedRefresh();
 
@@ -1285,7 +1284,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, destFilePath);
       if (workFile == null)
       {
-        messageDialog("Internal error #67830", mtError);
+        internalErrorPopup(67830);
         ui.update();
         fileManagerDlg.setNeedRefresh();
 
@@ -1335,7 +1334,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       folderRecord = HyperPath.getFolderFromFilePath(folder, true);
 
       if (folderRecord == null)
-        messageDialog("You must choose a subfolder of the main database folder.", mtError);
+        errorPopup("You must choose a subfolder of the main database folder.");
     }
 
     allSame.setTrue();
@@ -1348,7 +1347,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         if (file.equals(path) == false)
         {
-          messageDialog("A file with the name \"" + file.getNameOnly() + "\" already exists in the destination folder.", mtError);
+          errorPopup("A file with the name \"" + file.getNameOnly() + "\" already exists in the destination folder.");
           return null;
         }
       }
@@ -1791,7 +1790,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if ((pdfBD == null) && (queryBD == null))
       {
         if (messageShown == false)
-          messageDialog("Unable to find bibliographic information.", mtInformation);
+          infoPopup("Unable to find bibliographic information.");
 
         return;
       }
@@ -1804,7 +1803,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
       catch (IOException e)
       {
-        messageDialog("Unable to initialize merge dialog window.", mtError);
+        errorPopup("Unable to initialize merge dialog window.");
         return;
       }
 
@@ -1841,7 +1840,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     catch (IOException e)
     {
-      messageDialog("Unable to initialize merge dialog window.", mtError);
+      errorPopup("Unable to initialize merge dialog window.");
       return;
     }
 
@@ -1962,7 +1961,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     FilePath extPath = extPath();
     if (FilePath.isEmpty(extPath))
     {
-      messageDialog(NO_EXT_PATH_MESSAGE, mtError);
+      errorPopup(NO_EXT_PATH_MESSAGE);
       return true;
     }
 

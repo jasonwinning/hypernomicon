@@ -81,7 +81,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -172,7 +171,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     {
       if (tfVerificationCode.textProperty().isEmpty().get())
       {
-        falseWithWarningMessage("You must enter a verification code.", tfVerificationCode);
+        falseWithWarningPopup("You must enter a verification code.", tfVerificationCode);
         return;
       }
 
@@ -501,7 +500,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     }
     catch (IOException | InterruptedException | ExecutionException e)
     {
-      messageDialog("Error: " + getThrowableMessage(e), mtError);
+      errorPopup("Error: " + getThrowableMessage(e));
     }
   }
 
@@ -526,8 +525,8 @@ public class SettingsDlgCtrlr extends HyperDlg
       accessToken = service.getAccessToken(verificationCode);
       success = true;
     }
-    catch (OAuthException e)                                          { messageDialog("Verification code was rejected by the server.", mtError); }
-    catch (IOException | InterruptedException | ExecutionException e) { messageDialog("Verification failed: " + getThrowableMessage(e), mtError); }
+    catch (OAuthException e)                                          { errorPopup("Verification code was rejected by the server."); }
+    catch (IOException | InterruptedException | ExecutionException e) { errorPopup("Verification failed: " + getThrowableMessage(e)); }
 
     if (success == false) return;
 
@@ -537,7 +536,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     }
     catch (Exception e)
     {
-      messageDialog("Verification failed: " + getThrowableMessage(e), mtError);
+      errorPopup("Verification failed: " + getThrowableMessage(e));
       return;
     }
 
@@ -568,8 +567,8 @@ public class SettingsDlgCtrlr extends HyperDlg
       accessToken = service.getAccessToken(requestToken, verificationCode);
       success = true;
     }
-    catch (OAuthException e)                                          { messageDialog("Verification code was rejected by the server.", mtError); }
-    catch (IOException | InterruptedException | ExecutionException e) { messageDialog("Verification failed: " + getThrowableMessage(e), mtError); }
+    catch (OAuthException e)                                          { errorPopup("Verification code was rejected by the server."); }
+    catch (IOException | InterruptedException | ExecutionException e) { errorPopup("Verification failed: " + getThrowableMessage(e)); }
 
     if (success == false) return;
 
@@ -579,7 +578,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     }
     catch (Exception e)
     {
-      messageDialog("Verification failed: " + getThrowableMessage(e), mtError);
+      errorPopup("Verification failed: " + getThrowableMessage(e));
       return;
     }
 

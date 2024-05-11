@@ -94,17 +94,17 @@ public class NewCategoryDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (tfNewName.getText().isBlank())
-      return falseWithErrorMessage("Record name cannot be blank.", tfNewName);
+      return falseWithErrorPopup("Record name cannot be blank.", tfNewName);
 
     if (tfNewKey.getText().isBlank())
-      return falseWithErrorMessage("Sort key cannot be blank.", tfNewKey);
+      return falseWithErrorPopup("Sort key cannot be blank.", tfNewKey);
 
     if (hcbRecordType.selectedType() == hdtNone)
-      return falseWithErrorMessage("You must select a record type.", cbRecordType);
+      return falseWithErrorPopup("You must select a record type.", cbRecordType);
 
     for (HDT_Record record : db.records(hcbRecordType.selectedType()))
       if (record.getSortKeyAttr().equals(tfNewKey.getText()))
-        return falseWithErrorMessage("Another record already has that sort key.");
+        return falseWithErrorPopup("Another record already has that sort key.");
 
     return true;
   }

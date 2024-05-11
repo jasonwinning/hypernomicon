@@ -25,7 +25,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -388,7 +387,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     if (url.startsWith(EXT_1) && (extPath() == null))
     {
-      messageDialog(WorkTabCtrlr.NO_EXT_PATH_MESSAGE, mtWarning);
+      warningPopup(WorkTabCtrlr.NO_EXT_PATH_MESSAGE);
       return;
     }
 

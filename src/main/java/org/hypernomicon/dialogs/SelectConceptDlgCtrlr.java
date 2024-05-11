@@ -102,7 +102,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       HDT_Term tempTerm = hcbTerm.selectedRecord();
       if (tempTerm == null) return Stream.empty();
 
-      return tempTerm.concepts.stream().filter(curConcept -> unitingWith == null ? true : HDT_Hub.canUnite(curConcept, unitingWith, sb))
+      return tempTerm.concepts.stream().filter(curConcept -> (unitingWith == null) || HDT_Hub.canUnite(curConcept, unitingWith, sb))
                                        .map(curConcept -> curConcept.glossary.get()).distinct();
     });
 
@@ -118,7 +118,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
       if (oldConcept == null)
         return tempTerm.concepts.stream().filter(curConcept -> curConcept.glossary.get() == tempGlossary)
-                                         .filter(curConcept -> unitingWith == null ? true : HDT_Hub.canUnite(curConcept, unitingWith, sb))
+                                         .filter(curConcept -> (unitingWith == null) || HDT_Hub.canUnite(curConcept, unitingWith, sb))
                                          .map(curConcept -> curConcept.sense.get());
 
       return db.conceptSenses.stream().filter(curSense -> tempTerm.getConcept(tempGlossary, curSense) == null);
@@ -134,10 +134,10 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
       List<HyperTableCell> glossaryCells = hcbGlossary.populate(true);
 
-      boolean selectedGlossary = false;
-
       if (HyperTableCell.getRecord(newCell) != null)
       {
+        boolean selectedGlossary = false;
+
         if (oldConcept == null)
         {
           if (glossaryCells.stream().anyMatch(cell -> cell.getID() == 1))
@@ -174,7 +174,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   {
     if (tfSearchKey.getText().isEmpty())
     {
-      falseWithErrorMessage("Unable to create term record: search key of term cannot be zero-length.", tfSearchKey);
+      falseWithErrorPopup("Unable to create term record: search key of term cannot be zero-length.", tfSearchKey);
       return;
     }
 
@@ -191,7 +191,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     }
     catch (SearchKeyException e)
     {
-      falseWithErrorMessage(e instanceof SearchKeyTooShortException ?
+      errorPopup(e instanceof SearchKeyTooShortException ?
         "Unable to create term record. Search key must be at least 3 characters: " + e.getKey()
       :
         "Unable to create term record. Search key already exists: " + e.getKey());
@@ -223,12 +223,12 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (hcbTerm.selectedRecord() == null)
-      return falseWithErrorMessage("You must select a term.", cbTerm);
+      return falseWithErrorPopup("You must select a term.", cbTerm);
 
     glossaryToUse = hcbGlossary.selectedRecord();
 
     if (glossaryToUse == null)
-      return falseWithErrorMessage("You must select a glossary.", cbGlossary);
+      return falseWithErrorPopup("You must select a glossary.", cbGlossary);
 
     term = hcbTerm.selectedRecord();
 
@@ -239,14 +239,14 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       if (senseText.isBlank())
       {
         if (term.getConcept(glossaryToUse, null) != null)
-          return falseWithErrorMessage("The term already has a definition for that glossary and sense.", cbSense);
+          return falseWithErrorPopup("The term already has a definition for that glossary and sense.", cbSense);
       }
       else
       {
         for (HDT_ConceptSense sense : db.conceptSenses)
         {
           if (sense.name().equalsIgnoreCase(senseText))
-            return falseWithErrorMessage("The term already has a definition for that glossary and sense.", cbSense);
+            return falseWithErrorPopup("The term already has a definition for that glossary and sense.", cbSense);
         }
       }
     }

@@ -18,7 +18,6 @@
 package org.hypernomicon.view.mainText;
 
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
@@ -151,7 +150,7 @@ class HtmlTextNodeList
     }
 
     if (linkNodes.isEmpty())
-      messageDialog("Internal error #47690", mtError);
+      internalErrorPopup(47690);
 
     return linkNodes;
   }

@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.bib.BibManager;
@@ -135,7 +134,7 @@ public final class App extends Application
     }
     catch (SecurityException e)
     {
-      messageDialog("Initialization error: " + getThrowableMessage(e), mtError);
+      errorPopup("Initialization error: " + getThrowableMessage(e));
 
       prefs = null;
       Platform.exit();
@@ -152,7 +151,7 @@ public final class App extends Application
     }
     catch (HDB_InternalError e)
     {
-      messageDialog("Initialization error: " + getThrowableMessage(e), mtError);
+      errorPopup("Initialization error: " + getThrowableMessage(e));
 
       Platform.exit();
       return;
@@ -202,7 +201,7 @@ public final class App extends Application
     }
     catch(IOException e)
     {
-      messageDialog("Initialization error: " + getThrowableMessage(e), mtError);
+      errorPopup("Initialization error: " + getThrowableMessage(e));
 
       if (ui != null)
         ui.shutDown(false, false, false);
@@ -216,7 +215,7 @@ public final class App extends Application
 
     if ((safeStr(versionStr).isEmpty() == false) && (new VersionNumber(versionStr).equals(appVersion) == false))
     {
-      messageDialog("Internal error #69698", mtError);
+      internalErrorPopup(69698);
       ui.shutDown(false, false, false);
       return;
     }

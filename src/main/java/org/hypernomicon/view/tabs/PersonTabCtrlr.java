@@ -1194,7 +1194,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       if (invName.isBlank())
       {
         tpPerson.getSelectionModel().select(iV.tab);
-        return falseWithErrorMessage("Enter a name for the investigation.", iV.tfName);
+        return falseWithErrorPopup("Enter a name for the investigation.", iV.tfName);
       }
 
       HDT_Investigation inv = iV.record;
@@ -1209,7 +1209,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         String msg = "Unable to save investigation \"" + iV.tfName.getText() + "\". Search key " + (e instanceof SearchKeyTooShortException ? "must be at least 3 characters: " : "already exists: ") + e.getKey();
 
-        return falseWithErrorMessage(msg, iV.tfSearchKey);
+        return falseWithErrorPopup(msg, iV.tfSearchKey);
       }
 
       inv.setName(invName);

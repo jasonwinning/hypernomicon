@@ -43,7 +43,6 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -99,7 +98,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + '|' + newStr.replace("|", ""), update); }
   void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + '|' + getFirstName(), update); }
 
-  @Override public void setName(String str) { messageDialog("Internal error #19982", mtError); }
+  @Override public void setName(String str) { internalErrorPopup(19982); }
   @Override public String listName()        { return getNameLastFirst(false); }
   @Override public HyperPath getPath()      { return picture; }
 

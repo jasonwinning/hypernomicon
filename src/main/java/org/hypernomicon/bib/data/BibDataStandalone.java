@@ -33,7 +33,6 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 /**
@@ -100,7 +99,7 @@ public abstract class BibDataStandalone extends BibData
 
     if (bibField.isMultiStr() == false)
     {
-      messageDialog("Internal error #90226", mtError);
+      internalErrorPopup(90226);
       return null;
     }
 
@@ -127,7 +126,7 @@ public abstract class BibDataStandalone extends BibData
         case bfTranslators     -> authors.getStr(AuthorType.translator);
         default                ->
         {
-          messageDialog("Internal error #90227", mtError);
+          internalErrorPopup(90227);
           yield null;
         }
       };
@@ -140,7 +139,7 @@ public abstract class BibDataStandalone extends BibData
   {
     if (bibFieldEnum.isMultiLine() == false)
     {
-      messageDialog("Internal error #90228", mtError);
+      internalErrorPopup(90228);
       return;
     }
 

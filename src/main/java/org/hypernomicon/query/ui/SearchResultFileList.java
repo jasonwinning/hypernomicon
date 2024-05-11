@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -157,7 +156,7 @@ class SearchResultFileList
     // the visibility of the PDFCloneUtility constructor without providing an
     // alternate way to clone a PDF page in memory.
 
-    private static class PDFCloneUtility2 extends PDFCloneUtility
+    private static final class PDFCloneUtility2 extends PDFCloneUtility
     {
       private PDFCloneUtility2(PDDocument dest) { super(dest); }  // Make callable from outer class
     }
@@ -341,7 +340,7 @@ class SearchResultFileList
     String errors = strListToStr(errList, false);
 
     if (ultraTrim(convertToSingleLine(errors)).length() > 0)
-      messageDialog(errors, mtError);
+      errorPopup(errors);
   }
 
 //---------------------------------------------------------------------------

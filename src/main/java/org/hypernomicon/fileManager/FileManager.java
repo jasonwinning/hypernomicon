@@ -24,7 +24,6 @@ import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -996,7 +995,7 @@ public class FileManager extends HyperDlg
           case hdtMiscFile : confirmMsg += "is assigned to a misc. file record. Okay to permanently delete the file as well as the associated record?"; break;
           case hdtWorkFile : confirmMsg += "is assigned to a work file record. Permanently delete it anyway?"; break;
           case hdtFolder   : confirmMsg += "is assigned to a note record. Permanently delete it anyway?"; break;
-          default          : messageDialog("Internal error #21292", mtError); return;
+          default          : internalErrorPopup(21292); return;
         }
 
         if (confirmDialog(confirmMsg) == false) return;
@@ -1068,7 +1067,7 @@ public class FileManager extends HyperDlg
       try { Files.delete(filePath.toPath()); }
       catch (IOException e)
       {
-        return falseWithErrorMessage("Unable to delete the file: " + getThrowableMessage(e));
+        return falseWithErrorPopup("Unable to delete the file: " + getThrowableMessage(e));
       }
 
       db.unmapFilePath(filePath);
@@ -1088,7 +1087,7 @@ public class FileManager extends HyperDlg
       }
       catch (IOException e)
       {
-        return falseWithErrorMessage("An error occurred while trying to delete \"" + setPath.filePath() + "\": " + getThrowableMessage(e));
+        return falseWithErrorPopup("An error occurred while trying to delete \"" + setPath.filePath() + "\": " + getThrowableMessage(e));
       }
     }
 
@@ -1109,12 +1108,12 @@ public class FileManager extends HyperDlg
     HDT_RecordWithPath fileRecord = hyperPath == null ? null : hyperPath.getRecord();
 
     if (db.isProtectedFile(filePath, true))
-      return falseWithInfoMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
+      return falseWithInfoPopup((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
 
     if (deleting == false) return true;
 
     if (isDir && ((HDT_Folder) fileRecord).containsFilesThatAreInUse())
-      return falseWithInfoMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
+      return falseWithInfoPopup("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
 
     return true;
   }
@@ -1141,12 +1140,12 @@ public class FileManager extends HyperDlg
     }
     catch (FileAlreadyExistsException e)
     {
-      messageDialog("Unable to create the folder: A file with that name already exists.", mtError);
+      errorPopup("Unable to create the folder: A file with that name already exists.");
       return;
     }
     catch (IOException e)
     {
-      messageDialog("Unable to create the folder: " + getThrowableMessage(e), mtError);
+      errorPopup("Unable to create the folder: " + getThrowableMessage(e));
       return;
     }
     finally
@@ -1178,7 +1177,7 @@ public class FileManager extends HyperDlg
 
     if (cantRename)
     {
-      messageDialog("That " + noun.toLowerCase() + " cannot be renamed.", mtInformation);
+      infoPopup("That " + noun.toLowerCase() + " cannot be renamed.");
       return;
     }
 
@@ -1192,7 +1191,7 @@ public class FileManager extends HyperDlg
 
     if (destFilePath.exists())
     {
-      messageDialog("A " + (destFilePath.isDirectory() ? "folder" : "file") + " with that name already exists.", mtError);
+      errorPopup("A " + (destFilePath.isDirectory() ? "folder" : "file") + " with that name already exists.");
       return;
     }
 
@@ -1227,7 +1226,7 @@ public class FileManager extends HyperDlg
     }
     catch (IOException | HDB_InternalError e)
     {
-      messageDialog("Unable to rename the " + noun.toLowerCase() + ": " + getThrowableMessage(e), mtError);
+      errorPopup("Unable to rename the " + noun.toLowerCase() + ": " + getThrowableMessage(e));
       return;
     }
     finally
@@ -1426,7 +1425,7 @@ public class FileManager extends HyperDlg
       switch (record.getType())
       {
         case hdtWorkFile :
-
+        {
           HDT_WorkFile workFile = (HDT_WorkFile)record;
           if (workFile.works.size() > 0)
           {
@@ -1436,10 +1435,11 @@ public class FileManager extends HyperDlg
 
           record = recordTable.selectedRecord();
           break;
+        }
 
         case hdtWork :
-
-          workFile = null;
+        {
+          HDT_WorkFile workFile = null;
 
           if (FilePath.isEmpty(fileTablePath) == false)
           {
@@ -1458,6 +1458,7 @@ public class FileManager extends HyperDlg
           }
 
           break;
+        }
 
         case hdtMiscFile :
 

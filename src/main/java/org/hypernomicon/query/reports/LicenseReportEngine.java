@@ -19,7 +19,6 @@ package org.hypernomicon.query.reports;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -76,7 +75,7 @@ public class LicenseReportEngine extends ReportEngine
         }
         catch (IOException e)
         {
-          messageDialog("An error occurred while trying to load the LICENSE and NOTICE files.", mtError);
+          errorPopup("An error occurred while trying to load the LICENSE and NOTICE files.");
         }
       }
     }

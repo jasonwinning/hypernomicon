@@ -23,7 +23,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static org.hypernomicon.FolderTreeWatcher.WatcherEvent.WatcherEventKind.*;
@@ -123,7 +122,7 @@ public class FolderTreeWatcher
       catch (IOException e)
       {
         e.printStackTrace();
-        messageDialog("Unable to start watch service: " + getThrowableMessage(e), mtError);
+        errorPopup("Unable to start watch service: " + getThrowableMessage(e));
         return;
       }
 
@@ -219,7 +218,7 @@ public class FolderTreeWatcher
           }
           catch (IOException e)
           {
-            messageDialog("Unable to process watcher event list: " + getThrowableMessage(e), mtError);
+            errorPopup("Unable to process watcher event list: " + getThrowableMessage(e));
           }
         }
       }
@@ -282,7 +281,7 @@ public class FolderTreeWatcher
         switch (watcherEvent.kind)
         {
           case wekCreate:
-
+          {
             if (watcherEvent.isDirectory())
               registerTree(newPath);
             else if (((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
@@ -313,9 +312,10 @@ public class FolderTreeWatcher
             Platform.runLater(fileManagerDlg::refresh);
 
             break;
+          }
 
           case wekDelete:
-
+          {
             HyperPath hyperPath = oldPathInfo.getHyperPath();
 
             if (hyperPath != null)
@@ -323,7 +323,7 @@ public class FolderTreeWatcher
               if (hyperPath.isInUse())
               {
                 if (watcherEvent.isDirectory())
-                  messageDialog(changedFolderMsg(), mtWarning);
+                  warningPopup(changedFolderMsg());
                 else
                 {
                   FilePath oldPath = oldPathInfo.getFilePath();
@@ -333,7 +333,7 @@ public class FolderTreeWatcher
                     sleepForMillis(2000);
 
                     if (oldPath.exists() == false)
-                      messageDialog(deletedMsg(oldPath), mtWarning);
+                      warningPopup(deletedMsg(oldPath));
                   });
                 }
               }
@@ -344,19 +344,21 @@ public class FolderTreeWatcher
             Platform.runLater(fileManagerDlg::pruneAndRefresh);
 
             break;
+          }
 
           case wekModify:
-
+          {
             if (app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) && downloading.contains(newPath))
             {
               doImport(newPath);
             }
 
             break;
+          }
 
           case wekRename:
-
-            hyperPath = oldPathInfo.getHyperPath();
+          {
+            HyperPath hyperPath = oldPathInfo.getHyperPath();
             boolean untrackedFile = ((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
                                     ((hyperPath == null) || hyperPath.getRecordsString().isBlank());
 
@@ -373,7 +375,7 @@ public class FolderTreeWatcher
             else if ((hyperPath != null) && (hyperPath.getRecordsString().length() > 0))
             {
               if (watcherEvent.isDirectory())
-                messageDialog(changedFolderMsg(), mtWarning);
+                warningPopup(changedFolderMsg());
               else
               {
                 Platform.runLater(() ->
@@ -389,7 +391,7 @@ public class FolderTreeWatcher
 
                   if (newPath.exists() == false)
                   {
-                    messageDialog("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.", mtWarning);
+                    warningPopup("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.");
                     return;
                   }
 
@@ -432,10 +434,10 @@ public class FolderTreeWatcher
             Platform.runLater(fileManagerDlg::refresh);
 
             break;
+          }
 
           default:
             break;
-
         }
 
         if (app.debugging) System.out.println(switch (watcherEvent.kind)
@@ -607,7 +609,7 @@ public class FolderTreeWatcher
     catch (IOException e)
     {
       e.printStackTrace();
-      return falseWithErrorMessage("Unable to start watch service: " + getThrowableMessage(e));
+      return falseWithErrorPopup("Unable to start watch service: " + getThrowableMessage(e));
     }
 
     start();

@@ -40,7 +40,6 @@ import static org.hypernomicon.model.records.HDT_Institution.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -163,7 +162,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
       if (country == null)
       {
-        messageDialog("Select a country.", mtWarning);
+        warningPopup("Select a country.");
         safeFocus(cbCountry);
         return;
       }
@@ -200,7 +199,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @Override public String recordName()                    { return tfName.getText(); }
   @Override public void setDividerPositions()             { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
   @Override public void getDividerPositions()             { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void findWithinDesc()                  { messageDialog("Internal error #52009", mtError); }
+  @Override public void findWithinDesc()                  { internalErrorPopup(52009); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -346,7 +345,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @Override public boolean saveToRecord()
   {
     if (hcbType.selectedID() < 1)
-      return falseWithErrorMessage("You must select a type.", cbType);
+      return falseWithErrorPopup("You must select a type.", cbType);
 
     boolean locationChanged = false;
 

@@ -22,7 +22,6 @@ import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
@@ -71,7 +70,7 @@ public final class CrossrefBibData extends BibDataStandalone
         String message = jsonObj.getArray("message").getObj(0).getStrSafe("message");
 
         if (message.isBlank() == false)
-          messageDialog(message, mtError);
+          errorPopup(message);
 
         return null;
       }

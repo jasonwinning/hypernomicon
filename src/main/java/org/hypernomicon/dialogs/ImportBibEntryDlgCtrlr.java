@@ -20,7 +20,6 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -118,7 +117,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while trying to read the file " + filePath + ": " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while trying to read the file " + filePath + ": " + getThrowableMessage(e));
       failedToLoad = true;
       return;
     }
@@ -162,7 +161,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return (createNewWork != false) || (hcbWork.selectedID() >= 1) || falseWithErrorMessage("You must select a work record.", cbWork);
+    return (createNewWork != false) || (hcbWork.selectedID() >= 1) || falseWithErrorPopup("You must select a work record.", cbWork);
   }
 
 //---------------------------------------------------------------------------

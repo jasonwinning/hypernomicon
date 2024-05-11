@@ -42,7 +42,6 @@ import org.hypernomicon.util.json.JsonObj;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder> implements MendeleyEntity
@@ -148,7 +147,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
         break;
 
-      default : messageDialog("Internal error #90225", mtError); return;
+      default : internalErrorPopup(90225); return;
     }
 
     if (safeStr(newStr).isBlank())
@@ -483,7 +482,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     switch (relative.relation)
     {
       case Child:
-
+      {
         BibAuthors authors = getAuthors();
 
         List<BibAuthor> authorList     = new ArrayList<>(),
@@ -509,9 +508,10 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         }
 
         break;
+      }
 
       case Parent:
-
+      {
         JsonObj newVersion = dest.exportJsonObjForUploadToServer();
         newVersion.remove("authors");
         newVersion.put("editors", jObj.getArray("editors").clone());
@@ -519,13 +519,15 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         dest.getWork().getAuthors().setAll(new MendeleyAuthors(newVersion, dest.getEntryType()));
 
         break;
+      }
 
       case Sibling:
-
-        jsonArr = jObj.getArray("editors");
+      {
+        JsonArray jsonArr = jObj.getArray("editors");
         dest.jObj.put("editors", jsonArr == null ? new JsonArray() : jsonArr.clone());
 
         break;
+      }
     }
   }
 

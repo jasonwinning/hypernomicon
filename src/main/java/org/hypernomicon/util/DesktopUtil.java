@@ -38,7 +38,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
@@ -64,38 +63,40 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean openSystemSpecific(String pathStr)
+  private static void openSystemSpecific(String pathStr)
   {
     StringBuilder sb = new StringBuilder();
 
     if (SystemUtils.IS_OS_LINUX)
     {
-      if (exec(false, false, sb, "kde-open"  , pathStr)) return true;
-      if (exec(false, false, sb, "gnome-open", pathStr)) return true;
-      if (exec(false, false, sb, "xdg-open"  , pathStr)) return true;
-//      if (exec(false, false, sb, "exo-open"  , pathStr)) return true;
-//      if (exec(false, false, sb, "gvfs-open" , pathStr)) return true;
+      if (exec(false, false, sb, "kde-open"  , pathStr)) return;
+      if (exec(false, false, sb, "gnome-open", pathStr)) return;
+      if (exec(false, false, sb, "xdg-open"  , pathStr)) return;
+//      if (exec(false, false, sb, "exo-open"  , pathStr)) return;
+//      if (exec(false, false, sb, "gvfs-open" , pathStr)) return;
     }
 
-    return falseWithErrorMessage("Unable to open the file: " + pathStr + (sb.length() > 0 ? "\n" + sb : "") + '.');
+    errorPopup("Unable to open the file: " + pathStr + (sb.length() > 0 ? "\n" + sb : "") + '.');
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean browseDesktop(String url)
+  private static void browseDesktop(String url)
   {
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)))
-        return falseWithErrorMessage("An error occurred while trying to browse to: " + url + '.');
+      {
+        errorPopup("An error occurred while trying to browse to: " + url + '.');
+        return;
+      }
 
       Desktop.getDesktop().browse(makeURI(url));
-      return true;
     }
     catch (IOException | URISyntaxException e)
     {
-      return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e));
+      errorPopup("An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e));
     }
   }
 
@@ -141,46 +142,56 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean openFile(FilePath filePath)
+  private static void openFile(FilePath filePath)
   {
-    if (FilePath.isEmpty(filePath)) return true;
+    if (FilePath.isEmpty(filePath)) return;
 
     if ((SystemUtils.IS_OS_WINDOWS == false) && (SystemUtils.IS_OS_MAC == false))
-      return openSystemSpecific(filePath.toString());
+    {
+      openSystemSpecific(filePath.toString());
+      return;
+    }
 
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)))
-        return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath);
+      {
+        errorPopup("An error occurred while trying to open the file: " + filePath);
+        return;
+      }
 
       Desktop.getDesktop().open(filePath.toFile());
-      return true;
     }
     catch (IOException e)
     {
-      return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath + ". " + getThrowableMessage(e));
+      errorPopup("An error occurred while trying to open the file: " + filePath + ". " + getThrowableMessage(e));
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean editFile(FilePath filePath)
+  public static void editFile(FilePath filePath)
   {
     if ((SystemUtils.IS_OS_WINDOWS == false) && (SystemUtils.IS_OS_MAC == false))
-      return openSystemSpecific(filePath.toString());
+    {
+      openSystemSpecific(filePath.toString());
+      return;
+    }
 
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.EDIT)))
-        return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + '.');
+      {
+        errorPopup("An error occurred while trying to edit the file: " + filePath + '.');
+        return;
+      }
 
       Desktop.getDesktop().edit(filePath.toFile());
-      return true;
     }
     catch (IOException e)
     {
-      return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ". " + getThrowableMessage(e));
+      errorPopup("An error occurred while trying to edit the file: " + filePath + ". " + getThrowableMessage(e));
     }
   }
 
@@ -219,10 +230,10 @@ public final class DesktopUtil
     }
     catch (IOException | InterruptedException e)
     {
-      return falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + getThrowableMessage(e));
+      return falseWithErrPopupCond(showErrMsg, "An error occurred while trying to start application: " + getThrowableMessage(e));
     }
 
-    return (exitValue == 0) || falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + errorSB);
+    return (exitValue == 0) || falseWithErrPopupCond(showErrMsg, "An error occurred while trying to start application: " + errorSB);
   }
 
 //---------------------------------------------------------------------------
@@ -275,7 +286,7 @@ public final class DesktopUtil
 
     if (url.startsWith(EXT_1) && (extPath() == null))
     {
-      messageDialog(WorkTabCtrlr.NO_EXT_PATH_MESSAGE, mtWarning);
+      warningPopup(WorkTabCtrlr.NO_EXT_PATH_MESSAGE);
       return;
     }
 
@@ -320,7 +331,7 @@ public final class DesktopUtil
     }
     catch (URISyntaxException e)
     {
-      falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e));
+      errorPopup("An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e));
       return;
     }
 
@@ -389,7 +400,7 @@ public final class DesktopUtil
     }
     catch (IOException | InterruptedException e)
     {
-      messageDialog("An error occurred while trying to show the file: " + filePath + ". " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while trying to show the file: " + filePath + ". " + getThrowableMessage(e));
     }
   }
 
@@ -498,7 +509,7 @@ public final class DesktopUtil
     catch (UnknownHostException e) { return ""; }
 
     if (hostName.isBlank())
-      messageDialog("Unable to determine computer name", mtError);
+      errorPopup("Unable to determine computer name");
 
     return hostName;
   }

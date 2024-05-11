@@ -27,7 +27,6 @@ import static org.hypernomicon.query.GeneralQueries.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.query.ui.ResultsTable.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
@@ -176,7 +175,7 @@ public final class QueryCtrlr
     try { tab = new Tab("New query", loader.load()); }
     catch (IOException e)
     {
-      messageDialog("Internal error #90203", mtError);
+      internalErrorPopup(90203);
       return;
     }
 
@@ -796,7 +795,7 @@ public final class QueryCtrlr
       }
       catch (ParseException e)
       {
-        messageDialog("Error while parsing custom logic expression: " + getThrowableMessage(e), mtError);
+        errorPopup("Error while parsing custom logic expression: " + getThrowableMessage(e));
         return false;
       }
     }
@@ -881,10 +880,7 @@ public final class QueryCtrlr
               QuerySource source = entry.getValue();
               Query<?> query = queries.get(row);
 
-              boolean result = source.contains(record) ?
-                evaluate(query, record, row, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX))
-              :
-                false;
+              boolean result = source.contains(record) && evaluate(query, record, row, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
 
               if (customLogic)              results.put(rowNumbers.get(row), result);
               else if (firstRow)            add = result;
@@ -1080,7 +1076,7 @@ public final class QueryCtrlr
 
     if (startOpNum < 1)
     {
-      messageDialog("Internal error #90087", mtError);
+      internalErrorPopup(90087);
       return;
     }
 

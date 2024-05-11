@@ -27,7 +27,6 @@ import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.query.ui.QueriesTabCtrlr.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
@@ -1027,7 +1026,7 @@ public final class MainCtrlr
 
     if (db.isLoaded() == false)
     {
-      messageDialog("No database is currently loaded.", mtError);
+      errorPopup("No database is currently loaded.");
       return;
     }
 
@@ -1058,7 +1057,7 @@ public final class MainCtrlr
   {
     if (db.isLoaded() == false)
     {
-      messageDialog("No database is currently loaded.", mtError);
+      errorPopup("No database is currently loaded.");
       return;
     }
 
@@ -1329,7 +1328,7 @@ public final class MainCtrlr
       try { db.close(null); }
       catch (HDB_InternalError e)
       {
-        messageDialog(getThrowableMessage(e), mtError);
+        errorPopup(e);
       }
     }
 
@@ -1510,7 +1509,7 @@ public final class MainCtrlr
     try
     {
       if (db.isLoaded() == false)
-        return falseWithErrorMessage("No database is currently loaded.");
+        return falseWithErrorPopup("No database is currently loaded.");
 
       if (saveRecord && cantSaveRecord()) return false;
 
@@ -1607,7 +1606,7 @@ public final class MainCtrlr
   @FXML private void mnuNewDatabaseClick()
   {
     if (SystemUtils.IS_OS_WINDOWS == false)
-      messageDialog("Select an empty folder in which to create the new database.", mtInformation);
+      infoPopup("Select an empty folder in which to create the new database.");
 
     DirectoryChooser dirChooser = new DirectoryChooser();
 
@@ -1623,13 +1622,13 @@ public final class MainCtrlr
     String[] list = rootPath.toFile().list();
     if (list == null)
     {
-      messageDialog("Selected item is not a folder.", mtError);
+      errorPopup("Selected item is not a folder.");
       return;
     }
 
     if (list.length != 0)
     {
-      messageDialog("The selected folder is not empty.", mtError);
+      errorPopup("The selected folder is not empty.");
       return;
     }
 
@@ -1656,7 +1655,7 @@ public final class MainCtrlr
       try { success = db.newDB(rootPath, dlg.getChoices(), dlg.getFolders()); }
       catch (HDB_InternalError e)
       {
-        messageDialog("Unable to create new database: " + getThrowableMessage(e), mtError);
+        errorPopup("Unable to create new database: " + getThrowableMessage(e));
         shutDown(false, true, false); // An error in db.close is unrecoverable.
         return;
       }
@@ -1712,7 +1711,7 @@ public final class MainCtrlr
       }
       catch (IOException e)
       {
-        messageDialog("Unable to create new database: " + getThrowableMessage(e), mtError);
+        errorPopup("Unable to create new database: " + getThrowableMessage(e));
         return;
       }
 
@@ -1761,11 +1760,11 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean deleteCurrentRecord(boolean confirm)
+  public void deleteCurrentRecord(boolean confirm)
   {
     HDT_Record record = activeRecord();
 
-    if (record == null) return false;
+    if (record == null) return;
 
     RecordType type = record.getType();
 
@@ -1774,18 +1773,25 @@ public final class MainCtrlr
       case hdtGlossary :
 
         if (activeTabEnum() != treeTabEnum)
-          return falseWithInfoMessage("Glossary records can only be deleted from the tree tab.");
+        {
+          infoPopup("Glossary records can only be deleted from the tree tab.");
+          return;
+        }
 
         HDT_Glossary glossary = (HDT_Glossary) record;
 
         if (glossary.concepts.isEmpty() == false)
-          return falseWithInfoMessage("A glossary record can only be deleted if it does not contain any terms.");
+        {
+          infoPopup("A glossary record can only be deleted if it does not contain any terms.");
+          return;
+        }
 
         break;
 
       case hdtNone : case hdtConcept : case hdtFolder : case hdtWorkFile : case hdtHub :
 
-        return falseWithInfoMessage("Records of that type cannot be deleted by this method.");
+        infoPopup("Records of that type cannot be deleted by this method.");
+        return;
 
       default :
         break;
@@ -1804,14 +1810,13 @@ public final class MainCtrlr
 
       if (confirmDialog("Type: " + getTypeName(type) + '\n' +
                         "Name: " + name + '\n' +
-                        "ID: " + record.getID() + "\n\n" + msg) == false) return false;
+                        "ID: " + record.getID() + "\n\n" + msg) == false) return;
     }
 
     db.deleteRecord(record);
 
     viewSequence.loadViewFromCurrentSlotToUI();
     fileManagerDlg.refresh();
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -1850,7 +1855,7 @@ public final class MainCtrlr
     try { db.close(null); }
     catch (HDB_InternalError e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
       shutDown(false, true, false); // An error in db.close is unrecoverable.
       return false;
     }
@@ -1923,7 +1928,7 @@ public final class MainCtrlr
   {
     if (db.isLoaded() == false)
     {
-      messageDialog("No database is currently loaded.", mtError);
+      errorPopup("No database is currently loaded.");
       return null;
     }
 
@@ -1945,7 +1950,7 @@ public final class MainCtrlr
     }
     catch (HyperDataException e)
     {
-      messageDialog("An error occurred while creating the record: " + getThrowableMessage(e), mtError);
+      errorPopup("An error occurred while creating the record: " + getThrowableMessage(e));
       return null;
     }
 
@@ -2148,13 +2153,13 @@ public final class MainCtrlr
   {
     if (db.isLoaded() == false)
     {
-      messageDialog("No database is currently loaded.", mtError);
+      errorPopup("No database is currently loaded.");
       return;
     }
 
     if (queryHyperTab().getCurQueryCtrlr().inReportMode())
     {
-      messageDialog("That menu option cannot be used to add a record to a report.", mtInformation);
+      infoPopup("That menu option cannot be used to add a record to a report.");
       return;
     }
 
@@ -2162,7 +2167,7 @@ public final class MainCtrlr
 
     if (record == null)
     {
-      messageDialog("No record is currently selected.", mtError);
+      errorPopup("No record is currently selected.");
       return;
     }
 
@@ -2180,7 +2185,7 @@ public final class MainCtrlr
   @FXML private boolean mnuRevertToDiskCopyClick()
   {
     if (db.isLoaded() == false)
-      return falseWithErrorMessage("No database is currently loaded.");
+      return falseWithErrorPopup("No database is currently loaded.");
 
     if ((activeTabEnum() == termTabEnum) || (activeTabEnum() == personTabEnum))
       if (cantSaveRecord())
@@ -2189,10 +2194,10 @@ public final class MainCtrlr
     HDT_Record record = selectedRecord();
 
     if (record == null)
-      return falseWithErrorMessage("No record is currently selected.");
+      return falseWithErrorPopup("No record is currently selected.");
 
     if (record.hasStoredState() == false)
-      return falseWithErrorMessage("Unable to revert: the record may not have been previously saved to XML.");
+      return falseWithErrorPopup("Unable to revert: the record may not have been previously saved to XML.");
 
     String msg = "Are you sure you want to revert this record to the last version saved to XML?",
            additionalMsg = "";
@@ -2224,7 +2229,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean revertToDiskCopy(HDT_Record record)
+  private static void revertToDiskCopy(HDT_Record record)
   {
     boolean success = true;
     String recordStr = getTypeName(record.getType()) + " \"" + record.getCBText() + '"';
@@ -2242,16 +2247,16 @@ public final class MainCtrlr
     }
     catch (RelationCycleException e)
     {
-      messageDialog("Unable to revert " + recordStr + ": Records would be organized in a cycle as a result.", mtError);
+      errorPopup("Unable to revert " + recordStr + ": Records would be organized in a cycle as a result.");
       success = false;
     }
     catch (RestoreException | SearchKeyException | HDB_InternalError e)
     {
-      messageDialog("Unable to revert " + recordStr + ": " + getThrowableMessage(e), mtError);
+      errorPopup("Unable to revert " + recordStr + ": " + getThrowableMessage(e));
       success = false;
     }
 
-    if (success) return true;
+    if (success) return;
 
     try
     {
@@ -2261,8 +2266,6 @@ public final class MainCtrlr
       record.restoreTo(backupState, true);
     }
     catch (RelationCycleException | SearchKeyException | HDB_InternalError | RestoreException e) { throw new AssertionError(e); }
-
-    return false;
   }
 
 //---------------------------------------------------------------------------
@@ -2363,10 +2366,10 @@ public final class MainCtrlr
     }
 
     if (hdbExists == false)
-      return (hdbPath != null) && falseWithErrorMessage("Unable to load database. The file does not exist: " + hdbPath);
+      return (hdbPath != null) && falseWithErrorPopup("Unable to load database. The file does not exist: " + hdbPath);
 
     if (InterProcClient.checkFolder(hdbPath) == false)
-      return falseWithErrorMessage("Unable to load database: Database folder(s) are already in use by another instance of " + appTitle);
+      return falseWithErrorPopup("Unable to load database: Database folder(s) are already in use by another instance of " + appTitle);
 
     if (internetNotCheckedYet && app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
     {
@@ -2391,7 +2394,7 @@ public final class MainCtrlr
     try { success = db.loadAllFromDisk(creatingNew, favorites); }
     catch (HDB_InternalError e)
     {
-      messageDialog("Unable to load database. Reason: " + getThrowableMessage(e), mtError);
+      errorPopup("Unable to load database. Reason: " + getThrowableMessage(e));
       shutDown(false, true, false); // An error in db.close is unrecoverable.
       return false;
     }
@@ -2455,6 +2458,11 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Checks whether there is a currently active record that can be saved, and if so, saves it.
+   * @return True if the application is <i>not</i> in the process of shutting down and there was an active record that could not be saved;
+   * false indicates that the record was actually saved or no record was active or the application is shutting down.
+   */
   public boolean cantSaveRecord()
   {
     if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null))
@@ -3149,7 +3157,7 @@ public final class MainCtrlr
           {
             if (bibEntry.linkedToWork())
             {
-              messageDialog("Internal error #62883", mtError);
+              internalErrorPopup(62883);
               return false;
             }
 
@@ -3159,7 +3167,7 @@ public final class MainCtrlr
             }
             catch (IOException e)
             {
-              messageDialog("Unable to initialize merge dialog window.", mtError);
+              errorPopup("Unable to initialize merge dialog window.");
               return false;
             }
 
@@ -3171,7 +3179,7 @@ public final class MainCtrlr
           }
           else if (bibEntry.getKey().equals(work.getBibEntryKey()) == false)
           {
-            messageDialog("Internal error #62884", mtError);
+            internalErrorPopup(62884);
             return false;
           }
         }
@@ -3188,7 +3196,7 @@ public final class MainCtrlr
             }
             catch (IOException e)
             {
-              messageDialog("Unable to initialize merge dialog window.", mtError);
+              errorPopup("Unable to initialize merge dialog window.");
               return false;
             }
 
@@ -3214,7 +3222,7 @@ public final class MainCtrlr
     {
       if ((bibEntry != null) && bibEntry.linkedToWork())
       {
-        messageDialog("Internal error #62885", mtError);
+        internalErrorPopup(62885);
         return false;
       }
 
@@ -3328,7 +3336,7 @@ public final class MainCtrlr
 
     if (fileBibData == null)
     {
-      falseWithErrorMessage(ex == null ?
+      errorPopup(ex == null ?
         "Unable to parse bibliographic information."
       :
         "An error occurred while trying to parse BibTex file" + pathStr + ": " + getThrowableMessage(ex));
@@ -3356,7 +3364,7 @@ public final class MainCtrlr
     }
     catch (IOException e)
     {
-      messageDialog("Unable to initialize merge dialog window.", mtError);
+      errorPopup("Unable to initialize merge dialog window.");
       return;
     }
 

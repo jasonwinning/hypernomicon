@@ -23,7 +23,6 @@ import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -60,7 +59,7 @@ public class VerdictDlgCtrlr extends HyperDlg
     }
     else
     {
-      messageDialog("Internal Error: 90902", mtError);
+      internalErrorPopup(90902);
     }
   }
 
@@ -69,7 +68,7 @@ public class VerdictDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return (hcbVerdict.selectedID() > 0) || falseWithErrorMessage("You must select a verdict.", cbVerdict);
+    return (hcbVerdict.selectedID() > 0) || falseWithErrorPopup("You must select a verdict.", cbVerdict);
   }
 
 //---------------------------------------------------------------------------

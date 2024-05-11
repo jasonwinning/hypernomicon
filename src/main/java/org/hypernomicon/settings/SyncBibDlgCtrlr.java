@@ -18,9 +18,7 @@
 package org.hypernomicon.settings;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.dialogs.HyperDlg;
@@ -61,10 +59,10 @@ public final class SyncBibDlgCtrlr extends HyperDlg
         {
           if ((syncTask.getState() == State.FAILED) || (syncTask.getState() == State.CANCELLED))
           {
-            Throwable ex = syncTask.getException();
+            Throwable e = syncTask.getException();
 
-            if (ex instanceof HyperDataException)
-              messageDialog(getThrowableMessage(ex), mtError);
+            if (e instanceof HyperDataException)
+              errorPopup(e);
           }
 
           getStage().close();

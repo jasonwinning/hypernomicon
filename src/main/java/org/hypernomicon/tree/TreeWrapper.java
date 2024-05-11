@@ -23,7 +23,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
@@ -38,6 +37,7 @@ import java.util.stream.Collectors;
 
 import org.controlsfx.control.BreadCrumbBar;
 import org.controlsfx.control.BreadCrumbBar.BreadCrumbButton;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Glossary;
@@ -515,13 +515,13 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     if (dragSourceEdge.equals(dragTargetEdge))
     {
-      messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
+      errorPopup("Unable to copy or move source record: It is already attached to destination record.");
       return;
     }
 
     if (dragTargetEdge.relType == rtNone)
     {
-      messageDialog("Unable to copy or move source record: Internal error #33948.", mtError);
+      errorPopup("Unable to copy or move source record: " + getThrowableMessage(new HDB_InternalError(33948)));
       return;
     }
 
@@ -568,7 +568,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     RecordTreeEdge edge = new RecordTreeEdge(parent, child);
 
     if (edge.canDetach() == false)
-      return doDetach && falseWithErrorMessage("Internal error #33949.");
+      return doDetach && falseWithInternalErrorPopup(33949);
 
     boolean rv = edge.canDetachWithoutAttaching(doDetach);
 

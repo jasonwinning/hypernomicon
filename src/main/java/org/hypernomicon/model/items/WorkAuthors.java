@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static java.util.Objects.*;
 
@@ -209,7 +208,7 @@ public class WorkAuthors extends Authors
 
     if ((ndx == -1) || (oldAuthor.getPerson() != null) || (newAuthor.getPerson() != null) || (oldAuthor.getWork() != work) || (newAuthor.getWork() != work))
     {
-      messageDialog("Internal error #38891", mtError);
+      internalErrorPopup(38891);
       return;
     }
 
@@ -325,7 +324,7 @@ public class WorkAuthors extends Authors
   {
     if (oldAuthor.getPerson() != null)
     {
-      messageDialog("Internal error #73222", mtError);
+      internalErrorPopup(73222);
       return;
     }
 
@@ -352,7 +351,7 @@ public class WorkAuthors extends Authors
       }
     }
 
-    messageDialog("Internal error #73223", mtError);
+    internalErrorPopup(73223);
   }
 
   //---------------------------------------------------------------------------

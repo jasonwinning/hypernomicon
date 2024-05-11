@@ -22,7 +22,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.time.Instant;
@@ -130,7 +129,7 @@ public class RecordState
 
         default                ->
         {
-          messageDialog("Internal error #78934", mtError);
+          internalErrorPopup(78934);
           yield null;
         }
       };

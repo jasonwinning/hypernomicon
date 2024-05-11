@@ -69,7 +69,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 
 //---------------------------------------------------------------------------
@@ -460,7 +459,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     if ((resultsFolder.getPath().getRecordsString().length() > 0) ||
         resultsFolder.childFolders.stream().anyMatch(childFolder -> childFolder.isSpecial(true)))
     {
-      messageDialog("One or more file(s)/folder(s) in the search results folder are in use by the database.", mtError);
+      errorPopup("One or more file(s)/folder(s) in the search results folder are in use by the database.");
       return;
     }
 
@@ -472,7 +471,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       fileManagerDlg.pruneAndRefresh();
     }
-    catch (IOException e) { messageDialog("One or more files were not deleted. Reason: " + getThrowableMessage(e), mtError); }
+    catch (IOException e) { errorPopup("One or more files were not deleted. Reason: " + getThrowableMessage(e)); }
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();

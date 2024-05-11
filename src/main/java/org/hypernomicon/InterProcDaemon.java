@@ -19,7 +19,6 @@ package org.hypernomicon;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.io.*;
 import java.net.*;
@@ -64,7 +63,7 @@ class InterProcDaemon extends HyperThread
     }
     catch (IOException e)
     {
-      messageDialog("InterProcDaemon terminated unexpectedly: " + getThrowableMessage(e), mtError);
+      errorPopup("InterProcDaemon terminated unexpectedly: " + getThrowableMessage(e));
     }
   }
 

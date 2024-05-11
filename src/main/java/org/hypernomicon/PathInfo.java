@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.PathInfo.FileKind.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Set;
@@ -119,7 +118,7 @@ class PathInfo
 
               hyperPath = null;
               fileKind = fkUnknown;
-              messageDialog("Internal error #68754", mtError);
+              internalErrorPopup(68754);
               return;
           }
         }

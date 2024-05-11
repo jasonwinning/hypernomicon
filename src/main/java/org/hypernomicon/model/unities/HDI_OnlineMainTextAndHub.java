@@ -25,7 +25,6 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 
 import org.hypernomicon.model.HDI_Schema;
@@ -116,7 +115,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
         {
           if ((keyWork.getRecordType() != hdtWork) && (keyWork.getRecordType() != hdtMiscFile))
           {
-            messageDialog("Internal error #49283", mtError);
+            internalErrorPopup(49283);
             return;
           }
 
@@ -194,7 +193,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
           if ((kwRecord.getType() != hdtWork) && (kwRecord.getType() != hdtMiscFile))
           {
-            messageDialog("Internal error #59047", mtError);
+            internalErrorPopup(59047);
             return;
           }
 

@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.Set;
@@ -170,7 +169,7 @@ class RecordTreeEdge
     }
     catch (RelationCycleException e)
     {
-      return falseWithErrMsgCond(showErrMsg, getThrowableMessage(e));
+      return falseWithErrPopupCond(showErrMsg, e);
     }
 
     return true;
@@ -182,10 +181,10 @@ class RecordTreeEdge
   boolean canAttach(boolean showErrMsg)
   {
     if ((relType == rtFolderOfNote) && HyperDB.isUnstoredRecord(subj.getID(), hdtNote))
-      return falseWithErrMsgCond(showErrMsg, "A folder cannot be assigned to that record.");
+      return falseWithErrPopupCond(showErrMsg, "A folder cannot be assigned to that record.");
 
     if ((obj.getID() == subj.getID()) && (obj.getType() == subj.getType()))
-      return falseWithErrMsgCond(showErrMsg, "A record cannot be its own parent. Please select another record.");
+      return falseWithErrPopupCond(showErrMsg, "A record cannot be its own parent. Please select another record.");
 
     if (relType == rtKeyWork)
     {
@@ -193,10 +192,10 @@ class RecordTreeEdge
       HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
 
       if (db.keyWorkMentionerStream(kwRecord).anyMatch(mentioner -> mentioner == obj))
-        return falseWithErrMsgCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
+        return falseWithErrPopupCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
     }
     else if (db.getObjectList(relType, subj, true).contains(obj))
-      return falseWithErrMsgCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
+      return falseWithErrPopupCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
 
     return true;
   }

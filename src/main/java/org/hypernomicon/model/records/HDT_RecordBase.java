@@ -50,7 +50,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -199,7 +198,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
         case hdcNestedPointer  ->
         {
-          messageDialog("Internal error #78933", mtError); // Nested items are only created in RelationSet.getNestedItem
+          internalErrorPopup(78933); // Nested items are only created in RelationSet.getNestedItem
           yield null;
         }
       };
@@ -216,7 +215,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   {
     if ((db.isDeletionInProgress() == false) && (db.resolvingPointers() == false))
     {
-      messageDialog("Internal error #29948", mtError);
+      internalErrorPopup(29948);
       return;
     }
 
@@ -435,7 +434,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     }
     catch (RelationCycleException e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
       return false;
     }
 
@@ -456,7 +455,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     }
     catch (RelationCycleException e)
     {
-      messageDialog(getThrowableMessage(e), mtError);
+      errorPopup(e);
       return false;
     }
 

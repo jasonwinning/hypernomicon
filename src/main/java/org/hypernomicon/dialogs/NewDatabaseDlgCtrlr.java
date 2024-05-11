@@ -81,13 +81,13 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
     name = ultraTrim(name);
 
     if (name.isEmpty())
-      return falseWithErrorMessage("Folder name cannot be blank.");
+      return falseWithErrorPopup("Folder name cannot be blank.");
 
     if (name.equalsIgnoreCase(DEFAULT_XML_PATH))
-      return falseWithErrorMessage("The name XML is resevered for the XML folder.");
+      return falseWithErrorPopup("The name XML is resevered for the XML folder.");
 
     if ((FilePath.isFilenameValid(name) == false) || (name.equals(new FilePath(name).getNameOnly().toString()) == false))
-      return falseWithErrorMessage("Folder name is invalid: " + name);
+      return falseWithErrorPopup("Folder name is invalid: " + name);
 
     set.add(new FilePath(name));
     return true;
@@ -110,7 +110,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
       return false;
 
     if (set.size() < 7)
-      return falseWithErrorMessage("Enter a unique name for each folder.");
+      return falseWithErrorPopup("Enter a unique name for each folder.");
 
     FilePath filePath = new FilePath(newPath);
 
@@ -129,7 +129,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
     }
     catch(IOException e)
     {
-      return falseWithErrorMessage("Unable to create new database: " + getThrowableMessage(e));
+      return falseWithErrorPopup("Unable to create new database: " + getThrowableMessage(e));
     }
 
     return true;

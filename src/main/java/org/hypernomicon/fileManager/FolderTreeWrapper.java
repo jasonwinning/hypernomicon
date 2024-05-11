@@ -21,7 +21,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -151,7 +150,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
     if (record.getType() == hdtFolder)
       return new FileRow(((HDT_RecordWithPath)record).getPath(), treeModel);
 
-    messageDialog("Internal error #18726", mtError);
+    internalErrorPopup(18726);
     return null;
   }
 

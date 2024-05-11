@@ -27,7 +27,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -372,7 +371,7 @@ public final class MainTextUtil
 
       if (record == null)
       {
-        messageDialog("Internal error #28587", mtError);
+        internalErrorPopup(28587);
         return html;
       }
     }

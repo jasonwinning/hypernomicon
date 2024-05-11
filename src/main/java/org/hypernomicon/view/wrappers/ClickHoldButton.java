@@ -19,7 +19,6 @@ package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
@@ -67,7 +66,7 @@ public class ClickHoldButton
       children.add(children.indexOf(btn), btnMenu);
     }
     else
-      messageDialog("Unsupported parent type for ClickHoldButton", mtError);
+      errorPopup("Unsupported parent type for ClickHoldButton");
 
     copyRegionLayout(btn, btnMenu);
 

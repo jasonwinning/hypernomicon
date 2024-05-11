@@ -19,7 +19,6 @@ package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Arrays;
@@ -104,7 +103,7 @@ public abstract class Populator
   public RecordType getRecordType(HyperTableRow row)                     { return hdtNone; }
 
   @SuppressWarnings("unused")
-  public HyperTableCell addEntry(HyperTableRow row, int id, String text) { messageDialog("Internal error #90129", mtError); return null; }
+  public HyperTableCell addEntry(HyperTableRow row, int id, String text) { internalErrorPopup(90129); return null; }
 
   public HyperTableCell addEntry(HyperTableRow row, String text)         { return addEntry(row, -1, text); }
 

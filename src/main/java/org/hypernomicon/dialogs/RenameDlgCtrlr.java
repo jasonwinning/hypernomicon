@@ -118,12 +118,12 @@ public class RenameDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (tfName.getText().isEmpty())
-      return falseWithErrorMessage("Name cannot be zero-length.", tfName);
+      return falseWithErrorPopup("Name cannot be zero-length.", tfName);
 
     if (nameType != ntRecord)
     {
       if (FilenameUtils.equalsNormalizedOnSystem(oldName, tfName.getText()))
-        return falseWithErrorMessage("Original name and new name are the same.", tfName);
+        return falseWithErrorPopup("Original name and new name are the same.", tfName);
     }
 
     return true;

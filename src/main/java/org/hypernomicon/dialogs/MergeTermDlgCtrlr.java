@@ -19,7 +19,6 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.hypernomicon.model.records.HDT_Term;
 import javafx.fxml.FXML;
@@ -38,7 +37,7 @@ public class MergeTermDlgCtrlr extends HyperDlg
   {
     if (getKey().replace("^", "").replace("$", "").trim().length() < 3)
     {
-      messageDialog("Search key of a term record cannot be zero-length.", mtError);
+      errorPopup("Search key of a term record cannot be zero-length.");
 
       if      (rbKey1.isSelected()) safeFocus(tfKey1);
       else if (rbKey2.isSelected()) safeFocus(tfKey2);

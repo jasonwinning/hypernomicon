@@ -19,7 +19,6 @@ package org.hypernomicon.util;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.BufferedInputStream;
@@ -93,7 +92,7 @@ public final class MediaUtil
     }
     catch (IOException e)
     {
-      messageDialog("Error: " + getThrowableMessage(e), mtError);
+      errorPopup("Error: " + getThrowableMessage(e));
       return "";
     }
   }

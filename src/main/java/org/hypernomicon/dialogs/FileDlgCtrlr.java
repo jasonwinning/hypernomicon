@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
@@ -246,7 +245,7 @@ public class FileDlgCtrlr extends HyperDlg
 
     if (db.isProtectedFile(newSrc, false))
     {
-      messageDialog("That file cannot be assigned to a record.", mtError);
+      errorPopup("That file cannot be assigned to a record.");
       return;
     }
 
@@ -272,7 +271,7 @@ public class FileDlgCtrlr extends HyperDlg
           return;
         }
 
-        messageDialog(HyperPath.alreadyInUseMessage(newSrc, existingRecord), mtInformation);
+        infoPopup(HyperPath.alreadyInUseMessage(newSrc, existingRecord));
 
         // disable moving, only enable copying
         setRB_CopyOnly();
@@ -359,7 +358,7 @@ public class FileDlgCtrlr extends HyperDlg
 
     if (db.getRootPath().isSubpath(chosenFilePath) == false)
     {
-      messageDialog("The file cannot be copied or moved outside the database folder structure.", mtError);
+      errorPopup("The file cannot be copied or moved outside the database folder structure.");
       return;
     }
 
@@ -374,23 +373,23 @@ public class FileDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (FilePath.isEmpty(srcFilePath))
-      return falseWithErrorMessage("You must enter a source file name.", tfCurrentPath);
+      return falseWithErrorPopup("You must enter a source file name.", tfCurrentPath);
 
     if ((chkDontChangeFilename.isSelected() == false) && tfFileName.getText().isEmpty())
-      return falseWithErrorMessage("You must enter a destination file name.", tfFileName);
+      return falseWithErrorPopup("You must enter a destination file name.", tfFileName);
 
     if (tfNewPath.getText().isEmpty())
-      return falseWithErrorMessage("You must enter a destination path.", tfNewPath);
+      return falseWithErrorPopup("You must enter a destination path.", tfNewPath);
 
     if (recordType == hdtMiscFile)
     {
       int fileTypeID = hcbType.selectedID();
       if ((fileTypeID < 1) && hcbType.getText().isEmpty())
-        return falseWithErrorMessage("You must enter a file type.", cbType);
+        return falseWithErrorPopup("You must enter a file type.", cbType);
     }
 
     if (FilePath.isFilenameValid(tfFileName.getText()) == false)
-      return falseWithErrorMessage("Invalid file name: \"" + tfFileName.getText() + '"', tfFileName);
+      return falseWithErrorPopup("Invalid file name: \"" + tfFileName.getText() + '"', tfFileName);
 
     // check to see if destination file name currently points to a file in the database
 
@@ -400,7 +399,7 @@ public class FileDlgCtrlr extends HyperDlg
     HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(destFilePath);
 
     if ((existingRecord != null) && (existingRecord != curFileRecord))
-      return falseWithErrorMessage(HyperPath.alreadyInUseMessage(destFilePath, existingRecord));
+      return falseWithErrorPopup(HyperPath.alreadyInUseMessage(destFilePath, existingRecord));
 
     boolean success = true;
 
@@ -418,7 +417,7 @@ public class FileDlgCtrlr extends HyperDlg
       }
       catch (IOException e)
       {
-        return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + getThrowableMessage(e));
+        return falseWithErrorPopup("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + getThrowableMessage(e));
       }
     }
     else if (srcFilePath.equals(destFilePath) == false)
@@ -428,13 +427,13 @@ public class FileDlgCtrlr extends HyperDlg
         success = srcFilePath.renameTo(fileName.toString());
 
         if (success == false)
-          messageDialog("Unable to rename the file.", mtError);
+          errorPopup("Unable to rename the file.");
         else
           db.unmapFilePath(srcFilePath);
       }
       catch (IOException e)
       {
-        return falseWithErrorMessage("Unable to rename the file: " + getThrowableMessage(e));
+        return falseWithErrorPopup("Unable to rename the file: " + getThrowableMessage(e));
       }
     }
 
@@ -444,7 +443,7 @@ public class FileDlgCtrlr extends HyperDlg
     {
       HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, destFilePath);
       if (workFile == null)
-        return falseWithErrorMessage("Internal error #67830");
+        return falseWithInternalErrorPopup(67830);
 
       workFile.setName(tfRecordName.getText());
       curWork.addWorkFile(workFile.getID());
@@ -456,7 +455,7 @@ public class FileDlgCtrlr extends HyperDlg
 
       HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
       if (folder == null)
-        return falseWithErrorMessage("Internal error #22937");
+        return falseWithInternalErrorPopup(22937);
 
       curFileRecord.getPath().assign(folder, destFilePath.getNameOnly());
     }

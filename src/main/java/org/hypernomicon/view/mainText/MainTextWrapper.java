@@ -29,7 +29,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
@@ -50,7 +49,6 @@ import static org.hypernomicon.view.mainText.MainTextWrapper.MTW_State.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import javafx.event.Event;
 import javafx.scene.input.MouseButton;
@@ -775,7 +773,7 @@ public final class MainTextWrapper
     String tempHtml = editCtrlr.getHtmlAndKeyWorks(keyWorks);
     if (tempHtml.contains("hypernomiconHilite"))
     {
-      messageDialog(getThrowableMessage(new HDB_InternalError(28469)), mtError);
+      internalErrorPopup(28469);
       return;
     }
 
