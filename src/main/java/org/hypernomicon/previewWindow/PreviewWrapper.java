@@ -20,7 +20,6 @@ package org.hypernomicon.previewWindow;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
@@ -32,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -39,6 +40,8 @@ import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSCommand;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.util.DesktopUtil;
+import org.hypernomicon.util.Util;
 import org.hypernomicon.util.filePath.FilePath;
 import org.jodconverter.core.office.OfficeException;
 import org.jodconverter.core.office.OfficeUtils;
@@ -376,6 +379,8 @@ public class PreviewWrapper
     workEndPageNum = -1;
     curPrevFile = null;
 
+    stopOfficePreview();
+
     if (window.curSource() == src) window.clearControls();
 
     if (initialized == false) return;
@@ -538,13 +543,15 @@ public class PreviewWrapper
     String mimetypeStr = getMediaType(filePath).toString(),
            errHtml = UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString());
 
+    stopOfficePreview();
+
+    // For PDF, no conversion is necessary. We display it as-is.
+
     if (mimetypeStr.contains("pdf"))
     {
       jsWrapper.loadPdf(filePath, pageNum);
       return mimetypeStr;
     }
-
-    boolean unableToPreviewOffice = false;
 
     // Look for format that JodConverter can convert
 
@@ -573,38 +580,9 @@ public class PreviewWrapper
           return mimetypeStr;
         }
 
-        if (lastOfficePath.equals(officePath) == false)
-        {
-          lastOfficePath = "";
-
-          if (officeConverter != null)
-          {
-            OfficeUtils.stopQuietly(officeManager);
-            officeConverter = null;
-          }
-
-          try
-          {
-            officeManager = LocalOfficeManager.builder().officeHome(officePath).build();
-
-            // Start an office process and connect to the started instance (on port 2002).
-            officeManager.start();
-
-            officeConverter = LocalConverter.make(officeManager);
-          }
-          catch (OfficeException | IllegalStateException e)
-          {
-            unableToPreviewOffice = true;
-            OfficeUtils.stopQuietly(officeManager);
-
-            officeConverter = null;
-          }
-        }
-
-        if (unableToPreviewOffice == false)
+        if (updateOfficeConverter(officePath))
         {
           lastOfficePath = officePath;
-
 
           boolean convertToHtml = mimetypeStr.contains("spreadsheetml.sheet")      ||  // xlsx (Microsoft Excel XML)
                                   mimetypeStr.contains("ms-excel")                 ||  // xls  (Microsoft Excel)
@@ -613,15 +591,9 @@ public class PreviewWrapper
                                   mimetypeStr.contains("opendocument.spreadsheet") ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
                                   mimetypeStr.contains("sun.xml.calc");                // sxc  (OpenOffice.org 1.0 spreadsheet)
 
-          File tempPath = db.resultsPath("preview." + (convertToHtml ? "html" : "pdf")).toFile();
+          stopOfficePreview();
 
-          // Convert
-          officeConverter.convert(filePath.toFile()).to(tempPath).execute();
-
-          if (convertToHtml)
-            jsWrapper.loadFile(new FilePath(tempPath), false);
-          else
-            jsWrapper.loadPdf(new FilePath(tempPath), 1);
+          (officePreviewThread = new OfficePreviewThread(jsWrapper, filePath, convertToHtml)).start();
         }
         else
         {
@@ -635,12 +607,180 @@ public class PreviewWrapper
       else
         jsWrapper.loadHtml(errHtml);
     }
-    catch (OfficeException | IllegalStateException | IOException e)
+    catch (IllegalStateException | IOException e)
     {
       jsWrapper.loadHtml(errHtml);
     }
 
     return mimetypeStr;
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  private static OfficePreviewThread officePreviewThread;
+
+  public static void stopOfficePreview()
+  {
+    if (HyperThread.isRunning(officePreviewThread))
+    {
+      officePreviewThread.cancelled = true;
+
+      // Now we just have to let the converter keep running; there's no way to stop it once started
+      // We can only set the cancelled flag which prevents the preview window from being updated by this thread
+    }
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  private static final class OfficePreviewThread extends HyperThread
+  {
+    private final PDFJSWrapper jsWrapper;
+    private final FilePath filePath;
+    private final boolean convertToHtml;
+    private volatile boolean cancelled;
+
+//---------------------------------------------------------------------------
+
+    private OfficePreviewThread(PDFJSWrapper jsWrapper, FilePath filePath, boolean convertToHtml)
+    {
+      super("OfficePreview");
+
+      setDaemon(true);
+
+      this.filePath = filePath;
+      this.convertToHtml = convertToHtml;
+      this.jsWrapper = jsWrapper;
+    }
+
+//---------------------------------------------------------------------------
+
+    @Override public void run()
+    {
+      FilePath tempDir = null;
+      File tempPath = null;
+
+      try
+      {
+        tempDir = tempOfficePreviewFolder(false, false).resolve("preview" + Util.randomAlphanumericStr(8));
+        tempPath = tempDir.resolve("preview" + Util.randomAlphanumericStr(8) + '.' + (convertToHtml ? "html" : "pdf")).toFile();
+      }
+      catch (IOException e)
+      {
+        jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString()));
+        return;
+      }
+
+      try
+      {
+        officeConverter.convert(filePath.toFile()).to(tempPath).execute();
+      }
+      catch (OfficeException e)
+      {
+        jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString()));
+        try { FileUtils.deleteDirectory(tempDir.toFile()); } catch (IOException ex) { noOp(); }
+        return;
+      }
+
+      if (cancelled)
+      {
+        try { FileUtils.deleteDirectory(tempDir.toFile()); } catch (IOException ex) { noOp(); }
+        return;
+      }
+
+      if (convertToHtml)
+        try
+        {
+          jsWrapper.loadFile(new FilePath(tempPath), false);
+        }
+        catch (IOException e)
+        {
+          jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString()));
+        }
+      else
+        jsWrapper.loadPdf(new FilePath(tempPath), 1);
+    }
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  /**
+   * Make sure an officeManager exists corresponding to the current office installation path; if not,
+   * stop the existing officeManager if there is one and create a new one for the current installation path
+   * @param officePath The currently configured office installation path
+   * @return True if able to do conversions; false otherwise
+   */
+  private static boolean updateOfficeConverter(String officePath)
+  {
+    if (officePath.isBlank())
+      return false;
+
+    if (lastOfficePath.equals(officePath) == false)
+    {
+      lastOfficePath = "";
+
+      if (officeConverter != null)
+      {
+        stopOfficePreview();
+
+        OfficeUtils.stopQuietly(officeManager);
+        officeConverter = null;
+      }
+
+      try
+      {
+        tempOfficePreviewFolder(true, true);
+
+        List<Integer> ports = new ArrayList<>();
+        DesktopUtil.findAvailablePorts(4, ports);
+
+        officeManager = LocalOfficeManager.builder().portNumbers(ports.get(0), ports.get(1), ports.get(2), ports.get(3))
+                                                    .officeHome(officePath)
+                                                    .build();
+
+        // Start an office process and connect to the started instance (on port 2002).
+        officeManager.start();
+
+        officeConverter = LocalConverter.make(officeManager);
+      }
+      catch (OfficeException | IllegalStateException | IOException e)
+      {
+        OfficeUtils.stopQuietly(officeManager);
+
+        officeConverter = null;
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final String tempOfficePreviewFolderName = "hnTempOfficePreview";
+
+  private static FilePath tempOfficePreviewFolder(boolean create, boolean clear) throws IOException
+  {
+    FilePath filePath = DesktopUtil.tempDir().resolve(tempOfficePreviewFolderName);
+
+    if ((create == false) && (clear == false))
+      return filePath;
+
+    if (filePath.exists())
+    {
+      if (clear)
+        FileUtils.cleanDirectory(filePath.toFile());
+    }
+    else
+    {
+      if (create)
+        filePath.createDirectory();
+    }
+
+    return filePath;
   }
 
   //---------------------------------------------------------------------------
@@ -786,6 +926,8 @@ public class PreviewWrapper
 
   void cleanup(Runnable disposeHndlr)
   {
+    stopOfficePreview();
+
     if (officeConverter != null)
       OfficeUtils.stopQuietly(officeManager);
 

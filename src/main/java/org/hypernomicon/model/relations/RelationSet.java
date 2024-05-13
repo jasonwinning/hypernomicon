@@ -100,7 +100,20 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   HDT_Subj getSubject(HDT_Obj obj, int ndx)               { return objToSubjList.get(obj).get(ndx); }
   int getSubjectNdx(HDT_Obj obj, HDT_Subj subj)           { return objToSubjList.get(obj).indexOf(subj); }
   int getObjectNdx(HDT_Subj subj, HDT_Obj obj)            { return subjToObjList.get(subj).indexOf(obj); }
-  HDT_Obj getObject(HDT_Subj subj, int ndx)               { return subjToObjList.get(subj).get(ndx); }
+
+  HDT_Obj getObject(HDT_Subj subj, int ndx)
+  {
+    try
+    {
+      return subjToObjList.get(subj).get(ndx);
+    }
+    catch (IndexOutOfBoundsException e)
+    {
+      showStackTrace(e);
+      return null;
+    }
+  }
+
   boolean alreadyHasAsObject(HDT_Subj subj, HDT_Obj obj)  { return subjToObjList.containsEntry(subj, obj); }
   boolean alreadyHasAsSubject(HDT_Obj obj, HDT_Subj subj) { return objToSubjList.containsEntry(obj, subj); }
 

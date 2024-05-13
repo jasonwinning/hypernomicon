@@ -235,6 +235,7 @@ public class LockedDlgCtrlr extends HyperDlg
   private void sendMessage(HDB_MessageType newMsgType, String output)
   {
     InterComputerMsg sentMsg = new InterComputerMsg(DesktopUtil.getComputerName(), otherCompName, newMsgType);
+
     try
     {
       sentMsg.writeToDisk(true);

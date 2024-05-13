@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -426,6 +427,20 @@ public final class DesktopUtil
   public static String userWorkingDir()
   {
     return System.getProperty("user.dir");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void findAvailablePorts(int numToFind, List<Integer> ports) throws IOException
+  {
+    if (numToFind < 1) return;
+
+    try (ServerSocket socket = new ServerSocket(0))
+    {
+      ports.add(socket.getLocalPort());
+      findAvailablePorts(numToFind - 1, ports);
+    }
   }
 
 //---------------------------------------------------------------------------
