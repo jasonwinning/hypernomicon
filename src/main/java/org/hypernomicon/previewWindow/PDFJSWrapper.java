@@ -230,7 +230,6 @@ public class PDFJSWrapper
       disable();
     }
 
-
     return jxBrowserDisabled ? null : browser;
   }
 
@@ -251,6 +250,21 @@ public class PDFJSWrapper
     });
 
     jxBrowserDisabled = true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  boolean zoom(boolean zoomingIn)
+  {
+    if (pdfjsMode) return false;
+
+    if (zoomingIn)
+      browser.zoomIn();
+    else
+      browser.zoomOut();
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

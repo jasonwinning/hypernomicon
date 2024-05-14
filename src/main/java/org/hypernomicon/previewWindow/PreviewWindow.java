@@ -51,6 +51,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -416,6 +419,31 @@ public class PreviewWindow extends HyperDlg
     dialogStage.setOnHidden(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow));
 
     btnContents.setOnAction(event -> openContentsWindow());
+
+    dialogStage.addEventFilter(ScrollEvent.SCROLL, event ->
+    {
+      double deltaY = event.getDeltaY();
+      if ((event.isControlDown() == false) || (deltaY == 0)) return;
+
+      if (curWrapper().zoom(deltaY > 0))
+        event.consume();
+    });
+
+    dialogStage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    {
+      if (shortcutKeyIsDown(event))
+      {
+        if ((event.getCode() == KeyCode.PLUS    ) ||
+            (event.getCode() == KeyCode.EQUALS  ) ||
+            (event.getCode() == KeyCode.MINUS   ) ||
+            (event.getCode() == KeyCode.SUBTRACT) ||
+            (event.getCode() == KeyCode.ADD)    )
+        {
+          if (curWrapper().zoom((event.getCode() != KeyCode.MINUS) && (event.getCode() != KeyCode.SUBTRACT)))
+            event.consume();
+        }
+      }
+    });
   }
 
 //---------------------------------------------------------------------------
