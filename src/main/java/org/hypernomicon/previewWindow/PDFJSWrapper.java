@@ -21,7 +21,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -312,6 +315,20 @@ public class PDFJSWrapper
     preferences.setAllowScriptsToCloseWindows(true);
 
     browser.setPreferences(preferences);
+
+    browser.setDownloadHandler(downloadItem ->
+    {
+      try
+      {
+        browser.loadHTML("Unable to preview the file: " + Paths.get(new URI(downloadItem.getURL())));
+      }
+      catch (URISyntaxException e)
+      {
+        browser.loadHTML("Unable to preview the file: " + downloadItem.getURL());
+      }
+
+      return false;
+    });
 
     browserView = new BrowserView(browser);
 
