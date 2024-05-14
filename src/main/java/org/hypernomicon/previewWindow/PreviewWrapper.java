@@ -536,9 +536,9 @@ public class PreviewWrapper
       return mimetypeStr;
     }
 
-    if (mimetypeStr.contains("openxmlformats-officedocument"))
+    try
     {
-      try
+      if (mimetypeStr.contains("openxmlformats-officedocument"))
       {
         DocumentConverter converter = new DocumentConverter();
         Result<String> result = converter.convertToHtml(filePath.toFile());
@@ -548,16 +548,17 @@ public class PreviewWrapper
 
         jsWrapper.loadHtml(html.isBlank() ? errHtml : html);
       }
-      catch (IOException e)
-      {
+      else if (mimetypeStr.contains("html"))
+        jsWrapper.loadFile(filePath, true);
+      else if (mimetypeStr.contains("image")  || mimetypeStr.contains("plain") || mimetypeStr.contains("video") || mimetypeStr.contains("audio"))
+        jsWrapper.loadFile(filePath, false);
+      else
         jsWrapper.loadHtml(errHtml);
-      }
     }
-    else if (mimetypeStr.contains("html")  || mimetypeStr.contains("image")  || mimetypeStr.contains("plain") ||
-             mimetypeStr.contains("video") || mimetypeStr.contains("audio"))
-      jsWrapper.loadFile(filePath);
-    else
+    catch (IOException e)
+    {
       jsWrapper.loadHtml(errHtml);
+    }
 
     return mimetypeStr;
   }

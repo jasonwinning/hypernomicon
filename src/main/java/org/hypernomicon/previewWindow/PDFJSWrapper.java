@@ -50,10 +50,13 @@ import com.teamdev.jxbrowser.chromium.javafx.BrowserView;
 import com.teamdev.jxbrowser.chromium.javafx.DefaultDialogHandler;
 import com.teamdev.jxbrowser.chromium.javafx.internal.dialogs.MessageDialog;
 
+import static java.nio.charset.StandardCharsets.*;
+
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+
 import static java.util.logging.Level.*;
 
 import org.apache.commons.io.FileUtils;
@@ -61,6 +64,10 @@ import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import javafx.application.Platform;
 import javafx.scene.layout.AnchorPane;
@@ -638,10 +645,20 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void loadFile(FilePath file)
+  void loadFile(FilePath file, boolean isHtml) throws IOException
   {
     cleanupPdfHtml();
-    browser.loadURL(file.toURLString());
+
+    if (isHtml)
+    {
+      Document doc = Jsoup.parse(FileUtils.readFileToString(file.toFile(), UTF_8));
+
+      doc.getElementsByTag("script").forEach(Element::remove);
+
+      browser.loadHTML(doc.html());
+    }
+    else
+      browser.loadURL(file.toURLString());
   }
 
 //---------------------------------------------------------------------------
