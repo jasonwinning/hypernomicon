@@ -37,10 +37,13 @@ import com.teamdev.jxbrowser.chromium.BrowserContextParams;
 import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.BrowserException;
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
+import com.teamdev.jxbrowser.chromium.DefaultLoadHandler;
 import com.teamdev.jxbrowser.chromium.DialogParams;
 import com.teamdev.jxbrowser.chromium.JSArray;
 import com.teamdev.jxbrowser.chromium.JSObject;
 import com.teamdev.jxbrowser.chromium.JSValue;
+import com.teamdev.jxbrowser.chromium.LoadParams;
+import com.teamdev.jxbrowser.chromium.LoadParams.LoadType;
 import com.teamdev.jxbrowser.chromium.LoggerProvider;
 import com.teamdev.jxbrowser.chromium.ProtocolService;
 import com.teamdev.jxbrowser.chromium.URLResponse;
@@ -328,6 +331,23 @@ public class PDFJSWrapper
       }
 
       return false;
+    });
+
+    browser.setLoadHandler(new DefaultLoadHandler()
+    {
+      @Override public boolean onLoad(LoadParams params)
+      {
+        if (params.isRedirect())
+          return true;
+
+        if (params.getType() == LoadType.LinkClicked)
+        {
+          DesktopUtil.openWebLink(params.getURL());
+          return true;
+        }
+
+        return false;
+      }
     });
 
     browserView = new BrowserView(browser);
