@@ -38,7 +38,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane minHeight="356.0" minWidth="1026.0" prefHeight="657.0" prefWidth="1271.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.SettingsDlgCtrlr">
+<AnchorPane minHeight="356.0" minWidth="1026.0" prefHeight="657.0" prefWidth="1271.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.SettingsDlgCtrlr">
   <SplitPane dividerPositions="0.18124507486209615" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
       <TreeView fx:id="treeView" layoutX="11.0" layoutY="91.0" prefHeight="200.0" prefWidth="234.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
@@ -48,7 +48,7 @@
       </Tab>
       <Tab fx:id="tabComputerSpecific" text="Computer">
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-          <GridPane prefHeight="459.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+          <GridPane prefHeight="513.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <columnConstraints>
               <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" prefWidth="908.0" />
               <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
@@ -61,6 +61,8 @@
               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -117,9 +119,9 @@
               <Button layoutX="-9.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnExtFileBrowseClick" prefHeight="25.0" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
-              <Button fx:id="btnClearExtPath" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnClearExtPathClick" prefHeight="25.0" prefWidth="70.0" text="Clear" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+              <Button layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnClearExtPathClick" prefHeight="25.0" prefWidth="70.0" text="Clear" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6" GridPane.rowSpan="2">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8" GridPane.rowSpan="2">
               <GridPane layoutX="32.0" layoutY="-22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                 <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" maxWidth="224.0" minWidth="224.0" prefWidth="224.0" />
@@ -144,50 +146,65 @@
                 <Slider fx:id="sliderFontSize" blockIncrement="1.0" majorTickUnit="1.0" max="16.0" min="9.0" minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0" GridPane.columnIndex="2" GridPane.rowSpan="3" />
               </GridPane>
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10">
               <CheckBox fx:id="chkInternet" layoutY="4.0" mnemonicParsing="false" text="Check for internet connection before initial database load and before saving  on application exit (useful if using something like Dropbox to sync files)" />
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="11">
               <CheckBox fx:id="chkNewVersionCheck" layoutY="4.0" mnemonicParsing="false" text="Check for new application version on startup" />
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="12">
               <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically preview selected file in Work File dialog" />
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="11">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="13">
               <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file from internet in Work File dialog" />
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="12">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="14">
               <CheckBox fx:id="chkCompDontExpandKeyWorks" layoutY="4.0" mnemonicParsing="false" text="Don't expand key works when editing record description and there are no key works yet" />
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="13">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="15">
               <CheckBox fx:id="chkLinuxWorkaround" layoutY="4.0" mnemonicParsing="false" text="Enable workaround for when parent windows stop being resizable" />
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="15" />
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="16" />
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="17" />
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="18" />
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
+                     <children>
+                        <Label layoutX="28.0" layoutY="5.0" text="LibreOffice or OpenOffice installation path (to preview office documents)" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
+                     <children>
+                        <TextField fx:id="tfOffice" layoutY="1.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                     <children>
+                        <Button layoutX="-10.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnOfficeBrowseClick" prefHeight="25.0" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="7">
+                     <children>
+                        <Button layoutX="12.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnClearOfficeClick" prefHeight="25.0" prefWidth="70.0" text="Clear" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
           </GridPane>
         </AnchorPane>
       </Tab>
       <Tab fx:id="tabDBSpecific" text="Database">
         <AnchorPane minHeight="0.0" minWidth="0.0">
-          <VBox layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="908.0" spacing="4.0"
-                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                AnchorPane.topAnchor="0.0">
+          <VBox layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="908.0" spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <padding>
-              <Insets bottom="6.0" left="12.0" right="6.0" top="12.0"/>
+              <Insets bottom="6.0" left="12.0" right="6.0" top="12.0" />
             </padding>
-            <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false"
-                      text="Use sentence case instead of title case for titles"/>
+            <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" text="Use sentence case instead of title case for titles" />
             <HBox alignment="CENTER_LEFT" spacing="8.0">
-              <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false"
-                        text="Default work type when reference manager entry type is Book Section:"/>
+              <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false" text="Default work type when reference manager entry type is Book Section:" />
               <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
                 <HBox.margin>
-                  <Insets top="4.0"/>
+                  <Insets top="4.0" />
                 </HBox.margin>
               </ComboBox>
             </HBox>
-            <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false"
-                      text="Don't expand key works when editing record description and there are no key works yet"/>
+            <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false" text="Don't expand key works when editing record description and there are no key works yet" />
           </VBox>
         </AnchorPane>
       </Tab>

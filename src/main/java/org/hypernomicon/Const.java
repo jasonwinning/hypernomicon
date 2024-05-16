@@ -66,6 +66,7 @@ public final class Const
     PREF_KEY_AUTO_IMPORT = "autoImport",
     PREF_KEY_IMAGE_EDITOR = "imageEditor",
     PREF_KEY_EXT_FILES_1 = "extFiles1",
+    PREF_KEY_OFFICE_PATH = "officePath",
     PREF_KEY_IMAGE_EDITOR_COMMANDS = "imageEditorCommands",
     PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE = "imageEditorCommandType",
     PREF_KEY_PDF_READER = "pdfReader",

@@ -19,18 +19,18 @@ package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.zwobble.mammoth.DocumentConverter;
-import org.zwobble.mammoth.Result;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
@@ -40,6 +40,10 @@ import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
+import org.jodconverter.core.office.OfficeException;
+import org.jodconverter.core.office.OfficeUtils;
+import org.jodconverter.local.LocalConverter;
+import org.jodconverter.local.office.LocalOfficeManager;
 
 import javafx.application.Platform;
 import javafx.scene.control.MenuItem;
@@ -84,6 +88,10 @@ public class PreviewWrapper
   private PreviewFile curPrevFile;
   private final ToggleButton btn;
   private final AnchorPane ap;
+
+  private static LocalOfficeManager officeManager;
+  private static LocalConverter officeConverter;
+  private static String lastOfficePath = "";
 
   PreviewSource getSource()        { return src; }
   int getPageNum()                 { return pageNum; }
@@ -536,17 +544,89 @@ public class PreviewWrapper
       return mimetypeStr;
     }
 
+    boolean unableToPreviewOffice = false;
+
+    // Look for format that JodConverter can convert
+
     try
     {
-      if (mimetypeStr.contains("openxmlformats-officedocument"))
+      if (mimetypeStr.contains("openxmlformats-officedocument") ||  // docx (Microsoft Word XML)
+          mimetypeStr.equalsIgnoreCase("application/msword")    ||  // doc  (Microsoft Word)
+          mimetypeStr.equalsIgnoreCase("application/rtf")       ||  // rtf  (Rich Text format)
+          mimetypeStr.contains("opendocument.text")             ||  // odt  (OpenDocument text), ott (OpenDocument test template)
+          mimetypeStr.contains("sun.xml.writer")                ||  // sxw  (OpenOffice.org 1.0 text)
+          mimetypeStr.contains("ms-powerpoint")                 ||  // ppt  (Microsoft PowerPoint)
+          mimetypeStr.contains("opendocument.presentation")     ||  // odp  (OpenDocument presentation), otp (OpenDocument presentation template)
+          mimetypeStr.contains("sun.xml.impress")               ||  // sxi  (OpenOffice.org 1.0 presentation)
+          mimetypeStr.contains("vnd.wordperfect")               ||  // wpd  (WordPerfect)
+          mimetypeStr.contains("ms-excel")                      ||  // xls  (Microsoft Excel)
+          mimetypeStr.equalsIgnoreCase("text/csv")              ||  // csv  (Comma-separated values)
+          mimetypeStr.contains("tab-separated-values")          ||  // tsv  (Tab-separated values)
+          mimetypeStr.contains("opendocument.spreadsheet")      ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
+          mimetypeStr.contains("sun.xml.calc"))                     // sxc  (OpenOffice.org 1.0 spreadsheet)
       {
-        DocumentConverter converter = new DocumentConverter();
-        Result<String> result = converter.convertToHtml(filePath.toFile());
-        String html = result.getValue(); // The generated HTML
+        String officePath = app.prefs.get(PREF_KEY_OFFICE_PATH, "");
 
-        result.getWarnings().forEach(System.out::println);
+        if (officePath.isBlank())
+        {
+          jsWrapper.loadHtml("To preview this type of file, enter the installation path for LibreOffice or OpenOffice in the Settings dialog.");
+          return mimetypeStr;
+        }
 
-        jsWrapper.loadHtml(html.isBlank() ? errHtml : html);
+        if (lastOfficePath.equals(officePath) == false)
+        {
+          lastOfficePath = "";
+
+          if (officeConverter != null)
+          {
+            OfficeUtils.stopQuietly(officeManager);
+            officeConverter = null;
+          }
+
+          try
+          {
+            officeManager = LocalOfficeManager.builder().officeHome(officePath).build();
+
+            // Start an office process and connect to the started instance (on port 2002).
+            officeManager.start();
+
+            officeConverter = LocalConverter.make(officeManager);
+          }
+          catch (OfficeException | IllegalStateException e)
+          {
+            unableToPreviewOffice = true;
+            OfficeUtils.stopQuietly(officeManager);
+
+            officeConverter = null;
+          }
+        }
+
+        if (unableToPreviewOffice == false)
+        {
+          lastOfficePath = officePath;
+
+
+          boolean convertToHtml = mimetypeStr.contains("spreadsheetml.sheet")      ||  // xlsx (Microsoft Excel XML)
+                                  mimetypeStr.contains("ms-excel")                 ||  // xls  (Microsoft Excel)
+                                  mimetypeStr.equalsIgnoreCase("text/csv")         ||  // csv  (Comma-separated values)
+                                  mimetypeStr.contains("tab-separated-values")     ||  // tsv  (Tab-separated values)
+                                  mimetypeStr.contains("opendocument.spreadsheet") ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
+                                  mimetypeStr.contains("sun.xml.calc");                // sxc  (OpenOffice.org 1.0 spreadsheet)
+
+          File tempPath = db.resultsPath("preview." + (convertToHtml ? "html" : "pdf")).toFile();
+
+          // Convert
+          officeConverter.convert(filePath.toFile()).to(tempPath).execute();
+
+          if (convertToHtml)
+            jsWrapper.loadFile(new FilePath(tempPath), false);
+          else
+            jsWrapper.loadPdf(new FilePath(tempPath), 1);
+        }
+        else
+        {
+          jsWrapper.loadHtml(errHtml);
+        }
       }
       else if (mimetypeStr.contains("html"))
         jsWrapper.loadFile(filePath, true);
@@ -555,7 +635,7 @@ public class PreviewWrapper
       else
         jsWrapper.loadHtml(errHtml);
     }
-    catch (IOException e)
+    catch (OfficeException | IllegalStateException | IOException e)
     {
       jsWrapper.loadHtml(errHtml);
     }
@@ -706,6 +786,9 @@ public class PreviewWrapper
 
   void cleanup(Runnable disposeHndlr)
   {
+    if (officeConverter != null)
+      OfficeUtils.stopQuietly(officeManager);
+
     if (initialized)
       jsWrapper.cleanup(disposeHndlr);
     else

@@ -23,6 +23,7 @@
     <mainClass>org.hypernomicon.Main</mainClass>
     <maven.compiler.release>17</maven.compiler.release>
     <javafx.version>22</javafx.version>
+    <jodconverter.version>4.4.7</jodconverter.version>
   </properties>
   
   <build>
@@ -255,10 +256,10 @@
       <version>1.11.0</version>
     </dependency>
     <dependency>
-      <groupId>org.zwobble.mammoth</groupId>
-      <artifactId>mammoth</artifactId>
-      <version>1.7.0</version>
-    </dependency>
+      <groupId>org.jodconverter</groupId>
+      <artifactId>jodconverter-local</artifactId>
+      <version>${jodconverter.version}</version>
+   </dependency>
     
   </dependencies>
 </project>

@@ -90,7 +90,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
-  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnClearExtPath, btnExtFilesHelp;
+  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnExtFilesHelp;
   @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkDefaultChapterWorkType, chkLinuxWorkaround,
                          chkCompDontExpandKeyWorks, chkDBDontExpandKeyWorks;
   @FXML private ComboBox<HyperTableCell> cbDefaultChapterWorkType;
@@ -100,7 +100,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
   @FXML TreeView<SettingsPage> treeView;
   @FXML private TabPane tpMain;
-  @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfVerificationCode;
+  @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfOffice, tfVerificationCode;
 
   private final HyperCB hcbDefaultChapterWorkType;
   private final StringProperty authUrl;
@@ -136,6 +136,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private void btnImageEditorBrowseClick() { browseClick(tfImageEditor); }
   @FXML private void btnPDFReaderClick()         { browseClick(tfPDFReader); }
   @FXML private void btnClearExtPathClick()      { tfExtFiles.clear(); }
+  @FXML private void btnClearOfficeClick()       { tfOffice.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -212,6 +213,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     initTextField(app.prefs, tfImageEditor, PREF_KEY_IMAGE_EDITOR, "");
     initTextField(app.prefs, tfPDFReader  , PREF_KEY_PDF_READER  , "");
     initTextField(app.prefs, tfExtFiles   , PREF_KEY_EXT_FILES_1 , "");
+    initTextField(app.prefs, tfOffice     , PREF_KEY_OFFICE_PATH , "");
 
     btnImgEditorAdvanced.setOnAction(event ->
     {
@@ -469,6 +471,24 @@ public class SettingsDlgCtrlr extends HyperDlg
     dirChooser.setTitle("Select Folder");
 
     nullSwitch(showDirDialog(dirChooser), filePath -> tfExtFiles.setText(filePath.toString()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnOfficeBrowseClick()
+  {
+    DirectoryChooser dirChooser = new DirectoryChooser();
+
+    FilePath startPath = new FilePath(tfOffice.getText());
+
+    if (FilePath.isEmpty(startPath))
+      startPath = new FilePath(userWorkingDir());
+
+    dirChooser.setInitialDirectory(startPath.toFile());
+    dirChooser.setTitle("Select Folder");
+
+    nullSwitch(showDirDialog(dirChooser), filePath -> tfOffice.setText(filePath.toString()));
   }
 
 //---------------------------------------------------------------------------
