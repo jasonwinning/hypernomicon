@@ -533,15 +533,12 @@ public class PreviewWrapper
     refreshControls();
   }
 
-  private static final String UNABLE_TO_PREVIEW_HTML = "Unable to preview the file";
-
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   public static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper)
   {
-    String mimetypeStr = getMediaType(filePath).toString(),
-           errHtml = UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString());
+    String mimetypeStr = getMediaType(filePath).toString();
 
     stopOfficePreview();
 
@@ -576,7 +573,7 @@ public class PreviewWrapper
 
         if (officePath.isBlank())
         {
-          jsWrapper.loadHtml("To preview this type of file, enter the installation path for LibreOffice or OpenOffice in the Settings dialog.");
+          jsWrapper.setNoOfficeInstallation();
           return mimetypeStr;
         }
 
@@ -593,11 +590,13 @@ public class PreviewWrapper
 
           stopOfficePreview();
 
+          jsWrapper.setGenerating(filePath);
+
           (officePreviewThread = new OfficePreviewThread(jsWrapper, filePath, convertToHtml)).start();
         }
         else
         {
-          jsWrapper.loadHtml(errHtml);
+          jsWrapper.setUnable(filePath);
         }
       }
       else if (mimetypeStr.contains("html"))
@@ -605,11 +604,11 @@ public class PreviewWrapper
       else if (mimetypeStr.contains("image")  || mimetypeStr.contains("plain") || mimetypeStr.contains("video") || mimetypeStr.contains("audio"))
         jsWrapper.loadFile(filePath, false);
       else
-        jsWrapper.loadHtml(errHtml);
+        jsWrapper.setUnable(filePath);
     }
     catch (IllegalStateException | IOException e)
     {
-      jsWrapper.loadHtml(errHtml);
+      jsWrapper.setUnable(filePath);
     }
 
     return mimetypeStr;
@@ -668,7 +667,7 @@ public class PreviewWrapper
       }
       catch (IOException e)
       {
-        jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString()));
+        jsWrapper.setUnable(filePath);
         return;
       }
 
@@ -678,7 +677,7 @@ public class PreviewWrapper
       }
       catch (OfficeException e)
       {
-        jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString()));
+        jsWrapper.setUnable(filePath);
         try { FileUtils.deleteDirectory(tempDir.toFile()); } catch (IOException ex) { noOp(); }
         return;
       }
@@ -696,7 +695,7 @@ public class PreviewWrapper
         }
         catch (IOException e)
         {
-          jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString()));
+          jsWrapper.setUnable(filePath);
         }
       else
         jsWrapper.loadPdf(new FilePath(tempPath), 1);

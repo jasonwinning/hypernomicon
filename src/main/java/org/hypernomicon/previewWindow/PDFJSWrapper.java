@@ -76,14 +76,16 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 public class PDFJSWrapper
 {
-  private boolean ready = false, opened = false, pdfjsMode = true;
+  private boolean ready = false, opened = false, pdfjsMode = true, hiding = false, showingAlt = false;
   private final PDFJSDoneHandler doneHndlr;
   private final Consumer<Integer> pageChangeHndlr;
   private final PDFJSRetrievedDataHandler retrievedDataHndlr;
@@ -92,14 +94,14 @@ public class PDFJSWrapper
   private Browser browser = null, oldBrowser = null;
   private static BrowserContext browserContext = null;
   private BrowserView browserView = null;
+  private PreviewAltDisplayCtrlr altDisplay = null;
   private static String viewerHTMLStr = null;
   private static final String basePlaceholder = "<!-- base placeholder -->";
   private final AnchorPane apBrowser;
+  private final GridPane gpAltDisplay;
   private Runnable postBrowserLoadCode = null;
 
   int getNumPages()    { return numPages; }
-  void prepareToHide() { removeFromParent(browserView); }
-  void prepareToShow() { addToParent(browserView, apBrowser); }
 
 //---------------------------------------------------------------------------
 
@@ -137,9 +139,114 @@ public class PDFJSWrapper
     this.retrievedDataHndlr = retrievedDataHndlr;
     this.apBrowser = apBrowser;
 
+    GridPane tempGridPane = null;
+    FXMLLoader loader = new FXMLLoader(App.class.getResource("previewWindow/PreviewAltDisplay.fxml"));
+    try { tempGridPane = loader.load(); } catch (IOException e) { noOp(); }
+    gpAltDisplay = tempGridPane;
+    altDisplay = loader.getController();
+
     javascriptToJava = new JavascriptToJava();
 
     reloadBrowser(null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void prepareToHide()
+  {
+    removeFromParent(showingAlt ? gpAltDisplay : browserView);
+
+    hiding = true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void prepareToShow()
+  {
+    if (hiding == false) return;
+
+    addToParent(showingAlt ? gpAltDisplay : browserView, apBrowser);
+
+    hiding = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void switchToAltDisplay()
+  {
+    runInFXThread(() ->
+    {
+      if (browserView == null) return;
+
+      if (hiding == false)
+      {
+        removeFromParent(browserView);
+        addToParent(gpAltDisplay, apBrowser);
+      }
+
+      showingAlt = true;
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void switchToPreviewDisplay()
+  {
+    runInFXThread(() ->
+    {
+      if (browserView == null) return;
+
+      if (hiding == false)
+      {
+        removeFromParent(gpAltDisplay);
+        addToParent(browserView, apBrowser);
+      }
+
+      showingAlt = false;
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setGenerating(FilePath filePath)
+  {
+    altDisplay.setGenerating(filePath);
+    switchToAltDisplay();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setUnable(FilePath filePath)
+  {
+    runInFXThread(() ->
+    {
+      altDisplay.setUnable(filePath);
+      switchToAltDisplay();
+    });
+  }
+
+  public void setUnable(String pathStr)
+  {
+    runInFXThread(() ->
+    {
+      altDisplay.setUnable(pathStr);
+      switchToAltDisplay();
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setNoOfficeInstallation()
+  {
+    altDisplay.setNoOfficeInstallation();
+    switchToAltDisplay();
   }
 
 //---------------------------------------------------------------------------
@@ -285,6 +392,8 @@ public class PDFJSWrapper
 
   void reloadBrowser(Runnable stuffToDoAfterLoadingViewerHtml)
   {
+    switchToPreviewDisplay();
+
     if (browser != null)
     {
       removeFromParent(browserView);
@@ -323,11 +432,11 @@ public class PDFJSWrapper
     {
       try
       {
-        browser.loadHTML("Unable to preview the file: " + Paths.get(new URI(downloadItem.getURL())));
+        setUnable(Paths.get(new URI(downloadItem.getURL())).toString());
       }
       catch (URISyntaxException e)
       {
-        browser.loadHTML("Unable to preview the file: " + downloadItem.getURL());
+        setUnable(downloadItem.getURL());
       }
 
       return false;
@@ -358,7 +467,11 @@ public class PDFJSWrapper
 
     addCustomProtocolHandler("jar");
 
-    apBrowser.setOnMouseEntered(event -> safeFocus(browserView));
+    apBrowser.setOnMouseEntered(event ->
+    {
+      if (showingAlt == false)
+        safeFocus(browserView);
+    });
 
     browser.setPopupHandler(new com.teamdev.jxbrowser.chromium.javafx.DefaultPopupHandler());
 
@@ -468,6 +581,8 @@ public class PDFJSWrapper
 
   private void loadViewerHtml(Runnable stuffToDoAfterLoading)
   {
+    switchToPreviewDisplay();
+
     cleanupPdfHtml();
 
     postBrowserLoadCode = stuffToDoAfterLoading;
@@ -675,6 +790,8 @@ public class PDFJSWrapper
 
   void loadHtml(String html)
   {
+    switchToPreviewDisplay();
+
     cleanupPdfHtml();
     browser.loadHTML(html);
   }
@@ -684,6 +801,8 @@ public class PDFJSWrapper
 
   void loadFile(FilePath file, boolean isHtml) throws IOException
   {
+    switchToPreviewDisplay();
+
     cleanupPdfHtml();
 
     if (isHtml)
@@ -730,6 +849,8 @@ public class PDFJSWrapper
                                                    app.prefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
       ready = false;
     };
+
+    switchToPreviewDisplay();
 
     if (pdfjsMode == false)
       loadViewerHtml(runnable);

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright 2015-2024 Jason Winning
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1153.0" prefWidth="884.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.previewWindow.PreviewAltDisplayCtrlr">
+     <columnConstraints>
+       <ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" />
+       <ColumnConstraints hgrow="SOMETIMES" minWidth="400.0" />
+         <ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" />
+     </columnConstraints>
+     <rowConstraints>
+       <RowConstraints percentHeight="20.0" vgrow="SOMETIMES" />
+       <RowConstraints maxHeight="200.0" minHeight="200.0" prefHeight="200.0" vgrow="SOMETIMES" />
+       <RowConstraints vgrow="SOMETIMES" />
+     </rowConstraints>
+      <children>
+         <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: -fx-background; -fx-border-color: -fx-text-box-border;" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <effect>
+               <DropShadow height="30.0" radius="14.5" width="30.0">
+                  <color>
+                     <Color red="0.4300000071525574" green="0.4300000071525574" blue="0.4300000071525574" />
+                  </color>
+               </DropShadow>
+            </effect>
+            <children>
+               <Label fx:id="lblMessage" layoutX="53.0" layoutY="27.0" prefHeight="97.0" prefWidth="469.0" text="Generating preview for file:" wrapText="true" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="52.0">
+                  <font>
+                     <Font size="14.0" />
+                  </font>
+                  <styleClass>
+                     <String fx:value="alert" />
+                     <String fx:value="information" />
+                     <String fx:value="dialog-pane" />
+                  </styleClass>
+               </Label>
+               <ProgressBar fx:id="progressBar" layoutX="53.0" layoutY="126.0" prefHeight="25.0" prefWidth="469.0" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="51.0" />
+            </children>
+         </AnchorPane>
+      </children>
+   </GridPane>
