@@ -187,6 +187,7 @@ public class PreviewWindow extends HyperDlg
     paneType.setOnMouseClicked(event -> curWrapper().go());
 
     btnGoToMain.setOnAction(event -> ui.windows.focusStage(ui.getStage()));
+
     btnGoToManager.setOnAction(event ->
     {
       if (fileManagerDlg.getStage().isShowing())
@@ -232,13 +233,8 @@ public class PreviewWindow extends HyperDlg
 
     sldPreview.valueChangingProperty().addListener((ob, oldValue, newValue) ->
     {
-      if ((oldValue == null) || (newValue == null)) return;
-
-      if (oldValue && Boolean.FALSE.equals(newValue))
-      {
-        if (tfPreviewPage.isDisabled() == false)
-          curWrapper().setPreview((int) sldPreview.getValue(), true);
-      }
+      if (Boolean.TRUE.equals(oldValue) && Boolean.FALSE.equals(newValue) && (tfPreviewPage.isDisabled() == false))
+        curWrapper().setPreview((int) sldPreview.getValue(), true);
     });
 
     btnHilitePrev.setOnAction(event ->
