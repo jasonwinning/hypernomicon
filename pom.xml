@@ -23,7 +23,6 @@
     <mainClass>org.hypernomicon.Main</mainClass>
     <maven.compiler.release>17</maven.compiler.release>
     <javafx.version>22</javafx.version>
-    <jodconverter.version>4.4.7</jodconverter.version>
   </properties>
   
   <build>
@@ -69,6 +68,7 @@
         <version>2.10.0</version>
         <configuration>
           <generateBackupPoms>false</generateBackupPoms>
+          <rulesUri>file:///${project.basedir}/versions-rules.xml</rulesUri>
         </configuration>
       </plugin>  
       
@@ -183,7 +183,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>33.1.0-jre</version>
+      <version>33.2.0-jre</version>
     </dependency>
     <dependency>
       <groupId>org.jbibtex</groupId>
@@ -198,7 +198,7 @@
     <dependency>
       <groupId>com.ibm.icu</groupId>
       <artifactId>icu4j</artifactId>
-      <version>74.2</version>
+      <version>75.1</version>
     </dependency>
     <dependency>
       <groupId>com.github.scribejava</groupId>
@@ -223,12 +223,12 @@
     <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-core</artifactId>
-      <version>2.9.1</version>
+      <version>2.9.2</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>2.0.12</version>
+      <version>2.0.13</version>
     </dependency>
     <dependency>
       <groupId>org.controlsfx</groupId>
@@ -243,7 +243,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.16.0</version>
+      <version>2.16.1</version>
     </dependency>	
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -253,12 +253,12 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
-      <version>1.11.0</version>
+      <version>1.12.0</version>
     </dependency>
     <dependency>
       <groupId>org.jodconverter</groupId>
       <artifactId>jodconverter-local</artifactId>
-      <version>${jodconverter.version}</version>
+      <version>4.4.7</version>
    </dependency>
     
   </dependencies>

@@ -478,12 +478,26 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   @FXML private void btnOfficeBrowseClick()
   {
-    DirectoryChooser dirChooser = new DirectoryChooser();
-
     FilePath startPath = new FilePath(tfOffice.getText());
 
     if (FilePath.isEmpty(startPath))
       startPath = new FilePath(userWorkingDir());
+
+    if (SystemUtils.IS_OS_MAC)
+    {
+      FileChooser fileChooser = new FileChooser();
+
+      fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("App files (*.app)", "*.app"));
+      fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
+      fileChooser.setInitialDirectory(startPath.toFile());
+
+      fileChooser.setTitle("Select Office Application");
+
+      nullSwitch(showOpenDialog(fileChooser), filePath -> tfOffice.setText(filePath.toString()));
+      return;
+    }
+
+    DirectoryChooser dirChooser = new DirectoryChooser();
 
     dirChooser.setInitialDirectory(startPath.toFile());
     dirChooser.setTitle("Select Folder");

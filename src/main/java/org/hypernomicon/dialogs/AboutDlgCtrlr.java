@@ -101,7 +101,7 @@ public class AboutDlgCtrlr extends HyperDlg
       "<li>" + anchorTag("JSON.simple", "https://code.google.com/archive/p/json-simple/") + "</li>" +
       "<li>" + anchorTag("ScribeJava", "https://github.com/scribejava/scribejava") + "</li>" +
       "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
-      "<li>" + anchorTag("Mammoth .docx to HTML converter", "https://github.com/mwilliamson/java-mammoth") + "</li>" +
+      "<li>" + anchorTag("JODConverter", "https://github.com/jodconverter/jodconverter") + "</li>" +
       "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +
       "<li>" + anchorTag("mark.js", "https://markjs.io/") +
 

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
@@ -734,6 +735,9 @@ public class PreviewWrapper
 
         List<Integer> ports = new ArrayList<>();
         DesktopUtil.findAvailablePorts(4, ports);
+
+        if (SystemUtils.IS_OS_MAC && officePath.toLowerCase().endsWith(".app"))  // Allow user to just select the app file
+          officePath = officePath + "/Contents";
 
         officeManager = LocalOfficeManager.builder().portNumbers(ports.get(0), ports.get(1), ports.get(2), ports.get(3))
                                                     .officeHome(officePath)

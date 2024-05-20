@@ -106,6 +106,6 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
   * [JSON.simple](https://code.google.com/archive/p/json-simple/)
   * [ScribeJava](https://github.com/scribejava/scribejava)
   * [XMP Toolkit for Java](https://www.adobe.com/devnet/xmp.html)
-  * [Mammoth .docx to HTML converter](https://github.com/mwilliamson/java-mammoth)
+  * [JODConverter](https://github.com/jodconverter/jodconverter)
   * [JBibTex](https://github.com/jbibtex/jbibtex)
   * [mark.js](https://markjs.io/)
