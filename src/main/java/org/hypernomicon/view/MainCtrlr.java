@@ -120,7 +120,7 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanExpression;
-import javafx.event.Event;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
@@ -1876,15 +1876,32 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int origFolderMenuItemCount = -1;
+  private Menu makeTopicalMenu(String text, FilePath filePath)
+  {
+    Menu menu = new Menu(text);
+
+    MenuItem item = new MenuItem("Show in system explorer");
+    item.setOnAction(event -> launchFile(filePath));
+    menu.getItems().add(item);
+
+    item = new MenuItem("Show in File Manager");
+    item.setOnAction(event -> goToFileInManager(filePath));
+    menu.getItems().add(item);
+
+    item = new MenuItem("Copy path to clipboard");
+    item.setOnAction(event -> copyToClipboard(filePath.toString()));
+    menu.getItems().add(item);
+
+    return menu;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void updateTopicalFolders()
   {
-    if (origFolderMenuItemCount < 0)
-      origFolderMenuItemCount = mnuFolders.getItems().size();
-
-    while (mnuFolders.getItems().size() > origFolderMenuItemCount) // Clear the topical folder items that currently exist
-      mnuFolders.getItems().remove(origFolderMenuItemCount);
+    ObservableList<MenuItem> items = mnuFolders.getItems();
+    items.clear();
 
     if (db.isLoaded() == false)
     {
@@ -1892,8 +1909,19 @@ public final class MainCtrlr
       return;
     }
 
-    FilePath topicalPath = db.topicalPath();
     mnuFolders.setDisable(false);
+
+    items.addAll(makeTopicalMenu("Papers"               , db.papersPath   ()),
+                 makeTopicalMenu("Books"                , db.booksPath    ()),
+                 makeTopicalMenu("Works not entered yet", db.unenteredPath()),
+                 makeTopicalMenu("Topical"              , db.topicalPath  ()),
+                 makeTopicalMenu("Pictures"             , db.picturesPath ()),
+                 makeTopicalMenu("Misc. files"          , db.miscFilesPath()),
+                 makeTopicalMenu("Search results"       , db.resultsPath  ()),
+                 makeTopicalMenu("Database root folder" , db.getRootPath  ()));
+
+    int separatorPos = items.size();
+    FilePath topicalPath = db.topicalPath();
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(topicalPath.toPath(), "**"))
     {
@@ -1905,15 +1933,13 @@ public final class MainCtrlr
         FilePath relFilePath = topicalPath.relativize(entryFilePath);
 
         if (FilePath.isEmpty(relFilePath) == false)
-        {
-          MenuItem item = new MenuItem();
-          item.setText(relFilePath.toString());
-          item.setOnAction(event -> launchFile(entryFilePath));
-          mnuFolders.getItems().add(item);
-        }
+          items.add(makeTopicalMenu(relFilePath.toString(), entryFilePath));
       });
     }
     catch (DirectoryIteratorException | IOException e) { e.printStackTrace(); }
+
+    if (items.size() > separatorPos)
+      items.add(separatorPos, new SeparatorMenuItem());
   }
 
 //---------------------------------------------------------------------------
@@ -1959,38 +1985,6 @@ public final class MainCtrlr
     if (save) update();
 
     return newRecord;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void mnuFolderClick(Event event)
-  {
-    MenuItem item = (MenuItem)event.getSource();
-    int code = parseInt(item.getId(), 0);
-    boolean clipboard = (code % 10) == 1;
-
-    code = code / 10;
-
-    FilePath filePath = switch (code)
-    {
-      case 1  -> db.papersPath();
-      case 2  -> db.booksPath();
-      case 3  -> db.unenteredPath();
-      case 4  -> db.topicalPath();
-      case 5  -> db.picturesPath();
-      case 6  -> db.miscFilesPath();
-      case 7  -> db.getRootPath();
-      case 8  -> db.resultsPath();
-      default -> null;
-    };
-
-    if (FilePath.isEmpty(filePath)) return;
-
-    if (clipboard)
-      copyToClipboard(filePath.toString());
-    else
-      launchFile(filePath);
   }
 
 //---------------------------------------------------------------------------

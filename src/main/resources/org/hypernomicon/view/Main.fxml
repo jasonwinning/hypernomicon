@@ -97,28 +97,7 @@
           <Menu fx:id="mnuQueries" mnemonicParsing="false" text="Queries" />
           <SeparatorMenuItem mnemonicParsing="false" />
         </Menu>
-        <Menu fx:id="mnuFolders" mnemonicParsing="false" text="Folders">
-          <MenuItem id="10" mnemonicParsing="false" onAction="#mnuFolderClick" text="Papers" />
-          <MenuItem id="20" mnemonicParsing="false" onAction="#mnuFolderClick" text="Books" />
-          <MenuItem id="30" mnemonicParsing="false" onAction="#mnuFolderClick" text="Works not entered yet" />
-          <MenuItem id="40" mnemonicParsing="false" onAction="#mnuFolderClick" text="Topical" />
-          <MenuItem id="50" mnemonicParsing="false" onAction="#mnuFolderClick" text="Pictures" />
-          <MenuItem id="60" mnemonicParsing="false" onAction="#mnuFolderClick" text="Misc. files" />
-          <MenuItem id="80" mnemonicParsing="false" onAction="#mnuFolderClick" text="Search results" />
-          <MenuItem id="70" mnemonicParsing="false" onAction="#mnuFolderClick" text="Database root folder" />
-          <SeparatorMenuItem mnemonicParsing="false" />
-          <Menu mnemonicParsing="false" text="Copy path to clipboard">
-            <MenuItem id="11" mnemonicParsing="false" onAction="#mnuFolderClick" text="Papers" />
-            <MenuItem id="21" mnemonicParsing="false" onAction="#mnuFolderClick" text="Books" />
-            <MenuItem id="31" mnemonicParsing="false" onAction="#mnuFolderClick" text="Works not entered yet" />
-            <MenuItem id="41" mnemonicParsing="false" onAction="#mnuFolderClick" text="Topical" />
-            <MenuItem id="51" mnemonicParsing="false" onAction="#mnuFolderClick" text="Pictures" />
-            <MenuItem id="61" mnemonicParsing="false" onAction="#mnuFolderClick" text="Misc. files" />
-            <MenuItem id="81" mnemonicParsing="false" onAction="#mnuFolderClick" text="Search results" />
-            <MenuItem id="71" mnemonicParsing="false" onAction="#mnuFolderClick" text="Database root folder" />
-          </Menu>
-          <SeparatorMenuItem mnemonicParsing="false" />
-        </Menu>
+        <Menu fx:id="mnuFolders" mnemonicParsing="false" text="Folders" />
         <Menu mnemonicParsing="false" text="Help">
           <MenuItem mnemonicParsing="false" onAction="#showWelcomeWindow" text="Show Welcome Window" />
           <SeparatorMenuItem mnemonicParsing="false" />
