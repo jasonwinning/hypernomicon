@@ -45,14 +45,21 @@ import javafx.scene.image.ImageView;
 public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 {
   private final HyperPath hyperPath;
+  private final boolean isDir;
   private MediaType mimetype = null;
 
 //---------------------------------------------------------------------------
 
-  FileRow(HyperPath hyperPath, TreeModel<FileRow> treeModel)
+  FileRow(HyperPath hyperPath, boolean isDir)
+  {
+    this(hyperPath, isDir, null);
+  }
+
+  FileRow(HyperPath hyperPath, boolean isDir, TreeModel<FileRow> treeModel)
   {
     super(treeModel);
     this.hyperPath = hyperPath;
+    this.isDir = isDir;
 
     if (treeModel != null)
       treeItem = new TreeItem<>(this);
@@ -61,7 +68,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 
   public FilePath getFilePath() { return hyperPath.filePath(); }
-  boolean isDirectory()         { return nullSwitch(hyperPath.filePath(), false, FilePath::isDirectory); }
+  boolean isDirectory()         { return isDir; }
   public HDT_Folder getFolder() { return hyperPath.parentFolder(); }
   String getFileName()          { return hyperPath.getNameStr(); }
   HyperPath getHyperPath()      { return hyperPath; }

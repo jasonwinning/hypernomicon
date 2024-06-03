@@ -148,7 +148,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   @Override public FileRow newRow(HDT_Record record, TreeModel<FileRow> treeModel)
   {
     if (record.getType() == hdtFolder)
-      return new FileRow(((HDT_RecordWithPath)record).getPath(), treeModel);
+      return new FileRow(((HDT_RecordWithPath)record).getPath(), true, treeModel);
 
     internalErrorPopup(18726);
     return null;

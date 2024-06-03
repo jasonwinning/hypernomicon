@@ -235,12 +235,13 @@ class FileTable extends DragNDropContainer<FileRow>
         FilePath filePath = new FilePath(entry);
 
         Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
+        boolean isDir = filePath.isDirectory();
 
         if (set.size() > 0)
         {
-          FileRow row = new FileRow(set.iterator().next(), null);
+          FileRow row = new FileRow(set.iterator().next(), isDir);
 
-          if (filePath.isDirectory())
+          if (isDir)
           {
             addToSortedList(rows, row);
 
@@ -261,7 +262,7 @@ class FileTable extends DragNDropContainer<FileRow>
         }
         else
         {
-          addToSortedList(rows, new FileRow(new HyperPath(filePath), null));
+          addToSortedList(rows, new FileRow(new HyperPath(filePath), isDir));
         }
       }
     }
