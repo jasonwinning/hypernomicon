@@ -457,7 +457,7 @@ public class PreviewWrapper
       return;
     }
 
-    window.refreshControls(pageNum, numPages, filePath, getRecord());
+    window.refreshControls(pageNum, numPages, this);
   }
 
   //---------------------------------------------------------------------------

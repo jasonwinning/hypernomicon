@@ -613,11 +613,16 @@ public class PreviewWindow extends HyperDlg
       curWrapper().refreshControls();
   }
 
-  void refreshControls(int pageNum, int numPages, FilePath filePath, HDT_RecordWithPath record)
+  void refreshControls(int pageNum, int numPages, PreviewWrapper previewWrapper)
   {
+    if (curWrapper() != previewWrapper) return;
+
+    FilePath filePath = previewWrapper.getFilePath();
+    HDT_RecordWithPath record = previewWrapper.getRecord();
+
     disablePreviewUpdating = true;
 
-    tfPreviewPage.setText(curWrapper().getLabelByPage(pageNum));
+    tfPreviewPage.setText(previewWrapper.getLabelByPage(pageNum));
 
     tfPreviewPage.setDisable(false);
 
@@ -649,13 +654,13 @@ public class PreviewWindow extends HyperDlg
 
         enableAll(btnSetStart, btnStartPage, btnSetEnd, btnEndPage);
 
-        updateStartBtn(curWrapper().getWorkStartPageNum());
-        updateEndBtn  (curWrapper().getWorkEndPageNum  ());
+        updateStartBtn(previewWrapper.getWorkStartPageNum());
+        updateEndBtn  (previewWrapper.getWorkEndPageNum  ());
 
         btnContents.setDisable(true);
         btnContents.setText("No other records...");
 
-        HDT_RecordWithPath showingFile = HyperPath.getRecordFromFilePath(curWrapper().getFilePath());
+        HDT_RecordWithPath showingFile = HyperPath.getRecordFromFilePath(previewWrapper.getFilePath());
 
         if (showingFile == null) // External file (specified in URL field) is being previewed
         {
@@ -694,15 +699,15 @@ public class PreviewWindow extends HyperDlg
     btnPreviewPrev.setDisable(pageNum == 1);
     btnPreviewNext.setDisable(pageNum == numPages);
 
-    btnPreviewBack   .setDisable(curWrapper().enableNavButton(false) == false);
-    btnPreviewForward.setDisable(curWrapper().enableNavButton(true ) == false);
+    btnPreviewBack   .setDisable(previewWrapper.enableNavButton(false) == false);
+    btnPreviewForward.setDisable(previewWrapper.enableNavButton(true ) == false);
 
     updateFileNavButtons();
 
-    curWrapper().refreshNavMenu(chbBack.getMenu(), false);
-    curWrapper().refreshNavMenu(chbForward.getMenu(), true);
+    previewWrapper.refreshNavMenu(chbBack.getMenu(), false);
+    previewWrapper.refreshNavMenu(chbForward.getMenu(), true);
 
-    int lowest = curWrapper().lowestHilitePage();
+    int lowest = previewWrapper.lowestHilitePage();
 
     if (lowest < 0)
     {
@@ -712,19 +717,25 @@ public class PreviewWindow extends HyperDlg
     else
     {
       btnHilitePrev.setDisable(pageNum <= lowest);
-      btnHiliteNext.setDisable(pageNum >= curWrapper().highestHilitePage());
+      btnHiliteNext.setDisable(pageNum >= previewWrapper.highestHilitePage());
     }
 
     lblPreviewPages.setText(pageNum + " / " + numPages);
 
-    record = HyperPath.getRecordFromFilePath(curWrapper().getFilePath());
     HDT_WorkFile workFile = null;
 
     if ((record != null) && (record.getType() == hdtWorkFile))
       workFile = (HDT_WorkFile) record;
+    else
+    {
+      record = HyperPath.getRecordFromFilePath(filePath);
+
+      if ((record != null) && (record.getType() == hdtWorkFile))
+        workFile = (HDT_WorkFile) record;
+    }
 
     if (workFile == null)
-      contentsWindow.update(curWrapper().getFilePath(), pageNum);
+      contentsWindow.update(filePath, pageNum);
     else
       contentsWindow.update(workFile, pageNum);
 
