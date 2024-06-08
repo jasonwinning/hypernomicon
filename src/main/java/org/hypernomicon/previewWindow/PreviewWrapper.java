@@ -85,6 +85,7 @@ public class PreviewWrapper
   private final AnchorPane ap;
 
   PreviewSource getSource()        { return src; }
+  PDFJSWrapper getJSWrapper()      { return jsWrapper; }
   int getPageNum()                 { return pageNum; }
   int getNumPages()                { return numPages; }
   Tab getTab()                     { return tab; }
@@ -102,6 +103,7 @@ public class PreviewWrapper
   int getPageByLabel(String label) { return collEmpty(labelToPage) ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
   String getLabelByPage(int page)  { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
   boolean zoom(boolean zoomingIn)  { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
+  void setNeedsRefresh()           { needsRefresh = true; }
 
   boolean enableFileNavButton(boolean isForward) { return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1; }
 
@@ -367,11 +369,11 @@ public class PreviewWrapper
     workEndPageNum = -1;
     curPrevFile = null;
 
-    OfficePreviewer.stop();
-
     if (window.curSource() == src) window.clearControls();
 
     if (initialized == false) return;
+
+    OfficePreviewer.stopPreview(jsWrapper);
 
     if (pdfIsShowing)
       jsWrapper.close();
@@ -463,7 +465,7 @@ public class PreviewWrapper
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private void finishRefresh(boolean forceReload, boolean incrementNav)
+  private void finishRefresh(boolean force, boolean incrementNav)
   {
     if ((pageNum <= 0) || FilePath.isEmpty(getFilePath()) || (initialized == false) || (curPrevFile.filePath.equals(filePathShowing) && viewerErrOccurred))
     {
@@ -473,7 +475,7 @@ public class PreviewWrapper
 
     viewerErrOccurred = false;
 
-    if (forceReload || (curPrevFile.filePath.equals(filePathShowing) == false))
+    if (force || (curPrevFile.filePath.equals(filePathShowing) == false))
     {
       if (curPrevFile.filePath.isDirectory())
       {
@@ -493,7 +495,7 @@ public class PreviewWrapper
       pageToLabel = null;
       hilitePages = null;
 
-      String mimetypeStr = showFile(curPrevFile.filePath, pageNum, jsWrapper);
+      String mimetypeStr = showFile(curPrevFile.filePath, pageNum, jsWrapper, this);  // This can set needsRefresh to true
 
       if (mimetypeStr.contains("pdf"))
       {
@@ -526,9 +528,14 @@ public class PreviewWrapper
 
   public static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper)
   {
+    return showFile(filePath, pageNum, jsWrapper, null);
+  }
+
+  public static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
+  {
     String mimetypeStr = getMediaType(filePath).toString();
 
-    OfficePreviewer.stop();
+    OfficePreviewer.stopPreview(jsWrapper);
 
     // For PDF, no conversion is necessary. We display it as-is.
 
@@ -557,7 +564,7 @@ public class PreviewWrapper
           mimetypeStr.contains("opendocument.spreadsheet")      ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
           mimetypeStr.contains("sun.xml.calc"))                     // sxc  (OpenOffice.org 1.0 spreadsheet)
       {
-        OfficePreviewer.preview(mimetypeStr, filePath, pageNum, jsWrapper);
+        OfficePreviewer.preview(mimetypeStr, filePath, pageNum, jsWrapper, previewWrapper);
       }
       else if (mimetypeStr.contains("html"))
         jsWrapper.loadFile(filePath, true);
@@ -584,12 +591,13 @@ public class PreviewWrapper
 
     if (window.disablePreviewUpdating) return;
 
+    boolean neededRefresh = needsRefresh;
     needsRefresh = false;
 
     if (forceReload)
       jsWrapper.reloadBrowser(() -> Platform.runLater(() -> finishRefresh(true, incrementNav)));
     else
-      finishRefresh(false, incrementNav);
+      finishRefresh(neededRefresh, incrementNav);
   }
 
   //---------------------------------------------------------------------------

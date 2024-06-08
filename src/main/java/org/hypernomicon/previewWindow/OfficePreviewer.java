@@ -24,7 +24,10 @@ import static org.hypernomicon.util.Util.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -46,9 +49,11 @@ public final class OfficePreviewer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private record OfficePreviewInfo(PDFJSWrapper jsWrapper, FilePath filePath, int pageNum, boolean convertToHtml, String officePath) { }
+  private record OfficePreviewInfo(PreviewWrapper previewWrapper, PDFJSWrapper jsWrapper, FilePath filePath, int pageNum, boolean convertToHtml, String officePath) { }
 
   private static OfficePreviewThread bkgThread;
+
+  private static Map<PDFJSWrapper, Boolean> wrapperStopped = new ConcurrentHashMap<>();
 
   private static volatile OfficePreviewInfo lastInfo, nextInfo;
 
@@ -57,14 +62,17 @@ public final class OfficePreviewer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void preview(String mimetypeStr, FilePath filePath, int pageNum, PDFJSWrapper jsWrapper)
+  public static void preview(String mimetypeStr, FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
   {
+    if (previewWrapper != null)
+      assert (jsWrapper == previewWrapper.getJSWrapper());
+
     String officePath = app.prefs.get(PREF_KEY_OFFICE_PATH, "");
 
     if (officePath.isBlank())
     {
-      if ((lastInfo != null) && (lastInfo.jsWrapper == jsWrapper))
-        stop();
+      if (lastInfo != null)
+        wrapperStopped.put(jsWrapper, true);
 
       jsWrapper.setNoOfficeInstallation();
       return;
@@ -82,15 +90,28 @@ public final class OfficePreviewer
                             mimetypeStr.contains("opendocument.spreadsheet") ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
                             mimetypeStr.contains("sun.xml.calc");                // sxc  (OpenOffice.org 1.0 spreadsheet)
 
-    nextInfo = new OfficePreviewInfo(jsWrapper, filePath, pageNum, convertToHtml, officePath);
+    if ((lastInfo != nextInfo) && (nextInfo != null) && (nextInfo.jsWrapper != jsWrapper) && (nextInfo.previewWrapper != null))
+      nextInfo.previewWrapper.setNeedsRefresh();
+
+    nextInfo = new OfficePreviewInfo(previewWrapper, jsWrapper, filePath, pageNum, convertToHtml, officePath);
   }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static void stop()
+  public static synchronized void stopPreview()
   {
+    wrapperStopped.keySet().forEach(jsWrapper -> wrapperStopped.put(jsWrapper, true));
+
     nextInfo = null;
+  }
+
+  public static synchronized void stopPreview(PDFJSWrapper jsWrapper)
+  {
+    wrapperStopped.put(jsWrapper, true);
+
+    if ((nextInfo != null) && (nextInfo.jsWrapper == jsWrapper))
+      nextInfo = null;
   }
 
   //---------------------------------------------------------------------------
@@ -116,7 +137,7 @@ public final class OfficePreviewer
 
     @Override public void run()
     {
-      FilePath tempDir = null;
+      Map<PDFJSWrapper, FilePath> wrapperToTempDir = new HashMap<>();
       File tempPath = null;
 
       while (shutDown == false)
@@ -129,28 +150,32 @@ public final class OfficePreviewer
 
         try
         {
+          FilePath tempDir = wrapperToTempDir.get(nextInfo.jsWrapper);
           if (tempDir != null)
             FileUtils.deleteDirectory(tempDir.toFile());
 
           tempDir = tempOfficePreviewFolder(false, false).resolve("preview" + randomAlphanumericStr(8));
           tempPath = tempDir.resolve("preview" + randomAlphanumericStr(8) + '.' + (nextInfo.convertToHtml ? "html" : "pdf")).toFile();
+
+          wrapperToTempDir.put(nextInfo.jsWrapper, tempDir);
         }
         catch (IOException e)
         {
           nextInfo.jsWrapper.setUnable(nextInfo.filePath);
-          nextInfo = null;
-          tempDir = null;
+          stopPreview(nextInfo.jsWrapper);
+          wrapperToTempDir.remove(nextInfo.jsWrapper);
           continue;
         }
 
         if (updateOfficeConverter(nextInfo.officePath) == false)
         {
           nextInfo.jsWrapper.setUnable(nextInfo.filePath);
-          nextInfo = null;
+          stopPreview(nextInfo.jsWrapper);
           continue;
         }
 
         lastInfo = nextInfo;
+        wrapperStopped.put(nextInfo.jsWrapper, false);
 
         try
         {
@@ -167,7 +192,7 @@ public final class OfficePreviewer
           continue;
         }
 
-        if (shutDown || (nextInfo == null) || (lastInfo != nextInfo))
+        if (shutDown || Boolean.TRUE.equals(wrapperStopped.get(lastInfo.jsWrapper)) || ((nextInfo != null) && (lastInfo != nextInfo) && (lastInfo.jsWrapper == nextInfo.jsWrapper)))
           continue;
 
         if (lastInfo.convertToHtml)
@@ -182,7 +207,8 @@ public final class OfficePreviewer
         else
           lastInfo.jsWrapper.loadPdf(new FilePath(tempPath), 1);
 
-        nextInfo = null;
+        if (nextInfo == lastInfo)
+          nextInfo = null;
       }
 
       if (officeConverter != null)
@@ -288,7 +314,7 @@ public final class OfficePreviewer
 
   public static void cleanup()
   {
-    stop();
+    stopPreview();
 
     new HyperThread(OfficePreviewThread::cleanup, "OfficePreviewCleanup").start();
   }
