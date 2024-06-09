@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
@@ -70,6 +71,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 
   private FilePath filePathShowing = null;
+  private HDT_RecordWithPath recordShowing = null;
   private int fileNdx = -1, pageNum = -1, pageNumShowing = -1, workStartPageNum = -1, workEndPageNum = -1, numPages = 0;
   private final PreviewSource src;
   private final PreviewWindow window;
@@ -90,11 +92,9 @@ public class PreviewWrapper
   int getNumPages()                { return numPages; }
   Tab getTab()                     { return tab; }
   FilePath getFilePath()           { return curPrevFile == null ? null : curPrevFile.filePath; }
-  boolean needsRefresh()           { return needsRefresh; }
   int getWorkStartPageNum()        { return workStartPageNum; }
   int getWorkEndPageNum()          { return workEndPageNum; }
   HDT_RecordWithPath getRecord()   { return curPrevFile == null ? null : curPrevFile.record; }
-  ToggleButton getToggleButton()   { return btn; }
   FilePath getFilePathShowing()    { return filePathShowing; }
   void prepareToHide()             { if (initialized) jsWrapper.prepareToHide(); }
   void prepareToShow()             { if (initialized) jsWrapper.prepareToShow(); }
@@ -103,7 +103,6 @@ public class PreviewWrapper
   int getPageByLabel(String label) { return collEmpty(labelToPage) ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
   String getLabelByPage(int page)  { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
   boolean zoom(boolean zoomingIn)  { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
-  void setNeedsRefresh()           { needsRefresh = true; }
 
   boolean enableFileNavButton(boolean isForward) { return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1; }
 
@@ -207,6 +206,24 @@ public class PreviewWrapper
   {
     workStartPageNum = start;
     workEndPageNum = end;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Indicate that this preview file needs to be refreshed. If the passed in file is the one this preview is currently
+   * supposed to show, then make sure the preview is refreshed next time it is activated.
+   * @param nextFilePath The file that needs to be refreshed
+   */
+  void setNeedsRefresh(FilePath nextFilePath)
+  {
+    // If an office file preview is still being generated, filePathShowing will already be set even though
+    // the file isn't really showing yet. This gets called when the preview wrapper is being deactivated before
+    // the preview was done generating; it will have to be regenerated when this preview wrapper gets
+    // reactivated.
+
+    needsRefresh = Objects.equals(nextFilePath, filePathShowing);
   }
 
 //---------------------------------------------------------------------------
@@ -363,6 +380,7 @@ public class PreviewWrapper
   void clearPreview()
   {
     filePathShowing = null;
+    recordShowing = null;
     pageNum = -1;
     pageNumShowing = -1;
     workStartPageNum = -1;
@@ -428,6 +446,21 @@ public class PreviewWrapper
           fileList.remove(fileNdx);
 
         fileList.add(curPrevFile);
+
+        // Now remove empties
+
+        int ndx = 0;
+        while (ndx < fileNdx)
+        {
+          prevFile = fileList.get(ndx);
+          if (FilePath.isEmpty(prevFile.filePath) || prevFile.filePath.isDirectory())
+          {
+            fileList.remove(ndx);
+            fileNdx--;
+          }
+          else
+            ndx++;
+        }
       }
     }
 
@@ -442,7 +475,7 @@ public class PreviewWrapper
       if ((window.curSource() == src) && contentsWindow.getStage().isShowing())
         refreshControls();
 
-      needsRefresh = true;
+      needsRefresh = !filePath.equals(filePathShowing);
     }
   }
 
@@ -484,6 +517,7 @@ public class PreviewWrapper
       }
 
       filePathShowing = null;
+      recordShowing = null;
       pageNumShowing = -1;
 
       window.clearControls();
@@ -502,6 +536,7 @@ public class PreviewWrapper
         pdfIsShowing = true;
 
         filePathShowing = curPrevFile.filePath;
+        recordShowing = curPrevFile.record;
         pageNumShowing = -1;
 
         return;
@@ -511,16 +546,35 @@ public class PreviewWrapper
       numPages = 1;
 
       filePathShowing = curPrevFile.filePath;
+      recordShowing = curPrevFile.record;
       pageNumShowing = pageNum;
     }
 
-    if (pageNum != pageNumShowing)
+    if ((pageNum != pageNumShowing) && ((pageNum > 1) || (pageNumShowing > 1)))
       jsWrapper.goToPage(pageNum);
 
     if (incrementNav)
       incrementNav();
 
     refreshControls();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void activate()
+  {
+    if (needsRefresh)
+      refreshPreview(false, true);
+    else
+    {
+      if ((getRecord() != recordShowing) && (pageNum != pageNumShowing) && ((pageNum > 1) || (pageNumShowing > 1)))
+        jsWrapper.goToPage(pageNum);
+
+      refreshControls();
+    }
+
+    btn.setSelected(true);
   }
 
   //---------------------------------------------------------------------------

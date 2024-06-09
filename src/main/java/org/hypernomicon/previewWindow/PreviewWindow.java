@@ -288,8 +288,8 @@ public class PreviewWindow extends HyperDlg
       curWrapper().navClick(true);
     });
 
-    btnFileBack.setOnAction(event -> curWrapper().fileNavClick(false));
-    btnFileForward.setOnAction(event -> curWrapper().fileNavClick(true));
+    btnFileBack   .setOnAction(event -> curWrapper().fileNavClick(false));
+    btnFileForward.setOnAction(event -> curWrapper().fileNavClick(true ));
 
     btnPreviewPrev.setOnAction(event ->
     {
@@ -355,14 +355,7 @@ public class PreviewWindow extends HyperDlg
     {
       if (newValue == null) return;
 
-      PreviewWrapper wrapper = tabToWrapper.get(newValue);
-
-      if (wrapper.needsRefresh())
-        wrapper.refreshPreview(false, true);
-      else
-        wrapper.refreshControls();
-
-      wrapper.getToggleButton().setSelected(true);
+      tabToWrapper.get(newValue).activate();
     });
 
     tfPreviewPage.focusedProperty().addListener((ob, oldValue, newValue) ->
@@ -391,10 +384,7 @@ public class PreviewWindow extends HyperDlg
 
       ui.windows.push(dialogStage);
 
-      PreviewWrapper wrapper = curWrapper();
-
-      if (wrapper.needsRefresh())
-        wrapper.refreshPreview(false, true);
+      runDelayedInFXThread(1, 300, () -> curWrapper().activate());
     };
 
     dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->

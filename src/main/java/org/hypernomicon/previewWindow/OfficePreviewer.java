@@ -91,7 +91,7 @@ public final class OfficePreviewer
                             mimetypeStr.contains("sun.xml.calc");                // sxc  (OpenOffice.org 1.0 spreadsheet)
 
     if ((lastInfo != nextInfo) && (nextInfo != null) && (nextInfo.jsWrapper != jsWrapper) && (nextInfo.previewWrapper != null))
-      nextInfo.previewWrapper.setNeedsRefresh();
+      nextInfo.previewWrapper.setNeedsRefresh(nextInfo.filePath);
 
     nextInfo = new OfficePreviewInfo(previewWrapper, jsWrapper, filePath, pageNum, convertToHtml, officePath);
   }
@@ -205,7 +205,7 @@ public final class OfficePreviewer
             lastInfo.jsWrapper.setUnable(lastInfo.filePath);
           }
         else
-          lastInfo.jsWrapper.loadPdf(new FilePath(tempPath), 1);
+          lastInfo.jsWrapper.loadPdf(new FilePath(tempPath), lastInfo.pageNum);
 
         if (nextInfo == lastInfo)
           nextInfo = null;
