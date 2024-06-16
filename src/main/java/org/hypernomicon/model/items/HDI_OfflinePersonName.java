@@ -19,8 +19,8 @@ package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.records.RecordState;
-import org.hypernomicon.model.records.RecordType;
 
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
@@ -42,10 +42,10 @@ public class HDI_OfflinePersonName extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    if      (tag == tagFirstName) firstName = ultraTrim(convertToSingleLine(nodeText));
-    else if (tag == tagLastName)  lastName  = ultraTrim(convertToSingleLine(nodeText));
+    if      (element.tag == tagFirstName) firstName = ultraTrim(convertToSingleLine(nodeText));
+    else if (element.tag == tagLastName)  lastName  = ultraTrim(convertToSingleLine(nodeText));
   }
 
 //---------------------------------------------------------------------------

@@ -38,7 +38,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 
 /**
@@ -51,9 +50,9 @@ import org.hypernomicon.model.unities.MainText.DisplayItem;
  * They will also each have a reference to the same {@link HDT_Hub HDT_Hub}
  * object (record of type Hub).<br>
  * <br>
- * This class differs from {@link org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription HDT_RecordWithDescription}
+ * This class differs from {@link org.hypernomicon.model.unities.HDT_RecordWithDescription HDT_RecordWithDescription}
  * because this class will always have a description field that is considered
- * to be the "main" one, whereas implementing {@link org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription HDT_RecordWithDescription}
+ * to be the "main" one, whereas implementing {@link org.hypernomicon.model.unities.HDT_RecordWithDescription HDT_RecordWithDescription}
  * only implies that there is at least one description field but none that is
  * considered to be the "main" one. For example, {@link org.hypernomicon.model.records.HDT_Term HDT_Term}
  * instantiates {@code HDT_RecordWithDescription} but not {@code HDT_RecordWithMainText} because there can be multiple

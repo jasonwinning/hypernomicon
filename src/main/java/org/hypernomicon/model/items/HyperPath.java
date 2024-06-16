@@ -33,11 +33,11 @@ import java.util.stream.Collectors;
 
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_WorkFile;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.filePath.FilePath;
 

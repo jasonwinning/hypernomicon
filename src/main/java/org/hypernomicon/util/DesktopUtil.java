@@ -163,7 +163,7 @@ public final class DesktopUtil
 
       Desktop.getDesktop().open(filePath.toFile());
     }
-    catch (IOException e)
+    catch (IOException | SecurityException | IllegalArgumentException e)
     {
       errorPopup("An error occurred while trying to open the file: " + filePath + ". " + getThrowableMessage(e));
     }
@@ -190,7 +190,7 @@ public final class DesktopUtil
 
       Desktop.getDesktop().edit(filePath.toFile());
     }
-    catch (IOException e)
+    catch (IOException | SecurityException | IllegalArgumentException e)
     {
       errorPopup("An error occurred while trying to edit the file: " + filePath + ". " + getThrowableMessage(e));
     }

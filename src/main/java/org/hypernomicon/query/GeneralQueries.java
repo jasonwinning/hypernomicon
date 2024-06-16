@@ -38,7 +38,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
+import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.query.Query.FilteredRecordQuery;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.view.populators.RecordTypePopulator;

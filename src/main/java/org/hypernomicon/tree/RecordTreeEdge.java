@@ -35,7 +35,7 @@ import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
+import org.hypernomicon.model.records.HDT_RecordWithAuthors;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;

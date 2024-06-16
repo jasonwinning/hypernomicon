@@ -36,7 +36,7 @@ import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.DesktopUtil;

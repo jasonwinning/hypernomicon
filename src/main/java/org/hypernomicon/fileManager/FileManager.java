@@ -47,8 +47,7 @@ import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;

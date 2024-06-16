@@ -41,8 +41,6 @@ import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.WorkAuthors;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.HyperObjList;

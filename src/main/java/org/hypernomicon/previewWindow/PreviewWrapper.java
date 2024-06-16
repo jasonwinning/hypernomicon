@@ -32,7 +32,7 @@ import java.util.Objects;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSCommand;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.model.records.HDT_Work;
@@ -220,8 +220,8 @@ public class PreviewWrapper
   {
     // If an office file preview is still being generated, filePathShowing will already be set even though
     // the file isn't really showing yet. This gets called when the preview wrapper is being deactivated before
-    // the preview was done generating; it will have to be regenerated when this preview wrapper gets
-    // reactivated.
+    // the preview was done generating and a different preview was queued to be generated; this one will have to
+    // be regenerated when this preview wrapper gets reactivated.
 
     needsRefresh = Objects.equals(nextFilePath, filePathShowing);
   }

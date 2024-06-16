@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 

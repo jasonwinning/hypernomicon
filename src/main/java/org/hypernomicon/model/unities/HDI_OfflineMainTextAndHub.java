@@ -19,6 +19,7 @@ package org.hypernomicon.model.unities;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.items.HDI_OfflineBase;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
@@ -91,36 +92,36 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    switch (tag)
+    switch (element.tag)
     {
       case tagHub :
 
-        hubID = objID;
+        hubID = element.objID;
         break;
 
       case tagDisplayRecord :
 
         switch (nodeText)
         {
-          case DI_TYPE_DESC      : displayItems.add(new DisplayItem(diDescription )); break;
-          case DI_TYPE_KEY_WORKS : displayItems.add(new DisplayItem(diKeyWorks    )); break;
-          case DI_TYPE_RECORD    : displayItems.add(new DisplayItem(objID, objType)); break;
+          case DI_TYPE_DESC      : displayItems.add(new DisplayItem(diDescription                 )); break;
+          case DI_TYPE_KEY_WORKS : displayItems.add(new DisplayItem(diKeyWorks                    )); break;
+          case DI_TYPE_RECORD    : displayItems.add(new DisplayItem(element.objID, element.objType)); break;
         }
 
         break;
 
       case tagKeyWork :
 
-        if ((objType == hdtWork) || (objType == hdtMiscFile))
+        if ((element.objType == hdtWork) || (element.objType == hdtMiscFile))
         {
-          Set<Integer> idSet = usedKeyWorks.computeIfAbsent(objType, _objType -> new HashSet<>());
+          Set<Integer> idSet = usedKeyWorks.computeIfAbsent(element.objType, _objType -> new HashSet<>());
 
-          if (idSet.contains(objID) == false)
+          if (idSet.contains(element.objID) == false)
           {
-            keyWorks.add(new KeyWork(objType, objID, nodeText, false));
-            idSet.add(objID);
+            keyWorks.add(new KeyWork(element.objType, element.objID, nodeText, false));
+            idSet.add(element.objID);
           }
         }
 

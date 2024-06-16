@@ -15,51 +15,33 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.records;
 
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.HyperDB.HDX_Element;
-import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.items.Authors;
 
-import java.util.Map;
+//---------------------------------------------------------------------------
 
-public class HDI_OfflineString extends HDI_OfflineBase
+public interface HDT_RecordWithAuthors<AuthorsType extends Authors> extends HDT_Record
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String strValue = "";
+  AuthorsType getAuthors();
 
-//---------------------------------------------------------------------------
-
-  public HDI_OfflineString(HDI_Schema schema, RecordState recordState)
-  {
-    super(schema, recordState);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String get()                { return strValue; }
-  public void   set(String strValue) { this.strValue = strValue; }
+  /**
+   * <p>Sets the search key to a generated string instead of using one of the record's active search keys.</p>
+   * <p>Tries to create a search key based on information from the work record; if unable to do that,
+   * makes one that includes information from the parent work.</p>
+   * <p>For a non-work record, just sets it to the record name.</p>
+   */
+  String makeKeyWorkSearchKey();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
-  {
-    strValue = nodeText;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void writeToXml(Tag tag, StringBuilder xml)
-  {
-    writeStringTag(xml, tag, strValue);
-  }
+  default String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
+  default String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

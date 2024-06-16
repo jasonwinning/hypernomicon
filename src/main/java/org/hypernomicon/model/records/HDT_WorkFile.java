@@ -25,7 +25,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponent;
 import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponentType;

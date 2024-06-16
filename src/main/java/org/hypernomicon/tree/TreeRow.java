@@ -24,9 +24,9 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 import javafx.scene.Cursor;

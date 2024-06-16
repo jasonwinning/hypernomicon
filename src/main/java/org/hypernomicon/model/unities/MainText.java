@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 
 /**
  * Every record that has a main HTML description field refers to an object of

@@ -1620,13 +1620,28 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class HDX_Element
+  /**
+   * This class is used to represent any XML element inside a record element but not the record element itself.
+   * This includes elements for items of the record as well as nested items.
+   */
+  public static final class HDX_Element
   {
-    private final Tag tag;
-    private int objID, ord;
-    private RecordType objType;
+    public final Tag tag;
+    public final int objID, ord;
+    public final RecordType objType;
+
+    private int tempObjID = -1, tempOrd = -1;
+    private RecordType tempObjType;
 
   //---------------------------------------------------------------------------
+
+    public HDX_Element(Tag tag)
+    {
+      this.tag = tag;
+      objID = -1;
+      ord = -1;
+      objType = hdtNone;
+    }
 
     private HDX_Element(StartElement startElement, RecordState xmlRecord) throws InvalidItemException
     {
@@ -1635,33 +1650,36 @@ public final class HyperDB
       if (tag == tagNone)
         throw new InvalidItemException(xmlRecord.id, xmlRecord.type, startElement.getName().getLocalPart());
 
-      objType = tag.objType;
-      objID = -1;
-      ord = -1;
+      tempObjType = tag.objType;
 
       startElement.getAttributes().forEachRemaining(attribute ->
       {
         switch (attribute.getName().toString())
         {
           case "id" :
-            if (objType != hdtNone)
-              objID = parseInt(attribute.getValue(), -1);
+            if (tempObjType != hdtNone)
+              tempObjID = parseInt(attribute.getValue(), -1);
             break;
 
           case "type" :
-            if (objType == hdtAuxiliary) // this represents that the object type is not given away by the
-                                         // tag name, and should be obtained from the "type" attribute
-              objType = parseTypeTagStr(attribute.getValue());
+            if (tempObjType == hdtAuxiliary) // this represents that the object type is not given away by the
+                                             // tag name, and should be obtained from the "type" attribute
+              tempObjType = parseTypeTagStr(attribute.getValue());
+
             break;
 
           case "ord" :
-            ord = parseInt(attribute.getValue(), -1);
+            tempOrd = parseInt(attribute.getValue(), -1);
             break;
 
           default:
             break;
         }
       });
+
+      objType = tempObjType;
+      objID = tempObjID;
+      ord = tempOrd;
     }
   }
 
@@ -1738,60 +1756,69 @@ public final class HyperDB
 
       checkVersion(creatingNew, versionNumber, "this XML record data", appVersionToMinRecordsXMLVersion, appVersionToMaxRecordsXMLVersion);
 
-      RecordState xmlRecord = getNextRecordFromXML(eventReader);
+//---------------------------------------------------------------------------
 
-      while (xmlRecord != null)
+      // Main loop for single XML file
+      // -----------------------------
+
+      while (true)
       {
-        boolean notDoneReadingRecord = eventReader.hasNext(), noInnerTags = true, wasAlreadyInStartTag = false;
+        RecordState xmlRecord = getNextRecordFromXML(eventReader);
+        if (xmlRecord == null) break;
+
+        boolean notDoneReadingRecord = eventReader.hasNext(), noItemTags = true;
         Map<Tag, HDI_OfflineBase> nestedItems = null;
-        RecordType objType = hdtNone;
         XMLEvent event = null;
         String nodeText = "";
-        Tag tag = tagNone;
-        int objID = -1, ord = -1;
+        HDX_Element topLevelItemElement = null;
+
+        // Loop for the elements in a single record
+        // ----------------------------------------
 
         while (notDoneReadingRecord)
         {
           if (task.isCancelled()) throw new CancelledTaskException();
 
           event = eventReader.nextEvent();
+
           switch (event.getEventType())
           {
-            case XMLStreamConstants.START_ELEMENT :
 
+//---------------------------------------------------------------------------
+
+            case XMLStreamConstants.START_ELEMENT :
+            {
               HDX_Element hdxElement = new HDX_Element(event.asStartElement(), xmlRecord);
 
-              if (wasAlreadyInStartTag)
+              if (topLevelItemElement == null)
+              {
+                topLevelItemElement = hdxElement;
+                nodeText = "";
+                noItemTags = false;
+                nestedItems = null;
+              }
+              else
               {
                 if (nestedItems == null)
                   nestedItems = new LinkedHashMap<>();
 
-                readNestedItem(xmlRecord, nestedItems, getRelation(xmlRecord.type, objType, false), hdxElement, eventReader);
-              }
-              else
-              {
-                objID = hdxElement.objID;
-                ord = hdxElement.ord;
-                objType = hdxElement.objType;
-                tag = hdxElement.tag;
-                nodeText = "";
-                noInnerTags = false;
-                nestedItems = null;
+                readNestedItem(xmlRecord, nestedItems, getRelation(xmlRecord.type, topLevelItemElement.objType, false), hdxElement, eventReader);
               }
 
-              wasAlreadyInStartTag = true;
               break;
+            }
+
+//---------------------------------------------------------------------------
 
             case XMLStreamConstants.END_ELEMENT :
-
-              wasAlreadyInStartTag = false;
+            {
               if ("record".equals(event.asEndElement().getName().getLocalPart()))
                 notDoneReadingRecord = false;
               else
               {
                 try
                 {
-                  switch (tag)
+                  switch (topLevelItemElement.tag)
                   {
                     case tagCreationDate : xmlRecord.creationDate = parseIso8601offset(nodeText); break;
                     case tagModifiedDate : xmlRecord.modifiedDate = parseIso8601offset(nodeText); break;
@@ -1799,10 +1826,10 @@ public final class HyperDB
 
                     default              :
 
-                      if ((tag == tagInvestigation) && (xmlRecord.type == hdtWork))
-                        workIDtoInvIDs.put(xmlRecord.id, objID);
+                      if ((topLevelItemElement.tag == tagInvestigation) && (xmlRecord.type == hdtWork))
+                        workIDtoInvIDs.put(xmlRecord.id, topLevelItemElement.objID);
                       else
-                        xmlRecord.setItemFromXML(tag, nodeText, objType, objID, ord, nestedItems);
+                        xmlRecord.setItemFromXML(topLevelItemElement, nodeText, nestedItems);
                   }
                 }
                 catch (DateTimeParseException e)
@@ -1810,23 +1837,43 @@ public final class HyperDB
                   throw new HyperDataException(e);
                 }
 
-                tag = tagNone;
+                topLevelItemElement = null;
                 nodeText = "";
-                objType = hdtNone;
-                objID = -1;
-                ord = -1;
               }
 
               break;
+            }
 
-            case XMLStreamConstants.CHARACTERS   : nodeText = nodeText + event.asCharacters().getData(); break;
-            case XMLStreamConstants.END_DOCUMENT : notDoneReadingRecord = false; break;
-            default                              : break;
+//---------------------------------------------------------------------------
+
+            case XMLStreamConstants.CHARACTERS   :
+            {
+              nodeText = nodeText + event.asCharacters().getData();
+              break;
+            }
+
+//---------------------------------------------------------------------------
+
+            case XMLStreamConstants.END_DOCUMENT :
+            {
+              notDoneReadingRecord = false;
+              break;
+            }
+
+//---------------------------------------------------------------------------
+
+            default :
+            {
+              break;
+            }
           }
-        }
 
-        if (noInnerTags)
-          xmlRecord.setItemFromXML(tagNone, nodeText, hdtNone, -1, -1, null);
+        }  // End of loop for the elements in a single record
+
+//---------------------------------------------------------------------------
+
+        if (noItemTags)
+          xmlRecord.setItemFromXML(null, nodeText, null);
 
         if ((xmlRecord.type == hdtWorkType) && versionNumber.isLessThanOrEqualTo(new VersionNumber(1, 3)))
           needToAddThesisWorkType.setTrue();
@@ -1841,8 +1888,7 @@ public final class HyperDB
         if (event != null)
           task.updateProgress(curTaskCount + event.getLocation().getCharacterOffset(), totalTaskCount);
 
-        xmlRecord = getNextRecordFromXML(eventReader);
-      }
+      }  // End of main loop for single XML file
 
       curTaskCount += filePath.size();
     }
@@ -1926,7 +1972,7 @@ public final class HyperDB
 
     if (item == null) throw new InvalidItemException(xmlRecord.id, xmlRecord.type, "(nested) " + hdxElement.tag.name);
 
-    item.setFromXml(hdxElement.tag, nodeText.toString(), hdxElement.objType, hdxElement.objID, null);
+    item.setFromXml(hdxElement, nodeText.toString(), null);
   }
 
 //---------------------------------------------------------------------------

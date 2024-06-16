@@ -31,7 +31,7 @@ import static org.hypernomicon.util.MediaUtil.*;
 import org.hypernomicon.fileManager.FileTable.*;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.tree.AbstractTreeRow;
 import org.hypernomicon.tree.TreeModel;
 import org.hypernomicon.util.filePath.FilePath;

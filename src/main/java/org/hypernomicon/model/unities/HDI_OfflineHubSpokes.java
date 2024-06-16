@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.items.HDI_OfflineBase;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
@@ -46,17 +47,17 @@ public class HDI_OfflineHubSpokes extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    switch (objType)
+    switch (element.objType)
     {
-      case hdtDebate    : debateID   = objID; break;
-      case hdtPosition  : positionID = objID; break;
-      case hdtNote      : noteID     = objID; break;
-      case hdtWorkLabel : labelID    = objID; break;
-      case hdtConcept   : conceptID  = objID; break;
+      case hdtDebate    : debateID   = element.objID; break;
+      case hdtPosition  : positionID = element.objID; break;
+      case hdtNote      : noteID     = element.objID; break;
+      case hdtWorkLabel : labelID    = element.objID; break;
+      case hdtConcept   : conceptID  = element.objID; break;
 
-      default           :                     break;
+      default           :                             break;
     }
   }
 

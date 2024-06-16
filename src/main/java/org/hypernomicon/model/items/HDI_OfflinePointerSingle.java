@@ -19,6 +19,7 @@ package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
@@ -50,15 +51,10 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    setFromXml(objID, -1, nestedItems);
-  }
-
-  public void setFromXml(int objID, int ord, Map<Tag, HDI_OfflineBase> nestedItems)
-  {
-    this.objID = objID;
-    this.ord = ord;
+    this.objID = element.objID;
+    this.ord = element.ord;
 
     if (collEmpty(nestedItems) == false)
       tagToNestedItem = nestedItems;

@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.filePath.FilePath;
 
 public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath

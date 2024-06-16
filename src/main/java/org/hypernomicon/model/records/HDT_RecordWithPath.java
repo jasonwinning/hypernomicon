@@ -15,51 +15,29 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.records;
 
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.HyperDB.HDX_Element;
-import org.hypernomicon.model.records.RecordState;
+import static org.hypernomicon.util.Util.nullSwitch;
 
-import java.util.Map;
+import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.util.filePath.FilePath;
 
-public class HDI_OfflineString extends HDI_OfflineBase
+//---------------------------------------------------------------------------
+
+public interface HDT_RecordWithPath extends HDT_Record
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String strValue = "";
-
-//---------------------------------------------------------------------------
-
-  public HDI_OfflineString(HDI_Schema schema, RecordState recordState)
-  {
-    super(schema, recordState);
-  }
+  HyperPath getPath();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String get()                { return strValue; }
-  public void   set(String strValue) { this.strValue = strValue; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
-  {
-    strValue = nodeText;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void writeToXml(Tag tag, StringBuilder xml)
-  {
-    writeStringTag(xml, tag, strValue);
-  }
+  default boolean  pathNotEmpty()   { return nullSwitch(getPath(), false, HyperPath::isNotEmpty); }
+  default FilePath filePath()       { return nullSwitch(getPath(), null , HyperPath::filePath); }
+  default HDT_Folder parentFolder() { return nullSwitch(getPath(), null , HyperPath::parentFolder); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -35,8 +35,8 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HDI_OfflinePointerMulti;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.HyperObjList;
+import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.MainText;
 
 public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescription

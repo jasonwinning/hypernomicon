@@ -23,16 +23,11 @@ import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.items.Authors;
-import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.unities.MainText;
-import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
-import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
@@ -43,50 +38,6 @@ public final class SimpleRecordTypes
 //---------------------------------------------------------------------------
 
   private SimpleRecordTypes() { throw new UnsupportedOperationException(); }
-
-  /**
-   * Instantiating this class implies that a record has at least one description field. Calling {@code getDesc()}
-   * retrieves the default description field.<br>
-   * <br>
-   * This class differs from {@link org.hypernomicon.model.unities.HDT_RecordWithMainText HDT_RecordWithMainText}
-   * because unlike this class, {@code HDT_RecordWithMainText} records will always have a description field that is considered
-   * to be the "main" one, whereas implementing {@link HDT_RecordWithDescription HDT_RecordWithDescription}
-   * only implies that there is at least one description field but none that is
-   * considered to be the "main" one. For example, {@link org.hypernomicon.model.records.HDT_Term HDT_Term}
-   * instantiates {@code HDT_RecordWithDescription} but not {@code HDT_RecordWithMainText} because there can be multiple
-   * definitions (multiple {@link org.hypernomicon.model.records.HDT_Concept HDT_Concept} records). Hence,
-   * {@code HDT_Term} records are united one definition at a time.<br>
-   * <br>
-   *
-   * @author  Jason Winning
-   * @since   1.0
-   */
-  public interface HDT_RecordWithDescription extends HDT_Record { MainText getDesc(); }
-
-  public interface HDT_RecordWithAuthors<AuthorsType extends Authors> extends HDT_Record
-  {
-    AuthorsType getAuthors();
-
-    /**
-     * <p>Sets the search key to a generated string instead of using one of the record's active search keys.</p>
-     * <p>Tries to create a search key based on information from the work record; if unable to do that,
-     * makes one that includes information from the parent work.</p>
-     * <p>For a non-work record, just sets it to the record name.</p>
-     */
-    String makeKeyWorkSearchKey();
-
-    default String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
-    default String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
-  }
-
-  public interface HDT_RecordWithPath extends HDT_Record
-  {
-    HyperPath getPath();
-
-    default boolean  pathNotEmpty()   { return nullSwitch(getPath(), false, HyperPath::isNotEmpty); }
-    default FilePath filePath()       { return nullSwitch(getPath(), null , HyperPath::filePath); }
-    default HDT_Folder parentFolder() { return nullSwitch(getPath(), null , HyperPath::parentFolder); }
-  }
 
   static abstract class HDT_SimpleRecord extends HDT_RecordBase
   {

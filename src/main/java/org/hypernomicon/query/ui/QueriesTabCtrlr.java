@@ -50,7 +50,7 @@ import javafx.scene.web.WebView;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.*;
+import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.query.*;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;

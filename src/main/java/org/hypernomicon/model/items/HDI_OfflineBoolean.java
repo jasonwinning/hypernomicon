@@ -19,8 +19,8 @@ package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.records.RecordState;
-import org.hypernomicon.model.records.RecordType;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
@@ -50,7 +50,7 @@ public class HDI_OfflineBoolean extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     boolValue = parseBoolean(nodeText);
   }
