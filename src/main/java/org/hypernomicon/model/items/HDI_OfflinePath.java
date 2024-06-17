@@ -18,8 +18,8 @@
 package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.RecordState;
 
@@ -46,10 +46,10 @@ public class HDI_OfflinePath extends HDI_OfflineBase
 
   @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    switch (element.tag)
+    switch (element.getTag())
     {
       case tagParentFolder : case tagFolder : case tagPictureFolder :
-        folderID = element.objID; break;
+        folderID = element.getObjID(); break;
 
       default :
         fileName = nodeText; break;

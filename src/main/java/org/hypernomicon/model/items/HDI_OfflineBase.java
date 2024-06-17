@@ -23,8 +23,8 @@ import static org.hypernomicon.util.Util.*;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 

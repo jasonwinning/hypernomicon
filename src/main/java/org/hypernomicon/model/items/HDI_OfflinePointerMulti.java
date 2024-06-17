@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
@@ -52,10 +52,10 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 
   @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    objIDs.add(element.objID);
+    objIDs.add(element.getObjID());
 
     if (collEmpty(nestedItems) == false)
-      objIDtoMaps.put(element.objID, nestedItems);
+      objIDtoMaps.put(element.getObjID(), nestedItems);
   }
 
 //---------------------------------------------------------------------------

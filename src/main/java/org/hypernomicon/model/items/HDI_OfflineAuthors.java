@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.records.RecordState;
 
 public class HDI_OfflineAuthors extends HDI_OfflineBase
@@ -52,7 +52,7 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
 
   @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    if (element.objID < 1)
+    if (element.getObjID() < 1)
     {
       nodeText = ultraTrim(convertToSingleLine(nodeText));
       if (nodeText.isEmpty()) return;
@@ -60,8 +60,8 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
 
     OfflineAuthor author = new OfflineAuthor();
 
-    if (element.objID > 0)
-      author.personID = element.objID;
+    if (element.getObjID() > 0)
+      author.personID = element.getObjID();
     else
       author.name = new PersonName(nodeText);
 

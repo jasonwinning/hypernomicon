@@ -45,6 +45,17 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static class InvalidAttributeException extends HyperDataException
+  {
+    public InvalidAttributeException(int recordID, RecordType recordType, String itemName, String attrName)
+    {
+      super("Invalid XML attribute: \"" + attrName + "\". Item tag: \"" + itemName + "\". Record type: " + Tag.getTypeTagStr(recordType) + " ID: " + recordID);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static class CancelledTaskException extends Exception
   {
     public CancelledTaskException() { super("Task was cancelled by user."); }

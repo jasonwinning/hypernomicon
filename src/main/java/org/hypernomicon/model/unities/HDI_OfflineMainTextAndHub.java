@@ -18,8 +18,8 @@
 package org.hypernomicon.model.unities;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.HyperDB.HDX_Element;
 import org.hypernomicon.model.items.HDI_OfflineBase;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
@@ -94,34 +94,34 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 
   @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    switch (element.tag)
+    switch (element.getTag())
     {
       case tagHub :
 
-        hubID = element.objID;
+        hubID = element.getObjID();
         break;
 
       case tagDisplayRecord :
 
         switch (nodeText)
         {
-          case DI_TYPE_DESC      : displayItems.add(new DisplayItem(diDescription                 )); break;
-          case DI_TYPE_KEY_WORKS : displayItems.add(new DisplayItem(diKeyWorks                    )); break;
-          case DI_TYPE_RECORD    : displayItems.add(new DisplayItem(element.objID, element.objType)); break;
+          case DI_TYPE_DESC      : displayItems.add(new DisplayItem(diDescription                           )); break;
+          case DI_TYPE_KEY_WORKS : displayItems.add(new DisplayItem(diKeyWorks                              )); break;
+          case DI_TYPE_RECORD    : displayItems.add(new DisplayItem(element.getObjID(), element.getObjType())); break;
         }
 
         break;
 
       case tagKeyWork :
 
-        if ((element.objType == hdtWork) || (element.objType == hdtMiscFile))
+        if ((element.getObjType() == hdtWork) || (element.getObjType() == hdtMiscFile))
         {
-          Set<Integer> idSet = usedKeyWorks.computeIfAbsent(element.objType, _objType -> new HashSet<>());
+          Set<Integer> idSet = usedKeyWorks.computeIfAbsent(element.getObjType(), _objType -> new HashSet<>());
 
-          if (idSet.contains(element.objID) == false)
+          if (idSet.contains(element.getObjID()) == false)
           {
-            keyWorks.add(new KeyWork(element.objType, element.objID, nodeText, false));
-            idSet.add(element.objID);
+            keyWorks.add(new KeyWork(element.getObjType(), element.getObjID(), nodeText, false));
+            idSet.add(element.getObjID());
           }
         }
 

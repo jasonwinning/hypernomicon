@@ -1620,72 +1620,6 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * This class is used to represent any XML element inside a record element but not the record element itself.
-   * This includes elements for items of the record as well as nested items.
-   */
-  public static final class HDX_Element
-  {
-    public final Tag tag;
-    public final int objID, ord;
-    public final RecordType objType;
-
-    private int tempObjID = -1, tempOrd = -1;
-    private RecordType tempObjType;
-
-  //---------------------------------------------------------------------------
-
-    public HDX_Element(Tag tag)
-    {
-      this.tag = tag;
-      objID = -1;
-      ord = -1;
-      objType = hdtNone;
-    }
-
-    private HDX_Element(StartElement startElement, RecordState xmlRecord) throws InvalidItemException
-    {
-      tag = getTag(startElement.getName().getLocalPart());
-
-      if (tag == tagNone)
-        throw new InvalidItemException(xmlRecord.id, xmlRecord.type, startElement.getName().getLocalPart());
-
-      tempObjType = tag.objType;
-
-      startElement.getAttributes().forEachRemaining(attribute ->
-      {
-        switch (attribute.getName().toString())
-        {
-          case "id" :
-            if (tempObjType != hdtNone)
-              tempObjID = parseInt(attribute.getValue(), -1);
-            break;
-
-          case "type" :
-            if (tempObjType == hdtAuxiliary) // this represents that the object type is not given away by the
-                                             // tag name, and should be obtained from the "type" attribute
-              tempObjType = parseTypeTagStr(attribute.getValue());
-
-            break;
-
-          case "ord" :
-            tempOrd = parseInt(attribute.getValue(), -1);
-            break;
-
-          default:
-            break;
-        }
-      });
-
-      objType = tempObjType;
-      objID = tempObjID;
-      ord = tempOrd;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void checkVersion(boolean creatingNew, VersionNumber versionNumber, String dataName,
                             Map<VersionNumber, VersionNumber> appVersionToMinVersion,
                             Map<VersionNumber, VersionNumber> appVersionToMaxVersion) throws HyperDataException
@@ -1802,7 +1736,7 @@ public final class HyperDB
                 if (nestedItems == null)
                   nestedItems = new LinkedHashMap<>();
 
-                readNestedItem(xmlRecord, nestedItems, getRelation(xmlRecord.type, topLevelItemElement.objType, false), hdxElement, eventReader);
+                readNestedItem(xmlRecord, nestedItems, getRelation(xmlRecord.type, topLevelItemElement.getObjType(), false), hdxElement, eventReader);
               }
 
               break;
@@ -1818,7 +1752,7 @@ public final class HyperDB
               {
                 try
                 {
-                  switch (topLevelItemElement.tag)
+                  switch (topLevelItemElement.getTag())
                   {
                     case tagCreationDate : xmlRecord.creationDate = parseIso8601offset(nodeText); break;
                     case tagModifiedDate : xmlRecord.modifiedDate = parseIso8601offset(nodeText); break;
@@ -1826,8 +1760,8 @@ public final class HyperDB
 
                     default              :
 
-                      if ((topLevelItemElement.tag == tagInvestigation) && (xmlRecord.type == hdtWork))
-                        workIDtoInvIDs.put(xmlRecord.id, topLevelItemElement.objID);
+                      if ((topLevelItemElement.getTag() == tagInvestigation) && (xmlRecord.type == hdtWork))
+                        workIDtoInvIDs.put(xmlRecord.id, topLevelItemElement.getObjID());
                       else
                         xmlRecord.setItemFromXML(topLevelItemElement, nodeText, nestedItems);
                   }
@@ -1968,9 +1902,9 @@ public final class HyperDB
       }
     }
 
-    HDI_OfflineBase item = nestedItems.get(hdxElement.tag);
+    HDI_OfflineBase item = nestedItems.get(hdxElement.getTag());
 
-    if (item == null) throw new InvalidItemException(xmlRecord.id, xmlRecord.type, "(nested) " + hdxElement.tag.name);
+    if (item == null) throw new InvalidItemException(xmlRecord.id, xmlRecord.type, "(nested) " + hdxElement.getTag().name);
 
     item.setFromXml(hdxElement, nodeText.toString(), null);
   }

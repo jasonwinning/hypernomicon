@@ -30,7 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.HDX_Element;
+import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
@@ -151,21 +151,21 @@ public class RecordState
       return;
     }
 
-    if ((type == hdtHub) && (element.tag == tagName))
+    if ((type == hdtHub) && (element.getTag() == tagName))
       return;
 
-    HDI_OfflineBase item = items.get(element.tag);
+    HDI_OfflineBase item = items.get(element.getTag());
 
     if (item == null)
     {
-      if (((type == hdtWork) || (type == hdtMiscFile)) && (element.tag == tagWorkLabel)) // Backwards compatibility with records XML version 1.5. No conversion needed
-        return;                                                                          // because these relations were already redundant with Key Works.
+      if (((type == hdtWork) || (type == hdtMiscFile)) && (element.getTag() == tagWorkLabel)) // Backwards compatibility with records XML version 1.5. No conversion needed
+        return;                                                                               // because these relations were already redundant with Key Works.
 
-      throw new InvalidItemException(id, type, element.tag.name);
+      throw new InvalidItemException(id, type, element.getTag().name);
     }
 
-    if ((element.ord != -1) && (item.category() != hdcPointerSingle))
-        throw new HyperDataException("Invalid attribute: ord. Record type: " + getTypeTagStr(type) + " ID : " + id);
+    if ((element.getOrd() != -1) && (item.category() != hdcPointerSingle))
+      throw new HyperDataException("Invalid attribute: ord. Record type: " + getTypeTagStr(type) + " ID : " + id);
 
     item.setFromXml(element, nodeText, nestedItems);
   }
