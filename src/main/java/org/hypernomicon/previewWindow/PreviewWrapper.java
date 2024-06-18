@@ -58,12 +58,15 @@ public class PreviewWrapper
     private final FilePath filePath;
     private final HDT_RecordWithPath record;
     private final List<Integer> navList = new ArrayList<>();
+    private final boolean isEmpty;
     private int navNdx = -1;
 
     private PreviewFile(FilePath filePath, HDT_RecordWithPath record)
     {
       this.filePath = filePath;
       this.record = record;
+
+      isEmpty = FilePath.isEmpty(filePath) || filePath.isDirectory();
     }
   }
 
@@ -452,8 +455,7 @@ public class PreviewWrapper
         int ndx = 0;
         while (ndx < fileNdx)
         {
-          prevFile = fileList.get(ndx);
-          if (FilePath.isEmpty(prevFile.filePath) || prevFile.filePath.isDirectory())
+          if (fileList.get(ndx).isEmpty)
           {
             fileList.remove(ndx);
             fileNdx--;
