@@ -1047,12 +1047,20 @@ public final class Util
 
   public static int compareYears(String year1, String year2)
   {
+    return compareNumberStrings(year1, year2);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static int compareNumberStrings(String str1, String str2)
+  {
     MutableInt result = new MutableInt();
 
-    if (compareNumberStrings(year1, year2, result))
+    if (compareNumberStrings(str1, str2, result))
       return result.getValue();
 
-    return year1.compareToIgnoreCase(year2);
+    return str1.compareToIgnoreCase(str2);
   }
 
 //---------------------------------------------------------------------------
@@ -1103,10 +1111,25 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * If str1 and str2 are integers, returns the result of integer comparison.
+   * If they are strings, returns the result of string comparison.
+   * If one is an integer and the other isn't, the integer is sorted earlier.
+   * @param str1 First string to compare
+   * @param str2 Second string to compare
+   * @param result Output parameter for result of the comparson
+   * @return True if both strings are integers; false otherwise
+   */
   public static boolean compareNumberStrings(String str1, String str2, MutableInt result)
   {
     boolean numeric1 = true, numeric2 = true;
     int int1 = 0, int2 = 0;
+
+    if (safeStr(str1).isEmpty() && safeStr(str2).isEmpty())
+    {
+      result.setValue(0);
+      return true;
+    }
 
     try { int1 = Integer.parseInt(safeStr(str1)); }
     catch (NumberFormatException e) { numeric1 = false; }

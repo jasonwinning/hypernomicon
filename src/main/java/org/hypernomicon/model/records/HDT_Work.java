@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.WorkBibData;
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HyperPath;
@@ -155,42 +156,63 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int getStartPageNum(HDT_WorkFile workFile)
+  private String getStartPageNumStr(HDT_WorkFile workFile)
   {
-    return  workFile == null ? getStartPageNum() : parseInt(db.getNestedString(this, workFile, tagStartPageNum), -1);
+    return workFile == null ? getStartPageNumStr() : db.getNestedString(this, workFile, tagStartPageNum);
   }
 
-  public int getEndPageNum(HDT_WorkFile workFile)
+  private String getEndPageNumStr(HDT_WorkFile workFile)
   {
-    return workFile == null ? getEndPageNum() : parseInt(db.getNestedString(this, workFile, tagEndPageNum), -1);
+    return workFile == null ? getEndPageNumStr() : db.getNestedString(this, workFile, tagEndPageNum);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int getStartPageNum()
+  public String getStartPageNumStr()
   {
     if (workFiles.isEmpty() == false)
-      return getStartPageNum(workFiles.get(0));
+      return getStartPageNumStr(workFiles.get(0));
 
     if (getURL().startsWith(EXT_1))
-      return parseInt(getTagString(tagStartPageNum), -1);
+      return getTagString(tagStartPageNum);
 
-    return -1;
+    return "";
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int getEndPageNum()
+  public String getEndPageNumStr()
   {
     if (workFiles.isEmpty() == false)
-      return getEndPageNum(workFiles.get(0));
+      return getEndPageNumStr(workFiles.get(0));
 
     if (getURL().startsWith(EXT_1))
-      return parseInt(getTagString(tagEndPageNum), -1);
+      return getTagString(tagEndPageNum);
 
-    return -1;
+    return "";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public int getStartPageNum(HDT_WorkFile workFile) { return parseInt(getStartPageNumStr(workFile), -1); }
+  public int getEndPageNum  (HDT_WorkFile workFile) { return parseInt(getEndPageNumStr  (workFile), -1); }
+  public int getStartPageNum(                     ) { return parseInt(getStartPageNumStr(        ), -1); }
+  public int getEndPageNum  (                     ) { return parseInt(getEndPageNumStr  (        ), -1); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public String resultTextForTag(Tag tag)
+  {
+    return switch (tag)
+    {
+      case tagStartPageNum -> getStartPageNumStr();
+      case tagEndPageNum   -> getEndPageNumStr();
+      default              -> super.resultTextForTag(tag);
+    };
   }
 
 //---------------------------------------------------------------------------

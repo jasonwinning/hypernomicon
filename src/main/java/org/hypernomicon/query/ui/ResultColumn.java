@@ -255,9 +255,12 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
     {
       NonGeneralColumn col = switch (firstItem.tag)
       {
-        case tagTitle -> new NonGeneralColumn(firstItem.caption, str -> makeSortKeyByType(str, hdtWork));
-        case tagYear  -> new NonGeneralColumn(firstItem.caption, Util::compareYears, String.class);
-        default       -> new NonGeneralColumn(firstItem.caption);
+        case tagTitle         -> new NonGeneralColumn(firstItem.caption, str -> makeSortKeyByType(str, hdtWork));
+        case tagYear          -> new NonGeneralColumn(firstItem.caption, Util::compareYears, String.class);
+        case tagStartPageNum,
+             tagEndPageNum    -> new NonGeneralColumn(firstItem.caption, Util::compareNumberStrings, String.class);
+
+        default               -> new NonGeneralColumn(firstItem.caption);
       };
 
       // Only subject columns have a relType set. They are invisible by default.

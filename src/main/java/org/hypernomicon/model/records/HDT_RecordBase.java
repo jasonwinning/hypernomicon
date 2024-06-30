@@ -534,7 +534,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final String resultTextForTag(Tag tag)
+  @Override public String resultTextForTag(Tag tag)
   {
     return (tag == nameTag) || (tag == tagName) ?
       listName()
