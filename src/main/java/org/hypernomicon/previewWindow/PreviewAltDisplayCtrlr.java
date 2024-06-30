@@ -38,11 +38,26 @@ public class PreviewAltDisplayCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setGenerating(FilePath filePath)
+  public void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
+  {
+    String msg = "Generating preview for file: " + htmlEscaper.escape(filePath.toString());
+    if (dontRestartProgressIfSamePreview && lblMessage.getText().equals(msg))
+      return;
+
+    progressBar.setProgress(0.0);
+    progressBar.setProgress(-1.0);
+    lblMessage.setText(msg);
+    setInfoIconVisible(false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setStartingConverter()
   {
     progressBar.setProgress(0.0);
     progressBar.setProgress(-1.0);
-    lblMessage.setText("Generating preview for file: " + htmlEscaper.escape(filePath.toString()));
+    lblMessage.setText("Starting office document previewer...");
     setInfoIconVisible(false);
   }
 

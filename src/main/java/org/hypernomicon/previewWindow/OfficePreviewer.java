@@ -43,7 +43,7 @@ import org.jodconverter.local.office.LocalOfficeManager;
 
 //---------------------------------------------------------------------------
 
-public final class OfficePreviewer
+final class OfficePreviewer
 {
 
 //---------------------------------------------------------------------------
@@ -53,7 +53,7 @@ public final class OfficePreviewer
 
   private static OfficePreviewThread bkgThread;
 
-  private static Map<PDFJSWrapper, Boolean> wrapperStopped = new ConcurrentHashMap<>();
+  private static final Map<PDFJSWrapper, Boolean> wrapperStopped = new ConcurrentHashMap<>();
 
   private static volatile OfficePreviewInfo lastInfo, nextInfo;
 
@@ -62,10 +62,9 @@ public final class OfficePreviewer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void preview(String mimetypeStr, FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
+  static synchronized void preview(String mimetypeStr, FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
   {
-    if (previewWrapper != null)
-      assert (jsWrapper == previewWrapper.getJSWrapper());
+    assert (previewWrapper == null) || (jsWrapper == previewWrapper.getJSWrapper());
 
     String officePath = app.prefs.get(PREF_KEY_OFFICE_PATH, "");
 
@@ -81,7 +80,10 @@ public final class OfficePreviewer
     if (bkgThread == null)
       (bkgThread = new OfficePreviewThread()).start();
 
-    jsWrapper.setGenerating(filePath);
+    if ((lastInfo == null) || (lastInfo.officePath.equals(officePath) == false))
+      jsWrapper.setStartingConverter();
+    else
+      jsWrapper.setGenerating(filePath, false);
 
     boolean convertToHtml = mimetypeStr.contains("spreadsheetml.sheet")      ||  // xlsx (Microsoft Excel XML)
                             mimetypeStr.contains("ms-excel")                 ||  // xls  (Microsoft Excel)
@@ -138,7 +140,8 @@ public final class OfficePreviewer
     @Override public void run()
     {
       Map<PDFJSWrapper, FilePath> wrapperToTempDir = new HashMap<>();
-      File tempPath = null;
+      File tempPath;
+      File previewFilePath;
 
       while (shutDown == false)
       {
@@ -148,67 +151,79 @@ public final class OfficePreviewer
         if (shutDown)
           break;
 
-        try
+        synchronized(OfficePreviewer.class)
         {
-          FilePath tempDir = wrapperToTempDir.get(nextInfo.jsWrapper);
-          if (tempDir != null)
-            FileUtils.deleteDirectory(tempDir.toFile());
-
-          tempDir = tempOfficePreviewFolder(false, false).resolve("preview" + randomAlphanumericStr(8));
-          tempPath = tempDir.resolve("preview" + randomAlphanumericStr(8) + '.' + (nextInfo.convertToHtml ? "html" : "pdf")).toFile();
-
-          wrapperToTempDir.put(nextInfo.jsWrapper, tempDir);
-        }
-        catch (IOException e)
-        {
-          nextInfo.jsWrapper.setUnable(nextInfo.filePath);
-          stopPreview(nextInfo.jsWrapper);
-          wrapperToTempDir.remove(nextInfo.jsWrapper);
-          continue;
-        }
-
-        if (updateOfficeConverter(nextInfo.officePath) == false)
-        {
-          nextInfo.jsWrapper.setUnable(nextInfo.filePath);
-          stopPreview(nextInfo.jsWrapper);
-          continue;
-        }
-
-        lastInfo = nextInfo;
-        wrapperStopped.put(nextInfo.jsWrapper, false);
-
-        try
-        {
-          officeConverter.convert(lastInfo.filePath.toFile()).to(tempPath).execute();
-        }
-        catch (OfficeException e)
-        {
-          if ((nextInfo == lastInfo) || ((nextInfo != null) && (lastInfo.jsWrapper != nextInfo.jsWrapper)))
-            lastInfo.jsWrapper.setUnable(lastInfo.filePath);
-
-          if (nextInfo == lastInfo)
-            nextInfo = null;
-
-          continue;
-        }
-
-        if (shutDown || Boolean.TRUE.equals(wrapperStopped.get(lastInfo.jsWrapper)) || ((nextInfo != null) && (lastInfo != nextInfo) && (lastInfo.jsWrapper == nextInfo.jsWrapper)))
-          continue;
-
-        if (lastInfo.convertToHtml)
           try
           {
-            lastInfo.jsWrapper.loadFile(new FilePath(tempPath), false);
+            FilePath tempDir = wrapperToTempDir.get(nextInfo.jsWrapper);
+            if (tempDir != null)
+              FileUtils.deleteDirectory(tempDir.toFile());
+
+            tempDir = tempOfficePreviewFolder(false, false).resolve("preview" + randomAlphanumericStr(8));
+            tempPath = tempDir.resolve("preview" + randomAlphanumericStr(8) + '.' + (nextInfo.convertToHtml ? "html" : "pdf")).toFile();
+
+            wrapperToTempDir.put(nextInfo.jsWrapper, tempDir);
           }
           catch (IOException e)
           {
-            lastInfo.jsWrapper.setUnable(lastInfo.filePath);
+            nextInfo.jsWrapper.setUnable(nextInfo.filePath);
+            stopPreview(nextInfo.jsWrapper);
+            wrapperToTempDir.remove(nextInfo.jsWrapper);
+            continue;
           }
-        else
-          lastInfo.jsWrapper.loadPdf(new FilePath(tempPath), lastInfo.pageNum);
 
-        if (nextInfo == lastInfo)
-          nextInfo = null;
+          if (updateOfficeConverter(nextInfo.officePath) == false)
+          {
+            nextInfo.jsWrapper.setUnable(nextInfo.filePath);
+            stopPreview(nextInfo.jsWrapper);
+            continue;
+          }
+
+          lastInfo = nextInfo;
+          wrapperStopped.put(lastInfo.jsWrapper, false);
+          lastInfo.jsWrapper.setGenerating(lastInfo.filePath, true);
+
+          previewFilePath = lastInfo.filePath.toFile();
+        }
+
+        try
+        {
+          officeConverter.convert(previewFilePath).to(tempPath).execute();
+        }
+        catch (OfficeException e)
+        {
+          synchronized(OfficePreviewer.class)
+          {
+            if ((nextInfo == lastInfo) || ((nextInfo != null) && (lastInfo.jsWrapper != nextInfo.jsWrapper)))
+              lastInfo.jsWrapper.setUnable(lastInfo.filePath);
+
+            if (nextInfo == lastInfo)
+              nextInfo = null;
+
+            continue;
+          }
+        }
+
+        synchronized(OfficePreviewer.class)
+        {
+          if (shutDown || Boolean.TRUE.equals(wrapperStopped.get(lastInfo.jsWrapper)) || ((nextInfo != null) && (lastInfo != nextInfo) && (lastInfo.jsWrapper == nextInfo.jsWrapper)))
+            continue;
+
+          if (lastInfo.convertToHtml)
+            try
+            {
+              lastInfo.jsWrapper.loadFile(new FilePath(tempPath), false);
+            }
+            catch (IOException e)
+            {
+              lastInfo.jsWrapper.setUnable(lastInfo.filePath);
+            }
+          else
+            lastInfo.jsWrapper.loadPdf(new FilePath(tempPath), lastInfo.pageNum);
+
+          if (nextInfo == lastInfo)
+            nextInfo = null;
+        }
       }
 
       if (officeConverter != null)

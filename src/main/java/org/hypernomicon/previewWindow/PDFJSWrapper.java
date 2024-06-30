@@ -85,7 +85,7 @@ import javafx.scene.layout.GridPane;
 
 public class PDFJSWrapper
 {
-  private boolean ready = false, opened = false, pdfjsMode = true, hiding = false, showingAlt = false;
+  private boolean ready = false, pdfjsMode = true, hiding = false, showingAlt = false;
   private final PDFJSDoneHandler doneHndlr;
   private final Consumer<Integer> pageChangeHndlr;
   private final PDFJSRetrievedDataHandler retrievedDataHndlr;
@@ -100,6 +100,8 @@ public class PDFJSWrapper
   private final AnchorPane apBrowser;
   private final GridPane gpAltDisplay;
   private Runnable postBrowserLoadCode = null;
+
+  private volatile boolean opened = false;
 
   int getNumPages()    { return numPages; }
 
@@ -213,10 +215,25 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setGenerating(FilePath filePath)
+  public void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
   {
-    altDisplay.setGenerating(filePath);
-    switchToAltDisplay();
+    runInFXThread(() ->
+    {
+      altDisplay.setGenerating(filePath, dontRestartProgressIfSamePreview);
+      switchToAltDisplay();
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setStartingConverter()
+  {
+    runInFXThread(() ->
+    {
+      altDisplay.setStartingConverter();
+      switchToAltDisplay();
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -245,18 +262,27 @@ public class PDFJSWrapper
 
   public void setNoOfficeInstallation()
   {
-    altDisplay.setNoOfficeInstallation();
-    switchToAltDisplay();
+    runInFXThread(() ->
+    {
+      altDisplay.setNoOfficeInstallation();
+      switchToAltDisplay();
+    });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void switchToPdfMode()
+  void reset()
   {
-    if (pdfjsMode) return;
+    switchToPreviewDisplay();
 
-    loadViewerHtml(null);
+    if (pdfjsMode)
+    {
+      if (opened)
+        close();
+    }
+    else
+      loadViewerHtml(null);
   }
 
 //---------------------------------------------------------------------------
@@ -571,7 +597,10 @@ public class PDFJSWrapper
   private void cleanupPdfHtml()
   {
     if (pdfjsMode)
-      browser.executeJavaScriptAndReturnValue("if ('PDFViewerApplication' in window) PDFViewerApplication.cleanup();");
+    {
+      browser.executeJavaScript("if ('PDFViewerApplication' in window) PDFViewerApplication.cleanup();");
+      sleepForMillis(200);
+    }
 
     pdfjsMode = false;
   }
@@ -758,8 +787,8 @@ public class PDFJSWrapper
 
       if (success)
       {
-        opened = false;
         numPages = -1;
+        opened = false;
       }
       else
       {
@@ -782,7 +811,13 @@ public class PDFJSWrapper
       return;
     }
 
-    browser.executeJavaScriptAndReturnValue("closePdfFile();");
+    browser.executeJavaScript("closePdfFile();");
+
+    for (int ndx = 0; (ndx < 5) && opened; ndx++)
+      sleepForMillis(100);
+
+    if (opened)
+      errorPopup("An error occurred while closing the PDF file preview.");
   }
 
 //---------------------------------------------------------------------------
@@ -827,21 +862,27 @@ public class PDFJSWrapper
 
   void loadPdf(FilePath file, int initialPage)
   {
+    final boolean wasPdfjsMode = pdfjsMode;
+
     Runnable runnable = () ->
     {
       opened = false;
       boolean readyToOpen = false;
 
-      for (int ndx = 0; (ndx < 20) && (readyToOpen == false); ndx++)
+      if (wasPdfjsMode == false)
       {
-        readyToOpen = browser.executeJavaScriptAndReturnValue("'openPdfFile' in window").getBooleanValue();
-        if (readyToOpen == false) sleepForMillis(100);
-      }
+        for (int ndx = 0; (ndx < 20) && (readyToOpen == false); ndx++)
+        {
+          readyToOpen = browser.executeJavaScriptAndReturnValue("'openPdfFile' in window").getBooleanValue();
+          if (readyToOpen == false)
+            sleepForMillis(100);
+        }
 
-      if (readyToOpen == false)
-      {
-        errorPopup("An error occurred while trying to show PDF file preview.");
-        return;
+        if (readyToOpen == false)
+        {
+          errorPopup("An error occurred while trying to show PDF file preview.");
+          return;
+        }
       }
 
       browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " +
@@ -855,7 +896,7 @@ public class PDFJSWrapper
     if (pdfjsMode == false)
       loadViewerHtml(runnable);
     else
-      runnable.run();
+      Platform.runLater(runnable);  // This helps to prevent JxBrowser from crashing when quickly removing and re-adding it to the scene graph, then executing a script
   }
 
 //---------------------------------------------------------------------------

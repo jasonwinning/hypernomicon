@@ -79,7 +79,7 @@ public class PreviewWrapper
   private final PreviewSource src;
   private final PreviewWindow window;
   private final Tab tab;
-  private boolean viewerErrOccurred = false, needsRefresh = true, initialized = false, pdfIsShowing = false;
+  private boolean viewerErrOccurred = false, needsRefresh = true, initialized = false;
   private PDFJSWrapper jsWrapper;
   private Map<String, Integer> labelToPage;
   private Map<Integer, String> pageToLabel;
@@ -151,7 +151,6 @@ public class PreviewWrapper
 
       case pjsClose:
 
-        pdfIsShowing = false;
         break;
 
       default :
@@ -396,12 +395,7 @@ public class PreviewWrapper
 
     OfficePreviewer.stopPreview(jsWrapper);
 
-    if (pdfIsShowing)
-      jsWrapper.close();
-    else
-      jsWrapper.switchToPdfMode();
-
-    pdfIsShowing = false;
+    jsWrapper.reset();
 
     if (window.curSource() == src)
       needsRefresh = false;
@@ -535,8 +529,6 @@ public class PreviewWrapper
 
       if (mimetypeStr.contains("pdf"))
       {
-        pdfIsShowing = true;
-
         filePathShowing = curPrevFile.filePath;
         recordShowing = curPrevFile.record;
         pageNumShowing = -1;
@@ -544,7 +536,6 @@ public class PreviewWrapper
         return;
       }
 
-      pdfIsShowing = false;
       numPages = 1;
 
       filePathShowing = curPrevFile.filePath;
@@ -587,7 +578,7 @@ public class PreviewWrapper
     return showFile(filePath, pageNum, jsWrapper, null);
   }
 
-  public static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
+  private static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
   {
     String mimetypeStr = getMediaType(filePath).toString();
 
