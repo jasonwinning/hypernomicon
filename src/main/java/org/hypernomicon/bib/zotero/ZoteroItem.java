@@ -84,12 +84,34 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   @Override public String getKey()                     { return jObj.getStr("key"); }
   @Override public long getVersion()                   { return jObj.getLong("version", 0); }
   @Override protected boolean isNewEntry()             { return jObj.containsKey("version") == false; }
-  @Override protected void updateJsonObj(JsonObj jObj) { this.jObj = jObj; jData = jObj.getObj("data"); }
   @Override protected JsonArray getCollJsonArray()     { return jObj.getObj("data").getArray("collections"); }
   @Override public BibAuthors getAuthors()             { return linkedToWork() ? new WorkBibAuthors(getWork()) : new ZoteroAuthors(jData.getArray("creators"), getEntryType()); }
   @Override public EntryType getEntryType()            { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jData)); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected void updateJsonObj(JsonObj jObj)
+  {
+    this.jObj = jObj;
+    jData = jObj.getObj("data");
+
+    // The remainder of this function is being done because I have seen at least one case
+    // where the "data" node had the version and key specified, but the root node didn't,
+    // presumably due to a Zotero server bug
+
+    if ((jObj.containsKey("version") == false) && jData.containsKey("version"))
+    {
+      long version = jData.getLong("version", 0);
+      if (version > 0)
+        jObj.put("version", version);
+    }
+
+    if ((jObj.containsKey("key") == false) && jData.containsKey("key"))
+      jObj.put("key", jData.getStr("key"));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
