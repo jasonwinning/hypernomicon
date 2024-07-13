@@ -72,9 +72,9 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public void getToOfflineValue(HDI_OfflineString val, Tag tag)
   {
-    if (tag == record.getNameTag()) val.strValue = record.name();
+    if (tag == record.getNameTag()) val.set(record.name());
     else if (tag == tagListName)    val.recordState.listName = strValue;
-    else                            val.strValue = strValue;
+    else                            val.set(strValue);
   }
 
 //---------------------------------------------------------------------------

@@ -29,14 +29,18 @@ import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.relations.HyperObjList;
 
+//---------------------------------------------------------------------------
+
 public class FileAuthors extends Authors
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final HyperObjList<HDT_MiscFile, HDT_Person> objList, objListNoMod;
   private final HDT_MiscFile miscFile;
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public FileAuthors(HyperObjList<HDT_MiscFile, HDT_Person> objList, HDT_MiscFile miscFile)
   {
@@ -46,8 +50,8 @@ public class FileAuthors extends Authors
     objListNoMod = db.getObjectList(rtAuthorOfFile, miscFile, false);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public int size()                                { return objList.size(); }
   @Override public boolean containsPerson(HDT_Person person) { return objListNoMod.contains(person); }
@@ -56,8 +60,8 @@ public class FileAuthors extends Authors
   @Override void clearNoMod()                                { objListNoMod.clear(); }
   @Override void clear()                                     { objList.clear(); }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override void addNoMod(HDT_Person person, Map<Tag, HDI_OfflineBase> tagToNestedItem) throws RelationCycleException
   {
@@ -65,7 +69,7 @@ public class FileAuthors extends Authors
     objListNoMod.throwLastException();
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

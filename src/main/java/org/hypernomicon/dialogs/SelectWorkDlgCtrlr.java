@@ -516,7 +516,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
   private void updatePreview()
   {
-    if (jxBrowserDisabled) return;
+    if ((btnPreview.isSelected() == false) || jxBrowserDisabled) return;
 
     if (previewInitialized == false) jsWrapper = new PDFJSWrapper(apPreview);
 

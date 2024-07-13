@@ -79,7 +79,7 @@ public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public void getToOfflineValue(HDI_OfflineString val, Tag tag)
   {
-    val.strValue = keyStr;
+    val.set(keyStr);
   }
 
 //---------------------------------------------------------------------------
