@@ -36,15 +36,17 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import org.hypernomicon.model.HyperDB;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public class SortOrderDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private TableView<HyperTableRow> tvRecords;
 
   private final HyperTable htRecords;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public SortOrderDlgCtrlr(RecordType recordType)

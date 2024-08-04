@@ -133,8 +133,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       this::createLabel));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new sub-debate under this debate", HDT_Debate.class,
-        debate -> db.isLoaded(),
-        debate -> createChild(debate, rtParentDebateOfDebate)));
+      debate -> db.isLoaded(),
+      debate -> createChild(debate, rtParentDebateOfDebate)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new position under this debate", HDT_Debate.class,
       debate -> db.isLoaded(),

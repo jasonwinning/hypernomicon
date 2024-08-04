@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.WorkBibData;
+import org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
@@ -169,7 +170,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getStartPageNumStr()
+  private String getStartPageNumStr()
   {
     if (workFiles.isEmpty() == false)
       return getStartPageNumStr(workFiles.get(0));
@@ -183,7 +184,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getEndPageNumStr()
+  private String getEndPageNumStr()
   {
     if (workFiles.isEmpty() == false)
       return getEndPageNumStr(workFiles.get(0));
@@ -294,25 +295,16 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     {
       List<String> ISBNs = getISBNs(), lwISBNs = largerWorkRec.getISBNs();
 
-      boolean notAllInLW = ISBNs  .stream().anyMatch(isbn -> (lwISBNs.contains(isbn) == false)),
-              notAllInSW = lwISBNs.stream().anyMatch(isbn -> (ISBNs  .contains(isbn) == false));
+      boolean notAllInLW = ISBNs  .stream().anyMatch(Predicate.not(lwISBNs::contains)),
+              notAllInSW = lwISBNs.stream().anyMatch(Predicate.not(ISBNs  ::contains));
 
       if ((notAllInLW == false) && notAllInSW)
       {
-        updateISBNstrRecursively(largerWorkRec.getTagString(tagISBN));
+        nonInteractivelyUpdateISBNsForThisWorkAndDescendants(largerWorkRec.getTagString(tagISBN));
       }
       else if (notAllInLW)
       {
-        if (confirmDialog("Recursively update ISBN(s) for contained/container works?"))
-        {
-          String isbnStr = lwISBNs.stream().filter(Predicate.not(ISBNs::contains)).reduce((s1, s2) -> s1 + "; " + s2).orElse("");
-
-          HDT_Work ancestor = this;
-          while (ancestor.largerWork.isNotNull())
-            ancestor = ancestor.largerWork.get();
-
-          ancestor.updateISBNstrRecursively(isbnStr);
-        }
+        interactivelyUpdateISBNsForThisWorkAndDescendants(largerWorkRec);
       }
     }
 
@@ -476,11 +468,44 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateISBNstrRecursively(String newISBNs)
+  private void interactivelyUpdateISBNsForThisWorkAndDescendants(HDT_Work orig)
+  {
+    List<HDT_Work> list = new ArrayList<>();
+
+    addThisWorkAndDescendantsToList(list);
+
+    list.remove(orig);
+
+    if (list.isEmpty()) return;
+
+    UpdateISBNsDlgCtrlr dlg = new UpdateISBNsDlgCtrlr(orig, list);
+
+    if (dlg.showModal() == false) return;
+
+    String isbnStr = orig.getTagString(tagISBN);
+
+    dlg.worksToUpdate().forEach(work -> work.updateTagString(tagISBN, isbnStr));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addThisWorkAndDescendantsToList(List<HDT_Work> list)
+  {
+    list.add(this);
+
+    for (HDT_Work subWork : subWorks)
+      subWork.addThisWorkAndDescendantsToList(list);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void nonInteractivelyUpdateISBNsForThisWorkAndDescendants(String newISBNs)
   {
     updateTagString(tagISBN, newISBNs);
 
-    subWorks.forEach(child -> child.updateISBNstrRecursively(newISBNs));
+    subWorks.forEach(child -> child.nonInteractivelyUpdateISBNsForThisWorkAndDescendants(newISBNs));
   }
 
 //---------------------------------------------------------------------------
@@ -499,28 +524,14 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     String isbnStr = allIsbns.stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");
 
-    if (largerWork.isNotNull())
-    {
-      if (confirmDialog("Recursively update ISBN(s) for contained/container works?"))
-      {
-        HDT_Work ancestor = this;
-        while (ancestor.largerWork.isNotNull())
-          ancestor = ancestor.largerWork.get();
-
-        ancestor.updateISBNstrRecursively(isbnStr);
-        return;
-      }
-    }
-    else if (subWorks.isEmpty() == false)
-    {
-      if (confirmDialog("Recursively update ISBN(s) for contained/container works?"))
-      {
-        updateISBNstrRecursively(isbnStr);
-        return;
-      }
-    }
-
     updateTagString(tagISBN, isbnStr);
+
+    HDT_Work ancestor = this;
+
+    while (ancestor.largerWork.isNotNull())
+      ancestor = ancestor.largerWork.get();
+
+    ancestor.interactivelyUpdateISBNsForThisWorkAndDescendants(this);
   }
 
 //---------------------------------------------------------------------------
