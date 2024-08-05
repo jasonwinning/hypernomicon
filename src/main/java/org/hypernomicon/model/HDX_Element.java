@@ -18,7 +18,7 @@ import org.hypernomicon.model.records.RecordType;
 
 /**
  * This class is used to represent any XML element inside a record element but not the record element itself.
- * This includes elements for items of the record as well as nested items.
+ * This includes elements for "top-level" items of the record as well as nested items.
  */
 public final class HDX_Element
 {

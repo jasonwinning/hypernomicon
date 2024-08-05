@@ -268,7 +268,7 @@ public final class Const
    * Change this and the version in pom.xml to set the application version
    * <br>
    */
-  public static final VersionNumber appVersion = new VersionNumber(1, 27, 1); // 1.27.1
+  public static final VersionNumber appVersion = new VersionNumber(1, 28); // 1.28
 
   /**
    * This is the minimum version that the application version is able to load
