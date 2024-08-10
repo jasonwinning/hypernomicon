@@ -29,7 +29,7 @@ import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
-public class VersionNumber implements Magnitude<VersionNumber>
+public class VersionNumber implements Comparable<VersionNumber>
 {
 
 //---------------------------------------------------------------------------

@@ -85,6 +85,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.compare.ComparableUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.json.simple.parser.ParseException;
 
@@ -908,11 +909,11 @@ public final class HyperDB
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
     {
-      if (entry.getKey().isLessThanOrEqualTo(appVersion))
+      if (ComparableUtils.is(entry.getKey()).lessThanOrEqualTo(appVersion))
       {
         VersionNumber maxVersion = entry.getValue();
 
-        if (maxVersion.isGreaterThan(versionNumber))
+        if (ComparableUtils.is(maxVersion).greaterThan(versionNumber))
           versionNumber = maxVersion;
       }
     }
@@ -1629,27 +1630,27 @@ public final class HyperDB
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMinVersion.entrySet())
     {
-      if (entry.getValue().isGreaterThan(versionNumber))        // Too new
-        if (entry.getKey().isLessThan(oldestTooNewAppVersion))  // Older than other too new ones
+      if (ComparableUtils.is(entry.getValue()).greaterThan(versionNumber))        // Too new
+        if (ComparableUtils.is(entry.getKey()).lessThan(oldestTooNewAppVersion))  // Older than other too new ones
           oldestTooNewAppVersion = entry.getKey();
     }
 
-    if (oldestTooNewAppVersion.isLessThanOrEqualTo(appVersion))
+    if (ComparableUtils.is(oldestTooNewAppVersion).lessThanOrEqualTo(appVersion))
       throw new HyperDataException("A version of " + appTitle + " older than v" + oldestTooNewAppVersion + " is required to load " + dataName);
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
     {
-      if (entry.getValue().isLessThan(versionNumber))              // Too old
-        if (entry.getKey().isGreaterThan(newestTooOldAppVersion))  // Newer than other too old ones
+      if (ComparableUtils.is(entry.getValue()).lessThan(versionNumber))              // Too old
+        if (ComparableUtils.is(entry.getKey()).greaterThan(newestTooOldAppVersion))  // Newer than other too old ones
           newestTooOldAppVersion = entry.getKey();
     }
 
-    if (newestTooOldAppVersion.isGreaterThanOrEqualTo(appVersion))
+    if (ComparableUtils.is(newestTooOldAppVersion).greaterThanOrEqualTo(appVersion))
       throw new HyperDataException("A version of " + appTitle + " newer than v" + newestTooOldAppVersion + " is required to load " + dataName);
 
     VersionNumber savingAs = getVersionNumberSavingAs(appVersionToMaxVersion);
 
-    if (creatingNew || (versionNumber.isLessThan(savingAs) == false))
+    if (creatingNew || (ComparableUtils.is(versionNumber).lessThan(savingAs) == false))
       return;
 
     if (appVersionToMinVersion == appVersionToMinRecordsXMLVersion)
@@ -1662,8 +1663,8 @@ public final class HyperDB
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
     {
-      if (entry.getValue().isLessThan(savingAs))                   // Too old
-        if (entry.getKey().isGreaterThan(newestTooOldAppVersion))  // Newer than other too old ones
+      if (ComparableUtils.is(entry.getValue()).lessThan(savingAs))                   // Too old
+        if (ComparableUtils.is(entry.getKey()).greaterThan(newestTooOldAppVersion))  // Newer than other too old ones
           newestTooOldAppVersion = entry.getKey();
     }
 
@@ -1809,7 +1810,7 @@ public final class HyperDB
         if (noItemTags)
           xmlRecord.setItemFromXML(null, nodeText, null);
 
-        if ((xmlRecord.type == hdtWorkType) && versionNumber.isLessThanOrEqualTo(new VersionNumber(1, 3)))
+        if ((xmlRecord.type == hdtWorkType) && ComparableUtils.is(versionNumber).lessThanOrEqualTo(new VersionNumber(1, 3)))
           needToAddThesisWorkType.setTrue();
 
         try

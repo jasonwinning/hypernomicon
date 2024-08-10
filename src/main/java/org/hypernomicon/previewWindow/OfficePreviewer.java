@@ -92,6 +92,8 @@ final class OfficePreviewer
                             mimetypeStr.contains("opendocument.spreadsheet") ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
                             mimetypeStr.contains("sun.xml.calc");                // sxc  (OpenOffice.org 1.0 spreadsheet)
 
+    // If a preview is currently being generated in a different tab from the one a preview is now being requested in, set the other tab as needing refresh
+
     if ((lastInfo != nextInfo) && (nextInfo != null) && (nextInfo.jsWrapper != jsWrapper) && (nextInfo.previewWrapper != null))
       nextInfo.previewWrapper.setNeedsRefresh(nextInfo.filePath);
 
