@@ -97,7 +97,7 @@ public enum Tag
   tagMainText        ("main_text"         , "Description"),
   tagTitle           ("title"             , "Title"),
   tagFileName        ("file_name"         , "Filename"),
-  tagYear            ("year"              , "Year"),
+  tagBibDate         ("bibliographic_date", "Date"),
   tagBibEntryKey     ("bib_entry_key"     , "Bibliography Entry Key"),
   tagMiscBib         ("misc_bib"          , "Misc. Bib. Info"),
   tagDOI             ("doi"               , "DOI"),

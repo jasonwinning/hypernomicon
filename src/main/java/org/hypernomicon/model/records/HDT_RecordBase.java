@@ -189,6 +189,7 @@ public abstract class HDT_RecordBase implements HDT_Record
         case hdcHubSpokes      -> new HDI_OnlineHubSpokes     (schema, (HDT_Hub                 ) this);
         case hdcPersonName     -> new HDI_OnlinePersonName    (schema, (HDT_Person              ) this);
 
+        case hdcBibDate        -> new HDI_OnlineBibDate       (schema, this);
         case hdcBoolean        -> new HDI_OnlineBoolean       (schema, this);
         case hdcTernary        -> new HDI_OnlineTernary       (schema, this);
         case hdcPointerMulti   -> new HDI_OnlinePointerMulti  (schema, this);
@@ -392,7 +393,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final String getBibEntryKeyString()
+  protected final String getBibEntryKeyInternal()
   {
     return ((HDI_OnlineBibEntryKey)items.get(tagBibEntryKey)).get();
   }
@@ -403,6 +404,27 @@ public abstract class HDT_RecordBase implements HDT_Record
   protected final String getTagString(Tag tag)
   {
     return tag == nameTag ? name.get() : ((HDI_OnlineString)items.get(tag)).get();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected final BibliographicDate getBibDateInternal()
+  {
+    return ((HDI_OnlineBibDate)items.get(tagBibDate)).get();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected final void updateBibDate(BibliographicDate newBibDate)
+  {
+    HDI_OnlineBibDate item = (HDI_OnlineBibDate)items.get(tagBibDate);
+
+    if (item.get().equals(newBibDate)) return;
+
+    modifyNow();
+    item.set(newBibDate);
   }
 
 //---------------------------------------------------------------------------

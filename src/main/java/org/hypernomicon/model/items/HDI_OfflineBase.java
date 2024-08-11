@@ -148,4 +148,17 @@ public abstract class HDI_OfflineBase extends HDI_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  static void writeBibiographicDateTag(StringBuilder xml, Tag tag, BibliographicDate bibDate)
+  {
+    if (bibDate.isEmpty()) return;
+
+    xml.append(HDX_INDENT).append('<').append(tag.name).append(' ')
+       .append(bibDate.toXmlAttribs())
+       .append(" />")
+       .append(System.lineSeparator());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

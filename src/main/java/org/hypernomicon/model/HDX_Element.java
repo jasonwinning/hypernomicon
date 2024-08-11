@@ -26,10 +26,12 @@ import java.util.Iterator;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 
+import org.apache.commons.lang3.compare.ComparableUtils;
 import org.hypernomicon.model.Exceptions.InvalidAttributeException;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.util.VersionNumber;
 
 //---------------------------------------------------------------------------
 
@@ -101,14 +103,22 @@ public class HDX_Element
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static HDX_Element create(StartElement startElement, RecordState xmlRecord) throws InvalidItemException, InvalidAttributeException
+  static HDX_Element create(StartElement startElement, RecordState xmlRecord, VersionNumber dataVersion) throws InvalidItemException, InvalidAttributeException
   {
     String tagName = startElement.getName().getLocalPart();
 
     Tag tag = Tag.getTag(tagName);
 
     if (tag == tagNone)
-      throw new InvalidItemException(xmlRecord.id, xmlRecord.type, tagName);
+    {
+      if (tagName.equals("year") && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 7)))
+        tag = tagBibDate; // Backwards compatibility for record data version 1.7 or lower
+      else
+        throw new InvalidItemException(xmlRecord.id, xmlRecord.type, tagName);
+    }
+
+    if (tag == tagBibDate)
+      return new HDX_BibDateElement(startElement.getAttributes(), xmlRecord);
 
     return new HDX_Element(tag, startElement.getAttributes(), xmlRecord);
   }

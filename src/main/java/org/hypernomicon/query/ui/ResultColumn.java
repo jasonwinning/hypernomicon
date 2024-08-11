@@ -256,7 +256,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
       NonGeneralColumn col = switch (firstItem.tag)
       {
         case tagTitle         -> new NonGeneralColumn(firstItem, str -> makeSortKeyByType(str, hdtWork));
-        case tagYear          -> new NonGeneralColumn(firstItem, Util::compareYears, String.class);
+        case tagBibDate       -> new NonGeneralColumn(firstItem, Util::compareYears, String.class);
         case tagStartPageNum,
              tagEndPageNum    -> new NonGeneralColumn(firstItem, Util::compareNumberStrings, String.class);
 

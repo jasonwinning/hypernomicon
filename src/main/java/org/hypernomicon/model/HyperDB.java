@@ -529,7 +529,7 @@ public final class HyperDB
       addStringItem(hdtWork, tagWebURL);
       addStringItem(hdtWork, tagStartPageNum);  // These are only used for works with an external file path. Otherwise, nested page
       addStringItem(hdtWork, tagEndPageNum);    // number items in rtWorkFileOfWork relation are used.
-      addStringItem(hdtWork, tagYear);
+      addBibDateItem(hdtWork, tagBibDate);
       addBibEntryKeyItem();
       addStringItem(hdtWork, tagMiscBib);
       addStringItem(hdtWork, tagDOI);
@@ -634,6 +634,7 @@ public final class HyperDB
   private void addPointerMulti (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti  , rt    , tags); }
   private void addPointerSingle(RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle , rt    , tags); }
   private void addStringItem   (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString        , rtNone, tags); }
+  private void addBibDateItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBibDate       , rtNone, tags); }
   private void addPathItem     (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath          , rt    , tags); }
   private void addMainTextItem (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcMainTextAndHub, rtNone, tags); }
   private void addAuthorsItem  (RecordType type, RelationType rt             ) throws HDB_InternalError { addItem(type, hdcAuthors       , rt    , tagAuthor); }
@@ -1728,7 +1729,7 @@ public final class HyperDB
 
             case XMLStreamConstants.START_ELEMENT :
             {
-              HDX_Element hdxElement = HDX_Element.create(event.asStartElement(), xmlRecord);
+              HDX_Element hdxElement = HDX_Element.create(event.asStartElement(), xmlRecord, dataVersion);
 
               if (topLevelItemElement == null)
               {
@@ -1769,7 +1770,13 @@ public final class HyperDB
                       if ((topLevelItemElement.getTag() == tagInvestigation) && (xmlRecord.type == hdtWork))
                         workIDtoInvIDs.put(xmlRecord.id, topLevelItemElement.getObjID());
                       else
+                      {
+                        // Backwards compatibility for record data version 1.7 or lower
+                        if ((topLevelItemElement instanceof HDX_BibDateElement) && (safeStr(nodeText).isBlank() == false) && ComparableUtils.is(dataVersion).greaterThan(new VersionNumber(1, 7)))
+                          throw new HyperDataException(tagBibDate.name + " XML tags can only have attributes, not text. Found text: " + nodeText);
+
                         xmlRecord.setItemFromXML(topLevelItemElement, nodeText, nestedItems);
+                      }
                   }
                 }
                 catch (DateTimeParseException e)

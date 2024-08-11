@@ -191,7 +191,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
     NonGeneralColumn col = NonGeneralColumn.create(firstItem, recordTypeToItem);
 
-    addColumn(col, EnumSet.of(tagAuthor, tagYear, tagWorkType, tagMainText).contains(firstItem.tag));
+    addColumn(col, EnumSet.of(tagAuthor, tagBibDate, tagWorkType, tagMainText).contains(firstItem.tag));
 
     return col;
   }

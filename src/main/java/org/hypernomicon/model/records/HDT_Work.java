@@ -41,6 +41,7 @@ import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -92,25 +93,27 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
 //---------------------------------------------------------------------------
 
-  public WorkTypeEnum getWorkTypeEnum()     { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
-  public String getYear()                   { return getTagString(tagYear); }
-  public String getBibEntryKey()            { return getBibEntryKeyString(); }
-  public String getMiscBib()                { return getTagString(tagMiscBib); }
-  public String getDOI()                    { return getTagString(tagDOI); }
-  public List<String> getISBNs()            { return matchISBN(getTagString(tagISBN)); }
-  public String getURL()                    { return getTagString(tagWebURL); }
-  public boolean canLaunch()                { return ! (getPath().isEmpty() && getURL().isEmpty()); }
+  public WorkTypeEnum getWorkTypeEnum()             { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
+  public String getYear()                           { return getBibDateInternal().getYearStr(); }
+  public BibliographicDate getBibDate()             { return getBibDateInternal(); }
+  public String getBibEntryKey()                    { return getBibEntryKeyInternal(); }
+  public String getMiscBib()                        { return getTagString(tagMiscBib); }
+  public String getDOI()                            { return getTagString(tagDOI); }
+  public List<String> getISBNs()                    { return matchISBN(getTagString(tagISBN)); }
+  public String getURL()                            { return getTagString(tagWebURL); }
+  public boolean canLaunch()                        { return ! (getPath().isEmpty() && getURL().isEmpty()); }
 
-  public void setWorkType(WorkTypeEnum val) { workType.set(HDT_WorkType.get(val)); }
-  public void setYear(String str)           { updateTagString(tagYear, str); }
-  public void setBibEntryKey(String str)    { updateBibEntryKey(str); }
-  public void setMiscBib(String str)        { updateTagString(tagMiscBib, str); }
-  public void setDOI(String str)            { updateTagString(tagDOI, matchDOI(str)); }
-  public void setURL(String str)            { updateTagString(tagWebURL, str); }
+  public void setWorkType(WorkTypeEnum val)         { workType.set(HDT_WorkType.get(val)); }
+  public void setBibDate(BibliographicDate bibDate) { updateBibDate(bibDate); }
+  public void setYear(String str)                   { updateBibDate(getBibDateInternal().setYear(str)); }
+  public void setBibEntryKey(String str)            { updateBibEntryKey(str); }
+  public void setMiscBib(String str)                { updateTagString(tagMiscBib, str); }
+  public void setDOI(String str)                    { updateTagString(tagDOI, matchDOI(str)); }
+  public void setURL(String str)                    { updateTagString(tagWebURL, str); }
 
-  @Override public String listName()        { return name(); }
-  @Override public HyperPath getPath()      { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.get(0).getPath(); }
-  @Override public WorkAuthors getAuthors() { return authors; }
+  @Override public String listName()                { return name(); }
+  @Override public HyperPath getPath()              { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.get(0).getPath(); }
+  @Override public WorkAuthors getAuthors()         { return authors; }
 
 //---------------------------------------------------------------------------
 

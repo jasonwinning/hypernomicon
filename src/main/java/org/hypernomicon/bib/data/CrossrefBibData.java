@@ -18,8 +18,8 @@
 package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
-import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -35,6 +35,7 @@ import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -153,9 +154,9 @@ public final class CrossrefBibData extends BibDataStandalone
     setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
     setStr(bfPubLoc   , jsonObj.getStrSafe("publisher-location"));
 
-    setDateIfPresent(jsonObj, ytPublishedPrint);
-    setDateIfPresent(jsonObj, ytIssued);
-    setDateIfPresent(jsonObj, ytCreated);
+    setDateIfPresent(jsonObj, dtPublishedPrint);
+    setDateIfPresent(jsonObj, dtIssued);
+    setDateIfPresent(jsonObj, dtCreated);
 
     setStr(bfURL, jsonObj.getStrSafe("URL"));
 
@@ -196,10 +197,10 @@ public final class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setDateIfPresent(JsonObj jsonObj, YearType yt)
+  private void setDateIfPresent(JsonObj jsonObj, DateType dt)
   {
-    if (jsonObj.containsKey(yt.desc))
-      setYear(jsonObj.getObj(yt.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0), yt);
+    if (jsonObj.containsKey(dt.desc))
+      setYear(jsonObj.getObj(dt.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0), dt);
   }
 
 //---------------------------------------------------------------------------

@@ -27,6 +27,7 @@ import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.BibAuthorsStandalone;
+import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
@@ -46,7 +47,7 @@ public abstract class BibDataStandalone extends BibData
 {
   private EntryType entryType;
   private final Map<BibFieldEnum, BibField> bibFieldEnumToBibField = new EnumMap<>(BibFieldEnum.class);
-  private YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
+  private DateType dateType;      // Internally-used descriptor indicates where date field came from for purposes of determining priority
   final BibAuthorsStandalone authors = new BibAuthorsStandalone();
 
   private static final EnumSet<BibFieldType> stringBibFieldTypes = EnumSet.of(bftString, bftMultiString);
@@ -73,9 +74,9 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setYear(String text, YearType yearType)
+  public void setYear(String text, DateType dateType)
   {
-    if ((this.yearType == null) || (this.yearType.ordinal() <= yearType.ordinal()))
+    if ((this.dateType == null) || (this.dateType.ordinal() <= dateType.ordinal()))
       setStr(bfYear, extractYear(text));
   }
 
@@ -87,7 +88,7 @@ public abstract class BibDataStandalone extends BibData
     bibFieldEnumToBibField.get(bibFieldEnum).setStr(newStr);
 
     if (bibFieldEnum == bfYear)
-      yearType = YearType.highestPriority();
+      dateType = DateType.highestPriority();
   }
 
 //---------------------------------------------------------------------------

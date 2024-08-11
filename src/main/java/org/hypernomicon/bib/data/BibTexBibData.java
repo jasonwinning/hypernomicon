@@ -18,8 +18,8 @@
 package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
-import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.BufferedReader;
@@ -101,7 +101,7 @@ public final class BibTexBibData extends BibDataStandalone
         case "type"      : setEntryType(parseBibTexType(val)); break;
         case "url"       : setStr(bfURL, val); break;
         case "volume"    : setStr(bfVolume, val); break;
-        case "year"      : setYear(val, ytPublicationDate); break;
+        case "year"      : setYear(val, dtPublicationDate); break;
 
         case "doi" : case "isbn" : case "issn" : break; // captured already
 

@@ -18,8 +18,8 @@
 package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
-import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -133,9 +133,9 @@ public final class GoogleBibData extends BibDataStandalone
     setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
     setEntryType(parseGoogleBooksType(jsonObj.getStrSafe("printType"))); // supposedly this will either be "BOOK" or "MAGAZINE", nothing else
 
-    String publishedDate = jsonObj.getStrSafe(ytPublishedDate.desc);
+    String publishedDate = jsonObj.getStrSafe(dtPublishedDate.desc);
     if (publishedDate.length() > 0)
-      setYear(publishedDate.substring(0, 4), ytPublishedDate);
+      setYear(publishedDate.substring(0, 4), dtPublishedDate);
 
     nullSwitch(jsonObj.getArray("authors"), authArray -> authArray.strStream().forEach(authStr ->
       authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr)))));

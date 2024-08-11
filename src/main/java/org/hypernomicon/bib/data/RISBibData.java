@@ -18,8 +18,8 @@
 package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
-import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
@@ -82,10 +82,10 @@ public final class RISBibData extends BibDataStandalone
 
             setStr(bfPubLoc, val); break;
 
-          case "DA": setYear(val, ytCopyright); break;
-          case "PY": setYear(val, ytPublicationDate); break;
-          case "Y1": setYear(val, ytCoverDisplayDate); break;
-          case "Y2": setYear(val, ytCreated); break;
+          case "DA": setYear(val, dtCopyright); break;
+          case "PY": setYear(val, dtPublicationDate); break;
+          case "Y1": setYear(val, dtCoverDisplayDate); break;
+          case "Y2": setYear(val, dtCreated); break;
 
           case "OP": break;    // Original Publication
           case "RP": break;    // Reprint Edition

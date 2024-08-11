@@ -131,7 +131,7 @@ public class QueryWhereField extends RecordQuery
 
     switch (cat)
     {
-      case hdcString : case hdcPersonName : case hdcBibEntryKey : case hdcMainTextAndHub :
+      case hdcString : case hdcPersonName : case hdcBibEntryKey : case hdcMainTextAndHub : case hdcBibDate :
 
         clearOperands(row, 3);
         vp3.setRestricted(row, false);

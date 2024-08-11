@@ -19,7 +19,7 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
-import static org.hypernomicon.bib.data.BibData.YearType.*;
+import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -40,6 +40,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.filePath.FilePath;
 
@@ -300,19 +301,19 @@ public class PDFBibData extends BibDataStandalone
         }
         else if (safeStr(prefix).startsWith("prism"))
         {
-          YearType yt = getByDesc(name);
+          DateType dt = getByDesc(name);
 
-          if (yt != ytUnknown)
-            bd.setYear(elements.get(0).value, yt);
+          if (dt != dtUnknown)
+            bd.setYear(elements.get(0).value, dt);
         }
       }
 
       if (safeStr(prefix).startsWith("prism"))
       {
-        YearType yt = getByDesc(name);
+        DateType dt = getByDesc(name);
 
-        if (yt != ytUnknown)
-          bd.setYear(value, yt);
+        if (dt != dtUnknown)
+          bd.setYear(value, dt);
         else
         {
           switch (name)

@@ -18,9 +18,7 @@
 package org.hypernomicon.bib.data;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,47 +42,6 @@ import static org.hypernomicon.util.Util.*;
  */
 public abstract class BibData
 {
-
-//---------------------------------------------------------------------------
-
-  private static final Map<String, YearType> descToYearType = new HashMap<>();
-
-  public enum YearType
-  {
-    ytUnknown(""),
-    ytCreated("created"),
-    ytCopyright("copyright"),
-    ytIssued("issued"),
-    ytPublishedDate("publishedDate"),
-    ytPublicationDate("publicationDate"),
-    ytPublishedPrint("published-print"),
-    ytPublicationDisplayDate("publicationDisplayDate"),
-    ytCoverDate("coverDate"),
-    ytCoverDisplayDate("coverDisplayDate");
-
-    final String desc;
-
-    YearType(String desc) { this.desc = desc; descToYearType.put(desc, this); }
-
-    public static YearType getByDesc(String desc) { return descToYearType.getOrDefault(desc, ytUnknown); }
-
-    static YearType highestPriority()
-    {
-      int ordinal = Integer.MIN_VALUE;
-      YearType highestYT = null;
-
-      for (YearType yt : EnumSet.allOf(YearType.class))
-      {
-        if (yt.ordinal() > ordinal)
-        {
-          highestYT = yt;
-          ordinal = yt.ordinal();
-        }
-      }
-
-      return highestYT;
-    }
-  }
 
 //---------------------------------------------------------------------------
 

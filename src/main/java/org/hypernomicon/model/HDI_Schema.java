@@ -42,7 +42,8 @@ public record HDI_Schema(HyperDataCategory category, RelationType relType, Recor
     hdcPointerSingle, hdcPointerMulti,   hdcNestedPointer,
     hdcString,        hdcMainTextAndHub, hdcBoolean,
     hdcTernary,       hdcPath,           hdcPersonName,
-    hdcBibEntryKey,   hdcAuthors,        hdcHubSpokes
+    hdcBibEntryKey,   hdcAuthors,        hdcBibDate,
+    hdcHubSpokes
   }
 
 //---------------------------------------------------------------------------

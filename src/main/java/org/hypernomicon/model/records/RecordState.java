@@ -124,6 +124,7 @@ public class RecordState
         case hdcPath           -> new HDI_OfflinePath          (schema, this);
         case hdcPointerMulti   -> new HDI_OfflinePointerMulti  (schema, this);
         case hdcPointerSingle  -> new HDI_OfflinePointerSingle (schema, this);
+        case hdcBibDate        -> new HDI_OfflineBibDate       (schema, this);
         case hdcBibEntryKey,
              hdcString         -> new HDI_OfflineString        (schema, this);
         case hdcAuthors        -> new HDI_OfflineAuthors       (schema, this);
