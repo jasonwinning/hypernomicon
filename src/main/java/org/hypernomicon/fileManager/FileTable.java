@@ -39,6 +39,7 @@ import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.DragNDropContainer;
 import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.view.wrappers.ObjectCellValue;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -56,48 +57,6 @@ import javafx.scene.text.Text;
 
 class FileTable extends DragNDropContainer<FileRow>
 {
-
-//---------------------------------------------------------------------------
-
-  static class FileCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<FileCellValue<Comp_T>>
-  {
-    private final String text;
-    private final Comparable<Comp_T> sortVal;
-
-    FileCellValue(String text, Comparable<Comp_T> sortVal)
-    {
-      this.text = text;
-      this.sortVal = sortVal;
-    }
-
-    @Override public String toString() { return text; }
-
-    @SuppressWarnings("unchecked")
-    @Override public int compareTo(FileCellValue<Comp_T> other)
-    {
-      return sortVal.compareTo((Comp_T) other.sortVal);
-    }
-
-    @Override public int hashCode()
-    {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((sortVal == null) ? 0 : sortVal.hashCode());
-      return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override public boolean equals(Object obj)
-    {
-      if (this == obj) return true;
-      if (obj == null) return false;
-      if (getClass() != obj.getClass()) return false;
-      if (sortVal.getClass() != ((FileCellValue<Comp_T>) obj).sortVal.getClass()) return false;
-
-      FileCellValue<Comp_T> other = (FileCellValue<Comp_T>)obj;
-      return sortVal.equals(other.sortVal);
-    }
-  }
 
 //---------------------------------------------------------------------------
 
@@ -136,11 +95,11 @@ class FileTable extends DragNDropContainer<FileRow>
 
     fileTV.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-    TableColumn<FileRow, FileRow>                nameCol    = (TableColumn<FileRow, FileRow>)                fileTV.getColumns().get(0);
-    TableColumn<FileRow, FileCellValue<Instant>> modDateCol = (TableColumn<FileRow, FileCellValue<Instant>>) fileTV.getColumns().get(1);
-    TableColumn<FileRow, String>                 typeCol    = (TableColumn<FileRow, String>)                 fileTV.getColumns().get(2);
-    TableColumn<FileRow, FileCellValue<Long>>    sizeCol    = (TableColumn<FileRow, FileCellValue<Long>>)    fileTV.getColumns().get(3);
-    TableColumn<FileRow, String>                 recordsCol = (TableColumn<FileRow, String>)                 fileTV.getColumns().get(4);
+    TableColumn<FileRow, FileRow>                  nameCol    = (TableColumn<FileRow, FileRow>)                  fileTV.getColumns().get(0);
+    TableColumn<FileRow, ObjectCellValue<Instant>> modDateCol = (TableColumn<FileRow, ObjectCellValue<Instant>>) fileTV.getColumns().get(1);
+    TableColumn<FileRow, String>                   typeCol    = (TableColumn<FileRow, String>)                   fileTV.getColumns().get(2);
+    TableColumn<FileRow, ObjectCellValue<Long>>    sizeCol    = (TableColumn<FileRow, ObjectCellValue<Long>>)    fileTV.getColumns().get(3);
+    TableColumn<FileRow, String>                   recordsCol = (TableColumn<FileRow, String>)                   fileTV.getColumns().get(4);
 
     nameCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
     nameCol.setComparator(FileRow::compareTo);

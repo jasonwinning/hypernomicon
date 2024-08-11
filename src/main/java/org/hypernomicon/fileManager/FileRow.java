@@ -28,13 +28,13 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
-import org.hypernomicon.fileManager.FileTable.*;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.tree.AbstractTreeRow;
 import org.hypernomicon.tree.TreeModel;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.wrappers.ObjectCellValue;
 
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
@@ -85,33 +85,33 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  FileCellValue<Instant> getModifiedDateCellValue()
+  ObjectCellValue<Instant> getModifiedDateCellValue()
   {
     Instant i = hyperPath.filePath().lastModified();
 
-    return new FileCellValue<>(dateTimeToUserReadableStr(i), i);
+    return new ObjectCellValue<>(dateTimeToUserReadableStr(i), i);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  FileCellValue<Long> getSizeCellValue()
+  ObjectCellValue<Long> getSizeCellValue()
   {
     long size = 0L;
     FilePath filePath = hyperPath.filePath();
 
     if (FilePath.isEmpty(filePath) == false)
     {
-      if (filePath.isDirectory()) return new FileCellValue<>("", 0L);
+      if (filePath.isDirectory()) return new ObjectCellValue<>("", 0L);
 
       try                   { size = filePath.size(); }
-      catch (IOException e) { return new FileCellValue<>("", (long) -1); }
+      catch (IOException e) { return new ObjectCellValue<>("", (long) -1); }
 
       if (size >= 1000L)
-        return new FileCellValue<>(numberFormat.format(size / 1000L) + " KB", size);
+        return new ObjectCellValue<>(numberFormat.format(size / 1000L) + " KB", size);
     }
 
-    return new FileCellValue<>(size + " bytes", size);
+    return new ObjectCellValue<>(size + " bytes", size);
   }
 
 //---------------------------------------------------------------------------

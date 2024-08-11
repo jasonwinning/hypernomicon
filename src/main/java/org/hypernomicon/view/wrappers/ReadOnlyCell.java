@@ -33,6 +33,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.input.MouseButton;
 
+//---------------------------------------------------------------------------
+
 public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 {
   private final HyperTable table;
