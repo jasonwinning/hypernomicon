@@ -20,6 +20,7 @@ package org.hypernomicon.model.records;
 import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
+import static org.hypernomicon.model.items.HDI_OfflineBase.HDX_INDENT;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -244,9 +245,9 @@ public class RecordState
 
     if (creationDate == null) return;
 
-    xml.append("  <creation_date>").append(dateTimeToIso8601offset(creationDate)).append("</creation_date>").append(System.lineSeparator())
-       .append("  <modified_date>").append(dateTimeToIso8601offset(modifiedDate)).append("</modified_date>").append(System.lineSeparator())
-       .append("  <view_date>"    ).append(dateTimeToIso8601offset(viewDate    )).append("</view_date>"    ).append(System.lineSeparator());
+    xml.append(HDX_INDENT).append("<creation_date>").append(dateTimeToIso8601offset(creationDate)).append("</creation_date>").append(System.lineSeparator())
+       .append(HDX_INDENT).append("<modified_date>").append(dateTimeToIso8601offset(modifiedDate)).append("</modified_date>").append(System.lineSeparator())
+       .append(HDX_INDENT).append("<view_date>"    ).append(dateTimeToIso8601offset(viewDate    )).append("</view_date>"    ).append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------

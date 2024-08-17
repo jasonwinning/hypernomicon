@@ -155,7 +155,6 @@ public final class HyperDB
   private final BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
   private final Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
   private final Map<String, String> xmlChecksums = new HashMap<>();
-  private final SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
 
   public final FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
 
@@ -960,7 +959,8 @@ public final class HyperDB
     }
 
     alreadyShowedUpgradeMsg = false;
-    MutableBoolean needToAddThesisWorkType = new MutableBoolean(); // Backwards compatibility with records XML version 1.3
+    EnumMap<RecordType, VersionNumber> recordTypeToDataVersion = new EnumMap<>(RecordType.class);
+    SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
 
     task = new HyperTask("LoadDatabase") { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
@@ -975,7 +975,7 @@ public final class HyperDB
       }
       catch (IOException e) { throw new HyperDataException(e); }
 
-      for (FilePath filePath : xmlFileList) loadFromXMLFile(creatingNew, filePath, needToAddThesisWorkType);
+      for (FilePath filePath : xmlFileList) loadFromXMLFile(creatingNew, filePath, recordTypeToDataVersion, workIDtoInvIDs);
     }};
 
     if (task.runWithProgressDialog() != State.SUCCEEDED)
@@ -1026,11 +1026,12 @@ public final class HyperDB
         if (versionStr.isBlank())
           throw new HyperDataException("XML settings data version number not found.");
 
-        checkVersion(creatingNew, new VersionNumber(versionStr), "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
+        VersionNumber settingsVersion = new VersionNumber(versionStr);
+        checkVersion(creatingNew, settingsVersion, "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
 
         boolean writeFolderIDs = false;
 
-        if (prefs.getInt(PREF_KEY_XML_FOLDER_ID, -1) == -1) // Backwards compatibility with settings version 1.0
+        if (ComparableUtils.is(settingsVersion).lessThanOrEqualTo(new VersionNumber(1)))  // Backwards compatibility with settings version 1.0
         {
           papersFolder    = folders.getByID(2);
           booksFolder     = folders.getByID(3);
@@ -1064,19 +1065,19 @@ public final class HyperDB
             HDT_Record.isEmpty(xmlFolder      ) ||
             HDT_Record.isEmpty(topicalFolder  ))
         {
-          throw new HyperDataException("Unable to load information about paths from database settings file");
+          throw new HyperDataException("Unable to load information about paths from database settings file.");
         }
 
-        if (writeFolderIDs) // Backwards compatibility with settings version 1.0
+        if (writeFolderIDs)  // Backwards compatibility with settings version 1.0
         {
           prefs.putInt(PREF_KEY_XML_FOLDER_ID       , xmlFolder      .getID());
-          prefs.putInt(PREF_KEY_PICTURES_FOLDER_ID  , picturesFolder .getID()); prefs.remove("picturesPath");
-          prefs.putInt(PREF_KEY_BOOKS_FOLDER_ID     , booksFolder    .getID()); prefs.remove("booksPath");
-          prefs.putInt(PREF_KEY_PAPERS_FOLDER_ID    , papersFolder   .getID()); prefs.remove("papersPath");
-          prefs.putInt(PREF_KEY_RESULTS_FOLDER_ID   , resultsFolder  .getID()); prefs.remove("resultsPath");
+          prefs.putInt(PREF_KEY_PICTURES_FOLDER_ID  , picturesFolder .getID()); prefs.remove("picturesPath" );
+          prefs.putInt(PREF_KEY_BOOKS_FOLDER_ID     , booksFolder    .getID()); prefs.remove("booksPath"    );
+          prefs.putInt(PREF_KEY_PAPERS_FOLDER_ID    , papersFolder   .getID()); prefs.remove("papersPath"   );
+          prefs.putInt(PREF_KEY_RESULTS_FOLDER_ID   , resultsFolder  .getID()); prefs.remove("resultsPath"  );
           prefs.putInt(PREF_KEY_UNENTERED_FOLDER_ID , unenteredFolder.getID()); prefs.remove("unenteredPath"); prefs.remove("unenteredPat");
           prefs.putInt(PREF_KEY_MISC_FILES_FOLDER_ID, miscFilesFolder.getID()); prefs.remove("suppFilesPath");
-          prefs.putInt(PREF_KEY_TOPICAL_FOLDER_ID   , topicalFolder  .getID()); prefs.remove("topicsPath");
+          prefs.putInt(PREF_KEY_TOPICAL_FOLDER_ID   , topicalFolder  .getID()); prefs.remove("topicsPath"   );
         }
 
         try { resolvePointers(); }
@@ -1124,9 +1125,10 @@ public final class HyperDB
       }
 
       if (workIDtoInvIDs.isEmpty() == false)
-        doInvestigationConversion();
+        doInvestigationConversion(workIDtoInvIDs);
 
-      if (needToAddThesisWorkType.isTrue())
+      // Backwards compatibility with records XML version 1.3
+      if (ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWorkType, new VersionNumber(1))).lessThanOrEqualTo(new VersionNumber(1, 3)))
       {
         int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
 
@@ -1185,7 +1187,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doInvestigationConversion() // Backwards compatibility with records XML version 1.4
+  private void doInvestigationConversion(SetMultimap<Integer, Integer> workIDtoInvIDs) // Backwards compatibility with records XML version 1.4
   {
     runningConversion = true;
 
@@ -1521,7 +1523,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static RecordState getNextRecordFromXML(XMLEventReader eventReader) throws XMLStreamException, HyperDataException
+  private static RecordState getNextRecordFromXML(XMLEventReader eventReader, FilePath filePath) throws XMLStreamException, HyperDataException
   {
     while (eventReader.hasNext())
     {
@@ -1552,7 +1554,7 @@ public final class HyperDB
 
             type = parseTypeTagStr(attribute.getValue());
             if (type == hdtNone)
-              throw new HyperDataException("Invalid record type: " + attribute.getValue());
+              throw new HyperDataException("Invalid record type: " + attribute.getValue() + (id > 0 ? (" ID: " + String.valueOf(id)) : "") + " File: " + filePath);
 
             break;
 
@@ -1562,6 +1564,9 @@ public final class HyperDB
           default           : break;
         }
       }
+
+      if (type == hdtNone)
+        throw new HyperDataException("Record with no type found." + (id > 0 ? (" ID: " + String.valueOf(id)) : "") + " File: " + filePath);
 
       RecordState xmlRecord = new RecordState(type, id, sortKeyAttr, "", searchKey, listName);
       xmlRecord.stored = true;
@@ -1636,7 +1641,7 @@ public final class HyperDB
     }
 
     if (ComparableUtils.is(oldestTooNewAppVersion).lessThanOrEqualTo(appVersion))
-      throw new HyperDataException("A version of " + appTitle + " older than v" + oldestTooNewAppVersion + " is required to load " + dataName);
+      throw new HyperDataException("A version of " + appTitle + " older than v" + oldestTooNewAppVersion + " is required to load " + dataName + '.');
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
     {
@@ -1646,7 +1651,7 @@ public final class HyperDB
     }
 
     if (ComparableUtils.is(newestTooOldAppVersion).greaterThanOrEqualTo(appVersion))
-      throw new HyperDataException("A version of " + appTitle + " newer than v" + newestTooOldAppVersion + " is required to load " + dataName);
+      throw new HyperDataException("A version of " + appTitle + " newer than v" + newestTooOldAppVersion + " is required to load " + dataName + '.');
 
     VersionNumber savingAs = getVersionNumberSavingAs(appVersionToMaxVersion);
 
@@ -1675,7 +1680,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadFromXMLFile(boolean creatingNew, FilePath filePath, MutableBoolean needToAddThesisWorkType) throws HyperDataException, CancelledTaskException
+  private void loadFromXMLFile(boolean creatingNew, FilePath filePath, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion, SetMultimap<Integer, Integer> workIDtoInvIDs) throws HyperDataException, CancelledTaskException
   {
     MessageDigest md = newMessageDigest();
 
@@ -1684,12 +1689,12 @@ public final class HyperDB
     {
       XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(dis);
 
-      VersionNumber versionNumber = getVersionNumberFromXML(eventReader);
+      VersionNumber dataVersion = getVersionNumberFromXML(eventReader);
 
-      if (versionNumber == null)
-        throw new HyperDataException("XML record data version number not found.");
+      if (dataVersion == null)
+        throw new HyperDataException("XML record data version number not found. File: " + filePath);
 
-      checkVersion(creatingNew, versionNumber, "this XML record data", appVersionToMinRecordsXMLVersion, appVersionToMaxRecordsXMLVersion);
+      checkVersion(creatingNew, dataVersion, "this XML record data", appVersionToMinRecordsXMLVersion, appVersionToMaxRecordsXMLVersion);
 
 //---------------------------------------------------------------------------
 
@@ -1698,7 +1703,7 @@ public final class HyperDB
 
       while (true)
       {
-        RecordState xmlRecord = getNextRecordFromXML(eventReader);
+        RecordState xmlRecord = getNextRecordFromXML(eventReader, filePath);
         if (xmlRecord == null) break;
 
         boolean notDoneReadingRecord = eventReader.hasNext(), noItemTags = true;
@@ -1723,7 +1728,7 @@ public final class HyperDB
 
             case XMLStreamConstants.START_ELEMENT :
             {
-              HDX_Element hdxElement = new HDX_Element(event.asStartElement(), xmlRecord);
+              HDX_Element hdxElement = HDX_Element.create(event.asStartElement(), xmlRecord);
 
               if (topLevelItemElement == null)
               {
@@ -1810,15 +1815,21 @@ public final class HyperDB
         if (noItemTags)
           xmlRecord.setItemFromXML(null, nodeText, null);
 
-        if ((xmlRecord.type == hdtWorkType) && ComparableUtils.is(versionNumber).lessThanOrEqualTo(new VersionNumber(1, 3)))
-          needToAddThesisWorkType.setTrue();
-
-        try
+        if (isUnstoredRecord(xmlRecord.id, xmlRecord.type) == false)
         {
-          if (isUnstoredRecord(xmlRecord.id, xmlRecord.type) == false)
+          try
+          {
             createNewRecordFromState(xmlRecord, false);
+          }
+          catch (RelationCycleException | SearchKeyException e) { throw new AssertionError(getThrowableMessage(e), e); }
+
+          VersionNumber previousDataVersion = recordTypeToDataVersion.get(xmlRecord.type);
+
+          if (previousDataVersion == null)
+            recordTypeToDataVersion.put(xmlRecord.type, dataVersion);
+          else if (previousDataVersion.equals(dataVersion) == false)
+            throw new HyperDataException("Multiple " + getTypeName(xmlRecord.type) + " records found with incompatible XML record data version numbers. ID: " + String.valueOf(xmlRecord.id) + " File: " + filePath);
         }
-        catch (RelationCycleException | SearchKeyException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
         if (event != null)
           task.updateProgress(curTaskCount + event.getLocation().getCharacterOffset(), totalTaskCount);
@@ -2075,7 +2086,6 @@ public final class HyperDB
     displayedAtIndex .clear();
     bibEntryKeyToWork.clear();
     xmlChecksums     .clear();
-    workIDtoInvIDs   .clear();
 
     if (bibLibrary != null)
     {

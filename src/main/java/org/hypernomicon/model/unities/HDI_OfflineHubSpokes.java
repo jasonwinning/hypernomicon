@@ -57,7 +57,7 @@ public class HDI_OfflineHubSpokes extends HDI_OfflineBase
       case hdtWorkLabel : labelID    = element.getObjID(); break;
       case hdtConcept   : conceptID  = element.getObjID(); break;
 
-      default           :                             break;
+      default           : break;
     }
   }
 

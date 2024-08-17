@@ -245,9 +245,9 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
 //---------------------------------------------------------------------------
 
-    private NonGeneralColumn(String caption                                                    ) { super(caption                        ); }
-    private NonGeneralColumn(String caption, Function<String, String> sortKeyFunction          ) { super(caption, sortKeyFunction       ); }
-    private NonGeneralColumn(String caption, Comparator<String> comparator, Class<String> klass) { super(caption, comparator     , klass); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem                                                    ) { super(captionItem.caption                        ); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Function<String, String> sortKeyFunction          ) { super(captionItem.caption, sortKeyFunction       ); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Comparator<String> comparator, Class<String> klass) { super(captionItem.caption, comparator     , klass); }
 
 //---------------------------------------------------------------------------
 
@@ -255,12 +255,12 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
     {
       NonGeneralColumn col = switch (firstItem.tag)
       {
-        case tagTitle         -> new NonGeneralColumn(firstItem.caption, str -> makeSortKeyByType(str, hdtWork));
-        case tagYear          -> new NonGeneralColumn(firstItem.caption, Util::compareYears, String.class);
+        case tagTitle         -> new NonGeneralColumn(firstItem, str -> makeSortKeyByType(str, hdtWork));
+        case tagYear          -> new NonGeneralColumn(firstItem, Util::compareYears, String.class);
         case tagStartPageNum,
-             tagEndPageNum    -> new NonGeneralColumn(firstItem.caption, Util::compareNumberStrings, String.class);
+             tagEndPageNum    -> new NonGeneralColumn(firstItem, Util::compareNumberStrings, String.class);
 
-        default               -> new NonGeneralColumn(firstItem.caption);
+        default               -> new NonGeneralColumn(firstItem);
       };
 
       // Only subject columns have a relType set. They are invisible by default.

@@ -37,6 +37,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
 //---------------------------------------------------------------------------
 
   private static final char QUOTE = '"';
+  public static final String HDX_INDENT = "  ";
 
   protected final RecordState recordState;
 
@@ -72,17 +73,17 @@ public abstract class HDI_OfflineBase extends HDI_Base
     if (objID > 0)
       idStr = " id=" + QUOTE + objID + QUOTE;
 
-    xml.append("  <").append(tag.name).append(idStr).append('>')
+    xml.append(HDX_INDENT).append('<').append(tag.name).append(idStr).append('>')
        .append(xmlContentEscaper.escape(value))
        .append(System.lineSeparator());
 
     map.forEach((nestedTag, nestedItem) ->
     {
-      xml.append("  ");
+      xml.append(HDX_INDENT);
       nestedItem.writeToXml(nestedTag, xml);
     });
 
-    xml.append("  </").append(tag.name).append('>')
+    xml.append(HDX_INDENT).append("</").append(tag.name).append('>')
        .append(System.lineSeparator());
   }
 
@@ -114,7 +115,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
     if (objType != hdtNone) typeStr = " type=" + QUOTE + Tag.getTypeTagStr(objType) + QUOTE;
     if (ord > -1)           ordStr  = " ord="  + QUOTE + ord                        + QUOTE;
 
-    xml.append("  <").append(tag.name).append(typeStr).append(idStr).append(ordStr).append('>')
+    xml.append(HDX_INDENT).append('<').append(tag.name).append(typeStr).append(idStr).append(ordStr).append('>')
        .append(xmlContentEscaper.escape(value))
        .append("</").append(tag.name).append('>')
        .append(System.lineSeparator());
@@ -126,7 +127,8 @@ public abstract class HDI_OfflineBase extends HDI_Base
   protected static void writeStringTag(StringBuilder xml, Tag tag, String tagText)
   {
     if (tagText.isEmpty()) return;
-    xml.append("  <").append(tag.name).append('>')
+
+    xml.append(HDX_INDENT).append('<').append(tag.name).append('>')
        .append(xmlContentEscaper.escape(tagText))
        .append("</").append(tag.name).append('>')
        .append(System.lineSeparator());
@@ -137,7 +139,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
 
   static void writeBooleanTag(StringBuilder xml, Tag tag, boolean tf)
   {
-    xml.append("  <").append(tag.name).append('>')
+    xml.append(HDX_INDENT).append('<').append(tag.name).append('>')
        .append(tf ? "true" : "false")
        .append("</").append(tag.name).append('>')
        .append(System.lineSeparator());

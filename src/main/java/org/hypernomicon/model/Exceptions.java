@@ -47,9 +47,9 @@ public final class Exceptions
 
   public static class InvalidAttributeException extends HyperDataException
   {
-    public InvalidAttributeException(int recordID, RecordType recordType, String itemName, String attrName)
+    public InvalidAttributeException(int recordID, RecordType recordType, Tag tag, String attrName)
     {
-      super("Invalid XML attribute: \"" + attrName + "\". Item tag: \"" + itemName + "\". Record type: " + Tag.getTypeTagStr(recordType) + " ID: " + recordID);
+      super("Invalid XML attribute: \"" + attrName + "\". Item tag: \"" + tag.name + "\". Record type: " + Tag.getTypeTagStr(recordType) + " ID: " + recordID);
     }
   }
 

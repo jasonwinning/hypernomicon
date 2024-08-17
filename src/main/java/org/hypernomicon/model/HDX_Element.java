@@ -1,3 +1,20 @@
+/*
+ * Copyright 2015-2024 Jason Winning
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package org.hypernomicon.model;
 
 import static org.hypernomicon.model.Tag.*;
@@ -20,13 +37,13 @@ import org.hypernomicon.model.records.RecordType;
  * This class is used to represent any XML element inside a record element but not the record element itself.
  * This includes elements for "top-level" items of the record as well as nested items.
  */
-public final class HDX_Element
+public class HDX_Element
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Tag tag;
+  private final Tag tag;
   private int objID = -1, ord = -1;
   private RecordType objType;
 
@@ -47,20 +64,15 @@ public final class HDX_Element
 
 //---------------------------------------------------------------------------
 
-  HDX_Element(StartElement startElement, RecordState xmlRecord) throws InvalidItemException, InvalidAttributeException
+  private HDX_Element(Tag tag, Iterator<Attribute> attributesIt, RecordState xmlRecord) throws InvalidAttributeException
   {
-    tag = Tag.getTag(startElement.getName().getLocalPart());
-
-    if (tag == tagNone)
-      throw new InvalidItemException(xmlRecord.id, xmlRecord.type, startElement.getName().getLocalPart());
+    this.tag = tag;
 
     objType = tag.objType;
 
-    Iterator<Attribute> it = startElement.getAttributes();
-
-    while (it.hasNext())
+    while (attributesIt.hasNext())
     {
-      Attribute attribute = it.next();
+      Attribute attribute = attributesIt.next();
 
       switch (attribute.getName().toString())
       {
@@ -71,7 +83,7 @@ public final class HDX_Element
 
         case "type" :
           if (objType == hdtAuxiliary) // this represents that the object type is not given away by the
-                                           // tag name, and should be obtained from the "type" attribute
+                                       // tag name, and should be obtained from the "type" attribute
             objType = parseTypeTagStr(attribute.getValue());
 
           break;
@@ -81,9 +93,24 @@ public final class HDX_Element
           break;
 
         default:
-          throw new InvalidAttributeException(xmlRecord.id, xmlRecord.type, tag.name, attribute.getName().toString());
+          throw new InvalidAttributeException(xmlRecord.id, xmlRecord.type, tag, attribute.getName().toString());
       }
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static HDX_Element create(StartElement startElement, RecordState xmlRecord) throws InvalidItemException, InvalidAttributeException
+  {
+    String tagName = startElement.getName().getLocalPart();
+
+    Tag tag = Tag.getTag(tagName);
+
+    if (tag == tagNone)
+      throw new InvalidItemException(xmlRecord.id, xmlRecord.type, tagName);
+
+    return new HDX_Element(tag, startElement.getAttributes(), xmlRecord);
   }
 
 //---------------------------------------------------------------------------
