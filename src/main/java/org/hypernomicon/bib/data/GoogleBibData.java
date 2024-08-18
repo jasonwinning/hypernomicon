@@ -23,7 +23,9 @@ import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -51,7 +53,7 @@ public final class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static GoogleBibData createFromJSON(JsonObj jsonObj, String title, String queryIsbn)
+  private static GoogleBibData createFromJSON(JsonObj jsonObj, String title, List<String> authKeywords, String queryIsbn)
   {
     try
     {
@@ -63,26 +65,49 @@ public final class GoogleBibData extends BibDataStandalone
         return new GoogleBibData(jsonArray.getObj(0).getObj("volumeInfo"), queryIsbn);
 
       LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();
-      GoogleBibData bestBD = null;
-      double bestDist = Double.MAX_VALUE;
+      GoogleBibData bestBDnoAuthMatch = null, bestBDwithAuthMatch = null;
+      double bestDistNoAuthMatch = Double.MAX_VALUE, bestDistWithAuthMatch = Double.MAX_VALUE;
       title = HDT_RecordBase.makeSortKeyByType(title, hdtWork);
 
       for (JsonObj curArrObj : jsonArray.getObjs())
       {
         JsonObj curObj = curArrObj.getObj("volumeInfo");
+
+        boolean authMatch = false;
+
+        if (authKeywords.size() > 0)
+        {
+          JsonArray authArr = curObj.getArray("authors");
+
+          if (authArr != null)
+            authMatch = authArr.strStream().anyMatch(jsonAuthStr -> authKeywords.stream().anyMatch(jsonAuthStr::contains));
+        }
+
         GoogleBibData curBD = new GoogleBibData(curObj, queryIsbn);
         String curTitle = HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork);
         int len = Math.min(title.length(), curTitle.length());
         double curDist = (double)alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len)) / (double)len;
 
-        if (curDist < bestDist)
+        if (authMatch)
         {
-          bestBD = curBD;
-          bestDist = curDist;
+          if (curDist < bestDistWithAuthMatch)
+          {
+            bestBDwithAuthMatch = curBD;
+            bestDistWithAuthMatch = curDist;
+          }
+        }
+        else
+        {
+          if (curDist < bestDistNoAuthMatch)
+          {
+            bestBDnoAuthMatch = curBD;
+            bestDistNoAuthMatch = curDist;
+          }
         }
       }
 
-      return bestDist > 0.25 ? null : bestBD;
+      if (bestDistWithAuthMatch <= 0.25) return bestBDwithAuthMatch;
+      return bestDistNoAuthMatch > 0.25 ? null : bestBDnoAuthMatch;
     }
     catch (NullPointerException e)
     {
@@ -138,7 +163,7 @@ public final class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, BibAuthors authors, String isbn)
+  private static String getQueryUrl(String title, BibAuthors authors, List<String> authKeywords, String isbn)
   {
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
 
@@ -147,7 +172,9 @@ public final class GoogleBibData extends BibDataStandalone
 
     if (safeStr(title).isEmpty()) return url;
 
-    String auths = "", eds = "";
+    authKeywords.clear();
+    List<String> edKeywords = new ArrayList<>();
+
     if (authors != null)
     {
       for (BibAuthor author : authors)
@@ -158,13 +185,17 @@ public final class GoogleBibData extends BibDataStandalone
         String name = author.getName().toEngChar().getLast();
 
         if (ed)
-          eds = eds + (eds.length() > 0 ? "+" : "") + escapeURL('"' + name + '"', false);
+          edKeywords.add(name);
         else if (tr == false)
-          auths = auths + (auths.length() > 0 ? "+" : "") + escapeURL('"' + name + '"', false);
+          authKeywords.add(name);
       }
     }
 
-    if (auths.isEmpty()) auths = eds;
+    if (authKeywords.isEmpty())
+      authKeywords.addAll(edKeywords);
+
+    String auths = authKeywords.stream().map(keyword -> escapeURL('"' + keyword + '"', false))
+                                        .reduce((s1, s2) -> s1 + "+" + s2).orElse("");
 
     title = convertToEnglishChars(title).trim();
 
@@ -214,10 +245,12 @@ public final class GoogleBibData extends BibDataStandalone
 
     alreadyCheckedIDs.add(isbn.toLowerCase());
     String finalIsbn = isbn;
+    List<String> authKeywords = new ArrayList<>();
+    String url = getQueryUrl(title, authors, authKeywords, isbn);
 
-    JsonHttpClient.getObjAsync(getQueryUrl(title, authors, isbn), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(url, httpClient, jsonObj ->
     {
-      GoogleBibData bd = createFromJSON(jsonObj, title, finalIsbn);
+      GoogleBibData bd = createFromJSON(jsonObj, title, authKeywords, finalIsbn);
 
       if ((bd == null) && (isbnIt != null) && isbnIt.hasNext())
       {
