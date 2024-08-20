@@ -45,6 +45,7 @@ import static org.hypernomicon.util.WebButton.WebButtonField.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
@@ -133,11 +134,19 @@ public final class DesktopUtil
       }
     }
 
-    pos = ssp.indexOf('#');
-    String fragment = safeSubstring(ssp, pos + 1, ssp.length());
-    ssp = ssp.substring(0, pos);
+    try
+    {
+      URIBuilder ub = new URIBuilder(url);  // Try this first because it doesn't do any escaping.
+      return ub.build();
+    }
+    catch (URISyntaxException e)  // If that failed, then use the URI constructor, which does escaping.
+    {
+      pos = ssp.indexOf('#');
+      String fragment = safeSubstring(ssp, pos + 1, ssp.length());
+      ssp = ssp.substring(0, pos);
 
-    return new URI(scheme, ssp, fragment);
+      return new URI(scheme, ssp, fragment);
+    }
   }
 
 //---------------------------------------------------------------------------
