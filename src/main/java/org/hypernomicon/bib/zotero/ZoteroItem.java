@@ -80,8 +80,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String toString()                   { return jObj.toString(); }
-  @Override public String getKey()                     { return jObj.getStr("key"); }
+  @Override public String toString()                   { return exportStandaloneJsonObj(false).toString(); }
+  @Override public String getKey()                     { return jObj.getStrSafe("key"); }
   @Override public long getVersion()                   { return jObj.getLong("version", 0); }
   @Override protected boolean isNewEntry()             { return jObj.containsKey("version") == false; }
   @Override protected JsonArray getCollJsonArray()     { return jObj.getObj("data").getArray("collections"); }
@@ -443,9 +443,11 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  JsonObj exportJsonObjForUploadToServer(boolean missingKeysOK)
+  JsonObj exportStandaloneJsonObj(boolean forUploadToServer)
   {
-    JsonObj jServerObj = jObj.clone();
+    JsonObj jStandaloneObj = jObj.clone();
+
+    boolean missingKeysOK = !forUploadToServer;
 
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum)
     {
@@ -461,7 +463,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         {
           String fieldKey = getFieldKey(bibFieldEnum);
           if (fieldKey.length() > 0)
-            jServerObj.getObj("data").remove(getFieldKey(bibFieldEnum)); // This should be done even if missingKeysOK == true
+            jStandaloneObj.getObj("data").remove(getFieldKey(bibFieldEnum)); // This should be done even if missingKeysOK == true
         }
 
         break;
@@ -469,29 +471,29 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     if (linkedToWork())
     {
-      ZoteroItem serverItem = new ZoteroItem(getLibrary(), jServerObj, true);
+      ZoteroItem standaloneItem = new ZoteroItem(getLibrary(), jStandaloneObj, true);
 
-      if (missingKeysOK || thisTypeHasFieldKey(bfDOI  )) serverItem.setStr(bfDOI, getStr(bfDOI));
-      if (missingKeysOK || thisTypeHasFieldKey(bfYear )) serverItem.setStr(bfYear, getStr(bfYear));
+      if (missingKeysOK || thisTypeHasFieldKey(bfDOI  )) standaloneItem.setStr(bfDOI, getStr(bfDOI));
+      if (missingKeysOK || thisTypeHasFieldKey(bfYear )) standaloneItem.setStr(bfYear, getStr(bfYear));
 
       if (missingKeysOK || thisTypeHasFieldKey(bfURL  ))
       {
         String url = getStr(bfURL);
         if (url.startsWith(EXT_1) == false)
-          serverItem.setStr(bfURL, url);
+          standaloneItem.setStr(bfURL, url);
       }
 
-      if (missingKeysOK || thisTypeHasFieldKey(bfISBNs)) serverItem.setMultiStr(bfISBNs, getMultiStr(bfISBNs));
-      if (missingKeysOK || thisTypeHasFieldKey(bfMisc )) serverItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
-      if (missingKeysOK || thisTypeHasFieldKey(bfTitle)) serverItem.setTitle(getStr(bfTitle));
+      if (missingKeysOK || thisTypeHasFieldKey(bfISBNs)) standaloneItem.setMultiStr(bfISBNs, getMultiStr(bfISBNs));
+      if (missingKeysOK || thisTypeHasFieldKey(bfMisc )) standaloneItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
+      if (missingKeysOK || thisTypeHasFieldKey(bfTitle)) standaloneItem.setTitle(getStr(bfTitle));
 
-      BibAuthors serverAuthors = serverItem.getAuthors();
-      serverAuthors.clear();
+      BibAuthors standaloneAuthors = standaloneItem.getAuthors();
+      standaloneAuthors.clear();
 
-      getAuthors().forEach(serverAuthors::add);
+      getAuthors().forEach(standaloneAuthors::add);
     }
 
-    return isNewEntry() ? jServerObj.getObj("data") : jServerObj;
+    return isNewEntry() ? jStandaloneObj.getObj("data") : jStandaloneObj;
   }
 
 //---------------------------------------------------------------------------
@@ -551,7 +553,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
       case Parent:
       {
-        JsonObj jDestObj  = dest.exportJsonObjForUploadToServer(true),
+        JsonObj jDestObj  = dest.exportStandaloneJsonObj(false),
                 jDestData = nullSwitch(jDestObj.getObj("data"), jDestObj);
 
         JsonArray oldCreatorsArr = jDestData.getArray("creators"), newCreatorsArr = new JsonArray();
@@ -624,7 +626,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   {
     ReportGenerator report = ReportGenerator.create(html);
 
-    JsonObj jObj  = item.exportJsonObjForUploadToServer(true),
+    JsonObj jObj  = item.exportStandaloneJsonObj(false),
             jData = nullSwitch(jObj.getObj("data"), jObj);
 
     jData.keySet().forEach(key ->

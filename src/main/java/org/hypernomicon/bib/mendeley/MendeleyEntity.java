@@ -29,7 +29,14 @@ interface MendeleyEntity extends BibEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  Instant lastModified();
+  /**
+   * The instant that the Mendeley server says it was last modified
+   * @return The instant that the Mendeley server says it was last modified
+   */
+  Instant lastModifiedOnServer();
+
+  String Document_Last_Modified_JSON_Key = "last_modified",
+         Folder_Last_Modified_JSON_Key   = "modified";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

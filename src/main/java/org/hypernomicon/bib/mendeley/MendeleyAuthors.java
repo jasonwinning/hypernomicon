@@ -29,7 +29,7 @@ import org.hypernomicon.util.json.JsonObj;
 
 import static org.hypernomicon.util.Util.*;
 
-public class MendeleyAuthors extends BibAuthors
+class MendeleyAuthors extends BibAuthors
 {
   private final JsonObj jsonObj;
   private final EntryType entryType;

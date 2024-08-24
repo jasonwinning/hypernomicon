@@ -20,6 +20,7 @@ package org.hypernomicon.bib.mendeley;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.bib.mendeley.MendeleyEntity.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
@@ -73,10 +74,13 @@ import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.HttpHeader;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFolder>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private String accessToken, refreshToken;
   private Instant lastSyncTime = Instant.EPOCH;
 
@@ -131,7 +135,20 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  static Instant getSyncInstantFromJsonStr(String jsonStr)
+  {
+    return safeStr(jsonStr).isBlank() ? Instant.EPOCH : parseIso8601(jsonStr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
+  {
+    return doHttpRequest(url, requestType, jsonData, mediaType, nextUrl, null);
+  }
+
+  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl, Instant ifUnmodifiedSince) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
   {
     if (syncTaskIsCancelled()) throw new CancelledTaskException();
 
@@ -141,7 +158,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
       case patch -> RequestBuilder.patch().setEntity(new StringEntity(jsonData, UTF_8))
                                           .setHeader(HttpHeader.Content_Type.toString(), mediaType)
-                                          .setHeader(HttpHeader.If_Unmodified_Since.toString(), dateTimeToHttpDate(lastSyncTime));
+                                          .setHeader(HttpHeader.If_Unmodified_Since.toString(), dateTimeToHttpDate(ifUnmodifiedSince));
 
       case post ->  RequestBuilder.post ().setEntity(new StringEntity(jsonData, UTF_8))
                                           .setHeader(HttpHeader.Content_Type.toString(), mediaType)
@@ -226,7 +243,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             return jsonArray;
           }
 
-          return doHttpRequest(url, requestType, jsonData, mediaType, nextUrl);
+          return doHttpRequest(url, requestType, jsonData, mediaType, nextUrl, ifUnmodifiedSince);
         }
       }
     }
@@ -264,7 +281,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             String entryKey = jObj.getStrSafe("id");
             remoteChangeIDtoObj.put(entryKey, jObj);
             nonTrashedIDs.add(entryKey);
-            changed = true;
           });
 
 // Get list of remotely changed documents in trash ------------------------------------------------------------------
@@ -276,7 +292,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             String entryKey = jObj.getStrSafe("id");
             remoteChangeIDtoObj.put(entryKey, jObj);
             trashedIDs.add(entryKey);
-            changed = true;
           });
 
 // Get list of remotely deleted documents ---------------------------------------------------------------------------
@@ -316,6 +331,19 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
           });
 
           lastSyncTime = Instant.now();
+
+// Ignore documents with old modified date --------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+
+          remoteChangeIDtoObj.entrySet().removeIf(entry ->
+          {
+            MendeleyDocument document = keyToAllEntry.get(entry.getKey());
+
+            return (document != null) && (document.lastModifiedOnServer().isBefore(getSyncInstantFromJsonStr(entry.getValue().getStr(Document_Last_Modified_JSON_Key))) == false);
+          });
+
+          if (remoteChangeIDtoObj.isEmpty() == false)
+            changed = true;
 
 // If document that was assigned to a work now has unrecognized entry type, unassign it -----------------------------
 // ------------------------------------------------------------------------------------------------------------------
@@ -386,7 +414,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             {
               String oldKey = document.getKey();
 
-              JsonArray jsonArray = createDocumentOnServer(document.exportJsonObjForUploadToServer());
+              JsonArray jsonArray = createDocumentOnServer(document);
 
               document.update(jsonArray.getObj(0), false, false);
 
@@ -395,10 +423,15 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             }
             else
             {
-              JsonArray jsonArray = updateDocumentOnServer(document.exportJsonObjForUploadToServer());
+              JsonArray jsonArray = updateDocumentOnServer(document);
               if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
               {
                 document.update(jsonArray.getObj(0), false, false);
+                changed = true;
+              }
+              else if (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED)
+              {
+                document.mergeWithBackupCopy();
                 changed = true;
               }
             }
@@ -453,7 +486,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
           }
           else
           {
-            if (folder.lastModified().isBefore(parseIso8601(jObj.getStr("modified"))))
+            if (folder.lastModifiedOnServer().isBefore(getSyncInstantFromJsonStr(jObj.getStr(Folder_Last_Modified_JSON_Key))))
               changed = true;
 
             folder.update(jObj, true, false);
@@ -543,58 +576,66 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
         jsonArray;
 
-      default -> throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+      default ->
+
+        throwResponseException(jsonArray, "");
     };
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray createDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
+  private JsonArray createDocumentOnServer(MendeleyDocument document) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
-    String url       = "https://api.mendeley.com/documents",
-           mediaType = "application/vnd.mendeley-document.1+json";
+    JsonArray jsonArray = doHttpRequest("https://api.mendeley.com/documents",                // URL
+                                        HttpRequestType.post,                                // request type
+                                        document.exportStandaloneJsonObj(false).toString(),  // JSON data
+                                        "application/vnd.mendeley-document.1+json",          // media type
+                                        null);                                               // next URL
 
-    if (jsonObj.getStrSafe("title").isEmpty())
-      jsonObj.put("title", " ");
+    return switch (jsonClient.getStatusCode())
+    {
+      case HttpStatus.SC_CREATED ->
 
-    JsonArray jsonArray = doHttpRequest(url, HttpRequestType.post, jsonObj.toString(), mediaType, null);
+        jsonArray;
 
-    if (jsonClient.getStatusCode() == HttpStatus.SC_CREATED)
-      return jsonArray;
+      default ->
 
-    throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+        throwResponseException(jsonArray, "");
+    };
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray updateDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
+  private JsonArray updateDocumentOnServer(MendeleyDocument document) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
-    String url       = "https://api.mendeley.com/documents/" + jsonObj.getStrSafe("id"),
-           mediaType = "application/vnd.mendeley-document.1+json";
+    JsonArray jsonArray = doHttpRequest("https://api.mendeley.com/documents/" + document.getKey(),  // URL
+                                        HttpRequestType.patch,                                      // request type
+                                        document.exportStandaloneJsonObj(true).toString(),          // JSON data
+                                        "application/vnd.mendeley-document.1+json",                 // media type
+                                        null,                                                       // next URL
+                                        document.lastModifiedOnServer());                           // if modified since
 
-    if (jsonObj.getStrSafe("title").isEmpty())
-      jsonObj.put("title", " ");
-
-    jsonObj.remove("created");
-    jsonObj.remove("last_modified");
-    jsonObj.remove("profile_id");
-    jsonObj.remove("id");
-    jsonObj.remove("group_id");
-    jsonObj.remove("accessed");
-
-    JsonArray jsonArray = doHttpRequest(url, HttpRequestType.patch, jsonObj.toString(), mediaType, null);
-
-    switch (jsonClient.getStatusCode())
+    return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_OK :
-      case HttpStatus.SC_NOT_MODIFIED :
-      case HttpStatus.SC_PRECONDITION_FAILED :
+      case HttpStatus.SC_OK,
+           HttpStatus.SC_NOT_MODIFIED,
+           HttpStatus.SC_PRECONDITION_FAILED ->
 
-        return jsonArray;
-    }
+        jsonArray;
 
+      default ->
+
+        throwResponseException(jsonArray, document.getKey());
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private JsonArray throwResponseException(JsonArray jsonArray, String documentID) throws HttpResponseException
+  {
     String errMsg = jsonClient.getReasonPhrase();
 
     if (jsonArray != null)
@@ -604,7 +645,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
         errMsg = jsonMsg;
     }
 
-    throw new HttpResponseException(jsonClient.getStatusCode(), errMsg);
+    throw new HttpResponseException(jsonClient.getStatusCode(), errMsg + (safeStr(documentID).isBlank() ? "" : ("\n\nEntry ID: " + documentID)));
   }
 
 //---------------------------------------------------------------------------
@@ -623,8 +664,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     if (jMainObj == null) return;
 
-    String lastSyncTimeStr = db.prefs.get(PREF_KEY_BIB_LAST_SYNC_TIME, "");
-    lastSyncTime = lastSyncTimeStr.isBlank() ? Instant.EPOCH : parseIso8601(lastSyncTimeStr);
+    lastSyncTime = getSyncInstantFromJsonStr(db.prefs.get(PREF_KEY_BIB_LAST_SYNC_TIME, ""));
 
     loadFromJSON(jMainObj);
   }

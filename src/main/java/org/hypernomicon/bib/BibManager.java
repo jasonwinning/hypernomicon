@@ -422,8 +422,10 @@ public class BibManager extends HyperDlg
       iv1.setFitHeight(16);
       btnSync.setGraphic(iv1);
 
-      if ((syncTask.getState() == State.FAILED) || (syncTask.getState() == State.CANCELLED))
+      if (syncTask.getState() == State.CANCELLED)
       {
+        // If the task failed, and it was a HyperDataException, a popup is displayed by HyperTask.InnerTask.failed()
+
         Throwable e = syncTask.getException();
 
         if (e instanceof HyperDataException)

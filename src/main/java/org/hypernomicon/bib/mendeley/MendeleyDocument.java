@@ -44,6 +44,8 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder> implements MendeleyEntity
 {
 
@@ -71,9 +73,17 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String toString()                   { return jObj.toString(); }
-  @Override public String getKey()                     { return jObj.getStr("id"); }
-  @Override protected boolean isNewEntry()             { return jObj.containsKey("last_modified") == false; }
+  private static final List<String> Noneditable_Document_JSON_Keys = List.of
+  (
+    "profile_id", "id", "created", Document_Last_Modified_JSON_Key, "group_id", "accessed", "citation_key", "folder_uuids",
+    "authored", "read", "hidden", "confirmed", "file_attached", "private_publication", "starred"
+  );
+
+//---------------------------------------------------------------------------
+
+  @Override public String toString()                   { return exportStandaloneJsonObj(false).toString(); }
+  @Override public String getKey()                     { return jObj.getStrSafe("id"); }
+  @Override protected boolean isNewEntry()             { return jObj.containsKey(Document_Last_Modified_JSON_Key) == false; }
   @Override protected void updateJsonObj(JsonObj jObj) { this.jObj = jObj; }
   @Override protected JsonArray getCollJsonArray()     { return jObj.getArray("folder_uuids"); }
   @Override public String getEntryURL()                { return ""; }
@@ -110,29 +120,21 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         }
         catch (NumberFormatException e)
         {
-          jObj.putNull(fieldKey);
+          jObj.remove(fieldKey);
         }
 
         return;
 
       case bfDOI :
 
-        JsonObj idObj = jObj.getObj("identifiers");
-
-        if (idObj == null)
-          jObj.put("identifiers", idObj = new JsonObj());
-
-        if (safeStr(newStr).isBlank())
-          idObj.putNull("doi");
-        else
-          idObj.put("doi", newStr);
+        updateIdentifiers(fieldKey, newStr);
 
         return;
 
       case bfURL :
 
         if (safeStr(newStr).isBlank())
-          jObj.putNull("websites");
+          jObj.remove("websites");
         else
         {
           JsonArray jArr = new JsonArray();
@@ -152,13 +154,39 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
     if (safeStr(newStr).isBlank())
     {
-      jObj.putNull(fieldKey);
+      jObj.remove(fieldKey);
       return;
     }
 
     if (jObj.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
 
     jObj.put(fieldKey, newStr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateIdentifiers(String fieldKey, String identifiersStr)
+  {
+    JsonObj idObj = jObj.getObj("identifiers");
+
+    if (idObj == null)
+    {
+      if (safeStr(identifiersStr).isBlank())
+        return;
+
+      jObj.put("identifiers", idObj = new JsonObj());
+    }
+
+    if (safeStr(identifiersStr).isBlank())
+    {
+      idObj.remove(fieldKey);
+
+      if (idObj.keySet().isEmpty())
+        jObj.remove("identifiers");
+    }
+    else
+      idObj.put(fieldKey, identifiersStr);
   }
 
 //---------------------------------------------------------------------------
@@ -274,51 +302,46 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       }
     }
 
-    String fieldKey = getFieldKey(bibFieldEnum), newStr = null;
+    String fieldKey = getFieldKey(bibFieldEnum);
 
     switch (bibFieldEnum)
     {
       case bfContainerTitle : case bfTitle :
+      {
+        String titleStr = strListToStr(list, false);
+        if (jObj.getStrSafe(fieldKey).equals(safeStr(titleStr))) return;
 
-        newStr = strListToStr(list, false);
-        if (jObj.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
-
-        jObj.put(fieldKey, newStr);
+        jObj.put(fieldKey, titleStr);
 
         return;
+      }
 
       case bfMisc :
+      {
+        String miscStr = list.stream().map(StringBuilder::new).reduce((all, one) -> all.append("<br>").append(one)).orElse(new StringBuilder()).toString();
 
-        newStr = list.stream().map(StringBuilder::new).reduce((all, one) -> all.append("<br>").append(one)).orElse(new StringBuilder()).toString();
+        if (jObj.getStrSafe(fieldKey).equals(safeStr(miscStr))) return;
 
-        if (jObj.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
-
-        jObj.put(fieldKey, newStr);
+        jObj.put(fieldKey, miscStr);
 
         return;
+      }
 
       case bfISBNs : case bfISSNs :
+      {
+        String identifiersStr = "";
 
-        if (collEmpty(list))
-          newStr = "";
-        else
+        if (collEmpty(list) == false)
         {
           List<String> list2 = new ArrayList<>(list);
           removeDupsInStrList(list2);
-          newStr = ultraTrim(convertToSingleLine(strListToStr(list2, false)));
+          identifiersStr = ultraTrim(convertToSingleLine(strListToStr(list2, false)));
         }
 
-        JsonObj idObj = jObj.getObj("identifiers");
-
-        if (idObj == null)
-          jObj.put("identifiers", idObj = new JsonObj());
-
-        if (newStr.isEmpty())
-          idObj.remove(fieldKey);
-        else
-          idObj.put(fieldKey, newStr);
+        updateIdentifiers(fieldKey, identifiersStr);
 
         return;
+      }
 
       default : break;
     }
@@ -440,36 +463,57 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  JsonObj exportJsonObjForUploadToServer()
+  /**
+   * Convert the entry to a standalone JSON object
+   * @param serverPatch True if we are patching a server document, so we have to set null to clear out values
+   * @return The standalone JSON object
+   */
+  JsonObj exportStandaloneJsonObj(boolean serverPatch)
   {
-    JsonObj jServerObj = jObj.clone();
+    JsonObj jStandaloneObj = jObj.clone();
 
     if (isNewEntry())
-      jServerObj.remove("id");
+      jStandaloneObj.remove("id");
 
     if (linkedToWork())
     {
-      MendeleyDocument serverItem = new MendeleyDocument(getLibrary(), jServerObj, true);
+      MendeleyDocument standaloneItem = new MendeleyDocument(getLibrary(), jStandaloneObj, true);
 
-      serverItem.setStr(bfDOI, getStr(bfDOI));
-      serverItem.setStr(bfYear, getStr(bfYear));
+      standaloneItem.setStr(bfDOI, getStr(bfDOI));
+      standaloneItem.setStr(bfYear, getStr(bfYear));
 
       String url = getStr(bfURL);
       if (url.startsWith(EXT_1) == false)
-        serverItem.setStr(bfURL, url);
+        standaloneItem.setStr(bfURL, url);
 
-      serverItem.setMultiStr(bfISBNs, getMultiStr(bfISBNs));
-      serverItem.setMultiStr(bfISSNs, getMultiStr(bfISSNs));
-      serverItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
-      serverItem.setTitle(getStr(bfTitle));
+      standaloneItem.setMultiStr(bfISBNs, getMultiStr(bfISBNs));
+      standaloneItem.setMultiStr(bfISSNs, getMultiStr(bfISSNs));
+      standaloneItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
+      standaloneItem.setTitle(getStr(bfTitle));
 
-      BibAuthors serverAuthors = serverItem.getAuthors();
-      serverAuthors.clear();
+      BibAuthors standaloneAuthors = standaloneItem.getAuthors();
+      standaloneAuthors.clear();
 
-      getAuthors().forEach(serverAuthors::add);
+      getAuthors().forEach(standaloneAuthors::add);
     }
 
-    return jServerObj;
+    if (serverPatch)
+    {
+      // To clear an existing value when doing a Patch on the server,
+      // you have to set the value to null.
+
+      JsonObj jBackupObj = ((MendeleyDocument) backupItem).jObj;
+
+      jBackupObj.keySet().forEach(key ->
+      {
+        if ((Noneditable_Document_JSON_Keys.contains(key) == false) && (jStandaloneObj.containsKey(key) == false))
+          jStandaloneObj.putNull(key);
+      });
+
+      Noneditable_Document_JSON_Keys.forEach(jStandaloneObj::remove);
+    }
+
+    return jStandaloneObj;
   }
 
 //---------------------------------------------------------------------------
@@ -512,7 +556,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
       case Parent:
       {
-        JsonObj newVersion = dest.exportJsonObjForUploadToServer();
+        JsonObj newVersion = dest.exportStandaloneJsonObj(false);
         newVersion.remove("authors");
         newVersion.put("editors", jObj.getArray("editors").clone());
 
@@ -546,21 +590,14 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
   {
     ReportGenerator report = ReportGenerator.create(html);
 
-    JsonObj jObj  = document.exportJsonObjForUploadToServer();
+    JsonObj jObj  = document.exportStandaloneJsonObj(false);
 
     jObj.keySet().forEach(key ->
     {
-      String fieldName = key;
+      if (Noneditable_Document_JSON_Keys.contains(key))
+        return;
 
-      switch (fieldName)
-      {
-        case "profile_id" : case "id"       : case "created"      : case "last_modified" :
-        case "group_id"   : case "accessed" : case "citation_key" : case "folder_uuids"  :
-
-          return;
-
-        default : fieldName = formatMendeleyFieldName(fieldName); break;
-      }
+      String fieldName = formatMendeleyFieldName(key);
 
       switch (jObj.getType(key))
       {
@@ -716,12 +753,9 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public Instant lastModified()
+  @Override public Instant lastModifiedOnServer()
   {
-    String str = jObj.getStrSafe("last_modified");
-
-    return str.isBlank() ? Instant.now()      // If it does not yet exist in Mendeley, then for Mendeley's purposes it should be considered brand-new
-                         : parseIso8601(str);
+    return MendeleyWrapper.getSyncInstantFromJsonStr(jObj.getStrSafe(Document_Last_Modified_JSON_Key));
   }
 
 //---------------------------------------------------------------------------

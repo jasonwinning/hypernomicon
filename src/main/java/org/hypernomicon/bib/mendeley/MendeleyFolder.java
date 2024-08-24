@@ -19,8 +19,6 @@ package org.hypernomicon.bib.mendeley;
 
 import java.time.Instant;
 
-import static org.hypernomicon.util.Util.*;
-
 import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -39,10 +37,10 @@ public class MendeleyFolder extends BibCollection implements MendeleyEntity
 
 //---------------------------------------------------------------------------
 
-  @Override public boolean isSynced()     { return true; }
-  @Override public String getName()       { return jObj.getStr("name"); }
-  @Override public String getKey()        { return jObj.getStr("id"); }
-  @Override public Instant lastModified() { return parseIso8601(jObj.getStr("modified")); }
+  @Override public boolean isSynced()             { return true; }
+  @Override public String getName()               { return jObj.getStr("name"); }
+  @Override public String getKey()                { return jObj.getStr("id"); }
+  @Override public Instant lastModifiedOnServer() { return MendeleyWrapper.getSyncInstantFromJsonStr(jObj.getStr(Folder_Last_Modified_JSON_Key)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -538,7 +538,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
         int uploadCount = Math.min(uploadQueue.size(), 50);
         for (int ndx = 0; ndx < uploadCount; ndx++)
-          jArr.add(uploadQueue.get(ndx).exportJsonObjForUploadToServer(false));
+          jArr.add(uploadQueue.get(ndx).exportStandaloneJsonObj(true));
 
         jArr = doWriteCommand(ZoteroCmd.writeItems, jArr.toString());
 
