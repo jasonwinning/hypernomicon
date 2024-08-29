@@ -361,12 +361,11 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
   private void createFolder()
   {
+    if (ui.cantSaveRecord()) return;
+
     HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
 
-    String folderName = FilePath.removeInvalidFileNameChars(recordName());
-
-    if (folderName.isBlank())
-      folderName = FilePath.removeInvalidFileNameChars(curNote.name());
+    String folderName = FilePath.removeInvalidFileNameChars(curNote.name());
 
     if (folderName.isBlank())
     {
