@@ -187,7 +187,10 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
 
     @Override public void addColumnsToTable()
     {
-      List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition, bfVolume, bfIssue, bfLanguage, bfISSNs, bfPages).forEach(field -> addColumn(new BibFieldColumn(field)));
+      List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition,
+              bfVolume   , bfIssue         , bfLanguage , bfISSNs , bfPages)
+
+        .forEach(field -> addColumn(new BibFieldColumn(field, false)));
     }
   }
 

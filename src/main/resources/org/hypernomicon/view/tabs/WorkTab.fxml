@@ -40,7 +40,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
+<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
   <columnConstraints>
     <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
     <ColumnConstraints hgrow="SOMETIMES" />
@@ -95,11 +95,13 @@
     <Button fx:id="btnWebSrch2" maxWidth="86.0" minWidth="86.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="86.0" text="PhilPapers" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
   </AnchorPane>
   <AnchorPane fx:id="apLowerMid" GridPane.columnIndex="1" GridPane.rowIndex="1">
-    <Label layoutX="4.0" layoutY="9.0" text="Year:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
-    <TextField fx:id="tfYear" layoutX="38.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
-    <Button fx:id="btnLargerWork" layoutX="84.0" layoutY="5.0" maxWidth="83.0" minWidth="83.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="84.0" AnchorPane.topAnchor="5.0" />
-      <SplitMenuButton fx:id="btnFolder" maxWidth="86.0" minWidth="86.0" mnemonicParsing="false" prefWidth="86.0" text="Folder:" visible="false" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="169.0" AnchorPane.topAnchor="5.0" />
-    <ComboBox fx:id="cbLargerWork" layoutX="182.0" layoutY="5.0" prefHeight="25.0" prefWidth="413.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="169.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+    <Label layoutX="4.0" layoutY="9.0" text="Date:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
+    <TextField fx:id="tfYear" layoutX="38.0" layoutY="5.0" maxHeight="25.0" maxWidth="60.0" minHeight="25.0" minWidth="60.0" prefHeight="25.0" prefWidth="60.0" promptText="YYYY" text="2222" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
+      <ComboBox fx:id="cbMonth" layoutX="101.0" layoutY="5.0" maxHeight="25.0" maxWidth="66.0" minHeight="25.0" minWidth="66.0" prefHeight="25.0" prefWidth="66.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="101.0" AnchorPane.topAnchor="5.0" />
+      <TextField fx:id="tfDay" layoutX="184.0" layoutY="5.0" maxHeight="25.0" maxWidth="40.0" minHeight="25.0" minWidth="40.0" prefHeight="25.0" prefWidth="40.0" promptText="DD" text="29" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="170.0" AnchorPane.topAnchor="5.0" />
+    <Button fx:id="btnLargerWork" layoutX="84.0" layoutY="5.0" maxWidth="83.0" minWidth="83.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="213.0" AnchorPane.topAnchor="5.0" />
+      <SplitMenuButton fx:id="btnFolder" maxWidth="86.0" minWidth="86.0" mnemonicParsing="false" prefWidth="86.0" text="Folder:" visible="false" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="299.0" AnchorPane.topAnchor="5.0" />
+    <ComboBox fx:id="cbLargerWork" layoutX="182.0" layoutY="5.0" prefHeight="25.0" prefWidth="413.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="299.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
   </AnchorPane>
   <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
     <Button fx:id="btnURL" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="URL:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />

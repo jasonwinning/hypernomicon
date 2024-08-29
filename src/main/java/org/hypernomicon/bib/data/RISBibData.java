@@ -88,10 +88,10 @@ public final class RISBibData extends BibDataStandalone
 
             setStr(bfPubLoc, val); break;
 
-          case "DA": setDate(BibliographicDate.fromUserStr(val), dtCopyright       ); break;
-          case "PY": setDate(BibliographicDate.fromUserStr(val), dtPublicationDate ); break;
-          case "Y1": setDate(BibliographicDate.fromUserStr(val), dtCoverDisplayDate); break;
-          case "Y2": setDate(BibliographicDate.fromUserStr(val), dtCreated         ); break;
+          case "DA": setDate(parseDate(val), dtCopyright       , true); break;
+          case "PY": setDate(parseDate(val), dtPublicationDate , true); break;
+          case "Y1": setDate(parseDate(val), dtCoverDisplayDate, true); break;
+          case "Y2": setDate(parseDate(val), dtCreated         , true); break;
 
           case "OP": break;    // Original Publication
           case "RP": break;    // Reprint Edition
@@ -156,6 +156,32 @@ public final class RISBibData extends BibDataStandalone
     }
 
     throw new RISException(); // It has to end with "ER"; otherwise malformed
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Pattern risDatePattern = Pattern.compile("^(\\d+)(?:\\/(\\d{0,2})(?:\\/(\\d{0,2})(?:(?:\\/|\\s)([^/]*))?)?)?$");
+
+  private BibliographicDate parseDate(String str)
+  {
+    // First, pattern match on entire string
+    Matcher m = risDatePattern.matcher(str);
+
+    boolean matched = m.find();
+
+    String group1 = "", group2 = "", group3 = "";
+
+    if (matched)
+    {
+      group1 = safeStr(m.group(1));
+      group2 = safeStr(m.group(2));
+      group3 = safeStr(m.group(3));
+
+      return new BibliographicDate(parseInt(group3, 0), parseInt(group2, 0), group1, false);
+    }
+
+    return BibliographicDate.fromUserStr(str);
   }
 
 //---------------------------------------------------------------------------

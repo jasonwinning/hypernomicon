@@ -18,10 +18,12 @@
 package org.hypernomicon.dialogs;
 
 import java.io.IOException;
+import java.time.Month;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javafx.scene.control.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
@@ -85,21 +87,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.DirectoryChooser;
@@ -116,6 +103,7 @@ public class WorkDlgCtrlr extends HyperDlg
   @FXML private CheckBox chkSetDefault, chkCreateBibEntry, chkKeepFilenameUnchanged;
   @FXML private ComboBox<EntryType> cbEntryType;
   @FXML private ComboBox<HyperTableCell> cbType;
+  @FXML private ComboBox<Month> cbMonth;
   @FXML private Hyperlink hlCase;
   @FXML private Label lblAutoPopulated;
   @FXML private MenuItem mnuPopulateUsingDOI, mnuPopulateFromPDF;
@@ -124,7 +112,7 @@ public class WorkDlgCtrlr extends HyperDlg
   @FXML private SplitMenuButton btnAutoFill;
   @FXML private TableView<HyperTableRow> tvAuthors, tvISBN;
   @FXML private TextArea taMisc;
-  @FXML private TextField tfDest, tfDOI, tfFileTitle, tfNewFile, tfOrigFile, tfTitle, tfYear;
+  @FXML private TextField tfDest, tfDOI, tfFileTitle, tfNewFile, tfOrigFile, tfTitle, tfYear, tfDay;
   @FXML private ToggleButton btnPreview;
   @FXML private ToggleGroup tgSelect;
 
@@ -174,6 +162,8 @@ public class WorkDlgCtrlr extends HyperDlg
   private WorkDlgCtrlr(String dialogTitle, HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
     super("WorkDlg", dialogTitle, true);
+
+    setupDateControls(tfYear, cbMonth, tfDay);
 
     apPreview = new AnchorPane();
     mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
@@ -332,11 +322,11 @@ public class WorkDlgCtrlr extends HyperDlg
 
         tfNewFile.disableProperty().unbind();
 
-        disableAll(tfFileTitle, tfNewFile, tfDest, btnDest, chkSetDefault, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy, rbCurrent);
+        disableAll(tfFileTitle, tfNewFile, tfDest, btnDest, chkSetDefault, tfYear, cbMonth, tfDay, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy, rbCurrent);
       }
       else if (HyperTableCell.getCellID(newValue) > 0)
       {
-        enableAll(tfFileTitle, tfDest, btnDest, chkSetDefault, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy);
+        enableAll(tfFileTitle, tfDest, btnDest, chkSetDefault, tfYear, cbMonth, tfDay, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy);
 
         tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
 
@@ -525,7 +515,7 @@ public class WorkDlgCtrlr extends HyperDlg
     return titleFormatter(alreadyChangingTitle, null);
   }
 
-  public static TextFormatter<?> titleFormatter(MutableBoolean alreadyChangingTitle, RadioButton rb)
+  public static TextFormatter<?> titleFormatter(MutableBoolean alreadyChangingTitle, Toggle rb)
   {
     return new TextFormatter<>(change ->
     {
@@ -621,7 +611,7 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MasterDetailPane addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, ToggleButton btnPreview)
+  public static MasterDetailPane addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, Toggle btnPreview)
   {
     stagePane.getChildren().remove(apMain);
 
@@ -847,7 +837,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (bdToUse != null)
       populateFieldsFromBibData(bdToUse, true, true);
-    else if (tfTitle.getText().isEmpty() && tfYear.getText().isEmpty())
+    else if (tfTitle.getText().isEmpty() && BibliographicDate.isEmpty(getDateFromControls(tfYear, cbMonth, tfDay)))
       extractDataFromPdf(app.prefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
   }
 
@@ -1161,7 +1151,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
   public GUIBibData getBibDataFromGUI()
   {
-    curBD.setDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
+    curBD.setDate(getDateFromControls(tfYear, cbMonth, tfDay));
     curBD.setStr(bfDOI, matchDOI(tfDOI.getText()));
     curBD.setTitle(tfTitle.getText());
 
@@ -1221,7 +1211,7 @@ public class WorkDlgCtrlr extends HyperDlg
         cbEntryType.getSelectionModel().select(entryType);
     }
 
-    tfYear.setText(curBD.getDate().getYearStr());
+    populateDateControls(tfYear, cbMonth, tfDay, curBD.getDate());
 
     alreadyChangingTitle.setTrue();
     tfTitle.setText(curBD.getStr(bfTitle));

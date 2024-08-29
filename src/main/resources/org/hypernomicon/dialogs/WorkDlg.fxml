@@ -37,7 +37,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WorkDlgCtrlr">
+<AnchorPane minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WorkDlgCtrlr">
   <AnchorPane fx:id="apMain" minHeight="300.0" minWidth="300.0" prefHeight="680.0" prefWidth="917.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <Label layoutX="14.0" layoutY="14.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0">
     </Label>
@@ -79,16 +79,19 @@
     <Label layoutX="15.0" layoutY="140.0" text="Edit how title will appear in filename (or leave it alone)." wrapText="true" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="137.0" />
     <Label layoutX="14.0" layoutY="161.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 4." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="161.0">
     </Label>
-    <ComboBox fx:id="cbType" layoutX="85.0" layoutY="162.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="162.0" />
-    <Label alignment="CENTER" contentDisplay="CENTER" layoutX="486.0" layoutY="147.0" text="Miscellaneous bibliographical information:" textAlignment="CENTER" AnchorPane.leftAnchor="248.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="147.0">
+    <ComboBox fx:id="cbType" layoutX="85.0" layoutY="162.0" prefHeight="25.0" prefWidth="172.0" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="162.0" />
+    <Label alignment="CENTER" contentDisplay="CENTER" layoutX="248.0" layoutY="146.0" text="Miscellaneous bibliographical information:" textAlignment="CENTER" AnchorPane.leftAnchor="248.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="146.0">
       <padding>
         <Insets right="8.0" />
       </padding>
     </Label>
+    <TextArea fx:id="taMisc" layoutX="263.0" layoutY="163.0" prefHeight="71.0" prefWidth="642.0" wrapText="true" AnchorPane.leftAnchor="263.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="162.0" />
     <Label layoutX="13.0" layoutY="185.0" text="Select work type." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="186.0" />
     <Label layoutX="14.0" layoutY="207.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 5." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="207.0" />
-    <TextField fx:id="tfYear" layoutX="85.0" layoutY="208.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="208.0" />
-    <Label layoutX="15.0" layoutY="232.0" text="Enter the year." AnchorPane.leftAnchor="15.0" AnchorPane.topAnchor="232.0" />
+    <TextField fx:id="tfYear" layoutX="85.0" layoutY="208.0" maxHeight="25.0" maxWidth="60.0" minHeight="25.0" minWidth="60.0" prefHeight="25.0" prefWidth="60.0" promptText="YYYY" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="208.0" />
+      <ComboBox fx:id="cbMonth" layoutX="148.0" layoutY="208.0" maxHeight="25.0" maxWidth="66.0" minHeight="25.0" minWidth="66.0" prefHeight="25.0" prefWidth="66.0" AnchorPane.leftAnchor="148.0" AnchorPane.topAnchor="208.0" />
+      <TextField fx:id="tfDay" layoutX="217.0" layoutY="208.0" maxHeight="25.0" maxWidth="40.0" minHeight="25.0" minWidth="40.0" prefHeight="25.0" prefWidth="40.0" promptText="DD" AnchorPane.leftAnchor="217.0" AnchorPane.topAnchor="208.0" />
+    <Label layoutX="14.0" layoutY="232.0" text="Enter the date." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="232.0" />
     <CheckBox fx:id="chkCreateBibEntry" layoutX="385.0" layoutY="248.0" mnemonicParsing="false" text="Create new Zotero entry of type:" AnchorPane.rightAnchor="216.0" AnchorPane.topAnchor="248.0" />
     <ComboBox fx:id="cbEntryType" layoutX="719.0" layoutY="244.0" prefHeight="22.0" prefWidth="186.0" AnchorPane.rightAnchor="12.0" />
     <SplitMenuButton fx:id="btnAutoFill" layoutX="85.0" layoutY="268.0" maxHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="112.0" text="Auto-Fill" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="268.0">
@@ -102,6 +105,7 @@
         </ImageView>
       </graphic>
     </SplitMenuButton>
+    <Label layoutX="209.0" layoutY="272.0" text="DOI:" AnchorPane.leftAnchor="209.0" AnchorPane.topAnchor="272.0" />
     <TextField fx:id="tfDOI" layoutX="235.0" layoutY="268.0" prefHeight="22.0" prefWidth="166.0" AnchorPane.leftAnchor="235.0" AnchorPane.topAnchor="268.0" />
     <Label fx:id="lblAutoPopulated" alignment="CENTER_RIGHT" layoutX="407.0" layoutY="272.0" prefHeight="17.0" prefWidth="463.0" style="-fx-font-weight: bold;" text="Data has been auto-populated from PDF." textFill="RED" AnchorPane.leftAnchor="407.0" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="272.0" />
     <ProgressBar fx:id="progressBar" layoutX="666.0" layoutY="275.0" prefWidth="200.0" visible="false" AnchorPane.rightAnchor="51.0" AnchorPane.topAnchor="275.0" />
@@ -154,7 +158,5 @@
     <AnchorPane layoutX="677.0" layoutY="518.0" prefHeight="45.0" prefWidth="71.0" AnchorPane.bottomAnchor="21.0" AnchorPane.rightAnchor="169.0" />
     <Button fx:id="btnOk" layoutX="755.0" layoutY="647.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" prefWidth="74.0" text="OK" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="88.0" />
     <Button fx:id="btnCancel" layoutX="834.0" layoutY="647.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="22.0" prefWidth="71.0" text="Cancel" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="12.0" />
-    <TextArea fx:id="taMisc" layoutX="248.0" layoutY="163.0" prefHeight="70.0" prefWidth="651.0" wrapText="true" AnchorPane.leftAnchor="248.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="163.0" />
-    <Label layoutX="209.0" layoutY="272.0" text="DOI:" AnchorPane.leftAnchor="209.0" AnchorPane.topAnchor="272.0" />
   </AnchorPane>
 </AnchorPane>

@@ -21,6 +21,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -40,8 +41,8 @@ import static org.hypernomicon.util.Util.*;
 //---------------------------------------------------------------------------
 
 /**
- * <p>{@code BibDataStandalone} objects, like all {@code BibData} objects, represent bibliographic data
- * about a work. Unlike other other classes that extend {@code BibData}, however, they are not
+ * <p>{@code BibDataStandalone} objects, like all {@code BibData} objects, represent bibliographic
+ * data about a work. Unlike other classes that extend {@code BibData}, however, they are not
  * dependent on a separate object like a reference manager (e.g., Zotero) library entry JSON
  * object or a Hypernomicon work record to be what actually holds that data in memory.
  * </p>
@@ -85,13 +86,41 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setDate(BibliographicDate newDate, DateType dateType)
+  /**
+   * Set the date for this bibliographic entry.
+   * @param newDate The new date
+   * @param newDateType What type of date the source says this is.
+   * @param okToMerge If true, it will merge information from multiple date types as long as those dates don't have conflicting information.
+   */
+  public void setDate(BibliographicDate newDate, DateType newDateType, boolean okToMerge)
   {
-    if ((this.dateType == null) || (this.dateType.ordinal() <= dateType.ordinal()))
+    if (BibliographicDate.isEmpty(newDate))
+      newDate = BibliographicDate.EMPTY_DATE;
+
+    if (okToMerge)
+    {
+      // Merge in information from newDate if it doesn't conflict at all with existing date
+
+      boolean noMerge = (date.hasYear () && newDate.hasYear () && (Objects.equals(date.year , newDate.year ) == false))  ||
+                        (date.hasMonth() && newDate.hasMonth() && (Objects.equals(date.month, newDate.month) == false))  ||
+                        (date.hasDay  () && newDate.hasDay  () && (Objects.equals(date.day  , newDate.day  ) == false));
+
+      if (!noMerge)
+      {
+        date = BibliographicDate.combine(date, newDate);
+
+        if ((dateType == null) || (dateType.ordinal() <= newDateType.ordinal()))
+          dateType = newDateType;
+
+        return;
+      }
+    }
+
+    if ((dateType == null) || (dateType.ordinal() <= newDateType.ordinal()))
     {
       date = newDate;
 
-      this.dateType = dateType;
+      dateType = newDateType;
     }
   }
 
@@ -108,7 +137,8 @@ public abstract class BibDataStandalone extends BibData
 
   @Override public void setDate(BibliographicDate newDate)
   {
-    date = newDate;
+    date = BibliographicDate.isEmpty(newDate) ? BibliographicDate.EMPTY_DATE : newDate;
+
     dateType = DateType.highestPriority();
   }
 

@@ -208,11 +208,11 @@ public final class CrossrefBibData extends BibDataStandalone
     {
       JsonArray partsArr = jsonObj.getObj(dt.desc).getArray("date-parts").getArray(0);
 
-      int year =  parseInt(partsArr.getLongAsStrSafe(0), 0),
-          month = parseInt(partsArr.getLongAsStrSafe(1), 0),
-          day =   parseInt(partsArr.getLongAsStrSafe(2), 0);
+      int year =  (partsArr.size() > 0 ? parseInt(partsArr.getLongAsStrSafe(0), 0) : 0),
+          month = (partsArr.size() > 1 ? parseInt(partsArr.getLongAsStrSafe(1), 0) : 0),
+          day =   (partsArr.size() > 2 ? parseInt(partsArr.getLongAsStrSafe(2), 0) : 0);
 
-      setDate(new BibliographicDate(day, month, BibliographicYear.fromNumberWhereMinusOneEqualsOneBC(year)));  // I don't know how Crossref stores BC years, this is just a guess.
+      setDate(new BibliographicDate(day, month, BibliographicYear.fromNumberWhereMinusOneEqualsOneBC(year)), dt, false);  // I don't know how Crossref stores BC years, this is just a guess.
     }
   }
 

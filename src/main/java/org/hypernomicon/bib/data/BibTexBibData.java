@@ -122,7 +122,7 @@ public final class BibTexBibData extends BibDataStandalone
 
     boolean yearZeroIsOneBC = false;  // I don't know how BibTex stores BC years, this is just a guess.
 
-    setDate(new BibliographicDate(monthDate == null ? 0 : monthDate.day, monthDate == null ? 0 : monthDate.month, yearStr, yearZeroIsOneBC), dtPublicationDate);
+    setDate(new BibliographicDate(monthDate == null ? 0 : monthDate.day, monthDate == null ? 0 : monthDate.month, yearStr, yearZeroIsOneBC), dtPublicationDate, true);
   }
 
 //---------------------------------------------------------------------------

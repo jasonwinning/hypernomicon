@@ -299,7 +299,7 @@ public class PDFBibData extends BibDataStandalone
           DateType dt = getByDesc(name);
 
           if (dt != dtUnknown)
-            bd.setDate(BibliographicDate.fromUserStr(elements.get(0).value), dt);
+            bd.setDate(BibliographicDate.fromUserStr(elements.get(0).value), dt, false);
         }
       }
 
@@ -308,7 +308,7 @@ public class PDFBibData extends BibDataStandalone
         DateType dt = getByDesc(name);
 
         if (dt != dtUnknown)
-          bd.setDate(BibliographicDate.fromUserStr(value), dt);
+          bd.setDate(BibliographicDate.fromUserStr(value), dt, false);
         else
         {
           switch (name)

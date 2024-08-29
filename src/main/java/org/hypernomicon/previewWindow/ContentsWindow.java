@@ -246,7 +246,7 @@ public class ContentsWindow extends HyperDlg
         wtc = ui.workHyperTab();
 
         title = wtc.getTitle();
-        year = wtc.tfYear.getText();
+        year = wtc.getDateFromUI().getYearStr();
         workType = wtc.hcbType.selectedRecord();
         authStr = wtc.getShortAuthorsStr();
       }

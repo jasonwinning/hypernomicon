@@ -29,6 +29,7 @@ import java.util.EnumMap;
 import java.util.function.Function;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
@@ -47,13 +48,6 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ResultColumn(String caption)
-  {
-    this(caption, false);
-  }
-
-//---------------------------------------------------------------------------
-
   private ResultColumn(String caption, boolean caseSensitive)
   {
     super(caption);
@@ -69,62 +63,21 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
 //---------------------------------------------------------------------------
 
-  private ResultColumn(String caption, Comparator<HDT_Record> comparator)
-  {
-    this(caption, comparator, false);
-  }
-
-//---------------------------------------------------------------------------
-
-  private ResultColumn(String caption, Comparator<HDT_Record> comparator, boolean caseSensitive)
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private ResultColumn(String caption, Function<ResultCellValue, Comparable<?>> sortFunction)
   {
     super(caption);
 
     setSafeComparator((cell1, cell2) ->
     {
-      if (HDT_Record.isEmpty(cell1.record) || HDT_Record.isEmpty(cell2.record))
-      {
-        if (caseSensitive)
-          return safeStr(cell1.text).trim().compareTo(safeStr(cell2.text).trim());
-
-        return safeStr(cell1.text).trim().compareToIgnoreCase(safeStr(cell2.text).trim());
-      }
-
-      return comparator.compare(cell1.record, cell2.record);
+      Comparable value1 = sortFunction.apply(cell1);
+      return value1.compareTo(sortFunction.apply(cell2));
     });
   }
 
 //---------------------------------------------------------------------------
 
-  private ResultColumn(String caption, Function<String, String> sortKeyFunction)
-  {
-    this(caption, sortKeyFunction, false);
-  }
-
-//---------------------------------------------------------------------------
-
-  private ResultColumn(String caption, Function<String, String> sortKeyFunction, boolean caseSensitive)
-  {
-    super(caption);
-
-    setSafeComparator((cell1, cell2) ->
-    {
-      if (caseSensitive)
-        return sortKeyFunction.apply(safeStr(cell1.text).trim()).compareTo(sortKeyFunction.apply(safeStr(cell2.text).trim()));
-
-      return sortKeyFunction.apply(safeStr(cell1.text).trim()).compareToIgnoreCase(sortKeyFunction.apply(safeStr(cell2.text).trim()));
-    });
-  }
-
-//---------------------------------------------------------------------------
-
-  /**
-   *
-   * @param caption column header name
-   * @param comparator how to compare the display text of the cells
-   * @param klass is just there to disambiguate from the other constructor that takes a comparator; it doesn't do anything
-   */
-  private ResultColumn(String caption, Comparator<String> comparator, Class<String> klass)
+  private ResultColumn(String caption, Comparator<String> comparator)
   {
     super(caption);
 
@@ -151,12 +104,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   static class DateColumn extends ResultColumn { DateColumn(String caption, Function<HDT_Record, Instant> instantFunction)
   {
-    super (caption, (record1, record2) ->
-    {
-      Instant i1 = nullSwitch(instantFunction.apply(record1), Instant.MIN);
-      Instant i2 = nullSwitch(instantFunction.apply(record2), Instant.MIN);
-      return i1.compareTo(i2);
-    });
+    super(caption, cell -> cell.record == null ? Instant.MIN : nullSwitch(instantFunction.apply(cell.record), Instant.MIN));
 
     setCellValueFactory(cellData ->
     {
@@ -172,7 +120,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   static class RecordIDColumn extends ResultColumn { RecordIDColumn()
   {
-    super("ID", Comparator.comparingInt(HDT_Record::getID));
+    super("ID", cell -> cell.record == null ? -1 : cell.record.getID());
 
     setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordIDStr()));
   }}
@@ -182,7 +130,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   static class RecordNameColumn extends ResultColumn { RecordNameColumn()
   {
-    super("Name", str -> makeSortKeyByType(str, hdtWork));
+    super("Name", cell -> makeSortKeyByType(safeStr(cell.text).trim(), hdtWork));
 
     setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordName()));
   }}
@@ -192,7 +140,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   static class RecordTypeColumn extends ResultColumn { RecordTypeColumn()
   {
-    super("Type");
+    super("Type", false);
 
     setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordTypeStr()));
   }}
@@ -202,7 +150,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   static class SearchKeyColumn extends ResultColumn { SearchKeyColumn()
   {
-    super("Search Key");
+    super("Search Key", false);
 
     setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getSearchKey()));
     setVisible(false);
@@ -222,9 +170,9 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static class BibFieldColumn extends ResultColumn { BibFieldColumn(BibFieldEnum field)
+  static class BibFieldColumn extends ResultColumn { BibFieldColumn(BibFieldEnum field, boolean caseSensitive)
   {
-    super(field.getUserFriendlyName());
+    super(field.getUserFriendlyName(), caseSensitive);
 
     setCellValueFactory(cellData ->
     {
@@ -245,9 +193,9 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
 //---------------------------------------------------------------------------
 
-    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem                                                    ) { super(captionItem.caption                        ); }
-    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Function<String, String> sortKeyFunction          ) { super(captionItem.caption, sortKeyFunction       ); }
-    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Comparator<String> comparator, Class<String> klass) { super(captionItem.caption, comparator     , klass); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, boolean caseSensitive                                ) { super(captionItem.caption, caseSensitive); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Comparator<String> comparator                        ) { super(captionItem.caption, comparator   ); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Function<ResultCellValue, Comparable<?>> sortFunction) { super(captionItem.caption, sortFunction ); }
 
 //---------------------------------------------------------------------------
 
@@ -255,12 +203,12 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
     {
       NonGeneralColumn col = switch (firstItem.tag)
       {
-        case tagTitle         -> new NonGeneralColumn(firstItem, str -> makeSortKeyByType(str, hdtWork));
-        case tagBibDate       -> new NonGeneralColumn(firstItem, Util::compareYears, String.class);
+        case tagTitle         -> new NonGeneralColumn(firstItem, cell -> makeSortKeyByType(safeStr(cell.text).trim(), hdtWork));
+        case tagBibDate       -> new NonGeneralColumn(firstItem, cell -> (cell.record == null) || (cell.record.getType() != hdtWork) ? BibliographicDate.EMPTY_DATE : ((HDT_Work)cell.record).getBibDate());
         case tagStartPageNum,
-             tagEndPageNum    -> new NonGeneralColumn(firstItem, Util::compareNumberStrings, String.class);
+             tagEndPageNum    -> new NonGeneralColumn(firstItem, Util::compareNumberStrings);
 
-        default               -> new NonGeneralColumn(firstItem);
+        default               -> new NonGeneralColumn(firstItem, false);
       };
 
       // Only subject columns have a relType set. They are invisible by default.

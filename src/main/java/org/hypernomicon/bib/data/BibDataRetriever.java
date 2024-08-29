@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -197,6 +196,7 @@ public class BibDataRetriever
             queryBD = bd;
             doStage(2);
           }, this::finish);
+
           return;
         }
       }
@@ -223,6 +223,7 @@ public class BibDataRetriever
 
             doStage(3);
           }, this::finish);
+
           return;
         }
       }
@@ -241,34 +242,31 @@ public class BibDataRetriever
       //     if got bib info
       //       exit
 
-      String yearStr = workBD == null ? "" : workBD.getYearStr();
-      if ((yearStr.length() > 0) && StringUtils.isNumeric(yearStr))
+      int year = workBD == null ? 0 : workBD.getDate().year.numericValueWhereMinusOneEqualsOneBC();
+
+      if ((year > 0) && queryCrossref && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 1995)))
       {
-        int year = parseInt(yearStr, -1);
+        if (stopped) return;
 
-        if (queryCrossref && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 1995)))
+        CrossrefBibData.doHttpRequest(httpClient, title, workBD.getYearStr(), workTypeEnum == wtPaper, authors, "", alreadyCheckedIDs, bd ->
         {
-          if (stopped) return;
+          searchedCrossref = true;
+          queryBD = bd;
+          doStage(4);
 
-          CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, "", alreadyCheckedIDs, bd ->
+        }, e ->
+        {
+          if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
           {
             searchedCrossref = true;
-            queryBD = bd;
+            errorPopup(e);
             doStage(4);
+          }
+          else
+            finish(null);
+        });
 
-          }, e ->
-          {
-            if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
-            {
-              searchedCrossref = true;
-              errorPopup(e);
-              doStage(4);
-            }
-            else
-              finish(null);
-          });
-          return;
-        }
+        return;
       }
     }
 
@@ -291,6 +289,7 @@ public class BibDataRetriever
             queryBD = bd;
             doStage(5);
           }, this::finish);
+
           return;
         }
       }
@@ -315,6 +314,7 @@ public class BibDataRetriever
             queryBD = bd;
             doStage(6);
           }, this::finish);
+
           return;
         }
       }
@@ -338,6 +338,7 @@ public class BibDataRetriever
           queryBD = bd;
           doStage(7);
         }, this::finish);
+
         return;
       }
     }
@@ -357,6 +358,7 @@ public class BibDataRetriever
         queryBD = bd;
         finish(null);
       }, this::finish);
+
       return;
     }
 

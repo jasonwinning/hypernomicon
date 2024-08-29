@@ -72,8 +72,8 @@ public final class GoogleBibData extends BibDataStandalone
 
     String publishedDate = jsonObj.getStrSafe(dtPublishedDate.desc);
     if (publishedDate.length() > 0)
-      setDate(ZoteroDate.parsedDateStrToBibDate(publishedDate, false), dtPublishedDate);  // Date is in local ISO date format like Zotero's "parsed date"
-                                                                                          // Assumption here is that Google Books years are never BC
+      setDate(ZoteroDate.parsedDateStrToBibDate(publishedDate, false), dtPublishedDate, true);  // Date is in local ISO date format like Zotero's "parsed date"
+                                                                                                // Assumption here is that Google Books years are never BC
 
     nullSwitch(jsonObj.getArray("authors"), authArray -> authArray.strStream().forEach(authStr ->
       authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr)))));

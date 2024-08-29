@@ -75,6 +75,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -127,6 +128,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private Button btnBibManager, btnLargerWork, btnLaunch, btnMergeBib, btnNewChapter, btnURL,
                        btnStop, btnTree, btnUseDOI, btnUseISBN, btnWebSrch1, btnWebSrch2, btnAutofill, btnTopAutofill;
   @FXML private ComboBox<HyperTableCell> cbLargerWork, cbType;
+  @FXML private ComboBox<Month> cbMonth;
   @FXML private Label lblSearchKey, lblTitle;
   @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
   @FXML private ProgressBar progressBar;
@@ -137,9 +139,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvKeyMentions,
                                          tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
   @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
-  @FXML private TextField tfDOI, tfURL, tfSearchKey, tfTitle;
-
-  @FXML public TextField tfYear;
+  @FXML private TextField tfDOI, tfURL, tfSearchKey, tfTitle, tfYear, tfDay;
 
   private final HyperTable htLabels, htSubworks, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
   private final HyperCB hcbLargerWork;
@@ -603,6 +603,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnMergeBib.setOnAction(event -> btnMergeBibClick());
 
+    setupDateControls(tfYear, cbMonth, tfDay);
+
     tabPane.addEventFilter(InputEvent.ANY, event -> tabPane.requestLayout()); // Fix for https://sourceforge.net/p/hypernomicon/tickets/18/
   }
 
@@ -620,6 +622,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
   private void lblSearchKeyClick()             { tfSearchKey.setText(curWork.makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), true, false)); }
   public String getTitle()                     { return tfTitle.getText(); }
+  public BibliographicDate getDateFromUI()     { return getDateFromControls(tfYear, cbMonth, tfDay); }
   private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ')'); }
   private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).toList()); }
   private void useDOIClick()                   { tfDOI.setText(getDoiFromBibTab()); }
@@ -722,7 +725,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     else
     {
       changeToNormalMode();
-      tfYear.setText(curWork.getYear());
+
+      populateDateControls(tfYear, cbMonth, tfDay, curWork.getBibDate());
     }
 
     alreadyChangingTitle.setTrue();
@@ -976,7 +980,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     btnTopAutofill.setVisible(true);
 
-    tfYear.setDisable(false);
+    enableAll(tfYear, cbMonth, tfDay);
 
     btnNewChapter.setText("New Chapter");
     setToolTip(btnNewChapter, "Create new work record having this work record as parent");
@@ -1029,8 +1033,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tfURLLeftAnchor = AnchorPane.getLeftAnchor(tfURL);
     tfURLRightAnchor = AnchorPane.getRightAnchor(tfURL);
 
-    tfYear.setDisable(true);
-    cbLargerWork.setDisable(true);
+    disableAll(tfYear, cbMonth, tfDay, cbLargerWork);
 
     btnNewChapter.setText("Add Multiple Files");
     setToolTip(btnNewChapter, "Choose multiple files to add to this work record");
@@ -1169,7 +1172,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     newWork.setLargerWork(curWork.getID(), false);
     newWork.setWorkType(wtChapter);
-    newWork.setBibDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
+    newWork.setBibDate(getDateFromUI());
 
     ui.goToRecord(newWork, false);
   }
@@ -1392,8 +1395,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tfDOI      .setText("");
     tfYear     .setText("");
+    tfDay      .setText("");
     tfSearchKey.setText("");
     tfURL      .setText("");
+
+    cbMonth.getSelectionModel().select(null);
 
     htISBN          .clear();
     htAuthors       .clear();
@@ -1507,7 +1513,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     else
     {
-      curWork.setBibDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
+      curWork.setBibDate(getDateFromUI());
       curWork.setLargerWork(hcbLargerWork.selectedID(), noIsbnUpdate);
       curWork.setURL(tfURL.getText());
     }
@@ -1536,9 +1542,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       case hdtMiscFile :
 
         if (ui.cantSaveRecord()) return;
+
         HDT_MiscFile file = db.createNewBlankRecord(hdtMiscFile);
         file.work.set(curWork);
         ui.goToRecord(file, false);
+
         break;
 
       default:
@@ -1891,7 +1899,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     bd.setMultiStr(bfISBNs, isbns);
 
     bd.setTitle(tfTitle.getText());
-    bd.setDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
+    bd.setDate(getDateFromUI());
     bd.setStr(bfURL, tfURL.getText());
     bd.setStr(bfDOI, tfDOI.getText());
     bd.setWorkType(hcbType.selectedRecord());
