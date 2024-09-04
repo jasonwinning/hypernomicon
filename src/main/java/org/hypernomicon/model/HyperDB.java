@@ -1522,7 +1522,7 @@ public final class HyperDB
 
   private static final String recordsTagName = "records", versionAttr = "version";
 
-  private static VersionNumber getVersionNumberFromXML(XMLEventReader eventReader) throws XMLStreamException
+  public static VersionNumber getVersionNumberFromXML(XMLEventReader eventReader) throws XMLStreamException
   {
     while (eventReader.hasNext())
     {

@@ -40,6 +40,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.*;
@@ -62,6 +63,7 @@ import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.HttpHeader;
@@ -102,6 +104,17 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   @Override public String collectionFileNode() { return "collections"; }
 
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static JsonObj getTemplateInitIfNecessary(EntryType type) throws IOException, ParseException, HDB_InternalError
+  {
+    if (templates == null)
+      initTemplates();
+
+    return templates.get(type);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -264,11 +277,15 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       default   -> throw new UnsupportedOperationException(requestType.name());
     };
 
-    request = rb
+    rb = rb
       .setUri(url)
       .setHeader(HttpHeader.Content_Type.toString(), "application/json")
-      .setHeader(Zotero_API_Version.toString(), "3")
-      .setHeader(Zotero_API_Key.toString(), apiKey)
+      .setHeader(Zotero_API_Version.toString(), "3");
+
+    if (safeStr(apiKey).isBlank() == false)
+      rb = rb.setHeader(Zotero_API_Key.toString(), apiKey);
+
+    request = rb
       .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
       .setHeader(If_Unmodified_Since_Version.toString(), String.valueOf(offlineLibVersion))
       .build();
@@ -339,52 +356,49 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void getCreatorTypes()
+  public JsonObj getCreatorTypes() throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
     JsonObj jObj = new JsonObj();
 
-    try
+    for (String zType : entryTypeMap.values())
     {
-      for (String zType : new String[]{"artwork", "audioRecording", "bill", "blogPost", "book", "bookSection", "case", "computerProgram",
-        "conferencePaper", "dictionaryEntry", "document", "email", "encyclopediaArticle", "film", "forumPost", "hearing", "instantMessage",
-        "interview", "journalArticle", "letter", "magazineArticle", "manuscript", "map", "newspaperArticle", "patent", "podcast",
-        "preprint", "presentation", "radioBroadcast", "report", "statute", "tvBroadcast", "thesis", "videoRecording", "webpage"})
-      {
-        jObj.put(zType, doHttpRequest("https://api.zotero.org/itemTypeCreatorTypes?itemType=" + zType, HttpRequestType.get, null));
-      }
-
-      StringBuilder json = new StringBuilder(jObj.toString());
-
-      FilePath filePath = db.xmlPath(ZOTERO_CREATOR_TYPES_FILE_NAME);
-
-      saveStringBuilderToFile(json, filePath);
+      jObj.put(zType, doHttpRequest("https://api.zotero.org/itemTypeCreatorTypes?itemType=" + zType, HttpRequestType.get, null));
     }
-    catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
-    {
-      e.printStackTrace();
-    }
+
+    return jObj;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void getTemplates()
+  public JsonArray getTemplates() throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
     JsonArray jArr = new JsonArray();
 
+    for (String zType : entryTypeMap.values())
+    {
+      jArr.add(doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, HttpRequestType.get, null).getObj(0));
+    }
+
+    return jArr;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void retrieveMetadataAndSaveToFile(boolean getCreatorsNotTemplates)
+  {
     try
     {
-      for (String zType : new String[]{"artwork", "audioRecording", "bill", "blogPost", "book", "bookSection", "case", "computerProgram",
-        "conferencePaper", "dictionaryEntry", "document", "email", "encyclopediaArticle", "film", "forumPost", "hearing", "instantMessage",
-        "interview", "journalArticle", "letter", "magazineArticle", "manuscript", "map", "newspaperArticle", "patent", "podcast",
-        "preprint", "presentation", "radioBroadcast", "report", "statute", "tvBroadcast", "thesis", "videoRecording", "webpage"})
-      {
-        jArr.add(doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, HttpRequestType.get, null).getObj(0));
-      }
+      StringBuilder json = new StringBuilder(getCreatorsNotTemplates ?
+        getCreatorTypes().toString()
+      :
+        getTemplates().toString());
 
-      StringBuilder json = new StringBuilder(jArr.toString());
-
-      FilePath filePath = db.xmlPath(ZOTERO_TEMPLATE_FILE_NAME);
+      FilePath filePath = db.xmlPath(getCreatorsNotTemplates ?
+        ZOTERO_CREATOR_TYPES_FILE_NAME
+      :
+        ZOTERO_TEMPLATE_FILE_NAME);
 
       saveStringBuilderToFile(json, filePath);
     }
@@ -401,6 +415,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     @Override public void call() throws CancelledTaskException, HyperDataException
     {
+
     //---------------------------------------------------------------------------
     // The algorithm for Zotero syncing is described here:
     // https://www.zotero.org/support/dev/web_api/v3/syncing
@@ -526,7 +541,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       List<ZoteroItem> uploadQueue; // implemented as array because indices are returned by server
       JsonArray jArr = new JsonArray();
 
-      uploadQueue = getAllEntries().stream().filter(entry -> entry.isSynced() == false).collect(Collectors.toCollection(ArrayList::new));
+      uploadQueue = getAllEntries().stream().filter(Predicate.not(ZoteroItem::isSynced)).collect(Collectors.toCollection(ArrayList::new));
 
       if (uploadQueue.isEmpty()) return false;
 
@@ -716,7 +731,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void loadFromDisk(FilePath filePath) throws IOException, ParseException
+  @Override public void loadFromDisk(FilePath filePath) throws IOException, ParseException, HDB_InternalError
   {
     JsonObj jMainObj = null;
     clear();
@@ -725,7 +740,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       jMainObj = parseJsonObj(new InputStreamReader(in, UTF_8));
     }
-    catch (FileNotFoundException | NoSuchFileException e) { noOp(); }
+    catch (FileNotFoundException | NoSuchFileException e)
+    {
+      noOp();  // This happens when first linking to Zotero
+    }
 
     if (jMainObj != null)
     {
@@ -740,21 +758,38 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static synchronized void initTemplates() throws IOException, ParseException
+  private static synchronized void initTemplates() throws IOException, ParseException, HDB_InternalError
   {
     if (templates != null) return;
+
+    templates = new EnumMap<>(EntryType.class);
 
     StringBuilder sb = new StringBuilder();
 
     readResourceTextFile("resources/" + ZOTERO_TEMPLATE_FILE_NAME, sb, false);
     JsonArray jArr = parseJson(sb.toString());
 
-    if (jArr != null)
-    {
-      templates = new EnumMap<>(EntryType.class);
+    if (jArr == null)
+      throw new HDB_InternalError(77653);
 
-      jArr.getObjs().forEach(jObj -> templates.put(entryTypeMap.inverse().getOrDefault(jObj.getStrSafe("itemType"), etOther), jObj));
+    for (JsonObj jObj : jArr.getObjs())
+    {
+      EntryType entryType = entryTypeMap.inverse().getOrDefault(jObj.getStrSafe("itemType"), etOther);
+
+      if (entryType == etOther)
+        throw new HDB_InternalError(77654);
+
+      templates.put(entryType, jObj);
     }
+
+    // Make sure the set of item types in the templates is the same as the ones in the type map
+
+    if ((entryTypeMap.keySet().size() != templates.keySet().size()) ||
+        (entryTypeMap.keySet().containsAll(templates.keySet()) == false))
+    {
+      throw new HDB_InternalError(77655);
+    }
+
   }
 
 //---------------------------------------------------------------------------

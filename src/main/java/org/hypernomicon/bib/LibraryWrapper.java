@@ -38,6 +38,7 @@ import com.google.common.collect.EnumHashBiMap;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
@@ -94,7 +95,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   protected boolean didMergeDuringSync = false;
 
   public abstract SyncTask createNewSyncTask();
-  public abstract void loadFromDisk(FilePath filePath) throws IOException, ParseException;
+  public abstract void loadFromDisk(FilePath filePath) throws IOException, ParseException, HDB_InternalError;
   public abstract LibraryType type();
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
   protected abstract void safePrefs();

@@ -37,7 +37,7 @@ import static org.hypernomicon.bib.data.EntryType.*;
 
 public class ZoteroAuthors extends BibAuthors
 {
-  private static final ImmutableTable<EntryType, String, AuthorType> creatorTypes = buildCreatorTypes();
+  public static final ImmutableTable<EntryType, String, AuthorType> creatorTypes = buildCreatorTypes();
 
   private final JsonArray creatorsArr;
   private final EntryType entryType;

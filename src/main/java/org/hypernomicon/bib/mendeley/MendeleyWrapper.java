@@ -17,10 +17,11 @@
 
 package org.hypernomicon.bib.mendeley;
 
-import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.mendeley.MendeleyEntity.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
@@ -660,13 +661,69 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     {
       jMainObj = parseJsonObj(new InputStreamReader(in, UTF_8));
     }
-    catch (FileNotFoundException | NoSuchFileException e) { noOp(); }
+    catch (FileNotFoundException | NoSuchFileException e)
+    {
+      noOp();  // This happens when first linking to Mendeley
+    }
 
     if (jMainObj == null) return;
 
     lastSyncTime = getSyncInstantFromJsonStr(db.prefs.get(PREF_KEY_BIB_LAST_SYNC_TIME, ""));
 
     loadFromJSON(jMainObj);
+
+    if (app.debugging)
+      checkDocumentTypesFromServer();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Unfortunately this cannot be done as a unit test because for some
+  // unfathomable reason, Mendeley (unlike Zotero) requires an access
+  // token just to get the list of valid document types.
+
+  private void checkDocumentTypesFromServer()
+  {
+    String failMsg = "";
+
+    try
+    {
+      System.out.print("Checking list of Mendeley document types from server against local list: ");
+
+      JsonArray jsonArray = doHttpRequest("https://api.mendeley.com/document_types",
+                                          HttpRequestType.get,
+                                          null,
+                                          "application/vnd.mendeley-document-type.1+json",
+                                          null);
+
+      EnumSet<EntryType> unusedTypes = EnumSet.copyOf(entryTypeMap.keySet());
+
+      for (JsonObj jObj : jsonArray.getObjs())
+      {
+        String typeName = jObj.getStr("name");
+
+        if (entryTypeMap.containsValue(typeName))
+          unusedTypes.remove(entryTypeMap.inverse().get(typeName));
+        else
+        {
+          failMsg = "Unrecognized Mendeley document type: " + typeName;
+          errorPopup(failMsg);
+        }
+      }
+
+      if (unusedTypes.isEmpty() == false)
+      {
+        failMsg = "One or more locally recognized Mendeley document type(s) not listed by server: " + unusedTypes;
+        errorPopup(failMsg);
+      }
+    }
+    catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
+    {
+      failMsg = getThrowableMessage(e);
+    }
+
+    System.out.println(failMsg.isBlank() ? "Success." : "Fail. Reason:\n" + failMsg);
   }
 
 //---------------------------------------------------------------------------
