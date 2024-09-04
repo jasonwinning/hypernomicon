@@ -40,6 +40,7 @@ import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -75,9 +76,9 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   @FXML private ComboBox<HyperTableCell> cbType1, cbType2, cbType3, cbType4;
   @FXML private GridPane gpAuthors, gpMain, gpTitle, gpType, gpYear;
   @FXML private RadioButton rbAuthors1, rbAuthors2, rbAuthors3, rbAuthors4,
-                            rbTitle1, rbTitle2, rbTitle3, rbTitle4, rbType1, rbType2, rbType3, rbType4, rbYear1, rbYear2, rbYear3, rbYear4;
+                            rbTitle1, rbTitle2, rbTitle3, rbTitle4, rbType1, rbType2, rbType3, rbType4, rbDate1, rbDate2, rbDate3, rbDate4;
   @FXML private TableView<HyperTableRow> tvAuthors1, tvAuthors2, tvAuthors3, tvAuthors4;
-  @FXML private TextField tfTitle1, tfTitle2, tfTitle3, tfTitle4, tfYear1, tfYear2, tfYear3, tfYear4;
+  @FXML private TextField tfTitle1, tfTitle2, tfTitle3, tfTitle4, tfDate1, tfDate2, tfDate3, tfDate4;
   @FXML private ToggleButton btnPreview;
   @FXML private Hyperlink hlFixCase;
   @FXML private CheckBox chkNewEntry;
@@ -167,16 +168,16 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     bd4 = bdList.get(3);
 
     if (bd4 != null)
-      works.add(0, new WorkToMerge(bd4, rbTitle4, tfTitle4, rbType4, cbType4, rbYear4, tfYear4, rbAuthors4, tvAuthors4,
+      works.add(0, new WorkToMerge(bd4, rbTitle4, tfTitle4, rbType4, cbType4, rbDate4, tfDate4, rbAuthors4, tvAuthors4,
                                    destWork, creatingNewWork, alreadyChangingTitle));
 
     if (bd3 != null)
-      works.add(0, new WorkToMerge(bd3, rbTitle3, tfTitle3, rbType3, cbType3, rbYear3, tfYear3, rbAuthors3, tvAuthors3,
+      works.add(0, new WorkToMerge(bd3, rbTitle3, tfTitle3, rbType3, cbType3, rbDate3, tfDate3, rbAuthors3, tvAuthors3,
                                    destWork, creatingNewWork, alreadyChangingTitle));
 
-    works.add(0, new WorkToMerge(bd2, rbTitle2, tfTitle2, rbType2, cbType2, rbYear2, tfYear2, rbAuthors2, tvAuthors2,
+    works.add(0, new WorkToMerge(bd2, rbTitle2, tfTitle2, rbType2, cbType2, rbDate2, tfDate2, rbAuthors2, tvAuthors2,
                                  destWork, creatingNewWork, alreadyChangingTitle));
-    works.add(0, new WorkToMerge(bd1, rbTitle1, tfTitle1, rbType1, cbType1, rbYear1, tfYear1, rbAuthors1, tvAuthors1,
+    works.add(0, new WorkToMerge(bd1, rbTitle1, tfTitle1, rbType1, cbType1, rbDate1, tfDate1, rbAuthors1, tvAuthors1,
                                  destWork, creatingNewWork, alreadyChangingTitle));
 
     if (bd4 == null)
@@ -209,7 +210,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     {
       switch (bibFieldEnum)
       {
-        case bfAuthors : case bfEditors : case bfTranslators : case bfTitle : case bfYear : case bfWorkType : case bfEntryType :
+        case bfAuthors : case bfEditors : case bfTranslators : case bfTitle : case bfDate : case bfWorkType : case bfEntryType :
           continue;
 
         default : break;
@@ -419,7 +420,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
   public void mergeInto(BibData mergedBD)
   {
-    String title, year;
+    String title, dateRawStr;
     List<ObjectGroup> authGroups;
     HDT_Work work = mergedBD.getWork();
     HDT_WorkType workType = getMergedWorkType();
@@ -429,10 +430,10 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     else if (rbTitle3.isSelected()) title = tfTitle3.getText();
     else                            title = tfTitle4.getText();
 
-    if      (rbYear1.isSelected()) year = tfYear1.getText();
-    else if (rbYear2.isSelected()) year = tfYear2.getText();
-    else if (rbYear3.isSelected()) year = tfYear3.getText();
-    else                           year = tfYear4.getText();
+    if      (rbDate1.isSelected()) dateRawStr = tfDate1.getText();
+    else if (rbDate2.isSelected()) dateRawStr = tfDate2.getText();
+    else if (rbDate3.isSelected()) dateRawStr = tfDate3.getText();
+    else                           dateRawStr = tfDate4.getText();
 
     if      (rbAuthors1.isSelected()) authGroups = works.get(0).getAuthorGroups(work);
     else if (rbAuthors2.isSelected()) authGroups = works.get(1).getAuthorGroups(work);
@@ -440,7 +441,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     else                              authGroups = works.get(3).getAuthorGroups(work);
 
     mergedBD.setTitle(title);
-    mergedBD.setStr(bfYear, year);
+    mergedBD.setDate(BibliographicDate.fromUserStr(dateRawStr));
 
     if (work != null)
     {
@@ -458,7 +459,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     {
       switch (bibFieldEnum)
       {
-        case bfAuthors : case bfEditors : case bfTranslators : case bfTitle : case bfYear :
+        case bfAuthors : case bfEditors : case bfTranslators : case bfTitle : case bfDate :
           continue;
 
         default : break;

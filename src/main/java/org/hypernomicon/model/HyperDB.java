@@ -131,6 +131,10 @@ import org.hypernomicon.view.mainText.MainTextCtrlr;
 
 public final class HyperDB
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static HyperDB db;
 
   private final EnumMap<RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(RecordType.class);
@@ -1166,6 +1170,10 @@ public final class HyperDB
 
     HDT_RecordBase.setRootRecordDates();
 
+    // Backwards compatibility with records XML version 1.7
+    if (bibLibraryIsLinked() && ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWork, new VersionNumber(1))).lessThan(new VersionNumber(1, 8)))
+      doBibDateConversion();
+
     getRootFolder().checkExists();
 
     loaded = true;
@@ -1188,8 +1196,32 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doInvestigationConversion(SetMultimap<Integer, Integer> workIDtoInvIDs) // Backwards compatibility with records XML version 1.4
+  // Backwards compatibility with records XML version 1.7
+
+  private void doBibDateConversion()
   {
+    boolean wasRunningConversion = runningConversion;
+    runningConversion = true;
+
+    bibEntryKeyToWork.forEach((bibEntryKey, work) ->
+    {
+      BibliographicDate date = bibLibrary.getEntryByKey(bibEntryKey).getDateFromJson();
+
+      if ((date.hasDay() || date.hasMonth()) && Objects.equals(date.year, work.getBibDate().year))
+        work.setBibDate(date);
+    });
+
+    runningConversion = wasRunningConversion;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Backwards compatibility with records XML version 1.4
+
+  private void doInvestigationConversion(SetMultimap<Integer, Integer> workIDtoInvIDs)
+  {
+    boolean wasRunningConversion = runningConversion;
     runningConversion = true;
 
     for (Entry<Integer, Collection<Integer>> entry : workIDtoInvIDs.asMap().entrySet())
@@ -1201,7 +1233,7 @@ public final class HyperDB
       MainText.setKeyWorkMentioners(works.getByID(entry.getKey()), invList, HDT_Investigation.class);
     }
 
-    runningConversion = false;
+    runningConversion = wasRunningConversion;
   }
 
 //---------------------------------------------------------------------------

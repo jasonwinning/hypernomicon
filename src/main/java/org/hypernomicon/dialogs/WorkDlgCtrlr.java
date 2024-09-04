@@ -27,6 +27,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
@@ -1160,7 +1161,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
   public GUIBibData getBibDataFromGUI()
   {
-    curBD.setStr(bfYear, tfYear.getText());
+    curBD.setDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
     curBD.setStr(bfDOI, matchDOI(tfDOI.getText()));
     curBD.setTitle(tfTitle.getText());
 
@@ -1220,7 +1221,7 @@ public class WorkDlgCtrlr extends HyperDlg
         cbEntryType.getSelectionModel().select(entryType);
     }
 
-    tfYear.setText(curBD.getStr(bfYear));
+    tfYear.setText(curBD.getDate().getYearStr());
 
     alreadyChangingTitle.setTrue();
     tfTitle.setText(curBD.getStr(bfTitle));

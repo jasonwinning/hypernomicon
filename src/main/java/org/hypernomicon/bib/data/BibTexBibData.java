@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Map.Entry;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
 import org.jbibtex.BibTeXDatabase;
 import org.jbibtex.BibTeXEntry;
@@ -38,6 +39,8 @@ import org.jbibtex.LaTeXPrinter;
 import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 import org.jbibtex.Value;
+
+//---------------------------------------------------------------------------
 
 public final class BibTexBibData extends BibDataStandalone
 {
@@ -68,6 +71,9 @@ public final class BibTexBibData extends BibDataStandalone
     LaTeXPrinter latexPrinter = new LaTeXPrinter();
 
     setEntryType(parseBibTexType(entry.getType().getValue()));
+
+    BibliographicDate monthDate = null;
+    String yearStr = null;
 
     for (Entry<Key, Value> mapping : entry.getFields().entrySet())
     {
@@ -101,13 +107,22 @@ public final class BibTexBibData extends BibDataStandalone
         case "type"      : setEntryType(parseBibTexType(val)); break;
         case "url"       : setStr(bfURL, val); break;
         case "volume"    : setStr(bfVolume, val); break;
-        case "year"      : setYear(val, dtPublicationDate); break;
+        case "month"     : monthDate = BibliographicDate.fromUserStr(val); break;
+        case "year"      : yearStr = val; break;
 
         case "doi" : case "isbn" : case "issn" : break; // captured already
 
         default          : addStr(bfMisc, mapping.getKey().getValue() + ": " + val); break;
       }
     }
+
+    yearStr = safeStr(yearStr);
+
+    if (BibliographicDate.isEmpty(monthDate) && yearStr.isBlank()) return;
+
+    boolean yearZeroIsOneBC = false;  // I don't know how BibTex stores BC years, this is just a guess.
+
+    setDate(new BibliographicDate(monthDate == null ? 0 : monthDate.day, monthDate == null ? 0 : monthDate.month, yearStr, yearZeroIsOneBC), dtPublicationDate);
   }
 
 //---------------------------------------------------------------------------

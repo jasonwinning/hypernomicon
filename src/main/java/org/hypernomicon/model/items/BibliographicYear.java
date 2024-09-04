@@ -33,45 +33,99 @@ public class BibliographicYear implements Comparable<BibliographicYear>
 
   private static Pattern yearPattern = Pattern.compile("^(?:[^0-9]*?)(-?[0-9]{1,6}) ?(B\\.? ?C\\.?(?: ?E\\.?)?)?\\b(.*?)$", Pattern.CASE_INSENSITIVE);
 
-  public final int parsedVal;  // Zero means unentered. Mendeley year must be a numeric value between -999999 and 999999; cannot be 0.
-                               // Zotero cannot handle negative year yet.
+  private final int numericValue;  // There is no such thing as year zero. It goes from 1 BC to 1 AD.
+                                   // For 1 AD, this will equal 1. For 1 BC, this will equal -1.
+                                   // A zero value, then, represents that there is no numeric value for this year (rawValue might not be empty, however).
 
-  public final String rawVal;  // This is the raw text as entered by the user.
+                                   // Mendeley year must be a numeric value between -999999 and 999999; cannot be 0. -1 means 1 BC.
+                                   // Zotero cannot handle negative year yet.
+
+  public final String rawValue;    // This is the raw text as entered by the user.
 
 //---------------------------------------------------------------------------
 
-  public BibliographicYear(int parsedVal)
+  private BibliographicYear(int numericValue)
   {
-    this(parsedVal, String.valueOf(parsedVal));
+    this(numericValue, numericValWhereMinusOneEqualsOneBCtoStr(numericValue));
   }
 
 //---------------------------------------------------------------------------
 
-  public BibliographicYear(String rawVal)
+  BibliographicYear(String rawValue, boolean yearZeroIsOneBC)
   {
-    if (rawVal == null) rawVal = "";
+    if (rawValue == null) rawValue = "";
 
-    Matcher m = yearPattern.matcher(rawVal);
-    int tempParsedVal = 0;
+    Matcher m = yearPattern.matcher(rawValue);
+    int tempNumericValue = 0;
 
     if (m.find())
     {
-      tempParsedVal = parseInt(m.group(1), 0);
+      tempNumericValue = parseInt(m.group(1), 0);
 
       if (safeStr(m.group(2)).length() > 0)  // If it ends with BC, B.C.E., etc.
-        tempParsedVal = Math.abs(tempParsedVal) * -1;
+        tempNumericValue = Math.abs(tempNumericValue) * -1;
+
+      if (yearZeroIsOneBC && (tempNumericValue < 1))
+        tempNumericValue--;
     }
 
-    parsedVal = tempParsedVal;
-    this.rawVal = rawVal;
+    numericValue = tempNumericValue;
+    this.rawValue = rawValue;
   }
 
 //---------------------------------------------------------------------------
 
-  public BibliographicYear(int parsedVal, String rawVal)
+  private BibliographicYear(int numericValue, String rawValue)
   {
-    this.parsedVal = parsedVal;
-    this.rawVal = rawVal == null ? "" : rawVal;
+    this.numericValue = numericValue;
+    this.rawValue = rawValue == null ? "" : rawValue;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public int numericValueWhereMinusOneEqualsOneBC()
+  {
+    return numericValue;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static BibliographicYear fromNumberWhereMinusOneEqualsOneBC(int numericValue)
+  {
+    return new BibliographicYear(numericValue);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static BibliographicYear fromRawStrWhereMinusOneEqualsOneBC(String rawValue)
+  {
+    return new BibliographicYear(rawValue, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static BibliographicYear fromRawStrAndNumberWhereMinusOneEqualsOneBC(int numericValue, String rawValue)
+  {
+    return new BibliographicYear(numericValue, rawValue);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String numericValWhereMinusOneEqualsOneBCtoStr(int numericValue)
+  {
+    if (numericValue == 0) return "";
+
+    String yearStr = String.valueOf(Math.abs(numericValue));
+
+    return numericValue < 0 ?
+      yearStr + " B.C.E."
+    :
+      yearStr;
   }
 
 //---------------------------------------------------------------------------
@@ -79,7 +133,7 @@ public class BibliographicYear implements Comparable<BibliographicYear>
 
   public boolean isEmpty()
   {
-    return (parsedVal == 0) && safeStr(rawVal).isBlank();
+    return (numericValue == 0) && safeStr(rawValue).isBlank();
   }
 
 //---------------------------------------------------------------------------
@@ -89,12 +143,12 @@ public class BibliographicYear implements Comparable<BibliographicYear>
   {
     if (o == null) return 1;
 
-    if ((parsedVal == 0) && (o.parsedVal == 0)) return safeStr(rawVal).compareTo(safeStr(o.rawVal));
+    if ((numericValue == 0) && (o.numericValue == 0)) return safeStr(rawValue).compareTo(safeStr(o.rawValue));
 
-    if (parsedVal == 0) return -1;
-    if (o.parsedVal == 0) return 1;
+    if (numericValue == 0) return -1;
+    if (o.numericValue == 0) return 1;
 
-    return parsedVal - o.parsedVal;
+    return numericValue - o.numericValue;
   }
 
 //---------------------------------------------------------------------------
@@ -102,7 +156,7 @@ public class BibliographicYear implements Comparable<BibliographicYear>
 
   @Override public int hashCode()
   {
-    return Objects.hash(parsedVal, rawVal);
+    return Objects.hash(numericValue, rawValue);
   }
 
 //---------------------------------------------------------------------------
@@ -115,7 +169,7 @@ public class BibliographicYear implements Comparable<BibliographicYear>
 
     BibliographicYear other = (BibliographicYear) obj;
 
-    return (parsedVal == other.parsedVal) && Objects.equals(rawVal, other.rawVal);
+    return (numericValue == other.numericValue) && Objects.equals(safeStr(rawValue), safeStr(other.rawValue));
   }
 
 //---------------------------------------------------------------------------

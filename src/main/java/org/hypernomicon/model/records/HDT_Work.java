@@ -105,7 +105,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public void setWorkType(WorkTypeEnum val)         { workType.set(HDT_WorkType.get(val)); }
   public void setBibDate(BibliographicDate bibDate) { updateBibDate(bibDate); }
-  public void setYear(String str)                   { updateBibDate(getBibDateInternal().setYear(str)); }
   public void setBibEntryKey(String str)            { updateBibEntryKey(str); }
   public void setMiscBib(String str)                { updateTagString(tagMiscBib, str); }
   public void setDOI(String str)                    { updateTagString(tagDOI, matchDOI(str)); }
@@ -589,7 +588,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
       if (cResult != 0) return cResult;
     }
 
-    cResult = compareYears(getYear(), otherWork.getYear());
+    cResult = getBibDate().compareTo(otherWork.getBibDate());
     if (cResult != 0) return cResult;
 
     return getSortKey().compareTo(otherWork.getSortKey());

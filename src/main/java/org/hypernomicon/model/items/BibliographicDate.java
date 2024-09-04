@@ -31,6 +31,7 @@ import java.util.Objects;
 
 import javax.xml.stream.events.Attribute;
 
+import org.hypernomicon.bib.zotero.ZoteroDate;
 import org.hypernomicon.model.Exceptions.InvalidAttributeException;
 import org.hypernomicon.model.records.RecordState;
 
@@ -85,41 +86,50 @@ public class BibliographicDate implements Comparable<BibliographicDate>
 
   private static final char QUOTE = '"';
 
-  public static final BibliographicDate EMPTY_DATE = new BibliographicDate(0, 0, "");
+  public static final BibliographicDate EMPTY_DATE = new BibliographicDate(0, 0, "", false);
 
-  private final int day,         // Value between 1 and 31, inclusive. < 1 means unentered.
-                    month;       // Value between 1 and 12, inclusive. < 1 means unentered.
+  public final int day,         // Value between 1 and 31, inclusive. 0 means unentered.
+                   month;       // Value between 1 and 12, inclusive. 0 means unentered.
 
-  private final BibliographicYear year;
+  public final BibliographicYear year;
 
 //---------------------------------------------------------------------------
 
-  public BibliographicDate(int day, int month, String yearRaw)
+  public BibliographicDate(int day, int month, String yearRaw, boolean yearZeroIsOneBC)
   {
-    this(day, month, new BibliographicYear(yearRaw));
+    this(day, month, new BibliographicYear(yearRaw, yearZeroIsOneBC));
   }
 
   public BibliographicDate(int day, int month, BibliographicYear year)
   {
-    this.day = day;
-    this.month = month;
+    this.day = ((day >= 1) && (day <= 31)) ? day : 0;
+    this.month = ((month >= 1) && (month <= 12)) ? month : 0;
     this.year = year;
   }
 
 //---------------------------------------------------------------------------
 
-  public String getYearStr() { return year.rawVal; }
+  public String getYearStr() { return safeStr(year.rawValue); }
   public boolean hasMonth()  { return (month >= 1) && (month <= 12); }
   public boolean hasDay()    { return (day >= 1) && (day <= 31); }
   public boolean hasYear()   { return year == null ? false : (year.isEmpty() == false); }
-  public boolean isEmpty()   { return (hasYear() || hasMonth() || hasDay()) == false; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean isEmpty(BibliographicDate bibDate)
+  {
+    if (bibDate == null) return true;
+
+    return (bibDate.hasYear() || bibDate.hasMonth() || bibDate.hasDay()) == false;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public String displayToUser()
   {
-    String str = safeStr(year.rawVal);
+    String str = getYearStr();
 
     if ((hasDay() || hasMonth()) == false)
       return str;
@@ -139,17 +149,17 @@ public class BibliographicDate implements Comparable<BibliographicDate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibliographicDate setYear(String yearRaw)
+  public BibliographicDate setYear(String yearRaw, boolean yearZeroIsOneBC)
   {
-    return new BibliographicDate(day, month, yearRaw);
+    return new BibliographicDate(day, month, yearRaw, yearZeroIsOneBC);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibliographicDate fromYearStr(String yearRaw)
+  public static BibliographicDate fromYearStr(String yearRaw, boolean yearZeroIsOneBC)
   {
-    return new BibliographicDate(0, 0, yearRaw);
+    return new BibliographicDate(0, 0, yearRaw, yearZeroIsOneBC);
   }
 
 //---------------------------------------------------------------------------
@@ -167,6 +177,16 @@ public class BibliographicDate implements Comparable<BibliographicDate>
     return new BibliographicDate(date1.hasDay  () ? date1.day   : date2.day,
                                  date1.hasMonth() ? date1.month : date2.month,
                                  date1.hasYear () ? date1.year  : date2.year);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static BibliographicDate fromUserStr(String val)
+  {
+    ZoteroDate zoteroDate = ZoteroDate.fromUserStr(val, getLocaleStr(Locale.getDefault()));
+
+    return new BibliographicDate(zoteroDate.getDay(), zoteroDate.getMonth(), zoteroDate.getRawYear(), false);
   }
 
 //---------------------------------------------------------------------------
@@ -232,8 +252,8 @@ public class BibliographicDate implements Comparable<BibliographicDate>
   {
     String attribs = "", parsedYearStr = "";
 
-    if (year.parsedVal != 0)
-      parsedYearStr = String.valueOf(year.parsedVal);
+    if (year.numericValueWhereMinusOneEqualsOneBC() != 0)
+      parsedYearStr = String.valueOf(year.numericValueWhereMinusOneEqualsOneBC());
 
     if (hasDay())
       attribs = attribs + DAY_ATTR_NAME + "=" + QUOTE + String.valueOf(day) + QUOTE + ' ';
@@ -241,10 +261,10 @@ public class BibliographicDate implements Comparable<BibliographicDate>
     if (hasMonth())
       attribs = attribs + MONTH_ATTR_NAME + "=" + QUOTE + String.valueOf(month) + QUOTE + ' ';
 
-    if ((safeStr(year.rawVal).isBlank() == false) && (year.rawVal.equals(parsedYearStr) == false))
-      attribs = attribs + RAW_YEAR_ATTR_NAME + "=" + QUOTE + xmlContentEscaper.escape(year.rawVal) + QUOTE + ' ';
+    if ((safeStr(year.rawValue).isBlank() == false) && (((year.numericValueWhereMinusOneEqualsOneBC() > 0) && year.rawValue.equals(parsedYearStr)) == false))
+      attribs = attribs + RAW_YEAR_ATTR_NAME + "=" + QUOTE + xmlContentEscaper.escape(year.rawValue) + QUOTE + ' ';
 
-    if (year.parsedVal != 0)
+    if (year.numericValueWhereMinusOneEqualsOneBC() != 0)
       attribs = attribs + PARSED_YEAR_ATTR_NAME + "=" + QUOTE + parsedYearStr + QUOTE + ' ';
 
     return attribs.trim();
@@ -288,7 +308,7 @@ public class BibliographicDate implements Comparable<BibliographicDate>
     if ((parsedYear != 0) && rawYear.isBlank())
       rawYear = String.valueOf(parsedYear);
 
-    return new BibliographicDate(day, month, new BibliographicYear(parsedYear, rawYear));
+    return new BibliographicDate(day, month, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(parsedYear, rawYear));
   }
 
 //---------------------------------------------------------------------------

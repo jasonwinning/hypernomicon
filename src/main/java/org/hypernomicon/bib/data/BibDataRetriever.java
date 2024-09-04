@@ -39,8 +39,14 @@ import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.json.simple.parser.ParseException;
 
+//---------------------------------------------------------------------------
+
 public class BibDataRetriever
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private BibData workBD = null;
   private BibDataStandalone queryBD = null;
   private PDFBibData pdfBD = null;
@@ -53,15 +59,18 @@ public class BibDataRetriever
   private final boolean queryCrossref, queryGoogle;
   private final Set<String> alreadyCheckedIDs = new HashSet<>();
 
+//---------------------------------------------------------------------------
+
   @FunctionalInterface
   public interface RetrieveHandler { void handle(PDFBibData pdfBD, BibDataStandalone queryBD, boolean messageShown); }
+
+//---------------------------------------------------------------------------
 
   public BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, List<FilePath> pdfFiles, RetrieveHandler doneHndlr)
   {
     this(httpClient, workBD, pdfFiles, true, true, doneHndlr);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, List<FilePath> pdfFiles,
@@ -232,7 +241,7 @@ public class BibDataRetriever
       //     if got bib info
       //       exit
 
-      String yearStr = workBD == null ? "" : workBD.getStr(bfYear);
+      String yearStr = workBD == null ? "" : workBD.getYearStr();
       if ((yearStr.length() > 0) && StringUtils.isNumeric(yearStr))
       {
         int year = parseInt(yearStr, -1);
@@ -341,7 +350,7 @@ public class BibDataRetriever
       if (stopped) return;
 
       title = workBD == null ? "" : ultraTrim(workBD.getStr(bfTitle));
-      String yearStr = workBD == null ? "" : workBD.getStr(bfYear);
+      String yearStr = workBD == null ? "" : workBD.getYearStr();
 
       CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, "", alreadyCheckedIDs, bd ->
       {

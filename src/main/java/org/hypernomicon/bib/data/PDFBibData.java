@@ -40,6 +40,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.filePath.FilePath;
@@ -49,6 +50,8 @@ import com.adobe.internal.xmp.XMPIterator;
 import com.adobe.internal.xmp.XMPMeta;
 import com.adobe.internal.xmp.XMPMetaFactory;
 import com.adobe.internal.xmp.properties.XMPPropertyInfo;
+
+//---------------------------------------------------------------------------
 
 public class PDFBibData extends BibDataStandalone
 {
@@ -106,7 +109,6 @@ public class PDFBibData extends BibDataStandalone
     private String getNamespace()         { return ns; }
 
   //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
 
     private XMPNode(XMPMeta xmpMeta, XMPNode parent, XMPPropertyInfo propInfo)
     {
@@ -146,7 +148,6 @@ public class PDFBibData extends BibDataStandalone
       }
     }
 
-  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     private void addDescendant(XMPPropertyInfo targetInfo)
@@ -188,7 +189,6 @@ public class PDFBibData extends BibDataStandalone
     }
 
   //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
 
     private void addCsvLines(List<String> csvFile)
     {
@@ -215,11 +215,9 @@ public class PDFBibData extends BibDataStandalone
     }
 
     //---------------------------------------------------------------------------
-    //---------------------------------------------------------------------------
 
     private static String escape(String str) { return str.replace(",", "@&$"); }
 
-    //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
     private String getCsvPath()
@@ -233,7 +231,6 @@ public class PDFBibData extends BibDataStandalone
     }
 
   //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
 
     private static boolean nameIsNotExcluded(String nameStr)
     {
@@ -242,7 +239,6 @@ public class PDFBibData extends BibDataStandalone
       return ! (nameStr.contains("journaldoi") || nameStr.contains("instanceid") || nameStr.contains("documentid"));
     }
 
-  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     private void extractDOIandISBNs(PDFBibData bd)
@@ -259,7 +255,6 @@ public class PDFBibData extends BibDataStandalone
       elements.forEach(child -> child.extractDOIandISBNs(bd));
     }
 
-  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
     private void extractBibData(PDFBibData bd)
@@ -304,7 +299,7 @@ public class PDFBibData extends BibDataStandalone
           DateType dt = getByDesc(name);
 
           if (dt != dtUnknown)
-            bd.setYear(elements.get(0).value, dt);
+            bd.setDate(BibliographicDate.fromUserStr(elements.get(0).value), dt);
         }
       }
 
@@ -313,7 +308,7 @@ public class PDFBibData extends BibDataStandalone
         DateType dt = getByDesc(name);
 
         if (dt != dtUnknown)
-          bd.setYear(value, dt);
+          bd.setDate(BibliographicDate.fromUserStr(value), dt);
         else
         {
           switch (name)
@@ -350,7 +345,6 @@ public class PDFBibData extends BibDataStandalone
     }
 
   //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
 
     private static EntryType parsePrismAggregationType(String paType) { return switch (paType.toLowerCase())
     {
@@ -373,7 +367,6 @@ public class PDFBibData extends BibDataStandalone
   private PDDocumentInformation docInfo = null;
   private XMPNode xmpRoot = null;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public PDFBibData(FilePath filePath) throws IOException
@@ -469,8 +462,8 @@ public class PDFBibData extends BibDataStandalone
     xmpRoot.extractDOIandISBNs(this);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void populateFromFile()
   {
@@ -494,16 +487,16 @@ public class PDFBibData extends BibDataStandalone
       xmpRoot.extractBibData(this);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void addCsvLines(List<String> csvFile)
   {
     if (xmpRoot != null) xmpRoot.addCsvLines(csvFile);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static PDFBibData createFromFiles(List<FilePath> filePaths) throws IOException
   {
@@ -568,7 +561,7 @@ public class PDFBibData extends BibDataStandalone
     return goodPdfBD;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

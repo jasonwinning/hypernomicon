@@ -22,7 +22,6 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,6 +37,7 @@ import org.hypernomicon.bib.mendeley.MendeleyDocument;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroItem;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.json.JsonArray;
@@ -58,6 +58,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   protected abstract void updateJsonObj(JsonObj jObj);
   public abstract String getEntryURL();
   public abstract List<String> getReportFieldOrder();
+  public abstract BibliographicDate getDateFromJson();
   protected abstract String getUserName();
 
   @SuppressWarnings("unchecked")
@@ -149,7 +150,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
     setMultiStr(bfISBNs, backupItem.getMultiStr(bfISBNs));
     setMultiStr(bfMisc, backupItem.getMultiStr(bfMisc));
     setStr(bfDOI, backupItem.getStr(bfDOI));
-    setStr(bfYear, backupItem.getStr(bfYear));
+    setDate(backupItem.getDate());
 
     String url = getStr(bfURL);
     if (url.startsWith(EXT_1) == false)
@@ -160,6 +161,14 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
     if (authorsChanged() == false) return;
 
     libWrapper.doMerge(thisEntry, jBackupObj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public final BibliographicDate getDate()
+  {
+    return linkedToWork() ? getWork().getBibDate() : getDateFromJson();
   }
 
 //---------------------------------------------------------------------------
@@ -181,7 +190,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   public String getCBText()
   {
     String authorStr = getAuthors().getStr(),
-           yearStr = getStr(bfYear),
+           yearStr = getDate().getYearStr(),
            titleStr = getStr(bfTitle),
            cbStr = "";
 
@@ -235,7 +244,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
     BibData bd = work.getBibData();
 
     setStr(bfDOI, bd.getStr(bfDOI));
-    setStr(bfYear, bd.getStr(bfYear));
+    setDate(bd.getDate());
     setStr(bfURL, bd.getStr(bfURL));
     setMultiStr(bfISBNs, bd.getMultiStr(bfISBNs));
     setTitle(bd.getStr(bfTitle));
@@ -306,7 +315,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
         if (cResult != 0) return cResult;
       }
 
-      cResult = compareYears(e1.getStr(bfYear), e2.getStr(bfYear));
+      cResult = e1.getDate().compareTo(e2.getDate());
 
       return cResult != 0 ?
         cResult

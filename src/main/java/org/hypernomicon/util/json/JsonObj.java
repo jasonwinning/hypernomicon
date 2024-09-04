@@ -126,7 +126,7 @@ public final class JsonObj implements Cloneable
   public static JsonObj parseJsonObj(Reader in) throws IOException, org.json.simple.parser.ParseException
   { return new JsonObj((JSONObject) jsonParser.parse(in)); }
 
-  private static JsonObj parseJsonObj(String str) throws org.json.simple.parser.ParseException
+  public static JsonObj parseJsonObj(String str) throws org.json.simple.parser.ParseException
   { return new JsonObj((JSONObject) jsonParser.parse(str)); }
 
   public static JsonArray parseJson(String str) throws org.json.simple.parser.ParseException

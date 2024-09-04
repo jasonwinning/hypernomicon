@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.authors.BibAuthor;
@@ -31,6 +30,8 @@ import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.reports.ReportGenerator;
+import org.hypernomicon.model.items.BibliographicDate;
+import org.hypernomicon.model.items.BibliographicYear;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
@@ -95,13 +96,39 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public void setDate(BibliographicDate newDate)
+  {
+    if (linkedToWork())
+    {
+      getWork().setBibDate(newDate);
+      return;
+    }
+
+    if (newDate.hasYear())
+      jObj.put("year", Long.valueOf(newDate.year.numericValueWhereMinusOneEqualsOneBC()));
+    else
+      jObj.remove("year");
+
+    if (newDate.hasMonth())
+      jObj.put("month", Long.valueOf(newDate.month));
+    else
+      jObj.remove("month");
+
+    if (newDate.hasDay())
+      jObj.put("day", Long.valueOf(newDate.day));
+    else
+      jObj.remove("day");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
   {
     if (linkedToWork())
     {
       switch (bibFieldEnum)
       {
-        case bfYear : getWork().setYear(newStr); return;
         case bfDOI  : getWork().setDOI (newStr); return;
         case bfURL  : getWork().setURL (newStr); return;
         default     : break;
@@ -112,19 +139,6 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
     switch (bibFieldEnum)
     {
-      case bfYear :
-
-        try
-        {
-          jObj.put(fieldKey, Long.parseLong(safeStr(newStr)));
-        }
-        catch (NumberFormatException e)
-        {
-          jObj.remove(fieldKey);
-        }
-
-        return;
-
       case bfDOI :
 
         updateIdentifiers(fieldKey, newStr);
@@ -205,7 +219,6 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     case bfPubLoc    -> "city"; // There is also a "country" field
     case bfEdition   -> "edition";
     case bfLanguage  -> "language";
-    case bfYear      -> "year";
 
     case bfContainerTitle -> "source";
 
@@ -224,7 +237,21 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     case bfEditors     -> "editors";
     case bfTranslators -> "translators";
     case bfWorkType    -> "";
+
+    default -> throw new IllegalArgumentException("Unexpected value: " + bibFieldEnum); // bfDate does not have a field key because there are separate field keys for year, month, and day
   };}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public BibliographicDate getDateFromJson()
+  {
+    int year  = parseInt(safeStr(jObj.getAsStr("year" )), 0),
+        month = parseInt(safeStr(jObj.getAsStr("month")), 0),
+        day   = parseInt(safeStr(jObj.getAsStr("day"  )), 0);
+
+    return new BibliographicDate(day, month, BibliographicYear.fromNumberWhereMinusOneEqualsOneBC(year));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -236,7 +263,6 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       switch (bibFieldEnum)
       {
         case bfDOI   : return getWork().getDOI();
-        case bfYear  : return getWork().getYear();
         case bfURL   : return getWork().getURL();
         case bfTitle : return getWork().name();
         default      : break;
@@ -264,8 +290,6 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
         return jObj.getStrSafe(fieldKey);
 
-      case bfYear : return jObj.getAsStr("year");
-
       case bfAuthors     : return getAuthors().getStr(AuthorType.author);
       case bfEditors     : return getAuthors().getStr(AuthorType.editor);
       case bfTranslators : return getAuthors().getStr(AuthorType.translator);
@@ -273,6 +297,8 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       case bfContainerTitle : case bfTitle :
 
         return BibField.buildTitle(getMultiStr(bibFieldEnum));
+
+      case bfDate : return getDateRawStr();
 
       case bfMisc : return strListToStr(getMultiStr(bibFieldEnum), false, true);
 
@@ -403,10 +429,18 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     if (authorsChanged()) return false;
 
     return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum ->
-      (bibFieldEnum == bfYear) && backupItem.getStr(bfYear).isBlank() && (StringUtils.isNumeric(getStr(bfYear)) == false) ?
-        true
+      bibFieldEnum == bfDate ?
+        sameDateForSyncPurposes(backupItem.getDate(), getDate())
       :
         fieldsAreEqual(bibFieldEnum, backupItem, true));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean sameDateForSyncPurposes(BibliographicDate date1, BibliographicDate date2)
+  {
+    return (date1.day == date2.day) && (date1.month == date2.month) && (date1.year.numericValueWhereMinusOneEqualsOneBC() == date2.year.numericValueWhereMinusOneEqualsOneBC());
   }
 
 //---------------------------------------------------------------------------
@@ -480,7 +514,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       MendeleyDocument standaloneItem = new MendeleyDocument(getLibrary(), jStandaloneObj, true);
 
       standaloneItem.setStr(bfDOI, getStr(bfDOI));
-      standaloneItem.setStr(bfYear, getStr(bfYear));
+      standaloneItem.setDate(getDate());
 
       String url = getStr(bfURL);
       if (url.startsWith(EXT_1) == false)

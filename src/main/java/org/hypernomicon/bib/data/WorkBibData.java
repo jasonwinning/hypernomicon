@@ -25,6 +25,7 @@ import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
@@ -50,10 +51,12 @@ public class WorkBibData extends BibData
 
 //---------------------------------------------------------------------------
 
-  @Override public HDT_Work getWork()                   { return work; }
-  @Override public HDT_WorkType getWorkType()           { return work.workType.get(); }
-  @Override protected void setWorkType(HDT_WorkType wt) { work.workType.set(wt); }
-  @Override public BibAuthors getAuthors()              { return new WorkBibAuthors(work); }
+  @Override public HDT_Work getWork()                      { return work; }
+  @Override public HDT_WorkType getWorkType()              { return work.workType.get(); }
+  @Override protected void setWorkType(HDT_WorkType wt)    { work.workType.set(wt); }
+  @Override public BibAuthors getAuthors()                 { return new WorkBibAuthors(work); }
+  @Override public BibliographicDate getDate()             { return work.getBibDate(); }
+  @Override public void setDate(BibliographicDate newDate) { work.setBibDate(newDate); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -113,7 +116,6 @@ public class WorkBibData extends BibData
   {
     switch (bibFieldEnum)
     {
-      case bfYear : work.setYear(newStr); return;
       case bfDOI  : work.setDOI(newStr);  return;
       case bfURL  : work.setURL(newStr);  return;
 
@@ -146,7 +148,6 @@ public class WorkBibData extends BibData
     return switch (bibFieldEnum)
     {
       case bfDOI   -> work.getDOI();
-      case bfYear  -> work.getYear();
       case bfURL   -> work.getURL();
       case bfTitle -> work.name();
       case bfMisc  -> work.getMiscBib();

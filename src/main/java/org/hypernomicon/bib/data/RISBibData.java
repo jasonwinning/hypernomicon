@@ -27,13 +27,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
+
+//---------------------------------------------------------------------------
 
 public final class RISBibData extends BibDataStandalone
 {
-  private static class RISException extends Exception { @java.io.Serial private static final long serialVersionUID = -5457122244377661495L; }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static class RISException extends Exception { @java.io.Serial private static final long serialVersionUID = -5457122244377661495L; }
+
 //---------------------------------------------------------------------------
 
   private RISBibData(Iterable<String> lines) throws RISException
@@ -82,10 +88,10 @@ public final class RISBibData extends BibDataStandalone
 
             setStr(bfPubLoc, val); break;
 
-          case "DA": setYear(val, dtCopyright); break;
-          case "PY": setYear(val, dtPublicationDate); break;
-          case "Y1": setYear(val, dtCoverDisplayDate); break;
-          case "Y2": setYear(val, dtCreated); break;
+          case "DA": setDate(BibliographicDate.fromUserStr(val), dtCopyright       ); break;
+          case "PY": setDate(BibliographicDate.fromUserStr(val), dtPublicationDate ); break;
+          case "Y1": setDate(BibliographicDate.fromUserStr(val), dtCoverDisplayDate); break;
+          case "Y2": setDate(BibliographicDate.fromUserStr(val), dtCreated         ); break;
 
           case "OP": break;    // Original Publication
           case "RP": break;    // Reprint Edition

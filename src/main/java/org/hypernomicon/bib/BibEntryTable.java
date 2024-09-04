@@ -22,10 +22,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.util.BasicTextMatcher;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
 import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.view.wrappers.ObjectCellValue;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -85,18 +88,25 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
                                      tcType        = (TableColumn<BibEntryRow, String>) tv.getColumns().get(1),
                                      tcAuthors     = (TableColumn<BibEntryRow, String>) tv.getColumns().get(2),
                                      tcTitle       = (TableColumn<BibEntryRow, String>) tv.getColumns().get(3),
-                                     tcYear        = (TableColumn<BibEntryRow, String>) tv.getColumns().get(4),
                                      tcAssocRecord = (TableColumn<BibEntryRow, String>) tv.getColumns().get(5),
                                      tcPublishedIn = (TableColumn<BibEntryRow, String>) tv.getColumns().get(6),
                                      tcPublisher   = (TableColumn<BibEntryRow, String>) tv.getColumns().get(7);
+
+    TableColumn<BibEntryRow, ObjectCellValue<BibliographicDate>> tcBibDate = (TableColumn<BibEntryRow, ObjectCellValue<BibliographicDate>>) tv.getColumns().get(4);
 
     tcEntryKey   .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getKey()));
     tcType       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getEntryType().getUserFriendlyName()));
     tcAuthors    .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getAuthors().getStr()));
     tcTitle      .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfTitle)));
-    tcYear       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfYear)));
     tcPublishedIn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfContainerTitle)));
     tcPublisher  .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfPublisher)));
+
+    tcBibDate.setCellValueFactory(cellData ->
+    {
+      BibliographicDate bibDate = cellData.getValue().getEntry().getDate();
+
+      return new SimpleObjectProperty<>(new ObjectCellValue<>(bibDate.displayToUser(), bibDate));
+    });
 
     tcTitle.setComparator(Comparator.comparing(str -> makeSortKeyByType(str, hdtWork)));
 
@@ -115,7 +125,6 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
       return str1.compareTo(str2);
     };
 
-    tcYear.setComparator(cmp);
     tcAssocRecord.setComparator(cmp);
 
     tcAssocRecord.setCellValueFactory(cellData -> new SimpleStringProperty

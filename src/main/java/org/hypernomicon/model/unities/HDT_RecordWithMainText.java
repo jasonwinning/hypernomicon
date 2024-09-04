@@ -199,11 +199,13 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 
     if ((parent == null) || isUnstoredRecord(parent)) return;
 
-    boolean rc = db.runningConversion;
+    boolean wasRunningConversion = db.runningConversion;
     db.runningConversion = true;
+
     displayItems.add(new DisplayItem(parent));
     mainText.setDisplayItemsFromList(displayItems);
-    db.runningConversion = rc;
+
+    db.runningConversion = wasRunningConversion;
   }
 
 //---------------------------------------------------------------------------

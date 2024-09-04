@@ -35,7 +35,9 @@ import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
+import org.hypernomicon.model.items.BibliographicYear;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -43,6 +45,8 @@ import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.util.json.JsonObj.JsonNodeType;
+
+//---------------------------------------------------------------------------
 
 public final class CrossrefBibData extends BibDataStandalone
 {
@@ -99,7 +103,8 @@ public final class CrossrefBibData extends BibDataStandalone
       for (JsonObj curObj : jsonArray.getObjs())
       {
         CrossrefBibData curBD = new CrossrefBibData(curObj, queryDoi);
-        int otherYear = parseInt(curBD.getStr(bfYear), Integer.MAX_VALUE);
+        int otherYear = curBD.getDate().year.numericValueWhereMinusOneEqualsOneBC();
+        if (otherYear == 0) otherYear = Integer.MAX_VALUE;
         String otherTitle = curBD.getStr(bfTitle);
 
         while (otherTitle.endsWith("."))
@@ -200,7 +205,15 @@ public final class CrossrefBibData extends BibDataStandalone
   private void setDateIfPresent(JsonObj jsonObj, DateType dt)
   {
     if (jsonObj.containsKey(dt.desc))
-      setYear(jsonObj.getObj(dt.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0), dt);
+    {
+      JsonArray partsArr = jsonObj.getObj(dt.desc).getArray("date-parts").getArray(0);
+
+      int year =  parseInt(partsArr.getLongAsStrSafe(0), 0),
+          month = parseInt(partsArr.getLongAsStrSafe(1), 0),
+          day =   parseInt(partsArr.getLongAsStrSafe(2), 0);
+
+      setDate(new BibliographicDate(day, month, BibliographicYear.fromNumberWhereMinusOneEqualsOneBC(year)));  // I don't know how Crossref stores BC years, this is just a guess.
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -404,6 +404,20 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static String getLocaleStr(Locale locale)
+  {
+    String language = locale.getLanguage();
+    String country = locale.getCountry();
+
+    return safeStr(country).isBlank() ?
+      language
+    :
+      language + "-" + country;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String saveStringBuilderToFile(StringBuilder sb, FilePath filePath) throws IOException
   {
     int bufLen = 65536;

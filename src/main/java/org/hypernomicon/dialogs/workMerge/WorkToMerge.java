@@ -57,7 +57,7 @@ class WorkToMerge
 //---------------------------------------------------------------------------
 
   WorkToMerge(BibData bibData, RadioButton rbTitle, TextField tfTitle, RadioButton rbType, ComboBox<HyperTableCell> cbType,
-              RadioButton rbYear, TextField tfYear, RadioButton rbAuthors, TableView<HyperTableRow> tvAuthors,
+              RadioButton rbDate, TextField tfDate, RadioButton rbAuthors, TableView<HyperTableRow> tvAuthors,
               HDT_Work destWork, boolean creatingNewWork, MutableBoolean alreadyChangingTitle)
   {
     this.bibData = bibData;
@@ -90,10 +90,10 @@ class WorkToMerge
 
     tfTitle.setTextFormatter(titleFormatter(alreadyChangingTitle, rbTitle));
 
-    tfYear.setText(bibData.getStr(bfYear));
-    if (tfYear.getText().isEmpty() == false) rbYear.setSelected(true);
+    tfDate.setText(bibData.getDateRawStr());
+    if (tfDate.getText().isEmpty() == false) rbDate.setSelected(true);
 
-    tfYear.textProperty().addListener((obs, ov, nv) -> rbYear.setSelected(true));
+    tfDate.textProperty().addListener((obs, ov, nv) -> rbDate.setSelected(true));
 
     if (bibData.getWork() != null)
       loadFromWork(bibData.getWork(), rbType);

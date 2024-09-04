@@ -27,6 +27,8 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 
+//---------------------------------------------------------------------------
+
 public class BibField
 {
 
@@ -56,7 +58,7 @@ public class BibField
     bfTranslators    ("Translators"       , bftAuthor),
     bfURL            ("URL"               , bftString),      // URL where this work can be found
     bfVolume         ("Volume"            , bftString),      // Volume number
-    bfYear           ("Year"              , bftString);      // Publication year
+    bfDate           ("Date"              , bftBibDate);     // Main date to show in bibliography (usually publication date)
 
     private final BibFieldType type;
     private final String userFriendlyName;
@@ -72,7 +74,7 @@ public class BibField
     public boolean isMultiLine()        { return type == bftMultiString; }
   }
 
-  public enum BibFieldType { bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor }
+  public enum BibFieldType { bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor, bftBibDate }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -26,6 +26,7 @@ import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.reports.ReportGenerator;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
@@ -33,6 +34,8 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
+
+//---------------------------------------------------------------------------
 
 /**
  * <p>{@code BibData} is the superclass for all objects that represent the bibliographic
@@ -44,6 +47,7 @@ public abstract class BibData
 {
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public abstract EntryType getEntryType();
   public abstract void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list);
@@ -51,6 +55,8 @@ public abstract class BibData
   public abstract void setStr(BibFieldEnum bibFieldEnum, String newStr);
   public abstract List<String> getMultiStr(BibFieldEnum bibFieldEnum);
   public abstract String getStr(BibFieldEnum bibFieldEnum);
+  public abstract BibliographicDate getDate();
+  public abstract void setDate(BibliographicDate newDate);
   public abstract BibAuthors getAuthors();
   public abstract HDT_Work getWork();
   public abstract HDT_WorkType getWorkType();
@@ -58,6 +64,8 @@ public abstract class BibData
 
 //---------------------------------------------------------------------------
 
+  public String getYearStr()            { return nullSwitch(getDate(), "", BibliographicDate::getYearStr); }
+  public String getDateRawStr()         { return nullSwitch(getDate(), "", BibliographicDate::displayToUser); }
   public void setTitle(String newTitle) { setMultiStr(bfTitle, safeListOf(newTitle)); }
   void addISBN(String newStr)           { matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn)); }
   void addISSN(String newStr)           { matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn)); }
@@ -81,7 +89,10 @@ public abstract class BibData
     if (bibFieldEnum.isMultiLine())
       return getMultiStr(bibFieldEnum).stream().allMatch(String::isBlank) == false;
 
-    return getStr(bibFieldEnum).length() > 0;
+    return bibFieldEnum == bfDate ?
+      (BibliographicDate.isEmpty(getDate()) == false)
+    :
+      getStr(bibFieldEnum).length() > 0;
   }
 
 //---------------------------------------------------------------------------
@@ -135,14 +146,18 @@ public abstract class BibData
 
         // fall through
 
-      case bfDOI       : case bfVolume  : case bfIssue    : case bfPages : case bfEntryType : case bfPubLoc :
-      case bfPublisher : case bfEdition : case bfLanguage : case bfYear  : case bfWorkType  :
+      case bfDOI       : case bfVolume    : case bfIssue   : case bfPages    : case bfEntryType :
+      case bfPubLoc    : case bfPublisher : case bfEdition : case bfLanguage : case bfWorkType  :
 
         return ultraTrim(getStr(bibFieldEnum)).equals(ultraTrim(otherBD.getStr(bibFieldEnum)));
 
       case bfContainerTitle : case bfTitle : case bfMisc : case bfISBNs : case bfISSNs :
 
         return strListsEqual(getMultiStr(bibFieldEnum), otherBD.getMultiStr(bibFieldEnum), false);
+
+      case bfDate :
+
+        return getDate().equals(otherBD.getDate());
 
       default:
 
@@ -166,6 +181,15 @@ public abstract class BibData
   {
     String fieldName = bibFieldEnum.getUserFriendlyName();
     report.addField(fieldName, report.makeRow(fieldName, getStr(bibFieldEnum)));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addDateToReport(BibFieldEnum bibFieldEnum, ReportGenerator report)
+  {
+    String fieldName = bibFieldEnum.getUserFriendlyName();
+    report.addField(fieldName, report.makeRow(fieldName, getDate().displayToUser()));
   }
 
 //---------------------------------------------------------------------------
@@ -202,7 +226,7 @@ public abstract class BibData
 
     addStrToReport     (bfEntryType     , report);
     addStrToReport     (bfTitle         , report);
-    addStrToReport     (bfYear          , report);
+    addDateToReport    (bfDate          , report);
 
     addCreatorsToReport(bfAuthors       , report, authors.getStr(AuthorType.author    ));
     addCreatorsToReport(bfEditors       , report, authors.getStr(AuthorType.editor    ));
@@ -236,6 +260,7 @@ public abstract class BibData
       case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;
       case bftEntryType   : if (includeEntryType) setEntryType(bd.getEntryType()); break;
       case bftWorkType    : setWorkType(bd.getWorkType()); break;
+      case bftBibDate     : setDate(bd.getDate()); break;
       case bftAuthor      : break;
     }});
 

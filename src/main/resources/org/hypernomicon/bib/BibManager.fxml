@@ -133,7 +133,7 @@
             <TableColumn editable="false" prefWidth="75.0" text="Type" />
             <TableColumn editable="false" prefWidth="75.0" text="Authors" />
             <TableColumn editable="false" prefWidth="362.0" text="Title" />
-            <TableColumn editable="false" minWidth="0.0" prefWidth="88.0" text="Year" />
+            <TableColumn editable="false" minWidth="0.0" prefWidth="88.0" text="Date" />
             <TableColumn editable="false" prefWidth="150.0" text="Work Record ID" />
             <TableColumn editable="false" prefWidth="200.0" text="Published In" visible="false" />
             <TableColumn editable="false" prefWidth="200.0" text="Publisher" visible="false" />

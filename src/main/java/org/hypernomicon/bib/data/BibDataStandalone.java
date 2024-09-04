@@ -27,6 +27,7 @@ import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.BibAuthorsStandalone;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -35,6 +36,8 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+
+//---------------------------------------------------------------------------
 
 /**
  * <p>{@code BibDataStandalone} objects, like all {@code BibData} objects, represent bibliographic data
@@ -45,12 +48,19 @@ import static org.hypernomicon.util.Util.*;
  */
 public abstract class BibDataStandalone extends BibData
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private EntryType entryType;
   private final Map<BibFieldEnum, BibField> bibFieldEnumToBibField = new EnumMap<>(BibFieldEnum.class);
+  private BibliographicDate date = BibliographicDate.EMPTY_DATE;
   private DateType dateType;      // Internally-used descriptor indicates where date field came from for purposes of determining priority
   final BibAuthorsStandalone authors = new BibAuthorsStandalone();
 
   private static final EnumSet<BibFieldType> stringBibFieldTypes = EnumSet.of(bftString, bftMultiString);
+
+//---------------------------------------------------------------------------
 
   BibDataStandalone()
   {
@@ -66,6 +76,7 @@ public abstract class BibDataStandalone extends BibData
   @Override public final HDT_Work getWork()                                    { return null; }
   @Override public final BibAuthors getAuthors()                               { return authors; }
   @Override public final EntryType getEntryType()                              { return entryType; }
+  @Override public final BibliographicDate getDate()                           { return date; }
   @Override public final void setMultiStr(BibFieldEnum bfe, List<String> list) { bibFieldEnumToBibField.get(bfe).setAll(list); }
   @Override protected final void setEntryType(EntryType entryType)             { this.entryType = entryType; }
   @Override public HDT_WorkType getWorkType()                                  { return EntryType.toWorkType(getEntryType()); }
@@ -74,10 +85,14 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setYear(String text, DateType dateType)
+  public void setDate(BibliographicDate newDate, DateType dateType)
   {
     if ((this.dateType == null) || (this.dateType.ordinal() <= dateType.ordinal()))
-      setStr(bfYear, extractYear(text));
+    {
+      date = newDate;
+
+      this.dateType = dateType;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -86,9 +101,15 @@ public abstract class BibDataStandalone extends BibData
   @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
   {
     bibFieldEnumToBibField.get(bibFieldEnum).setStr(newStr);
+  }
 
-    if (bibFieldEnum == bfYear)
-      dateType = DateType.highestPriority();
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void setDate(BibliographicDate newDate)
+  {
+    date = newDate;
+    dateType = DateType.highestPriority();
   }
 
 //---------------------------------------------------------------------------
@@ -122,6 +143,7 @@ public abstract class BibDataStandalone extends BibData
         case bfContainerTitle,
              bfMisc,
              bfTitle           -> bibFieldEnumToBibField.get(bibFieldEnum).getStr();
+        case bfDate            -> getDateRawStr();
         case bfAuthors         -> authors.getStr(AuthorType.author);
         case bfEditors         -> authors.getStr(AuthorType.editor);
         case bfTranslators     -> authors.getStr(AuthorType.translator);

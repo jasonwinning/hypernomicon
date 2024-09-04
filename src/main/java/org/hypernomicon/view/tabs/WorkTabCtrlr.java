@@ -34,6 +34,7 @@ import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
@@ -1168,7 +1169,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     newWork.setLargerWork(curWork.getID(), false);
     newWork.setWorkType(wtChapter);
-    newWork.setYear(curWork.getYear());
+    newWork.setBibDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
 
     ui.goToRecord(newWork, false);
   }
@@ -1500,13 +1501,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (workTypeEnumVal == wtUnenteredSet)
     {
-      curWork.setYear("");
+      curWork.setBibDate(BibliographicDate.EMPTY_DATE);
       curWork.setLargerWork(-1, true);
       curWork.setURL("");
     }
     else
     {
-      curWork.setYear(tfYear.getText());
+      curWork.setBibDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
       curWork.setLargerWork(hcbLargerWork.selectedID(), noIsbnUpdate);
       curWork.setURL(tfURL.getText());
     }
@@ -1731,7 +1732,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (safeStr(doi).isBlank())
       {
         bd.setTitle(tfTitle.getText());
-        bd.setStr(bfYear, tfYear.getText());
+        bd.setDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
       }
       else
         bd.setStr(bfDOI, doi);
@@ -1743,7 +1744,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (collEmpty(isbns))
       {
         bd.setTitle(tfTitle.getText());
-        bd.setStr(bfYear, tfYear.getText());
+        bd.setDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
       }
       else
         bd.setMultiStr(bfISBNs, isbns);
@@ -1890,7 +1891,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     bd.setMultiStr(bfISBNs, isbns);
 
     bd.setTitle(tfTitle.getText());
-    bd.setStr(bfYear, tfYear.getText());
+    bd.setDate(BibliographicDate.fromYearStr(tfYear.getText(), false));
     bd.setStr(bfURL, tfURL.getText());
     bd.setStr(bfDOI, tfDOI.getText());
     bd.setWorkType(hcbType.selectedRecord());

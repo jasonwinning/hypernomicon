@@ -156,27 +156,27 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
               <AnchorPane>
-                <RadioButton fx:id="rbYear1" layoutX="-22.0" layoutY="23.0" mnemonicParsing="false" selected="true" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0">
+                <RadioButton fx:id="rbDate1" layoutX="-22.0" layoutY="23.0" mnemonicParsing="false" selected="true" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0">
                   <toggleGroup>
                     <ToggleGroup fx:id="grpYear" />
                   </toggleGroup>
                 </RadioButton>
-                <TextField fx:id="tfYear1" layoutX="21.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
+                <TextField fx:id="tfDate1" layoutX="21.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
               </AnchorPane>
               <AnchorPane GridPane.columnIndex="1">
-                <RadioButton fx:id="rbYear2" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grpYear" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
-                <TextField fx:id="tfYear2" layoutX="40.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
+                <RadioButton fx:id="rbDate2" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grpYear" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
+                <TextField fx:id="tfDate2" layoutX="40.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
               </AnchorPane>
               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-                <RadioButton fx:id="rbYear3" layoutX="8.0" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grpYear" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
-                <TextField fx:id="tfYear3" layoutX="47.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
+                <RadioButton fx:id="rbDate3" layoutX="8.0" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grpYear" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
+                <TextField fx:id="tfDate3" layoutX="47.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
               </AnchorPane>
               <AnchorPane GridPane.columnIndex="3">
-                <RadioButton fx:id="rbYear4" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grpYear" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
-                <TextField fx:id="tfYear4" layoutX="55.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
+                <RadioButton fx:id="rbDate4" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grpYear" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
+                <TextField fx:id="tfDate4" layoutX="55.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
               </AnchorPane>
             </GridPane>
-            <Label text="Year" />
+            <Label text="Date" />
           </AnchorPane>
           <AnchorPane GridPane.rowIndex="3">
             <GridPane.margin>

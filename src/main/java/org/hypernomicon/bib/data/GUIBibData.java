@@ -22,20 +22,29 @@ import java.util.EnumSet;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
+//---------------------------------------------------------------------------
+
 public class GUIBibData extends BibDataStandalone
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final GUIBibData NoneFoundBD = new GUIBibData();
 
   private HDT_WorkType workType;
 
+//---------------------------------------------------------------------------
+
   public GUIBibData() { }
+
+//---------------------------------------------------------------------------
 
   public GUIBibData(BibData bd)
   {
     copyAllFieldsFrom(bd, true, true);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setWorkType(HDT_WorkType workType) { this.workType = workType; }
@@ -64,7 +73,7 @@ public class GUIBibData extends BibDataStandalone
     set.removeIf(bibFieldEnum -> switch (bibFieldEnum)
     {
       case bfAuthors,   bfEditors,  bfTranslators, bfTitle,
-           bfDOI,       bfISBNs,    bfMisc,        bfYear,
+           bfDOI,       bfISBNs,    bfMisc,        bfDate,
            bfEntryType, bfWorkType, bfURL
 
         -> true;

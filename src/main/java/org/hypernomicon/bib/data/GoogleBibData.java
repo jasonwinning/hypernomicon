@@ -33,12 +33,15 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.zotero.ZoteroDate;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
+
+//---------------------------------------------------------------------------
 
 public final class GoogleBibData extends BibDataStandalone
 {
@@ -49,6 +52,41 @@ public final class GoogleBibData extends BibDataStandalone
   private final String queryIsbn;
 
   public String getQueryIsbn() { return safeStr(queryIsbn); }
+
+//---------------------------------------------------------------------------
+
+  private GoogleBibData(JsonObj jsonObj, String queryIsbn)
+  {
+    this.queryIsbn = queryIsbn;
+
+    String title    = jsonObj.getStrSafe("title"),
+           subtitle = jsonObj.getStrSafe("subtitle");
+
+    addStr(bfTitle, title);
+
+    if (title.equalsIgnoreCase(subtitle) == false)
+      addStr(bfTitle, subtitle);
+
+    setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
+    setEntryType(parseGoogleBooksType(jsonObj.getStrSafe("printType")));  // supposedly this will either be "BOOK" or "MAGAZINE", nothing else
+
+    String publishedDate = jsonObj.getStrSafe(dtPublishedDate.desc);
+    if (publishedDate.length() > 0)
+      setDate(ZoteroDate.parsedDateStrToBibDate(publishedDate, false), dtPublishedDate);  // Date is in local ISO date format like Zotero's "parsed date"
+                                                                                          // Assumption here is that Google Books years are never BC
+
+    nullSwitch(jsonObj.getArray("authors"), authArray -> authArray.strStream().forEach(authStr ->
+      authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr)))));
+
+    nullSwitch(jsonObj.getArray("industryIdentifiers"), iiArr -> iiArr.getObjs().forEach(iiObj ->
+    {
+      if (iiObj.getStrSafe("type").toLowerCase().contains("isbn"))
+        addISBN(iiObj.getStrSafe("identifier"));
+    }));
+
+    if (fieldNotEmpty(bfISBNs) == false)
+      addISBN(queryIsbn);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -113,41 +151,6 @@ public final class GoogleBibData extends BibDataStandalone
     {
       return null;
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private GoogleBibData(JsonObj jsonObj, String queryIsbn)
-  {
-    this.queryIsbn = queryIsbn;
-
-    String title    = jsonObj.getStrSafe("title"),
-           subtitle = jsonObj.getStrSafe("subtitle");
-
-    addStr(bfTitle, title);
-
-    if (title.equalsIgnoreCase(subtitle) == false)
-      addStr(bfTitle, subtitle);
-
-    setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
-    setEntryType(parseGoogleBooksType(jsonObj.getStrSafe("printType"))); // supposedly this will either be "BOOK" or "MAGAZINE", nothing else
-
-    String publishedDate = jsonObj.getStrSafe(dtPublishedDate.desc);
-    if (publishedDate.length() > 0)
-      setYear(publishedDate.substring(0, 4), dtPublishedDate);
-
-    nullSwitch(jsonObj.getArray("authors"), authArray -> authArray.strStream().forEach(authStr ->
-      authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr)))));
-
-    nullSwitch(jsonObj.getArray("industryIdentifiers"), iiArr -> iiArr.getObjs().forEach(iiObj ->
-    {
-      if (iiObj.getStrSafe("type").toLowerCase().contains("isbn"))
-        addISBN(iiObj.getStrSafe("identifier"));
-    }));
-
-    if (fieldNotEmpty(bfISBNs) == false)
-      addISBN(queryIsbn);
   }
 
 //---------------------------------------------------------------------------

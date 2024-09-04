@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
@@ -30,6 +31,7 @@ import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.reports.ReportGenerator;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
@@ -116,13 +118,36 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public void setDate(BibliographicDate newDate)
+  {
+    if (linkedToWork())
+    {
+      getWork().setBibDate(newDate);
+      return;
+    }
+
+    String parsedDateStr = ZoteroDate.bibDateToParsedDateStr(newDate);
+
+    if (jObj.containsKey("meta") && Objects.equals(parsedDateStr, jObj.getObj("meta").getStrSafe("parsedDate")))
+      return;
+
+    jData.put("date", newDate.displayToUser());
+
+    if (jObj.containsKey("meta") == false)
+      jObj.put("meta", new JsonObj());
+
+    jObj.getObj("meta").put("parsedDate", parsedDateStr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
   {
     if (linkedToWork())
     {
       switch (bibFieldEnum)
       {
-        case bfYear : getWork().setYear(newStr); return;
         case bfDOI  : getWork().setDOI (newStr); return;
         case bfURL  : getWork().setURL (newStr); return;
         default     : break;
@@ -131,7 +156,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     switch (bibFieldEnum)
     {
-      case bfDOI : case bfYear : case bfURL : case bfISBNs : case bfMisc : case bfTitle : break;
+      case bfDOI : case bfURL : case bfISBNs : case bfMisc : case bfTitle : break;
       default :
 
         if (thisTypeHasFieldKey(bibFieldEnum) == false) return;
@@ -141,20 +166,6 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     switch (bibFieldEnum)
     {
-      case bfYear :
-
-        newStr = safeStr(newStr);
-        if (newStr.matches("[12]\\d\\d\\d") == false) break;
-
-        String oldDate = jData.getStrSafe(fieldKey);
-        String oldYear = extractYear(oldDate);
-        if (oldYear.isEmpty()) break;
-
-        if (oldYear.equals(newStr)) return;
-
-        jData.put(fieldKey, oldDate.replaceFirst("[12]\\d\\d\\d", newStr)); // Leave all parts of the date other than the year intact
-        return;
-
       case bfDOI       : case bfURL    : case bfVolume  : case bfIssue    : case bfPages :
       case bfPublisher : case bfPubLoc : case bfEdition : case bfLanguage :
 
@@ -190,7 +201,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     case bfPubLoc    -> "place";
     case bfEdition   -> "edition";
     case bfLanguage  -> "language";
-    case bfYear      -> "date";
+    case bfDate      -> "date";
 
     case bfContainerTitle ->
     {
@@ -226,6 +237,50 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public String getDateRawStr()
+  {
+    if (linkedToWork())
+    {
+      BibliographicDate date = getDate();
+
+      // If the date information in the work matches what's in the JSON object, use the raw value from the JSON object. Otherwise, use the date from the work record.
+
+      if ((jObj.containsKey("meta") &&
+           ZoteroDate.bibDateToParsedDateStr(date).equals(jObj.getObj("meta").getStrSafe("parsedDate")) &&
+           (date.year.numericValueWhereMinusOneEqualsOneBC() > 0) &&
+           safeStr(date.year.rawValue).equals(String.valueOf(date.year.numericValueWhereMinusOneEqualsOneBC()))) == false)
+        return super.getDateRawStr();
+    }
+
+    return jData.getStrSafe(getFieldKey(bfDate));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public BibliographicDate getDateFromJson()
+  {
+    // Don't use parsedDate from meta Json node for year because we may lose whether it is supposed to be a negative (BC) year
+
+    int day = 0, month = 0;
+
+    JsonObj jMeta = jObj.getObj("meta");
+    if (jMeta != null)
+    {
+      String parsedDateStr = jMeta.getStrSafe("parsedDate");
+      BibliographicDate parsedDate = ZoteroDate.parsedDateStrToBibDate(parsedDateStr, false);
+
+      day = parsedDate.day;
+      month = parsedDate.month;
+    }
+
+    BibliographicDate date = BibliographicDate.fromUserStr(jData.getStrSafe(getFieldKey(bfDate)));
+    return new BibliographicDate(day > 0 ? day : date.day, month > 0 ? month : date.month, date.year);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public String getStr(BibFieldEnum bibFieldEnum)
   {
     if (linkedToWork())
@@ -233,7 +288,6 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       switch (bibFieldEnum)
       {
         case bfDOI   : return getWork().getDOI();
-        case bfYear  : return getWork().getYear();
         case bfURL   : return getWork().getURL();
         case bfTitle : return getWork().name();
         default      : break;
@@ -251,8 +305,6 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
         return jData.getStrSafe(fieldKey);
 
-      case bfYear : return extractYear(jData.getStrSafe(fieldKey));
-
       case bfAuthors     : return getAuthors().getStr(AuthorType.author);
       case bfEditors     : return getAuthors().getStr(AuthorType.editor);
       case bfTranslators : return getAuthors().getStr(AuthorType.translator);
@@ -260,6 +312,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       case bfContainerTitle : case bfTitle :
 
         return BibField.buildTitle(getMultiStr(bibFieldEnum));
+
+      case bfDate : return getDateRawStr();
 
       case bfMisc : return strListToStr(getMultiStr(bibFieldEnum), false, true);
 
@@ -291,7 +345,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     switch (bibFieldEnum)
     {
-      case bfDOI : case bfYear : case bfURL : case bfISBNs : case bfMisc : case bfTitle : break;
+      case bfDOI : case bfURL : case bfISBNs : case bfMisc : case bfTitle : break;
       default :
 
         if (thisTypeHasFieldKey(bibFieldEnum) == false) return;
@@ -451,7 +505,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum)
     {
-      case bfDOI : case bfYear : case bfURL : case bfISBNs : case bfMisc : case bfTitle :
+      case bfDOI : case bfDate : case bfURL : case bfISBNs : case bfMisc : case bfTitle :
         if (missingKeysOK)
           break;
 
@@ -474,7 +528,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       ZoteroItem standaloneItem = new ZoteroItem(getLibrary(), jStandaloneObj, true);
 
       if (missingKeysOK || thisTypeHasFieldKey(bfDOI  )) standaloneItem.setStr(bfDOI, getStr(bfDOI));
-      if (missingKeysOK || thisTypeHasFieldKey(bfYear )) standaloneItem.setStr(bfYear, getStr(bfYear));
+      if (missingKeysOK || thisTypeHasFieldKey(bfDate )) standaloneItem.setDate(getDate());
 
       if (missingKeysOK || thisTypeHasFieldKey(bfURL  ))
       {
@@ -491,6 +545,20 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       standaloneAuthors.clear();
 
       getAuthors().forEach(standaloneAuthors::add);
+    }
+
+    if (forUploadToServer)
+    {
+      JsonObj jMeta = jStandaloneObj.getObj("meta");
+      if (jMeta != null)
+      {
+        String parsedDateStr = jMeta.getStrSafe("parsedDate");
+
+        if (parsedDateStr.length() == 10)  // Zotero only recognizes a multi-part date if the first 10 characters are a 10-character ISO date
+          jStandaloneObj.getObj("data").put("date", parsedDateStr + " " + jStandaloneObj.getObj("data").getStrSafe("date"));  // Send up to the server as a "multi-part" date so Zotero doesn't have to parse a raw string
+
+        jMeta.remove("parsedDate");
+      }
     }
 
     return isNewEntry() ? jStandaloneObj.getObj("data") : jStandaloneObj;

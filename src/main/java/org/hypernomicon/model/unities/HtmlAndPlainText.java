@@ -20,6 +20,8 @@ package org.hypernomicon.model.unities;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
+//---------------------------------------------------------------------------
+
 /**
  * The point of this class is to allow for lazy initialization of the
  * main HTML text field for many record types. If eager initialization
@@ -32,23 +34,27 @@ class HtmlAndPlainText
 {
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final String inputHtml;
+
   private String plainText = "", html = "";
   private boolean initialized = false;
+
+//---------------------------------------------------------------------------
 
   HtmlAndPlainText(String inputHtml)
   {
     this.inputHtml = inputHtml;
   }
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   String getPlainText() { ensureInitialized(); return plainText; }
   String getHtml     () { ensureInitialized(); return html;      }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private synchronized void ensureInitialized()
   {
@@ -73,7 +79,7 @@ class HtmlAndPlainText
     initialized = true;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }
