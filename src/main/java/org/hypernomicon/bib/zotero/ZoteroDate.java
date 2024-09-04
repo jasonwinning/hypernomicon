@@ -45,7 +45,7 @@ public final class ZoteroDate
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static Map<String, Integer> monthStrToInt = new HashMap<>();
+  private static final Map<String, Integer> monthStrToInt = new HashMap<>();
 
   private Integer day = null,
                   month = null;
@@ -56,23 +56,24 @@ public final class ZoteroDate
 
   private static String localeStr = null;
 
-  private static Pattern rawDatePattern = Pattern.compile("^(.*?)\\b([0-9]{1,4})(?:([\\-\\/\\.\\u5e74])([0-9]{1,2}))?(?:([\\-\\/\\.\\u6708])([0-9]{1,4}))?((?:\\b|[^0-9]).*?)$", Pattern.UNICODE_CHARACTER_CLASS),
-                         yearPattern = Pattern.compile("^(.*?)\\b((?:circa |around |about |c\\\\.? ?)?[0-9]{1,4}(?: ?B\\.? ?C\\.?(?: ?E\\.?)?| ?C\\.? ?E\\.?| ?A\\.? ?D\\.?)|[0-9]{3,4})([^A-Za-z0-9].*)?$", Pattern.CASE_INSENSITIVE),
-                         parsedDatePattern = Pattern.compile("^\\-?([0-9]{4})(?:\\-(0[1-9]|10|11|12))?(?:\\-(0[1-9]|[1-2][0-9]|30|31))?$"),
-                         monthPattern = null,
+  private static final Pattern rawDatePattern = Pattern.compile("^(.*?)\\b([0-9]{1,4})(?:([\\-\\/\\.\\u5e74])([0-9]{1,2}))?(?:([\\-\\/\\.\\u6708])([0-9]{1,4}))?((?:\\b|[^0-9]).*?)$", Pattern.UNICODE_CHARACTER_CLASS),
+                               yearPattern = Pattern.compile("^(.*?)\\b((?:circa |around |about |c\\\\.? ?)?[0-9]{1,4}(?: ?B\\.? ?C\\.?(?: ?E\\.?)?| ?C\\.? ?E\\.?| ?A\\.? ?D\\.?)|[0-9]{3,4})([^A-Za-z0-9].*)?$", Pattern.CASE_INSENSITIVE),
+                               parsedDatePattern = Pattern.compile("^\\-?([0-9]{4})(?:\\-(0[1-9]|10|11|12))?(?:\\-(0[1-9]|[1-2][0-9]|30|31))?$");
+
+  private static Pattern monthPattern = null,
                          dayPattern = null;
 
   private ZoteroDate() { }
 
 //---------------------------------------------------------------------------
 
-  public int getDay()        { return day == null ? 0 : day.intValue(); }
+  public int getDay()        { return day == null ? 0 : day; }
 
   /**
    * Get month as a number from 1 to 12 (even though ZoteroDate internally stores it as a number from 0 to 11).
    * @return The month number from 1 to 12, or 0 if it is not set
    */
-  public int getMonth()      { return month == null ? 0 : (month.intValue() + 1); }
+  public int getMonth()      { return month == null ? 0 : (month + 1); }
 
   public String getRawYear() { return safeStr(year); }
 
@@ -90,7 +91,7 @@ public final class ZoteroDate
     boolean english = newLocale.startsWith("en");
 
     StringBuilder sb = new StringBuilder();
-    JsonObj jObj = null;
+    JsonObj jObj;
 
     try
     {
@@ -111,7 +112,7 @@ public final class ZoteroDate
 
     // Try first two characters repeated ('de-DE')
     if (jObj.containsKey(localeStr) == false)
-      localeStr = localeStr + "-" + localeStr.toUpperCase();
+      localeStr = localeStr + '-' + localeStr.toUpperCase();
 
     // Look for another localeStr with same first two characters
     if (jObj.containsKey(localeStr) == false)
@@ -158,29 +159,29 @@ public final class ZoteroDate
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class ZoteroPart
+  private static final class ZoteroPart
   {
-    public String partStr,  // Some part of a date string that has not been identified as containing a day, month, or year
+    private final String partStr,  // Some part of a date string that has not been identified as containing a day, month, or year
 
-                  before,   // Set either to "true", "m", "d", "y", or "".
-                            // "true" means this part is before all date components so far identified
-                            // "m" means it comes before the month, etc.
+                         before,   // Set either to "true", "m", "d", "y", or "".
+                                   // "true" means this part is before all date components so far identified
+                                   // "m" means it comes before the month, etc.
 
-                  after;    // Set either to "true", "m", "d", "y", or "".
-                            // "true" means this part is after all date components so far identified
-                            // "m" means it comes after the month, etc.
+                         after;    // Set either to "true", "m", "d", "y", or "".
+                                   // "true" means this part is after all date components so far identified
+                                   // "m" means it comes after the month, etc.
 
-    public ZoteroPart(String partStr)
+    private ZoteroPart(String partStr)
     {
       this(partStr, null, null);
     }
 
-    public ZoteroPart(String partStr, String before)
+    private ZoteroPart(String partStr, String before)
     {
       this(partStr, before, null);
     }
 
-    public ZoteroPart(String partStr, String before, String after)
+    private ZoteroPart(String partStr, String before, String after)
     {
       this.partStr = safeStr(partStr);
       this.before = safeStr(before);
@@ -295,49 +296,66 @@ public final class ZoteroDate
     }
 
     if (matched &&
-       ((group5.isEmpty() || group3.isEmpty()) || group3.equals(group5) || (group3.equals("\u5e74") && group5.equals("\u6708"))) &&  // look for conventional separators
+       ((group5.isEmpty() || group3.isEmpty()) || group3.equals(group5) || ("\u5e74".equals(group3) && "\u6708".equals(group5))) &&  // look for conventional separators
        (((group2.isEmpty() == false) && (group4.isEmpty() == false) && (group6.isEmpty() == false)) ||  // require that either all parts are found,
         (group1.isEmpty() && group7.isEmpty())))  // or else this is the entire date field
     {
       // figure out date based on parts
-      if ((group2.length() == 3) || (group2.length() == 4) || group3.equals("\u5e74"))
+      if ((group2.length() == 3) || (group2.length() == 4) || "\u5e74".equals(group3))
       {
         // ISO 8601 style date (big endian)
+
         date.year = group2;
-        int month = parseInt(group4, -1); date.month = month < 1 ? null : month;
-        int day = parseInt(group6, -1); date.day = day < 1 ? null : day;
+
+        int month = parseInt(group4, -1);
+        date.month = month < 1 ? null : month;
+
+        int day = parseInt(group6, -1);
+        date.day = day < 1 ? null : day;
+
         date.order += ((group2.isEmpty() == false) ? "y" : "");
-        date.order += ((group4.isEmpty() == false) ? "m" : "");
-        date.order += ((group6.isEmpty() == false) ? "d" : "");
+        date.order += (date.month == null ? "" : "m");
+        date.order += (date.day   == null ? "" : "d");
       }
       else if ((group2.isEmpty() == false) && group4.isEmpty() && (group6.isEmpty() == false))
       {
-        int month = parseInt(group2, -1); date.month = month < 1 ? null : month;
+        int month = parseInt(group2, -1);
+
+        date.month = month < 1 ? null : month;
         date.year = group6;
-        date.order += ((group2.isEmpty() == false) ? "m" : "");
-        date.order += ((group6.isEmpty() == false) ? "y" : "");
+
+        date.order += (date.month == null ? "" : "m");
+        date.order += "y";
       }
       else
       {
         // local style date (middle or little endian)
         String country = localeStr != null ? localeStr.substring(3) : "US";
 
-        if (country.equals("US")  ||  // The United States
-            country.equals("FM")  ||  // The Federated States of Micronesia
-            country.equals("PW")  ||  // Palau
-            country.equals("PH"))     // The Philippines
+        if ("US".equals(country)  ||  // The United States
+            "FM".equals(country)  ||  // The Federated States of Micronesia
+            "PW".equals(country)  ||  // Palau
+            "PH".equals(country))     // The Philippines
         {
-          int month = parseInt(group2, -1); date.month = month < 1 ? null : month;
-          int day = parseInt(group4, -1); date.day = day < 1 ? null : day;
-          date.order += ((group2.isEmpty() == false) ? "m" : "");
-          date.order += ((group4.isEmpty() == false) ? "d" : "");
+          int month = parseInt(group2, -1);
+          date.month = month < 1 ? null : month;
+
+          int day = parseInt(group4, -1);
+          date.day = day < 1 ? null : day;
+
+          date.order += (date.month == null ? "" : "m");
+          date.order += (date.day   == null ? "" : "d");
         }
         else
         {
-          int month = parseInt(group4, -1); date.month = month < 1 ? null : month;
-          int day = parseInt(group2, -1); date.day = day < 1 ? null : day;
-          date.order += ((group2.isEmpty() == false) ? "d" : "");
-          date.order += ((group4.isEmpty() == false) ? "m" : "");
+          int month = parseInt(group4, -1);
+          date.month = month < 1 ? null : month;
+
+          int day = parseInt(group2, -1);
+          date.day = day < 1 ? null : day;
+
+          date.order += (date.day   == null ? "" : "d");
+          date.order += (date.month == null ? "" : "m");
         }
 
         date.year = group6;
@@ -345,15 +363,10 @@ public final class ZoteroDate
           date.order += 'y';
       }
 
-      boolean longYear = (date.year != null) && (date.year.length() > 2);
+      boolean longYear = date.year.length() > 2;
 
-      int yearInt = -1;
-
-      if (date.year != null)
-      {
-        yearInt = parseInt(date.year, -1);
-        date.year = yearInt < 1 ? null : String.valueOf(yearInt);
-      }
+      int yearInt = parseInt(date.year, -1);
+      date.year = yearInt < 1 ? null : String.valueOf(yearInt);
 
       if (date.month != null)
       {
@@ -482,7 +495,7 @@ public final class ZoteroDate
               part = parts.get(i).partStr.substring(0, m.start());
 
               if (safeStr(m.group(2)).isBlank() == false)
-                part += " " + m.group(2);
+                part += ' ' + m.group(2);
             }
             else
             {
@@ -502,7 +515,7 @@ public final class ZoteroDate
     date.part = "";
 
     for (ZoteroPart part : parts)
-      date.part += part.partStr + " ";
+      date.part += part.partStr + ' ';
 
     // clean up date part
     if (date.part.isBlank() == false)
@@ -583,7 +596,12 @@ public final class ZoteroDate
    * @param newDate The input
    * @return A string formatted like YYYY-MM-DD or YYYY-MM or YYYY
    */
-  public static String bibDateToParsedDateStr(BibliographicDate newDate)
+  static String bibDateToParsedDateStr(BibliographicDate newDate)
+  {
+    return bibDateToParsedDateStr(newDate, false);
+  }
+
+  static String bibDateToParsedDateStr(BibliographicDate newDate, boolean alwaysTenChars)
   {
     String str = "";
 
@@ -591,6 +609,9 @@ public final class ZoteroDate
       return str;
 
     int year = Math.abs(newDate.year.numericValueWhereMinusOneEqualsOneBC());
+
+    if (alwaysTenChars)
+      return String.format("%04d",year) + '-' + String.format("%02d", newDate.month) + '-' + String.format("%02d", newDate.day);
 
     if ((year < 1) || (year > 9999))  // Zotero cannot handle a negative year
       return str;

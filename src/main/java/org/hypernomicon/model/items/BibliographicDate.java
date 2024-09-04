@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.events.Attribute;
 
@@ -112,7 +114,7 @@ public class BibliographicDate implements Comparable<BibliographicDate>
   public String getYearStr() { return safeStr(year.rawValue); }
   public boolean hasMonth()  { return (month >= 1) && (month <= 12); }
   public boolean hasDay()    { return (day >= 1) && (day <= 31); }
-  public boolean hasYear()   { return year == null ? false : (year.isEmpty() == false); }
+  public boolean hasYear()   { return BibliographicYear.isEmpty(year) == false; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -127,9 +129,25 @@ public class BibliographicDate implements Comparable<BibliographicDate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Pattern numPattern = Pattern.compile("(\\d{1,})");
+
+//---------------------------------------------------------------------------
+
   public String displayToUser()
   {
+    return displayToUser(false);
+  }
+
+  public String displayToUser(boolean fourDigitYear)
+  {
     String str = getYearStr();
+
+    if (fourDigitYear)
+    {
+      Matcher m = numPattern.matcher(str);
+      if (m.find())
+        str = safeSubstring(str, 0, m.start()) + String.format("%04d", parseInt(m.group(1), 0)) + safeSubstring(str, m.end(), str.length());
+    }
 
     if ((hasDay() || hasMonth()) == false)
       return str;
@@ -141,7 +159,7 @@ public class BibliographicDate implements Comparable<BibliographicDate>
       str = str + ", " + Month.of(month).getDisplayName(TextStyle.SHORT, Locale.getDefault());
 
     return hasDay() ?
-      str + (hasMonth() ? " " : ", ") + String.valueOf(day)
+      str + (hasMonth() ? " " : ", ") + day
     :
       str;
   }
@@ -149,7 +167,21 @@ public class BibliographicDate implements Comparable<BibliographicDate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibliographicDate setYear(String yearRaw, boolean yearZeroIsOneBC)
+  private static final Pattern leadingZeroPattern = Pattern.compile("(^|[^0-9])(0{1,})([1-9])");
+
+//---------------------------------------------------------------------------
+
+  public static String removeLeadingZerosFromDateStr(String str)
+  {
+    Matcher m = leadingZeroPattern.matcher(safeStr(str));
+
+    return m.replaceAll(result -> safeStr(m.group(1)) + safeStr(m.group(3)));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  BibliographicDate setYear(String yearRaw, boolean yearZeroIsOneBC)
   {
     return new BibliographicDate(day, month, yearRaw, yearZeroIsOneBC);
   }
@@ -186,7 +218,7 @@ public class BibliographicDate implements Comparable<BibliographicDate>
   {
     ZoteroDate zoteroDate = ZoteroDate.fromUserStr(val, getLocaleStr(Locale.getDefault()));
 
-    return new BibliographicDate(zoteroDate.getDay(), zoteroDate.getMonth(), zoteroDate.getRawYear(), false);
+    return zoteroDate == null ? EMPTY_DATE : new BibliographicDate(zoteroDate.getDay(), zoteroDate.getMonth(), zoteroDate.getRawYear(), false);
   }
 
 //---------------------------------------------------------------------------
@@ -203,9 +235,10 @@ public class BibliographicDate implements Comparable<BibliographicDate>
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
-    if (!(obj instanceof BibliographicDate)) return false;
+    if (obj == null) return isEmpty(this);
+    if (!(obj instanceof BibliographicDate other)) return false;
 
-    BibliographicDate other = (BibliographicDate) obj;
+    if (isEmpty(other)) return isEmpty(this);
 
     return (day == other.day) && (month == other.month) && Objects.equals(year, other.year);
   }
@@ -215,29 +248,26 @@ public class BibliographicDate implements Comparable<BibliographicDate>
 
   @Override public int compareTo(BibliographicDate o)
   {
-    if (o == null) return 1;
+    if (isEmpty(o)) return isEmpty(this) ? 0 : 1;
 
-    if ((year == null) && (o.year == null)) return 0;
-    if (year == null) return -1;
+    int yearDiff = BibliographicYear.isEmpty(year) ?
+      (BibliographicYear.isEmpty(o.year) ? 0 : -1)
+    :
+      year.compareTo(o.year);
 
-    int yearDiff = year.compareTo(o.year);
     if (yearDiff != 0) return yearDiff;
 
-    if ((hasMonth() == false) && (o.hasMonth() == false))
-      return 0;
+    int monthDiff = hasMonth() ?
+      (o.hasMonth() ? (month - o.month) : 1)
+    :
+      (o.hasMonth() ? -1 : 0);
 
-    if (hasMonth() == false) return -1;
-    if (o.hasMonth() == false) return 1;
+    if (monthDiff != 0) return monthDiff;
 
-    if (month != o.month) return month - o.month;
-
-    if ((hasDay() == false) && (o.hasDay() == false))
-      return 0;
-
-    if (hasDay() == false) return -1;
-    if (o.hasDay() == false) return 1;
-
-    return day - o.day;
+    return hasDay() ?
+      (o.hasDay() ? (day - o.day) : 1)
+    :
+      (o.hasDay() ? -1 : 0);
   }
 
 //---------------------------------------------------------------------------
@@ -256,16 +286,16 @@ public class BibliographicDate implements Comparable<BibliographicDate>
       parsedYearStr = String.valueOf(year.numericValueWhereMinusOneEqualsOneBC());
 
     if (hasDay())
-      attribs = attribs + DAY_ATTR_NAME + "=" + QUOTE + String.valueOf(day) + QUOTE + ' ';
+      attribs = attribs + DAY_ATTR_NAME + '=' + QUOTE + day + QUOTE + ' ';
 
     if (hasMonth())
-      attribs = attribs + MONTH_ATTR_NAME + "=" + QUOTE + String.valueOf(month) + QUOTE + ' ';
+      attribs = attribs + MONTH_ATTR_NAME + '=' + QUOTE + month + QUOTE + ' ';
 
     if ((safeStr(year.rawValue).isBlank() == false) && (((year.numericValueWhereMinusOneEqualsOneBC() > 0) && year.rawValue.equals(parsedYearStr)) == false))
-      attribs = attribs + RAW_YEAR_ATTR_NAME + "=" + QUOTE + xmlContentEscaper.escape(year.rawValue) + QUOTE + ' ';
+      attribs = attribs + RAW_YEAR_ATTR_NAME + '=' + QUOTE + xmlContentEscaper.escape(year.rawValue) + QUOTE + ' ';
 
     if (year.numericValueWhereMinusOneEqualsOneBC() != 0)
-      attribs = attribs + PARSED_YEAR_ATTR_NAME + "=" + QUOTE + parsedYearStr + QUOTE + ' ';
+      attribs = attribs + PARSED_YEAR_ATTR_NAME + '=' + QUOTE + parsedYearStr + QUOTE + ' ';
 
     return attribs.trim();
   }

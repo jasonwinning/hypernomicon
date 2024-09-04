@@ -18,7 +18,6 @@
 package org.hypernomicon.bib.zotero;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -126,17 +125,40 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       return;
     }
 
-    String parsedDateStr = ZoteroDate.bibDateToParsedDateStr(newDate);
+    String parsedDateStr = ZoteroDate.bibDateToParsedDateStr(newDate, true);
 
-    if (jObj.containsKey("meta") && Objects.equals(parsedDateStr, jObj.getObj("meta").getStrSafe("parsedDate")))
-      return;
+    int posIntYear = Math.abs(newDate.year.numericValueWhereMinusOneEqualsOneBC());
 
-    jData.put("date", newDate.displayToUser());
+    if ((posIntYear > 9999) || (posIntYear < 1000) || (parsedDateStr.length() != 10))
+      parsedDateStr = "";  // Zotero will only recognize a "multi-part" date if the year is 4 digits and month and day are present
 
-    if (jObj.containsKey("meta") == false)
-      jObj.put("meta", new JsonObj());
+    String origRawDateStr = jData.getStrSafe("date"),
+           origParsedDateStr = "";
 
-    jObj.getObj("meta").put("parsedDate", parsedDateStr);
+    if (jObj.containsKey("meta"))
+      origParsedDateStr = jObj.getObj("meta").getStrSafe("parsedDate");
+
+    if ((BibliographicDate.isEmpty(newDate) == false) &&
+        Objects.equals(newDate, BibliographicDate.fromUserStr(origRawDateStr)) &&
+        (safeStr(origParsedDateStr).isBlank() || Objects.equals(newDate, ZoteroDate.parsedDateStrToBibDate(origParsedDateStr, false))))
+    {
+      return;  // Preserve current date in the Zotero item JSON if it represents the same date
+    }
+
+    jData.put("date", newDate.displayToUser(true));  // For years < 1000, we need to send it to Zotero as 4 digits with leading zeros;
+                                                     // otherwise Zotero won't recognize it as a year
+    if (parsedDateStr.isBlank())
+    {
+      if (jObj.containsKey("meta"))
+        jObj.getObj("meta").remove("parsedDate");
+    }
+    else
+    {
+      if (jObj.containsKey("meta") == false)
+        jObj.put("meta", new JsonObj());
+
+      jObj.getObj("meta").put("parsedDate", parsedDateStr);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -413,8 +435,30 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     if (thisIsBackup) return true;
     if (authorsChanged()) return false;
 
-    return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum ->
-      (thisTypeHasFieldKey(bibFieldEnum) == false) || fieldsAreEqual(bibFieldEnum, backupItem, true));
+    for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
+    {
+      if (thisTypeHasFieldKey(bibFieldEnum))
+      {
+        if (bibFieldEnum == bfDate)
+        {
+          // For certain dates, including B.C. dates and years below 1000, Zotero cannot be relied upon
+          // to correctly parse the date. Sending a "multi-part" date (where the first part is already
+          // parsed into ISO 8601) doesn't work in those cases, either. So we also have to check whether
+          // the raw, unparsed values are the same.
+
+          String backupDateRawStrNoLeadingZeros = BibliographicDate.removeLeadingZerosFromDateStr(backupItem.getDateRawStr());
+
+          if ((fieldsAreEqual(bibFieldEnum, backupItem, true        ) == false)  &&
+              (getDateRawStr().equals(backupItem.getDateRawStr()    ) == false)  &&
+              (getDateRawStr().equals(backupDateRawStrNoLeadingZeros) == false))     // For years < 1000, we need to send it to Zotero as 4 digits with leading zeros;
+            return false;                                                            // otherwise Zotero won't recognize it as a year. So we need to strip those zeros
+        }                                                                            // when checking for equality.
+        else if (fieldsAreEqual(bibFieldEnum, backupItem, true) == false)
+          return false;
+      }
+    }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -555,7 +599,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         String parsedDateStr = jMeta.getStrSafe("parsedDate");
 
         if (parsedDateStr.length() == 10)  // Zotero only recognizes a multi-part date if the first 10 characters are a 10-character ISO date
-          jStandaloneObj.getObj("data").put("date", parsedDateStr + " " + jStandaloneObj.getObj("data").getStrSafe("date"));  // Send up to the server as a "multi-part" date so Zotero doesn't have to parse a raw string
+          jStandaloneObj.getObj("data").put("date", parsedDateStr + ' ' + jStandaloneObj.getObj("data").getStrSafe("date"));  // Send up to the server as a "multi-part" date so Zotero doesn't have to parse a raw string
 
         jMeta.remove("parsedDate");
       }
@@ -745,7 +789,12 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
         case STRING:
 
-          report.addField(fieldName, makeReportString(report, fieldName, jData.getStrSafe(key)));
+          String value = jData.getStrSafe(key);
+
+          if ("date".equals(key))
+            value = BibliographicDate.removeLeadingZerosFromDateStr(value);
+
+          report.addField(fieldName, makeReportString(report, fieldName, value));
           break;
 
         default:
