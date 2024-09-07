@@ -58,34 +58,34 @@ public class MergeWorksMLChkCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, List<BibData> bibDataList)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
 
     lbl.setText(bibFieldEnum.getUserFriendlyName());
 
-    if (bd4 == null)
+    if (bibDataList.size() < 4)
     {
       chk4.setSelected(false);
       deleteGridPaneColumn(gp, 3);
     }
-    else if (bd4.fieldNotEmpty(bibFieldEnum))
-      ta4.setText(strListToStr(bd4.getMultiStr(bibFieldEnum), true));
+    else if (bibDataList.get(3).fieldNotEmpty(bibFieldEnum))
+      ta4.setText(strListToStr(bibDataList.get(3).getMultiStr(bibFieldEnum), true));
 
-    if (bd3 == null)
+    if (bibDataList.size() < 3)
     {
       chk3.setSelected(false);
       deleteGridPaneColumn(gp, 2);
     }
-    else if (bd3.fieldNotEmpty(bibFieldEnum))
-      ta3.setText(strListToStr(bd3.getMultiStr(bibFieldEnum), true));
+    else if (bibDataList.get(2).fieldNotEmpty(bibFieldEnum))
+      ta3.setText(strListToStr(bibDataList.get(2).getMultiStr(bibFieldEnum), true));
 
-    if (bd2.fieldNotEmpty(bibFieldEnum))
-      ta2.setText(strListToStr(bd2.getMultiStr(bibFieldEnum), true));
+    if (bibDataList.get(1).fieldNotEmpty(bibFieldEnum))
+      ta2.setText(strListToStr(bibDataList.get(1).getMultiStr(bibFieldEnum), true));
 
-    if (bd1.fieldNotEmpty(bibFieldEnum))
-      ta1.setText(strListToStr(bd1.getMultiStr(bibFieldEnum), true));
+    if (bibDataList.get(0).fieldNotEmpty(bibFieldEnum))
+      ta1.setText(strListToStr(bibDataList.get(0).getMultiStr(bibFieldEnum), true));
   }
 
 //---------------------------------------------------------------------------

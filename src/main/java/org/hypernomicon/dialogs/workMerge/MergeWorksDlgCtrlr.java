@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.io.IOException;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -88,6 +89,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   private final MasterDetailPane mdp;
   private final Map<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
   private final Map<BibFieldEnum, BibFieldRow> extraRows = new EnumMap<>(BibFieldEnum.class);
+  public final List<BibData> bibDataList;
   private final List<WorkToMerge> works = new ArrayList<>(4);
   private final boolean creatingNewWork;
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
@@ -103,18 +105,43 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MergeWorksDlgCtrlr(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice) throws IOException
+  /**
+   * Show popup window to merge information about a work or bibliographic entry from multiple sources
+   * @param title Title of the popup
+   * @param newBibDataList List of BibData sources. Use Arrays.asList to build the list because it needs to be able to contain null values.
+   * @param destWork The work we are merging information into, if any
+   * @param creatingNewWork Whether a new work record is being created
+   * @param showNewEntry Whether to show the checkbox to create a new bibliographic entry
+   * @param newEntryChoice Whether the user has already expressed a preference about creating a new entry
+   * @throws IOException if unable to load the FXML
+   */
+  public MergeWorksDlgCtrlr(String title, List<BibData> newBibDataList, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice) throws IOException
   {
-    this(title, bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChoice, nullSwitch(destWork, null, HDT_Work::filePath));
+    this(title, newBibDataList, destWork, creatingNewWork, showNewEntry, newEntryChoice, nullSwitch(destWork, null, HDT_Work::filePath));
   }
 
-  public MergeWorksDlgCtrlr(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
+  /**
+   * Show popup window to merge information about a work or bibliographic entry from multiple sources
+   * @param title Title of the popup
+   * @param newBibDataList List of BibData sources. Use Arrays.asList to build the list because it needs to be able to contain null values.
+   * @param destWork The work we are merging information into, if any
+   * @param creatingNewWork Whether a new work record is being created
+   * @param showNewEntry Whether to show the checkbox to create a new bibliographic entry
+   * @param newEntryChoice Whether the user has already expressed a preference about creating a new entry
+   * @param filePath Path of file to use for new work record
+   * @throws IOException
+   */
+  public MergeWorksDlgCtrlr(String title, List<BibData> newBibDataList, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
   {
     super("dialogs/workMerge/MergeWorksDlg", title, true, true);
 
     this.newEntryChoice = newEntryChoice;
     apPreview = new AnchorPane();
     mdp = WorkDlgCtrlr.addPreview(stagePane, apMain, apPreview, btnPreview);
+
+    bibDataList = newBibDataList.stream().filter(Objects::nonNull).toList();  // Make a copy to make sure it is unmodifiable
+
+    assert((bibDataList.size() > 1) && (bibDataList.size() < 5));
 
     btnLaunch.setOnAction(event ->
     {
@@ -153,34 +180,20 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     if (FilePath.isEmpty(filePath) && ((destWork == null) || (destWork.pathNotEmpty() == false)))
       disableAll(btnLaunch, btnPreview);
 
-    List<BibData> bdList = new ArrayList<>();
-
-    if (bd1 != null) bdList.add(bd1);
-    if (bd2 != null) bdList.add(bd2);
-    if (bd3 != null) bdList.add(bd3);
-    if (bd4 != null) bdList.add(bd4);
-
-    while (bdList.size() < 4) bdList.add(null);
-
-    bd1 = bdList.get(0);
-    bd2 = bdList.get(1);
-    bd3 = bdList.get(2);
-    bd4 = bdList.get(3);
-
-    if (bd4 != null)
-      works.add(0, new WorkToMerge(bd4, rbTitle4, tfTitle4, rbType4, cbType4, rbDate4, tfDate4, rbAuthors4, tvAuthors4,
+    if (bibDataList.size() > 3)
+      works.add(0, new WorkToMerge(bibDataList.get(3), rbTitle4, tfTitle4, rbType4, cbType4, rbDate4, tfDate4, rbAuthors4, tvAuthors4,
                                    destWork, creatingNewWork, alreadyChangingTitle));
 
-    if (bd3 != null)
-      works.add(0, new WorkToMerge(bd3, rbTitle3, tfTitle3, rbType3, cbType3, rbDate3, tfDate3, rbAuthors3, tvAuthors3,
+    if (bibDataList.size() > 2)
+      works.add(0, new WorkToMerge(bibDataList.get(2), rbTitle3, tfTitle3, rbType3, cbType3, rbDate3, tfDate3, rbAuthors3, tvAuthors3,
                                    destWork, creatingNewWork, alreadyChangingTitle));
 
-    works.add(0, new WorkToMerge(bd2, rbTitle2, tfTitle2, rbType2, cbType2, rbDate2, tfDate2, rbAuthors2, tvAuthors2,
+    works.add(0, new WorkToMerge(bibDataList.get(1), rbTitle2, tfTitle2, rbType2, cbType2, rbDate2, tfDate2, rbAuthors2, tvAuthors2,
                                  destWork, creatingNewWork, alreadyChangingTitle));
-    works.add(0, new WorkToMerge(bd1, rbTitle1, tfTitle1, rbType1, cbType1, rbDate1, tfDate1, rbAuthors1, tvAuthors1,
+    works.add(0, new WorkToMerge(bibDataList.get(0), rbTitle1, tfTitle1, rbType1, cbType1, rbDate1, tfDate1, rbAuthors1, tvAuthors1,
                                  destWork, creatingNewWork, alreadyChangingTitle));
 
-    if (bd4 == null)
+    if (bibDataList.size() < 4)
     {
       deleteGridPaneRow(gpTitle, 4);
       deleteGridPaneColumn(gpType, 3);
@@ -188,7 +201,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       deleteGridPaneColumn(gpAuthors, 3);
     }
 
-    if (bd3 == null)
+    if (bibDataList.size() < 3)
     {
       deleteGridPaneRow(gpTitle, 3);
       deleteGridPaneColumn(gpType, 2);
@@ -196,14 +209,13 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       deleteGridPaneColumn(gpAuthors, 2);
     }
 
-    if ((db.bibLibraryIsLinked() == false) || (showNewEntry == false) || (destWork.getBibEntryKey().isBlank() == false) ||
-        HDT_Work.isUnenteredSet(destWork))
+    if ((db.bibLibraryIsLinked() == false) || (showNewEntry == false) || (destWork.getBibEntryKey().isBlank() == false) || HDT_Work.isUnenteredSet(destWork))
       chkNewEntry.setVisible(false);
     else
     {
       chkNewEntry.setSelected(newEntryChoice.isTrue());
       chkNewEntry.setText("Create new " + db.getBibLibrary().type().getUserFriendlyName() + " entry");
-      addField(bfEntryType, bd1, bd2, bd3, bd4);
+      addField(bfEntryType);
     }
 
     for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
@@ -220,69 +232,37 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       BibData singleBD = null;
       boolean fieldsEqual = true;
 
-      if (bd1.fieldNotEmpty(bibFieldEnum))
+      for (BibData bd : bibDataList)
       {
-        singleBD = bd1;
-        cnt++;
-      }
-
-      if (bd2.fieldNotEmpty(bibFieldEnum))
-      {
-        if (singleBD != null)
+        if (bd.fieldNotEmpty(bibFieldEnum))
         {
-          if (singleBD.fieldsAreEqual(bibFieldEnum, bd2, false) == false)
-            fieldsEqual = false;
-        }
-        else
-          singleBD = bd2;
+          if (singleBD != null)
+          {
+            if (singleBD.fieldsAreEqual(bibFieldEnum, bd, false) == false)
+              fieldsEqual = false;
+          }
+          else
+            singleBD = bd;
 
-        cnt++;
+          cnt++;
+        }
       }
 
-      if ((bd3 != null) && bd3.fieldNotEmpty(bibFieldEnum))
-      {
-        if (singleBD != null)
-        {
-          if (singleBD.fieldsAreEqual(bibFieldEnum, bd3, false) == false)
-            fieldsEqual = false;
-        }
-        else
-          singleBD = bd3;
-
-        cnt++;
-      }
-
-      if ((bd4 != null) && bd4.fieldNotEmpty(bibFieldEnum))
-      {
-        if (singleBD != null)
-        {
-          if (singleBD.fieldsAreEqual(bibFieldEnum, bd4, false) == false)
-            fieldsEqual = false;
-        }
-        else
-          singleBD = bd4;
-
-        cnt++;
-      }
-
-      if ((bibFieldEnum == bfMisc) || ((cnt > 0) && ((fieldsEqual == false) || (cnt < works.size()))))
+      if ((bibFieldEnum == bfMisc) || ((cnt > 0) && ((fieldsEqual == false) || (cnt < bibDataList.size()))))
       {
         if ((bibFieldEnum == bfPublisher) && (extraRows.containsKey(bfPubLoc) == false))
         {
           HDT_WorkType bookWorkType = HDT_WorkType.get(WorkTypeEnum.wtBook);
 
-          if ((bd1.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd1.getEntryType()) == bookWorkType)) ||
-              (bd2.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd2.getEntryType()) == bookWorkType)) ||
-              ((bd3 != null) && bd3.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd3.getEntryType()) == bookWorkType)) ||
-              ((bd4 != null) && bd4.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd4.getEntryType()) == bookWorkType)))
+          if (bibDataList.stream().anyMatch(bd -> (bd.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd.getEntryType()) == bookWorkType))))
           {
             singleFields.remove(bfPubLoc);
 
-            addField(bfPubLoc, bd1, bd2, bd3, bd4);
+            addField(bfPubLoc);
           }
         }
 
-        addField(bibFieldEnum, bd1, bd2, bd3, bd4);
+        addField(bibFieldEnum);
       }
       else if (singleBD != null)
       {
@@ -334,9 +314,9 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addField(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
+  private void addField(BibFieldEnum bibFieldEnum) throws IOException
   {
-    BibFieldRow row = BibFieldRow.create(bibFieldEnum, bd1, bd2, bd3, bd4);
+    BibFieldRow row = BibFieldRow.create(bibFieldEnum, bibDataList);
     extraRows.put(bibFieldEnum, row);
     AnchorPane ap = row.getAnchorPane();
 

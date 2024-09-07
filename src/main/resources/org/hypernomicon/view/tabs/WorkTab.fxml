@@ -194,7 +194,7 @@
                 <TabPane fx:id="tpBib" layoutX="220.0" layoutY="63.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="124.0" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="30.0">
                   <Tab fx:id="tabEntry" closable="false" text="Entry">
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                      <TextArea fx:id="taEntry" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                      <TextArea fx:id="taEntry" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                     </AnchorPane>
                   </Tab>
 

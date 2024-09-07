@@ -20,6 +20,8 @@ package org.hypernomicon.dialogs.workMerge;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.List;
+
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 
@@ -55,38 +57,38 @@ public class MergeWorksMLCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, List<BibData> bibDataList)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
 
     lbl.setText(bibFieldEnum.getUserFriendlyName());
 
-    if (bd4 == null)
+    if (bibDataList.size() < 4)
       deleteGridPaneColumn(gp, 3);
-    else if (bd4.fieldNotEmpty(bibFieldEnum))
+    else if (bibDataList.get(3).fieldNotEmpty(bibFieldEnum))
     {
-      ta4.setText(strListToStr(bd4.getMultiStr(bibFieldEnum), true));
+      ta4.setText(strListToStr(bibDataList.get(3).getMultiStr(bibFieldEnum), true));
       rb4.setSelected(true);
     }
 
-    if (bd3 == null)
+    if (bibDataList.size() < 3)
       deleteGridPaneColumn(gp, 2);
-    else if (bd3.fieldNotEmpty(bibFieldEnum))
+    else if (bibDataList.get(2).fieldNotEmpty(bibFieldEnum))
     {
-      ta3.setText(strListToStr(bd3.getMultiStr(bibFieldEnum), true));
+      ta3.setText(strListToStr(bibDataList.get(2).getMultiStr(bibFieldEnum), true));
       rb3.setSelected(true);
     }
 
-    if (bd2.fieldNotEmpty(bibFieldEnum))
+    if (bibDataList.get(1).fieldNotEmpty(bibFieldEnum))
     {
-      ta2.setText(strListToStr(bd2.getMultiStr(bibFieldEnum), true));
+      ta2.setText(strListToStr(bibDataList.get(1).getMultiStr(bibFieldEnum), true));
       rb2.setSelected(true);
     }
 
-    if (bd1.fieldNotEmpty(bibFieldEnum))
+    if (bibDataList.get(0).fieldNotEmpty(bibFieldEnum))
     {
-      ta1.setText(strListToStr(bd1.getMultiStr(bibFieldEnum), true));
+      ta1.setText(strListToStr(bibDataList.get(0).getMultiStr(bibFieldEnum), true));
       rb1.setSelected(true);
     }
 

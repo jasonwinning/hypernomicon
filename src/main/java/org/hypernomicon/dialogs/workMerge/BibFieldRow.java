@@ -20,6 +20,7 @@ package org.hypernomicon.dialogs.workMerge;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.hypernomicon.App;
 import org.hypernomicon.bib.data.BibData;
@@ -35,13 +36,13 @@ public abstract class BibFieldRow
 
   final AnchorPane getAnchorPane() { return ap; }
 
-  abstract void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4);
+  abstract void init(BibFieldEnum bibFieldEnum, AnchorPane ap, List<BibData> bibDataList);
   abstract void mergeInto(BibData bd);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibFieldRow create(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
+  public static BibFieldRow create(BibFieldEnum bibFieldEnum, List<BibData> bibDataList) throws IOException
   {
     FXMLLoader loader;
 
@@ -54,7 +55,7 @@ public abstract class BibFieldRow
     AnchorPane ap = loader.load();
     BibFieldRow row = loader.getController();
 
-    row.init(bibFieldEnum, ap, bd1, bd2, bd3, bd4);
+    row.init(bibFieldEnum, ap, bibDataList);
     return row;
   }
 

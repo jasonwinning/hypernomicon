@@ -507,7 +507,7 @@ public class BibManager extends HyperDlg
 
       try
       {
-        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", entry, pdfBD, queryBD, null, entry.getWork(), false, false, Ternary.False);
+        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Arrays.asList(entry, pdfBD, queryBD), entry.getWork(), false, false, Ternary.False);
       }
       catch (IOException e)
       {
@@ -780,7 +780,7 @@ public class BibManager extends HyperDlg
 
     try
     {
-      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", work.getBibData(), entry, null, null, work, false, false, Ternary.False);
+      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Arrays.asList(work.getBibData(), entry), work, false, false, Ternary.False);
     }
     catch (IOException e)
     {

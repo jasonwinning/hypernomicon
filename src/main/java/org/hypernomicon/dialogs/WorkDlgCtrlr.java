@@ -958,9 +958,8 @@ public class WorkDlgCtrlr extends HyperDlg
 
     try
     {
-      MergeWorksDlgCtrlr mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", curBD,
-        bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(),
-        chkCreateBibEntry.isSelected() ? Ternary.True : Ternary.Unset, origFilePath);
+      MergeWorksDlgCtrlr mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Arrays.asList(curBD, bd1, bd2), curWork, false, curWork.getBibEntryKey().isBlank(),
+                                                      chkCreateBibEntry.isSelected() ? Ternary.True : Ternary.Unset, origFilePath);
 
       if (mwd.showModal())
       {

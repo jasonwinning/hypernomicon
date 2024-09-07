@@ -169,7 +169,7 @@ public abstract class BibDataStandalone extends BibData
       switch (bibFieldEnum)
       {
         case bfEntryType       -> entryType == null ? "" : entryType.getUserFriendlyName();
-        case bfWorkType        -> nullSwitch(getWorkType(), "", HDT_WorkType::getCBText); // fall through
+        case bfWorkType        -> nullSwitch(getWorkType(), "", HDT_WorkType::getCBText);   // fall through
         case bfContainerTitle,
              bfMisc,
              bfTitle           -> bibFieldEnumToBibField.get(bibFieldEnum).getStr();

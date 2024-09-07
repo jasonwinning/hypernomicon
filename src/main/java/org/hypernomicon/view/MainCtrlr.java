@@ -91,6 +91,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -3157,7 +3158,7 @@ public final class MainCtrlr
 
             try
             {
-              mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, newEntryChoice, nullSwitch(filePathToUse, work.filePath()));
+              mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Arrays.asList(work.getBibData(), bibEntry, bdToUse), work, false, false, newEntryChoice, nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
             {
@@ -3186,7 +3187,7 @@ public final class MainCtrlr
           {
             try
             {
-              mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", workBD, bdToUse, null, null, work, false, true, newEntryChoice, nullSwitch(filePathToUse, work.filePath()));
+              mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Arrays.asList(workBD, bdToUse), work, false, true, newEntryChoice, nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
             {
@@ -3354,7 +3355,7 @@ public final class MainCtrlr
     try
     {
       mwd = new MergeWorksDlgCtrlr("Import Into " + (creatingNewWork ? "New" : "Existing") + " Work Record",
-                                   workBibData, fileBibData, null, null, work, creatingNewWork, showNewEntry, newEntryChecked ? Ternary.True : Ternary.Unset);
+                                   Arrays.asList(workBibData, fileBibData), work, creatingNewWork, showNewEntry, newEntryChecked ? Ternary.True : Ternary.Unset);
     }
     catch (IOException e)
     {

@@ -19,6 +19,8 @@ package org.hypernomicon.dialogs.workMerge;
 
 import static org.hypernomicon.util.UIUtil.*;
 
+import java.util.List;
+
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 
@@ -54,42 +56,42 @@ public class MergeWorksSLCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, List<BibData> bibDataList)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
 
     lbl.setText(bibFieldEnum.getUserFriendlyName());
 
-    if (bd4 == null)
+    if (bibDataList.size() < 4)
     {
       deleteGridPaneColumn(gp, 3);
     }
-    else if (bd4.fieldNotEmpty(bibFieldEnum))
+    else if (bibDataList.get(3).fieldNotEmpty(bibFieldEnum))
     {
-      tf4.setText(bd4.getStr(bibFieldEnum));
+      tf4.setText(bibDataList.get(3).getStr(bibFieldEnum));
       rb4.setSelected(true);
     }
 
-    if (bd3 == null)
+    if (bibDataList.size() < 3)
     {
       deleteGridPaneColumn(gp, 2);
     }
-    else if (bd3.fieldNotEmpty(bibFieldEnum))
+    else if (bibDataList.get(2).fieldNotEmpty(bibFieldEnum))
     {
-      tf3.setText(bd3.getStr(bibFieldEnum));
+      tf3.setText(bibDataList.get(2).getStr(bibFieldEnum));
       rb3.setSelected(true);
     }
 
-    if (bd2.fieldNotEmpty(bibFieldEnum))
+    if (bibDataList.get(1).fieldNotEmpty(bibFieldEnum))
     {
-      tf2.setText(bd2.getStr(bibFieldEnum));
+      tf2.setText(bibDataList.get(1).getStr(bibFieldEnum));
       rb2.setSelected(true);
     }
 
-    if (bd1.fieldNotEmpty(bibFieldEnum))
+    if (bibDataList.get(0).fieldNotEmpty(bibFieldEnum))
     {
-      tf1.setText(bd1.getStr(bibFieldEnum));
+      tf1.setText(bibDataList.get(0).getStr(bibFieldEnum));
       rb1.setSelected(true);
     }
 

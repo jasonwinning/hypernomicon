@@ -21,6 +21,8 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 
+import java.util.List;
+
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.EntryType;
@@ -47,25 +49,25 @@ public class EntryTypeCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, List<BibData> bibDataList)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
 
     lbl.setText(bibFieldEnum.getUserFriendlyName());
 
-    if (bd4 == null)
+    if (bibDataList.size() < 4)
       deleteGridPaneColumn(gp, 3);
     else
-      initOne(cb4, rb4, bd4);
+      initOne(cb4, rb4, bibDataList.get(3));
 
-    if (bd3 == null)
+    if (bibDataList.size() < 3)
       deleteGridPaneColumn(gp, 2);
     else
-      initOne(cb3, rb3, bd3);
+      initOne(cb3, rb3, bibDataList.get(2));
 
-    initOne(cb2, rb2, bd2);
-    initOne(cb1, rb1, bd1);
+    initOne(cb2, rb2, bibDataList.get(1));
+    initOne(cb1, rb1, bibDataList.get(0));
   }
 
 //---------------------------------------------------------------------------

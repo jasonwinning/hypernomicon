@@ -19,6 +19,7 @@ package org.hypernomicon.bib;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -174,7 +175,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
       try
       {
-        mwd = new MergeWorksDlgCtrlr("Merge Remote Changes with Local Changes", entry, BibEntry.create(this, jObj, true), null, null, entry.getWork(), false, false, Ternary.False);
+        mwd = new MergeWorksDlgCtrlr("Merge Remote Changes with Local Changes", Arrays.asList(entry, BibEntry.create(this, jObj, true)), entry.getWork(), false, false, Ternary.False);
       }
       catch (IOException e)
       {
