@@ -3360,6 +3360,7 @@ public final class MainCtrlr
     catch (IOException e)
     {
       errorPopup("Unable to initialize merge dialog window.");
+      if (creatingNewWork) db.deleteRecord(work);
       return;
     }
 

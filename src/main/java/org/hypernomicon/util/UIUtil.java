@@ -24,19 +24,15 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.time.Month;
-import java.time.format.TextStyle;
 import java.util.*;
 import java.util.function.Supplier;
 
 import javafx.beans.value.ObservableDoubleValue;
-import javafx.collections.FXCollections;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.WindowStack;
@@ -59,7 +55,6 @@ import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
 import javafx.scene.control.DialogPane;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
@@ -69,8 +64,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
@@ -835,20 +828,17 @@ public final class UIUtil
 
   public static ScrollBar getScrollBar(Control ctrl, Orientation orientation)
   {
-    ScrollBar sb = sbMap.get(ctrl, orientation);
-    if (sb != null) return sb;
+    {
+      ScrollBar sb = sbMap.get(ctrl, orientation);
+      if (sb != null) return sb;
+    }
 
     for (Node node : ctrl.lookupAll(".scroll-bar"))
     {
-      if (node instanceof ScrollBar)
+      if ((node instanceof ScrollBar sb) && (sb.getOrientation() == orientation))
       {
-        sb = (ScrollBar) node;
-
-        if (sb.getOrientation() == orientation)
-        {
-          sbMap.put(ctrl, orientation, sb);
-          return sb;
-        }
+        sbMap.put(ctrl, orientation, sb);
+        return sb;
       }
     }
 
@@ -874,77 +864,6 @@ public final class UIUtil
     }
 
     return 0.0;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static class MonthCell extends ListCell<Month>
-  {
-    @Override public void updateItem(Month item, boolean empty)
-    {
-      super.updateItem(item, empty);
-
-      setText(item == null ? "" : item.getDisplayName(TextStyle.SHORT, Locale.getDefault()));
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void setupDateControls(TextField tfYear, ComboBox<Month> cbMonth, TextField tfDay)
-  {
-    setToolTip(tfYear, "Year");
-    setToolTip(cbMonth, "Month");
-    setToolTip(tfDay, "Day");
-
-    cbMonth.setItems(FXCollections.observableArrayList());
-
-    cbMonth.setCellFactory(param -> new MonthCell());
-
-    cbMonth.setButtonCell(new MonthCell());
-
-    for (int monthInt = 1; monthInt <= 12; monthInt++)
-      cbMonth.getItems().add(Month.of(monthInt));
-
-    cbMonth.getItems().add(null);
-
-    tfDay.setTextFormatter(new TextFormatter<>(change ->
-    {
-      if (change.isAdded())
-      {
-        if (change.getText().matches(".*[^0-9].*"))
-        {
-          change.setText("");
-          return change;
-        }
-
-        int intVal = parseInt(change.getControlNewText(), 0);
-
-        if ((intVal < 1) || (intVal > 31))
-          change.setText("");
-      }
-
-      return change;
-    }));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static BibliographicDate getDateFromControls(TextField tfYear, ComboBox<Month> cbMonth, TextField tfDay)
-  {
-    return new BibliographicDate(parseInt(tfDay.getText(), 0), nullSwitch(cbMonth.getSelectionModel().getSelectedItem(), 0, Month::getValue), tfYear.getText(), false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void populateDateControls(TextField tfYear, ComboBox<Month> cbMonth, TextField tfDay, BibliographicDate date)
-  {
-    tfYear.setText(date.getYearStr());
-    cbMonth.getSelectionModel().select(date.hasMonth() ? Month.of(date.month) : null);
-    tfDay.setText(date.hasDay() ? String.valueOf(date.day) : "");
   }
 
 //---------------------------------------------------------------------------

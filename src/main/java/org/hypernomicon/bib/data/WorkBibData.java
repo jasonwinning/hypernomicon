@@ -61,7 +61,7 @@ public class WorkBibData extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private BibEntry<?, ?> getBibEntry()
+  public BibEntry<?, ?> getBibEntry()
   {
     String entryKey = work.getBibEntryKey();
 

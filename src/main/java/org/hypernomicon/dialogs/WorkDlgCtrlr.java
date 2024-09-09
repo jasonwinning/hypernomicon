@@ -61,6 +61,7 @@ import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
+import org.hypernomicon.view.wrappers.DateControlsWrapper;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
@@ -122,6 +123,7 @@ public class WorkDlgCtrlr extends HyperDlg
   private final MasterDetailPane mdp;
   private final HyperCB hcbType;
   private final HyperTable htAuthors, htISBN;
+  private final DateControlsWrapper dateCtrls;
   private final HDT_WorkFile oldWorkFile;
   private final GUIBibData curBD;
   private final HDT_Work curWork;
@@ -163,7 +165,7 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     super("WorkDlg", dialogTitle, true);
 
-    setupDateControls(tfYear, cbMonth, tfDay);
+    dateCtrls = new DateControlsWrapper(tfYear, cbMonth, tfDay);
 
     apPreview = new AnchorPane();
     mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
@@ -266,7 +268,6 @@ public class WorkDlgCtrlr extends HyperDlg
       newRow.setCheckboxValue(4, origRow.getCheckboxValue(3));
     }
 
-
     onShown = () ->
     {
       disableCache(taMisc);
@@ -322,11 +323,13 @@ public class WorkDlgCtrlr extends HyperDlg
 
         tfNewFile.disableProperty().unbind();
 
-        disableAll(tfFileTitle, tfNewFile, tfDest, btnDest, chkSetDefault, tfYear, cbMonth, tfDay, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy, rbCurrent);
+        disableAll(tfFileTitle, tfNewFile, tfDest, btnDest, chkSetDefault, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy, rbCurrent);
+        dateCtrls.setDisable(true);
       }
       else if (HyperTableCell.getCellID(newValue) > 0)
       {
-        enableAll(tfFileTitle, tfDest, btnDest, chkSetDefault, tfYear, cbMonth, tfDay, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy);
+        enableAll(tfFileTitle, tfDest, btnDest, chkSetDefault, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy);
+        dateCtrls.setDisable(false);
 
         tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
 
@@ -450,7 +453,7 @@ public class WorkDlgCtrlr extends HyperDlg
     destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
 
     if (db.bibLibraryIsLinked())
-      bibManagerDlg.initCB(cbEntryType);
+      bibManagerDlg.initEntryTypeCB(cbEntryType);
 
     tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
 
@@ -837,7 +840,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (bdToUse != null)
       populateFieldsFromBibData(bdToUse, true, true);
-    else if (tfTitle.getText().isEmpty() && BibliographicDate.isEmpty(getDateFromControls(tfYear, cbMonth, tfDay)))
+    else if (tfTitle.getText().isEmpty() && BibliographicDate.isEmpty(dateCtrls.getDate()))
       extractDataFromPdf(app.prefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
   }
 
@@ -1150,7 +1153,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
   public GUIBibData getBibDataFromGUI()
   {
-    curBD.setDate(getDateFromControls(tfYear, cbMonth, tfDay));
+    curBD.setDate(dateCtrls.getDate());
     curBD.setStr(bfDOI, matchDOI(tfDOI.getText()));
     curBD.setTitle(tfTitle.getText());
 
@@ -1210,7 +1213,7 @@ public class WorkDlgCtrlr extends HyperDlg
         cbEntryType.getSelectionModel().select(entryType);
     }
 
-    populateDateControls(tfYear, cbMonth, tfDay, curBD.getDate());
+    dateCtrls.setDate(curBD.getDate());
 
     alreadyChangingTitle.setTrue();
     tfTitle.setText(curBD.getStr(bfTitle));

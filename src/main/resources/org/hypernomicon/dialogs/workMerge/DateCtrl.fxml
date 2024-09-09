@@ -16,15 +16,22 @@
    limitations under the License.
 -->
 
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane prefHeight="58.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.hypernomicon.dialogs.workMerge.BibFieldCtrlr$SingleLineCtrlr">
+            fx:controller="org.hypernomicon.dialogs.workMerge.BibFieldCtrlr$EntryTypeCtrlr">
   <RadioButton fx:id="radioBtn" mnemonicParsing="false" selected="true" AnchorPane.bottomAnchor="7.0"
                AnchorPane.leftAnchor="0.0"/>
-  <TextField fx:id="tf" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="0.0"/>
-  <Label fx:id="label" text="Publisher" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0"/>
+  <TextField fx:id="tfYear" maxHeight="25.0" maxWidth="60.0" minHeight="25.0" minWidth="60.0" prefHeight="25.0"
+             prefWidth="60.0" promptText="YYYY" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0"
+             AnchorPane.rightAnchor="112.0"/>
+  <ComboBox fx:id="cbMonth" maxHeight="25.0" maxWidth="66.0" minHeight="25.0" minWidth="66.0" prefHeight="25.0"
+            prefWidth="66.0" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="43.0"/>
+  <TextField fx:id="tfDay" maxHeight="25.0" maxWidth="40.0" minHeight="25.0" minWidth="40.0" prefHeight="25.0"
+             prefWidth="40.0" promptText="DD" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="0.0"/>
+  <Label fx:id="label" text="Date" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0"/>
 </AnchorPane>

@@ -119,10 +119,29 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   @Override public void setDate(BibliographicDate newDate)
   {
+    setDate(newDate, null);
+  }
+
+  /**
+   * This updates the date, including the structured BibliographicDate representation and in the JSON object.
+   * @param newRawDateStr New date represented as a String
+   */
+  public void setDateFromRawStr(String newRawDateStr)
+  {
+    setDate(BibliographicDate.fromUserStr(newRawDateStr), newRawDateStr);
+  }
+
+  /**
+   * This updates the date, always including in the JSON object if newRawDateStr is non-null. It assumes newDate and rawDateStr represent the same date and doesn't verify that.
+   * @param newDate New date
+   * @param newRawDateStr New date represented as a String to save to the JSON object
+   */
+  private void setDate(BibliographicDate newDate, String newRawDateStr)
+  {
     if (linkedToWork())
     {
       getWork().setBibDate(newDate);
-      return;
+      if (newRawDateStr == null) return;
     }
 
     String parsedDateStr = ZoteroDate.bibDateToParsedDateStr(newDate, true);
@@ -138,6 +157,11 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     if (jObj.containsKey("meta"))
       origParsedDateStr = jObj.getObj("meta").getStrSafe("parsedDate");
 
+    if ((safeStr(newRawDateStr).isBlank() == false) && newRawDateStr.equals(origRawDateStr))
+    {
+      return;  // Preserve current date in the Zotero item JSON if raw versions are the same
+    }
+
     if ((BibliographicDate.isEmpty(newDate) == false) &&
         Objects.equals(newDate, BibliographicDate.fromUserStr(origRawDateStr)) &&
         (safeStr(origParsedDateStr).isBlank() || Objects.equals(newDate, ZoteroDate.parsedDateStrToBibDate(origParsedDateStr, false))))
@@ -145,8 +169,11 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       return;  // Preserve current date in the Zotero item JSON if it represents the same date
     }
 
-    jData.put("date", newDate.displayToUser(true));  // For years < 1000, we need to send it to Zotero as 4 digits with leading zeros;
+    if (newRawDateStr == null)
+      newRawDateStr = newDate.displayToUser(true);   // For years < 1000, we need to send it to Zotero as 4 digits with leading zeros;
                                                      // otherwise Zotero won't recognize it as a year
+    jData.put("date", newRawDateStr);
+
     if (parsedDateStr.isBlank())
     {
       if (jObj.containsKey("meta"))
@@ -377,9 +404,11 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     switch (bibFieldEnum)
     {
-      case bfContainerTitle : case bfTitle : newStr = strListToStr(list, false       ); break;
-      case bfMisc           :                newStr = strListToStr(list, true        ); break;
-      case bfISBNs          : case bfISSNs : newStr = strListToSpaceDelimitedStr(list); break;
+      case bfContainerTitle : case bfTitle : newStr = strListToStr(list, false); break;
+      case bfMisc           :                newStr = strListToStr(list, true ); break;
+
+      case bfISBNs          : case bfISSNs : newStr = collEmpty(list) ? "" : strListToSpaceDelimitedStr(removeDupsInStrList(new ArrayList<>(list))); break;
+
       default               : return;
     }
 

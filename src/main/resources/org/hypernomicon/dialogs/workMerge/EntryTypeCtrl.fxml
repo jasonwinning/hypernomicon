@@ -16,60 +16,15 @@
    limitations under the License.
 -->
 
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.hypernomicon.dialogs.workMerge.EntryTypeCtrlr">
-  <GridPane.margin>
-    <Insets left="4.0" right="4.0"/>
-  </GridPane.margin>
-  <GridPane fx:id="gp" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-            AnchorPane.topAnchor="0.0">
-    <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-    </columnConstraints>
-    <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-    </rowConstraints>
-    <AnchorPane>
-      <RadioButton fx:id="rb1" layoutX="-22.0" layoutY="23.0" mnemonicParsing="false" selected="true"
-                   AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0">
-        <toggleGroup>
-          <ToggleGroup fx:id="grp"/>
-        </toggleGroup>
-      </RadioButton>
-      <ComboBox fx:id="cb1" layoutX="21.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0"
-                AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0"/>
-    </AnchorPane>
-    <AnchorPane GridPane.columnIndex="1">
-      <RadioButton fx:id="rb2" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grp"
-                   AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0"/>
-      <ComboBox fx:id="cb2" layoutX="40.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0"
-                AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-      <RadioButton fx:id="rb3" layoutX="8.0" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grp"
-                   AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0"/>
-      <ComboBox fx:id="cb3" layoutX="47.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0"
-                AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0"/>
-    </AnchorPane>
-    <AnchorPane GridPane.columnIndex="3">
-      <RadioButton fx:id="rb4" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grp"
-                   AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0"/>
-      <ComboBox fx:id="cb4" layoutX="55.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0"
-                AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0"/>
-    </AnchorPane>
-  </GridPane>
-  <Label fx:id="lbl"/>
+<AnchorPane prefHeight="58.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.workMerge.BibFieldCtrlr$EntryTypeCtrlr">
+  <RadioButton fx:id="radioBtn" mnemonicParsing="false" selected="true" AnchorPane.bottomAnchor="7.0"
+               AnchorPane.leftAnchor="0.0"/>
+  <ComboBox fx:id="cb" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="0.0"/>
+  <Label fx:id="label" text="Entry Type" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0"/>
 </AnchorPane>

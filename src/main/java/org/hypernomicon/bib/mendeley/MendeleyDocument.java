@@ -355,14 +355,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
       case bfISBNs : case bfISSNs :
       {
-        String identifiersStr = "";
-
-        if (collEmpty(list) == false)
-        {
-          List<String> list2 = new ArrayList<>(list);
-          removeDupsInStrList(list2);
-          identifiersStr = ultraTrim(convertToSingleLine(strListToStr(list2, false)));
-        }
+        String identifiersStr = collEmpty(list) ? "" : strListToSpaceDelimitedStr(removeDupsInStrList(new ArrayList<>(list)));
 
         updateIdentifiers(fieldKey, identifiersStr);
 

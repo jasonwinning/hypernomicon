@@ -436,7 +436,7 @@ public class MainTextCtrlr
 
           button.addEventFilter(ActionEvent.ACTION, event -> highlighter.clear()); // Make sure user can't copy text with highlighting to clipboard
 
-          if (convertToSingleLine(strListToStr(button.getStyleClass(), false)).contains("paste"))
+          if (strListToSpaceDelimitedStr(button.getStyleClass()).contains("paste"))
             Platform.runLater(() -> topBarItems.remove(button));
         }
       });

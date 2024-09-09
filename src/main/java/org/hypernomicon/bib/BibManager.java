@@ -364,7 +364,7 @@ public class BibManager extends HyperDlg
     if (libraryWrapper != null)
     {
       setToolTip(btnSync, "Synchronize with " + libraryWrapper.type().getUserFriendlyName());
-      initCB(cbNewType);
+      initEntryTypeCB(cbNewType);
     }
 
     if (shownAlready() == false) return;
@@ -882,7 +882,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void initCB(ComboBox<EntryType> cb)
+  public void initEntryTypeCB(ComboBox<EntryType> cb)
   {
     EnumHashBiMap<EntryType, String> map = libraryWrapper.getEntryTypeMap();
 

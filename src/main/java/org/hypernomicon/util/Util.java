@@ -257,7 +257,7 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void removeDupsInStrList(List<String> list)
+  public static List<String> removeDupsInStrList(List<String> list)
   {
     Set<String> set = new HashSet<>();
     Iterator<String> it = list.iterator();
@@ -270,6 +270,8 @@ public final class Util
       else
         set.add(str);
     }
+
+    return list;
   }
 
 //---------------------------------------------------------------------------
