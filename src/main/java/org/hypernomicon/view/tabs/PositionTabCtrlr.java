@@ -30,7 +30,6 @@ import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
-import org.hypernomicon.view.wrappers.HyperTableColumn;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.App.*;
@@ -38,7 +37,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.compareYears;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
@@ -65,15 +63,15 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     List<TableColumn<HyperTableRow, ?>> cols = tvLeftChildren.getColumns();
 
     cols.get(2).setText("Title of Work");
-    cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Year"));
-    cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Verdict"));
-    cols.add(new TableColumn<HyperTableRow, HyperTableCell>("Arg. Name"));
+    cols.add(2, new TableColumn<>("Year"));
+    cols.add(2, new TableColumn<>("Verdict"));
+    cols.add(new TableColumn<>("Arg. Name"));
 
     spChildren.setDividerPositions(0.6);
 
     cols = tvRightChildren.getColumns();
 
-    cols.add(1, new TableColumn<HyperTableRow, HyperTableCell>("Sub-Position/Debate Name"));
+    cols.add(1, new TableColumn<>("Sub-Position/Debate Name"));
     cols.get(2).setText("Person");
 
     htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_POS_PARENTS);
@@ -103,12 +101,9 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htArguments.addActionCol(ctGoNewBtn, 3);
     htArguments.addLabelCol(hdtPerson);                        // Author(s) of work
     htArguments.addLabelCol(hdtPositionVerdict, smTextSimple); // True, False, etc.
-
-    HyperTableColumn htCol = htArguments.addLabelCol(hdtArgument);    // Year
-    htCol.comparator.set((cell1, cell2) -> compareYears(cell1.text, cell2.text));
-
-    htArguments.addLabelCol(hdtWork, smStandard);   // Title of work
-    htArguments.addLabelCol(hdtArgument);           // Name of argument
+    htArguments.addLabelCol(hdtArgument, smYear);              // Year
+    htArguments.addLabelCol(hdtWork, smStandard);              // Title of work
+    htArguments.addLabelCol(hdtArgument);                      // Name of argument
 
     TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>();
     tvRightChildren.getColumns().add(1, col);
@@ -186,7 +181,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
       if (work != null)
       {
-        row.setCellValue(3, argument, work.getYear());
+        row.setCellValue(3, argument, work.getYearStr());
         row.setCellValue(4, work, work.name());
       }
       else

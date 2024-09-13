@@ -552,7 +552,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
       {
         lblDupTitle.setText(work.name());
         lblDupType .setText(nullSwitch(work.workType.get(), "", HDT_WorkType::name));
-        lblDupYear .setText(work.getYear());
+        lblDupYear .setText(work.getYearStr());
       });
 
       if (tfDupSearchKey.getText().isBlank())

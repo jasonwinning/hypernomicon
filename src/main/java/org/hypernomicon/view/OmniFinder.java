@@ -334,7 +334,7 @@ public class OmniFinder
           if (record.getType() == hdtWork)
           {
             for (PersonForDupCheck otherPerson : getPersonList(record))
-              if (authorMatch(otherPerson, ((HDT_Work)record).getYear(), curTier)) return true;
+              if (authorMatch(otherPerson, ((HDT_Work)record).getYearStr(), curTier)) return true;
           }
           else if (record.getType() == hdtMiscFile)
           {
@@ -418,7 +418,7 @@ public class OmniFinder
 
             HDT_Work work = (HDT_Work) record;
 
-            cells.set(2, new HyperTableCell(work, work.getYear()));
+            cells.set(2, new HyperTableCell(work, work.getYearStr()));
 
             if (work.authorRecords.isEmpty())
               cells.set(3, new HyperTableCell(work, work.getShortAuthorsStr(true)));

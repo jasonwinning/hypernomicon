@@ -26,8 +26,9 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.Comparator;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
-
+import org.hypernomicon.model.items.BibliographicYear;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.MediaUtil;
@@ -164,6 +165,11 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
       }
 
       return result;
+    }
+
+    if (sortMethod == smYear)
+    {
+      return ObjectUtils.compare(BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC(cell1.text), BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC(cell2.text));
     }
 
     if (sortMethod == smNumeric)

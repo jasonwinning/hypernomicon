@@ -94,7 +94,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 
   public WorkTypeEnum getWorkTypeEnum()             { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
-  public String getYear()                           { return getBibDateInternal().getYearStr(); }
+  public String getYearStr()                        { return getBibDateInternal().getYearStr(); }
   public BibliographicDate getBibDate()             { return getBibDateInternal(); }
   public String getBibEntryKey()                    { return getBibEntryKeyInternal(); }
   public String getMiscBib()                        { return getTagString(tagMiscBib); }
@@ -261,7 +261,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   @Override public String getCBText()
   {
     String authorStr = getShortAuthorsStr(false),
-           yearStr = getYear(),
+           yearStr = getYearStr(),
            titleStr = name(),
            cbStr = "";
 
@@ -614,7 +614,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public String makeWorkSearchKey(boolean addLetter, boolean keyWorkLink)
   {
-    return makeWorkSearchKey(getAuthors().asList(), getYear(), addLetter, keyWorkLink);
+    return makeWorkSearchKey(getAuthors().asList(), getYearStr(), addLetter, keyWorkLink);
   }
 
   public String makeWorkSearchKey(List<Author> authorsToUse, String yearToUse, boolean addLetter, boolean keyWorkLink)
@@ -642,7 +642,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     if (title.isBlank())
       return "Work ID=" + getID();
 
-    if ((getYear().isBlank() == false) || largerWork.isNull())
+    if ((getYearStr().isBlank() == false) || largerWork.isNull())
       return makeKeyFromYearAndTitle();
 
     String lwTitle = ultraTrim(new SplitString(largerWork.get().name(), ':').next());
@@ -670,7 +670,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     if (title.isBlank())
       return "";
 
-    if (getYear().isBlank())
+    if (getYearStr().isBlank())
       return title;
 
     WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
@@ -678,9 +678,9 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     return switch (configToUse.parentheses)
     {
-      case aroundAll  -> '(' + getYear() + ' '  + title + ')';
-      case aroundYear -> '(' + getYear() + ") " + title;
-      default         -> getYear() + ' ' + title;
+      case aroundAll  -> '(' + getYearStr() + ' '  + title + ')';
+      case aroundYear -> '(' + getYearStr() + ") " + title;
+      default         -> getYearStr() + ' ' + title;
     };
   }
 

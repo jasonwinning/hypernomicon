@@ -1061,14 +1061,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static int compareYears(String year1, String year2)
-  {
-    return compareNumberStrings(year1, year2);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static int compareNumberStrings(String str1, String str2)
   {
     MutableInt result = new MutableInt();

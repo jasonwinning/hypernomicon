@@ -446,8 +446,8 @@ public final class MainTextUtil
           tooltip.append(" & ").append(work.getAuthors().get(work.getAuthors().size() - 1).singleName());
         }
 
-        if (work.getYear().length() > 0)
-          tooltip.append(" (").append(work.getYear()).append(')');
+        if (work.getYearStr().length() > 0)
+          tooltip.append(" (").append(work.getYearStr()).append(')');
 
         tooltip.append(' ').append(work.name());
 
@@ -591,8 +591,8 @@ public final class MainTextUtil
           if (authorBibStr.length() > 0)
             innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(htmlEscaper.escape(authorBibStr)).append("</span>");
 
-          if (work.getYear().length() > 0)
-            innerHtml.append("&nbsp;(").append(htmlEscaper.escape(work.getYear())).append(')');
+          if (work.getYearStr().length() > 0)
+            innerHtml.append("&nbsp;(").append(htmlEscaper.escape(work.getYearStr())).append(')');
 
           innerHtml.append("&nbsp;").append(getGoToRecordAnchor(work, "", htmlEscaper.escape(work.name())));
 

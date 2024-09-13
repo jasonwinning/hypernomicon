@@ -251,7 +251,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htSubworks.addLabelCol(hdtPerson);
     htSubworks.addLabelCol(hdtWork, smStandard);
-    htSubworks.addLabelCol(hdtWork, smNumeric);
+    htSubworks.addLabelCol(hdtWork, smYear);
 
     htSubworks.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
@@ -798,7 +798,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         row.setCellValue(0, subWork, subWork.getLongAuthorsStr(true));
 
       row.setCellValue(1, subWork, subWork.name());
-      row.setCellValue(2, subWork, subWork.getYear());
+      row.setCellValue(2, subWork, subWork.getYearStr());
     });
 
   // Populate arguments
@@ -855,7 +855,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tfSearchKey.setText(curWork.getSearchKey());
     if (tfSearchKey.getText().isEmpty())
-      if (curWork.getYear().length() > 0)
+      if (curWork.getYearStr().length() > 0)
         if (curWork.authorRecords.size() > 0)
           if (curWork.authorRecords.get(0).getName().getSingle().isBlank() == false)
             tfSearchKey.setText(curWork.makeWorkSearchKey(true, false));
@@ -1458,17 +1458,17 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (tfSearchKey.getText().isEmpty())
       lblSearchKeyClick();
-    else if (curWork.getYear().length() > 0)
+    else if (curWork.getYearStr().length() > 0)
     {
-      if (tfSearchKey.getText().contains(curWork.getYear()))
+      if (tfSearchKey.getText().contains(curWork.getYearStr()))
         if (workTypeEnumVal != wtUnenteredSet)
-          if (tfYear.getText().equals(curWork.getYear()) == false)
+          if (tfYear.getText().equals(curWork.getYearStr()) == false)
             if (confirmDialog("Year has been modified. Update search key?"))
-              if (tfSearchKey.getText().matches(".*" + Pattern.quote(curWork.getYear()) + "[a-z].*"))
+              if (tfSearchKey.getText().matches(".*" + Pattern.quote(curWork.getYearStr()) + "[a-z].*"))
                 lblSearchKeyClick();
               else
               {
-                String key = tfSearchKey.getText().replace(curWork.getYear(), tfYear.getText());
+                String key = tfSearchKey.getText().replace(curWork.getYearStr(), tfYear.getText());
                 if (key.equals(curWork.makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), false, false)))
                   lblSearchKeyClick();  // Search key is same as what would be automatically generated minus letter(s) so use automatically generated search key with letter(s) added
                 else

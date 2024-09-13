@@ -75,7 +75,7 @@ public class ContentsWindow extends HyperDlg
     htContents.addLabelCol(hdtPerson);
     htContents.addLabelCol(hdtWorkType);
     htContents.addLabelCol(hdtWork);
-    htContents.addLabelCol(hdtWork, smNumeric);
+    htContents.addLabelCol(hdtWork, smYear);
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -236,7 +236,7 @@ public class ContentsWindow extends HyperDlg
 
     htContents.buildRows(works, (row, work) ->
     {
-      String authStr = work.getShortAuthorsStr(true), title = work.name(), year = work.getYear();
+      String authStr = work.getShortAuthorsStr(true), title = work.name(), year = work.getYearStr();
       HDT_WorkType workType = work.workType.get();
       WorkTabCtrlr wtc = null;
       int authorID = work.authorRecords.stream().map(HDT_Record::getID).findFirst().orElse(-1);

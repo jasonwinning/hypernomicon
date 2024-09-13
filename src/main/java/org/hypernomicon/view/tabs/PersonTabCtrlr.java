@@ -176,8 +176,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
 
-    col = htWorks.addLabelCol(hdtWork); // Year
-    col.comparator.set((cell1, cell2) -> compareYears(cell1.text, cell2.text));
+    col = htWorks.addLabelCol(hdtWork, smYear); // Year
 
     htWorks.addLabelCol(hdtWorkType, smTextSimple); // Work Type
     htWorks.addLabelCol(hdtWork    , smTextSimple); // Ed/Tr
@@ -473,7 +472,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       if (htWorks.containsRecord(work) == false)
       {
         HyperTableRow row = htWorks.newDataRow();
-        row.setCellValue(0, work, work.getYear());
+        row.setCellValue(0, work, work.getYearStr());
 
         String typeName = "";
 
