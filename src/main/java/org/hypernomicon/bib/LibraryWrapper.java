@@ -19,7 +19,6 @@ package org.hypernomicon.bib;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -41,6 +40,7 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -175,7 +175,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
       try
       {
-        mwd = new MergeWorksDlgCtrlr("Merge Remote Changes with Local Changes", Arrays.asList(entry, BibEntry.create(this, jObj, true)), entry.getWork(), false, false, Ternary.False);
+        mwd = new MergeWorksDlgCtrlr("Merge Remote Changes with Local Changes", Stream.of(entry, BibEntry.create(this, jObj, true)),
+                                     entry.getWork(), false, false, Ternary.False, nullSwitch(entry.getWork(), null, HDT_Work::filePath), true);
       }
       catch (IOException e)
       {
@@ -186,8 +187,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
       entry.update(jObj, true, true);
 
-      if (mwd.showModal())
-        mwd.mergeInto(entry);
+      mwd.showModal();       // Just do the merge because the cancel button gets
+      mwd.mergeInto(entry);  // removed from the merge window in this situation
 
       fxThreadReturnValue = true;
 

@@ -22,6 +22,7 @@ import java.time.Month;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javafx.scene.control.*;
 import org.apache.commons.io.FilenameUtils;
@@ -958,44 +959,46 @@ public class WorkDlgCtrlr extends HyperDlg
   private void doMerge(BibData bd1, BibData bd2)
   {
     getBibDataFromGUI();
+    MergeWorksDlgCtrlr mwd = null;
 
     try
     {
-      MergeWorksDlgCtrlr mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Arrays.asList(curBD, bd1, bd2), curWork, false, curWork.getBibEntryKey().isBlank(),
-                                                      chkCreateBibEntry.isSelected() ? Ternary.True : Ternary.Unset, origFilePath);
-
-      if (mwd.showModal())
-      {
-        lblAutoPopulated.setText("");
-        mwd.mergeInto(curBD);
-        populateFieldsFromBibData(curBD, true);
-
-        if (db.bibLibraryIsLinked() && curWork.getBibEntryKey().isBlank())
-        {
-          cbEntryType.getSelectionModel().select(mwd.getEntryType());
-          newEntryChoice = mwd.creatingNewEntry();
-          chkCreateBibEntry.setSelected(newEntryChoice.isTrue());
-          origBDtoUse = new GUIBibData(curBD);
-
-          if (hcbType.selectedRecord() == null)
-          {
-            switch (mwd.getEntryType())
-            {
-              case etBook : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtBook)); break;
-
-              case etJournalArticle : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtPaper)); break;
-
-              case etThesis : case etMastersThesis : case etDoctoralThesis : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtThesis)); break;
-
-              default : break;
-            }
-          }
-        }
-      }
+      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(curBD, bd1, bd2), curWork, false, curWork.getBibEntryKey().isBlank(),
+                                   chkCreateBibEntry.isSelected() ? Ternary.True : Ternary.Unset, origFilePath);
     }
     catch (IOException e)
     {
       errorPopup("Unable to initialize merge dialog window.");
+      return;
+    }
+
+    if (mwd.showModal() == false)
+      return;
+
+    lblAutoPopulated.setText("");
+    mwd.mergeInto(curBD);
+    populateFieldsFromBibData(curBD, true);
+
+    if (db.bibLibraryIsLinked() && curWork.getBibEntryKey().isBlank())
+    {
+      cbEntryType.getSelectionModel().select(mwd.getEntryType());
+      newEntryChoice = mwd.creatingNewEntry();
+      chkCreateBibEntry.setSelected(newEntryChoice.isTrue());
+      origBDtoUse = new GUIBibData(curBD);
+
+      if (hcbType.selectedRecord() == null)
+      {
+        switch (mwd.getEntryType())
+        {
+          case etBook : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtBook)); break;
+
+          case etJournalArticle : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtPaper)); break;
+
+          case etThesis : case etMastersThesis : case etDoctoralThesis : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtThesis)); break;
+
+          default : break;
+        }
+      }
     }
   }
 

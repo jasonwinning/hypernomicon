@@ -29,6 +29,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 import java.io.IOException;
 
 import org.controlsfx.control.MasterDetailPane;
@@ -48,12 +49,14 @@ import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWrapper;
 import org.hypernomicon.util.filePath.FilePath;
 
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 
@@ -64,9 +67,10 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apMain;
   @FXML private GridPane gpMain;
+  @FXML private HBox hBox;
   @FXML private ToggleButton btnPreview;
   @FXML private CheckBox chkNewEntry;
-  @FXML private Button btnLaunch;
+  @FXML private Button btnLaunch, btnCancel;
 
   private final AnchorPane apPreview;
   private final MasterDetailPane mdp;
@@ -89,22 +93,22 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   /**
    * Show popup window to merge information about a work or bibliographic entry from multiple sources
    * @param title Title of the popup
-   * @param newBibDataList List of BibData sources. Use Arrays.asList to build the list because it needs to be able to contain null values.
+   * @param newBibDataStream Stream of BibData sources
    * @param destWork The work we are merging information into, if any
    * @param creatingNewWork Whether a new work record is being created
    * @param showNewEntry Whether to show the checkbox to create a new bibliographic entry
    * @param newEntryChoice Whether the user has already expressed a preference about creating a new entry
    * @throws IOException if unable to load the FXML
    */
-  public MergeWorksDlgCtrlr(String title, List<BibData> newBibDataList, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice) throws IOException
+  public MergeWorksDlgCtrlr(String title, Stream<BibData> newBibDataStream, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice) throws IOException
   {
-    this(title, newBibDataList, destWork, creatingNewWork, showNewEntry, newEntryChoice, nullSwitch(destWork, null, HDT_Work::filePath));
+    this(title, newBibDataStream, destWork, creatingNewWork, showNewEntry, newEntryChoice, nullSwitch(destWork, null, HDT_Work::filePath));
   }
 
   /**
    * Show popup window to merge information about a work or bibliographic entry from multiple sources
    * @param title Title of the popup
-   * @param newBibDataList List of BibData sources. Use Arrays.asList to build the list because it needs to be able to contain null values.
+   * @param newBibDataStream Stream of BibData sources
    * @param destWork The work we are merging information into, if any
    * @param creatingNewWork Whether a new work record is being created
    * @param showNewEntry Whether to show the checkbox to create a new bibliographic entry
@@ -112,9 +116,32 @@ public class MergeWorksDlgCtrlr extends HyperDlg
    * @param filePath Path of file to use for new work record
    * @throws IOException if unable to load the FXML
    */
-  public MergeWorksDlgCtrlr(String title, List<BibData> newBibDataList, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
+  public MergeWorksDlgCtrlr(String title, Stream<BibData> newBibDataStream, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
+  {
+    this(title, newBibDataStream, destWork, creatingNewWork, showNewEntry, newEntryChoice, filePath, false);
+  }
+
+  /**
+   * Show popup window to merge information about a work or bibliographic entry from multiple sources
+   * @param title Title of the popup
+   * @param newBibDataStream Stream of BibData sources
+   * @param destWork The work we are merging information into, if any
+   * @param creatingNewWork Whether a new work record is being created
+   * @param showNewEntry Whether to show the checkbox to create a new bibliographic entry
+   * @param newEntryChoice Whether the user has already expressed a preference about creating a new entry
+   * @param filePath Path of file to use for new work record
+   * @param cantCancel If true, user must proceed with the merge (sync with reference manager cannot be stopped mid-stream)
+   * @throws IOException if unable to load the FXML
+   */
+  public MergeWorksDlgCtrlr(String title, Stream<BibData> newBibDataStream, HDT_Work destWork, boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath, boolean cantCancel) throws IOException
   {
     super("dialogs/workMerge/MergeWorksDlg", title, true, true);
+
+    if (cantCancel)
+    {
+      dialogStage.setOnCloseRequest(Event::consume);
+      hBox.getChildren().remove(btnCancel);
+    }
 
     this.newEntryChoice = newEntryChoice;
     this.creatingNewWork = creatingNewWork;
@@ -122,7 +149,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     apPreview = new AnchorPane();
     mdp = WorkDlgCtrlr.addPreview(stagePane, apMain, apPreview, btnPreview);
 
-    bibDataList = newBibDataList.stream().filter(Objects::nonNull).toList();  // Make a copy to make sure it is unmodifiable
+    bibDataList = newBibDataStream.filter(Objects::nonNull).toList();
 
     assert((bibDataList.size() > 1) && (bibDataList.size() < 5));
 
@@ -146,10 +173,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
       previewInitialized = true;
 
-      if (FilePath.isEmpty(filePath) || filePath.equals(destWork.filePath()))
-        PreviewWrapper.showFile(destWork.filePath(), 1, jsWrapper);
-      else
-        PreviewWrapper.showFile(filePath, 1, jsWrapper);
+      PreviewWrapper.showFile(FilePath.isEmpty(filePath) ? destWork.filePath() : filePath, 1, jsWrapper);
     });
 
     if (FilePath.isEmpty(filePath) && ((destWork == null) || (destWork.pathNotEmpty() == false)))

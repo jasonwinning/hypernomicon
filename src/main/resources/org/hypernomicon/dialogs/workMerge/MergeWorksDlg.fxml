@@ -40,7 +40,7 @@
       </GridPane>
     </AnchorPane>
   </ScrollPane>
-  <HBox nodeOrientation="LEFT_TO_RIGHT" prefHeight="25.0" spacing="4.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0">
+  <HBox fx:id="hBox" nodeOrientation="LEFT_TO_RIGHT" prefHeight="25.0" spacing="4.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0">
     <CheckBox fx:id="chkNewEntry" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" prefHeight="25.0" text="Create new Zotero entry">
       <padding>
         <Insets right="7.0" />
@@ -64,7 +64,7 @@
       </tooltip>
     </Button>
     <Button mnemonicParsing="false" onAction="#btnOkClick" prefWidth="75.0" text="OK" />
-    <Button cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="75.0" text="Cancel" />
+    <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="75.0" text="Cancel" />
   </HBox>
   </AnchorPane>
 </AnchorPane>

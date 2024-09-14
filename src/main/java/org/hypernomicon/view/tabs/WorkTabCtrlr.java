@@ -77,7 +77,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1808,7 +1807,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       try
       {
-        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Arrays.asList(workBD, pdfBD, queryBD), curWork, false, true, Ternary.Unset);
+        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBD, pdfBD, queryBD), curWork, false, true, Ternary.Unset);
       }
       catch (IOException e)
       {
@@ -1845,7 +1844,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     try
     {
-      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Arrays.asList(workBibData, pdfBDprop.get(), crossrefBDprop.get(), googleBDprop.get()), curWork, false, true, Ternary.Unset);
+      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBibData, pdfBDprop.get(), crossrefBDprop.get(), googleBDprop.get()), curWork, false, true, Ternary.Unset);
     }
     catch (IOException e)
     {
