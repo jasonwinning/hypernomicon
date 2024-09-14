@@ -131,12 +131,11 @@ public final class Author implements Cloneable, Comparable<Author>
   {
     if (person != objGroup.getPrimary()) return false;
 
-    return (person == null) && (name.equalsExceptParenthetical(new PersonName(objGroup.getPrimaryStr())) == false) ?
-      false
-    :
-      nullSwitch(objGroup.getValue(tagInFileName), true, val -> val.ternary == getInFileName()) &&
-      nullSwitch(objGroup.getValue(tagEditor    ), true, val -> val.bool    == getIsEditor  ()) &&
-      nullSwitch(objGroup.getValue(tagTranslator), true, val -> val.bool    == getIsTrans   ());
+    return ((person != null) || name.equalsExceptParenthetical(new PersonName(objGroup.getPrimaryStr())))  &&
+
+           nullSwitch(objGroup.getValue(tagInFileName), true, val -> val.ternary == getInFileName())       &&
+           nullSwitch(objGroup.getValue(tagEditor    ), true, val -> val.bool    == getIsEditor  ())       &&
+           nullSwitch(objGroup.getValue(tagTranslator), true, val -> val.bool    == getIsTrans   ());
   }
 
   //---------------------------------------------------------------------------

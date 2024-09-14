@@ -10,49 +10,49 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="471.0" prefWidth="1287.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr">
-   <children>
-      <GridPane layoutX="91.0" layoutY="123.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints maxHeight="65.0" minHeight="65.0" prefHeight="65.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints maxHeight="32.0" minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647">
-               <children>
-                  <Label fx:id="lblOrigWork" layoutX="42.0" layoutY="17.0" text="Should the following works be updated to have the same ISBN(s) as the work:" wrapText="true" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0">
-                    <styleClass>
-                      <String fx:value="alert" />
-                      <String fx:value="confirmation" />
-                      <String fx:value="dialog-pane" />
-                   </styleClass>
-                     <font>
-                        <Font size="14.0" />
-                     </font>
-                 </Label>
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
-               <children>
-                  <ListView fx:id="listView" layoutX="265.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-               <children>
-                  <Button defaultButton="true" layoutX="204.0" layoutY="6.0" maxHeight="25.0" maxWidth="70.0" minHeight="25.0" minWidth="70.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="70.0" text="Yes" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-               <children>
-                  <Button cancelButton="true" layoutX="44.0" maxHeight="25.0" maxWidth="70.0" minHeight="25.0" minWidth="70.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="70.0" text="No" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="3.0" />
-               </children>
-            </AnchorPane>
-         </children>
-      </GridPane>
-   </children>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="471.0"
+            prefWidth="1287.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr">
+  <GridPane layoutX="91.0" layoutY="123.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+    </columnConstraints>
+    <rowConstraints>
+      <RowConstraints maxHeight="65.0" minHeight="65.0" prefHeight="65.0" vgrow="SOMETIMES"/>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+      <RowConstraints maxHeight="32.0" minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647">
+      <Label fx:id="lblOrigWork" layoutX="42.0" layoutY="17.0"
+             text="Should the following works be updated to have the same ISBN(s) as the work:" wrapText="true"
+             AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="6.0"
+             AnchorPane.topAnchor="6.0">
+        <styleClass>
+          <String fx:value="alert"/>
+          <String fx:value="confirmation"/>
+          <String fx:value="dialog-pane"/>
+        </styleClass>
+        <font>
+          <Font size="14.0"/>
+        </font>
+      </Label>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+      <ListView fx:id="listView" layoutX="265.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0"
+                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                AnchorPane.topAnchor="0.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+      <Button defaultButton="true" layoutX="204.0" layoutY="6.0" maxHeight="25.0" maxWidth="70.0"
+              minHeight="25.0" minWidth="70.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0"
+              prefWidth="70.0" text="Yes" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0"/>
+    </AnchorPane>
+    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+      <Button cancelButton="true" layoutX="44.0" maxHeight="25.0" maxWidth="70.0" minHeight="25.0"
+              minWidth="70.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0"
+              prefWidth="70.0" text="No" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="3.0"/>
+    </AnchorPane>
+  </GridPane>
 </AnchorPane>

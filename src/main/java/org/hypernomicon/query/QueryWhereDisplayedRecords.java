@@ -19,7 +19,7 @@ package org.hypernomicon.query;
 
 import static org.hypernomicon.view.wrappers.HyperTableCell.getCellID;
 
-import java.util.Set;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -42,7 +42,7 @@ public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks
 
 //---------------------------------------------------------------------------
 
-  @Override protected Set<RecordType> operandRecordTypes() { return MainTextCtrlr.getDisplayedTypes(); }
+  @Override protected Stream<RecordType> operandRecordTypesStream() { return MainTextCtrlr.displayedTypesStream(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

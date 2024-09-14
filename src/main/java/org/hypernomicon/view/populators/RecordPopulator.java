@@ -94,7 +94,7 @@ public abstract class RecordPopulator extends Populator
       }
     }
 
-    choices.add(HyperTableCell.blankCell());
+    choices.add(HyperTableCell.blankCell);
   }
 
 //---------------------------------------------------------------------------
@@ -103,7 +103,7 @@ public abstract class RecordPopulator extends Populator
   protected HyperTableCell generateCell(HDT_Record record)
   {
     return (record == null) || ((idFilter != null) && (idFilter.test(record.getID()) == false)) ?
-      HyperTableCell.blankCell()
+      HyperTableCell.blankCell
     :
       new HyperTableCell(record, getCellText(record));
   }

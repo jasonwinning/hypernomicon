@@ -47,7 +47,7 @@ public class HDX_Element
 
   private final Tag tag;
   private int objID = -1, ord = -1;
-  private RecordType objType;
+  private RecordType objType = hdtNone;
 
   public Tag getTag()            { return tag; }
   public int getObjID()          { return objID; }
@@ -59,9 +59,6 @@ public class HDX_Element
   public HDX_Element(Tag tag)
   {
     this.tag = tag;
-    objID = -1;
-    ord = -1;
-    objType = hdtNone;
   }
 
 //---------------------------------------------------------------------------
@@ -111,7 +108,7 @@ public class HDX_Element
 
     if (tag == tagNone)
     {
-      if (tagName.equals("year") && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 7)))
+      if ("year".equals(tagName) && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 7)))
         tag = tagBibDate; // Backwards compatibility for record data version 1.7 or lower
       else
         throw new InvalidItemException(xmlRecord.id, xmlRecord.type, tagName);

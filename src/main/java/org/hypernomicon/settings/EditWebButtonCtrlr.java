@@ -17,7 +17,9 @@
 
 package org.hypernomicon.settings;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
 import java.io.IOException;
 import java.util.EnumMap;
@@ -62,7 +64,7 @@ public class EditWebButtonCtrlr
 
     hBox.getChildren().clear();
 
-    for (WebButtonField field : WebButtonField.getFieldsForPrefKey(prefKey))
+    for (WebButtonField field : getFieldsForPrefKey(prefKey))
     {
       CheckBox chk = new CheckBox(hBox.getChildren().isEmpty() ? "" : "   ");
       chk.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
@@ -86,6 +88,54 @@ public class EditWebButtonCtrlr
     tfPattern.textProperty().addListener((obs, ov, nv) -> dlg.setChanged());
 
     fieldToChk.values().forEach(chk -> chk.setOnAction(event -> dlg.setChanged()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static EnumSet<WebButtonField> getFieldsForPrefKey(String prefKey)
+  {
+    EnumSet<WebButtonField> fields = EnumSet.noneOf(WebButtonField.class);
+
+    switch (prefKey)
+    {
+      case PREF_KEY_PERSON_SRCH : case PREF_KEY_PERSON_IMG_SRCH :
+
+        fields.add(FirstName); fields.add(LastName); fields.add(SingleName); fields.add(QueryName); fields.add(Field);
+        break;
+
+      case PREF_KEY_INST_SRCH :
+
+        fields.add(Name); fields.add(DivisionName);
+        break;
+
+      case PREF_KEY_INST_MAP_SRCH :
+
+        fields.add(Name); fields.add(City); fields.add(Region); fields.add(Country);
+        break;
+
+      case PREF_KEY_DOI_SRCH :
+
+        fields.add(doi);
+        break;
+
+      case PREF_KEY_ISBN_SRCH :
+
+        fields.add(ISBN);
+        break;
+
+      case PREF_KEY_WORK_SRCH :
+
+        fields.add(Title); fields.add(QueryTitle); fields.add(NumericYear); fields.add(SingleName); fields.add(ISBN); fields.add(doi);
+        break;
+
+      case PREF_KEY_GEN_SRCH :
+
+        fields.add(Name);
+        break;
+    }
+
+    return fields;
   }
 
 //---------------------------------------------------------------------------

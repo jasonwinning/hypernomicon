@@ -163,7 +163,7 @@ public final class RISBibData extends BibDataStandalone
 
   private static final Pattern risDatePattern = Pattern.compile("^(\\d+)(?:\\/(\\d{0,2})(?:\\/(\\d{0,2})(?:(?:\\/|\\s)([^/]*))?)?)?$");
 
-  private BibliographicDate parseDate(String str)
+  private static BibliographicDate parseDate(String str)
   {
     // First, pattern match on entire string
     Matcher m = risDatePattern.matcher(str);

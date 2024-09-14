@@ -273,7 +273,7 @@ class FileTable extends DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean isValidDragTarget(FileRow targetRow, DragEvent dragEvent, TreeItem<FileRow> treeItem)
+  @Override protected boolean isValidDragTarget(FileRow targetRow, DragEvent dragEvent, TreeItem<FileRow> treeItem)
   {
     scroll(dragEvent);
 

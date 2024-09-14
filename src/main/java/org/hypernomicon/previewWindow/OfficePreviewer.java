@@ -103,14 +103,14 @@ final class OfficePreviewer
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static synchronized void stopPreview()
+  private static synchronized void stopPreview()
   {
     wrapperStopped.keySet().forEach(jsWrapper -> wrapperStopped.put(jsWrapper, true));
 
     nextInfo = null;
   }
 
-  public static synchronized void stopPreview(PDFJSWrapper jsWrapper)
+  static synchronized void stopPreview(PDFJSWrapper jsWrapper)
   {
     wrapperStopped.put(jsWrapper, true);
 

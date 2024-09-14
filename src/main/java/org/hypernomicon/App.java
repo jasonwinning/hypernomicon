@@ -352,7 +352,7 @@ public final class App extends Application
 
   private static void initMainWindows(Stage stage, Preferences prefs) throws IOException
   {
-    Application.setUserAgentStylesheet(STYLESHEET_MODENA);
+    setUserAgentStylesheet(STYLESHEET_MODENA);
 
     initScaling(prefs);
 

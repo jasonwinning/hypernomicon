@@ -36,94 +36,80 @@
       <Insets bottom="6.0" left="12.0" right="12.0" top="6.0"/>
     </padding>
     <HBox spacing="6.0">
-      <children>
-        <BorderPane>
-          <center>
-            <Label prefWidth="130.0" text="Before-year separator:"/>
-          </center>
-        </BorderPane>
-        <TextField fx:id="tfBeforeYearSep" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"/>
-      </children>
+      <BorderPane>
+        <center>
+          <Label prefWidth="130.0" text="Before-year separator:"/>
+        </center>
+      </BorderPane>
+      <TextField fx:id="tfBeforeYearSep" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"/>
     </HBox>
     <HBox spacing="6.0">
-      <children>
-        <BorderPane>
-          <center>
-            <Label prefWidth="130.0" text="After-name separator:"/>
-          </center>
-        </BorderPane>
-        <TextField fx:id="tfAfterNameSep" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"/>
-      </children>
+      <BorderPane>
+        <center>
+          <Label prefWidth="130.0" text="After-name separator:"/>
+        </center>
+      </BorderPane>
+      <TextField fx:id="tfAfterNameSep" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"/>
     </HBox>
     <CheckBox fx:id="chkMultipleAuthors" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0"
               text="Include multiple authors"/>
     <CheckBox fx:id="chkSepAfterPenultimate" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
               prefHeight="25.0" selected="true" text="Use separator after penultimate author"/>
     <HBox spacing="6.0">
-      <children>
-        <BorderPane>
-          <center>
-            <Label maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="Parentheses:"/>
-          </center>
-        </BorderPane>
-        <ToggleButton fx:id="btnAroundAll" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0"
-                      selected="true" text="Around All">
-          <toggleGroup>
-            <ToggleGroup fx:id="grpParen"/>
-          </toggleGroup>
-        </ToggleButton>
-        <ToggleButton fx:id="btnAroundYear" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                      prefHeight="25.0" text="Around Year" toggleGroup="$grpParen"/>
-      </children>
+      <BorderPane>
+        <center>
+          <Label maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="Parentheses:"/>
+        </center>
+      </BorderPane>
+      <ToggleButton fx:id="btnAroundAll" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0"
+                    selected="true" text="Around All">
+        <toggleGroup>
+          <ToggleGroup fx:id="grpParen"/>
+        </toggleGroup>
+      </ToggleButton>
+      <ToggleButton fx:id="btnAroundYear" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                    prefHeight="25.0" text="Around Year" toggleGroup="$grpParen"/>
     </HBox>
     <HBox layoutX="16.0" layoutY="132.0" spacing="6.0">
-      <children>
-        <BorderPane>
-          <center>
-            <Label maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="Final conjunction symbol:"/>
-          </center>
-        </BorderPane>
-        <ToggleButton fx:id="btnAnd" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0"
-                      selected="true" text="and">
-          <toggleGroup>
-            <ToggleGroup fx:id="grpConj"/>
-          </toggleGroup>
-        </ToggleButton>
-        <ToggleButton fx:id="btnAmpersand" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0"
-                      text="&amp;" toggleGroup="$grpConj"/>
-      </children>
+      <BorderPane>
+        <center>
+          <Label maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="Final conjunction symbol:"/>
+        </center>
+      </BorderPane>
+      <ToggleButton fx:id="btnAnd" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0"
+                    selected="true" text="and">
+        <toggleGroup>
+          <ToggleGroup fx:id="grpConj"/>
+        </toggleGroup>
+      </ToggleButton>
+      <ToggleButton fx:id="btnAmpersand" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0"
+                    text="&amp;" toggleGroup="$grpConj"/>
     </HBox>
     <HBox spacing="6.0">
-      <children>
-        <BorderPane>
-          <center>
-            <Label text="Truncate authors when # reaches (leave blank for never):"/>
-          </center>
-        </BorderPane>
-        <TextField fx:id="tfTruncateNum" maxHeight="25.0" maxWidth="48.0" minHeight="25.0" minWidth="48.0"
-                   prefHeight="25.0" prefWidth="48.0" text="3"/>
-      </children>
+      <BorderPane>
+        <center>
+          <Label text="Truncate authors when # reaches (leave blank for never):"/>
+        </center>
+      </BorderPane>
+      <TextField fx:id="tfTruncateNum" maxHeight="25.0" maxWidth="48.0" minHeight="25.0" minWidth="48.0"
+                 prefHeight="25.0" prefWidth="48.0" text="3"/>
     </HBox>
     <HBox spacing="6.0">
-      <children>
-        <BorderPane>
-          <center>
-            <Label text="Truncation indicator (e.g., et al.):"/>
-          </center>
-        </BorderPane>
-        <TextField fx:id="tfTruncationIndicator" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="et al."/>
-      </children>
+      <BorderPane>
+        <center>
+          <Label text="Truncation indicator (e.g., et al.):"/>
+        </center>
+      </BorderPane>
+      <TextField fx:id="tfTruncationIndicator" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="et al."/>
     </HBox>
     <HBox spacing="6.0">
-      <children>
-        <BorderPane>
-          <center>
-            <Label text="Number of authors to show when truncating:"/>
-          </center>
-        </BorderPane>
-        <TextField fx:id="tfNumToShowWhenTruncating" maxHeight="25.0" maxWidth="48.0" minHeight="25.0" minWidth="48.0"
-                   prefHeight="25.0" prefWidth="48.0" text="2"/>
-      </children>
+      <BorderPane>
+        <center>
+          <Label text="Number of authors to show when truncating:"/>
+        </center>
+      </BorderPane>
+      <TextField fx:id="tfNumToShowWhenTruncating" maxHeight="25.0" maxWidth="48.0" minHeight="25.0" minWidth="48.0"
+                 prefHeight="25.0" prefWidth="48.0" text="2"/>
     </HBox>
     <TextArea fx:id="taExamples" editable="false" prefHeight="200.0" prefWidth="200.0"/>
   </VBox>

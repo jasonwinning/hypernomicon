@@ -59,7 +59,7 @@ public abstract class Populator
 
     @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
     {
-      return nullSwitch(super.getChoiceByID(row, id), HyperTableCell.blankCell());
+      return nullSwitch(super.getChoiceByID(row, id), HyperTableCell.blankCell);
     }
 
   //---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ public abstract class Populator
 
   protected static HyperTableCell addEntryToList(List<HyperTableCell> list, HyperTableCell cell)
   {
-    if ((cell.equals(HyperTableCell.blankCell()) == false) && (list.size() > 0) && list.get(list.size() - 1).equals(HyperTableCell.blankCell()))
+    if ((HyperTableCell.blankCell.equals(cell) == false) && (list.size() > 0) && HyperTableCell.blankCell.equals(list.get(list.size() - 1)))
       list.add(list.size() - 1, cell);
     else
       list.add(cell);

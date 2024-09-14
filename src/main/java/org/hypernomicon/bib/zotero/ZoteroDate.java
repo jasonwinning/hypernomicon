@@ -257,7 +257,7 @@ public final class ZoteroDate
    * </blockquote>
    *
    * @param string The input
-   * @param newLocaleStr
+   * @param newLocaleStr Locale string to use, e.g. "en-US". It could also just have the language part, e.g. "en".
    * @return A ZoteroDate object
    */
   public static synchronized ZoteroDate fromUserStr(String string, String newLocaleStr)

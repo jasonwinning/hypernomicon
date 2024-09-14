@@ -19,8 +19,6 @@ package org.hypernomicon.model.items;
 
 import java.util.List;
 
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
@@ -48,7 +46,7 @@ public class HDI_OnlineBibDate extends HDI_OnlineBase<HDI_OfflineBibDate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflineBibDate val, Tag tag) throws RelationCycleException, HDB_InternalError
+  @Override public void setFromOfflineValue(HDI_OfflineBibDate val, Tag tag)
   {
     value = val.get();
   }

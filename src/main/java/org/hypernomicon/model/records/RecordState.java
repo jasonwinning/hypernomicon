@@ -178,7 +178,7 @@ public class RecordState
   private void setMainText(String html)
   {
     Tag tag = db.mainTextTagForRecordType(type);
-    ((HDI_OfflineMainTextAndHub) items.get(tag)).setFromXml(new HDX_Element(tag), html, null);
+    items.get(tag).setFromXml(new HDX_Element(tag), html, null);
   }
 
 //---------------------------------------------------------------------------

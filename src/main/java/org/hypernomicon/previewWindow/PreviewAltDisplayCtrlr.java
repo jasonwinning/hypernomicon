@@ -38,7 +38,7 @@ public class PreviewAltDisplayCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
+  void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
   {
     String msg = "Generating preview for file: " + htmlEscaper.escape(filePath.toString());
     if (dontRestartProgressIfSamePreview && lblMessage.getText().equals(msg))
@@ -53,7 +53,7 @@ public class PreviewAltDisplayCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setStartingConverter()
+  void setStartingConverter()
   {
     progressBar.setProgress(0.0);
     progressBar.setProgress(-1.0);
@@ -78,7 +78,7 @@ public class PreviewAltDisplayCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setNoOfficeInstallation()
+  void setNoOfficeInstallation()
   {
     lblMessage.setText("To preview this type of file, enter the installation path for LibreOffice or OpenOffice in the Settings dialog.");
     setInfoIconVisible(true);

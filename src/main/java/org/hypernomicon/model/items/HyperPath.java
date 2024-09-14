@@ -271,28 +271,21 @@ public class HyperPath
 
   public static String alreadyInUseMessage(FilePath filePath, HDT_RecordWithPath existingRecord)
   {
-    switch (existingRecord.getType())
+    return switch (existingRecord.getType())
     {
-      case hdtMiscFile :
-
-        return "The file: " + filePath + " is already in use as a miscellaneous file, record ID: " + existingRecord.getID();
-
-      case hdtWorkFile :
-
+      case hdtWorkFile ->
+      {
         HDT_WorkFile workFile = (HDT_WorkFile) existingRecord;
-        return workFile.works.size() > 0 ?
+        yield workFile.works.size() > 0 ?
           "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.get(0).getID()
         :
           "The file: " + filePath + " is already in use as a work file, ID: " + workFile.getID();
+      }
 
-      case hdtPerson :
-
-        return "The file: " + filePath + " is already in use as a picture, person record ID: " + existingRecord.getID();
-
-      default :
-
-        return "The file: " + filePath + " is already in use. Record type: " + getTypeName(existingRecord.getType()) + " ID: " + existingRecord.getID();
-    }
+      case hdtMiscFile -> "The file: " + filePath + " is already in use as a miscellaneous file, record ID: " + existingRecord.getID();
+      case hdtPerson   -> "The file: " + filePath + " is already in use as a picture, person record ID: " + existingRecord.getID();
+      default          -> "The file: " + filePath + " is already in use. Record type: " + getTypeName(existingRecord.getType()) + " ID: " + existingRecord.getID();
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -438,7 +431,7 @@ public class HyperPath
       val.append(getTypeName(relative.getType())).append(": ").append(relative.listName());
     });
 
-    if ((val.length() == 0) && (getRecordType() == hdtFolder))
+    if (val.isEmpty() && (getRecordType() == hdtFolder))
     {
       if (((HDT_Folder) getRecord()).childFolders.stream().anyMatch(subFolder -> subFolder.getPath().getRecordsString().length() > 0))
         return "(Subfolders have associated records)";

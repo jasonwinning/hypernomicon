@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDataset;
@@ -571,10 +572,10 @@ public abstract class HDT_RecordBase implements HDT_Record
   {
     Instant dbCreationDate = db.getCreationDate();
 
-    EnumSet.of(hdtFolder, hdtDebate, hdtNote, hdtWorkLabel, hdtPersonGroup, hdtGlossary).forEach(type ->
+    Stream.of(hdtFolder, hdtDebate, hdtNote, hdtWorkLabel, hdtPersonGroup, hdtGlossary)
+          .map(type -> (HDT_RecordBase) db.records(type).getByID(1))
+          .forEach(record ->
     {
-      HDT_RecordBase record = (HDT_RecordBase) db.records(type).getByID(1);
-
       record.modifiedDate = dbCreationDate;
       record.creationDate = dbCreationDate;
       record.viewDate     = dbCreationDate;

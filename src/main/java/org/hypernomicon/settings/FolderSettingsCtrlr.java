@@ -79,7 +79,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initRow(String prefKey, TextField tf, Button btn)
+  private static void initRow(String prefKey, TextField tf, Button btn)
   {
     tf.setEditable(false);
 

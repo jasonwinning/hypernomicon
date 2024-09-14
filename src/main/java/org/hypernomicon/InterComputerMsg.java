@@ -61,18 +61,17 @@ public class InterComputerMsg
 
   public void writeToDisk(boolean getFolderFromAppPrefs) throws IOException
   {
-    FilePath filePath;
     List<String> lines = Lists.newArrayList(source, dest);
 
-    switch (type)
+    FilePath filePath = switch (type)
     {
-      case hmtEchoRequest    : lines.add("echo request"   ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
-      case hmtEchoReply      : lines.add("echo reply"     ); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
-      case hmtUnlockRequest  : lines.add("unlock request" ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
-      case hmtUnlockComplete : lines.add("unlock complete"); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
+      case hmtEchoRequest    -> { lines.add("echo request"   ); yield db.getRequestMessageFilePath (getFolderFromAppPrefs); }
+      case hmtUnlockRequest  -> { lines.add("unlock request" ); yield db.getRequestMessageFilePath (getFolderFromAppPrefs); }
+      case hmtEchoReply      -> { lines.add("echo reply"     ); yield db.getResponseMessageFilePath(getFolderFromAppPrefs); }
+      case hmtUnlockComplete -> { lines.add("unlock complete"); yield db.getResponseMessageFilePath(getFolderFromAppPrefs); }
 
-      default                : throw new UnsupportedOperationException("Attempt to write inter-computer message of invalid type.");
-    }
+      default -> throw new UnsupportedOperationException("Attempt to write inter-computer message of invalid type.");
+    };
 
     FileUtils.writeLines(filePath.toFile(), lines);
   }

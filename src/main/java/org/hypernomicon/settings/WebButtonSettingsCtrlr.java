@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsControl;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.view.tabs.HyperTab;
@@ -411,9 +412,9 @@ public class WebButtonSettingsCtrlr implements SettingsControl
     {
       Preferences node = app.prefs.node(PREF_KEY_WEB_BUTTONS);
 
-      WebButtonTable.loadPref(node, personSrchList, PREF_KEY_PERSON_SRCH, personSrchDefaults);
-      WebButtonTable.loadPref(node, workSrchList  , PREF_KEY_WORK_SRCH  , workSrchDefaults  );
-      WebButtonTable.loadPref(node, genSrchList   , PREF_KEY_GEN_SRCH   , genSrchDefaults   );
+      loadPref(node, personSrchList, PREF_KEY_PERSON_SRCH, personSrchDefaults);
+      loadPref(node, workSrchList  , PREF_KEY_WORK_SRCH  , workSrchDefaults  );
+      loadPref(node, genSrchList   , PREF_KEY_GEN_SRCH   , genSrchDefaults   );
 
       WebButtonBar.loadPref(node, personImgSrchList, PREF_KEY_PERSON_IMG_SRCH);
       WebButtonBar.loadPref(node, instSrchList     , PREF_KEY_INST_SRCH      );
@@ -427,6 +428,22 @@ public class WebButtonSettingsCtrlr implements SettingsControl
     {
       e.printStackTrace();
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void loadPref(Preferences node, List<WebButton> srchList, String prefKey, List<WebButton> defaults) throws BackingStoreException
+  {
+    MutableInt numCustom = new MutableInt(0);
+
+    int count = node.getInt(prefKey + "Count", defaults.size());
+
+    for (int ndx = 1; ndx <= defaults.size(); ndx++)
+      ui.webButtonMap.put(prefKey + ndx, defaults.get(ndx - 1));
+
+    for (int ndx = 1; ndx <= count; ndx++)
+      WebButtonBar.loadPref(node, srchList, prefKey + ndx, numCustom);
   }
 
 //---------------------------------------------------------------------------

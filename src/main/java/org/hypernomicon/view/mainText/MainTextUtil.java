@@ -49,7 +49,6 @@ import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -565,7 +564,7 @@ public final class MainTextUtil
     MutableBoolean firstOne = new MutableBoolean(true);
 
     if (sortByName)
-      sortedKeys.sort(Comparator.comparing(keyWork -> ((HDT_RecordWithAuthors<?>)keyWork.getRecord()).getShortAuthorsStr(true)));
+      sortedKeys.sort(Comparator.comparing(keyWork -> keyWork.getRecord().getShortAuthorsStr(true)));
     else
       sortedKeys.sort(null);
 

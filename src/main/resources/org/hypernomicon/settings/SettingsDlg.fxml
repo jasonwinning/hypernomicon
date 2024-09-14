@@ -166,26 +166,25 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="17" />
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="18" />
-                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
-                     <children>
-                        <Label layoutX="28.0" layoutY="5.0" text="LibreOffice or OpenOffice installation path (to preview office documents)" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
-                     <children>
-                        <TextField fx:id="tfOffice" layoutY="1.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
-                     <children>
-                        <Button layoutX="-10.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnOfficeBrowseClick" prefHeight="25.0" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="7">
-                     <children>
-                        <Button layoutX="12.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnClearOfficeClick" prefHeight="25.0" prefWidth="70.0" text="Clear" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
+              <Label layoutX="28.0" layoutY="5.0"
+                     text="LibreOffice or OpenOffice installation path (to preview office documents)"
+                     AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"/>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
+              <TextField fx:id="tfOffice" layoutY="1.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
+                         AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0"/>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+              <Button layoutX="-10.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                      onAction="#btnOfficeBrowseClick" prefHeight="25.0" prefWidth="32.0" text="..."
+                      AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0"/>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="7">
+              <Button layoutX="12.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                      onAction="#btnClearOfficeClick" prefHeight="25.0" prefWidth="70.0" text="Clear"
+                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+            </AnchorPane>
           </GridPane>
         </AnchorPane>
       </Tab>
@@ -237,12 +236,13 @@
               <Label layoutX="15.0" layoutY="-5.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-                     <HBox alignment="CENTER_LEFT" layoutY="5.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                        <children>
-                    <ToggleButton fx:id="btnZoteroAuthorize" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="Link to Zotero account" />
-                    <ToggleButton fx:id="btnMendeleyAuthorize" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="Link to Mendeley account" />
-                        </children>
-                     </HBox>
+              <HBox alignment="CENTER_LEFT" layoutY="5.0" spacing="5.0" AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <ToggleButton fx:id="btnZoteroAuthorize" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                              prefHeight="25.0" text="Link to Zotero account"/>
+                <ToggleButton fx:id="btnMendeleyAuthorize" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                              prefHeight="25.0" text="Link to Mendeley account"/>
+              </HBox>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
               <Label layoutY="-2.0" text="Click button to initiate process of linking to reference manager account." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />

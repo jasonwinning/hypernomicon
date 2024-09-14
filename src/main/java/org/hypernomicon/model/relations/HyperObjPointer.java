@@ -79,7 +79,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
       if (obj != null)
       {
         if (obj.getType() != relSet.getObjType())
-          return falseWithInternalErrorPopup(02055);
+          return falseWithInternalErrorPopup(2055);
 
         relSet.setObject(subj, obj, -1, true);
       }

@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.query.ui.QueriesTabCtrlr.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
@@ -226,10 +225,10 @@ public class QueryWhereField extends RecordQuery
 
   @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2)
   {
-    return opNum < 3 ? true : switch (op2.getID())
+    return (opNum < 3) || switch (op2.getID())
     {
       case IS_EMPTY_OPERAND_ID, IS_NOT_EMPTY_OPERAND_ID -> false;
-      default                                           -> true;
+      default -> true;
     };
   }
 

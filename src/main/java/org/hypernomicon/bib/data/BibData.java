@@ -186,9 +186,9 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addDateToReport(BibFieldEnum bibFieldEnum, ReportGenerator report)
+  private void addDateToReport(ReportGenerator report)
   {
-    String fieldName = bibFieldEnum.getUserFriendlyName();
+    String fieldName = bfDate.getUserFriendlyName();
     report.addField(fieldName, report.makeRow(fieldName, getDate().displayToUser()));
   }
 
@@ -226,7 +226,7 @@ public abstract class BibData
 
     addStrToReport     (bfEntryType     , report);
     addStrToReport     (bfTitle         , report);
-    addDateToReport    (bfDate          , report);
+    addDateToReport    (                  report);
 
     addCreatorsToReport(bfAuthors       , report, authors.getStr(AuthorType.author    ));
     addCreatorsToReport(bfEditors       , report, authors.getStr(AuthorType.editor    ));

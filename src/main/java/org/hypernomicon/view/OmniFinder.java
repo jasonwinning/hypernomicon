@@ -323,59 +323,37 @@ public class OmniFinder
 
       if (records.contains(record)) return false;
 
-      switch (curTier)
+      return switch (curTier)
       {
-        case tierKeywordStart:
+        case tierKeywordStart     -> true;
+        case tierExactName        -> (record.getType() != hdtPerson) && record.getNameEngChar().toLowerCase().equals(queryLC);
+        case tierNameStartExact   -> (record.getType() != hdtPerson) && record.getNameEngChar().toLowerCase().startsWith(queryLC);
+        case tierKeyword          -> linkList.stream().anyMatch(keyLink -> keyLink.key().record == record);
+        case tierKeywordContains  -> record.getSearchKey().toLowerCase().contains(queryLC);
+        case tierPersonMatch,
+             tierPersonMatchStart -> authorMatch(getPersonList(record).get(0), "", curTier);
 
-          return true;
-
-        case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
-
-          if (record.getType() == hdtWork)
+        case tierNameContains ->
+        {
+          yield switch (record.getType())
           {
-            for (PersonForDupCheck otherPerson : getPersonList(record))
-              if (authorMatch(otherPerson, ((HDT_Work)record).getYearStr(), curTier)) return true;
-          }
-          else if (record.getType() == hdtMiscFile)
+            case hdtPerson -> authorMatch(getPersonList(record).get(0), "", tierAuthorContains);
+            default        -> record.getNameEngChar().toLowerCase().contains(queryLC);
+          };
+        }
+
+        case tierAuthorContains, tierAuthorMatch, tierAuthorYear, tierAuthorKeyword, tierAuthorMatchStart ->
+        {
+          yield switch (record.getType())
           {
-            for (PersonForDupCheck otherPerson : getPersonList(record))
-              if (authorMatch(otherPerson, "", curTier)) return true;
-          }
-          return false;
+            case hdtWork     -> getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, ((HDT_Work)record).getYearStr(), curTier));
+            case hdtMiscFile -> getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, ""                             , curTier));
+            default          -> false;
+          };
+        }
 
-        case tierPersonMatch: case tierPersonMatchStart:
-
-          return authorMatch(getPersonList(record).get(0), "", curTier);
-
-        case tierExactName:
-
-          return (record.getType() != hdtPerson) && record.getNameEngChar().toLowerCase().equals(queryLC);
-
-        case tierKeyword:
-
-          for (KeywordLink keyLink : linkList)
-            if (keyLink.key().record == record)
-              return true;
-
-          return false;
-
-        case tierKeywordContains:
-
-          return record.getSearchKey().toLowerCase().contains(queryLC);
-
-        case tierNameContains:
-
-          return record.getType() == hdtPerson ?
-            authorMatch(getPersonList(record).get(0), "", tierAuthorContains)
-          :
-            record.getNameEngChar().toLowerCase().contains(queryLC);
-
-        case tierNameStartExact:
-
-          return (record.getType() != hdtPerson) && record.getNameEngChar().toLowerCase().startsWith(queryLC);
-
-        default: return false;
-      }
+        default -> false;
+      };
     }
 
   //---------------------------------------------------------------------------

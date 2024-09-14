@@ -431,7 +431,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean sameDateForSyncPurposes(BibliographicDate date1, BibliographicDate date2)
+  private static boolean sameDateForSyncPurposes(BibliographicDate date1, BibliographicDate date2)
   {
     return (date1.day == date2.day) && (date1.month == date2.month) && (date1.year.numericValueWhereMinusOneEqualsOneBC() == date2.year.numericValueWhereMinusOneEqualsOneBC());
   }

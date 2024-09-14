@@ -22,8 +22,7 @@ import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.getCellID;
 
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -65,7 +64,7 @@ public class QueryWhereKeyWorks extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected Set<RecordType> operandRecordTypes() { return EnumSet.of(hdtWork, hdtMiscFile); }
+  protected Stream<RecordType> operandRecordTypesStream() { return Stream.of(hdtWork, hdtMiscFile); }
 
 //---------------------------------------------------------------------------
 
@@ -77,7 +76,7 @@ public class QueryWhereKeyWorks extends RecordQuery
       vp2.setRestricted(row, false);
     else
     {
-      vp2.setPopulator(row, new RecordTypePopulator(operandRecordTypes()));
+      vp2.setPopulator(row, new RecordTypePopulator(operandRecordTypesStream()));
       vp3.setPopulator(row, new RecordByTypePopulator());
     }
 

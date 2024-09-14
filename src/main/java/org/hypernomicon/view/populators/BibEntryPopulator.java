@@ -60,7 +60,7 @@ public class BibEntryPopulator extends Populator
       .map(bibEntry -> new HyperTableCell(bibEntry.numericID(), bibEntry.getCBText(), hdtNone))
       .collect(Collectors.toCollection(ArrayList::new));
 
-    choices.add(HyperTableCell.blankCell());
+    choices.add(HyperTableCell.blankCell);
     return choices;
   }
 

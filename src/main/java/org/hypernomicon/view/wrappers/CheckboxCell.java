@@ -22,6 +22,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableCell;
 
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 {
@@ -43,7 +44,7 @@ class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
       HyperTableRow row = getTableRow().getItem();
       if (row == null) return;
 
-      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), HyperTableCell.checkboxCellFromBoolean(Boolean.TRUE.equals(newValue)));
+      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), fromBoolean(Boolean.TRUE.equals(newValue)));
     });
   }
 
@@ -62,7 +63,7 @@ class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 
     setGraphic(chk);
     setAlignment(Pos.CENTER);
-    chk.setSelected(HyperTableCell.getCellID(val) == 1);
+    chk.setSelected(getCellID(val) == TRUE_ID);
 
     chk.setDisable(HyperTableCell.isEmpty(nullSwitch(getTableRow(), null, tableRow ->
                                           nullSwitch(tableRow.getItem(), null, row ->

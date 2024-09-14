@@ -46,17 +46,23 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
   public final RecordType type;
   public final boolean sortToBottom;
 
-  public int getID()                                             { return id; }
-  public <HDT_T extends HDT_Record> HDT_T getRecord()            { return getRecord(this); }
+  public static final int TRUE_ID  = 1,
+                          FALSE_ID = 2,
+                          UNSET_ID = 3;
 
-  static HyperTableCell checkboxCellFromBoolean(boolean boolVal) { return boolVal ? trueCheckboxCell() : falseCheckboxCell(); }
-  public static int getCellID(HyperTableCell cell)               { return cell == null ? -1 : cell.id; }
-  public static String getCellText(HyperTableCell cell)          { return cell == null ? "" : safeStr(cell.text); }
-  public static RecordType getCellType(HyperTableCell cell)      { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
-  public static boolean isEmpty(HyperTableCell cell)             { return (cell == null) || cell.equals(blankCell()); }
-  public static HyperTableCell blankCell()                       { return new HyperTableCell(    "", hdtNone); }
-  public static HyperTableCell trueCheckboxCell()                { return new HyperTableCell(1 , "", hdtNone); }
-  public static HyperTableCell falseCheckboxCell()               { return new HyperTableCell(0 , "", hdtNone); }
+  public static final HyperTableCell trueCell  = new HyperTableCell(TRUE_ID , "True" , hdtNone),
+                                     falseCell = new HyperTableCell(FALSE_ID, "False", hdtNone),
+                                     unsetCell = new HyperTableCell(UNSET_ID, "Unset", hdtNone),
+                                     blankCell = new HyperTableCell("", hdtNone);
+
+  public int getID()                                        { return id; }
+  public <HDT_T extends HDT_Record> HDT_T getRecord()       { return getRecord(this); }
+
+  static HyperTableCell fromBoolean(boolean boolVal)        { return boolVal ? trueCell : falseCell; }
+  public static int getCellID(HyperTableCell cell)          { return cell == null ? -1 : cell.id; }
+  public static String getCellText(HyperTableCell cell)     { return cell == null ? "" : safeStr(cell.text); }
+  public static RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
+  public static boolean isEmpty(HyperTableCell cell)        { return (cell == null) || blankCell.equals(cell); }
 
   @Override public HyperTableCell clone()
   { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
@@ -159,7 +165,7 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 
       if (result == 0)
       {
-        result = cell1.type.compareTo(cell2.type);
+        result = getCellType(cell1).compareTo(getCellType(cell2));
 
         if (result == 0) result = cell1.id - cell2.id;
       }
@@ -208,12 +214,12 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
     if ((cell1.id > 0) && (cell1.type != null) && (cell1.type != hdtNone))
       key1 = db.records(cell1.type).getByID(cell1.id).getSortKey();
 
-    if (key1.isEmpty()) key1 = makeSortKeyByType(cell1.text, cell1.type);
+    if (key1.isEmpty()) key1 = makeSortKeyByType(cell1.text, getCellType(cell1));
 
     if ((cell2.id > 0) && (cell2.type != null) && (cell2.type != hdtNone))
       key2 = db.records(cell2.type).getByID(cell2.id).getSortKey();
 
-    if (key2.isEmpty()) key2 = makeSortKeyByType(cell2.text, cell2.type);
+    if (key2.isEmpty()) key2 = makeSortKeyByType(cell2.text, getCellType(cell2));
 
     return key1.compareTo(key2);
   }

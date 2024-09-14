@@ -24,6 +24,8 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -46,7 +48,7 @@ public class RecordTypePopulator extends Populator
     types.removeAll(noHubs ? EnumSet.of(hdtNone, hdtAuxiliary, hdtHub) : EnumSet.of(hdtNone, hdtAuxiliary));
   }
 
-  public RecordTypePopulator(Collection<RecordType> set)    { setTypes(set); }
+  public RecordTypePopulator(Stream<RecordType> stream)     { setTypes(stream); }
 
   public RecordTypePopulator(RecordType... types)           { setTypes(Arrays.asList(types)); }
 
@@ -60,14 +62,19 @@ public class RecordTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void setTypes(Stream<RecordType> stream)
+  {
+    types = stream.collect(Collectors.toCollection(() -> EnumSet.noneOf(RecordType.class)));
+
+    changed = true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void setTypes(Collection<RecordType> collection)
   {
-    if (collection == null)
-      types = EnumSet.noneOf(RecordType.class);
-    else if (collection instanceof Set)
-      types = (Set<RecordType>)collection;
-    else
-      types = EnumSet.copyOf(collection);
+    types = collEmpty(collection) ? EnumSet.noneOf(RecordType.class) : EnumSet.copyOf(collection);
 
     changed = true;
   }
@@ -80,7 +87,7 @@ public class RecordTypePopulator extends Populator
     return getChoiceByType(dummyRow, type);
   }
 
-  public HyperTableCell getChoiceByType(HyperTableRow row, RecordType type)
+  private HyperTableCell getChoiceByType(HyperTableRow row, RecordType type)
   {
     return findFirst(populate(row, false), cell -> HyperTableCell.getCellType(cell) == type);
   }

@@ -268,7 +268,9 @@ public final class MainCtrlr
     private void clear()
     {
       SeparatorMenuItem sepItem = (SeparatorMenuItem) findFirst(list1, item -> item instanceof SeparatorMenuItem);
+
       if (sepItem == null) return;
+
       int ndx = list1.indexOf(sepItem);
 
       while (list1.size() > ndx)

@@ -92,7 +92,7 @@ public abstract class BibDataStandalone extends BibData
    * @param newDateType What type of date the source says this is.
    * @param okToMerge If true, it will merge information from multiple date types as long as those dates don't have conflicting information.
    */
-  public void setDate(BibliographicDate newDate, DateType newDateType, boolean okToMerge)
+  void setDate(BibliographicDate newDate, DateType newDateType, boolean okToMerge)
   {
     if (BibliographicDate.isEmpty(newDate))
       newDate = BibliographicDate.EMPTY_DATE;
@@ -188,7 +188,7 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void addStr(BibFieldEnum bibFieldEnum, String newStr)
+  @Override void addStr(BibFieldEnum bibFieldEnum, String newStr)
   {
     if (bibFieldEnum.isMultiLine() == false)
     {
@@ -202,7 +202,7 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setStartPage(String value)
+  void setStartPage(String value)
   {
     BibField field = bibFieldEnumToBibField.get(bfPages);
 
@@ -214,7 +214,7 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setEndPage(String value)
+  void setEndPage(String value)
   {
     BibField field = bibFieldEnumToBibField.get(bfPages);
 

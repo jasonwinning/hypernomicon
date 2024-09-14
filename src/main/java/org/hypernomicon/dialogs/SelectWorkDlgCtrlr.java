@@ -19,6 +19,7 @@ package org.hypernomicon.dialogs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.bib.BibEntry;
@@ -209,7 +210,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       if (workBibEntryKey.isBlank() == false)
         return Lists.newArrayList(db.getBibEntryByKey(workBibEntryKey));
 
-      return db.getBibLibrary().getNonTrashEntries().filter(entry -> entry.linkedToWork() == false)
+      return db.getBibLibrary().getNonTrashEntries().filter(Predicate.not(BibEntry::linkedToWork))
                                                     .sorted(BibEntry.comparator())
                                                     .collect(Collectors.toCollection(ArrayList::new));
     }));
@@ -415,7 +416,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private FilePath promptForFilePath()
+  private static FilePath promptForFilePath()
   {
     FileChooser fileChooser = new FileChooser();
 

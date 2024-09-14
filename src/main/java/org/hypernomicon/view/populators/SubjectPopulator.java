@@ -131,7 +131,7 @@ public class SubjectPopulator extends RecordPopulator
       return choices;
 
     choices.clear();
-    choices.add(HyperTableCell.blankCell());
+    choices.add(HyperTableCell.blankCell);
 
     if (db.isLoaded() == false) return choices;
 

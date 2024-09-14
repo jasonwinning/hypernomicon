@@ -182,7 +182,7 @@ public final class FileDownloadUtility
         case Content_Length : contentLength.setValue(parseInt(header.getValue(), -1)); break;
         case Content_Disposition :
 
-          if (fileName.length() == 0)
+          if (fileName.isEmpty())
           {
             String disposition = header.getValue();
             int index = disposition.indexOf("filename=");
@@ -196,7 +196,7 @@ public final class FileDownloadUtility
       }
     }
 
-    if (fileName.length() == 0)
+    if (fileName.isEmpty())
     {
       // extracts file name from URL
 

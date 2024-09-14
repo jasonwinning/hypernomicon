@@ -57,7 +57,7 @@ public class DateControlsWrapper
 
   private static class DateProperty extends SimpleObjectProperty<BibliographicDate>
   {
-    public DateProperty(BibliographicDate initialValue, String name)
+    private DateProperty(BibliographicDate initialValue, String name)
     {
       super(initialValue == null ? BibliographicDate.EMPTY_DATE : initialValue, name);
     }

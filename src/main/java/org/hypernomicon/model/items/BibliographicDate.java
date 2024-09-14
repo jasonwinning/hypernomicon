@@ -200,8 +200,8 @@ public class BibliographicDate implements Comparable<BibliographicDate>
   /**
    * Create a new BibliograhicDate object by combining date1 and date2.
    * If date1 and date2 both have a certain date component, the component from date1 is used.
-   * @param date1
-   * @param date2
+   * @param date1 The first date to compare
+   * @param date2 The second date to compare
    * @return The resulting newly created BibliographicDate object
    */
   public static BibliographicDate combine(BibliographicDate date1, BibliographicDate date2)

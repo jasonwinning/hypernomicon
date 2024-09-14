@@ -101,13 +101,11 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
       rowMenu.getItems().add(newItem);
     }
 
-    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem -> { if (menuItem instanceof HasRightClickableRows.RowMenuItem)
+    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem ->
     {
-      @SuppressWarnings("unchecked")
-      RowMenuItem rowItem = (RowMenuItem)menuItem;
-
-      rowItem.setDisable(rowItem.schema.disabled);
-    }}));
+      if (menuItem instanceof HasRightClickableRows.RowMenuItem rowItem)
+        rowItem.setDisable(rowItem.schema.disabled);
+    }));
 
     return noneVisible ? null : rowMenu;
   }

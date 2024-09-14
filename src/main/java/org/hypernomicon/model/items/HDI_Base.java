@@ -40,9 +40,10 @@ public class HDI_Base
 
 //---------------------------------------------------------------------------
 
-  public HyperDataCategory category()  { return schema.category(); }
-  public RecordType nestedTargetType() { return schema.nestedTargetType(); }
-  public HDI_Schema getSchema()        { return schema; }
+  public HyperDataCategory category() { return schema.category(); }
+  public HDI_Schema getSchema()       { return schema; }
+
+  RecordType nestedTargetType()       { return schema.nestedTargetType(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

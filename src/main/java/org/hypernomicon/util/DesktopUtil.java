@@ -521,7 +521,7 @@ public final class DesktopUtil
 
     if (SystemUtils.IS_OS_WINDOWS == false) try
     {
-      for (String line : FileUtils.readLines(new File("/etc/hostname"), (Charset)null))
+      for (String line : FileUtils.readLines(new File("/etc/hostname"), Charset.defaultCharset()))
       {
         hostName = formatName(line);
         if (hostName.length() > 0) return hostName;

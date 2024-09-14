@@ -176,8 +176,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
 
-    col = htWorks.addLabelCol(hdtWork, smYear); // Year
-
+    htWorks.addLabelCol(hdtWork, smYear); // Year
     htWorks.addLabelCol(hdtWorkType, smTextSimple); // Work Type
     htWorks.addLabelCol(hdtWork    , smTextSimple); // Ed/Tr
 

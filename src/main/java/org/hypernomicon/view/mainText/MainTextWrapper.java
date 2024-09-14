@@ -588,7 +588,7 @@ public final class MainTextWrapper
 
       concepts.forEach(concept ->
       {
-        relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b " + NO_LINKS_ATTR + "=true>Related concepts: </b>" : "; ");
+        relRecordsHtml.append(relRecordsHtml.isEmpty() ? "<b " + NO_LINKS_ATTR + "=true>Related concepts: </b>" : "; ");
         relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.extendedName()));
       });
     }
@@ -596,7 +596,7 @@ public final class MainTextWrapper
     {
       db.displayerStream(curRecord).filter(Predicate.not(this::displayerIsAlreadyShowing)).forEachOrdered(displayer ->
       {
-        relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b " + NO_LINKS_ATTR + "=true>Displayers: </b>" : "; ");
+        relRecordsHtml.append(relRecordsHtml.isEmpty() ? "<b " + NO_LINKS_ATTR + "=true>Displayers: </b>" : "; ");
         relRecordsHtml.append(getGoToRecordAnchor(displayer, "", displayer.getCBText()));
       });
     }
@@ -687,25 +687,28 @@ public final class MainTextWrapper
           return true;
     }
 
-    switch (curRecord.getType())
+    return switch (curRecord.getType())
     {
-      case hdtPosition :
-
+      case hdtPosition ->
+      {
         HDT_Position position = (HDT_Position) curRecord;
-        return position.subPositions.contains(displayer) || position.subDebates.contains(displayer) || position.arguments.contains(displayer);
+        yield position.subPositions.contains(displayer) || position.subDebates.contains(displayer) || position.arguments.contains(displayer);
+      }
 
-      case hdtDebate :
-
+      case hdtDebate ->
+      {
         HDT_Debate debate = (HDT_Debate) curRecord;
-        return debate.subPositions.contains(displayer) || debate.subDebates.contains(displayer);
+        yield debate.subPositions.contains(displayer) || debate.subDebates.contains(displayer);
+      }
 
-      case hdtArgument :
-
+      case hdtArgument ->
+      {
         HDT_Argument arg = (HDT_Argument) curRecord;
-        return arg.counterArgs.contains(displayer);
+        yield arg.counterArgs.contains(displayer);
+      }
 
-      default : return false;
-    }
+      default -> false;
+    };
   }
 
 //---------------------------------------------------------------------------

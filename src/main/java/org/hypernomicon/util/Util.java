@@ -414,7 +414,7 @@ public final class Util
     return safeStr(country).isBlank() ?
       language
     :
-      language + "-" + country;
+      language + '-' + country;
   }
 
 //---------------------------------------------------------------------------

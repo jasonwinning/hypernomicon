@@ -63,18 +63,14 @@
                   text="Enforce POSIX compatibility (other than filename length)"/>
         <CheckBox fx:id="chkLowercase" mnemonicParsing="false" text="Enforce lowercase"/>
         <HBox alignment="CENTER_LEFT" spacing="6.0">
-          <children>
-            <Label text="Maximum number of characters (usually 255):"/>
-            <TextField fx:id="tfMaxChar" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="255"/>
-          </children>
+          <Label text="Maximum number of characters (usually 255):"/>
+          <TextField fx:id="tfMaxChar" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" text="255"/>
         </HBox>
         <AnchorPane maxHeight="25.0" minHeight="25.0" prefHeight="25.0">
-          <children>
-            <Label fx:id="lblExample" layoutX="-4.0" layoutY="4.0" text="Example:" AnchorPane.leftAnchor="0.0"
-                   AnchorPane.topAnchor="4.0"/>
-            <TextField fx:id="tfExample" editable="false" layoutX="51.0" prefHeight="25.0" prefWidth="957.0"
-                       AnchorPane.leftAnchor="51.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-          </children>
+          <Label fx:id="lblExample" layoutX="-4.0" layoutY="4.0" text="Example:" AnchorPane.leftAnchor="0.0"
+                 AnchorPane.topAnchor="4.0"/>
+          <TextField fx:id="tfExample" editable="false" layoutX="51.0" prefHeight="25.0" prefWidth="957.0"
+                     AnchorPane.leftAnchor="51.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
         </AnchorPane>
       </VBox>
       <Button fx:id="btnRevert" mnemonicParsing="false" text="Revert Changes in Table" AnchorPane.rightAnchor="6.0"

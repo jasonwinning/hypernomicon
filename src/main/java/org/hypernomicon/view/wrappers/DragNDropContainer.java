@@ -170,10 +170,8 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       event.consume();
     });
 
-    if (cell instanceof TreeCell<?>)
+    if (cell instanceof TreeCell<RowType> treeCell)
     {
-      TreeCell<RowType> treeCell = (TreeCell<RowType>)cell;
-
       treeCell.setOnDragOver(event ->
       {
         try
@@ -189,10 +187,8 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
         event.consume();
       });
     }
-    else if (cell instanceof TreeTableRow<?>)
+    else if (cell instanceof TreeTableRow<RowType> treeTableRow)
     {
-      TreeTableRow<RowType> treeTableRow = (TreeTableRow<RowType>)cell;
-
       treeTableRow.setOnDragOver(event ->
       {
         try

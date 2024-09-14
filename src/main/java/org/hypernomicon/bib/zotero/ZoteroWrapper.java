@@ -789,7 +789,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       throw new HDB_InternalError(77655);
     }
-
   }
 
 //---------------------------------------------------------------------------

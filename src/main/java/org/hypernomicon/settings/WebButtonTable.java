@@ -19,7 +19,6 @@ package org.hypernomicon.settings;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import static org.hypernomicon.App.*;
@@ -28,7 +27,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.view.populators.CustomPopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -151,22 +149,6 @@ class WebButtonTable extends WebButtonCtrl
     }
 
     node.putInt(prefKey + "Count", ndx);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static void loadPref(Preferences node, List<WebButton> srchList, String prefKey, List<WebButton> defaults) throws BackingStoreException
-  {
-    MutableInt numCustom = new MutableInt(0);
-
-    int count = node.getInt(prefKey + "Count", defaults.size());
-
-    for (int ndx = 1; ndx <= defaults.size(); ndx++)
-      ui.webButtonMap.put(prefKey + ndx, defaults.get(ndx - 1));
-
-    for (int ndx = 1; ndx <= count; ndx++)
-      WebButtonBar.loadPref(node, srchList, prefKey + ndx, numCustom);
   }
 
 //---------------------------------------------------------------------------

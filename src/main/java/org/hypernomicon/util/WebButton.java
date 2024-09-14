@@ -24,7 +24,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -77,50 +76,6 @@ public class WebButton
 
   //---------------------------------------------------------------------------
 
-    public static EnumSet<WebButtonField> getFieldsForPrefKey(String prefKey)
-    {
-      EnumSet<WebButtonField> fields = EnumSet.noneOf(WebButtonField.class);
-
-      switch (prefKey)
-      {
-        case PREF_KEY_PERSON_SRCH : case PREF_KEY_PERSON_IMG_SRCH :
-
-          fields.add(FirstName); fields.add(LastName); fields.add(SingleName); fields.add(QueryName); fields.add(Field);
-          break;
-
-        case PREF_KEY_INST_SRCH :
-
-          fields.add(Name); fields.add(DivisionName);
-          break;
-
-        case PREF_KEY_INST_MAP_SRCH :
-
-          fields.add(Name); fields.add(City); fields.add(Region); fields.add(Country);
-          break;
-
-        case PREF_KEY_DOI_SRCH :
-
-          fields.add(doi);
-          break;
-
-        case PREF_KEY_ISBN_SRCH :
-
-          fields.add(ISBN);
-          break;
-
-        case PREF_KEY_WORK_SRCH :
-
-          fields.add(Title); fields.add(QueryTitle); fields.add(NumericYear); fields.add(SingleName); fields.add(ISBN); fields.add(doi);
-          break;
-
-        case PREF_KEY_GEN_SRCH :
-
-          fields.add(Name);
-          break;
-      }
-
-      return fields;
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -190,11 +145,11 @@ public class WebButton
 
   private String getPatternStr()
   {
-    for (UrlPattern pattern : patterns)
-      if (pattern.requiredFields.stream().allMatch(values::containsKey))
-        return pattern.str;
+    return patterns.stream().filter(pattern -> pattern.requiredFields.stream().allMatch(values::containsKey))
+                            .findFirst()
+                            .map(pattern -> pattern.str)
+                            .orElse(null);
 
-    return null;
   }
 
 //---------------------------------------------------------------------------

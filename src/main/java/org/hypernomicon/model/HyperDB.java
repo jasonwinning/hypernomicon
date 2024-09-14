@@ -768,7 +768,7 @@ public final class HyperDB
   {
     StringBuilder xml = xmlList.get(xmlList.size() - 1);
 
-    if (xml.length() == 0)
+    if (xml.isEmpty())
     {
       xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append(System.lineSeparator()).append(System.lineSeparator())
          .append("<records version=\"").append(getVersionNumberSavingAs(appVersionToMaxRecordsXMLVersion)).append("\" xmlns=\"org.hypernomicon\"")
@@ -1587,7 +1587,7 @@ public final class HyperDB
 
             type = parseTypeTagStr(attribute.getValue());
             if (type == hdtNone)
-              throw new HyperDataException("Invalid record type: " + attribute.getValue() + (id > 0 ? (" ID: " + String.valueOf(id)) : "") + " File: " + filePath);
+              throw new HyperDataException("Invalid record type: " + attribute.getValue() + (id > 0 ? (" ID: " + id) : "") + " File: " + filePath);
 
             break;
 
@@ -1599,7 +1599,7 @@ public final class HyperDB
       }
 
       if (type == hdtNone)
-        throw new HyperDataException("Record with no type found." + (id > 0 ? (" ID: " + String.valueOf(id)) : "") + " File: " + filePath);
+        throw new HyperDataException("Record with no type found." + (id > 0 ? (" ID: " + id) : "") + " File: " + filePath);
 
       RecordState xmlRecord = new RecordState(type, id, sortKeyAttr, "", searchKey, listName);
       xmlRecord.stored = true;
@@ -1867,7 +1867,7 @@ public final class HyperDB
           if (previousDataVersion == null)
             recordTypeToDataVersion.put(xmlRecord.type, dataVersion);
           else if (previousDataVersion.equals(dataVersion) == false)
-            throw new HyperDataException("Multiple " + getTypeName(xmlRecord.type) + " records found with incompatible XML record data version numbers. ID: " + String.valueOf(xmlRecord.id) + " File: " + filePath);
+            throw new HyperDataException("Multiple " + getTypeName(xmlRecord.type) + " records found with incompatible XML record data version numbers. ID: " + xmlRecord.id + " File: " + filePath);
         }
 
         if (event != null)
@@ -2614,7 +2614,7 @@ public final class HyperDB
 
     if (folderPath.exists() == false) return;
 
-    for (RecordType recordType : MainTextCtrlr.getDisplayedTypes())
+    for (RecordType recordType : (Iterable<RecordType>)MainTextCtrlr.displayedTypesStream()::iterator)
     {
       FilePath filePath = mainTextTemplateFilePath(recordType);
       if (filePath.exists() == false) continue;

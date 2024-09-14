@@ -148,7 +148,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     col = htWhereMade.addTextEditCol(hdtWork, false); // Pages column
     col.comparator.set(HyperTableCell.leadingNumberComparator());
 
-    col = htWhereMade.addLabelCol(hdtArgument, smYear); // Year column
+    htWhereMade.addLabelCol(hdtArgument, smYear); // Year column
 
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);

@@ -60,7 +60,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
   HyperTableRow(int colCount, HyperTable table)
   {
-    this(FXCollections.observableArrayList(Collections.nCopies(colCount, HyperTableCell.blankCell())), table);
+    this(FXCollections.observableArrayList(Collections.nCopies(colCount, HyperTableCell.blankCell)), table);
   }
 
 //---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 //---------------------------------------------------------------------------
 
   public void setCheckboxValue(int colNdx, boolean boolVal) {
-    setCellValue(colNdx, HyperTableCell.checkboxCellFromBoolean(boolVal)); }
+    setCellValue(colNdx, HyperTableCell.fromBoolean(boolVal)); }
 
   public boolean setCellValue(int colNdx, HDT_Record record, String text) {
     return setCellValue(colNdx, new HyperTableCell(record, text)); }

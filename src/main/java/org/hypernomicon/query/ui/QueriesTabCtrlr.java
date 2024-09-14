@@ -79,14 +79,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int TRUE_ID  = 1,
-                          FALSE_ID = 2,
-                          UNSET_ID = 3;
-
-  public static final HyperTableCell trueCell  = new HyperTableCell(TRUE_ID , "True" , hdtNone),
-                                     falseCell = new HyperTableCell(FALSE_ID, "False", hdtNone),
-                                     unsetCell = new HyperTableCell(UNSET_ID, "Unset", hdtNone);
-
   @FXML private AnchorPane apOrigDescription;
   @FXML private Button btnClear, btnToggleFavorite;
   @FXML private CheckBox chkShowFields;
@@ -400,7 +392,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     SearchResultFileList fileList = new SearchResultFileList(entirePDF.get(), includeEdited.get());
 
-    if ((db.isLoaded() == false) || (results().size() < 1)) return false;
+    if ((db.isLoaded() == false) || results().isEmpty()) return false;
 
     HyperTask task = new HyperTask("BuildListOfFilesToCopy") { @Override protected void call() throws CancelledTaskException
     {

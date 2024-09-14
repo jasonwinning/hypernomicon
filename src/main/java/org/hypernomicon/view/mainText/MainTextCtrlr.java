@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
 
@@ -161,7 +162,7 @@ public class MainTextCtrlr
     GridPane.setHgrow(webView, Priority.ALWAYS);
     GridPane.setVgrow(webView, Priority.ALWAYS);
 
-    RecordTypePopulator rtp = new RecordTypePopulator(getDisplayedTypes());
+    RecordTypePopulator rtp = new RecordTypePopulator(displayedTypesStream());
 
     hcbType = new HyperCB(cbType, ctDropDownList, rtp);
     hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator());
@@ -433,7 +434,6 @@ public class MainTextCtrlr
       {
         if (node instanceof Button button)
         {
-
           button.addEventFilter(ActionEvent.ACTION, event -> highlighter.clear()); // Make sure user can't copy text with highlighting to clipboard
 
           if (strListToSpaceDelimitedStr(button.getStyleClass()).contains("paste"))
@@ -488,17 +488,9 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EnumSet<RecordType> getDisplayedTypes()
+  public static Stream<RecordType> displayedTypesStream()
   {
-    EnumSet<RecordType> typeSet = EnumSet.noneOf(RecordType.class);
-
-    EnumSet.allOf(RecordType.class).forEach(type ->
-    {
-      if (type.hasMainText() && (type != hdtHub) && (type != hdtWorkLabel))
-        typeSet.add(type);
-    });
-
-    return typeSet;
+    return EnumSet.allOf(RecordType.class).stream().filter(type -> type.hasMainText() && (type != hdtHub) && (type != hdtWorkLabel));
   }
 
 //---------------------------------------------------------------------------

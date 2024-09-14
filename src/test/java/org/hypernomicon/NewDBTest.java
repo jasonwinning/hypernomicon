@@ -85,7 +85,7 @@ class NewDBTest
 
           VersionNumber dataVersion = getVersionNumberFromXML(eventReader);
 
-          assertEquals(appVersionToMaxRecordsXMLVersion.get(appVersion), dataVersion, "Record data version in " + path.toString() + " in the new database template is not the most up to date data version number.");
+          assertEquals(appVersionToMaxRecordsXMLVersion.get(appVersion), dataVersion, "Record data version in " + path + " in the new database template is not the most up to date data version number.");
         }
       }
     }

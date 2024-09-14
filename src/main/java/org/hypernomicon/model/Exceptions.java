@@ -165,8 +165,8 @@ public final class Exceptions
 
   public static class HDB_InternalError extends HyperDataException
   {
-    public HDB_InternalError(int num             ) { super("Internal error #" + num   ); }
-    public HDB_InternalError(int num, Throwable e) { super("Internal error #" + num, e); }
+    public HDB_InternalError(int num             ) { super("Internal error #" + String.format("%05d", num)   ); }
+    public HDB_InternalError(int num, Throwable e) { super("Internal error #" + String.format("%05d", num), e); }
   }
 
 //---------------------------------------------------------------------------

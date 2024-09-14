@@ -198,7 +198,7 @@ public final class GoogleBibData extends BibDataStandalone
       authKeywords.addAll(edKeywords);
 
     String auths = authKeywords.stream().map(keyword -> escapeURL('"' + keyword + '"', false))
-                                        .reduce((s1, s2) -> s1 + "+" + s2).orElse("");
+                                        .reduce((s1, s2) -> s1 + '+' + s2).orElse("");
 
     title = convertToEnglishChars(title).trim();
 

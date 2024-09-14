@@ -229,7 +229,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<BibEntry_T> getUnsorted()
+  Stream<BibEntry_T> getUnsorted()
   {
     Predicate<BibEntry_T> predicate = item ->
       keyToTrashEntry.containsKey(item.getKey()) ?
