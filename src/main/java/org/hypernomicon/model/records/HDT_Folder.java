@@ -130,8 +130,11 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // singleCall means that this function isn't being called repeatedly; just a one-off
-
+  /**
+   * Delete the folder on the file system and delete the folder record and its child folder records
+   * @param singleCall If true, means that this function isn't being called repeatedly; just a one-off
+   * @return True if the folder was deleted successfully
+   */
   public boolean delete(boolean singleCall)
   {
     FilePath filePath = filePath();

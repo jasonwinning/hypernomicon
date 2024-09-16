@@ -186,11 +186,11 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     authUrl = new SimpleStringProperty();
 
-    btnZoteroAuthorize.disableProperty().bind(authUrl.isNotEmpty());
+    btnZoteroAuthorize  .disableProperty().bind(authUrl.isNotEmpty());
     btnMendeleyAuthorize.disableProperty().bind(authUrl.isNotEmpty());
     lblRedirect.visibleProperty().bind(authUrl.isNotEmpty());
 
-    btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
+    btnZoteroAuthorize  .setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
     btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
     lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
 
@@ -508,6 +508,22 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void selectLibraryType(LibraryType libraryType)
+  {
+    if ((db.isLoaded() == false) || db.bibLibraryIsLinked()) return;
+
+    switch (libraryType)
+    {
+      case ltMendeley : btnMendeleyAuthorize.setSelected(true); break;
+      case ltZotero   : btnZoteroAuthorize  .setSelected(true); break;
+    }
+
+    btnAuthorizeClick(libraryType);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void btnAuthorizeClick(LibraryType libType)
   {
     try
@@ -546,7 +562,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     boolean success = false;
 
     authUrl.set("");
-    btnZoteroAuthorize.setSelected(false);
+    btnZoteroAuthorize  .setSelected(false);
     btnMendeleyAuthorize.setSelected(false);
 
     OAuth2AccessToken accessToken = null;
@@ -588,7 +604,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     boolean success = false;
 
     authUrl.set("");
-    btnZoteroAuthorize.setSelected(false);
+    btnZoteroAuthorize  .setSelected(false);
     btnMendeleyAuthorize.setSelected(false);
 
     OAuth1AccessToken accessToken = null;

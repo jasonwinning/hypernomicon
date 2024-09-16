@@ -37,6 +37,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataStandalone;
@@ -160,7 +161,7 @@ public final class MainCtrlr
                          mnuRecordSelect, mnuRevertToDiskCopy, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile,
                          mnuShortcuts, mnuChangeFieldOrder, mnuChangeRankOrder, mnuChangeCountryOrder, mnuChangePersonStatusOrder,
                          mnuChangeFileTypeOrder, mnuChangeWorkTypeOrder, mnuChangeArgVerdictOrder, mnuChangePosVerdictOrder,
-                         mnuChangeInstitutionTypeOrder;
+                         mnuChangeInstitutionTypeOrder, mnuTestConsole;
 
   @FXML private MenuButton mbCreateNew;
   @FXML private ProgressBar progressBar;
@@ -222,6 +223,7 @@ public final class MainCtrlr
   @FXML private void mnuAboutClick()          { new AboutDlgCtrlr().showModal(); }
   @FXML private void mnuChangeFavOrderClick() { new FavOrderDlgCtrlr().showModal(); }
   @FXML private void mnuSettingsClick()       { if (cantSaveRecord() == false) new SettingsDlgCtrlr().showModal(); }
+  @FXML private void mnuTestConsoleClick()    { if (cantSaveRecord() == false) new TestConsoleDlgCtrlr().showModal(); }
   @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(activeRecord(), false); }
 
   public PersonTabCtrlr   personHyperTab    () { return getHyperTab(personTabEnum  ); }
@@ -767,7 +769,7 @@ public final class MainCtrlr
     mnuAutoImport.setSelected(app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
     mnuAutoImport.setOnAction(event -> app.prefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
 
-    setAllVisible(app.debugging, mnuChangeID, mnuSaveReloadAll);
+    setAllVisible(app.debugging, mnuChangeID, mnuSaveReloadAll, mnuTestConsole);
 
 //---------------------------------------------------------------------------
 
@@ -1596,6 +1598,9 @@ public final class MainCtrlr
 
     if (FilePath.isEmpty(filePath) || (close(true) == false) || db.isLoaded()) return;
 
+    if (ui.isShuttingDown())
+      return;
+
     app.prefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
     app.prefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
 
@@ -1634,24 +1639,32 @@ public final class MainCtrlr
       return;
     }
 
-    if (cantSaveRecord()) return;
-    personHyperTab().assignPicture(null, true);
+    if (createNewDB(rootPath))
+      loadDB(true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean createNewDB(FilePath rootPath)
+  {
+    if (cantSaveRecord()) return false;
 
     if (db.isLoaded())
     {
       DialogResult result = yesNoCancelDialog("Save data to XML files?");
 
-      if (result == mrCancel) return;
+      if (result == mrCancel) return false;
 
       if ((result == mrYes) && (saveAllToDisk(false, false, false) == false))
-        return;
+        return false;
 
       NewDatabaseDlgCtrlr dlg = new NewDatabaseDlgCtrlr(rootPath.toString());
 
       if (dlg.showModal() == false)
-        return;
+        return false;
 
-      closeWindows(false);
+      resetUIPreClose();
       boolean success;
 
       try { success = db.newDB(rootPath, dlg.getChoices(), dlg.getFolders()); }
@@ -1659,13 +1672,13 @@ public final class MainCtrlr
       {
         errorPopup("Unable to create new database: " + getThrowableMessage(e));
         shutDown(false, true, false); // An error in db.close is unrecoverable.
-        return;
+        return false;
       }
 
       if (success == false)
       {
         close(false);
-        return;
+        return false;
       }
 
       clearAllTabsAndViews();
@@ -1673,7 +1686,7 @@ public final class MainCtrlr
       if (saveAllToDisk(false, false, false) == false)
       {
         close(false);
-        return;
+        return false;
       }
     }
     else
@@ -1714,14 +1727,15 @@ public final class MainCtrlr
       catch (IOException e)
       {
         errorPopup("Unable to create new database: " + getThrowableMessage(e));
-        return;
+        close(false);
+        return false;
       }
 
       app.prefs.put(PREF_KEY_SOURCE_FILENAME, srcFilePath.getNameOnly().toString());
       app.prefs.put(PREF_KEY_SOURCE_PATH    , srcFilePath.getDirOnly ().toString());
     }
 
-    loadDB(true);
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -1829,7 +1843,7 @@ public final class MainCtrlr
     close(true);
   }
 
-  private boolean close(boolean needToSave)
+  public boolean close(boolean needToSave)
   {
     if (db.isLoaded() && needToSave)
     {
@@ -1846,13 +1860,7 @@ public final class MainCtrlr
       }
     }
 
-    btnTextSearch.setSelected(false);
-
-    clearAllTabsAndViews();
-    lblStatus.setText("");
-
-    treeSelector.clear();
-    closeWindows(false);
+    resetUIPreClose();
 
     try { db.close(null); }
     catch (HDB_InternalError e)
@@ -1873,6 +1881,20 @@ public final class MainCtrlr
     stage.setTitle(appTitle);
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void resetUIPreClose()
+  {
+    btnTextSearch.setSelected(false);
+
+    clearAllTabsAndViews();
+    lblStatus.setText("");
+
+    treeSelector.clear();
+    closeWindows(false);
   }
 
 //---------------------------------------------------------------------------
@@ -2290,6 +2312,11 @@ public final class MainCtrlr
 
   public void loadDB(boolean creatingNew)
   {
+    loadDB(creatingNew, false);
+  }
+
+  public void loadDB(boolean creatingNew, boolean dontAskAboutRefMgr)
+  {
     if (loadDataFromDisk(creatingNew) == false)
     {
       if (db.isLoaded() == false)
@@ -2319,7 +2346,7 @@ public final class MainCtrlr
 
     viewSequence.init(getTabEnumByRecordType(Tag.parseTypeTagStr(db.prefs.get(PREF_KEY_RECORD_TYPE, ""))));
 
-    if (db.bibLibraryIsLinked() || db.prefs.getBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true) == false)
+    if (dontAskAboutRefMgr || db.bibLibraryIsLinked() || (db.prefs.getBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true) == false))
       return;
 
     switch (new PopupDialog("This database is not currently integrated with a reference manager account (like Mendeley or Zotero). Add one now?")
@@ -3391,7 +3418,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void showWelcomeWindow()
+  @FXML public void showWelcomeWindow()
   {
     WelcomeDlgCtrlr wdc = new WelcomeDlgCtrlr();
     if (wdc.showModal() == false) return;
@@ -3443,6 +3470,27 @@ public final class MainCtrlr
       the <code>$</code> at the end of the <code>object</code> search key prevents the word &lsquo;objectively&rsquo; from being matched.""");
 
     tf.setTooltip(searchKeyToolTip);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void createTransientTestDB(FilePath transientDBFilePath, LibraryType libraryType)
+  {
+    if (createNewDB(transientDBFilePath) == false)
+      return;
+
+    loadDB(true, true);
+
+    if (libraryType == null)
+    {
+      db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, false);
+      return;
+    }
+
+    SettingsDlgCtrlr settingsDlgCtrlr = new SettingsDlgCtrlr(SettingsPage.BibMgr);
+    settingsDlgCtrlr.selectLibraryType(libraryType);
+    settingsDlgCtrlr.showModal();
   }
 
 //---------------------------------------------------------------------------

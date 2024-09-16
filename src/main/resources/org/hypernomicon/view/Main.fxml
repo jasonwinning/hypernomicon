@@ -47,7 +47,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
+<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
   <top>
     <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
       <MenuBar fx:id="menuBar" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
@@ -68,6 +68,7 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Tools">
           <MenuItem mnemonicParsing="false" onAction="#mnuSettingsClick" text="Settings" />
+               <MenuItem fx:id="mnuTestConsole" mnemonicParsing="false" onAction="#mnuTestConsoleClick" text="Test Console" />
           <Menu mnemonicParsing="false" text="Create new category record...">
             <MenuItem fx:id="mnuNewField" mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Academic Field" />
             <MenuItem fx:id="mnuNewCountry" mnemonicParsing="false" onAction="#mnuNewCountryClick" text="Country" />
@@ -321,27 +322,19 @@
 
       </AnchorPane>
       <AnchorPane GridPane.columnIndex="2">
-        <Button fx:id="btnSave" layoutX="2.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnSaveClick"
-                prefHeight="24.0" prefWidth="78.0" text="Accept Edits" AnchorPane.rightAnchor="214.0"
-                AnchorPane.topAnchor="5.0"/>
-        <Button fx:id="btnRevert" layoutX="84.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0"
-                prefWidth="53.0" text="Refresh" AnchorPane.rightAnchor="157.0" AnchorPane.topAnchor="5.0"/>
-        <Button fx:id="btnDelete" layoutX="141.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0"
-                prefWidth="48.0" text="Delete" AnchorPane.rightAnchor="105.0" AnchorPane.topAnchor="5.0"/>
-        <SplitMenuButton fx:id="btnCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false"
-                         onAction="#btnCreateClick" popupSide="TOP" prefHeight="24.0" prefWidth="99.0" text="Create New"
-                         AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+        <Button fx:id="btnSave" layoutX="2.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnSaveClick" prefHeight="24.0" prefWidth="78.0" text="Accept Edits" AnchorPane.rightAnchor="214.0" AnchorPane.topAnchor="5.0" />
+        <Button fx:id="btnRevert" layoutX="84.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="53.0" text="Refresh" AnchorPane.rightAnchor="157.0" AnchorPane.topAnchor="5.0" />
+        <Button fx:id="btnDelete" layoutX="141.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="48.0" text="Delete" AnchorPane.rightAnchor="105.0" AnchorPane.topAnchor="5.0" />
+        <SplitMenuButton fx:id="btnCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnCreateClick" popupSide="TOP" prefHeight="24.0" prefWidth="99.0" text="Create New" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
           <items>
-            <MenuItem mnemonicParsing="false" text="Action 1"/>
-            <MenuItem mnemonicParsing="false" text="Action 2"/>
+            <MenuItem mnemonicParsing="false" text="Action 1" />
+            <MenuItem mnemonicParsing="false" text="Action 2" />
           </items>
         </SplitMenuButton>
-        <MenuButton fx:id="mbCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" popupSide="TOP"
-                    prefHeight="24.0" prefWidth="93.0" text="Create New" visible="false" AnchorPane.rightAnchor="2.0"
-                    AnchorPane.topAnchor="5.0">
+        <MenuButton fx:id="mbCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" popupSide="TOP" prefHeight="24.0" prefWidth="93.0" text="Create New" visible="false" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
           <items>
-            <MenuItem mnemonicParsing="false" text="Action 1"/>
-            <MenuItem mnemonicParsing="false" text="Action 2"/>
+            <MenuItem mnemonicParsing="false" text="Action 1" />
+            <MenuItem mnemonicParsing="false" text="Action 2" />
           </items>
         </MenuButton>
       </AnchorPane>

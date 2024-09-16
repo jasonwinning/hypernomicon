@@ -62,6 +62,8 @@ public final class Const
     PREF_KEY_DB_CREATION_DATE = "dbCreationDate",
     PREF_KEY_SOURCE_PATH = "sourcePath",
     PREF_KEY_SOURCE_FILENAME = "sourceFile",
+    PREF_KEY_TRANSIENT_TEST_PARENT_PATH = "transientTestParentPath",
+    PREF_KEY_TRANSIENT_TEST_FOLDER_NAME = "transientTestFolderName",
     PREF_KEY_HDB_MRU = "hbdMru",
     PREF_KEY_AUTO_IMPORT = "autoImport",
     PREF_KEY_IMAGE_EDITOR = "imageEditor",

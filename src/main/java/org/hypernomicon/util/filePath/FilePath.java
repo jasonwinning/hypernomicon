@@ -71,7 +71,7 @@ public class FilePath implements Comparable<FilePath>
   public long size() throws IOException { return Files.size(toPath()); }
   public boolean isFile()               { return toFile().isFile();  }
   public boolean isDirectory()          { return toFile().isDirectory(); }
-  public FilePath getParent()           { return new FilePath(toPath().getParent()); }
+  public FilePath getParent()           { return nullSwitch(nullSwitch(toPath(), null, Path::getParent), (FilePath)null, FilePath::new); }
   public Instant lastModified()         { return Instant.ofEpochMilli(toFile().lastModified()); }
 
   /**
@@ -288,7 +288,8 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 
   /**
-   * Creates a new directory. Throws exception if directory already exists.
+   * Creates a new directory.
+   * @throws IOException if directory already exists or some other file system error occurs
    */
   public void createDirectory() throws IOException
   {
@@ -298,6 +299,11 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Delete the folder on the file system
+   * @param singleCall If true, means that this function isn't being called repeatedly; just a one-off
+   * @throws IOException if a file system error occurred
+   */
   public void deleteDirectory(boolean singleCall) throws IOException
   {
     FilePath filePath = getDirOnly();
