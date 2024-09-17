@@ -298,7 +298,9 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     public boolean matches(PersonForDupCheck person2)
     {
-      return keySetNoNicknames.isSubsetOf(person2.keySet) || person2.keySetNoNicknames.isSubsetOf(keySet);
+      return fullLCNameEngChar.equals(person2.fullLCNameEngChar) ||
+             keySetNoNicknames.isSubsetOf(person2.keySet)        ||
+             person2.keySetNoNicknames.isSubsetOf(keySet);
     }
   }
 
@@ -348,12 +350,18 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     for (PersonForDupCheck person2 : list)
     {
+      if (task.isCancelled()) throw new CancelledTaskException();
+
+      if ((ctr % 10) == 0) task.updateProgress(ctr, total);
+
+      ctr++;
+
       if (nullSwitch(person1.author     , false, author1    -> author1    == person2.author     )) continue;
       if (nullSwitch(person1.getPerson(), false, personRec1 -> personRec1 == person2.getPerson())) continue;
 
       boolean isMatch = false;
 
-      if (person1.fullLCNameEngChar.equals(person2.fullLCNameEngChar))
+      if (person1.matches(person2))
       {
         if (work1 != null)
         {
@@ -377,17 +385,9 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
         isMatch = true;
       }
-      else if (person1.matches(person2))
-        isMatch = true;
 
       if (isMatch)
         matchedAuthors.add(person2.author);
-
-      if (task.isCancelled()) throw new CancelledTaskException();
-
-      if ((ctr % 10) == 0) task.updateProgress(ctr, total);
-
-      ctr++;
     }
   }
 
