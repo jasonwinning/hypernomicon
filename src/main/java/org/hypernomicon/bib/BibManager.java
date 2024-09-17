@@ -75,19 +75,7 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -141,6 +129,8 @@ public class BibManager extends HyperDlg
   private void hideBottomControls()                   { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
   private void viewOnWeb()                            { viewOnWeb(tableView.getSelectionModel().getSelectedItem().getEntry()); }
   private static void viewOnWeb(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getEntryURL()); }
+  public void rebuildCollectionTree()                 { collTree.rebuild(libraryWrapper.getKeyToColl()); }
+  public void clearCollectionTree()                   { collTree.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -252,10 +242,7 @@ public class BibManager extends HyperDlg
       {
         hideBottomControls();
 
-        collTree.clear();
         entryTable.clear();
-
-        collTree.rebuild(libraryWrapper.getKeyToColl());
 
         treeView.getSelectionModel().clearAndSelect(0);
 
@@ -361,22 +348,25 @@ public class BibManager extends HyperDlg
   {
     this.libraryWrapper = libraryWrapper;
 
-    if (libraryWrapper != null)
+    if (libraryWrapper == null)
+    {
+      collTree.clear();
+    }
+    else
     {
       setToolTip(btnSync, "Synchronize with " + libraryWrapper.type().getUserFriendlyName());
       initEntryTypeCB(cbNewType);
+      rebuildCollectionTree();
     }
 
     if (shownAlready() == false) return;
 
     stop();
 
-    collTree.clear();
     entryTable.clear();
 
     if (libraryWrapper == null) return;
 
-    collTree.rebuild(libraryWrapper.getKeyToColl());
     treeView.getSelectionModel().clearAndSelect(0);
   }
 

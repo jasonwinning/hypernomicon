@@ -17,6 +17,7 @@
 
 package org.hypernomicon.settings;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.UIUtil.*;
 
@@ -51,6 +52,8 @@ public final class SyncBibDlgCtrlr extends HyperDlg
 
     onShown = () ->
     {
+      bibManagerDlg.clearCollectionTree();
+
       SyncTask syncTask = db.getBibLibrary().createNewSyncTask();
 
       syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
@@ -64,6 +67,8 @@ public final class SyncBibDlgCtrlr extends HyperDlg
             if (e instanceof HyperDataException)
               errorPopup(e);
           }
+
+          bibManagerDlg.rebuildCollectionTree();
 
           getStage().close();
         }
