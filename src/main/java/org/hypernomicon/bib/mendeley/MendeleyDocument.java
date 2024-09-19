@@ -548,9 +548,9 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
   @Override public void syncBookAuthorsTo(RelatedBibEntry relative)
   {
-    MendeleyDocument dest = (MendeleyDocument) relative.entry;
+    MendeleyDocument dest = (MendeleyDocument) relative.entry();
 
-    switch (relative.relation)
+    switch (relative.relation())
     {
       case Child:
       {

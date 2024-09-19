@@ -23,15 +23,19 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
+import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AutoCompleteCB;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
+
+import javafx.beans.property.Property;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
@@ -50,19 +54,21 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private final EventHandler<ActionEvent> onAction;
   private final HyperTable table;
   private final MutableBoolean dontCreateNewRecord;
+  private Property<Supplier<HDT_Work>> workSupplier;
   private final Function<HyperTableRow, String> textHndlr;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,
-               MutableBoolean dontCreateNewRecord, Function<HyperTableRow, String> textHndlr)
+               MutableBoolean dontCreateNewRecord, Function<HyperTableRow, String> textHndlr, Property<Supplier<HDT_Work>> workSupplier)
   {
     this.table = table;
     this.ctrlType = ctrlType;
     this.populator = populator;
     this.onAction = onAction;
     this.dontCreateNewRecord = dontCreateNewRecord;
+    this.workSupplier = workSupplier;
     this.textHndlr = textHndlr;
   }
 
@@ -165,6 +171,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     hcb = new HyperCB(cb, ctrlType, populator, row, false, table, colNdx);
 
     hcb.dontCreateNewRecord = dontCreateNewRecord.booleanValue();
+    hcb.workSupplier = workSupplier.getValue();
 
     hcb.setOnAction(onAction);
 

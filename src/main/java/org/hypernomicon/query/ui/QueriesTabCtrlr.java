@@ -25,7 +25,7 @@ import org.apache.commons.io.FileUtils;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -92,7 +92,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML CheckBox chkShowDesc;
 
   private ComboBox<CheckBoxOrCommand> fileBtn = null;
-  private ObjectProperty<ObservableList<ResultRow>> propToUnbind = null;
+  private Property<ObservableList<ResultRow>> propToUnbind = null;
   private ChangeListener<ResultRow> cbListenerToRemove = null, tvListenerToRemove = null;
   private ComboBox<ResultRow> cb;
   private boolean clearingViews = false;

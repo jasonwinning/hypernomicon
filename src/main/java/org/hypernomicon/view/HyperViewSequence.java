@@ -84,7 +84,7 @@ public class HyperViewSequence
       HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = getHyperTabByTab(newTab);
 
       if (hyperTab.getTabEnum() != workTabEnum)
-        bibManagerDlg.workRecordToAssign.set(null);
+        bibManagerDlg.workRecordToAssign.setValue(null);
 
       saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(hyperTab.getView());
     });
@@ -240,7 +240,7 @@ public class HyperViewSequence
     ui.update(activeRecord);
 
     if (curHyperTab.getTabEnum() != workTabEnum)
-      bibManagerDlg.workRecordToAssign.set(null);
+      bibManagerDlg.workRecordToAssign.setValue(null);
 
     if ((activeRecord == null) || (curHyperTab.getTabEnum() == queryTabEnum))
       return;

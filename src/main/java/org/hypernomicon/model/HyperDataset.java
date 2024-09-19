@@ -169,7 +169,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       record.bringStoredCopyOnline(false);
       db.addToInitialNavList(record);
 
-      if ((++db.curTaskCount % 10) == 0)
+      if ((++db.curTaskCount % 50) == 0)
         db.task.updateProgress(db.curTaskCount, db.totalTaskCount);
     }
 

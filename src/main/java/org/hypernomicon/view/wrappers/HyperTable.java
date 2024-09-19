@@ -58,6 +58,7 @@ import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -479,6 +480,17 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addReadOnlyColWithCustomGraphic(RecordType objType, Function<HyperTableRow, Node> graphicProvider) {
     return addCol(new HyperTableColumn(this, objType, ctNone, null, -1, graphicProvider)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableColumn addAuthorEditCol(Supplier<HDT_Work> workSupplier, CellUpdateHandler updateHandler)
+  {
+    HyperTableColumn col = addCol(new HyperTableColumn(this, hdtPerson, ctDropDownList, new StandardPopulator(hdtPerson), -1, updateHandler));
+    col.setWorkSupplier(workSupplier);
+
+    return col;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

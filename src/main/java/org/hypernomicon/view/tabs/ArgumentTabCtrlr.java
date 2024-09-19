@@ -117,7 +117,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade = new HyperTable(lowerCtrlr.tvWhereMade, 2, true, PREF_KEY_HT_ARG_SRC);
 
     htWhereMade.addActionCol(ctGoNewBtn, 2);
-    HyperTableColumn col = htWhereMade.addColWithUpdateHandler(hdtPerson, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
+    HyperTableColumn col = htWhereMade.addAuthorEditCol(null, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       HDT_Record obj = HyperTableCell.getRecord(cellVal);
       HybridSubjectPopulator hsPop = (HybridSubjectPopulator)nextPopulator;
@@ -146,7 +146,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     });
 
     col = htWhereMade.addTextEditCol(hdtWork, false); // Pages column
-    col.comparator.set(HyperTableCell.leadingNumberComparator());
+    col.comparator.setValue(HyperTableCell.leadingNumberComparator());
 
     htWhereMade.addLabelCol(hdtArgument, smYear); // Year column
 

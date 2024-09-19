@@ -106,7 +106,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_FILE_AUTHORS);
 
     htAuthors.addActionCol(ctGoBtn, 1);
-    htAuthors.addCol(hdtPerson, ctDropDownList);
+    htAuthors.addAuthorEditCol(null, null);
 
     htAuthors.addRemoveMenuItem();
     htAuthors.addChangeOrderMenuItem(true);

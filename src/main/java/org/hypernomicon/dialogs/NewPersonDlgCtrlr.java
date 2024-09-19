@@ -22,6 +22,7 @@ import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.HDT_Person;
@@ -67,6 +68,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
   @FXML private ToggleGroup grpAction, grpName;
 
   private final Author origAuthor;
+  private final HDT_Work destWork;
   private final ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
 
   private HDT_Person person;
@@ -86,21 +88,28 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   public NewPersonDlgCtrlr(boolean mustCreate, String name, Author origAuthor)
   {
-    this("Add a New Person to the Database", name, null, null, mustCreate, null, origAuthor, new ArrayList<>());
+    this("Add a New Person to the Database", name, null, null, mustCreate, null, origAuthor, new ArrayList<>(), null);
+  }
+
+  public NewPersonDlgCtrlr(boolean mustCreate, String name, Author origAuthor, HDT_Work destWork)
+  {
+    this("Add a New Person to the Database", name, null, null, mustCreate, null, origAuthor, new ArrayList<>(), destWork);
   }
 
   public NewPersonDlgCtrlr(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
   {
-    this("Potential Duplicate(s)", null, personName, searchKey, mustCreate, person, origAuthor, matchedAuthors);
+    this("Potential Duplicate(s)", null, personName, searchKey, mustCreate, person, origAuthor, matchedAuthors, null);
   }
 
-  private NewPersonDlgCtrlr(String title, String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
+  private NewPersonDlgCtrlr(String title, String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor,
+                            ArrayList<Author> matchedAuthors, HDT_Work destWork)
   {
     super("NewPersonDlg", title, true);
 
     this.matchedAuthors = matchedAuthors;
     this.person = person;
     this.origAuthor = origAuthor;
+    this.destWork = destWork;
 
     rbCreateNoMerge.setText(person == null ? "Create Person Record" : "Don't Merge");
 
@@ -434,7 +443,14 @@ public class NewPersonDlgCtrlr extends HyperDlg
     lblStatus.setVisible(true);
     progressIndicator.setVisible(true);
 
-    task = createDupCheckTask(personName, origAuthor, matchedAuthorsList, this::finishDupSearch);
+    // Next, make sure it doesn't find "duplicate" authors in the same work we are currently populating
+
+    Author author = (destWork != null) && ((origAuthor == null) || (origAuthor.getWork() == null)) ?
+      new Author(destWork, personName, false, false, Ternary.Unset)
+    :
+      origAuthor;
+
+    task = createDupCheckTask(personName, author, matchedAuthorsList, this::finishDupSearch);
 
     task.updateProgress(0, 1);
 

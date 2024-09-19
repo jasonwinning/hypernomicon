@@ -25,7 +25,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -36,7 +36,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 {
   private TextField textField;
   private final MutableBoolean canEditIfEmpty;
-  private final ObjectProperty<CellSortMethod> sortMethod;
+  private final Property<CellSortMethod> sortMethod;
   private final HyperTable table;
 
 //---------------------------------------------------------------------------
@@ -45,7 +45,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
 //---------------------------------------------------------------------------
 
-  TextFieldCell(HyperTable table, MutableBoolean canEditIfEmpty, ObjectProperty<CellSortMethod> sortMethod)
+  TextFieldCell(HyperTable table, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod)
   {
     this.table = table;
 
@@ -126,7 +126,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
         commit();
     });
 
-    if (sortMethod.get() == smNumeric)
+    if (sortMethod.getValue() == smNumeric)
     {
       textField.setTextFormatter(new TextFormatter<>(change ->
       {

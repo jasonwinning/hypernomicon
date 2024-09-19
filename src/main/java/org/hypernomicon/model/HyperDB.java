@@ -93,7 +93,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
@@ -1898,11 +1898,11 @@ public final class HyperDB
 
   private void initNestedItems(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relation) throws HDB_InternalError
   {
-    ObjectProperty<HDI_OfflineBase> item = new SimpleObjectProperty<>();
+    Property<HDI_OfflineBase> item = new SimpleObjectProperty<>();
 
     for (HDI_Schema schema : relationSets.get(relation).getSchemas())
     {
-      item.set(switch (schema.category())
+      item.setValue(switch (schema.category())
       {
         case hdcBoolean       -> new HDI_OfflineBoolean      (schema, xmlRecord);
         case hdcTernary       -> new HDI_OfflineTernary      (schema, xmlRecord);
@@ -1912,7 +1912,7 @@ public final class HyperDB
         default               -> throw new HDB_InternalError(78936);
       });
 
-      schema.tags().forEach(tag -> nestedItems.put(tag, item.get()));
+      schema.tags().forEach(tag -> nestedItems.put(tag, item.getValue()));
     }
   }
 

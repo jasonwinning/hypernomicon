@@ -25,9 +25,12 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javafx.scene.control.*;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import org.controlsfx.control.MasterDetailPane;
+
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.BibliographicDate;
@@ -61,12 +64,10 @@ import org.hypernomicon.previewWindow.PreviewWrapper;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.DateControlsWrapper;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
-
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -85,7 +86,7 @@ import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -128,7 +129,7 @@ public class WorkDlgCtrlr extends HyperDlg
   private final HDT_WorkFile oldWorkFile;
   private final GUIBibData curBD;
   private final HDT_Work curWork;
-  private final ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
+  private final Property<HDT_Folder> destFolder = new SimpleObjectProperty<>();
 
   private BibDataRetriever bibDataRetriever = null;
   private HDT_WorkFile newWorkFile = null;
@@ -369,12 +370,11 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     HyperTable hyperTable = new HyperTable(tvAuthors, 0, true, PREF_KEY_HT_WORK_DLG);
 
-    hyperTable.addColWithUpdateHandler(hdtPerson, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
+    hyperTable.addAuthorEditCol(() -> curWork, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       dontRegenerateFilename = true;
 
-      if (HyperTableCell.getCellID(cellVal) > 0)
-        row.setCheckboxValue(1, true);
+      row.setCheckboxValue(1, HyperTableCell.getCellID(cellVal) > 0);
 
       if (hyperTable.dataRowCount() == 1)
         row.setCheckboxValue(2, true);
@@ -555,16 +555,31 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     if (userOverrideDest) return;
 
-    destFolder.set(db.getImportFolderForWorkType(HDT_WorkType.getEnumVal(hcbType.selectedRecord())));
+    destFolder.setValue(db.getImportFolderForWorkType(HDT_WorkType.getEnumVal(hcbType.selectedRecord())));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static CellUpdateHandler createAuthorRecordHandler(HyperTable htAuthors, Supplier<HDT_Work> workSource)
+  /**
+   * When there is a checkbox column next to an editable author column where you specify if you want to create a record for
+   * the author, this creates the update handler for the checkbox column so that the Person record gets immediately created
+   * when you click it.
+   * <p>
+   * The work supplied by the workSupplier is used during the process of finding duplicate authors. If the "duplicate" is from
+   * the work already being edited, it is not treated as a duplicate.
+   *
+   * @param htAuthors The table the columns are in
+   * @param workSupplier Callback function to get the relevant work for the context the table is in (whether there is a
+   * work we are merging into or a work we are editing, etc.)
+   * @return The update handler
+   */
+  public static CellUpdateHandler createAuthorRecordHandler(HyperTable htAuthors, Supplier<HDT_Work> workSupplier)
   {
     return (row, cellVal, nextColNdx, nextPopulator) ->
     {
+      // If the user unchecked the Record checkbox while a record is selected, re-check it.
+
       if (row.getID(0) > 0)
       {
         Platform.runLater(() ->
@@ -576,21 +591,17 @@ public class WorkDlgCtrlr extends HyperDlg
         return;
       }
 
+      // If the user unchecked the Record checkbox while a record was not selected, don't do anything else.
+
       if (HyperTableCell.falseCell.equals(cellVal))
         return;
 
+      // Now show the New Person Dialog, which checks for duplicates
+
       String text = row.getText(0);
 
-      HDT_Person otherPerson = WorkTabCtrlr.otherPersonToUse(text);
-
-      if (otherPerson != null)
-      {
-        htAuthors.selectID(0, row, otherPerson.getID());
-        return;
-      }
-
       Author author = null;
-      HDT_Work work = workSource.get();
+      HDT_Work work = workSupplier.get();
 
       if (work != null)
       {
@@ -608,7 +619,13 @@ public class WorkDlgCtrlr extends HyperDlg
         htAuthors.selectID(0, row, npdc.getPerson().getID());
       }
       else
-        Platform.runLater(() -> row.setCheckboxValue(1, false));
+      {
+        Platform.runLater(() ->
+        {
+          row.setCheckboxValue(1, row.getID(0) > 0);
+          htAuthors.refresh();
+        });
+      }
     };
   }
 
@@ -753,7 +770,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
 
     userOverrideDest = true;
-    destFolder.set(folder);
+    destFolder.setValue(folder);
   }
 
 //---------------------------------------------------------------------------
@@ -1316,9 +1333,9 @@ public class WorkDlgCtrlr extends HyperDlg
         origFilePath.getDirOnly().resolve(ultraTrim(tfNewFile.getText())))
     :
       (chkKeepFilenameUnchanged.isSelected() ?
-        destFolder.get().filePath().resolve(origFilePath.getNameOnly())
+        destFolder.getValue().filePath().resolve(origFilePath.getNameOnly())
       :
-        destFolder.get().filePath().resolve(ultraTrim(tfNewFile.getText())));
+        destFolder.getValue().filePath().resolve(ultraTrim(tfNewFile.getText())));
 
     HDT_RecordWithPath existingFile = HyperPath.getRecordFromFilePath(newFilePath);
 

@@ -93,7 +93,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -148,9 +148,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private final Map<Tab, String> tabCaptions = new HashMap<>();
   private final MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
-  private final ObjectProperty<CrossrefBibData> crossrefBDprop = new SimpleObjectProperty<>();
-  private final ObjectProperty<PDFBibData>      pdfBDprop      = new SimpleObjectProperty<>();
-  private final ObjectProperty<GoogleBibData>   googleBDprop   = new SimpleObjectProperty<>();
+  private final Property<CrossrefBibData> crossrefBDprop = new SimpleObjectProperty<>();
+  private final Property<PDFBibData>      pdfBDprop      = new SimpleObjectProperty<>();
+  private final Property<GoogleBibData>   googleBDprop   = new SimpleObjectProperty<>();
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
   private static final String TOOLTIP_PREFIX = "Search for this work in ";
@@ -191,7 +191,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
 
     htAuthors.addActionCol(ctGoBtn, 1);
-    htAuthors.addCol(hdtPerson, ctDropDownList);
+    htAuthors.addAuthorEditCol(() -> curWork, null);
     htAuthors.addCheckboxCol();
     htAuthors.addCheckboxCol();
 
@@ -214,17 +214,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         Author author = curWork.getAuthors().getAuthor(new PersonName(text));
         if (author != null)
           isInFileName = author.getInFileName();
-
-        HDT_Person otherPerson = otherPersonToUse(text);
-
-        if (otherPerson != null)
-        {
-          htAuthors.selectID(1, row, otherPerson.getID());
-          saveToRecord();
-          curWork.setPersonIsInFileName(otherPerson, isInFileName);
-          ui.update();
-          return;
-        }
 
         NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(true, text, author);
 
@@ -277,7 +266,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htArguments.addLabelCol(hdtNone, smTextSimple);
     htArguments.addLabelCol(hdtArgument);
     col = htArguments.addLabelCol(hdtWork);
-    col.comparator.set(HyperTableCell.leadingNumberComparator());
+    col.comparator.setValue(HyperTableCell.leadingNumberComparator());
 
     htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
 
@@ -598,9 +587,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tpBib.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> updateBibButtons());
 
-    tabPdfMetadata.setOnClosed(event -> { taPdfMetadata.clear(); pdfBDprop     .set(null); });
-    tabCrossref   .setOnClosed(event -> { taCrossref   .clear(); crossrefBDprop.set(null); });
-    tabGoogleBooks.setOnClosed(event -> { taGoogleBooks.clear(); googleBDprop  .set(null); });
+    tabPdfMetadata.setOnClosed(event -> { taPdfMetadata.clear(); pdfBDprop     .setValue(null); });
+    tabCrossref   .setOnClosed(event -> { taCrossref   .clear(); crossrefBDprop.setValue(null); });
+    tabGoogleBooks.setOnClosed(event -> { taGoogleBooks.clear(); googleBDprop  .setValue(null); });
 
     btnMergeBib.setOnAction(event -> btnMergeBibClick());
 
@@ -655,19 +644,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void updateMergeButton()
   {
-    btnMergeBib.setDisable((crossrefBDprop.get() == null) && (pdfBDprop.get() == null) && (googleBDprop.get() == null));
+    btnMergeBib.setDisable((crossrefBDprop.getValue() == null) && (pdfBDprop.getValue() == null) && (googleBDprop.getValue() == null));
 
     tabPane.requestLayout();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static HDT_Person otherPersonToUse(String text)
-  {
-    return nullSwitch(HDT_Person.lookUpByName(new PersonName(text)), null, otherPerson ->
-                      confirmDialog(otherPerson.getNameLastFirst(false) +
-                                    " is an existing person record in the database. Use existing record?") ? otherPerson : null);
   }
 
 //---------------------------------------------------------------------------
@@ -870,7 +849,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     else
     {
-      bibManagerDlg.workRecordToAssign.set(null);
+      bibManagerDlg.workRecordToAssign.setValue(null);
 
       if (subworkCnt > 0)
         tabPane.getSelectionModel().select(tabSubworks);
@@ -1382,9 +1361,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     disableCache(taPdfMetadata);
     disableCache(taGoogleBooks);
 
-    pdfBDprop     .set(null);
-    crossrefBDprop.set(null);
-    googleBDprop  .set(null);
+    pdfBDprop     .setValue(null);
+    crossrefBDprop.setValue(null);
+    googleBDprop  .setValue(null);
 
     tpBib.getTabs().removeAll(tabEntry, tabCrossref, tabPdfMetadata, tabGoogleBooks);
 
@@ -1443,7 +1422,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (curWork == null)
       {
         previewWindow.clearPreview(pvsWorkTab);
-        bibManagerDlg.workRecordToAssign.set(null);
+        bibManagerDlg.workRecordToAssign.setValue(null);
       }
     }
   }
@@ -1645,9 +1624,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     Tab curTab = tpBib.getSelectionModel().getSelectedItem();
 
-    if (curTab == tabPdfMetadata) return pdfBDprop     .get();
-    if (curTab == tabCrossref   ) return crossrefBDprop.get();
-    if (curTab == tabGoogleBooks) return googleBDprop  .get();
+    if (curTab == tabPdfMetadata) return pdfBDprop     .getValue();
+    if (curTab == tabCrossref   ) return crossrefBDprop.getValue();
+    if (curTab == tabGoogleBooks) return googleBDprop  .getValue();
 
     return null;
   }
@@ -1660,7 +1639,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     stopRetrieving();
 
     taPdfMetadata.clear();
-    pdfBDprop.set(null);
+    pdfBDprop.setValue(null);
 
     if (tpBib.getTabs().contains(tabPdfMetadata) == false)
       tpBib.getTabs().add(tabPdfMetadata);
@@ -1672,15 +1651,15 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
                                                             .toList();
     try
     {
-      pdfBDprop.set(PDFBibData.createFromFiles(pdfFilePaths));
+      pdfBDprop.setValue(PDFBibData.createFromFiles(pdfFilePaths));
 
-      if (pdfBDprop.get() == null)
-        pdfBDprop.set(PDFBibData.createFromFiles(safeListOf(resolveExtFilePath(tfURL.getText()))));
+      if (pdfBDprop.getValue() == null)
+        pdfBDprop.setValue(PDFBibData.createFromFiles(safeListOf(resolveExtFilePath(tfURL.getText()))));
 
-      if (pdfBDprop.get() == null)
+      if (pdfBDprop.getValue() == null)
         taPdfMetadata.setText("[No PDF file.]");
       else
-        taPdfMetadata.appendText(pdfBDprop.get().createReport());
+        taPdfMetadata.appendText(pdfBDprop.getValue().createReport());
     }
     catch (IOException e)
     {
@@ -1717,8 +1696,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       setAllVisible(false, btnStop, progressBar);
 
-      if (crossref) crossrefBDprop.set((CrossrefBibData) queryBD);
-      else          googleBDprop  .set((GoogleBibData  ) queryBD);
+      if (crossref) crossrefBDprop.setValue((CrossrefBibData) queryBD);
+      else          googleBDprop  .setValue((GoogleBibData  ) queryBD);
 
       ta.setText("Query URL: " + httpClient.lastUrl() + System.lineSeparator());
 
@@ -1844,7 +1823,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     try
     {
-      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBibData, pdfBDprop.get(), crossrefBDprop.get(), googleBDprop.get()), curWork, false, true, Ternary.Unset);
+      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBibData, pdfBDprop.getValue(), crossrefBDprop.getValue(), googleBDprop.getValue()), curWork, false, true, Ternary.Unset);
     }
     catch (IOException e)
     {

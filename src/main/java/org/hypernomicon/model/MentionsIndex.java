@@ -27,7 +27,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
@@ -156,7 +156,7 @@ class MentionsIndex
       MainText mainText = ((HDT_RecordWithMainText)record).getMainText();
 
       MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
-      ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
+      Property<Element> elementProp = new SimpleObjectProperty<>();
 
       HDT_MiscFile miscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
 

@@ -69,7 +69,7 @@ import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
 import javafx.animation.SequentialTransition;
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
@@ -115,7 +115,7 @@ public class BibManager extends HyperDlg
   private final ImageView assignImg, unassignImg;
   private final CustomTextField searchField;
 
-  public final ObjectProperty<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
+  public final Property<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
 
   private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper = null;
   private BibDataRetriever bibDataRetriever = null;
@@ -517,13 +517,6 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public enum BibEntryRelation { Parent, Sibling, Child }
-
-  private static final ImmutableSet<EntryType> childTypes  = Sets.immutableEnumSet(etBookChapter, etEncyclopediaArticle, etConferencePaper, etDictionaryEntry),
-                                               parentTypes = Sets.immutableEnumSet(etBook, etConferenceProceedings);
-
-//---------------------------------------------------------------------------
-
   private void unassign(BibEntryRow row)
   {
     if (confirmDialog("Are you sure you want to unassign the work record?") == false) return;
@@ -533,10 +526,10 @@ public class BibManager extends HyperDlg
 
     row.getEntry().unassignWork();
 
-    if (workRecordToAssign.get() == work)
+    if (workRecordToAssign.getValue() == work)
     {
-      workRecordToAssign.set(null);
-      workRecordToAssign.set(work);
+      workRecordToAssign.setValue(null);
+      workRecordToAssign.setValue(work);
     }
 
     refresh();
@@ -546,17 +539,12 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class RelatedBibEntry
-  {
-    public final BibEntryRelation relation;
-    public final BibEntry<?, ?> entry;
+  public enum BibEntryRelation { Parent, Sibling, Child }
 
-    private RelatedBibEntry(BibEntryRelation relation, BibEntry<?, ?> entry)
-    {
-      this.relation = relation;
-      this.entry = entry;
-    }
-  }
+  public record RelatedBibEntry(BibEntryRelation relation, BibEntry<?, ?> entry) { }
+
+  private static final ImmutableSet<EntryType> childTypes  = Sets.immutableEnumSet(etBookChapter, etEncyclopediaArticle, etConferencePaper, etDictionaryEntry),
+                                               parentTypes = Sets.immutableEnumSet(etBook, etConferenceProceedings);
 
 //---------------------------------------------------------------------------
 
@@ -709,7 +697,7 @@ public class BibManager extends HyperDlg
 
     if (ui.cantSaveRecord()) return;
 
-    HDT_Work work = workRecordToAssign.get();
+    HDT_Work work = workRecordToAssign.getValue();
     BibEntry<?, ?> entry = libraryWrapper.addEntry(et);
 
     work.setBibEntryKey(entry.getKey());
@@ -722,7 +710,7 @@ public class BibManager extends HyperDlg
         updateRelative(new RelatedBibEntry(BibEntryRelation.Child, entry), parentEntry);
     }
 
-    workRecordToAssign.set(null);
+    workRecordToAssign.setValue(null);
 
     refresh();
 
@@ -738,7 +726,7 @@ public class BibManager extends HyperDlg
   {
     if (ui.cantSaveRecord()) return;
 
-    SelectWorkDlgCtrlr dlg = new SelectWorkDlgCtrlr(workRecordToAssign.get(), row.getEntry());
+    SelectWorkDlgCtrlr dlg = new SelectWorkDlgCtrlr(workRecordToAssign.getValue(), row.getEntry());
 
     if (dlg.showModal() == false) return;
 
@@ -783,7 +771,7 @@ public class BibManager extends HyperDlg
     work.setBibEntryKey(entry.getKey());
     mwd.mergeInto(entry);
 
-    workRecordToAssign.set(null);
+    workRecordToAssign.setValue(null);
     refresh();
 
     ui.update();
@@ -815,11 +803,11 @@ public class BibManager extends HyperDlg
   {
     if (HDT_Work.isUnenteredSet(work))
     {
-      workRecordToAssign.set(null);
+      workRecordToAssign.setValue(null);
       return;
     }
 
-    workRecordToAssign.set(work);
+    workRecordToAssign.setValue(work);
 
     String key = work.getBibEntryKey();
 

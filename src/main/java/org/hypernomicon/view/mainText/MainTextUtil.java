@@ -68,7 +68,7 @@ import org.jsoup.parser.Parser;
 
 import com.google.common.collect.Ordering;
 
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -805,10 +805,10 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_MiscFile nextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, ObjectProperty<Element> elementProp)
+  public static HDT_MiscFile nextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, Property<Element> elementProp)
   {
     startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.getValue()));
-    elementProp.set(null);
+    elementProp.setValue(null);
 
     while (startNdx.getValue() >= 0)
     {
@@ -821,9 +821,9 @@ public final class MainTextUtil
 
         Document doc = jsoupParse(tag);
 
-        elementProp.set(doc.getElementsByTag(EMBEDDED_FILE_TAG).first());
+        elementProp.setValue(doc.getElementsByTag(EMBEDDED_FILE_TAG).first());
 
-        HDT_MiscFile miscFile = nullSwitch(elementProp.get(), null, element -> db.miscFiles.getByID(parseInt(element.attr("id"), -1)));
+        HDT_MiscFile miscFile = nullSwitch(elementProp.getValue(), null, element -> db.miscFiles.getByID(parseInt(element.attr("id"), -1)));
 
         if (miscFile != null) return miscFile;
       }
@@ -864,14 +864,14 @@ public final class MainTextUtil
       return str;
 
     MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
-    ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
+    Property<Element> elementProp = new SimpleObjectProperty<>();
 
     HDT_MiscFile miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
 
     while (miscFile != null)
     {
-      String heightAttr = elementProp.get().attr("height"),
-             widthAttr  = elementProp.get().attr("width");
+      String heightAttr = elementProp.getValue().attr("height"),
+             widthAttr  = elementProp.getValue().attr("width");
 
       if (heightAttr.isBlank() == false)
         heightAttr = " height=\"" + heightAttr + '"';

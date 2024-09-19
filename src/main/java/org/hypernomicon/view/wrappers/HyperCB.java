@@ -19,6 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -67,6 +68,7 @@ public class HyperCB implements CommitableWrapper
   private Runnable enterKeyHandler;
   private MutableBoolean adjusting;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
+  public Supplier<HDT_Work> workSupplier;
   private boolean silentMode = false;
 
 //---------------------------------------------------------------------------
@@ -447,7 +449,10 @@ public class HyperCB implements CommitableWrapper
             if (cell.getID() == otherPerson.getID())
               return cell;
 
-        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(table == null, cb.getEditor().getText(), null);
+        String text = cb.getEditor().getText();
+        HDT_Work work = workSupplier == null ? null : workSupplier.get();
+
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(work == null, text, null, work);
 
         if (npdc.showModal())
         {

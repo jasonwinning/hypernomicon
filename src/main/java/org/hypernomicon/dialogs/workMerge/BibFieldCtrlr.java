@@ -239,7 +239,7 @@ public abstract class BibFieldCtrlr
 
       htAuthors.initConstrainedResize();
 
-      htAuthors.addCol(hdtPerson, ctDropDownList);
+      htAuthors.addAuthorEditCol(() -> destWork, (row, cellVal, nextColNdx, nextPopulator) -> row.setCheckboxValue(1, HyperTableCell.getCellID(cellVal) > 0));
 
       HDT_Work workRecord = nullSwitch(bibData.getWork(), destWork);
 
@@ -252,7 +252,7 @@ public abstract class BibFieldCtrlr
       htAuthors.addChangeOrderMenuItem(true);
 
       htAuthors.addContextMenuItem("Remove this row",
-        row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
+        row -> (row.getText(0).length() > 0) && (row.getID(0) < 1),
         htAuthors::removeRow);
 
       if (bibData.getWork() != null)

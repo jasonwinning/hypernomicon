@@ -642,9 +642,9 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   @Override public void syncBookAuthorsTo(RelatedBibEntry relative)
   {
-    ZoteroItem dest = (ZoteroItem) relative.entry;
+    ZoteroItem dest = (ZoteroItem) relative.entry();
 
-    switch (relative.relation)
+    switch (relative.relation())
     {
       case Child :
       {
