@@ -203,6 +203,8 @@ class CollectionTree
         insertTreeItem(parentRow.getTreeItem().getChildren(), childRow);
       }
     });
+
+    selectAllEntries();
   }
 
 //---------------------------------------------------------------------------

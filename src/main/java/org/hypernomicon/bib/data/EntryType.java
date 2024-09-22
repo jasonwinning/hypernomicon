@@ -74,8 +74,9 @@ public enum EntryType
   etManual               ("Manual"),                  etPatent               ("Patent"),
   etThesis               ("Thesis"),                  etMastersThesis        ("Masters Thesis"),
   etDoctoralThesis       ("Doctoral Thesis"),         etManuscript           ("Manuscript"),
-  etUnpublishedWork      ("Unpublished Work"),        etWorkingPaper         ("Working Paper"),
-  etUnpublishedRawData   ("Unpublished Raw Data"),    etPersonalCommunication("Personal Communication"),
+  etUnpublishedWork      ("Unpublished Work"),        etPreprint             ("Preprint"),
+  etWorkingPaper         ("Working Paper"),           etUnpublishedRawData   ("Unpublished Raw Data"),
+  etArchivalDocument     ("Archival Document"),       etArchivalCollection   ("Archival Collection"),
   etDocument             ("Document"),                etMap                  ("Map"),
   etChart                ("Chart"),                   etEquation             ("Equation"),
   etFigure               ("Figure"),                  etSlide                ("Slide"),
@@ -83,10 +84,9 @@ public enum EntryType
   etOnlineDatabase       ("Online Database"),         etAggregatedDatabase   ("Aggregated Database"),
   etSoftware             ("Software"),                etComponent            ("Component"),
   etAbstract             ("Abstract"),                etCommentary           ("Commentary"),
-  etInterview            ("Interview"),               etArchivalDocument     ("Archival Document"),
-  etArchivalCollection   ("Archival Collection"),     etLetter               ("Letter"),
+  etInterview            ("Interview"),               etPersonalCommunication("Personal Communication"),
+  etLetter               ("Letter"),                  etPressRelease         ("Press Release"),
   etPamphlet             ("Pamphlet"),                etBrochure             ("Brochure"),
-  etPreprint             ("Preprint"),
 
   etOther                ("Other"),         // This means it is a type that does not fit into any of the
                                             // above categories and shouldn't be displayed in the Bib. Manager
@@ -111,6 +111,42 @@ public enum EntryType
 
   public String getUserFriendlyName()      { return userFriendlyName; }
   public static EntryType parse(String et) { return nameToType.getOrDefault(et, null); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean isChild()
+  {
+    return switch (this)
+    {
+      case etBookChapter, etEncyclopediaArticle  , etConferencePaper, etDictionaryEntry, etBookPart,
+           etBookSection, etElectronicBookSection, etReferenceEntry , etSymposiumPaper
+
+        -> true;
+
+      default
+
+        -> false;
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean isParent()
+  {
+    return switch (this)
+    {
+      case etElectronicBook, etConferenceProceedings, etBook, etEditedBook,  etBookVolume, etMonograph,
+           etReferenceBook , etSymposiumProceedings
+
+        -> true;
+
+      default
+
+        -> false;
+    };
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

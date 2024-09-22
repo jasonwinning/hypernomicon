@@ -52,6 +52,14 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Populate the passed-in lists with the authors for each corresponding author type.
+   * <p>
+   * The passed-in lists are always cleared first before being populated with this entry's data.
+   * @param authorList List of authors
+   * @param editorList List of editors; will <b>not</b> include editors of parent work.
+   * @param translatorList List of translators; will <b>not</b> include translators of parent work.
+   */
   public abstract void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList);
 
   @SuppressWarnings("unused")

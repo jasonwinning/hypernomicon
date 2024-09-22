@@ -1232,7 +1232,10 @@ public final class Util
   {
     String doi = matchDOIiteration(str);
 
-    return doi.length() > 0 ? doi : matchDOIiteration(unescapeURL(str));
+    if (doi.isBlank())
+      doi = matchDOIiteration(unescapeURL(str));
+
+    return StringUtils.removeEndIgnoreCase(doi, ".pdf");
   }
 
   private static String matchDOIiteration(String str)

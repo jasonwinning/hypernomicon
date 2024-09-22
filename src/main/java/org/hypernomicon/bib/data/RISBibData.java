@@ -23,12 +23,16 @@ import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 //---------------------------------------------------------------------------
 
@@ -44,8 +48,11 @@ public final class RISBibData extends BibDataStandalone
 
   private RISBibData(Iterable<String> lines) throws RISException
   {
-    String jf = "", jo = "", t2 = "", singleTitle = "";
-    boolean gotType = false;
+    Multimap<String, String> tagsAndValues = ArrayListMultimap.create();
+
+//---------------------------------------------------------------------------
+// Parsing loop
+//---------------------------------------------------------------------------
 
     for (String line : lines)
     {
@@ -62,100 +69,183 @@ public final class RISBibData extends BibDataStandalone
         String tag = m.group(1),
                val = m.group(2).trim();
 
-        if ((gotType == false) && ("TY".equals(tag) == false))
+        if (tagsAndValues.isEmpty() && ("TY".equals(tag) == false))  // TY must always be the first tag
           throw new RISException();
 
         switch (tag)
         {
-          case "DO": break; // DOI was captured already
+          case "TY" :
 
-          case "ER":
+            if (tagsAndValues.isEmpty() == false)
+              throw new RISException();
 
-            setJournalTitle(jf, jo, t2, singleTitle);
-            return;
-
-          case "TY": setEntryType(parseRISType(val)); gotType = true; break;
-
-          case "A1": case "A2": case "A3": case "A4": case "AU":
-
-            getAuthors().add(AuthorType.author, new PersonName(val)); break;
-
-          case "ED":
-
-            getAuthors().add(AuthorType.editor, new PersonName(val)); break;
-
-          case "CY": case "PP":
-
-            setStr(bfPubLoc, val); break;
-
-          case "DA": setDate(parseDate(val), dtCopyright       , true); break;
-          case "PY": setDate(parseDate(val), dtPublicationDate , true); break;
-          case "Y1": setDate(parseDate(val), dtCoverDisplayDate, true); break;
-          case "Y2": setDate(parseDate(val), dtCreated         , true); break;
-
-          case "OP": break;    // Original Publication
-          case "RP": break;    // Reprint Edition
-          case "ID": break;    // "Reference ID" (usually author last name and year with no space in between)
-
-          case "ET": setStr(bfEdition, val); break;
-          case "IS": setStr(bfIssue, val); break;
-
-          case "JF": jf = val; break;
-          case "JO": jo = val; break;
-
-          case "L1": case "L2": case "LK": case "UR":
-
-            setStr(bfURL, val); break;
-
-          case "LA": setStr(bfLanguage, val); break;
-          case "PB": setStr(bfPublisher, val); break;
-
-          case "SE": break;    // Section
-
-          case "SP": setStartPage(val); break;
-          case "EP": setEndPage  (val); break;
-
-          case "TI": case "TT": case "T1":
-
-            singleTitle = val;
-            addStr(bfTitle, val);
+            setEntryType(parseRISType(val));
             break;
 
-          case "T2":
+          case "ER" :
 
-            t2 = val;
-            addStr(bfTitle, val);
+            if (tagsAndValues.containsKey("TY") == false)
+              throw new RISException();  // ER must always be the last tag, and TY must always be first
+
             break;
-
-          case "T3":
-
-            addStr(bfTitle, val);
-            break;
-
-          case "VL": case "VO":
-
-            setStr(bfVolume, val); break;
-
-          case "SN": addISSN(val); break;
 
           default :
 
-            addStr(bfMisc, val); break;
+            break;
         }
+
+        tagsAndValues.put(tag, val);
       }
       else if ("ER".equals(ultraTrim(line)))
       {
-        if (gotType)
-        {
-          setJournalTitle(jf, jo, t2, singleTitle);
-          return;
-        }
+        if (tagsAndValues.containsKey("TY") == false)
+          throw new RISException();  // ER must always be the last tag, and TY must always be first
 
-        throw new RISException();
+        tagsAndValues.put("ER", "");
       }
+
+      if (tagsAndValues.containsKey("ER"))
+        break;
     }
 
-    throw new RISException(); // It has to end with "ER"; otherwise malformed
+    if (tagsAndValues.containsKey("ER") == false)
+      throw new RISException(); // It has to end with "ER"; otherwise malformed
+
+//---------------------------------------------------------------------------
+// Now actually set the values
+//---------------------------------------------------------------------------
+
+    String jf = "", jo = "", t2 = "", singleTitle = "";
+
+    for (Entry<String, String> entry : tagsAndValues.entries())
+    {
+      String tag = entry.getKey(), val = entry.getValue();
+
+      switch (tag)
+      {
+        case "DO" : setStr(bfDOI, val); break; // DOI might have been captured already but prefer the explicit DO value
+
+        case "A1" : case "AU" :
+
+          getAuthors().add(AuthorType.author, new PersonName(val)); break;
+
+        case "A2" :
+
+          if (getEntryType().isChild())
+            getAuthors().add(AuthorType.editor, new PersonName(val));
+
+          break;
+
+        case "A3" :
+
+          if ((tagsAndValues.containsKey("ED") == false) && (tagsAndValues.containsKey("A2") == false))
+            getAuthors().add(AuthorType.editor, new PersonName(val));
+
+          break;
+
+        case "A4" :
+
+          if (getEntryType().isParent())
+            getAuthors().add(AuthorType.translator, new PersonName(val));
+
+          break;
+
+        case "ED" :
+
+          getAuthors().add(AuthorType.editor, new PersonName(val)); break;
+
+        case "CY" : case "PP" :
+
+          setStr(bfPubLoc, val); break;
+
+        case "DA" : setDate(parseDate(val), dtCopyright       , true); break;
+        case "PY" : setDate(parseDate(val), dtPublicationDate , true); break;
+        case "Y1" : setDate(parseDate(val), dtCoverDisplayDate, true); break;
+        case "Y2" : setDate(parseDate(val), dtCreated         , true); break;
+
+        case "OP" : break;    // Original Publication
+        case "RP" : break;    // Reprint Edition
+        case "ID" : break;    // "Reference ID" (usually author last name and year with no space in between)
+
+        case "ET" : setStr(bfEdition, val); break;
+        case "IS" : setStr(bfIssue, val); break;
+
+        case "JF" : jf = val; break;
+        case "JO" : jo = val; break;
+
+        case "L1" : case "L2" : case "L3" : case "L4" : case "LK" :
+
+          if (tagsAndValues.containsKey("UR") == false)
+            setStr(bfURL, val);
+
+          break;
+
+        case "UR" :
+
+          setStr(bfURL, val);
+          break;
+
+
+        case "LA" : setStr(bfLanguage, val); break;
+        case "PB" : setStr(bfPublisher, val); break;
+
+        case "SE" : break;    // Section
+
+        case "SP" : setStartPage(val); break;
+        case "EP" : setEndPage  (val); break;
+
+        case "TI" : case "T1" :
+
+          singleTitle = val;
+          addStr(bfTitle, val);
+          break;
+
+        case "T2" :
+
+          t2 = val;
+          addStr(bfTitle, val);
+          break;
+
+        case "T3" :
+
+          addStr(bfTitle, val);
+          break;
+
+        case "VL" : case "VO" :
+
+          setStr(bfVolume, val); break;
+
+        case "SN" : addISSN(val); break;
+
+        case "ER" : case "TY" : break;
+
+        default :
+
+          addStr(bfMisc, val); break;
+      }
+
+    }
+
+    if (getEntryType() != etJournalArticle)
+    {
+      setMultiStr(bfTitle, safeListOf(singleTitle));
+      setMultiStr(bfContainerTitle, safeListOf(t2));
+      return;
+    }
+
+    String containerTitle;
+
+    if (safeStr(t2).isBlank() == false)
+    {
+      setMultiStr(bfTitle, safeListOf(singleTitle));
+      containerTitle = t2;
+    }
+    else if (safeStr(jf).isBlank() == false)
+      containerTitle = jf;
+    else
+      containerTitle = safeStr(jo);
+
+    setMultiStr(bfContainerTitle, safeListOf(containerTitle));
   }
 
 //---------------------------------------------------------------------------
@@ -187,29 +277,6 @@ public final class RISBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setJournalTitle(String jf, String jo, String t2, String singleTitle)
-  {
-    if (getEntryType() != etJournalArticle)
-      return;
-
-    String containerTitle;
-
-    if (safeStr(jf).isBlank() == false)
-      containerTitle = jf;
-    else if (safeStr(jo).isBlank() == false)
-      containerTitle = jo;
-    else
-    {
-      containerTitle = safeStr(t2);
-      setMultiStr(bfTitle, safeListOf(singleTitle));
-    }
-
-    setMultiStr(bfContainerTitle, safeListOf(containerTitle));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static RISBibData create(List<String> lines)
   {
     try { return new RISBibData(lines); }
@@ -221,10 +288,10 @@ public final class RISBibData extends BibDataStandalone
 
   private static EntryType parseRISType(String risType) { return switch (risType)
   {
-    case "ABST"    -> etAbstract;                  case "GOVDOC"  -> etGovernmentDocument;
-    case "ADVS"    -> etAudiovisualMaterial;       case "GRANT"   -> etGrant;
-    case "AGGR"    -> etAggregatedDatabase;        case "HEAR"    -> etHearing;
-    case "ANCIENT" -> etAncientText;               case "ICOMM"   -> etInternetCommunication;
+    case "ABST"    -> etAbstract;                  case "GRNT", "GRANT" -> etGrant;
+    case "ADVS"    -> etAudiovisualMaterial;       case "HEAR"    -> etHearing;
+    case "AGGR"    -> etAggregatedDatabase;        case "ICOMM"   -> etInternetCommunication;
+    case "ANCIENT" -> etAncientText;               case "INTV"    -> etInterview;
     case "ART"     -> etArtwork;                   case "INPR"    -> etInPress;
     case "BILL"    -> etBill;                      case "JFULL"   -> etJournal;
     case "BLOG"    -> etBlogPost;                  case "JOUR"    -> etJournalArticle;
@@ -239,17 +306,22 @@ public final class RISBibData extends BibDataStandalone
     case "CTLG"    -> etCatalog;                   case "PAMP"    -> etPamphlet;
     case "DATA"    -> etDataFile;                  case "PAT"     -> etPatent;
     case "DBASE"   -> etOnlineDatabase;            case "PCOMM"   -> etPersonalCommunication;
-    case "DICT"    -> etDictionaryEntry;           case "RPRT"    -> etReport;
-    case "EBOOK"   -> etElectronicBook;            case "SER"     -> etSerialPublication;
-    case "ECHAP"   -> etElectronicBookSection;     case "SLIDE"   -> etSlide;
-    case "EDBOOK"  -> etEditedBook;                case "SOUND"   -> etAudioRecording;
-    case "EJOUR"   -> etElectronicArticle;         case "STAND"   -> etStandard;
-    case "ELEC"    -> etWebPage;                   case "STAT"    -> etStatute;
-    case "ENCYC"   -> etEncyclopediaArticle;       case "THES"    -> etThesis;
-    case "EQUA"    -> etEquation;                  case "UNPB"    -> etUnpublishedWork;
-    case "FIGURE"  -> etFigure;                    case "VIDEO"   -> etVideoRecording;
-    case "GEN"     -> etUnentered;                 default        -> etOther;
+    case "DICT"    -> etDictionaryEntry;           case "POD"     -> etPodcast;
+    case "EBOOK"   -> etElectronicBook;            case "PRESS"   -> etPressRelease;
+    case "ECHAP"   -> etElectronicBookSection;     case "RPRT"    -> etReport;
+    case "EDBOOK"  -> etEditedBook;                case "SER"     -> etSerialPublication;
+    case "EJOUR"   -> etElectronicArticle;         case "SLIDE"   -> etSlide;
+    case "ELEC"    -> etWebPage;                   case "SOUND"   -> etAudioRecording;
+    case "ENCYC"   -> etEncyclopediaArticle;       case "STAND"   -> etStandard;
+    case "EQUA"    -> etEquation;                  case "STAT"    -> etStatute;
+    case "FIGURE"  -> etFigure;                    case "THES"    -> etThesis;
+    case "GEN"     -> etUnentered;                 case "UNPB"    -> etUnpublishedWork;
+    case "GOVDOC"  -> etGovernmentDocument;        case "VIDEO"   -> etVideoRecording;
+
+    default        -> etOther;
   };}
+
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

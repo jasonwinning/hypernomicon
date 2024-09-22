@@ -48,6 +48,7 @@ public class BibField
     bfEditors        ("Editors"           , bftAuthor),
     bfISBNs          ("ISBNs"             , bftMultiString), // International standard book numbers
     bfISSNs          ("ISSNs"             , bftMultiString), // International standard serial numbers
+    bfVolume         ("Volume"            , bftString),      // Volume number
     bfIssue          ("Issue"             , bftString),      // Issue number
     bfLanguage       ("Language"          , bftString),      // Language
     bfMisc           ("Misc. Information" , bftMultiString), // Holds uncategorized information
@@ -57,7 +58,6 @@ public class BibField
     bfTitle          ("Title"             , bftMultiString), // Title of this work
     bfTranslators    ("Translators"       , bftAuthor),
     bfURL            ("URL"               , bftString),      // URL where this work can be found
-    bfVolume         ("Volume"            , bftString),      // Volume number
     bfDate           ("Date"              , bftBibDate);     // Main date to show in bibliography (usually publication date)
 
     private final BibFieldType type;

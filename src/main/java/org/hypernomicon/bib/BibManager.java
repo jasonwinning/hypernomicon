@@ -37,9 +37,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.google.common.collect.EnumHashBiMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
 
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
@@ -70,6 +68,7 @@ import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
 import javafx.animation.SequentialTransition;
+import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -199,7 +198,9 @@ public class BibManager extends HyperDlg
     btnCreateNew.setOnAction(event -> btnCreateNewClick());
     btnUpdateRelatives.setOnAction(event -> btnUpdateRelativesClick());
 
-    tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> refresh());
+    // In the next line, the refresh is done in a runLater because we might already be in a refresh when this is happening
+
+    tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> Platform.runLater(() -> refresh()));
 
     entryTable.addContextMenuItem(viewEntryInRefMgrCaptionSupplier, row -> row.getURLtoViewEntryInRefMgr().length() > 0, row -> viewInRefMgr(row.getEntry()));
 
@@ -247,12 +248,12 @@ public class BibManager extends HyperDlg
 
         entryTable.clear();
 
-        treeView.getSelectionModel().clearAndSelect(0);
+        collTree.selectAllEntries();
 
         setDividerPositions();
       }
-      else
-        refresh();
+
+      refresh();
 
       ui.windows.push(dialogStage);
 
@@ -369,8 +370,6 @@ public class BibManager extends HyperDlg
     entryTable.clear();
 
     if (libraryWrapper == null) return;
-
-    treeView.getSelectionModel().clearAndSelect(0);
   }
 
 //---------------------------------------------------------------------------
@@ -546,9 +545,6 @@ public class BibManager extends HyperDlg
 
   public record RelatedBibEntry(BibEntryRelation relation, BibEntry<?, ?> entry) { }
 
-  private static final ImmutableSet<EntryType> childTypes  = Sets.immutableEnumSet(etBookChapter, etEncyclopediaArticle, etConferencePaper, etDictionaryEntry),
-                                               parentTypes = Sets.immutableEnumSet(etBook, etConferenceProceedings);
-
 //---------------------------------------------------------------------------
 
   private void updateRightPane()
@@ -650,13 +646,13 @@ public class BibManager extends HyperDlg
 
     BibEntry<?, ?> entry = row.getEntry();
 
-    if (childTypes.contains(entry.getEntryType()) && work.largerWork.isNotNull())
+    if (entry.getEntryType().isChild() && work.largerWork.isNotNull())
     {
       HDT_Work parentWork = work.largerWork.get();
       if (parentWork.getBibEntryKey().isBlank() == false)
       {
         BibEntry<?, ?> parentEntry = libraryWrapper.getEntryByKey(parentWork.getBibEntryKey());
-        if (parentTypes.contains(parentEntry.getEntryType()))
+        if (parentEntry.getEntryType().isParent())
         {
           list.add(new RelatedBibEntry(BibEntryRelation.Parent, parentEntry));
 
@@ -665,7 +661,7 @@ public class BibManager extends HyperDlg
       }
     }
 
-    if (parentTypes.contains(entry.getEntryType()))
+    if (entry.getEntryType().isParent())
       addChildren(work, work.subWorks, BibEntryRelation.Child, list);
 
     return list;
@@ -681,7 +677,7 @@ public class BibManager extends HyperDlg
       if ((childWork == self) || childWork.getBibEntryKey().isBlank()) return;
 
       BibEntry<?, ?> childEntry = libraryWrapper.getEntryByKey(childWork.getBibEntryKey());
-      if (childTypes.contains(childEntry.getEntryType()))
+      if (childEntry.getEntryType().isChild())
         list.add(new RelatedBibEntry(relation, childEntry));
     });
   }
@@ -705,11 +701,11 @@ public class BibManager extends HyperDlg
 
     work.setBibEntryKey(entry.getKey());
 
-    if (childTypes.contains(et) && work.largerWork.isNotNull() && (work.largerWork.get().getBibEntryKey().isBlank() == false))
+    if (et.isChild() && work.largerWork.isNotNull() && (work.largerWork.get().getBibEntryKey().isBlank() == false))
     {
       BibEntry<?, ?> parentEntry = libraryWrapper.getEntryByKey(work.largerWork.get().getBibEntryKey());
 
-      if (parentTypes.contains(parentEntry.getEntryType()))
+      if (parentEntry.getEntryType().isParent())
         updateRelative(new RelatedBibEntry(BibEntryRelation.Child, entry), parentEntry);
     }
 

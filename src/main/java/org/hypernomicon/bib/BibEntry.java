@@ -51,6 +51,12 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   private final LibraryWrapper<BibEntry_T, BibCollection_T> libWrapper;
   private final BibEntry_T thisEntry;
 
+  /**
+   * This function assumes that authors is set as if it came from calling getAuthors() on the parent BibData.
+   * @param authors The authors of the parent work.
+   */
+  protected abstract void setParentAuthorsFrom(BibAuthors authors);
+
   protected abstract void syncBookAuthorsTo(RelatedBibEntry relative);
   protected abstract JsonArray getCollJsonArray();
   protected abstract boolean isNewEntry();

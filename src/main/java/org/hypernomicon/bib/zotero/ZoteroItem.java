@@ -637,6 +637,51 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override protected void setParentAuthorsFrom(BibAuthors authors)
+  {
+    List<BibAuthor> authorList     = new ArrayList<>(),
+                    editorList     = new ArrayList<>(),
+                    translatorList = new ArrayList<>();
+
+    authors.getLists(authorList, editorList, translatorList);
+
+    JsonArray creatorsArr = jData.getArray("creators");
+
+    JsonObjIterator it = creatorsArr.getObjs();
+    while (it.hasNext())
+    {
+      JsonObj creator = it.next();
+      String type = creator.getStrSafe("creatorType");
+      if ("editor".equals(type) || "bookAuthor".equals(type))
+        it.remove();
+    }
+
+    for (BibAuthor author : authorList)
+    {
+      JsonObj creatorObj = new JsonObj();
+
+      creatorObj.put("firstName", removeAllParentheticals(author.getGiven()));
+      creatorObj.put("lastName", author.getFamily());
+      creatorObj.put("creatorType", "bookAuthor");
+
+      creatorsArr.add(creatorObj);
+    }
+
+    for (BibAuthor editor : editorList)
+    {
+      JsonObj creatorObj = new JsonObj();
+
+      creatorObj.put("firstName", removeAllParentheticals(editor.getGiven()));
+      creatorObj.put("lastName", editor.getFamily());
+      creatorObj.put("creatorType", "editor");
+
+      creatorsArr.add(creatorObj);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void syncBookAuthorsTo(RelatedBibEntry relative)
   {
     ZoteroItem dest = (ZoteroItem) relative.entry();
@@ -645,47 +690,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     {
       case Child :
       {
-        BibAuthors authors = getAuthors();
-
-        List<BibAuthor> authorList     = new ArrayList<>(),
-                        editorList     = new ArrayList<>(),
-                        translatorList = new ArrayList<>();
-
-        authors.getLists(authorList, editorList, translatorList);
-
-        JsonArray creatorsArr = dest.jData.getArray("creators");
-
-        JsonObjIterator it = creatorsArr.getObjs();
-        while (it.hasNext())
-        {
-          JsonObj creator = it.next();
-          String type = creator.getStrSafe("creatorType");
-          if ("editor".equals(type) || "bookAuthor".equals(type))
-            it.remove();
-        }
-
-        for (BibAuthor author : authorList)
-        {
-          JsonObj creatorObj = new JsonObj();
-
-          creatorObj.put("firstName", removeAllParentheticals(author.getGiven()));
-          creatorObj.put("lastName", author.getFamily());
-          creatorObj.put("creatorType", "bookAuthor");
-
-          creatorsArr.add(creatorObj);
-        }
-
-        for (BibAuthor editor : editorList)
-        {
-          JsonObj creatorObj = new JsonObj();
-
-          creatorObj.put("firstName", removeAllParentheticals(editor.getGiven()));
-          creatorObj.put("lastName", editor.getFamily());
-          creatorObj.put("creatorType", "editor");
-
-          creatorsArr.add(creatorObj);
-        }
-
+        dest.setParentAuthorsFrom(getAuthors());
         break;
       }
 
@@ -696,19 +701,32 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
         JsonArray oldCreatorsArr = jDestData.getArray("creators"), newCreatorsArr = new JsonArray();
 
+        // If parent has authors but the child doesn't have any parent-authors, don't do anything.
+        // The parent authors might be correct, and the parent-authors might not have been set on
+        // the child for some reason, for example if it was imported from another format.
+
+        List<String> selfAuthorTypes   = List.of("editor", "author"),
+                     parentAuthorTypes = List.of("editor", "bookAuthor");
+
+        if (oldCreatorsArr.objStream().filter(creator -> selfAuthorTypes.contains(creator.getStrSafe("creatorType"))).findAny().isPresent())
+          if (jData.getArray("creators").objStream().filter(creator -> parentAuthorTypes.contains(creator.getStrSafe("creatorType"))).findAny().isEmpty())
+            return;
+
+        // Clear parent's authors
+
         JsonObjIterator it = oldCreatorsArr.getObjs();
         while (it.hasNext())
         {
           JsonObj creator = it.next();
-          String type = creator.getStrSafe("creatorType");
-          if ("editor".equals(type) || "author".equals(type))
+          if (selfAuthorTypes.contains(creator.getStrSafe("creatorType")))
             it.remove();
         }
 
+        // Add child's parent-authors to parent
+
         jData.getArray("creators").getObjs().forEach(oldCreator ->
         {
-          String type = oldCreator.getStrSafe("creatorType");
-          if ("editor".equals(type) || "bookAuthor".equals(type))
+          if (parentAuthorTypes.contains(oldCreator.getStrSafe("creatorType")))
           {
             JsonObj newCreator = oldCreator.clone();
             if ("bookAuthor".equals(newCreator.getStrSafe("creatorType")))

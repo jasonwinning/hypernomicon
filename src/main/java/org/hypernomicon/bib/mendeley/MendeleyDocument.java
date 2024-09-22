@@ -547,6 +547,34 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override protected void setParentAuthorsFrom(BibAuthors authors)
+  {
+    List<BibAuthor> authorList     = new ArrayList<>(),
+                    editorList     = new ArrayList<>(),
+                    translatorList = new ArrayList<>();
+
+    authors.getLists(authorList, editorList, translatorList);
+
+    JsonArray jsonArr = jObj.getArray("editors");
+    if (jsonArr == null)
+      jObj.put("editors", jsonArr = new JsonArray());
+
+    jsonArr.clear();
+
+    for (BibAuthor editor : editorList)
+    {
+      JsonObj personObj = new JsonObj();
+
+      personObj.put("first_name", removeAllParentheticals(editor.getGiven()));
+      personObj.put("last_name", editor.getFamily());
+
+      jsonArr.add(personObj);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void syncBookAuthorsTo(RelatedBibEntry relative)
   {
     MendeleyDocument dest = (MendeleyDocument) relative.entry();
@@ -555,37 +583,27 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     {
       case Child:
       {
-        BibAuthors authors = getAuthors();
-
-        List<BibAuthor> authorList     = new ArrayList<>(),
-                        editorList     = new ArrayList<>(),
-                        translatorList = new ArrayList<>();
-
-        authors.getLists(authorList, editorList, translatorList);
-
-        JsonArray jsonArr = dest.jObj.getArray("editors");
-        if (jsonArr == null)
-          dest.jObj.put("editors", jsonArr = new JsonArray());
-
-        jsonArr.clear();
-
-        for (BibAuthor editor : editorList)
-        {
-          JsonObj personObj = new JsonObj();
-
-          personObj.put("first_name", removeAllParentheticals(editor.getGiven()));
-          personObj.put("last_name", editor.getFamily());
-
-          jsonArr.add(personObj);
-        }
-
+        dest.setParentAuthorsFrom(getAuthors());
         break;
       }
 
       case Parent:
       {
         JsonObj newVersion = dest.exportStandaloneJsonObj(false);
+
+        // If parent has authors but the child doesn't have any parent-authors, don't do anything.
+        // The parent authors might be correct, and the parent-authors might not have been set on
+        // the child for some reason, for example if it was imported from another format.
+
+        if ((newVersion.condArray("authors").size() > 0) && (jObj.condArray("editors").size() == 0))
+          return;
+
+        // Clear parent's authors
+
         newVersion.remove("authors");
+
+        // Add child's parent-authors to parent
+
         newVersion.put("editors", jObj.getArray("editors").clone());
 
         dest.getWork().getAuthors().setAll(new MendeleyAuthors(newVersion, dest.getEntryType()));

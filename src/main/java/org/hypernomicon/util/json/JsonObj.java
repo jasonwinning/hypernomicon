@@ -111,6 +111,8 @@ public final class JsonObj implements Cloneable
 
       return new CondJsonObj(jBaseArr.getObj(ndx));
     }
+
+    public int size() { return jBaseArr == null ? 0 : jBaseArr.size(); }
   }
 
 //---------------------------------------------------------------------------
