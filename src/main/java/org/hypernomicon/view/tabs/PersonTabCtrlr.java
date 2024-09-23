@@ -59,7 +59,6 @@ import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
-import org.hypernomicon.view.wrappers.HyperTableColumn;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static java.util.Collections.*;
@@ -151,8 +150,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     super(personTabEnum, tab, "view/tabs/PersonTab");
 
-    HyperTableColumn col;
-
     mainText = new MainTextWrapper(apOverview);
 
     btnNewWork.setOnAction(event -> ui.importWorkFile(curPerson, null, false));
@@ -180,8 +177,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htWorks.addLabelCol(hdtWorkType, smTextSimple); // Work Type
     htWorks.addLabelCol(hdtWork    , smTextSimple); // Ed/Tr
 
-    col = htWorks.addCol(hdtInvestigation, ctInvSelect);
-    col.setHeaderTooltip(invHelpTooltip());
+    htWorks.addCol(hdtInvestigation, ctInvSelect)
+           .setHeaderTooltip(invHelpTooltip());
 
     htWorks.addLabelCol(hdtNone);  // Title; can display work or misc. file records
     htWorks.addLabelCol(hdtPerson); // Coauthor(s)

@@ -171,7 +171,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       HyperTableCell cell = cells.get(colNdx);
       if ((HyperTableCell.getCellID(cell) == oldID) && (HyperTableCell.getCellType(cell) == changedType))
-        cells.set(colNdx, new HyperTableCell(newID, cell.text, changedType));
+        cells.set(colNdx, new HyperTableCell(newID, HyperTableCell.getCellText(cell), changedType));
     }
   }
 

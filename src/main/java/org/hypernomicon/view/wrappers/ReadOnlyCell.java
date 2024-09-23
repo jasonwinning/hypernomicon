@@ -51,8 +51,8 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     this.col = col;
     this.graphicProvider = graphicProvider;
 
-    if (col.alignment != null)
-      setAlignment(col.alignment);
+    if (col.getAlignment() != null)
+      setAlignment(col.getAlignment());
 
     setOnMouseClicked(mouseEvent -> nullSwitch(getItem(), cellItem -> nullSwitch(cellItem.getRecord(), (HDT_Record record) ->
     {

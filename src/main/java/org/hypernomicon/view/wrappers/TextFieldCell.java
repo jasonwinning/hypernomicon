@@ -41,7 +41,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
 //---------------------------------------------------------------------------
 
-  private String getString() { return nullSwitch(getItem(), "", cell -> cell.text); }
+  private String getString() { return nullSwitch(getItem(), "", HyperTableCell::getCellText); }
 
 //---------------------------------------------------------------------------
 
@@ -142,7 +142,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
       if (event.getCode() == KeyCode.ESCAPE)
       {
         HyperTableCell item = getItem();
-        textField.setText(item.text);
+        textField.setText(HyperTableCell.getCellText(item));
         commitEdit(item);
         event.consume();
       }

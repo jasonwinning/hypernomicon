@@ -149,7 +149,7 @@ public class HyperCB implements CommitableWrapper
 
       @Override public HyperTableCell fromString(String string)
       {
-        HyperTableCell cell = nullSwitch(cb.getItems(), null, items -> findFirst(items, htc -> string.equals(htc.text)));
+        HyperTableCell cell = nullSwitch(cb.getItems(), null, items -> findFirst(items, htc -> string.equals(HyperTableCell.getCellText(htc))));
         return cell == null ? new HyperTableCell(string, populator.getRecordType(row)) : cell;
       }
     });
@@ -202,7 +202,7 @@ public class HyperCB implements CommitableWrapper
     HyperTableCell htc = cb.getValue();
     String str = cb.getEditor().getText();
 
-    return (htc == null) || (htc.text.equals(str) == false) ?
+    return (htc == null) || (HyperTableCell.getCellText(htc).equals(str) == false) ?
       new HyperTableCell(str, selectedType())
     :
       htc;
@@ -332,7 +332,7 @@ public class HyperCB implements CommitableWrapper
   {
     populate(false);
 
-    select(findFirst(cb.getItems(), choice -> choice.type == objType));
+    select(findFirst(cb.getItems(), choice -> HyperTableCell.getCellType(choice) == objType));
   }
 
 //---------------------------------------------------------------------------
@@ -506,7 +506,7 @@ public class HyperCB implements CommitableWrapper
     cbItemsLoop: for (HyperTableCell cell : cb.getItems())
     {
       HDT_Record record = HyperTableCell.getRecord(cell);
-      String lcCellText = cell.text.toLowerCase();
+      String lcCellText = HyperTableCell.getCellText(cell).toLowerCase();
 
       if (lcCellText.equals(str) || ((record != null) && record.getNameEngChar().toLowerCase().equals(str)))
         return cell;
@@ -562,7 +562,7 @@ public class HyperCB implements CommitableWrapper
       }
 
       if (lcCellText.contains(str) &&
-          ((cell.type != hdtPerson) || (record != null))) // Don't use non-record author partial matches
+          ((HyperTableCell.getCellType(cell) != hdtPerson) || (record != null))) // Don't use non-record author partial matches
       {
         cells.add(cell);
         atLeastOneStrongMatch.setTrue();

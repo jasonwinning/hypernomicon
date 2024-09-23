@@ -57,7 +57,7 @@ public class RelationPopulator extends Populator
     relTypes.forEach(relType ->
     {
       HyperTableCell cell = new HyperTableCell(relType.getCode(), relType.getTitle(), objType);
-      addToSortedList(cells, cell, Comparator.comparing(cel -> cel.text));
+      addToSortedList(cells, cell, Comparator.comparing(HyperTableCell::getCellText));
     });
 
     return cells;

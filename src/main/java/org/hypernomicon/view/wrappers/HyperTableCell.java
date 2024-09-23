@@ -42,8 +42,8 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
   private int id;
   private String imgRelPath;  // should only ever be accessed by getImgRelPath
 
-  public final String text;
-  public final RecordType type;
+  private final String text;
+  private final RecordType type;
   public final boolean sortToBottom;
 
   public static final int TRUE_ID  = 1,

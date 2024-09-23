@@ -85,7 +85,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
-      RecordType parentType = cellVal.type;
+      RecordType parentType = HyperTableCell.getCellType(cellVal);
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
       row.setCellValue(nextColNdx, "", parentType);

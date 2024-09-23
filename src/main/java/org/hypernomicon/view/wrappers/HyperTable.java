@@ -43,7 +43,6 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import java.util.ArrayList;
@@ -123,7 +122,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public void setCanAddRows(boolean value)                         { canAddRows = value; tv.setEditable(value); }
   public void setOnShowMore(Runnable onShowMore)                   { this.onShowMore = onShowMore; }
   int getMainColNdx()                                              { return mainCol; }
-  public void setTooltip(int colNdx, ButtonAction ba, String text) { cols.get(colNdx).setTooltip(ba, text); }
   public void removeRow(HyperTableRow row)                         { rows.remove(row); }
   public Iterable<HyperTableRow> dataRows()                        { return new DataRowIterator(); }
   public Stream<HyperTableRow> dataRowStream()                     { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
@@ -425,16 +423,12 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addLabelCol(RecordType objType, CellSortMethod sortMethod)
   {
-    HyperTableColumn col = addLabelCol(objType);
-    col.setSortMethod(sortMethod);
-    return col;
+    return addLabelCol(objType).setSortMethod(sortMethod);
   }
 
   public HyperTableColumn addLabelColWithAlignment(RecordType objType, Pos alignment)
   {
-    HyperTableColumn col = addColAltPopulator(objType, ctNone, Populator.create(cvtRecord));
-    col.alignment = alignment;
-    return col;
+    return addColAltPopulator(objType, ctNone, Populator.create(cvtRecord)).setAlignment(alignment);
   }
 
 //---------------------------------------------------------------------------
@@ -486,10 +480,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addAuthorEditCol(Supplier<HDT_Work> workSupplier, CellUpdateHandler updateHandler)
   {
-    HyperTableColumn col = addCol(new HyperTableColumn(this, hdtPerson, ctDropDownList, new StandardPopulator(hdtPerson), -1, updateHandler));
-    col.setWorkSupplier(workSupplier);
-
-    return col;
+    return addCol(new HyperTableColumn(this, hdtPerson, ctDropDownList, new StandardPopulator(hdtPerson), -1, updateHandler))
+      .setWorkSupplier(workSupplier);
   }
 
 //---------------------------------------------------------------------------
@@ -502,11 +494,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addTextEditColWithUpdateHandler(RecordType objType, boolean canEditIfEmpty, CellSortMethod sortMethod, CellUpdateHandler updateHandler)
   {
-    HyperTableColumn col = addCol(new HyperTableColumn(this, objType, ctEdit, null, -1, updateHandler));
-    col.setCanEditIfEmpty(canEditIfEmpty);
-    col.setSortMethod(sortMethod);
-
-    return col;
+    return addCol(new HyperTableColumn(this, objType, ctEdit, null, -1, updateHandler))
+      .setCanEditIfEmpty(canEditIfEmpty)
+      .setSortMethod(sortMethod);
   }
 
 //---------------------------------------------------------------------------
@@ -519,11 +509,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addTextEditCol(RecordType objType, boolean canEditIfEmpty, CellSortMethod sortMethod)
   {
-    HyperTableColumn col = addCol(new HyperTableColumn(this, objType, ctEdit, null, -1));
-    col.setCanEditIfEmpty(canEditIfEmpty);
-    col.setSortMethod(sortMethod);
-
-    return col;
+    return addCol(new HyperTableColumn(this, objType, ctEdit, null, -1))
+      .setCanEditIfEmpty(canEditIfEmpty)
+      .setSortMethod(sortMethod);
   }
 
 //---------------------------------------------------------------------------
@@ -632,7 +620,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void selectType(int colNdx, HyperTableRow row, RecordType newType)
   {
-    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.type == newType), cell -> row.setCellValue(colNdx, cell));
+    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> HyperTableCell.getCellType(cell) == newType), cell -> row.setCellValue(colNdx, cell));
   }
 
 //---------------------------------------------------------------------------

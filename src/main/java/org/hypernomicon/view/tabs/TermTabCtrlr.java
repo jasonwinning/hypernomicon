@@ -561,7 +561,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     }
 
     HDT_ConceptSense sense = newCell.getRecord();
-    String newText = ultraTrim(newCell.text);
+    String newText = ultraTrim(HyperTableCell.getCellText(newCell));
 
     if ((oldGlossaryRow.sense != null) && ((sense == oldGlossaryRow.sense) || newText.equalsIgnoreCase(oldGlossaryRow.sense.name())))
     {

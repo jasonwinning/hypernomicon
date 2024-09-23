@@ -80,35 +80,38 @@ public class HyperTableColumn
                                dontCreateNewRecord = new MutableBoolean(false);
 
   /**
-   * Property to determine how cells will sort in the column.<br>
+   * Determines how cells will sort in the column.<br>
    * The compare method can assume the cells are non-null.<br>
-   * If this property is set, the sortMethod is ignored.<br>
-   * <br>
-   * Note: updating this property does not cause the column to re-sort.
+   * If this is set, the sortMethod is ignored.<br>
    */
-  public final Property<Comparator<HyperTableCell>> comparator = new SimpleObjectProperty<>();
+  private Comparator<HyperTableCell> comparator;
 
   private final Property<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
-  private final Property<Supplier<HDT_Work>> workSupplier = new SimpleObjectProperty<>();
 
-  public Function<HyperTableRow, String> textHndlr = null;
-
-  Pos alignment = null;  // This is currently only respected by ReadOnlyCell
+  private Supplier<HDT_Work> workSupplier;
+  private Function<HyperTableRow, String> textHndlr;
+  private Pos alignment = null;  // This is currently only respected by ReadOnlyCell
 
 //---------------------------------------------------------------------------
 
-  public HyperCtrlType getCtrlType()                 { return ctrlType; }
-  public int getColNdx()                             { return colNdx; }
-  public String getHeader()                          { return tc.getText(); }
-  RecordType getObjType()                            { return objType; }
-  void setCanEditIfEmpty(boolean newVal)             { canEditIfEmpty.setValue(newVal); }
-  void setSortMethod(CellSortMethod newSM)           { sortMethod.setValue(newSM); }
-  void setWorkSupplier(Supplier<HDT_Work> newWS)     { workSupplier.setValue(newWS); }
-  public void setDontCreateNewRecord(boolean newVal) { dontCreateNewRecord.setValue(newVal); }
-  void setTooltip(ButtonAction ba, String text)      { tooltips.put(ba, text); }
-  void clear()                                       { if (populator != null) populator.clear(); }
+  public HyperCtrlType getCtrlType() { return ctrlType; }
+  public int getColNdx()             { return colNdx; }
+  public String getHeader()          { return tc.getText(); }
+  RecordType getObjType()            { return objType; }
+  Pos getAlignment()                 { return alignment; }
+  void clear()                       { if (populator != null) populator.clear(); }
 
-  @SuppressWarnings("unchecked") <PopType extends Populator> PopType getPopulator()     { return (PopType) populator; }
+  HyperTableColumn setCanEditIfEmpty(boolean newVal)         { canEditIfEmpty.setValue(newVal); return this; }
+  HyperTableColumn setSortMethod(CellSortMethod newSM)       { sortMethod.setValue(newSM);      return this; }
+  HyperTableColumn setWorkSupplier(Supplier<HDT_Work> newWS) { workSupplier = newWS;            return this; }
+  HyperTableColumn setAlignment(Pos newAlignment)            { alignment = newAlignment;        return this; }
+
+  public HyperTableColumn setComparator(Comparator<HyperTableCell> newComparator) { comparator = newComparator;           return this; }
+  public HyperTableColumn setTooltip(ButtonAction ba, String text)                { tooltips.put(ba, text);               return this; }
+  public HyperTableColumn setTextHndlr(Function<HyperTableRow, String> newTH)     { textHndlr = newTH;                    return this; }
+  public HyperTableColumn setDontCreateNewRecord(boolean newVal)                  { dontCreateNewRecord.setValue(newVal); return this; }
+
+  @SuppressWarnings("unchecked") <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
 
 //---------------------------------------------------------------------------
 
@@ -174,8 +177,8 @@ public class HyperTableColumn
           return tc.getSortType() == SortType.ASCENDING ? -1 : 1;
       }
 
-      if (comparator.getValue() != null)
-        return comparator.getValue().compare(cell1, cell2);
+      if (comparator != null)
+        return comparator.compare(cell1, cell2);
 
       if (sortMethod.getValue() != null)
         return HyperTableCell.compareCells(cell1, cell2, sortMethod.getValue());

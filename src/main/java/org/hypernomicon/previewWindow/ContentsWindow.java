@@ -90,7 +90,8 @@ public class ContentsWindow extends HyperDlg
     {
       previewWindow.goToPage(parseInt(row.getText(4), -1));
       ui.openPreviewWindow(null);
-    });
+
+    }).setTooltip(ButtonAction.baCustom, "Jump to start page in preview window");
 
     htContents.addCustomActionCol(4, "Set", (row, colNdx) ->
     {
@@ -101,7 +102,8 @@ public class ContentsWindow extends HyperDlg
 
       row.setCellValue(4, work, String.valueOf(num));
       setPageNum(work, num, true);
-    });
+
+    }).setTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as start page");
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -116,7 +118,8 @@ public class ContentsWindow extends HyperDlg
     {
       previewWindow.goToPage(parseInt(row.getText(7), -1));
       ui.openPreviewWindow(null);
-    });
+
+    }).setTooltip(ButtonAction.baCustom, "Jump to end page in preview window");
 
     htContents.addCustomActionCol(7, "Set", (row, colNdx) ->
     {
@@ -127,7 +130,8 @@ public class ContentsWindow extends HyperDlg
 
       row.setCellValue(7, work, String.valueOf(num));
       setPageNum(work, num, false);
-    });
+
+    }).setTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as end page");
 
     onShown = () -> ui.windows.push(dialogStage);
 
@@ -147,11 +151,6 @@ public class ContentsWindow extends HyperDlg
     });
 
     dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
-
-    htContents.setTooltip(5, ButtonAction.baCustom, "Jump to start page in preview window");
-    htContents.setTooltip(8, ButtonAction.baCustom, "Jump to end page in preview window");
-    htContents.setTooltip(6, ButtonAction.baCustom, "Assign page currently visible in preview window as start page");
-    htContents.setTooltip(9, ButtonAction.baCustom, "Assign page currently visible in preview window as end page");
   }
 
 //---------------------------------------------------------------------------

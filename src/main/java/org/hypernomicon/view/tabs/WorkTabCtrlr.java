@@ -172,8 +172,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     super(workTabEnum, tab, "view/tabs/WorkTab");
 
-    HyperTableColumn col;
-
     mainText = new MainTextWrapper(apDescription);
 
     tabPane.setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
@@ -265,19 +263,21 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htArguments.addLabelCol(hdtNone);
     htArguments.addLabelCol(hdtNone, smTextSimple);
     htArguments.addLabelCol(hdtArgument);
-    col = htArguments.addLabelCol(hdtWork);
-    col.comparator.setValue(HyperTableCell.leadingNumberComparator());
+    htArguments.addLabelCol(hdtWork)
+               .setComparator(HyperTableCell.leadingNumberComparator());
 
     htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
 
     htWorkFiles.addRefreshHandler(tabPane::requestLayout);
 
-    htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx)));
+    htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx)))
+      .setTooltip(ButtonAction.baEdit, "Update or rename this work file")
+      .setTooltip(ButtonAction.baNew, "Add a new work file");
 
     htWorkFiles.addCheckboxCol();
     htWorkFiles.addLabelCol(hdtWorkFile);
 
-    col = htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
+    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int startPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (startPageNum < 0) return;
@@ -288,11 +288,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       int endPageNum = parseInt(row.getText(nextColNdx), -1);
 
       previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
-    });
 
-    col.setHeaderTooltip("Start page in PDF (actual PDF page, not page label)");
+    }).setHeaderTooltip("Start page in PDF (actual PDF page, not page label)");
 
-    col = htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
+    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int endPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (endPageNum < 0) return;
@@ -303,14 +302,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       int startPageNum = parseInt(row.getText(nextColNdx - 2), -1);
 
       previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
-    });
 
-    col.setHeaderTooltip("End page in PDF (actual PDF page, not page label)");
+    }).setHeaderTooltip("End page in PDF (actual PDF page, not page label)");
 
     htWorkFiles.addTextEditCol(hdtWorkFile, false);
-
-    htWorkFiles.setTooltip(0, ButtonAction.baEdit, "Update or rename this work file");
-    htWorkFiles.setTooltip(0, ButtonAction.baNew, "Add a new work file");
 
     htWorkFiles.addContextMenuItem("Launch file", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
       workFile -> launchWorkFile(workFile.filePath(), getCurPageNum(curWork, workFile, true)));

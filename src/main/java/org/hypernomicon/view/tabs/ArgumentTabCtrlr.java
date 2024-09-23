@@ -87,7 +87,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
-      RecordType parentType = cellVal.type;
+      RecordType parentType = HyperTableCell.getCellType(cellVal);
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
       row.setCellValue(nextColNdx, "", parentType);
@@ -117,7 +117,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade = new HyperTable(lowerCtrlr.tvWhereMade, 2, true, PREF_KEY_HT_ARG_SRC);
 
     htWhereMade.addActionCol(ctGoNewBtn, 2);
-    HyperTableColumn col = htWhereMade.addAuthorEditCol(null, (row, cellVal, nextColNdx, nextPopulator) ->
+    htWhereMade.addAuthorEditCol(null, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       HDT_Record obj = HyperTableCell.getRecord(cellVal);
       HybridSubjectPopulator hsPop = (HybridSubjectPopulator)nextPopulator;
@@ -126,9 +126,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
       hsPop.setObj(row, obj);
       row.setCellValue(nextColNdx, "", hsPop.getRecordType(row));
-    });
 
-    col.textHndlr = row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), work -> work.getLongAuthorsStr(true));
+    }).setTextHndlr(row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), work -> work.getLongAuthorsStr(true)));
 
     htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -145,8 +144,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       }
     });
 
-    col = htWhereMade.addTextEditCol(hdtWork, false); // Pages column
-    col.comparator.setValue(HyperTableCell.leadingNumberComparator());
+    htWhereMade.addTextEditCol(hdtWork, false) // Pages column
+               .setComparator(HyperTableCell.leadingNumberComparator());
 
     htWhereMade.addLabelCol(hdtArgument, smYear); // Year column
 
