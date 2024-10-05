@@ -643,14 +643,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   private JsonArray throwResponseException(JsonArray jsonArray, String documentID) throws HttpResponseException
   {
-    String errMsg = jsonClient.getReasonPhrase();
+    StringBuilder errMsg = new StringBuilder(jsonClient.getReasonPhrase());
 
-    if (jsonArray != null)
-    {
-      String jsonMsg = nullSwitch(jsonArray.getObj(0), "", jObj -> jObj.getStrSafe("message"));
-      if (jsonMsg.isBlank() == false)
-        errMsg = jsonMsg;
-    }
+    new CondJsonArray(jsonArray).condObj(0).condStr("message", jsonMsg -> assignSB(errMsg, jsonMsg));
 
     throw new HttpResponseException(jsonClient.getStatusCode(), errMsg + (safeStr(documentID).isBlank() ? "" : ("\n\nEntry ID: " + documentID)));
   }

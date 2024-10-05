@@ -121,7 +121,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     bibEntry = bibEntryToUse;
     work = workToUse;
 
-    lblBibEntry.setText(db.bibLibraryIsLinked() ? "Existing " + db.getBibLibrary().type().getUserFriendlyName() + " entry:" : "");
+    lblBibEntry.setText(db.bibLibraryIsLinked() ? "Existing " + db.bibLibraryUserFriendlyName() + " entry:" : "");
 
     if (db.bibLibraryIsLinked() == false)
       cbBibEntry.setDisable(true);

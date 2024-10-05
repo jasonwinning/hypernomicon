@@ -923,10 +923,9 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getEntryURL()
+  @Override public String getURLtoViewEntryInRefMgr()
   {
-    return isNewEntry() ? "" : nullSwitch(jObj.getObj("links"), "", links ->
-                               nullSwitch(links.getObj("alternate"), "", alt -> alt.getStrSafe("href")));
+    return isNewEntry() ? "" : jObj.condObj("links").condObj("alternate").condStrOrBlank("href");
   }
 
 //---------------------------------------------------------------------------
@@ -934,9 +933,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   @Override protected String getUserName()
   {
-    String url = isNewEntry() ? "" : nullSwitch(jObj.getObj("library"), "", library ->
-                                     nullSwitch(library.getObj("links"), "", links ->
-                                     nullSwitch(links.getObj("alternate"), "", alt -> alt.getStrSafe("href"))));
+    String url = isNewEntry() ? "" : jObj.condObj("library").condObj("links").condObj("alternate").condStrOrBlank("href");
 
     if (url.isBlank()) return "";
 

@@ -48,7 +48,7 @@ public final class SyncBibDlgCtrlr extends HyperDlg
 
   private SyncBibDlgCtrlr()
   {
-    super("settings/SyncBibDlg", "Link to " + db.getBibLibrary().type().getUserFriendlyName(), true, true);
+    super("settings/SyncBibDlg", "Link to " + db.bibLibraryUserFriendlyName(), true, true);
 
     onShown = () ->
     {

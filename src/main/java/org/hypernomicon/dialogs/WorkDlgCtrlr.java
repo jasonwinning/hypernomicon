@@ -199,7 +199,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
       setAllVisible(false, chkCreateBibEntry, cbEntryType);
     else
-      chkCreateBibEntry.setText("Create new " + db.getBibLibrary().type().getUserFriendlyName() + " entry of type:");
+      chkCreateBibEntry.setText("Create new " + db.bibLibraryUserFriendlyName() + " entry of type:");
 
     if (workFileToUse == null)
     {
@@ -1226,7 +1226,7 @@ public class WorkDlgCtrlr extends HyperDlg
       EntryType entryType = curBD.getEntryType();
       if (cbEntryType.getItems().contains(entryType) == false)
       {
-        warningPopup('"' + entryType.getUserFriendlyName() + "\" is not a valid " + db.getBibLibrary().type().getUserFriendlyName() + " entry type.");
+        warningPopup('"' + entryType.getUserFriendlyName() + "\" is not a valid " + db.bibLibraryUserFriendlyName() + " entry type.");
         cbEntryType.getSelectionModel().select(null);
       }
       else
@@ -1271,7 +1271,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (extFields.isEmpty()) return choice;
 
     String msg = "The current work record is not associated with a " +
-                 db.getBibLibrary().type().getUserFriendlyName() + " entry. Create one now?\n" +
+                 db.bibLibraryUserFriendlyName() + " entry. Create one now?\n" +
                  "Otherwise, existing information for these fields will be lost: " +
                  extFields.stream().map(BibFieldEnum::getUserFriendlyName).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
 

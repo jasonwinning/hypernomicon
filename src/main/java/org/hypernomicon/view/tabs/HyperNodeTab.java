@@ -138,10 +138,11 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     btnWebSrch4.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '4'));
     btnTree    .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
 
-    setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "Google");
-    setToolTip(btnWebSrch3, TOOLTIP_PREFIX + "Internet Encyclopedia of Philosophy");
-    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Stanford Encyclopedia of Philosophy");
-    setToolTip(btnWebSrch4, TOOLTIP_PREFIX + "Wikipedia");
+    setToolTip(btnWebSrch1, () -> TOOLTIP_PREFIX + btnWebSrch1.getText());
+    setToolTip(smbWebSrch1, () -> TOOLTIP_PREFIX + smbWebSrch1.getText());
+    setToolTip(btnWebSrch2, () -> TOOLTIP_PREFIX + btnWebSrch2.getText());
+    setToolTip(btnWebSrch3, () -> TOOLTIP_PREFIX + btnWebSrch3.getText());
+    setToolTip(btnWebSrch4, () -> TOOLTIP_PREFIX + btnWebSrch4.getText());
 
     setToolTip(btnTree, "Go to this record in Tree tab");
 
@@ -506,15 +507,11 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
   @Override void updateWebButtons(Preferences node)
   {
-    updateWebButtons(node, PREF_KEY_GEN_SRCH, 4, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
+    updateWebButtons(node, PREF_KEY_GEN_SRCH, 4, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
     btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '2').getCaption());
     btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '3').getCaption());
     btnWebSrch4.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '4').getCaption());
-
-    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
-    setToolTip(btnWebSrch3, TOOLTIP_PREFIX + btnWebSrch3.getText());
-    setToolTip(btnWebSrch4, TOOLTIP_PREFIX + btnWebSrch4.getText());
   }
 
 //---------------------------------------------------------------------------

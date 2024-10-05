@@ -529,7 +529,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     try
     {
       lblStep2Instructions.setText("Click link to open web site where you will authorize " + appTitle + " to access your " +
-                                   libType.getUserFriendlyName() + " account and get verification code.");
+                                   libType.userFriendlyName + " account and get verification code.");
 
       if (libType == LibraryType.ltZotero)
       {
@@ -643,7 +643,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   private void setLinkedMessage(String additionalInfo)
   {
-    String message = "This database is currently linked to a " + db.getBibLibrary().type().getUserFriendlyName() + " library.";
+    String message = "This database is currently linked to a " + db.bibLibraryUserFriendlyName() + " library.";
 
     if (additionalInfo.length() > 0)
       message = message + ' ' + additionalInfo;
@@ -673,7 +673,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     ((MendeleyWrapper)library).getUserNameFromServer(
       emailAddress -> setLinkedMessage("Username: " + emailAddress),
-      ex           -> setLinkedMessage("Unable to retrieve username from " + library.type().getUserFriendlyName() + " server."));
+      ex           -> setLinkedMessage("Unable to retrieve username from " + library.getUserFriendlyName() + " server."));
   }
 
 //---------------------------------------------------------------------------
@@ -681,7 +681,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   private void btnUnlinkClick()
   {
-    String typeName = db.getBibLibrary().type().getUserFriendlyName();
+    String typeName = db.bibLibraryUserFriendlyName();
 
     if (confirmDialog("Do you really want to unlink your " + typeName + " account?" + System.lineSeparator() +
                       "All associations between " + appTitle + " records and " + typeName + " entries will be erased." + System.lineSeparator() +

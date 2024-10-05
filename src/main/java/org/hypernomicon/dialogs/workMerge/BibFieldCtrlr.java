@@ -370,7 +370,7 @@ public abstract class BibFieldCtrlr
         EntryType entryType = bibData.getEntryType();
         if (cb.getItems().contains(entryType) == false)
         {
-          warningPopup('"' + entryType.getUserFriendlyName() + "\" is not a valid " + db.getBibLibrary().type().getUserFriendlyName() + " entry type.");
+          warningPopup('"' + entryType.getUserFriendlyName() + "\" is not a valid " + db.bibLibraryUserFriendlyName() + " entry type.");
           cb.getSelectionModel().select(null);
         }
         else

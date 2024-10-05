@@ -190,6 +190,7 @@ public final class HyperDB
   public Tag mainTextTagForRecordType(RecordType type)              { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
   public boolean isLoaded()                                         { return loaded; }
   public boolean bibLibraryIsLinked()                               { return bibLibrary != null; }
+  public String bibLibraryUserFriendlyName()                        { return bibLibraryIsLinked() ? bibLibrary.getUserFriendlyName() : ""; }
   public Instant getCreationDate()                                  { return dbCreationDate; }
   public RecordType getSubjType(RelationType relType)               { return relationSets.get(relType).getSubjType(); }
   public RecordType getObjType(RelationType relType)                { return relationSets.get(relType).getObjType(); }
@@ -1120,7 +1121,7 @@ public final class HyperDB
           }
           catch (Exception e)
           {
-            throw new HyperDataException("Unable to initialize link to " + libType.getUserFriendlyName() + ": " + getThrowableMessage(e), e);
+            throw new HyperDataException("Unable to initialize link to " + libType.userFriendlyName + ": " + getThrowableMessage(e), e);
           }
         }
       }
@@ -1328,7 +1329,7 @@ public final class HyperDB
     prefs.put(PREF_KEY_BIB_ACCESS_TOKEN, bibEncAccessToken);
     prefs.put(PREF_KEY_BIB_REFRESH_TOKEN, bibEncRefreshToken);
 
-    prefs.put(PREF_KEY_BIB_LIBRARY_TYPE, libType.getDescriptor());
+    prefs.put(PREF_KEY_BIB_LIBRARY_TYPE, libType.descriptor);
 
     bibChangedHandlers.forEach(Runnable::run);
   }

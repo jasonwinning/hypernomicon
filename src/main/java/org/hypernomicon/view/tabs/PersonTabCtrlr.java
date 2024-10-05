@@ -208,8 +208,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField                ), true);
     hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), true);
 
-    setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "Google");
-    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
+    setToolTip(btnWebSrch1, () -> TOOLTIP_PREFIX + btnWebSrch1.getText());
+    setToolTip(smbWebSrch1, () -> TOOLTIP_PREFIX + smbWebSrch1.getText());
+    setToolTip(btnWebSrch2, () -> TOOLTIP_PREFIX + btnWebSrch2.getText());
 
     setToolTip(tfFirst, "To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\"");
 
@@ -1032,11 +1033,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @Override void updateWebButtons(Preferences node)
   {
-    updateWebButtons(node, PREF_KEY_PERSON_SRCH, 2, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
+    updateWebButtons(node, PREF_KEY_PERSON_SRCH, 2, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
     btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH + '2').getCaption());
-
-    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
   }
 
 //---------------------------------------------------------------------------

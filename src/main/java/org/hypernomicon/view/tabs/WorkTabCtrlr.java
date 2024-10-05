@@ -146,7 +146,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private final MainTextWrapper mainText;
   private final DateControlsWrapper dateCtrls;
   private final Map<Tab, String> tabCaptions = new HashMap<>();
-  private final MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
   private final Property<CrossrefBibData> crossrefBDprop = new SimpleObjectProperty<>();
   private final Property<PDFBibData>      pdfBDprop      = new SimpleObjectProperty<>();
@@ -179,8 +178,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tabPane.getTabs().forEach(subTab -> tabCaptions.put(subTab, subTab.getText()));
 
-    setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
-    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
+    setToolTip(btnWebSrch1, () -> TOOLTIP_PREFIX + btnWebSrch1.getText());
+    setToolTip(smbWebSrch1, () -> TOOLTIP_PREFIX + smbWebSrch1.getText());
+    setToolTip(btnWebSrch2, () -> TOOLTIP_PREFIX + btnWebSrch2.getText());
     setToolTip(btnAutofill, AUTOFILL_TOOLTIP);
     setToolTip(btnTopAutofill, AUTOFILL_TOOLTIP);
 
@@ -400,7 +400,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htISBN.addTextEditCol(hdtWork, true, smTextSimple);
 
-    isbnSrchMenuItemSchema = htISBN.addContextMenuItem("WorldCat",
+    htISBN.addContextMenuItem(() -> ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).getCaption(),
       row ->
       {
         List<String> list = matchISBN(row.getText(0));
@@ -521,7 +521,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (curWork.getBibEntryKey().length() > 0)
         {
           programmaticTypeChange = true;
-          errorPopup("You cannot change a work that is assigned to a " + db.getBibLibrary().type().getUserFriendlyName() + " entry into an unentered set of work files.");
+          errorPopup("You cannot change a work that is assigned to a " + db.bibLibraryUserFriendlyName() + " entry into an unentered set of work files.");
           programmaticTypeChange = false;
 
           Platform.runLater(() -> cbType.setValue(oldValue));
@@ -710,7 +710,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (curWork.getBibEntryKey().isBlank() == false)
     {
-      tabEntry.setText(db.getBibLibrary().type().getUserFriendlyName() + " entry");
+      tabEntry.setText(db.bibLibraryUserFriendlyName() + " entry");
       tpBib.getTabs().add(0, tabEntry);
       tpBib.getSelectionModel().select(tabEntry);
       taEntry.appendText(curWork.getBibData().createReport());
@@ -867,7 +867,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       iv.setFitWidth(16);
       iv.setFitHeight(16);
       btnBibManager.setGraphic(iv);
-      setToolTip(btnBibManager, "Go to " + db.getBibLibrary().type().getUserFriendlyName() + " entry for this work");
+      setToolTip(btnBibManager, "Go to " + db.bibLibraryUserFriendlyName() + " entry for this work");
     }
 
     if (updatePreview)
@@ -1402,7 +1402,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       btnBibManager.setVisible(true);
       btnBibManager.setGraphic(iv);
-      setToolTip(btnBibManager, "Assign to " + db.getBibLibrary().type().getUserFriendlyName() + " entry");
+      setToolTip(btnBibManager, "Assign to " + db.bibLibraryUserFriendlyName() + " entry");
     }
     else
       btnBibManager.setVisible(false);
@@ -1887,14 +1887,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override void updateWebButtons(Preferences node)
   {
-    updateWebButtons(node, PREF_KEY_WORK_SRCH, 2, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
+    updateWebButtons(node, PREF_KEY_WORK_SRCH, 2, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
     btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH + '2').getCaption());
     mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(PREF_KEY_DOI_SRCH).getCaption());
-
-    isbnSrchMenuItemSchema.setCaption(ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).getCaption());
-
-    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
   }
 
 //---------------------------------------------------------------------------

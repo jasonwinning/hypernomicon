@@ -72,7 +72,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     super("ImportBibEntryDlg", "Import Bibliography File", true);
 
     if (db.bibLibraryIsLinked())
-      chkNewEntry.setText("Create new " + db.getBibLibrary().type().getUserFriendlyName() + " entry (unless existing work is already assigned to one)");
+      chkNewEntry.setText("Create new " + db.bibLibraryUserFriendlyName() + " entry (unless existing work is already assigned to one)");
     else
     {
       chkNewEntry.setSelected(false);

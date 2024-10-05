@@ -56,7 +56,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   protected abstract boolean isNewEntry();
   protected abstract boolean authorsChanged();
   protected abstract void updateJsonObj(JsonObj jObj);
-  public abstract String getEntryURL();
+  public abstract String getURLtoViewEntryInRefMgr();
   public abstract List<String> getReportFieldOrder();
   public abstract BibliographicDate getDateFromJson();
   protected abstract String getUserName();

@@ -192,7 +192,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     else
     {
       chkNewEntry.setSelected(newEntryChoice.isTrue());
-      chkNewEntry.setText("Create new " + db.getBibLibrary().type().getUserFriendlyName() + " entry");
+      chkNewEntry.setText("Create new " + db.bibLibraryUserFriendlyName() + " entry");
 
       addRow(bfEntryType);
     }

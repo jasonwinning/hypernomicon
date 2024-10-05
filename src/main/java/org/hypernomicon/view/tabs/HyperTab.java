@@ -289,8 +289,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void updateWebButtons(Preferences node, String prefKey, int numDef, Button btn, SplitMenuButton smb, String toolTipPrefix,
-                               Function<String, EventHandler<ActionEvent>> eventHndlr)
+  static void updateWebButtons(Preferences node, String prefKey, int numDef, Button btn, SplitMenuButton smb, Function<String, EventHandler<ActionEvent>> eventHndlr)
   {
     int count = node.getInt(prefKey + "Count", numDef);
 
@@ -300,7 +299,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
       smb.setVisible(true);
 
       smb.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
-      setToolTip(smb, toolTipPrefix + smb.getText());
 
       smb.getItems().clear();
 
@@ -319,7 +317,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
       btn.setVisible(true);
 
       btn.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
-      setToolTip(btn, toolTipPrefix + btn.getText());
     }
   }
 

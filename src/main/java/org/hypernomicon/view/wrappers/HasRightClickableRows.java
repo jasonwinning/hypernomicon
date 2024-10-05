@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
@@ -140,16 +141,28 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Consumer<RowType> rowHandler)
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String captionStr, Consumer<RowType> rowHandler)
+  { return addContextMenuItem(() -> captionStr, rowHandler); }
+
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String captionStr, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
+  { return addContextMenuItem(() -> captionStr, condRowHandler, rowHandler); }
+
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String captionStr, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
+  { return addContextMenuItem(() -> captionStr, klass, recordHandler); }
+
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String captionStr, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
+  { return addContextMenuItem(() -> captionStr, klass, condRecordHandler, recordHandler); }
+
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(Supplier<String> caption, Consumer<RowType> rowHandler)
   { return addSchema(new MenuItemSchema<>(caption, rowHandler)); }
 
-  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(Supplier<String> caption, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
   { return addSchema(new MenuItemSchema<>(caption, condRowHandler, rowHandler)); }
 
-  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(Supplier<String> caption, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
   { return addSchema(new MenuItemSchema<>(caption, klass, recordHandler)); }
 
-  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
+  public final <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(Supplier<String> caption, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
   { return addSchema(new MenuItemSchema<>(caption, klass, condRecordHandler, recordHandler)); }
 
 //---------------------------------------------------------------------------

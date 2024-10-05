@@ -69,10 +69,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     ltMendeley("mendeley", "Mendeley");
 
     LibraryType(String descriptor, String userFriendlyName) { this.descriptor = descriptor; this.userFriendlyName = userFriendlyName; }
-    private final String descriptor, userFriendlyName;
 
-    public String getDescriptor()       { return descriptor; }
-    public String getUserFriendlyName() { return userFriendlyName; }
+    public final String descriptor, userFriendlyName;
 
     public static LibraryType getByDescriptor(String descriptor)
     {
@@ -116,6 +114,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   public final Map<String, BibCollection> getKeyToColl() { return Collections.unmodifiableMap(keyToColl); }
 
   public String getUserName()                            { return userName; }
+  public String getUserFriendlyName()                    { return type().userFriendlyName; }
 
   public EntryType parseEntryType(String typeStr)        { return getEntryTypeMap().inverse().getOrDefault(typeStr, etOther); }
 

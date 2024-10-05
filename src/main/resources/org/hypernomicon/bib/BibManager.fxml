@@ -90,7 +90,7 @@
             </ImageView>
           </graphic>
         </Button>
-        <Button fx:id="btnViewOnWeb" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+        <Button fx:id="btnViewInRefMgr" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
           <graphic>
             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
               <Image url="@../resources/images/world_go.png" />

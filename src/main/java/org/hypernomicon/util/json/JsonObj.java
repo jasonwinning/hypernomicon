@@ -90,7 +90,7 @@ public final class JsonObj implements Cloneable
 
     public String condStrOrBlank(String key)
     {
-      return jBaseObj == null ? null : jBaseObj.getStrSafe(key);
+      return jBaseObj == null ? "" : jBaseObj.getStrSafe(key);
     }
   }
 
@@ -100,7 +100,7 @@ public final class JsonObj implements Cloneable
   {
     private final JsonArray jBaseArr;
 
-    private CondJsonArray(JsonArray jBaseArr)
+    public CondJsonArray(JsonArray jBaseArr)
     {
       this.jBaseArr = jBaseArr;
     }

@@ -33,6 +33,7 @@ import static java.util.Objects.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.google.common.collect.EnumHashBiMap;
@@ -90,7 +91,7 @@ import javafx.util.StringConverter;
 
 public class BibManager extends HyperDlg
 {
-  @FXML private Button btnCreateNew, btnAutofill, btnViewOnWeb, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
+  @FXML private Button btnCreateNew, btnAutofill, btnViewInRefMgr, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
   @FXML private CheckBox chkRequireByDefault;
   @FXML private ComboBox<EntryType> cbNewType;
   @FXML private Label lblSelect;
@@ -124,13 +125,13 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected boolean isValid()               { return true; }
+  @Override protected boolean isValid()                  { return true; }
 
-  private void hideBottomControls()                   { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
-  private void viewOnWeb()                            { viewOnWeb(tableView.getSelectionModel().getSelectedItem().getEntry()); }
-  private static void viewOnWeb(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getEntryURL()); }
-  public void rebuildCollectionTree()                 { collTree.rebuild(libraryWrapper.getKeyToColl()); }
-  public void clearCollectionTree()                   { collTree.clear(); }
+  private void hideBottomControls()                      { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
+  private void viewInRefMgr()                            { viewInRefMgr(tableView.getSelectionModel().getSelectedItem().getEntry()); }
+  private static void viewInRefMgr(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getURLtoViewEntryInRefMgr()); }
+  public void rebuildCollectionTree()                    { collTree.rebuild(libraryWrapper.getKeyToColl()); }
+  public void clearCollectionTree()                      { collTree.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -156,11 +157,13 @@ public class BibManager extends HyperDlg
     btnSync.setOnAction(event -> sync());
     btnStop.setOnAction(event -> stop());
     btnAutofill.setOnAction(event -> autofill());
-    btnViewOnWeb.setOnAction(event -> viewOnWeb());
+    btnViewInRefMgr.setOnAction(event -> viewInRefMgr());
+
+    Supplier<String> viewEntryInRefMgrCaptionSupplier = () -> "View this entry in " + libraryWrapper.getUserFriendlyName();
 
     setToolTip(btnMainWindow, "Return to main application window");
     setToolTip(btnAutofill, MainCtrlr.AUTOFILL_TOOLTIP);
-    setToolTip(btnViewOnWeb, "View this entry on the web");
+    setToolTip(btnViewInRefMgr, viewEntryInRefMgrCaptionSupplier);
 
     btnUpdateRelatives.disableProperty().bind(btnStop.disabledProperty().not());
 
@@ -198,7 +201,7 @@ public class BibManager extends HyperDlg
 
     tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> refresh());
 
-    entryTable.addContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> viewOnWeb(row.getEntry()));
+    entryTable.addContextMenuItem(viewEntryInRefMgrCaptionSupplier, row -> row.getURLtoViewEntryInRefMgr().length() > 0, row -> viewInRefMgr(row.getEntry()));
 
     entryTable.addContextMenuItem("Go to work record", HDT_Work.class, work -> ui.goToRecord(work, true));
 
@@ -354,7 +357,7 @@ public class BibManager extends HyperDlg
     }
     else
     {
-      setToolTip(btnSync, "Synchronize with " + libraryWrapper.type().getUserFriendlyName());
+      setToolTip(btnSync, "Synchronize with " + libraryWrapper.getUserFriendlyName());
       initEntryTypeCB(cbNewType);
       rebuildCollectionTree();
     }
@@ -841,7 +844,7 @@ public class BibManager extends HyperDlg
 
     btnAssign   .setDisable(row == null);
     btnAutofill .setDisable(row == null);
-    btnViewOnWeb.setDisable((row == null) || row.getURL().isBlank());
+    btnViewInRefMgr.setDisable((row == null) || row.getURLtoViewEntryInRefMgr().isBlank());
 
     if ((row == null) || (row.getWork() == null))
     {

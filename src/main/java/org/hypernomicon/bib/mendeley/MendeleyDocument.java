@@ -87,7 +87,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
   @Override protected boolean isNewEntry()             { return jObj.containsKey(Document_Last_Modified_JSON_Key) == false; }
   @Override protected void updateJsonObj(JsonObj jObj) { this.jObj = jObj; }
   @Override protected JsonArray getCollJsonArray()     { return jObj.getArray("folder_uuids"); }
-  @Override public String getEntryURL()                { return ""; }
+  @Override public String getURLtoViewEntryInRefMgr()  { return ""; }
   @Override public BibAuthors getAuthors()             { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
   @Override public EntryType getEntryType()            { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jObj)); }
 
@@ -277,7 +277,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
       case bfDOI :
 
-        return nullSwitch(jObj.getObj("identifiers"), "", idObj -> idObj.getStrSafe("doi"));
+        return jObj.condObj("identifiers").condStrOrBlank("doi");
 
       case bfURL :
 
