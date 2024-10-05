@@ -17,8 +17,11 @@
 
 package org.hypernomicon.bib.reports;
 
-import java.util.Objects;
 import java.util.stream.Stream;
+
+import org.hypernomicon.util.Util;
+
+import static org.hypernomicon.util.Util.*;
 
 public final class PlainTextReportGenerator extends ReportGenerator
 {
@@ -37,7 +40,8 @@ public final class PlainTextReportGenerator extends ReportGenerator
 
   @Override public String makeRows(String fieldName, Stream<String> stream)
   {
-    String line = stream.filter(Objects::nonNull)
+    String line = stream.filter(str -> safeStr(str).isBlank() == false)
+                        .map(Util::ultraTrim)
                         .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
 
     return makeRow(fieldName, line);

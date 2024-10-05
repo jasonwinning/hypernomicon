@@ -22,6 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -33,6 +34,87 @@ import org.json.simple.parser.JSONParser;
 
 public final class JsonObj implements Cloneable
 {
+
+//---------------------------------------------------------------------------
+
+  public static class CondJsonObj
+  {
+    private final JsonObj jBaseObj;
+
+    private CondJsonObj(JsonObj jBaseObj)
+    {
+      this.jBaseObj = jBaseObj;
+    }
+
+    public CondJsonObj condObj(String key)
+    {
+      if (jBaseObj == null) return new CondJsonObj(null);
+
+      return new CondJsonObj(jBaseObj.getObj(key));
+    }
+
+    public CondJsonArray condArray(String key)
+    {
+      if (jBaseObj == null) return new CondJsonArray(null);
+
+      return new CondJsonArray(jBaseObj.getArray(key));
+    }
+
+    /**
+     * This only calls the consumer function if the string value exists and is non-blank.
+     * @param key Key
+     * @param consumer Function to pass the string value to
+     */
+    public void condStr(String key, Consumer<String> consumer)
+    {
+      if ((jBaseObj == null) || (jBaseObj.containsKey(key) == false)) return;
+
+      String val = jBaseObj.getStrSafe(key);
+
+      if (val.isBlank() == false) consumer.accept(val);
+    }
+
+    /**
+     * Calls the consumer function if the string value exists.
+     * @param key Key
+     * @param consumer Function to pass the string value to
+     */
+    public void condStrBlankOk(String key, Consumer<String> consumer)
+    {
+      if ((jBaseObj == null) || (jBaseObj.containsKey(key) == false)) return;
+
+      String val = jBaseObj.getStrSafe(key);
+
+      consumer.accept(val);
+    }
+
+    public String condStrOrBlank(String key)
+    {
+      return jBaseObj == null ? null : jBaseObj.getStrSafe(key);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
+  public static class CondJsonArray
+  {
+    private final JsonArray jBaseArr;
+
+    private CondJsonArray(JsonArray jBaseArr)
+    {
+      this.jBaseArr = jBaseArr;
+    }
+
+    public CondJsonObj condObj(int ndx)
+    {
+      if ((jBaseArr == null) || (jBaseArr.size() <= ndx)) return new CondJsonObj(null);
+
+      return new CondJsonObj(jBaseArr.getObj(ndx));
+    }
+  }
+
+//---------------------------------------------------------------------------
+
   public enum JsonNodeType { OBJECT, STRING, ARRAY, BOOLEAN, INTEGER, NONE }
 
   public static final JSONParser jsonParser = new JSONParser();
@@ -45,10 +127,12 @@ public final class JsonObj implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()                     { jObj.clear(); }
-  public boolean containsKey(String key)  { return jObj.containsKey(key); }
-  public void remove(String key)          { jObj.remove(key); }
-  public JsonNodeType getType(String key) { return determineType(jObj.get(key)); }
+  public void clear()                        { jObj.clear(); }
+  public boolean containsKey(String key)     { return jObj.containsKey(key); }
+  public void remove(String key)             { jObj.remove(key); }
+  public JsonNodeType getType(String key)    { return determineType(jObj.get(key)); }
+  public CondJsonObj condObj(String key)     { return new CondJsonObj(getObj(key)); }
+  public CondJsonArray condArray(String key) { return new CondJsonArray(getArray(key)); }
 
   public JsonObj getObj(String key)         { return nullSwitch((JSONObject)jObj.get(key), null, JsonObj::new); }
   public String getStr(String key)          { return (String) jObj.get(key); }

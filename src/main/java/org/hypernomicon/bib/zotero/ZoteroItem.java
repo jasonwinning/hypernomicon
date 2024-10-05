@@ -152,10 +152,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       parsedDateStr = "";  // Zotero will only recognize a "multi-part" date if the year is 4 digits and month and day are present
 
     String origRawDateStr = jData.getStrSafe("date"),
-           origParsedDateStr = "";
-
-    if (jObj.containsKey("meta"))
-      origParsedDateStr = jObj.getObj("meta").getStrSafe("parsedDate");
+           origParsedDateStr = jObj.condObj("meta").condStrOrBlank("parsedDate");
 
     if ((safeStr(newRawDateStr).isBlank() == false) && newRawDateStr.equals(origRawDateStr))
     {

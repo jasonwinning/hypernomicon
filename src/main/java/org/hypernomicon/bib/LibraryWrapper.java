@@ -51,6 +51,14 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+/**
+ * Classes that extend this class form a "wrapper" around, and act as Hypernomicon's primary interface with, the
+ * actual third-party reference manager's web services, local copy of JSON data, and overall library data model.
+ * The corresponding BibEntry-derived class provides the interface to JSON data for individual entries in the
+ * library.
+ * @param <BibEntry_T> The type of bibliographic entry corresponding with this library
+ * @param <BibCollection_T> The type of collection corresponding with this library
+ */
 public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, BibCollection_T>, BibCollection_T extends BibCollection>
 {
   //---------------------------------------------------------------------------

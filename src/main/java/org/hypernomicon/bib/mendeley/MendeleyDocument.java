@@ -393,6 +393,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         String note = jObj.getStrSafe(getFieldKey(bibFieldEnum));
 
         note = note.replaceAll("<br>"   , "\n")
+                   .replaceAll("<br/>"   , "\n")
                    .replaceAll("<[^>]*>", ""  );
 
         note = trimLines(note);

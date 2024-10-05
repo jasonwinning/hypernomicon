@@ -158,23 +158,17 @@ public final class CrossrefBibData extends BibDataStandalone
     setStr(bfPages    , jsonObj.getStrSafe("page"));
     setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
     setStr(bfPubLoc   , jsonObj.getStrSafe("publisher-location"));
+    setStr(bfLanguage , jsonObj.getStrSafe("language"));
 
     setDateIfPresent(jsonObj, dtPublishedPrint);
     setDateIfPresent(jsonObj, dtIssued);
     setDateIfPresent(jsonObj, dtCreated);
 
-    setStr(bfURL, jsonObj.getStrSafe("URL"));
+    setStr(bfURL, jsonObj.getStrSafe("URL"));  // This is at least sometimes just a doi.org link
 
-    if (jsonObj.containsKey("link"))
-    {
-      JsonArray linkArray = jsonObj.getArray("link");
-      if (linkArray.size() > 0)
-      {
-        String link = linkArray.getObj(0).getStrSafe("URL");
-        if (link.isBlank() == false)
-          setStr(bfURL, link);
-      }
-    }
+    jsonObj.condObj("resource").condObj("primary").condStr("URL", urlStr -> setStr(bfURL, urlStr));
+
+    jsonObj.condArray("link").condObj(0).condStr("URL", link -> setStr(bfURL, link));
 
     setStr(bfVolume, jsonObj.getStrSafe("volume"));
     setStr(bfIssue , jsonObj.getStrSafe("issue"));
