@@ -23,12 +23,12 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.WebButton.WebButtonField;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import com.google.common.collect.Ordering;
@@ -40,8 +40,8 @@ import static org.hypernomicon.model.records.HDT_Institution.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 

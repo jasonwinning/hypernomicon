@@ -31,13 +31,13 @@ import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.FilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.ui.QueryCtrlr;
+import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordHTC;
 
 import javafx.concurrent.Worker.State;
 

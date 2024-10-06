@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.view.cellValues;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
@@ -103,7 +103,7 @@ public class RecordHTC extends HyperTableCell implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getImgRelPath()
+  @Override public String getImgRelPath()
   {
     if (imgRelPath != null)
       return imgRelPath;

@@ -55,6 +55,7 @@ import org.hypernomicon.query.*;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.Highlighter;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.populators.*;

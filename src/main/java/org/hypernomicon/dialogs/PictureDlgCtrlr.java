@@ -38,8 +38,8 @@ import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.tabs.PersonTabCtrlr;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import java.io.IOException;
 import java.util.Set;

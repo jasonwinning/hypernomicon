@@ -25,11 +25,11 @@ import java.io.IOException;
 import java.util.List;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordHTC;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

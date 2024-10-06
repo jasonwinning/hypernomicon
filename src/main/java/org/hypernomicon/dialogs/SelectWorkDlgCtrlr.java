@@ -43,14 +43,14 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.BibEntryPopulator;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import com.google.common.collect.Lists;
 

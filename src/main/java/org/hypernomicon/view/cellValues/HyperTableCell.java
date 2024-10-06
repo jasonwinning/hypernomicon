@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.view.cellValues;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
@@ -53,7 +53,7 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>
 
   public final boolean sortToBottom;
 
-  static HyperTableCell fromBoolean(boolean boolVal)        { return boolVal ? trueCell : falseCell; }
+  public static HyperTableCell fromBoolean(boolean boolVal) { return boolVal ? trueCell : falseCell; }
   public static int getCellID(HyperTableCell cell)          { return cell == null ? -1 : cell.getID(); }
   public static String getCellText(HyperTableCell cell)     { return cell == null ? "" : safeStr(cell.getText()); }
   public static RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.getRecordType() == null) ? hdtNone : cell.getRecordType(); }

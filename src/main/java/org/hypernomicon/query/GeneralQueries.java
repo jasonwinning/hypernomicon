@@ -22,7 +22,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.query.WorkQueries.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -41,9 +41,9 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.query.Query.FilteredRecordQuery;
 import org.hypernomicon.query.Query.RecordQuery;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.concurrent.Worker.State;

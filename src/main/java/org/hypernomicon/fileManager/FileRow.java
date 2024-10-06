@@ -34,7 +34,7 @@ import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.tree.AbstractTreeRow;
 import org.hypernomicon.tree.TreeModel;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.wrappers.ObjectCellValue;
+import org.hypernomicon.view.cellValues.ObjectCellValue;
 
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;

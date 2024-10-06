@@ -28,9 +28,9 @@ import java.util.Map;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class QueryPopulator extends Populator
 {

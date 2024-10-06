@@ -17,7 +17,7 @@
 
 package org.hypernomicon.query;
 
-import static org.hypernomicon.view.wrappers.HyperTableCell.getCellID;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import java.util.stream.Stream;
 
@@ -25,8 +25,8 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks

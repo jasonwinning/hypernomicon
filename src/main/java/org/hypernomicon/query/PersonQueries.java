@@ -20,7 +20,7 @@ package org.hypernomicon.query;
 import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.query.Query.PersonQuery;
-import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.App.app;

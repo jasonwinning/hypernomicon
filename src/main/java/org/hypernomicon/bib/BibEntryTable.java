@@ -24,9 +24,9 @@ import java.util.stream.Stream;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.util.BasicTextMatcher;
+import org.hypernomicon.view.cellValues.ObjectCellValue;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.ObjectCellValue;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;

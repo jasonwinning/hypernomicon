@@ -36,10 +36,10 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.CustomPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

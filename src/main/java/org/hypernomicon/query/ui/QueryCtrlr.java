@@ -28,8 +28,8 @@ import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.query.ui.ResultsTable.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
@@ -65,6 +65,8 @@ import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.ui.ColumnGroup.*;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
+import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator;
@@ -72,9 +74,7 @@ import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.populators.QueryPopulator.QueryCell;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordHTC;
 import org.hypernomicon.util.boolEvaluator.BoolEvaluator;
 import org.hypernomicon.util.boolEvaluator.BoolExpression;
 

@@ -28,9 +28,9 @@ import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import java.io.IOException;
 import java.util.EnumSet;

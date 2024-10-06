@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.view.cellValues;
 
 //---------------------------------------------------------------------------
 

@@ -18,8 +18,8 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -27,11 +27,11 @@ import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.query.ui.QueryCtrlr;
+import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.populators.RelationPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
-import org.hypernomicon.view.populators.Populator.CellValueType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class QueryWhereRelative extends RecordQuery

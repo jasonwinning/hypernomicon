@@ -20,15 +20,15 @@ package org.hypernomicon.view;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
-import org.hypernomicon.view.wrappers.RecordHTC;
+import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import java.util.ArrayList;
 import java.util.List;

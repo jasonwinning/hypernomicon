@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------

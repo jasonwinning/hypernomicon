@@ -28,8 +28,8 @@ import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
-import org.hypernomicon.view.wrappers.RecordHTC;
+import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 
 //---------------------------------------------------------------------------
 

@@ -67,11 +67,11 @@ import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.controls.HiddenSidesPane;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;

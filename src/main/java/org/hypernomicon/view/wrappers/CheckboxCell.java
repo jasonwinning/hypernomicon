@@ -22,7 +22,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableCell;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
+
+import org.hypernomicon.view.cellValues.HyperTableCell;
 
 class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 {

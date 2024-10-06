@@ -19,7 +19,7 @@ package org.hypernomicon.query;
 
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.concurrent.Worker.State;

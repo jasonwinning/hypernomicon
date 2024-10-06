@@ -37,9 +37,9 @@ import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.cellValues.ObjectCellValue;
 import org.hypernomicon.view.wrappers.DragNDropContainer;
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.ObjectCellValue;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;

@@ -17,8 +17,8 @@
 
 package org.hypernomicon.util;
 
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;

@@ -29,9 +29,9 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

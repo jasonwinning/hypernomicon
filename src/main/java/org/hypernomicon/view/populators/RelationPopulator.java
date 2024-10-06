@@ -29,9 +29,9 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class RelationPopulator extends Populator
 {

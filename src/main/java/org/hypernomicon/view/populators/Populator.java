@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public abstract class Populator
