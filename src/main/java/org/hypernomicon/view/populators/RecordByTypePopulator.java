@@ -31,6 +31,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 //---------------------------------------------------------------------------
 
@@ -176,7 +177,7 @@ public class RecordByTypePopulator extends RecordPopulator
   {
     RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
 
-    HyperTableCell cell = new HyperTableCell(id, text, type);
+    HyperTableCell cell = new RecordHTC(id, text, type);
 
     rowToChoices.putIfAbsent(row, new ArrayList<>());
 

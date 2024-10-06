@@ -74,6 +74,7 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 import org.hypernomicon.util.boolEvaluator.BoolEvaluator;
 import org.hypernomicon.util.boolEvaluator.BoolExpression;
 
@@ -380,10 +381,9 @@ public final class QueryCtrlr
     if (includeReport == false) queryTypes.remove(qtReport);
 
     return Populator.create(cvtQueryType, queryTypes.stream()
-      .map(queryType -> new HyperTableCell(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
+      .map(queryType -> new RecordHTC(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
       .toList());
   }
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -573,7 +573,7 @@ public final class QueryCtrlr
         QueryRow queryRow = new QueryRow();
 
         for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
-          queryRow.cells[colNdx - QUERY_TYPE_COL_NDX] = row.getCell(colNdx).clone();
+          queryRow.cells[colNdx - QUERY_TYPE_COL_NDX] = (RecordHTC) row.getCell(colNdx).clone();
 
         fav.rows.add(queryRow);
       });

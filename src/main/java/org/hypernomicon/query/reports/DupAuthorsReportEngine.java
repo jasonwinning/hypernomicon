@@ -39,6 +39,7 @@ import org.hypernomicon.model.items.Author;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -98,16 +99,16 @@ public class DupAuthorsReportEngine extends ReportEngine
       ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(HyperTableCell.blankCell);
 
       cells.add(author.getPerson() == null ?
-        new HyperTableCell(author.getNameLastFirst(false), hdtNone)
+        new RecordHTC(author.getNameLastFirst(false), hdtNone)
       :
-        new HyperTableCell(author.getPerson(), author.getNameLastFirst(false)));
+        new RecordHTC(author.getPerson(), author.getNameLastFirst(false)));
 
       cells.add(getWorkCell(author));
 
       cells.add(match.getPerson() == null ?
-        new HyperTableCell(match.getNameLastFirst(false), hdtNone)
+        new RecordHTC(match.getNameLastFirst(false), hdtNone)
       :
-        new HyperTableCell(match.getPerson(), match.getNameLastFirst(false)));
+        new RecordHTC(match.getPerson(), match.getNameLastFirst(false)));
 
       cells.add(getWorkCell(match));
 
@@ -124,7 +125,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
   private static HyperTableCell getWorkCell(Author author)
   {
-    return nullSwitch(author.getWork(), new HyperTableCell("", hdtWork), work -> new HyperTableCell(work, work.getCBText()));
+    return nullSwitch(author.getWork(), new RecordHTC("", hdtWork), work -> new RecordHTC(work, work.getCBText()));
   }
 
 //---------------------------------------------------------------------------

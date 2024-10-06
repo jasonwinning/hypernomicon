@@ -31,6 +31,7 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class TagItemPopulator extends Populator
 {
@@ -67,7 +68,7 @@ public class TagItemPopulator extends Populator
 
     tags.forEach(tag ->
     {
-      HyperTableCell cell = new HyperTableCell(tag.num, tag.header, recordType);
+      HyperTableCell cell = new RecordHTC(tag.num, tag.header, recordType);
       addToSortedList(choices, cell, Comparator.comparing(HyperTableCell::getCellText));
     });
 

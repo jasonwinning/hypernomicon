@@ -30,6 +30,7 @@ import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class QueryPopulator extends Populator
 {
@@ -99,7 +100,7 @@ public class QueryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class QueryCell extends HyperTableCell
+  public static final class QueryCell extends RecordHTC
   {
     private final Query<?> query;
 
@@ -117,7 +118,7 @@ public class QueryPopulator extends Populator
 
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
-    HyperTableCell cell = new HyperTableCell(id, text, getRecordType(row));
+    HyperTableCell cell = new RecordHTC(id, text, getRecordType(row));
 
     rowToChoices.putIfAbsent(row, new ArrayList<>());
 

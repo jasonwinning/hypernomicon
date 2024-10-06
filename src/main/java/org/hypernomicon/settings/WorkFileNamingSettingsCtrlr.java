@@ -37,9 +37,9 @@ import org.hypernomicon.util.Util;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -193,7 +193,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     hyperTable = new HyperTable(tv, 0, true, "");
 
     Populator pop = Populator.create(CellValueType.cvtFileNameComponent,
-        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new HyperTableCell(type.prefValue, type.caption, hdtNone)).toList());
+        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new RecordHTC(type.prefValue, type.caption, hdtNone)).toList());
 
     hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDown, pop, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
 
@@ -215,7 +215,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     btnRevert.setOnAction(event -> reloadFromPrefs());
 
-    hyperTable.setDefaultValue(3, new HyperTableCell(" ", hdtNone)); // Default within-separator is space
+    hyperTable.setDefaultValue(3, new RecordHTC(" ", hdtNone)); // Default within-separator is space
     hyperTable.addRemoveMenuItem(row ->
     {
       HyperTableRow lastRow = hyperTable.getRows().get(hyperTable.getRows().size() - 1);
@@ -250,14 +250,14 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     hyperTable.buildRows(WorkFileNameComponent.loadFromPrefs(), (row, component) ->
     {
-      row.setCellValue(0, new HyperTableCell(component.type.prefValue, component.type.caption, hdtNone));
+      row.setCellValue(0, new RecordHTC(component.type.prefValue, component.type.caption, hdtNone));
 
       setExclWorkTypesCellValue(component.excludedWorkTypes.stream(), row);
 
-      row.setCellValue(2, new HyperTableCell(component.beforeSep, hdtNone));
-      row.setCellValue(3, new HyperTableCell(component.withinSep, hdtNone));
-      row.setCellValue(4, new HyperTableCell(component.afterSep , hdtNone));
-      row.setCellValue(5, new HyperTableCell(component.testStr  , hdtNone));
+      row.setCellValue(2, new RecordHTC(component.beforeSep, hdtNone));
+      row.setCellValue(3, new RecordHTC(component.withinSep, hdtNone));
+      row.setCellValue(4, new RecordHTC(component.afterSep , hdtNone));
+      row.setCellValue(5, new RecordHTC(component.testStr  , hdtNone));
     });
 
     refreshExample();

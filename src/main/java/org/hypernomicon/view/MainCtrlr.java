@@ -749,7 +749,7 @@ public final class MainCtrlr
     mnuFindWithinName.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new RecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
         mnuFindWithinNameClick();
     });
@@ -759,9 +759,9 @@ public final class MainCtrlr
     mnuFindWithinAnyField.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new RecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
-        showSearch(true, fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new RecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
     });
 
 //---------------------------------------------------------------------------
@@ -1257,7 +1257,7 @@ public final class MainCtrlr
 
     lblStatus.setText("");
 
-    if (!showSearch(true, fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(query, hdtNone), null, query))
+    if (!showSearch(true, fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new RecordHTC(query, hdtNone), null, query))
     {
       discardLastQuery(backClick);
       return;
@@ -2124,7 +2124,7 @@ public final class MainCtrlr
     lblStatus.setText("");
 
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
-                   new HyperTableCell("", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
+                   new RecordHTC("", type), new RecordHTC(record, ""), "Mentions: " + record.listName()))
     {
       List<ResultRow> resultRows = queryHyperTab().results();
 

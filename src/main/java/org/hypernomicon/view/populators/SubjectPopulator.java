@@ -32,6 +32,7 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
@@ -184,7 +185,7 @@ public class SubjectPopulator extends RecordPopulator
   {
     RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? db.getSubjType(relType) : hdtNone;
 
-    HyperTableCell cell = new HyperTableCell(id, text, type);
+    HyperTableCell cell = new RecordHTC(id, text, type);
 
     rowToChoices.putIfAbsent(row, new ArrayList<>());
 

@@ -31,6 +31,7 @@ import java.util.List;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class RelationPopulator extends Populator
 {
@@ -56,7 +57,7 @@ public class RelationPopulator extends Populator
 
     relTypes.forEach(relType ->
     {
-      HyperTableCell cell = new HyperTableCell(relType.getCode(), relType.getTitle(), objType);
+      HyperTableCell cell = new RecordHTC(relType.getCode(), relType.getTitle(), objType);
       addToSortedList(cells, cell, Comparator.comparing(HyperTableCell::getCellText));
     });
 

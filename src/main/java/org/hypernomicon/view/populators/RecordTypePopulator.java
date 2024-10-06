@@ -35,6 +35,7 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class RecordTypePopulator extends Populator
 {
@@ -103,7 +104,7 @@ public class RecordTypePopulator extends Populator
 
     types.forEach(type ->
     {
-      HyperTableCell cell = new HyperTableCell(getTypeName(type), type);
+      HyperTableCell cell = new RecordHTC(getTypeName(type), type);
       addToSortedList(choices, cell, Comparator.comparing(HyperTableCell::getCellText));
     });
 

@@ -43,6 +43,7 @@ import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -127,10 +128,10 @@ public class OmniFinder
 
     for (int ndx = 0; ndx < ROWS_TO_SHOW; ndx++)
     {
-      ObservableList<HyperTableCell> oList = FXCollections.observableArrayList(new HyperTableCell("", hdtWork),
-                                                                               new HyperTableCell("", hdtWork),
-                                                                               new HyperTableCell("", hdtWork),
-                                                                               new HyperTableCell("", hdtPerson));
+      ObservableList<HyperTableCell> oList = FXCollections.observableArrayList(new RecordHTC("", hdtWork),
+                                                                               new RecordHTC("", hdtWork),
+                                                                               new RecordHTC("", hdtWork),
+                                                                               new RecordHTC("", hdtPerson));
       cellLists.add(oList);
       rows.add(new HyperTableRow(oList, htFind));
     }
@@ -380,15 +381,15 @@ public class OmniFinder
       for (HDT_Record record : buffer)
       {
         ObservableList<HyperTableCell> cells = showingMore ?
-          FXCollections.observableArrayList(new HyperTableCell("", hdtWork),
-                                            new HyperTableCell("", hdtWork),
-                                            new HyperTableCell("", hdtWork),
-                                            new HyperTableCell("", hdtPerson))
+          FXCollections.observableArrayList(new RecordHTC("", hdtWork),
+                                            new RecordHTC("", hdtWork),
+                                            new RecordHTC("", hdtWork),
+                                            new RecordHTC("", hdtPerson))
         :
           cellLists.get(rowNdx);
 
-        cells.set(0, new HyperTableCell(record.getID(), ""               , record.getType()));
-        cells.set(1, new HyperTableCell(record.getID(), record.listName(), record.getType()));
+        cells.set(0, new RecordHTC(record.getID(), ""               , record.getType()));
+        cells.set(1, new RecordHTC(record.getID(), record.listName(), record.getType()));
 
         switch (record.getType())
         {
@@ -396,17 +397,17 @@ public class OmniFinder
 
             HDT_Work work = (HDT_Work) record;
 
-            cells.set(2, new HyperTableCell(work, work.getYearStr()));
+            cells.set(2, new RecordHTC(work, work.getYearStr()));
 
             if (work.authorRecords.isEmpty())
-              cells.set(3, new HyperTableCell(work, work.getShortAuthorsStr(true)));
+              cells.set(3, new RecordHTC(work, work.getShortAuthorsStr(true)));
             else if ((work.getAuthors().size() == 1) && (work.authorRecords.size() == 1))
             {
               HDT_Person author = work.authorRecords.get(0);
-              cells.set(3, new HyperTableCell(author, author.getCBText()));
+              cells.set(3, new RecordHTC(author, author.getCBText()));
             }
             else
-              cells.set(3, new HyperTableCell(work.authorRecords.get(0), work.getShortAuthorsStr(true)));
+              cells.set(3, new RecordHTC(work.authorRecords.get(0), work.getShortAuthorsStr(true)));
 
             break;
 
@@ -414,19 +415,19 @@ public class OmniFinder
 
             HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
-            cells.set(2, new HyperTableCell(miscFile, ""));
+            cells.set(2, new RecordHTC(miscFile, ""));
 
             List<HDT_Person> authorRecords = miscFile.authorRecords();
 
             if (authorRecords.isEmpty())
-              cells.set(3, new HyperTableCell("", hdtPerson));
+              cells.set(3, new RecordHTC("", hdtPerson));
             else if (authorRecords.size() == 1)
             {
               HDT_Person author = authorRecords.get(0);
-              cells.set(3, new HyperTableCell(author, author.getCBText()));
+              cells.set(3, new RecordHTC(author, author.getCBText()));
             }
             else
-              cells.set(3, new HyperTableCell(authorRecords.get(0), miscFile.getShortAuthorsStr(true)));
+              cells.set(3, new RecordHTC(authorRecords.get(0), miscFile.getShortAuthorsStr(true)));
 
             break;
 
@@ -435,8 +436,8 @@ public class OmniFinder
             HDT_Investigation inv = (HDT_Investigation) record;
             HDT_Person person = inv.person.get();
 
-            cells.set(2, new HyperTableCell(inv, ""));
-            cells.set(3, new HyperTableCell(person, person.getCBText()));
+            cells.set(2, new RecordHTC(inv, ""));
+            cells.set(3, new RecordHTC(person, person.getCBText()));
 
             break;
 
@@ -444,23 +445,23 @@ public class OmniFinder
 
             HDT_WorkLabel label = (HDT_WorkLabel) record;
 
-            cells.set(2, new HyperTableCell(label, ""));
-            cells.set(3, new HyperTableCell(label, label.extendedText()));
+            cells.set(2, new RecordHTC(label, ""));
+            cells.set(3, new RecordHTC(label, label.extendedText()));
 
             break;
 
           case hdtConcept :
 
             HDT_Concept concept = (HDT_Concept) record;
-            cells.set(2, new HyperTableCell(concept, ""));
-            cells.set(3, new HyperTableCell(concept, "Glossary: " + concept.glossary.get().listName()));
+            cells.set(2, new RecordHTC(concept, ""));
+            cells.set(3, new RecordHTC(concept, "Glossary: " + concept.glossary.get().listName()));
 
             break;
 
           default :
 
-            cells.set(2, new HyperTableCell(record, ""));
-            cells.set(3, new HyperTableCell(record, ""));
+            cells.set(2, new RecordHTC(record, ""));
+            cells.set(3, new RecordHTC(record, ""));
 
             break;
         }
@@ -471,10 +472,10 @@ public class OmniFinder
         {
           if (rowNdx == (ROWS_TO_SHOW - 1))  // This will be the "show more" row
           {
-            cells.set(0, new HyperTableCell("", hdtNone     , true));
-            cells.set(1, new HyperTableCell("", hdtAuxiliary, true));
-            cells.set(2, new HyperTableCell("", hdtNone     , true));
-            cells.set(3, new HyperTableCell("", hdtNone     , true));
+            cells.set(0, new RecordHTC("", hdtNone     , true));
+            cells.set(1, new RecordHTC("", hdtAuxiliary, true));
+            cells.set(2, new RecordHTC("", hdtNone     , true));
+            cells.set(3, new RecordHTC("", hdtNone     , true));
           }
 
           curRows.add(rows.get(rowNdx));

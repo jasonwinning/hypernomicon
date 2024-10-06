@@ -37,6 +37,7 @@ import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 import javafx.concurrent.Worker.State;
 
@@ -175,12 +176,12 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     return Populator.create(cvtOperand,
 
-      new HyperTableCell(EQUAL_TO_OPERAND_ID        , excludeRecordOps ? "Is exactly" : "Is or includes record", hdtNone),
-      new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID    , excludeRecordOps ? "Is not"     : "Excludes record"      , hdtNone),
-      new HyperTableCell(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
-      new HyperTableCell(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
-      new HyperTableCell(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
-      new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone));
+      new RecordHTC(EQUAL_TO_OPERAND_ID        , excludeRecordOps ? "Is exactly" : "Is or includes record", hdtNone),
+      new RecordHTC(NOT_EQUAL_TO_OPERAND_ID    , excludeRecordOps ? "Is not"     : "Excludes record"      , hdtNone),
+      new RecordHTC(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
+      new RecordHTC(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
+      new RecordHTC(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
+      new RecordHTC(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone));
   }
 
 //---------------------------------------------------------------------------

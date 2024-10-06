@@ -27,6 +27,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class BibEntryPopulator extends Populator
 {
@@ -57,7 +58,7 @@ public class BibEntryPopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     List<HyperTableCell> choices = handler.handle(row, force).stream()
-      .map(bibEntry -> new HyperTableCell(bibEntry.numericID(), bibEntry.getCBText(), hdtNone))
+      .map(bibEntry -> new RecordHTC(bibEntry.numericID(), bibEntry.getCBText(), hdtNone))
       .collect(Collectors.toCollection(ArrayList::new));
 
     choices.add(HyperTableCell.blankCell);

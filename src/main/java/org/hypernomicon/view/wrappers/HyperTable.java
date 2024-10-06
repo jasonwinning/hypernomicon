@@ -579,7 +579,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     HyperTableRow row = newDataRow();
 
     for (int colNdx = 0; colNdx < cols.size(); colNdx++)
-      row.setCellValue(colNdx, new HyperTableCell("", cols.get(colNdx).getCtrlType() == ctIncremental ? hdtAuxiliary : hdtNone, true));
+      row.setCellValue(colNdx, new RecordHTC("", cols.get(colNdx).getCtrlType() == ctIncremental ? hdtAuxiliary : hdtNone, true));
 
     return row;
   }
@@ -677,7 +677,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       if (pop.getRecordType(row) == hdtWorkLabel)
       {
-        List<HyperTableCell> choices = pop.populate(row, false);
+        List<? extends HyperTableCell> choices = pop.populate(row, false);
         HDT_Record record = null;
 
         if (collEmpty(choices) == false)

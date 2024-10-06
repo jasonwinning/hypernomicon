@@ -132,7 +132,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
       alreadyChanging = true;
 
-      List<HyperTableCell> glossaryCells = hcbGlossary.populate(true);
+      List<? extends HyperTableCell> glossaryCells = hcbGlossary.populate(true);
 
       if (HyperTableCell.getRecord(newCell) != null)
       {

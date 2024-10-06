@@ -185,7 +185,6 @@ public final class RISBibData extends BibDataStandalone
           setStr(bfURL, val);
           break;
 
-
         case "LA" : setStr(bfLanguage, val); break;
         case "PB" : setStr(bfPublisher, val); break;
 
@@ -223,7 +222,6 @@ public final class RISBibData extends BibDataStandalone
 
           addStr(bfMisc, val); break;
       }
-
     }
 
     if (getEntryType() != etJournalArticle)

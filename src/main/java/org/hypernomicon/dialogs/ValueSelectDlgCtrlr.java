@@ -19,6 +19,7 @@ package org.hypernomicon.dialogs;
 
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -52,7 +53,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
     StringConverter<HyperTableCell> strConv = new StringConverter<>()
     {
       @Override public String toString(HyperTableCell cell)     { return HyperTableCell.getCellText(cell); }
-      @Override public HyperTableCell fromString(String string) { return new HyperTableCell(string, objType); }
+      @Override public HyperTableCell fromString(String string) { return new RecordHTC(string, objType); }
     };
 
     listView.setCellFactory(TextFieldListCell.forListView(strConv));

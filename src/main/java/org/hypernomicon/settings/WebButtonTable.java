@@ -33,6 +33,7 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 import javafx.scene.control.TableView;
 
@@ -55,7 +56,7 @@ class WebButtonTable extends WebButtonCtrl
     ht = new HyperTable(tv, 0, true, "");
     this.defaults = defaults;
 
-    CustomPopulator pop = new CustomPopulator(cvtSrchBtnPreset, (row, force) -> webBtnList.stream().map(webButton -> new HyperTableCell(webButton.getName(), hdtNone)));
+    CustomPopulator pop = new CustomPopulator(cvtSrchBtnPreset, (row, force) -> webBtnList.stream().map(webButton -> new RecordHTC(webButton.getName(), hdtNone)));
 
     ht.addTextEditCol(hdtNone, true);
     ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDownList, pop,

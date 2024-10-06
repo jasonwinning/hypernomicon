@@ -163,7 +163,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
     if (getGraphic() != textField) return;
 
     HyperTableCell oldItem = getItem();
-    commitEdit(new HyperTableCell(getCellID(oldItem), textField.getText(), getCellType(oldItem)));
+    commitEdit(new RecordHTC(getCellID(oldItem), textField.getText(), getCellType(oldItem)));
   }
 
 //---------------------------------------------------------------------------

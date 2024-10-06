@@ -29,6 +29,7 @@ import java.util.function.Predicate;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 //---------------------------------------------------------------------------
 
@@ -105,7 +106,7 @@ public abstract class RecordPopulator extends Populator
     return (record == null) || ((idFilter != null) && (idFilter.test(record.getID()) == false)) ?
       HyperTableCell.blankCell
     :
-      new HyperTableCell(record, getCellText(record));
+      new RecordHTC(record, getCellText(record));
   }
 
 //---------------------------------------------------------------------------

@@ -39,6 +39,7 @@ import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class QueryWhereBibField extends WorkQuery
 {
@@ -73,7 +74,7 @@ public class QueryWhereBibField extends WorkQuery
       vp1.setPopulator(row, Populator.create(cvtBibField,
 
         EnumSet.allOf(BibFieldEnum.class).stream().filter(field -> field != bfWorkType)
-                                                  .map(field -> new HyperTableCell(field.ordinal(), field.getUserFriendlyName(), hdtWork))
+                                                  .map(field -> new RecordHTC(field.ordinal(), field.getUserFriendlyName(), hdtWork))
                                                   .collect(Collectors.toCollection(ArrayList::new))));
     }
 

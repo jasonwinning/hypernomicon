@@ -17,70 +17,47 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
-import java.util.Comparator;
-
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.hypernomicon.model.items.BibliographicYear;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.MediaUtil;
-import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
-import org.hypernomicon.model.records.HDT_Work;
 
 //---------------------------------------------------------------------------
 
-public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
+public class RecordHTC extends HyperTableCell implements Cloneable
 {
   private int id;
   private String imgRelPath;  // should only ever be accessed by getImgRelPath
 
   private final String text;
   private final RecordType type;
-  public final boolean sortToBottom;
 
-  public static final int TRUE_ID  = 1,
-                          FALSE_ID = 2,
-                          UNSET_ID = 3;
+  @Override public int getID()                { return id; }
+  @Override public String getText()           { return text; }
+  @Override public RecordType getRecordType() { return type; }
 
-  public static final HyperTableCell trueCell  = new HyperTableCell(TRUE_ID , "True" , hdtNone),
-                                     falseCell = new HyperTableCell(FALSE_ID, "False", hdtNone),
-                                     unsetCell = new HyperTableCell(UNSET_ID, "Unset", hdtNone),
-                                     blankCell = new HyperTableCell("", hdtNone);
-
-  public int getID()                                        { return id; }
-  public <HDT_T extends HDT_Record> HDT_T getRecord()       { return getRecord(this); }
-
-  static HyperTableCell fromBoolean(boolean boolVal)        { return boolVal ? trueCell : falseCell; }
-  public static int getCellID(HyperTableCell cell)          { return cell == null ? -1 : cell.id; }
-  public static String getCellText(HyperTableCell cell)     { return cell == null ? "" : safeStr(cell.text); }
-  public static RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
-  public static boolean isEmpty(HyperTableCell cell)        { return (cell == null) || blankCell.equals(cell); }
-
-  @Override public HyperTableCell clone()
-  { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
+  @Override public RecordHTC clone()
+  { return (RecordHTC) super.clone(); }
 
 //---------------------------------------------------------------------------
 
-  public HyperTableCell(                   String text, RecordType type)         { this(-1            , text, type); }
-  public HyperTableCell(int id           , String text, RecordType type)         { this(id            , text, type, false); }
-  public HyperTableCell(HDT_Record record, String text                 )         { this(record.getID(), text, record.getType()); }
+  public RecordHTC(                   String text, RecordType type)         { this(-1            , text, type); }
+  public RecordHTC(int id           , String text, RecordType type)         { this(id            , text, type, false); }
+  public RecordHTC(HDT_Record record, String text                 )         { this(record.getID(), text, record.getType()); }
 
-  public HyperTableCell(String text, RecordType type, boolean sortToBottom)      { this(-1, text, type, sortToBottom); }
+  public RecordHTC(String text, RecordType type, boolean sortToBottom)      { this(-1, text, type, sortToBottom); }
 
-  private HyperTableCell(int id, String text, RecordType type, boolean sortToBottom)
+  private RecordHTC(int id, String text, RecordType type, boolean sortToBottom)
   {
+    super(sortToBottom);
+
     this.id = id;
     this.text = text;
     this.type = type;
-    this.sortToBottom = sortToBottom;
   }
 
 //---------------------------------------------------------------------------
@@ -105,22 +82,22 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
 
-    HyperTableCell other = (HyperTableCell) obj;
+    RecordHTC other = (RecordHTC) obj;
 
     if (getCellType(this) != getCellType(other))
     {
       if ((getCellType(this) == hdtAuxiliary) || (getCellType(other) == hdtAuxiliary))
         return false;
 
-      if ((id < 0) && (other.id < 0))
-        return safeStr(text).isEmpty() && safeStr(other.text).isEmpty();
+      if ((id < 0) && (other.getID() < 0))
+        return safeStr(text).isEmpty() && safeStr(other.getText()).isEmpty();
 
       return false;
     }
 
-    if (((id >= 0) || (other.id >= 0)) && (id != other.id)) return false;
+    if (((id >= 0) || (other.id >= 0)) && (id != other.getID())) return false;
 
-    return safeStr(text).equals(safeStr(other.text));
+    return safeStr(text).equals(safeStr(other.getText()));
   }
 
 //---------------------------------------------------------------------------
@@ -137,113 +114,11 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableCell getCopyWithID(int newID)
+  @Override public RecordHTC getCopyWithID(int newID)
   {
-    HyperTableCell newCell = clone();
+    RecordHTC newCell = clone();
     newCell.id = newID;
     return newCell;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static int compareCells(HyperTableCell cell1, HyperTableCell cell2, CellSortMethod sortMethod)
-  {
-    if ((cell1 == null) && (cell2 == null)) return 0;
-    if (cell1 == null) return -1;
-    if (cell2 == null) return 1;
-
-    if (cell1.sortToBottom)
-      return 1;
-
-    if (cell2.sortToBottom)
-      return -1;
-
-    if (sortMethod == smIcon)
-    {
-      int result = compareImgRelPaths(cell1.getImgRelPath(), cell2.getImgRelPath());
-
-      if (result == 0)
-      {
-        result = getCellType(cell1).compareTo(getCellType(cell2));
-
-        if (result == 0) result = cell1.id - cell2.id;
-      }
-
-      return result;
-    }
-
-    if (sortMethod == smYear)
-    {
-      return ObjectUtils.compare(BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC(cell1.text), BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC(cell2.text));
-    }
-
-    if (sortMethod == smNumeric)
-    {
-      MutableInt result = new MutableInt();
-
-      if (compareNumberStrings(cell1.text, cell2.text, result))
-        return result.getValue();
-
-      sortMethod = smTextSimple;
-    }
-
-    if (sortMethod == smTextSimple)
-    {
-      int result = cell1.text.compareToIgnoreCase(cell2.text);
-      if (result == 0) result = cell1.id - cell2.id;
-      return result;
-    }
-
-    if (sortMethod == smWork)
-    {
-      HDT_Work work1 = cell1.getRecord(), work2 = cell2.getRecord();
-
-      if ((work1 == null) && (work2 != null))
-        return -1;
-
-      if ((work2 == null) && (work1 != null))
-        return 1;
-
-      if (work1 != null)
-        return work1.compareTo(work2);
-    }
-
-    String key1 = "", key2 = "";
-
-    if ((cell1.id > 0) && (cell1.type != null) && (cell1.type != hdtNone))
-      key1 = db.records(cell1.type).getByID(cell1.id).getSortKey();
-
-    if (key1.isEmpty()) key1 = makeSortKeyByType(cell1.text, getCellType(cell1));
-
-    if ((cell2.id > 0) && (cell2.type != null) && (cell2.type != hdtNone))
-      key2 = db.records(cell2.type).getByID(cell2.id).getSortKey();
-
-    if (key2.isEmpty()) key2 = makeSortKeyByType(cell2.text, getCellType(cell2));
-
-    return key1.compareTo(key2);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static Comparator<HyperTableCell> leadingNumberComparator()
-  {
-    return(cell1, cell2) ->
-    {
-      String text1 = ultraTrim(cell1.text), text2 = ultraTrim(cell2.text);
-      int num1 = extractLeadingNumber(text1), num2 = extractLeadingNumber(text2);
-      if ((num1 < 0) && (num2 < 0))
-        return text1.compareTo(text2);
-
-      if (num1 < 0)
-        return -1;
-
-      if (num2 < 0)
-        return 1;
-
-      return Integer.compare(num1, num2);
-    };
   }
 
 //---------------------------------------------------------------------------
@@ -258,19 +133,6 @@ public class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
       return Integer.MIN_VALUE + 1;
 
     return compareCells(this, otherCell, smStandard);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  public static <HDT_T extends HDT_Record> HDT_T getRecord(HyperTableCell cell)
-  {
-    int id = getCellID(cell);
-    if (id < 1) return null;
-
-    RecordType type = getCellType(cell);
-    return type == hdtNone ? null : (HDT_T)db.records(type).getByID(id);
   }
 
 //---------------------------------------------------------------------------

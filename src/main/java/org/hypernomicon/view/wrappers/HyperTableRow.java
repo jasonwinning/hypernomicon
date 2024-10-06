@@ -98,13 +98,13 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     setCellValue(colNdx, HyperTableCell.fromBoolean(boolVal)); }
 
   public boolean setCellValue(int colNdx, HDT_Record record, String text) {
-    return setCellValue(colNdx, new HyperTableCell(record, text)); }
+    return setCellValue(colNdx, new RecordHTC(record, text)); }
 
   public boolean setCellValue(int colNdx, String text, RecordType type) {
-    return setCellValue(colNdx, new HyperTableCell(text, type)); }
+    return setCellValue(colNdx, new RecordHTC(text, type)); }
 
   public boolean setCellValue(int colNdx, int id, String text, RecordType type) {
-    return setCellValue(colNdx, new HyperTableCell(id, text, type)); }
+    return setCellValue(colNdx, new RecordHTC(id, text, type)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       HyperTableCell cell = cells.get(colNdx);
       if ((HyperTableCell.getCellID(cell) == oldID) && (HyperTableCell.getCellType(cell) == changedType))
-        cells.set(colNdx, new HyperTableCell(newID, HyperTableCell.getCellText(cell), changedType));
+        cells.set(colNdx, new RecordHTC(newID, HyperTableCell.getCellText(cell), changedType));
     }
   }
 

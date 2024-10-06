@@ -34,6 +34,7 @@ import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
 
 public class QueryWhereKeyWorks extends RecordQuery
 {
@@ -53,10 +54,10 @@ public class QueryWhereKeyWorks extends RecordQuery
   {
     vp1.setPopulator(row, Populator.create(cvtOperand,
 
-        new HyperTableCell(EQUAL_TO_OPERAND_ID    , "Include record", hdtNone),
-        new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID, "Exclude record", hdtNone),
-        new HyperTableCell(IS_EMPTY_OPERAND_ID    , "Empty"         , hdtNone),
-        new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID, "Not empty"     , hdtNone)));
+        new RecordHTC(EQUAL_TO_OPERAND_ID    , "Include record", hdtNone),
+        new RecordHTC(NOT_EQUAL_TO_OPERAND_ID, "Exclude record", hdtNone),
+        new RecordHTC(IS_EMPTY_OPERAND_ID    , "Empty"         , hdtNone),
+        new RecordHTC(IS_NOT_EMPTY_OPERAND_ID, "Not empty"     , hdtNone)));
 
     return true;
   }

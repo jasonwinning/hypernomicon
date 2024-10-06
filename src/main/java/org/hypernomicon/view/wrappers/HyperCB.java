@@ -44,6 +44,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
@@ -150,7 +151,7 @@ public class HyperCB implements CommitableWrapper
       @Override public HyperTableCell fromString(String string)
       {
         HyperTableCell cell = nullSwitch(cb.getItems(), null, items -> findFirst(items, htc -> string.equals(HyperTableCell.getCellText(htc))));
-        return cell == null ? new HyperTableCell(string, populator.getRecordType(row)) : cell;
+        return cell == null ? new RecordHTC(string, populator.getRecordType(row)) : cell;
       }
     });
 
@@ -203,7 +204,7 @@ public class HyperCB implements CommitableWrapper
     String str = cb.getEditor().getText();
 
     return (htc == null) || (HyperTableCell.getCellText(htc).equals(str) == false) ?
-      new HyperTableCell(str, selectedType())
+      new RecordHTC(str, selectedType())
     :
       htc;
   }
@@ -211,15 +212,16 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<HyperTableCell> populate(boolean force)
+  @SuppressWarnings("unchecked")
+  public List<? extends HyperTableCell> populate(boolean force)
   {
     HyperTableCell cell = cb.getValue();
 
     silentMode = true;
 
-    List<HyperTableCell> choices = populator.populate(row, force);
+    List<? extends HyperTableCell> choices = populator.populate(row, force);
     cb.setItems(null);
-    cb.setItems(FXCollections.observableList(choices));
+    cb.setItems((ObservableList<HyperTableCell>) FXCollections.observableList(choices));
     select(cell);
 
     silentMode = false;

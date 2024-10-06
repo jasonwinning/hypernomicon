@@ -29,6 +29,8 @@ import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordHTC;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -55,8 +57,8 @@ public class LicenseReportEngine extends ReportEngine
   @Override public List<HyperTableRow> getRows()
   {
     List<HyperTableRow> rows = Lists.newArrayList(
-      new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell("LICENSE.html", hdtNone)), ht),
-      new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell("NOTICE.html" , hdtNone)), ht));
+      new HyperTableRow(FXCollections.observableArrayList(new RecordHTC("LICENSE.html", hdtNone)), ht),
+      new HyperTableRow(FXCollections.observableArrayList(new RecordHTC("NOTICE.html" , hdtNone)), ht));
 
     synchronized (LicenseReportEngine.class)
     {
