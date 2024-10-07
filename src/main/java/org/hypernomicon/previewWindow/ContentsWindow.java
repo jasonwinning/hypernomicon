@@ -31,11 +31,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -75,7 +77,7 @@ public class ContentsWindow extends HyperDlg
     htContents.addLabelCol(hdtPerson);
     htContents.addLabelCol(hdtWorkType);
     htContents.addLabelCol(hdtWork);
-    htContents.addLabelCol(hdtWork, smYear);
+    htContents.addLabelCol(hdtWork, smStandard);  // Date column
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -235,7 +237,8 @@ public class ContentsWindow extends HyperDlg
 
     htContents.buildRows(works, (row, work) ->
     {
-      String authStr = work.getShortAuthorsStr(true), title = work.name(), year = work.getYearStr();
+      String authStr = work.getShortAuthorsStr(true), title = work.name();
+      BibliographicDate bibDate = work.getBibDate();
       HDT_WorkType workType = work.workType.get();
       WorkTabCtrlr wtc = null;
       int authorID = work.authorRecords.stream().map(HDT_Record::getID).findFirst().orElse(-1);
@@ -245,7 +248,7 @@ public class ContentsWindow extends HyperDlg
         wtc = ui.workHyperTab();
 
         title = wtc.getTitle();
-        year = wtc.getDateFromUI().getYearStr();
+        bibDate = wtc.getDateFromUI();
         workType = wtc.hcbType.selectedRecord();
         authStr = wtc.getShortAuthorsStr();
       }
@@ -256,7 +259,7 @@ public class ContentsWindow extends HyperDlg
         row.setCellValue(1, workType, workType.listName());
 
       row.setCellValue(2, work, title);
-      row.setCellValue(3, work, year);
+      row.setCellValue(3, new BibDateHTC(work, bibDate));
 
       int pageNum = wtc == null ? -1 : wtc.getCurPageNum(work, curWorkFile, true);
 

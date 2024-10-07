@@ -26,6 +26,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
+import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -63,7 +64,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     List<TableColumn<HyperTableRow, ?>> cols = tvLeftChildren.getColumns();
 
     cols.get(2).setText("Title of Work");
-    cols.add(2, new TableColumn<>("Year"));
+    cols.add(2, new TableColumn<>("Date"));
     cols.add(2, new TableColumn<>("Verdict"));
     cols.add(new TableColumn<>("Arg. Name"));
 
@@ -101,7 +102,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htArguments.addActionCol(ctGoNewBtn, 3);
     htArguments.addLabelCol(hdtPerson);                        // Author(s) of work
     htArguments.addLabelCol(hdtPositionVerdict, smTextSimple); // True, False, etc.
-    htArguments.addLabelCol(hdtArgument, smYear);              // Year
+    htArguments.addLabelCol(hdtArgument);                      // Date
     htArguments.addLabelCol(hdtWork, smStandard);              // Title of work
     htArguments.addLabelCol(hdtArgument);                      // Name of argument
 
@@ -181,7 +182,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
       if (work != null)
       {
-        row.setCellValue(3, argument, work.getYearStr());
+        row.setCellValue(3, new BibDateHTC(argument, work.getBibDate()));
         row.setCellValue(4, work, work.name());
       }
       else

@@ -20,7 +20,6 @@ package org.hypernomicon.view.cellValues;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -28,8 +27,12 @@ import org.hypernomicon.util.MediaUtil;
 
 //---------------------------------------------------------------------------
 
-public class RecordHTC extends HyperTableCell implements Cloneable
+public class RecordHTC extends HyperTableCell
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private int id;
   private String imgRelPath;  // should only ever be accessed by getImgRelPath
 
@@ -40,8 +43,7 @@ public class RecordHTC extends HyperTableCell implements Cloneable
   @Override public String getText()           { return text; }
   @Override public RecordType getRecordType() { return type; }
 
-  @Override public RecordHTC clone()
-  { return (RecordHTC) super.clone(); }
+  @Override public RecordHTC clone() { return (RecordHTC) super.clone(); }
 
 //---------------------------------------------------------------------------
 
@@ -119,20 +121,6 @@ public class RecordHTC extends HyperTableCell implements Cloneable
     RecordHTC newCell = clone();
     newCell.id = newID;
     return newCell;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int compareTo(HyperTableCell otherCell)
-  {
-    if (sortToBottom)
-      return Integer.MAX_VALUE;
-
-    if (otherCell.sortToBottom)
-      return Integer.MIN_VALUE + 1;
-
-    return compareCells(this, otherCell, smStandard);
   }
 
 //---------------------------------------------------------------------------

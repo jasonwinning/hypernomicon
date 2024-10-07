@@ -50,6 +50,7 @@ import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
+import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
@@ -237,8 +238,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htSubworks = new HyperTable(tvSubworks, 1, false, PREF_KEY_HT_WORK_SUB);
 
     htSubworks.addLabelCol(hdtPerson);
-    htSubworks.addLabelCol(hdtWork, smStandard);
-    htSubworks.addLabelCol(hdtWork, smYear);
+    htSubworks.addLabelCol(hdtWork, smStandard);  // Title
+    htSubworks.addLabelCol(hdtWork, smStandard);  // Date
 
     htSubworks.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
@@ -772,7 +773,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         row.setCellValue(0, subWork, subWork.getLongAuthorsStr(true));
 
       row.setCellValue(1, subWork, subWork.name());
-      row.setCellValue(2, subWork, subWork.getYearStr());
+      row.setCellValue(2, new BibDateHTC(subWork, subWork.getBibDate()));
     });
 
   // Populate arguments

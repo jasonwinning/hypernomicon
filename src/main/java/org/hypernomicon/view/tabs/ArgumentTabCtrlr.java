@@ -26,12 +26,12 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
@@ -148,7 +148,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade.addTextEditCol(hdtWork, false) // Pages column
                .setComparator(HyperTableCell.leadingNumberComparator());
 
-    htWhereMade.addLabelCol(hdtArgument, smYear); // Year column
+    htWhereMade.addLabelCol(hdtArgument); // Date column
 
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);
@@ -212,7 +212,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
       row.setCellValue(2, work, work.getCBText());
       row.setCellValue(3, work, curArgument.pagesInWork(work));
-      row.setCellValue(4, work, work.getYearStr());
+      row.setCellValue(4, new BibDateHTC(work, work.getBibDate()));
     });
 
   // Populate the counterarguments

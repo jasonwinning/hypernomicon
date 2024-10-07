@@ -37,7 +37,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabCtrlr">
+<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabCtrlr">
   <SplitPane fx:id="spVert" dividerPositions="0.6166, 0.7998" layoutX="120.0" layoutY="96.0" orientation="VERTICAL" prefHeight="412.0" prefWidth="419.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <opaqueInsets>
       <Insets />
@@ -87,38 +87,32 @@
                   <Label text="Last name">
                   </Label>
                   <AnchorPane prefHeight="74.0" prefWidth="228.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
-                    <TextField fx:id="tfLast" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
-                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                    <TextField fx:id="tfLast" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <Label text="First name" GridPane.rowIndex="1">
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
-                    <TextField fx:id="tfFirst" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
-                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                    <TextField fx:id="tfFirst" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <Label text="Rank" GridPane.rowIndex="2">
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
-                    <ComboBox fx:id="cbRank" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
-                              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                    <ComboBox fx:id="cbRank" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <Label text="Status" GridPane.rowIndex="3">
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="3">
-                    <ComboBox fx:id="cbStatus" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
-                              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                    <ComboBox fx:id="cbStatus" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <Label text="Field" GridPane.rowIndex="4">
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="4">
-                    <ComboBox fx:id="cbField" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0"
-                              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                    <ComboBox fx:id="cbField" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <Label text="Specialty" GridPane.rowIndex="5">
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="5">
-                    <ComboBox fx:id="cbSubfield" minHeight="1.0" AnchorPane.bottomAnchor="1.0"
-                              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                    <ComboBox fx:id="cbSubfield" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <Label fx:id="lblWebsite" text="Website" underline="true" GridPane.rowIndex="6">
                     <cursor>
@@ -156,8 +150,7 @@
                     </cursor>
                   </Label>
                   <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="8">
-                    <TextField fx:id="tfSearchKey" minHeight="1.0" AnchorPane.bottomAnchor="1.0"
-                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0"/>
+                    <TextField fx:id="tfSearchKey" minHeight="1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
                   </AnchorPane>
                   <GridPane GridPane.columnSpan="2" GridPane.rowIndex="9">
                     <columnConstraints>
@@ -217,7 +210,7 @@
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
       <TableView fx:id="tvWorks" editable="true" layoutX="455.0" layoutY="-21.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columns>
-          <TableColumn text="Year" />
+          <TableColumn text="Date" />
           <TableColumn prefWidth="189.0" text="Work Type" />
           <TableColumn editable="false" maxWidth="41.0" minWidth="41.0" prefWidth="41.0" resizable="false" text="Ed/Tr" />
           <TableColumn prefWidth="266.0" text="Investigation(s) (click to edit)" />

@@ -190,7 +190,7 @@
               <columns>
                 <TableColumn maxWidth="32.0" minWidth="32.0" prefWidth="32.0" resizable="false" />
                 <TableColumn prefWidth="500.0" text="Name" />
-                <TableColumn maxWidth="1000.0" prefWidth="100.0" text="Year" />
+                <TableColumn maxWidth="1000.0" prefWidth="100.0" text="Date" />
                 <TableColumn maxWidth="2500.0" prefWidth="250.0" text="Additional Info" />
               </columns>
               <columnResizePolicy>

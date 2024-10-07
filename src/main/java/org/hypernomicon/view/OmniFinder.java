@@ -40,6 +40,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
+import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -397,7 +398,7 @@ public class OmniFinder
 
             HDT_Work work = (HDT_Work) record;
 
-            cells.set(2, new RecordHTC(work, work.getYearStr()));
+            cells.set(2, new BibDateHTC(work, work.getBibDate()));
 
             if (work.authorRecords.isEmpty())
               cells.set(3, new RecordHTC(work, work.getShortAuthorsStr(true)));
@@ -415,7 +416,10 @@ public class OmniFinder
 
             HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
-            cells.set(2, new RecordHTC(miscFile, ""));
+            cells.set(2, miscFile.work.isNotNull() ?
+              new BibDateHTC(miscFile, miscFile.work.get().getBibDate())
+            :
+              new RecordHTC(miscFile, ""));
 
             List<HDT_Person> authorRecords = miscFile.authorRecords();
 

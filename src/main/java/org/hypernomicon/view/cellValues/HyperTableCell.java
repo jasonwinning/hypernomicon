@@ -26,9 +26,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.Comparator;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.hypernomicon.model.items.BibliographicYear;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
@@ -36,7 +34,7 @@ import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 
 //---------------------------------------------------------------------------
 
-public abstract class HyperTableCell implements Comparable<HyperTableCell>
+public abstract class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 {
 
 //---------------------------------------------------------------------------
@@ -72,7 +70,7 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>
   public abstract String getText();
   public abstract RecordType getRecordType();
   public abstract String getImgRelPath();
-  public abstract RecordHTC getCopyWithID(int newID);
+  public abstract HyperTableCell getCopyWithID(int newID);
 
   public <HDT_T extends HDT_Record> HDT_T getRecord() { return getRecord(this); }
 
@@ -129,6 +127,15 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>
     if (cell2.sortToBottom)
       return -1;
 
+    if ((cell1 instanceof BibDateHTC) || (cell2 instanceof BibDateHTC))
+    {
+      return cell1 instanceof BibDateHTC bibDateHTC1 ?
+        (cell2 instanceof BibDateHTC bibDateHTC2 ?
+           bibDateHTC1.bibDate.compareTo(bibDateHTC2.bibDate)
+         : 1)
+      : -1;
+    }
+
     if (sortMethod == smIcon)
     {
       int result = compareImgRelPaths(cell1.getImgRelPath(), cell2.getImgRelPath());
@@ -141,11 +148,6 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>
       }
 
       return result;
-    }
-
-    if (sortMethod == smYear)
-    {
-      return ObjectUtils.compare(BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC(cell1.getText()), BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC(cell2.getText()));
     }
 
     if (sortMethod == smNumeric)
@@ -192,6 +194,20 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>
     if (key2.isEmpty()) key2 = makeSortKeyByType(cell2.getText(), getCellType(cell2));
 
     return key1.compareTo(key2);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int compareTo(HyperTableCell otherCell)
+  {
+    if (sortToBottom)
+      return Integer.MAX_VALUE;
+
+    if (otherCell.sortToBottom)
+      return Integer.MIN_VALUE + 1;
+
+    return compareCells(this, otherCell, smStandard);
   }
 
 //---------------------------------------------------------------------------

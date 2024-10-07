@@ -393,7 +393,7 @@ public final class MainCtrlr
 
     htFind.addIconCol();
     htFind.addCol     (hdtNone, ctIncremental);
-    htFind.addLabelCol(hdtNone, smYear);
+    htFind.addLabelCol(hdtNone, smStandard);
     htFind.addLabelCol(hdtNone, smTextSimple);
 
     htFind.setOnShowMore(() -> tfOmniGoToChange(ctfOmniGoTo.getText(), true));

@@ -52,6 +52,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
@@ -173,14 +174,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
 
-    htWorks.addLabelCol(hdtWork, smYear); // Year
-    htWorks.addLabelCol(hdtWorkType, smTextSimple); // Work Type
-    htWorks.addLabelCol(hdtWork    , smTextSimple); // Ed/Tr
+    htWorks.addLabelCol(hdtWork    , smStandard  );  // Date
+    htWorks.addLabelCol(hdtWorkType, smTextSimple);  // Work Type
+    htWorks.addLabelCol(hdtWork    , smTextSimple);  // Ed/Tr
 
     htWorks.addCol(hdtInvestigation, ctInvSelect)
            .setHeaderTooltip(invHelpTooltip());
 
-    htWorks.addLabelCol(hdtNone);  // Title; can display work or misc. file records
+    htWorks.addLabelCol(hdtNone);   // Title; can display work or misc. file records
     htWorks.addLabelCol(hdtPerson); // Coauthor(s)
 
     tvWorks.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
@@ -469,7 +470,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       if (htWorks.containsRecord(work) == false)
       {
         HyperTableRow row = htWorks.newDataRow();
-        row.setCellValue(0, work, work.getYearStr());
+        row.setCellValue(0, new BibDateHTC(work, work.getBibDate()));
 
         String typeName = "";
 
@@ -513,7 +514,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htWorks.buildRows(curPerson.miscFiles.stream().filter(Predicate.not(htWorks::containsRecord)), (row, file) ->
     {
-      row.setCellValue(0, file, "");  // it's blank because file records don't have a year
+      if (file.work.isNotNull())
+        row.setCellValue(0, new BibDateHTC(file, file.work.get().getBibDate()));
+      else
+        row.setCellValue(0, file, "");
 
       row.setCellValue(1, file, "File" + (file.fileType.isNull() ? "" : " (" + file.fileType.get().name() + ')'));
 

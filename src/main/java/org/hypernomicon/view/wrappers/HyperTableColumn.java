@@ -67,7 +67,7 @@ public class HyperTableColumn
 
   public enum CellSortMethod
   {
-    smStandard, smTextSimple, smNumeric, smWork, smIcon, smYear
+    smStandard, smTextSimple, smNumeric, smWork, smIcon
   }
 
   private final Populator populator;
