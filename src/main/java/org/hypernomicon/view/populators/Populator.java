@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public abstract class Populator
@@ -59,7 +60,7 @@ public abstract class Populator
 
     @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
     {
-      return nullSwitch(super.getChoiceByID(row, id), HyperTableCell.blankCell);
+      return nullSwitch(super.getChoiceByID(row, id), RecordHTC.blankCell);
     }
 
   //---------------------------------------------------------------------------
@@ -171,7 +172,7 @@ public abstract class Populator
 
   protected static HyperTableCell addEntryToList(List<HyperTableCell> list, HyperTableCell cell)
   {
-    if ((HyperTableCell.blankCell.equals(cell) == false) && (list.size() > 0) && HyperTableCell.blankCell.equals(list.get(list.size() - 1)))
+    if ((RecordHTC.blankCell.equals(cell) == false) && (list.size() > 0) && RecordHTC.blankCell.equals(list.get(list.size() - 1)))
       list.add(list.size() - 1, cell);
     else
       list.add(cell);

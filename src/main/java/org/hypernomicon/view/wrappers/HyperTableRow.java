@@ -62,7 +62,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
   HyperTableRow(int colCount, HyperTable table)
   {
-    this(FXCollections.observableArrayList(Collections.nCopies(colCount, HyperTableCell.blankCell)), table);
+    this(FXCollections.observableArrayList(Collections.nCopies(colCount, RecordHTC.blankCell)), table);
   }
 
 //---------------------------------------------------------------------------

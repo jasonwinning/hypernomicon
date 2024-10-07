@@ -27,6 +27,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -71,11 +72,16 @@ public class QueryWhereBibField extends WorkQuery
     {
       clearOperands(row, 1);
 
-      vp1.setPopulator(row, Populator.create(cvtBibField,
+      List<? extends HyperTableCell> cells = EnumSet.allOf(BibFieldEnum.class).stream()
 
-        EnumSet.allOf(BibFieldEnum.class).stream().filter(field -> field != bfWorkType)
-                                                  .map(field -> new RecordHTC(field.ordinal(), field.getUserFriendlyName(), hdtWork))
-                                                  .collect(Collectors.toCollection(ArrayList::new))));
+        .filter(field -> field != bfWorkType)
+        .map(field -> new RecordHTC(field.ordinal(), field.getUserFriendlyName(), hdtWork))
+        .collect(Collectors.toCollection(ArrayList::new));
+
+      // cells needed to be initialized before the next line of code, separately from it,
+      // in order to avoid a Maven false-positive build error. Don't ask me why.
+
+      vp1.setPopulator(row, Populator.create(cvtBibField, cells));
     }
 
     return true;

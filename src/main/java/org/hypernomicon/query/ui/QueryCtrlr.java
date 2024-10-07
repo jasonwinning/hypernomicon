@@ -318,7 +318,7 @@ public final class QueryCtrlr
         }
         else
         {
-          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 2, cellVal, blankCell))
+          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 2, cellVal, RecordHTC.blankCell))
             htFields.edit(row, OPERAND_2_COL_NDX);
         }
       }
@@ -1008,7 +1008,7 @@ public final class QueryCtrlr
 
   private static boolean queryHasOperand(Query<?> query, QueryType queryType, int opNum)
   {
-    return queryHasOperand(query, queryType, opNum, blankCell, blankCell);
+    return queryHasOperand(query, queryType, opNum, RecordHTC.blankCell, RecordHTC.blankCell);
   }
 
   private static boolean queryHasOperand(Query<?> query, QueryType queryType, int opNum, HyperTableCell op1, HyperTableCell op2)

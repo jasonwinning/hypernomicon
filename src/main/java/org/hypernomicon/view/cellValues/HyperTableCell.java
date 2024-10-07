@@ -22,6 +22,7 @@ import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.cellValues.RecordHTC.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.Comparator;
@@ -44,11 +45,6 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>, Clon
                           FALSE_ID = 2,
                           UNSET_ID = 3;
 
-  public static final HyperTableCell trueCell  = new RecordHTC(TRUE_ID , "True" , hdtNone),
-                                     falseCell = new RecordHTC(FALSE_ID, "False", hdtNone),
-                                     unsetCell = new RecordHTC(UNSET_ID, "Unset", hdtNone),
-                                     blankCell = new RecordHTC("", hdtNone);
-
   public final boolean sortToBottom;
 
   public static HyperTableCell fromBoolean(boolean boolVal) { return boolVal ? trueCell : falseCell; }
@@ -59,7 +55,7 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>, Clon
 
 //---------------------------------------------------------------------------
 
-  public HyperTableCell(boolean sortToBottom)
+  HyperTableCell(boolean sortToBottom)
   {
     this.sortToBottom = sortToBottom;
   }

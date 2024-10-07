@@ -336,25 +336,21 @@ public class OmniFinder
              tierPersonMatchStart -> authorMatch(getPersonList(record).get(0), "", curTier);
 
         case tierNameContains ->
-        {
-          yield switch (record.getType())
+
+          switch (record.getType())
           {
             case hdtPerson -> authorMatch(getPersonList(record).get(0), "", tierAuthorContains);
             default        -> record.getNameEngChar().toLowerCase().contains(queryLC);
           };
-        }
 
         case tierAuthorContains, tierAuthorMatch, tierAuthorYear, tierAuthorKeyword, tierAuthorMatchStart ->
-        {
-          yield switch (record.getType())
+
+          switch (record.getType())
           {
             case hdtWork     -> getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, ((HDT_Work)record).getYearStr(), curTier));
             case hdtMiscFile -> getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, ""                             , curTier));
             default          -> false;
           };
-        }
-
-        default -> false;
       };
     }
 

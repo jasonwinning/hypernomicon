@@ -35,12 +35,10 @@ class ZoteroDateTest
   @Test
   void fromUserStrTest()
   {
-    BibliographicDate bibDate;
-    String msg;
 
   //---------------------------------------------------------------------------
 
-    bibDate = BibliographicDate.fromUserStr(null);
+    BibliographicDate bibDate = BibliographicDate.fromUserStr(null);
 
     assertEquals(BibliographicDate.EMPTY_DATE, bibDate, "Should return empty date object for null input string");
 
@@ -59,7 +57,7 @@ class ZoteroDateTest
   //---------------------------------------------------------------------------
 
     bibDate = BibliographicDate.fromUserStr("June 26, 2010");
-    msg = "Should parse English month before date";
+    String msg = "Should parse English month before date";
 
     assertEquals(6, bibDate.month, msg);
     assertEquals(26, bibDate.day, msg);

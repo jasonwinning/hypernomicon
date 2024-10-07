@@ -33,7 +33,7 @@ public class BibDateHTC extends HyperTableCell
 
   private int id;
   private final RecordType recordType;
-  public final BibliographicDate bibDate;
+  final BibliographicDate bibDate;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

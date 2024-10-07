@@ -64,6 +64,7 @@ import org.hypernomicon.previewWindow.PreviewWrapper;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.DateControlsWrapper;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -593,7 +594,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
       // If the user unchecked the Record checkbox while a record was not selected, don't do anything else.
 
-      if (HyperTableCell.falseCell.equals(cellVal))
+      if (RecordHTC.falseCell.equals(cellVal))
         return;
 
       // Now show the New Person Dialog, which checks for duplicates

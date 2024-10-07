@@ -61,7 +61,7 @@ public class BibEntryPopulator extends Populator
       .map(bibEntry -> new RecordHTC(bibEntry.numericID(), bibEntry.getCBText(), hdtNone))
       .collect(Collectors.toCollection(ArrayList::new));
 
-    choices.add(HyperTableCell.blankCell);
+    choices.add(RecordHTC.blankCell);
     return choices;
   }
 
