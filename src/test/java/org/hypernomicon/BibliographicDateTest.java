@@ -98,8 +98,9 @@ class BibliographicDateTest
   @Test
   void dateEqualityTest()
   {
-    BibliographicDate date1 = BibliographicDate.EMPTY_DATE;
-    BibliographicDate date2 = null;
+    BibliographicDate date1 = BibliographicDate.EMPTY_DATE,
+                      date2 = null;
+
     assertEquals(date1, date2, "Empty date should equal null");
 
     date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, null));
@@ -264,8 +265,9 @@ class BibliographicDateTest
   @Test
   void yearEqualityTest()
   {
-    BibliographicYear year1 = BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, "");
-    BibliographicYear year2 = null;
+    BibliographicYear year1 = BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""),
+                      year2 = null;
+
     assertEquals(year1, year2, "Empty year should equal null");
 
     year1 = BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, null);

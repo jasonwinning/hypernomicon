@@ -34,14 +34,14 @@ import org.junit.jupiter.api.Test;
 
 //---------------------------------------------------------------------------
 
-public class RISTest
+class RISTest
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Test
-  public void testRISImport()
+  void testRISImport()
   {
     List<BibAuthor> authorList     = new ArrayList<>(),
                     editorList     = new ArrayList<>(),

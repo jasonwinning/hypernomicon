@@ -33,33 +33,38 @@ public class RecordHTC extends HyperTableCell
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final HyperTableCell trueCell  = new RecordHTC(TRUE_ID , "True" , hdtNone),
+                                     falseCell = new RecordHTC(FALSE_ID, "False", hdtNone),
+                                     unsetCell = new RecordHTC(UNSET_ID, "Unset", hdtNone),
+                                     blankCell = new RecordHTC("", hdtNone);
+
   private int id;
   private String imgRelPath;  // should only ever be accessed by getImgRelPath
 
   private final String text;
-  private final RecordType type;
+  private final RecordType recordType;
 
   @Override public int getID()                { return id; }
   @Override public String getText()           { return text; }
-  @Override public RecordType getRecordType() { return type; }
+  @Override public RecordType getRecordType() { return recordType; }
 
   @Override public RecordHTC clone() { return (RecordHTC) super.clone(); }
 
 //---------------------------------------------------------------------------
 
-  public RecordHTC(                   String text, RecordType type)         { this(-1            , text, type); }
-  public RecordHTC(int id           , String text, RecordType type)         { this(id            , text, type, false); }
-  public RecordHTC(HDT_Record record, String text                 )         { this(record.getID(), text, record.getType()); }
+  public RecordHTC(                   String text, RecordType recordType)    { this(-1            , text, recordType); }
+  public RecordHTC(int id           , String text, RecordType recordType)    { this(id            , text, recordType, false); }
+  public RecordHTC(HDT_Record record, String text                       )    { this(record.getID(), text, record.getType()); }
 
-  public RecordHTC(String text, RecordType type, boolean sortToBottom)      { this(-1, text, type, sortToBottom); }
+  public RecordHTC(String text, RecordType recordType, boolean sortToBottom) { this(-1, text, recordType, sortToBottom); }
 
-  private RecordHTC(int id, String text, RecordType type, boolean sortToBottom)
+  private RecordHTC(int id, String text, RecordType recordType, boolean sortToBottom)
   {
     super(sortToBottom);
 
     this.id = id;
     this.text = text;
-    this.type = type;
+    this.recordType = recordType;
   }
 
 //---------------------------------------------------------------------------
@@ -71,7 +76,7 @@ public class RecordHTC extends HyperTableCell
     int result = 1;
     result = prime * result + id;
     result = prime * result + (text == null ? 0 : text.hashCode());
-    result = prime * result + (type == null ? 0 : type.hashCode());
+    result = prime * result + (recordType == null ? 0 : recordType.hashCode());
     return result;
   }
 
@@ -110,7 +115,7 @@ public class RecordHTC extends HyperTableCell
     if (imgRelPath != null)
       return imgRelPath;
 
-    return imgRelPath = safeStr(nullSwitch(getRecord(this), imgRelPathByType(type), MediaUtil::imgRelPath));
+    return imgRelPath = safeStr(nullSwitch(getRecord(this), imgRelPathByType(recordType), MediaUtil::imgRelPath));
   }
 
 //---------------------------------------------------------------------------

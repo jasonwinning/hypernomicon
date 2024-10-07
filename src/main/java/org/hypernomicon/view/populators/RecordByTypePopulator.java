@@ -89,7 +89,7 @@ public class RecordByTypePopulator extends RecordPopulator
 
     if ((recordType == hdtNone) || (db.isLoaded() == false))
     {
-      choices.add(HyperTableCell.blankCell);
+      choices.add(RecordHTC.blankCell);
       return choices;
     }
 
@@ -131,7 +131,7 @@ public class RecordByTypePopulator extends RecordPopulator
     return ((rowRecordType == hdtNone) ||
             (id < 1) ||
             ((ignoreRecordType == false) && (rowRecordType != recordType))) ?
-      HyperTableCell.blankCell
+      RecordHTC.blankCell
     :
       generateCell(db.records(rowRecordType).getByID(id));
   }
