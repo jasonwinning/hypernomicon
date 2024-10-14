@@ -88,20 +88,26 @@ public class AboutDlgCtrlr extends HyperDlg
 
     tabAcknowledgementsHtml = htmlStart + "<div style='-webkit-column-count: 3;'>Hypernomicon uses the following software:<br><ul>" +
 
-      "<li>" + "Apache " + anchorTag("Commons", "https://commons.apache.org/") + ", " +
+      "<li>" + "Apache " + anchorTag("Commons Lang", "https://commons.apache.org/proper/commons-lang/") + ", " +
+      anchorTag("Commons Text", "https://commons.apache.org/proper/commons-text/") + ", " +
+      anchorTag("Commons IO", "https://commons.apache.org/proper/commons-io/") + ", " +
       anchorTag("PDFBox", "https://pdfbox.apache.org/") + ", " +
       anchorTag("Tika", "https://tika.apache.org/") + ", " +
-      anchorTag("HttpClient", "https://hc.apache.org/httpcomponents-client-ga/") + "</li>" +
+      anchorTag("HttpClient", "https://hc.apache.org/httpcomponents-client-4.5.x/index.html") + ", " +
+      anchorTag("Log4j", "https://logging.apache.org/log4j/2.x/index.html") + "</li>" +
       "<li>" + anchorTag("Guava", "https://github.com/google/guava") + "</li>" +
       "<li>" + anchorTag("JxBrowser", "https://www.teamdev.com/jxbrowser") + "</li>" +
       "<li>" + anchorTag("PDF.js", "https://mozilla.github.io/pdf.js/") + "</li>" +
       "<li>" + anchorTag("jsoup", "https://jsoup.org/") + "</li>" +
-      "<li>" + anchorTag("ICU4J", "http://site.icu-project.org/home") + "</li>" +
-      "<li>" + anchorTag("ControlsFX", "http://fxexperience.com/controlsfx/") + "</li>" +
+      "<li>" + anchorTag("ICU4J", "https://icu.unicode.org/home") + "</li>" +
+      "<li>" + anchorTag("ControlsFX", "https://controlsfx.github.io/") + "</li>" +
       "<li>" + anchorTag("JSON.simple", "https://code.google.com/archive/p/json-simple/") + "</li>" +
       "<li>" + anchorTag("ScribeJava", "https://github.com/scribejava/scribejava") + "</li>" +
       "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
       "<li>" + anchorTag("JODConverter", "https://github.com/jodconverter/jodconverter") + "</li>" +
+      "<li>" + anchorTag("Jakarta XML Binding", "https://jakarta.ee/specifications/xml-binding/4.0/") + "</li>" +
+      "<li>" + anchorTag("JUnit Jupiter", "https://junit.org/junit5/") + "</li>" +
+      "<li>" + anchorTag("SLF4J Simple", "http://www.slf4j.org") + "</li>" +
       "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +
       "<li>" + anchorTag("mark.js", "https://markjs.io/") +
 

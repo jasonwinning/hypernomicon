@@ -88,7 +88,7 @@ public final class MediaUtil
 
       noOp(stream.read(array));
 
-      return "data:image/png;base64," + javax.xml.bind.DatatypeConverter.printBase64Binary(array);
+      return "data:image/png;base64," + jakarta.xml.bind.DatatypeConverter.printBase64Binary(array);
     }
     catch (IOException e)
     {
