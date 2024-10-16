@@ -98,6 +98,9 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Similar to OneTouchExpandableWrapper.addOneTouchExpansion
+   */
   void reset()
   {
     tv.getColumns().clear();

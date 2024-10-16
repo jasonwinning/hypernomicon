@@ -16,26 +16,17 @@
    limitations under the License.
 -->
 
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.web.WebView?>
 <?import org.controlsfx.control.BreadCrumbBar?>
-<?import org.controlsfx.control.MasterDetailPane?>
 
-<AnchorPane prefHeight="689.0" prefWidth="1227.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.TreeTabCtrlr">
-  <MasterDetailPane fx:id="spMain" detailSide="BOTTOM" dividerPosition="0.70" minHeight="0.0" showDetailNode="false" AnchorPane.bottomAnchor="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-    <masterNode>
-    </masterNode>
-    <detailNode>
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-        <WebView fx:id="webView" layoutX="513.0" layoutY="53.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      </AnchorPane>
-    </detailNode>
-  </MasterDetailPane>
-  <BreadCrumbBar fx:id="bcbPath" autoNavigationEnabled="false" layoutX="41.0" layoutY="675.0" prefHeight="25.0" prefWidth="1122.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="105.0" />
-  <AnchorPane layoutX="1110.0" layoutY="667.0" prefHeight="25.0" style="-fx-background-color: -fx-background;"
-              AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="0.0">
-    <CheckBox fx:id="chkShowDesc" layoutY="3.0" mnemonicParsing="false" text="Show description"
-              AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="3.0"/>
-  </AnchorPane>
+<AnchorPane prefHeight="689.0" prefWidth="1227.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.TreeTabCtrlr">
+  <SplitPane fx:id="spMain" dividerPositions="0.7" minHeight="0.0" orientation="VERTICAL" AnchorPane.bottomAnchor="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" />
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+      <WebView fx:id="webView" layoutX="513.0" layoutY="53.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+    </AnchorPane>
+  </SplitPane>
+  <BreadCrumbBar fx:id="bcbPath" autoNavigationEnabled="false" layoutX="41.0" layoutY="675.0" prefHeight="25.0" prefWidth="1122.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
 </AnchorPane>

@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.HyperDataException;
@@ -75,6 +74,8 @@ import org.hypernomicon.view.populators.QueryPopulator.QueryCell;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper;
+import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper.CollapsedState;
 import org.hypernomicon.util.boolEvaluator.BoolEvaluator;
 import org.hypernomicon.util.boolEvaluator.BoolExpression;
 
@@ -86,7 +87,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
@@ -102,7 +103,7 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private MasterDetailPane spMain, spLower;
+  @FXML private SplitPane spMain, spLower;
   @FXML private TableView<HyperTableRow> tvFields;
   @FXML private TableView<ResultRow> tvResults;
   @FXML private AnchorPane apDescription, apResults;
@@ -122,6 +123,7 @@ public final class QueryCtrlr
   private ReportTable reportTable;
   private Tab tab;
   private QueryFavorite fav = null;
+  private OneTouchExpandableWrapper lowerOneTouchExpandableWrapper;
   private HDT_Record curResult = null;
   private int scrollPosPriorToBeingDeactivated = 0;
 
@@ -367,8 +369,14 @@ public final class QueryCtrlr
 
     switchToRecordMode();
 
-    scaleNodeForDPI(spMain);
-    setFontSize(spMain);
+    Platform.runLater(() ->
+    {
+      scaleNodeForDPI(spMain);
+      setFontSize(spMain);
+
+      OneTouchExpandableWrapper.wrap(spMain , 0.35, CollapsedState.Expanded);
+      lowerOneTouchExpandableWrapper = OneTouchExpandableWrapper.wrap(spLower, 0.55, CollapsedState.ShowingOnlyFirstRegion);
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -717,7 +725,7 @@ public final class QueryCtrlr
     reportTable.inject(reportEngine);
 
     if (reportEngine.autoShowDescription() && (reportEngine.getRows().size() > 0))
-      queriesTabCtrlr.chkShowDesc.setSelected(true);
+      lowerOneTouchExpandableWrapper.setCollapsedState(CollapsedState.Expanded);
   }
 
   //---------------------------------------------------------------------------
@@ -934,7 +942,7 @@ public final class QueryCtrlr
     });
 
     if (showDesc)
-      queriesTabCtrlr.chkShowDesc.setSelected(true);
+      lowerOneTouchExpandableWrapper.setCollapsedState(CollapsedState.Expanded);
 
     if (resultsBackingList.isEmpty() == false)
     {
@@ -1170,9 +1178,6 @@ public final class QueryCtrlr
 
   public void deactivate()
   {
-    spMain .showDetailNodeProperty().unbind();
-    spLower.showDetailNodeProperty().unbind();
-
     scrollPosPriorToBeingDeactivated = MainTextUtil.webEngineScrollPos(webView.getEngine());
 
     removeFromParent(webView);
@@ -1181,14 +1186,8 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void activate(CheckBox chkShowFields, CheckBox chkShowDesc)
+  public void activate()
   {
-    chkShowFields.setSelected(spMain .isShowDetailNode());
-    chkShowDesc  .setSelected(spLower.isShowDetailNode());
-
-    spMain .showDetailNodeProperty().bind(chkShowFields.selectedProperty());
-    spLower.showDetailNodeProperty().bind(chkShowDesc  .selectedProperty());
-
     apDescription.getChildren().setAll(webView);
   }
 

@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.controlsfx.control.BreadCrumbBar;
-import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.records.*;
@@ -38,6 +37,8 @@ import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.PositionTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.MenuItemSchema;
+import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper;
+import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper.CollapsedState;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
@@ -59,8 +60,8 @@ import javafx.concurrent.Worker;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
@@ -72,8 +73,7 @@ import javafx.scene.web.WebView;
 public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
   @FXML private BreadCrumbBar<TreeRow> bcbPath;
-  @FXML private MasterDetailPane spMain;
-  @FXML private CheckBox chkShowDesc;
+  @FXML private SplitPane spMain;
   @FXML private WebView webView;
 
   private final SetMultimap<RecordType, MenuItemSchema<? extends HDT_Record, TreeRow>> recordTypeToSchemas = LinkedHashMultimap.create();
@@ -97,8 +97,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     highlighter = new Highlighter(webView);
 
     initTTV();
-
-    spMain.showDetailNodeProperty().bind(chkShowDesc.selectedProperty());
 
     tree.addContextMenuItem("Select", HDT_Record.class,
       record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isLoaded(),
@@ -335,7 +333,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     FXMLLoader loader = new FXMLLoader(App.class.getResource("tree/Tree.fxml"));
     AnchorPane treePane = loader.load();
-    spMain.setMasterNode(treePane);
+    spMain.getItems().set(0, treePane);
     TreeCtrlr treeCtrlr = loader.getController();
 
     ttv = treeCtrlr.ttv;
@@ -398,6 +396,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     HyperTable.loadColWidthsForTable(ttv, ttv.getColumns(), PREF_KEY_HT_TREE);
 
     tree.reset(ttv, false, true);
+
+    Platform.runLater(() -> OneTouchExpandableWrapper.wrap(spMain, 0.7, CollapsedState.ShowingOnlyFirstRegion));
   }
 
 //---------------------------------------------------------------------------

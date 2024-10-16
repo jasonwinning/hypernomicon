@@ -38,7 +38,6 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -82,7 +81,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @FXML private AnchorPane apOrigDescription;
   @FXML private Button btnClear, btnToggleFavorite;
-  @FXML private CheckBox chkShowFields;
   @FXML private ComboBox<CheckBoxOrCommand> cbFile;
   @FXML private Tab tabNew;
   @FXML private TabPane tabPane;
@@ -90,7 +88,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML private WebView webView;
 
   @FXML Button btnExecute;
-  @FXML CheckBox chkShowDesc;
 
   private ComboBox<CheckBoxOrCommand> fileBtn = null;
   private Property<ObservableList<ResultRow>> propToUnbind = null;
@@ -281,7 +278,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     if (curQueryCtrlr != null)
       curQueryCtrlr.deactivate();
 
-    queryCtrlr.activate(chkShowFields, chkShowDesc);
+    queryCtrlr.activate();
 
     curQueryCtrlr = queryCtrlr;
     updateCB(curQueryCtrlr);
@@ -337,10 +334,12 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     clearingViews = false;
 
     if (ui.isShuttingDown() == false)
+    {
       webView.getEngine().loadContent("");
 
-    QueryCtrlr newQueryCtrlr = addQueryCtrlr();
-    tabPane.getSelectionModel().select(newQueryCtrlr.getTab());
+      QueryCtrlr newQueryCtrlr = addQueryCtrlr();
+      tabPane.getSelectionModel().select(newQueryCtrlr.getTab());
+    }
   }
 
 //---------------------------------------------------------------------------

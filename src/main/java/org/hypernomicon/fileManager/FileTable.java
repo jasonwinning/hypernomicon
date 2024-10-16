@@ -108,7 +108,7 @@ class FileTable extends DragNDropContainer<FileRow>
 
     typeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTypeString()));
     sizeCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getSizeCellValue()));
-    sizeCol.setStyle( "-fx-alignment: CENTER-RIGHT;");
+    sizeCol.setStyle("-fx-alignment: CENTER-RIGHT;");
 
     recordsCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHyperPath().getRecordsString()));
 

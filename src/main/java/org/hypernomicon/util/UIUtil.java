@@ -404,6 +404,7 @@ public final class UIUtil
       List<Node> list = ((VBox)contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent)).getChildren();
 
       list.clear();
+
       for (MenuItem item : items)
         list.add((Node) ctor.newInstance(contextMenuContent, item));
     }
@@ -460,18 +461,35 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setHeights(Region region, Double ht)
+  public static void setHeights(Region region, Double height)
   {
-    region.setMinHeight (ht);
-    region.setMaxHeight (ht);
-    region.setPrefHeight(ht);
+    region.setMinHeight (height);
+    region.setMaxHeight (height);
+    region.setPrefHeight(height);
   }
 
-  public static void setHeights(Stage stage, Double ht)
+  public static void setHeights(Stage stage, Double height)
   {
-    stage.setMinHeight(ht);
-    stage.setMaxHeight(ht);
-    stage.setHeight   (ht);
+    stage.setMinHeight(height);
+    stage.setMaxHeight(height);
+    stage.setHeight   (height);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void setWidths(Region region, Double width)
+  {
+    region.setMinWidth (width);
+    region.setMaxWidth (width);
+    region.setPrefWidth(width);
+  }
+
+  public static void setWidths(Stage stage, Double width)
+  {
+    stage.setMinWidth(width);
+    stage.setMaxWidth(width);
+    stage.setWidth   (width);
   }
 
 //---------------------------------------------------------------------------
@@ -617,7 +635,12 @@ public final class UIUtil
     else if (node instanceof TabPane tabPane)
       tabPane.getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
     else if (node instanceof Parent parent)
+    {
+      if (parent instanceof SplitPane)
+        assert(parent.getChildrenUnmodifiable().isEmpty() == false);
+
       parent.getChildrenUnmodifiable().forEach(UIUtil::scaleNodeForDPI);
+    }
   }
 
 //---------------------------------------------------------------------------

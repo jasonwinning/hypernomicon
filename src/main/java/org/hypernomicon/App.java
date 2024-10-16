@@ -261,6 +261,7 @@ public final class App extends Application
     {
       if (newVersion.compareTo(appVersion) > 0)
         noOp(new NewVersionDlgCtrlr());
+
     }, Util::noOp);
 
     if (db.viewTestingInProgress && hdbExists)

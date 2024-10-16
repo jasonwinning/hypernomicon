@@ -33,7 +33,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabCtrlr">
+<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabCtrlr">
   <GridPane>
     <columnConstraints>
       <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
@@ -46,7 +46,7 @@
       <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowSpan="2">
-      <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" styleClass="noScale" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
+      <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
         <graphic>
           <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
             <Image url="@../../resources/images/treeview.png" />
