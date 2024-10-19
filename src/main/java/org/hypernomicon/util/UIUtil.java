@@ -634,13 +634,10 @@ public final class UIUtil
       scaleNodeForDPI(titledPane.getContent());
     else if (node instanceof TabPane tabPane)
       tabPane.getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
+    else if (node instanceof SplitPane splitPane)
+      splitPane.getItems().forEach(UIUtil::scaleNodeForDPI);
     else if (node instanceof Parent parent)
-    {
-      if (parent instanceof SplitPane)
-        assert(parent.getChildrenUnmodifiable().isEmpty() == false);
-
       parent.getChildrenUnmodifiable().forEach(UIUtil::scaleNodeForDPI);
-    }
   }
 
 //---------------------------------------------------------------------------

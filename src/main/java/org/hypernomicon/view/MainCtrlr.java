@@ -2736,7 +2736,9 @@ public final class MainCtrlr
   private void updateSelectorTab(boolean setFocus)
   {
     TabEnum selectorTabEnum = selectorTabEnum(), activeTabEnum = activeTabEnum();
-    HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = nullSwitch(getHyperTab(selectorTabEnum), activeTab());
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = getHyperTab(selectorTabEnum);
+    if (hyperTab == null) hyperTab = activeTab();  // This is done on a separate line instead of using nullSwitch to avoid false-positive build error
+
     tfSelector = null;
 
     int count = hyperTab == null ? 0 : hyperTab.recordCount();

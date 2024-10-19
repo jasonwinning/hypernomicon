@@ -370,11 +370,11 @@ public final class QueryCtrlr
 
     switchToRecordMode();
 
+    scaleNodeForDPI(spMain);
+    setFontSize(spMain);
+
     Platform.runLater(() ->
     {
-      scaleNodeForDPI(spMain);
-      setFontSize(spMain);
-
       Supplier<String> fieldsDescSupplier  = () -> inRecordMode ? "query fields"  : "report fields",
                        resultsDescSupplier = () -> inRecordMode ? "query results" : "report results",
                        detailsDescSupplier = () -> inRecordMode ? "description of currently selected record" : "report result details";

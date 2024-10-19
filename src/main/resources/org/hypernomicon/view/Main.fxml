@@ -331,7 +331,7 @@
             <MenuItem mnemonicParsing="false" text="Action 2" />
           </items>
         </SplitMenuButton>
-        <MenuButton fx:id="mbCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" popupSide="TOP" prefHeight="24.0" prefWidth="93.0" text="Create New" visible="false" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+        <MenuButton fx:id="mbCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" popupSide="TOP" prefHeight="24.0" prefWidth="99.0" text="Create New" visible="false" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
           <items>
             <MenuItem mnemonicParsing="false" text="Action 1" />
             <MenuItem mnemonicParsing="false" text="Action 2" />

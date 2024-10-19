@@ -39,6 +39,7 @@ import static org.hypernomicon.util.Util.*;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
@@ -128,18 +129,21 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
       @Override public void run()
       {
         boolean buttonNotAdded;
+        int sleepTotal = 0;
 
         synchronized (buttonAdded) { buttonNotAdded = buttonAdded.isFalse(); }
 
-        while (buttonNotAdded)
+        while (buttonNotAdded && (sleepTotal < 1000))
         {
           runInFXThread(() ->
           {
             synchronized (buttonAdded)
             {
-              buttonAdded.setValue(buttonAdded.booleanValue() || !nullSwitch(tv.getScene(), false, scene ->
-                                                                  nullSwitch(scene.getWindow(), false, Window::isShowing)));
-              if (buttonAdded.isTrue()) return;
+              Scene scene = tv.getScene();
+              if (scene == null) return;
+
+              Window window = scene.getWindow();
+              if ((window == null) || (window.isShowing() == false)) return;
 
               nullSwitch(tv.lookup(".show-hide-columns-button"), showHideColumnsButton ->
               {
@@ -157,7 +161,10 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
           synchronized (buttonAdded) { buttonNotAdded = buttonAdded.isFalse(); }
 
           if (buttonNotAdded)
+          {
             sleepForMillis(50);
+            sleepTotal += 50;
+          }
         }
       }
     };
