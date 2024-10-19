@@ -21,13 +21,16 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.HyperTask.HyperThread;
 
 import static org.hypernomicon.view.wrappers.OneTouchExpandableWrapper.CollapsedState.*;
+
+import java.util.function.Supplier;
+
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
@@ -38,6 +41,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
 import javafx.stage.Window;
+
+import static javafx.geometry.Orientation.*;
 
 //---------------------------------------------------------------------------
 
@@ -75,10 +80,10 @@ public final class OneTouchExpandableWrapper
   private static final double TRIANGLE_THICKNESS = 0.6;
 
   /**
-   * Delta for comparing divider position (a double) with the min and max
+   * Delta for comparing divider position with the min and max
    * divider values, which in practice do not reach 0.0 or 1.0.
    */
-  private static final double END_TOLERANCE = 0.025;
+  private static final double END_TOLERANCE_AS_RATIO_OF_DIVIDER_THICKNESS = 0.7;
 
   private final SplitPane splitPane;
   private final DoubleBinding dividerPosition;
@@ -88,13 +93,13 @@ public final class OneTouchExpandableWrapper
 
 //---------------------------------------------------------------------------
 
-  private OneTouchExpandableWrapper(SplitPane splitPane, double expandedPos, CollapsedState collapsedState)
+  private OneTouchExpandableWrapper(SplitPane splitPane, Supplier<String> contentDescription1, Supplier<String> contentDescription2, double expandedPos, CollapsedState collapsedState)
   {
     this.splitPane = splitPane;
 
     dividerPosition = Bindings.selectDouble(Bindings.valueAt(splitPane.getDividers(), 0), "position");
 
-    thread = addOneTouchExpansion(expandedPos, collapsedState);
+    thread = addOneTouchExpansion(contentDescription1, contentDescription2, expandedPos, collapsedState);
   }
 
 //---------------------------------------------------------------------------
@@ -121,13 +126,15 @@ public final class OneTouchExpandableWrapper
   /**
    * Wrapper to add buttons to SplitPane to expand/collapse
    * @param splitPane The SplitPane
+   * @param contentDescription1 User-facing description of contents of left/top pane of SplitPane
+   * @param contentDescription2 User-facing description of contents of right/bottom pane of SplitPane
    * @param expandedPos The position of the divider when expanded, from 0.0 to 1.0
    * @param collapsedState Whether to start expanded or collapsed
    * @return The wrapper
    */
-  public static OneTouchExpandableWrapper wrap(SplitPane splitPane, double expandedPos, CollapsedState collapsedState)
+  public static OneTouchExpandableWrapper wrap(SplitPane splitPane, Supplier<String> contentDescription1, Supplier<String> contentDescription2, double expandedPos, CollapsedState collapsedState)
   {
-    return new OneTouchExpandableWrapper(splitPane, expandedPos, collapsedState);
+    return new OneTouchExpandableWrapper(splitPane, contentDescription1, contentDescription2, expandedPos, collapsedState);
   }
 
 //---------------------------------------------------------------------------
@@ -145,15 +152,22 @@ public final class OneTouchExpandableWrapper
 
   private final MutableBoolean oneTouchAdded = new MutableBoolean(false);
 
+  private volatile Runnable onOneTouchAdderFinish;
+
   /**
-   * Adds one-touch-expand buttons to a SplitPane's first divider.<br>
+   * Starts a new thread to add one-touch-expand buttons to a SplitPane's first divider.<br>
    * Similar to ResultsTable.reset
+   * @param contentDescription1 User-facing description of contents of left/top pane of SplitPane
+   * @param contentDescription2 User-facing description of contents of right/bottom pane of SplitPane
+   * @param expandedPos The starting position of divider in expanded state
+   * @param collapsedState Whether the SplitPane should start collapsed or not
+   * @return The running thread in which the one-touch capability is being added
    */
-  private HyperThread addOneTouchExpansion(double expandedPos, CollapsedState collapsedState)
+  private HyperThread addOneTouchExpansion(Supplier<String> contentDescription1, Supplier<String> contentDescription2, double expandedPos, CollapsedState collapsedState)
   {
     splitPane.setDividerPosition(0, expandedPos);
 
-    HyperThread thread = new HyperThread("OneTouchAdder")
+    HyperThread newThread = new HyperThread("OneTouchAdder")
     {
 
     //---------------------------------------------------------------------------
@@ -175,7 +189,7 @@ public final class OneTouchExpandableWrapper
                                                                       nullSwitch(scene.getWindow(), false, Window::isShowing)));
               if (oneTouchAdded.isTrue()) return;
 
-              nullSwitch(findDivider(splitPane), divider -> initDivider(splitPane, divider));
+              nullSwitch(findDivider(splitPane), divider -> initDivider(contentDescription1, contentDescription2, splitPane, divider));
             }
           }, true);
 
@@ -189,7 +203,7 @@ public final class OneTouchExpandableWrapper
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-      private void initDivider(SplitPane splitPane, StackPane divider)
+      private void initDivider(Supplier<String> contentDescription1, Supplier<String> contentDescription2, SplitPane splitPane, StackPane divider)
       {
         oneTouchAdded.setTrue();
 
@@ -206,12 +220,12 @@ public final class OneTouchExpandableWrapper
         borderPane.prefHeightProperty().bind(divider.heightProperty());
         borderPane.maxHeightProperty ().bind(divider.heightProperty());
 
-        if (splitPane.getOrientation() == Orientation.VERTICAL)
+        if (splitPane.getOrientation() == VERTICAL)
         {
           ObservableValue<Number> triangleScaleFactor = divider.heightProperty().multiply(TRIANGLE_THICKNESS);
 
-          button1 = createTriangleButton(triangleScaleFactor, 0, DIVIDER_THICKNESS, BUTTON_LENGTH, 1, 0, 0, 1, 2, 1);
-          button2 = createTriangleButton(triangleScaleFactor, 1, DIVIDER_THICKNESS, BUTTON_LENGTH, 1, 1, 0, 0, 2, 0);
+          button1 = createTriangleButton(contentDescription1, contentDescription2, triangleScaleFactor, 0, DIVIDER_THICKNESS, BUTTON_LENGTH, 1, 0, 0, 1, 2, 1);
+          button2 = createTriangleButton(contentDescription1, contentDescription2, triangleScaleFactor, 1, DIVIDER_THICKNESS, BUTTON_LENGTH, 1, 1, 0, 0, 2, 0);
 
           HBox expandButtonsPane = new HBox(button1, button2);
           expandButtonsPane.setAlignment(Pos.CENTER);
@@ -223,8 +237,8 @@ public final class OneTouchExpandableWrapper
         {
           ObservableValue<Number> triangleScaleFactor = divider.widthProperty().multiply(TRIANGLE_THICKNESS);
 
-          button1 = createTriangleButton(triangleScaleFactor, 0, BUTTON_LENGTH, DIVIDER_THICKNESS, 0, 1, 1, 0, 1, 2);
-          button2 = createTriangleButton(triangleScaleFactor, 1, BUTTON_LENGTH, DIVIDER_THICKNESS, 1, 1, 0, 0, 0, 2);
+          button1 = createTriangleButton(contentDescription1, contentDescription2, triangleScaleFactor, 0, BUTTON_LENGTH, DIVIDER_THICKNESS, 0, 1, 1, 0, 1, 2);
+          button2 = createTriangleButton(contentDescription1, contentDescription2, triangleScaleFactor, 1, BUTTON_LENGTH, DIVIDER_THICKNESS, 1, 1, 0, 0, 0, 2);
 
           VBox expandButtonsPane = new VBox(button1, button2);
           expandButtonsPane.setAlignment(Pos.CENTER);
@@ -235,27 +249,34 @@ public final class OneTouchExpandableWrapper
 
         if (collapsedState != Expanded)
           setDividerPosition(splitPane, collapsedState == ShowingOnlySecondRegion ? 0 : 1);
+
+        splitPane.widthProperty ().addListener((obs, ov, nv) -> borderPane.requestLayout());  // Necessary to get the button to stay
+        splitPane.heightProperty().addListener((obs, ov, nv) -> borderPane.requestLayout());  // centered when window is resized
+
+        if (onOneTouchAdderFinish != null)
+          onOneTouchAdderFinish.run();
       }
     };
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    thread.setDaemon(true);
-    thread.start();
+    newThread.setDaemon(true);
+    newThread.start();
 
-    return thread;
+    return newThread;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Button createTriangleButton(ObservableValue<Number> triangleScaleFactor, int endPos, double height, double width, double... points)
+  private Button createTriangleButton(Supplier<String> contentDescription1, Supplier<String> contentDescription2, ObservableValue<Number> triangleScaleFactor, int endPos, double height, double width, double... points)
   {
     Polygon triangle = new Polygon(points);
 
     triangle.scaleXProperty().bind(triangleScaleFactor);
     triangle.scaleYProperty().bind(triangleScaleFactor);
+
     triangle.setStyle("-fx-fill: -fx-text-base-color;");
 
     Button button = new Button("", triangle);
@@ -267,7 +288,20 @@ public final class OneTouchExpandableWrapper
 
     button.setCursor(Cursor.DEFAULT);
     button.setOnMouseClicked(e -> setDividerPosition(splitPane, endPos));
-    button.disableProperty().bind(dividerPosition.isEqualTo(endPos, END_TOLERANCE));
+
+    button. widthProperty().addListener((ob , ov    , nv    ) -> button.setDisable(shouldDisableButton(dividerPosition.doubleValue(), button, endPos)));
+    button.heightProperty().addListener((ob , ov    , nv    ) -> button.setDisable(shouldDisableButton(dividerPosition.doubleValue(), button, endPos)));
+    dividerPosition        .addListener((obs, oldPos, newPos) -> button.setDisable(shouldDisableButton(newPos         .doubleValue(), button, endPos)));
+
+    setToolTip(button, () ->
+    {
+      Button otherButton = endPos == 0 ? button2 : button1;
+
+      if (otherButton.isDisabled())
+        return "Show " + (endPos == 1 ? contentDescription1.get() : contentDescription2.get());
+
+      return "Collapse " + (endPos == 1 ? contentDescription2.get() : contentDescription1.get());
+    });
 
     return button;
   }
@@ -275,12 +309,12 @@ public final class OneTouchExpandableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Checks whether double values are nearly equal.
-   */
-  private static boolean isNearly(double value, double target)
+  private boolean shouldDisableButton(double newPos, Button button, double endPos)
   {
-    return Math.abs(target - value) < END_TOLERANCE;
+    double dividerThickness    = splitPane.getOrientation() == HORIZONTAL ? button   .getWidth() : button   .getHeight();
+    double splitPanelThickness = splitPane.getOrientation() == HORIZONTAL ? splitPane.getWidth() : splitPane.getHeight();
+
+    return Math.abs(newPos - endPos) < ((dividerThickness * END_TOLERANCE_AS_RATIO_OF_DIVIDER_THICKNESS) / splitPanelThickness);
   }
 
 //---------------------------------------------------------------------------
@@ -288,13 +322,16 @@ public final class OneTouchExpandableWrapper
 
   public void setCollapsedState(CollapsedState newCollapsedState)
   {
-    if (HyperThread.isRunning(thread))
+    Runnable onOneTouchAdderFinish = () -> Platform.runLater(() ->
     {
-      try { thread.join(); } catch (InterruptedException e) { throw new AssertionError(e); }
-    }
+      setCollapsedStateIteration(newCollapsedState);
+      setCollapsedStateIteration(newCollapsedState);  // May need to simulate clicking the button twice if going from one extreme to the other
+    });
 
-    setCollapsedStateIteration(newCollapsedState);
-    setCollapsedStateIteration(newCollapsedState);  // May need to simulate clicking the button twice if going from one extreme to the other
+    if (HyperThread.isRunning(thread))
+      this.onOneTouchAdderFinish = onOneTouchAdderFinish;
+    else
+      onOneTouchAdderFinish.run();
   }
 
   private void setCollapsedStateIteration(CollapsedState newCollapsedState)
@@ -321,21 +358,24 @@ public final class OneTouchExpandableWrapper
    * @param splitPane SplitPane to perform expand/collapse on
    * @param endPos farthest divider position in direction of expand/collapse, either 0 or 1
    */
-  private static void setDividerPosition(SplitPane splitPane, double endPos)
+  private void setDividerPosition(SplitPane splitPane, double endPos)
   {
-    double expandedPos = splitPane.getDividers().get(0).getPosition(),
-           startPos = 1 - endPos;
+    double expandedPos = splitPane.getDividers().get(0).getPosition();
 
-    if (isNearly(expandedPos, startPos))
+    Button otherButton = endPos == 0 ? button2 : button1;
+
+    if (otherButton.isDisabled())
     {
       Object savedPosObj = splitPane.getProperties().get(EXPANDED_POSITION);
 
-      splitPane.setDividerPosition(0, savedPosObj instanceof Number savedPos ?
-        savedPos.doubleValue()
-      :
-        0.5);
+      double newPos = savedPosObj instanceof Number savedPos ? savedPos.doubleValue() : 0.5;
+
+      if (shouldDisableButton(newPos, otherButton, 1 - endPos))
+        newPos = 0.5;
+
+      splitPane.setDividerPosition(0, newPos);
     }
-    else if (isNearly(expandedPos, endPos) == false)
+    else
     {
       splitPane.getProperties().put(EXPANDED_POSITION, expandedPos);
       splitPane.setDividerPosition(0, endPos);

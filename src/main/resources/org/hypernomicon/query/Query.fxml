@@ -26,7 +26,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 
 <SplitPane fx:id="spMain" dividerPositions="0.35" orientation="VERTICAL" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueryCtrlr">
-   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" style="-fx-background-color: -fx-background;">
      <TableView fx:id="tvFields" editable="true" layoutX="-2.0" layoutY="-1.0" prefHeight="245.0" prefWidth="1057.0" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="-1.0">
        <columns>
          <TableColumn maxWidth="36.0" minWidth="36.0" prefWidth="36.0" resizable="false" sortable="false" />
@@ -37,15 +37,19 @@
          <TableColumn prefWidth="209.0" text="Operand 3" />
        </columns>
      </TableView>
-       <ToggleButton fx:id="btnAnd" layoutX="100.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" selected="true" text="And" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="100.0">
-          <toggleGroup>
-             <ToggleGroup fx:id="tgLogic" />
-          </toggleGroup>
-       </ToggleButton>
-       <Label layoutX="9.0" layoutY="253.0" text="Evaluation logic:" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="9.0" />
-       <ToggleButton fx:id="btnOr" layoutX="149.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" text="Or" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="149.0" />
-       <ToggleButton fx:id="btnCustom" layoutX="198.0" layoutY="249.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="72.0" text="Custom:" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="198.0" />
-       <TextField fx:id="tfCustomLogic" layoutX="276.0" layoutY="250.0" prefHeight="25.0" prefWidth="781.0" promptText="Example: 1 and not (2 or 3)" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="274.0" AnchorPane.rightAnchor="2.0" />
+      <AnchorPane maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0" style="-fx-background-color: -fx-background;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <children>
+             <ToggleButton fx:id="btnAnd" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" selected="true" text="And" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="100.0">
+                <toggleGroup>
+                   <ToggleGroup fx:id="tgLogic" />
+                </toggleGroup>
+             </ToggleButton>
+             <Label text="Evaluation logic:" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="9.0" />
+             <ToggleButton fx:id="btnOr" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="45.0" text="Or" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="149.0" />
+             <ToggleButton fx:id="btnCustom" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="72.0" text="Custom:" toggleGroup="$tgLogic" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="198.0" />
+             <TextField fx:id="tfCustomLogic" prefHeight="25.0" prefWidth="781.0" promptText="Example: 1 and not (2 or 3)" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="274.0" AnchorPane.rightAnchor="2.0" />
+         </children>
+      </AnchorPane>
    </AnchorPane>
    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
      <SplitPane fx:id="spLower" dividerPositions="0.55" layoutX="476.0" layoutY="102.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">      

@@ -43,6 +43,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.Map.Entry;
 
 import org.hypernomicon.App;
@@ -374,8 +375,12 @@ public final class QueryCtrlr
       scaleNodeForDPI(spMain);
       setFontSize(spMain);
 
-      OneTouchExpandableWrapper.wrap(spMain , 0.35, CollapsedState.Expanded);
-      lowerOneTouchExpandableWrapper = OneTouchExpandableWrapper.wrap(spLower, 0.55, CollapsedState.ShowingOnlyFirstRegion);
+      Supplier<String> fieldsDescSupplier  = () -> inRecordMode ? "query fields"  : "report fields",
+                       resultsDescSupplier = () -> inRecordMode ? "query results" : "report results",
+                       detailsDescSupplier = () -> inRecordMode ? "description of currently selected record" : "report result details";
+
+      OneTouchExpandableWrapper.wrap(spMain, fieldsDescSupplier, resultsDescSupplier, 0.35, CollapsedState.Expanded);
+      lowerOneTouchExpandableWrapper = OneTouchExpandableWrapper.wrap(spLower, resultsDescSupplier, detailsDescSupplier, 0.55, CollapsedState.ShowingOnlyFirstRegion);
     });
   }
 

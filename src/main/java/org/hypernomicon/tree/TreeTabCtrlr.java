@@ -397,7 +397,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tree.reset(ttv, false, true);
 
-    Platform.runLater(() -> OneTouchExpandableWrapper.wrap(spMain, 0.7, CollapsedState.ShowingOnlyFirstRegion));
+    Platform.runLater(() -> OneTouchExpandableWrapper.wrap(spMain, () -> "tree", () -> "description of currently selected record", 0.7, CollapsedState.ShowingOnlyFirstRegion));
   }
 
 //---------------------------------------------------------------------------
