@@ -44,6 +44,7 @@ import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
@@ -560,6 +561,56 @@ public final class DesktopUtil
     process.waitFor();
 
     return safeStr(output);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String detectDistro()
+  {
+    String distro = null;
+
+    try
+    {
+      distro = readValueFromFile("/etc/os-release", "PRETTY_NAME");
+
+      if (distro == null)
+        distro = readValueFromFile("/etc/lsb-release", "DISTRIB_DESCRIPTION");
+
+      if (distro == null)
+        distro = readValueFromFile("/etc/redhat-release", "");
+
+      if (distro == null)
+        distro = readValueFromFile("/etc/debian_version", "");
+    }
+    catch (IOException e)
+    {
+      noOp();
+    }
+
+    return StringUtils.strip(safeStr(distro), "\"");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String readValueFromFile(String filePath, String key) throws IOException
+  {
+    File file = new File(filePath);
+    if (file.exists() == false)
+      return null;
+
+    for (String line : FileUtils.readLines(file, Charset.defaultCharset()))
+    {
+      if (safeStr(key).isBlank())
+        return line;
+
+      SplitString ss = new SplitString(line, '=');
+      if (ss.next().equals(key))
+        return ss.next();
+    }
+
+    return null;
   }
 
 //---------------------------------------------------------------------------

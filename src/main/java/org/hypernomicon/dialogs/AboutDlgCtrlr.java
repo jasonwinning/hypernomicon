@@ -37,6 +37,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.view.mainText.MainTextUtil;
 
 import com.sun.javafx.runtime.VersionInfo;
@@ -172,12 +173,14 @@ public class AboutDlgCtrlr extends HyperDlg
   {
     String maxHeap = app.debugging ? "Max heap space: " + new DecimalFormat("#,###").format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
 
+    String distro = SystemUtils.IS_OS_LINUX ? DesktopUtil.detectDistro() : "";
+
     return htmlStart +
 
       "Version: " + appVersion + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
       "Build date: " + buildDate + "<br>" +
       "Copyright \u00a9 2015-2024 Jason Winning.<br><br>" +
-      "Operating system: " + SystemUtils.OS_NAME + "<br>" +
+      "Operating system: " + SystemUtils.OS_NAME + (safeStr(distro).isBlank() ? "" : (" (" + distro + ")")) + "<br>" +
       "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
       "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + ' ' + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
       maxHeap +

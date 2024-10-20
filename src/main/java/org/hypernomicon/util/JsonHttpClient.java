@@ -188,7 +188,16 @@ public class JsonHttpClient
     {
       try (InputStream is = entity.getContent())
       {
-        Object obj = jsonParser.parse(new InputStreamReader(is, UTF_8));
+        Object obj = null;
+
+        try
+        {
+          obj = jsonParser.parse(new InputStreamReader(is, UTF_8));
+        }
+        catch (Error er)
+        {
+          throw new IOException("Unknown JSON parsing error", er);
+        }
 
         if (obj instanceof JSONObject jObj)
         {
