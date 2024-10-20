@@ -52,6 +52,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.PageRangeHTC;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
@@ -71,6 +72,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.MainCtrlr.*;
+import static org.hypernomicon.view.populators.Populator.CellValueType.cvtPageRange;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
@@ -126,6 +128,10 @@ import javafx.stage.FileChooser;
 
 public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private AnchorPane apDescription, apLowerMid, apLowerRight;
   @FXML private Button btnBibManager, btnLargerWork, btnLaunch, btnMergeBib, btnNewChapter, btnURL,
                        btnStop, btnTree, btnUseDOI, btnUseISBN, btnWebSrch1, btnWebSrch2, btnAutofill, btnTopAutofill;
@@ -261,12 +267,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htArguments = new HyperTable(tvArguments, 3, false, PREF_KEY_HT_WORK_ARG);
 
-    htArguments.addIconCol();
-    htArguments.addLabelCol(hdtNone);
-    htArguments.addLabelCol(hdtNone, smTextSimple);
-    htArguments.addLabelCol(hdtArgument);
-    htArguments.addLabelCol(hdtWork)
-               .setComparator(HyperTableCell.leadingNumberComparator());
+    htArguments.addIconCol();                       // Icon to indicate the type of record this argument targets
+    htArguments.addLabelCol(hdtNone);               // Record name of the target of the argument
+    htArguments.addLabelCol(hdtNone, smTextSimple); // Verdict of the argument
+    htArguments.addLabelCol(hdtArgument);           // Argument name
+    htArguments.addLabelCol(hdtWork)                // Pages
+               .setValueType(cvtPageRange);
 
     htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
 
@@ -799,7 +805,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
 
       row.setCellValue(3, arg, arg.listName());
-      row.setCellValue(4, arg, arg.pagesInWork(curWork));
+      row.setCellValue(4, new PageRangeHTC(arg, arg.pagesInWork(curWork)));
     });
 
   // Populate work files

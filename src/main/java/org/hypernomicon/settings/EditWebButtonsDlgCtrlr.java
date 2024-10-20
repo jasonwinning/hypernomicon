@@ -17,7 +17,7 @@
 
 package org.hypernomicon.settings;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
 import java.util.ArrayList;

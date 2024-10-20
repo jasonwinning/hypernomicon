@@ -79,7 +79,7 @@ public abstract class Populator
 
   public enum CellValueType
   {
-    cvtVaries,   cvtQuery,     cvtQueryType,  cvtRecordType, cvtRecord,   cvtBoolean,   cvtFileNameComponent,
+    cvtVaries,   cvtQuery,     cvtQueryType,  cvtRecordType, cvtRecord,   cvtBoolean,   cvtFileNameComponent, cvtPageRange,
     cvtTernary,  cvtOperand,   cvtTagItem,    cvtRelation,   cvtBibEntry, cvtBibField,  cvtSrchBtnPreset
   }
 

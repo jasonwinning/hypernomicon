@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.Comparator;
@@ -35,6 +36,7 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
@@ -90,6 +92,7 @@ public class HyperTableColumn
   private final Property<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
 
   private Supplier<HDT_Work> workSupplier;
+  private CellValueType cellValueType = cvtRecord;
   private Function<HyperTableRow, String> textHndlr;
   private Pos alignment = null;  // This is currently only respected by ReadOnlyCell
 
@@ -108,6 +111,7 @@ public class HyperTableColumn
   HyperTableColumn setAlignment(Pos newAlignment)            { alignment = newAlignment;        return this; }
 
   public HyperTableColumn setComparator(Comparator<HyperTableCell> newComparator) { comparator = newComparator;           return this; }
+  public HyperTableColumn setValueType(CellValueType newCellValueType)            { cellValueType = newCellValueType;     return this; }
   public HyperTableColumn setTooltip(ButtonAction ba, String text)                { tooltips.put(ba, text);               return this; }
   public HyperTableColumn setTextHndlr(Function<HyperTableRow, String> newTH)     { textHndlr = newTH;                    return this; }
   public HyperTableColumn setDontCreateNewRecord(boolean newVal)                  { dontCreateNewRecord.setValue(newVal); return this; }
@@ -204,7 +208,7 @@ public class HyperTableColumn
       case ctEdit :
 
         htcCol.setEditable(true);
-        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, canEditIfEmpty, sortMethod));
+        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, cellValueType, canEditIfEmpty, sortMethod));
 
         htcCol.setOnEditCommit(event ->
           event.getRowValue().setCellValue(colNdx, event.getNewValue().getCopyWithID(event.getOldValue().getID()))); // preserve ID value

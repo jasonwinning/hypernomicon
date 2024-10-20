@@ -19,7 +19,6 @@ package org.hypernomicon.util;
 
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.dialogs.LockedDlgCtrlr;
 import org.hypernomicon.util.filePath.FilePath;
 
 import java.io.BufferedReader;
@@ -351,14 +350,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void showStackTrace(Throwable e)
-  {
-    new LockedDlgCtrlr("Error", e).showModal();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static boolean parseBoolean(String s)
   {
     if (Boolean.parseBoolean(s)) return true;
@@ -376,12 +367,19 @@ public final class Util
 
   private static final DateTimeFormatter
 
+   //Formatter to display date and time in a user-readable format, using locale and time zone of the system
    userReadableDateTimeFormatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+
+   // Formatter to display only time in a user-readable format, using locale and time zone of the system
    userReadableTimeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
 
+   // Formatter for HTTP dates following the RFC 1123 standard, using locale and time zone of the system
    httpDate = DateTimeFormatter.RFC_1123_DATE_TIME.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
 
+   // Formatter for ISO 8601 instant dates, using locale and time zone of the system
    iso8601Format = DateTimeFormatter.ISO_INSTANT.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+
+   // Formatter for ISO 8601 dates with offset, using locale and time zone of the system
    iso8601FormatOffset = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault());
 
   public static final NumberFormat numberFormat = NumberFormat.getInstance();
@@ -1069,51 +1067,6 @@ public final class Util
       return result.getValue();
 
     return str1.compareToIgnoreCase(str2);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Returns the non-negative integer, if any, at the beginning of the string.<br>
-   * Examples:<br>
-   * "123-456" -> 123<br>
-   * "012; XYZ" -> 12<br>
-   * "5.5" -> 5<br>
-   * "-5.5" -> -1<br>
-   * @param s The string
-   * @return The non-negative integer that begins the string, or -1 if the string doesn't start with a non-negative integer or the number is too large to be stored as an integer.
-   */
-  public static int extractLeadingNumber(String s)
-  {
-    if (safeStr(s).isBlank()) return -1;
-
-    int i = 0,
-        radix = 10,
-        len = s.length(),
-        limit = -Integer.MAX_VALUE,
-        multmin = limit / radix,
-        result = 0;
-
-    // Accumulating negatively avoids surprises near MAX_VALUE
-
-    while (i < len)
-    {
-      if (result < multmin)
-        return -1;
-
-      int digit = Character.digit(s.charAt(i++), radix);
-      if (digit < 0)
-        return i == 1 ? -1 : -result;
-
-      result *= radix;
-      if (result < (limit + digit))
-        return -1;
-
-      result -= digit;
-    }
-
-    return -result;
   }
 
 //---------------------------------------------------------------------------

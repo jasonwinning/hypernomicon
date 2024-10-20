@@ -19,18 +19,16 @@ package org.hypernomicon.model;
 
 import static java.util.Collections.*;
 
-import static org.hypernomicon.util.Util.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
+import static org.hypernomicon.util.Util.*;
+
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Record;
+
+//---------------------------------------------------------------------------
 
 final class HyperCore<HDT_DT extends HDT_Record>
 {
@@ -62,7 +60,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
     @Override public int compareTo(KeyIDpair otherPair)
     {
       int result = key.compareTo(otherPair.key);
-      return result != 0 ? result : (id - otherPair.id);
+      return result != 0 ? result : Integer.compare(id, otherPair.id);
     }
   }
 
@@ -101,11 +99,11 @@ final class HyperCore<HDT_DT extends HDT_Record>
   void changeRecordID(int oldID, int newID) throws HDB_InternalError
   {
     HDT_DT record = getRecordByID(oldID);
-    String key = getKeyByID(oldID);
 
     if (record.getID() != newID)          // The record ID should have been changed to the new one already
       throw new HDB_InternalError(35468); // This function should only be called from HDT_Record.changeID
 
+    String key = getKeyByID(oldID);
     remove(oldID);
     add(newID, key, record);
   }

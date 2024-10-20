@@ -25,8 +25,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.RecordHTC.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
-import java.util.Comparator;
-
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
@@ -89,28 +87,6 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>, Clon
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static Comparator<HyperTableCell> leadingNumberComparator()
-  {
-    return(cell1, cell2) ->
-    {
-      String text1 = ultraTrim(cell1.getText()), text2 = ultraTrim(cell2.getText());
-      int num1 = extractLeadingNumber(text1), num2 = extractLeadingNumber(text2);
-      if ((num1 < 0) && (num2 < 0))
-        return text1.compareTo(text2);
-
-      if (num1 < 0)
-        return -1;
-
-      if (num2 < 0)
-        return 1;
-
-      return Integer.compare(num1, num2);
-    };
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static int compareCells(HyperTableCell cell1, HyperTableCell cell2, CellSortMethod sortMethod)
   {
     if ((cell1 == null) && (cell2 == null)) return 0;
@@ -128,6 +104,15 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>, Clon
       return cell1 instanceof BibDateHTC bibDateHTC1 ?
         (cell2 instanceof BibDateHTC bibDateHTC2 ?
            bibDateHTC1.bibDate.compareTo(bibDateHTC2.bibDate)
+         : 1)
+      : -1;
+    }
+
+    if ((cell1 instanceof PageRangeHTC) || (cell2 instanceof PageRangeHTC))
+    {
+      return cell1 instanceof PageRangeHTC pageRangeHTC1 ?
+        (cell2 instanceof PageRangeHTC pageRangeHTC2 ?
+            pageRangeHTC1.pageRange.compareTo(pageRangeHTC2.pageRange)
          : 1)
       : -1;
     }

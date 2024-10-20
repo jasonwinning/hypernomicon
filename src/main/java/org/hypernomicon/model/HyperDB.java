@@ -1479,8 +1479,10 @@ public final class HyperDB
       do
       {
         resolveAgain = false;
+
         for (HyperDataset<? extends HDT_Record> dataset : datasets.values())
           dataset.resolvePointers();
+
       } while (resolveAgain);
     }
     finally

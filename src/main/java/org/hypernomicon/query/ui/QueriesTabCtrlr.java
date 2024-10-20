@@ -145,10 +145,11 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     super(TabEnum.queryTabEnum, tab, "query/QueriesTab");
 
-    GeneralQueries.addQueries(allQueries);
-    FolderQueries .addQueries(allQueries);
-    PersonQueries .addQueries(allQueries);
-    WorkQueries   .addQueries(allQueries);
+    GeneralQueries .addQueries(allQueries);
+    FolderQueries  .addQueries(allQueries);
+    PersonQueries  .addQueries(allQueries);
+    ArgumentQueries.addQueries(allQueries);
+    WorkQueries    .addQueries(allQueries);
 
 //---------------------------------------------------------------------------
 

@@ -25,7 +25,9 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.PageRangeHTC;
 import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 
 import javafx.beans.property.Property;
@@ -35,11 +37,18 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+//---------------------------------------------------------------------------
+
 class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private TextField textField;
   private final MutableBoolean canEditIfEmpty;
   private final Property<CellSortMethod> sortMethod;
+  private final CellValueType cellValueType;
   private final HyperTable table;
 
 //---------------------------------------------------------------------------
@@ -48,12 +57,13 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
 //---------------------------------------------------------------------------
 
-  TextFieldCell(HyperTable table, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod)
+  TextFieldCell(HyperTable table, CellValueType cellValueType, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod)
   {
     this.table = table;
 
     this.canEditIfEmpty = canEditIfEmpty;
     this.sortMethod = sortMethod;
+    this.cellValueType = cellValueType;
   }
 
 //---------------------------------------------------------------------------
@@ -155,7 +165,6 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
         event.consume();
       }
     });
-
   }
 
 //---------------------------------------------------------------------------
@@ -165,8 +174,15 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
   {
     if (getGraphic() != textField) return;
 
-    HyperTableCell oldItem = getItem();
-    commitEdit(new RecordHTC(getCellID(oldItem), textField.getText(), getCellType(oldItem)));
+    HyperTableCell oldCell = getItem(), newCell;
+
+    newCell = switch (cellValueType)
+    {
+      case cvtPageRange -> new PageRangeHTC(getRecord(oldCell), textField.getText()                      );
+      default           -> new RecordHTC   (getCellID(oldCell), textField.getText(), getCellType(oldCell));
+    };
+
+    commitEdit(newCell);
   }
 
 //---------------------------------------------------------------------------

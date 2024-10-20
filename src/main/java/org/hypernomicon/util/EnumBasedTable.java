@@ -18,13 +18,25 @@
 package org.hypernomicon.util;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.CheckForNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
-public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V>
+public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements Table<R, C, V>
 {
 
 //---------------------------------------------------------------------------
@@ -49,14 +61,16 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public V get(R row, C column)            { return nullSwitch(rowToColumnToValue.get(row), null, columnToValue -> columnToValue.get(column)); }
-  public Collection<V> getRow(R row)       { return nullSwitch(rowToColumnToValue.get(row), null, EnumMap::values); }
-  public Collection<V> getColumn(C column) { return nullSwitch(columnToRowToValue.get(column), null, EnumMap::values); }
+  @Override @Nullable @CheckForNull
+  public V get(@Nullable Object rowKey, @Nullable Object columnKey)
+  {
+    return nullSwitch(rowToColumnToValue.get(rowKey), null, columnToValue -> columnToValue.get(columnKey));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public V put(R row, C column, V newValue)
+  @Override public V put(R row, C column, V newValue)
   {
     V oldValue = get(row, column);
 
@@ -73,6 +87,184 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V>
     rowToValue.put(row, newValue);
 
     return oldValue;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void clear()
+  {
+    rowToColumnToValue.clear();
+    columnToRowToValue.clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Set<R> rowKeySet()
+  {
+    return rowToColumnToValue.keySet();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Set<C> columnKeySet()
+  {
+    return columnToRowToValue.keySet();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Collection<V> values()
+  {
+    Set<V> values = new HashSet<>();
+
+    for (EnumMap<C, V> map : rowToColumnToValue.values())
+      values.addAll(map.values());
+
+    return values;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int size()
+  {
+    int size = 0;
+
+    for (EnumMap<C, V> map : rowToColumnToValue.values())
+      size += map.size();
+
+    return size;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean contains(Object row, Object column)
+  {
+    return get(row, column) != null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean containsRow(Object row)
+  {
+    return rowToColumnToValue.containsKey(row);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean containsColumn(Object column)
+  {
+    return columnToRowToValue.containsKey(column);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void putAll(Table<? extends R, ? extends C, ? extends V> table)
+  {
+    for (Cell<? extends R, ? extends C, ? extends V> cell : table.cellSet())
+    {
+      put(cell.getRowKey(), cell.getColumnKey(), cell.getValue());
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Set<Cell<R, C, V>> cellSet()
+  {
+    Set<Cell<R, C, V>> cellSet = new HashSet<>();
+
+    for (R row : rowToColumnToValue.keySet())
+      for (C column : rowToColumnToValue.get(row).keySet())
+        cellSet.add(Tables.immutableCell(row, column, get(row, column)));
+
+    return cellSet;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Map<R, Map<C, V>> rowMap()
+  {
+    return Collections.unmodifiableMap(rowToColumnToValue);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Map<C, Map<R, V>> columnMap()
+  {
+    return Collections.unmodifiableMap(columnToRowToValue);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean isEmpty()
+  {
+    return size() == 0;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override
+  @Nullable
+  @CheckForNull
+  @CanIgnoreReturnValue
+  public V remove(@Nullable Object rowKey, @Nullable Object columnKey)
+  {
+    R row = rowType.cast(rowKey);
+    C column = columnType.cast(columnKey);
+    V oldValue = get(row, column);
+
+    if (oldValue != null)
+    {
+      rowToColumnToValue.get(row).remove(column);
+      columnToRowToValue.get(column).remove(row);
+    }
+
+    return oldValue;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean containsValue(@Nullable Object value)
+  {
+    for (EnumMap<C, V> columnMap : rowToColumnToValue.values())
+    {
+      if (columnMap.containsValue(value))
+        return true;
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Map<C, V> row(R rowKey)
+  {
+    EnumMap<C, V> columnToValue = rowToColumnToValue.get(rowKey);
+    return columnToValue == null ? Collections.emptyMap() : Collections.unmodifiableMap(columnToValue);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Map<R, V> column(C columnKey)
+  {
+    EnumMap<R, V> rowToValue = columnToRowToValue.get(columnKey);
+    return rowToValue == null ? Collections.emptyMap() : Collections.unmodifiableMap(rowToValue);
   }
 
 //---------------------------------------------------------------------------

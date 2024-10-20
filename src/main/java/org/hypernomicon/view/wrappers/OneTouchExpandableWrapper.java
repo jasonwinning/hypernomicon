@@ -311,10 +311,10 @@ public final class OneTouchExpandableWrapper
 
   private boolean shouldDisableButton(double newPos, Button button, double endPos)
   {
-    double dividerThickness    = splitPane.getOrientation() == HORIZONTAL ? button   .getWidth() : button   .getHeight();
-    double splitPanelThickness = splitPane.getOrientation() == HORIZONTAL ? splitPane.getWidth() : splitPane.getHeight();
+    double dividerThickness   = splitPane.getOrientation() == HORIZONTAL ? button   .getWidth() : button   .getHeight();
+    double splitPaneThickness = splitPane.getOrientation() == HORIZONTAL ? splitPane.getWidth() : splitPane.getHeight();
 
-    return Math.abs(newPos - endPos) < ((dividerThickness * END_TOLERANCE_AS_RATIO_OF_DIVIDER_THICKNESS) / splitPanelThickness);
+    return Math.abs(newPos - endPos) < ((dividerThickness * END_TOLERANCE_AS_RATIO_OF_DIVIDER_THICKNESS) / splitPaneThickness);
   }
 
 //---------------------------------------------------------------------------

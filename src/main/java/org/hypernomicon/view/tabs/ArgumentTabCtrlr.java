@@ -25,6 +25,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -33,6 +34,7 @@ import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.PageRangeHTC;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
 
@@ -145,10 +147,10 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       }
     });
 
-    htWhereMade.addTextEditCol(hdtWork, false) // Pages column
-               .setComparator(HyperTableCell.leadingNumberComparator());
+    htWhereMade.addTextEditCol(hdtWork, false)  // Pages column
+               .setValueType(cvtPageRange);
 
-    htWhereMade.addLabelCol(hdtArgument); // Date column
+    htWhereMade.addLabelCol(hdtArgument);       // Date column
 
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);
@@ -211,7 +213,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
         row.setCellValue(1, work.getLongAuthorsStr(true), hdtPerson);
 
       row.setCellValue(2, work, work.getCBText());
-      row.setCellValue(3, work, curArgument.pagesInWork(work));
+      row.setCellValue(3, new PageRangeHTC(work, curArgument.pagesInWork(work)));
       row.setCellValue(4, new BibDateHTC(work, work.getBibDate()));
     });
 

@@ -293,7 +293,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public static EnumSet<RelationType> getRelationsForObjType(RecordType objType, boolean includeKeyWork)
   {
-    Collection<RelationType> relTypes = (includeKeyWork ? typeMappingsWithKeyWork : typeMappings).getColumn(objType);
+    Collection<RelationType> relTypes = (includeKeyWork ? typeMappingsWithKeyWork : typeMappings).column(objType).values();
     return collEmpty(relTypes) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);
   }
 
@@ -302,7 +302,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public static EnumSet<RelationType> getRelationsForSubjType(RecordType subjType, boolean includeKeyWork)
   {
-    Collection<RelationType> relTypes = (includeKeyWork ? typeMappingsWithKeyWork : typeMappings).getRow(subjType);
+    Collection<RelationType> relTypes = (includeKeyWork ? typeMappingsWithKeyWork : typeMappings).row(subjType).values();
     return collEmpty(relTypes) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);
   }
 

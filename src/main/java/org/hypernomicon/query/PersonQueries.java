@@ -29,16 +29,18 @@ import static org.hypernomicon.model.Tag.*;
 
 import java.util.List;
 
+//---------------------------------------------------------------------------
+
 public final class PersonQueries
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private PersonQueries() { throw new UnsupportedOperationException(); }
 
   private static final int QUERY_SET_DECEASED_AS_PAST = 1001,  // "Set deceased people as past members of institutions"
                            QUERY_MULTIPLE_INST        = 1002;  // "with multiple affiliations"
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
