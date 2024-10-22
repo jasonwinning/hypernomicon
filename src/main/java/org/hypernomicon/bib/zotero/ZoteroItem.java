@@ -22,6 +22,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
@@ -368,7 +369,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     }
 
     if (bibFieldEnum.getType() == BibFieldType.bftMultiString)
-      return getMultiStr(bibFieldEnum).stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+      return getMultiStr(bibFieldEnum).stream().collect(Collectors.joining("; "));
 
     return "";
   }

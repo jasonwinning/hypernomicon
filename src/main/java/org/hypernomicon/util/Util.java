@@ -69,7 +69,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import javafx.animation.KeyFrame;
@@ -209,8 +209,8 @@ public final class Util
 
   public static String strListToStr(List<String> list, boolean emptiesOK, boolean useSystemNewLineChar)
   {
-    Stream<StringBuilder> strm = (emptiesOK ? list.stream() : list.stream().filter(one -> safeStr(one).length() > 0)).map(StringBuilder::new);
-    return strm.reduce((all, one) -> all.append(useSystemNewLineChar ? System.lineSeparator() : "\n").append(one)).orElse(new StringBuilder()).toString();
+    return list.stream().filter(one -> emptiesOK || (safeStr(one).length() > 0))
+                        .collect(Collectors.joining(useSystemNewLineChar ? System.lineSeparator() : "\n"));
   }
 
 //---------------------------------------------------------------------------
@@ -218,7 +218,7 @@ public final class Util
 
   public static String strListToSpaceDelimitedStr(List<String> list)
   {
-    return ultraTrim(list.stream().map(Util::ultraTrim).reduce((s1, s2) -> s1 + ' ' + s2).orElse(""));
+    return ultraTrim(list.stream().map(Util::ultraTrim).collect(Collectors.joining(" ")));
   }
 
 //---------------------------------------------------------------------------

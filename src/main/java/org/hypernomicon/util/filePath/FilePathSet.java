@@ -28,6 +28,8 @@ import java.util.function.Predicate;
 
 import org.hypernomicon.util.FilenameMap;
 
+//---------------------------------------------------------------------------
+
 public class FilePathSet implements Set<FilePath>
 {
   private final FilenameMap<Set<FilePath>> nameToPaths = new FilenameMap<>();

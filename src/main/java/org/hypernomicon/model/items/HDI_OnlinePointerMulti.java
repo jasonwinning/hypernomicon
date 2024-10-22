@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.HDI_Schema;
@@ -133,7 +134,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
   {
     Function<? super HDT_Record, String> strFunction = objType == RecordType.hdtWork ? HDT_Record::getCBText : HDT_Record::listName;
 
-    return stream.map(strFunction).filter(Predicate.not(String::isBlank)).limit(20).reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+    return stream.map(strFunction).filter(Predicate.not(String::isBlank)).limit(20).collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------

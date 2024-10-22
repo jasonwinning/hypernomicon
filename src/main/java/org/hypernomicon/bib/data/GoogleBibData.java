@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.hypernomicon.bib.authors.BibAuthor;
@@ -198,7 +199,7 @@ public final class GoogleBibData extends BibDataStandalone
       authKeywords.addAll(edKeywords);
 
     String auths = authKeywords.stream().map(keyword -> escapeURL('"' + keyword + '"', false))
-                                        .reduce((s1, s2) -> s1 + '+' + s2).orElse("");
+                                        .collect(Collectors.joining("+"));
 
     title = convertToEnglishChars(title).trim();
 

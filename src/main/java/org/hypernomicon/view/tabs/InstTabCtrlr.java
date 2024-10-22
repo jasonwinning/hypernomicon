@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -253,7 +254,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
       List<HDT_Institution> instList = Ordering.from(Comparator.comparing(HDT_Record::name)).immutableSortedCopy(peopleMap.get(person));
 
-      String instStr = instList.stream().map(HDT_Institution::name).reduce((name1, name2) -> name1 + ", " + name2).orElse("");
+      String instStr = instList.stream().map(HDT_Institution::name).collect(Collectors.joining(", "));
       int instID = instList.isEmpty() ? -1 : instList.get(0).getID();
 
       row.setCellValue(3, instID, instStr, hdtInstitution);

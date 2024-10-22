@@ -25,6 +25,7 @@ import static org.hypernomicon.settings.SettingsDlgCtrlr.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -159,7 +160,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       db.prefs.put(PREF_KEY_FN_AFTER_SEP       + prefNdx, afterSep      );
       db.prefs.put(PREF_KEY_FN_TEST            + prefNdx, testStr       );
 
-      String prefStr = excludedWorkTypes.stream().map(workType -> String.valueOf(workType.getID())).reduce((s1, s2) -> s1 + ';' + s2).orElse("");
+      String prefStr = excludedWorkTypes.stream().map(workType -> String.valueOf(workType.getID())).collect(Collectors.joining(";"));
       db.prefs.put(PREF_KEY_FN_EXCL_WORK_TYPES + prefNdx, prefStr);
     }
 
@@ -203,7 +204,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       extdc.showModal();
 
       setExclWorkTypesCellValue(extdc.exclTypes(), row);
-      row.setCellValue(1, extdc.exclTypes().map(HDT_WorkType::name).reduce((s1, s2) -> s1 + "; " + s2).orElse(""), hdtNone);
+      row.setCellValue(1, extdc.exclTypes().map(HDT_WorkType::name).collect(Collectors.joining("; ")), hdtNone);
     });
 
     initColumn(2);
@@ -379,7 +380,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
   private static void setExclWorkTypesCellValue(Stream<HDT_WorkType> workTypes, HyperTableRow row)
   {
-    row.setCellValue(1, workTypes.map(HDT_WorkType::name).reduce((s1, s2) -> s1 + "; " + s2).orElse(""), hdtNone);
+    row.setCellValue(1, workTypes.map(HDT_WorkType::name).collect(Collectors.joining("; ")), hdtNone);
   }
 
 //---------------------------------------------------------------------------

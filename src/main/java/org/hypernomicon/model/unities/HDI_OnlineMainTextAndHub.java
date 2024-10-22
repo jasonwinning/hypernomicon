@@ -19,6 +19,7 @@ package org.hypernomicon.model.unities;
 
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
@@ -232,7 +233,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
       getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
                                      .filter(Predicate.not(String::isBlank))
                                      .limit(20)
-                                     .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+                                     .collect(Collectors.joining("; "));
     case tagHub           -> "";
     default               -> getMainText().getPlain();
   };}

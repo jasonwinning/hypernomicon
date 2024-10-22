@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.util.json.JsonArray;
@@ -146,7 +147,7 @@ public final class ZoteroDate
       months.addAll(JsonArray.toStrArrayList(jSubObj.getArray("long")));
     }
 
-    String monthsStr = months.stream().reduce((s1, s2) -> s1 + '|' + s2).orElse("");
+    String monthsStr = months.stream().collect(Collectors.joining("|"));
 
     monthPattern = Pattern.compile("(.*)(?:^|[^\\p{L}])(" + monthsStr + ")[^ ]*(?: (.*)$|$)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.UNICODE_CHARACTER_CLASS);
 

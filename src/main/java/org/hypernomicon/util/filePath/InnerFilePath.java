@@ -25,8 +25,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+//---------------------------------------------------------------------------
+
 class InnerFilePath
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private String pathStr = null;
   private File file = null;
   private Path path = null;
@@ -76,7 +82,7 @@ class InnerFilePath
   {
     if (file != null) return file;
 
-    if      (path != null)    file = path.toFile();
+    if      (path    != null) file = path.toFile();
     else if (pathStr != null) file = new File(pathStr);
 
     return file;
@@ -89,7 +95,7 @@ class InnerFilePath
   {
     if ((other instanceof InnerFilePath) == false) return false;
 
-    InnerFilePath otherFilePath = (InnerFilePath)other;
+    InnerFilePath otherFilePath = (InnerFilePath) other;
 
     try { return Files.isSameFile(getPath(), otherFilePath.getPath()); }
     catch (IOException e) { noOp(); }

@@ -1604,7 +1604,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     btnUseISBN.setDisable(getIsbnsFromBibTab().isEmpty());
 
     setToolTip(btnUseDOI , "Set current work's DOI to "     + getDoiFromBibTab());
-    setToolTip(btnUseISBN, "Add ISBN(s) " + getIsbnsFromBibTab().stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("") + " to current work's ISBN(s)");
+    setToolTip(btnUseISBN, "Add ISBN(s) " + getIsbnsFromBibTab().stream().collect(Collectors.joining("; ")) + " to current work's ISBN(s)");
 
     tabPane.requestLayout();
   }

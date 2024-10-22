@@ -119,7 +119,7 @@ public class MainText
 
   private String getKeyWorksString()
   {
-    return keyWorks.stream().map(keyWork -> keyWork.getSearchKey(true)).reduce((s1, s2) -> s1 + ' ' + s2).orElse("");
+    return keyWorks.stream().map(keyWork -> keyWork.getSearchKey(true)).collect(Collectors.joining(" "));
   }
 
 //---------------------------------------------------------------------------
@@ -129,7 +129,7 @@ public class MainText
   {
     return displayItems.stream().filter(item -> item.type == diRecord)
                                 .map(item -> item.record.listName() + " (" + getTypeName(item.record.getType()) + ')')
-                                .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+                                .collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------

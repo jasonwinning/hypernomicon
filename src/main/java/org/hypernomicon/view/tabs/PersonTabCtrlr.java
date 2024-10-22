@@ -1296,7 +1296,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     return work.investigationStream().filter(inv -> inv.person.get() == person)
                                      .map(this::invName)
-                                     .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+                                     .collect(Collectors.joining(", "));
   }
 
 //---------------------------------------------------------------------------

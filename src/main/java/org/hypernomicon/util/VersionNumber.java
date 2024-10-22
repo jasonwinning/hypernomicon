@@ -37,7 +37,8 @@ public class VersionNumber implements Comparable<VersionNumber>
 
   private final List<Integer> parts;
   private final int minParts;
-  private static final int minimumParts = 2;
+
+  private static final int MINIMUM_PARTS = 2;
 
 //---------------------------------------------------------------------------
 
@@ -45,7 +46,7 @@ public class VersionNumber implements Comparable<VersionNumber>
   {
     List<Integer> tempParts = Lists.newArrayList(parts);
 
-    minParts = minimumParts;
+    minParts = MINIMUM_PARTS;
 
     while (tempParts.size() < minParts)
       tempParts.add(0);
@@ -59,7 +60,7 @@ public class VersionNumber implements Comparable<VersionNumber>
   {
     List<Integer> tempParts = Arrays.stream(str.split("\\.")).map(partStr -> parseInt(partStr, 0))
                                                              .collect(Collectors.toCollection(ArrayList::new));
-    minParts = minimumParts;
+    minParts = MINIMUM_PARTS;
 
     while (tempParts.size() < minParts)
       tempParts.add(0);
@@ -70,14 +71,14 @@ public class VersionNumber implements Comparable<VersionNumber>
 //---------------------------------------------------------------------------
 
   public int numParts()       { return parts.size(); }
-  public int getPart(int ndx) { return ndx >= parts.size() ? 0 : parts.get(ndx); }
+  public int getPart(int ndx) { return ndx < parts.size() ? parts.get(ndx) : 0; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String toString()
   {
-    return parts.stream().map(String::valueOf).reduce((part1, part2) -> part1 + '.' + part2).orElse("");
+    return parts.stream().map(String::valueOf).collect(Collectors.joining("."));
   }
 
 //---------------------------------------------------------------------------
@@ -85,19 +86,13 @@ public class VersionNumber implements Comparable<VersionNumber>
 
   @Override public int hashCode()
   {
-    List<Integer> newList = new ArrayList<>();
-    boolean gotNonzero = false;
+    List<Integer> relevantParts = new ArrayList<>(parts);
 
-    for (int ndx = parts.size() - 1; ndx >= 0; ndx--)
-    {
-      if (parts.get(ndx) > 0)
-        gotNonzero = true;
+    // Remove trailing zeros
+    while ((relevantParts.isEmpty() == false) && (relevantParts.get(relevantParts.size() - 1) == 0))
+      relevantParts.remove(relevantParts.size() - 1);
 
-      if (gotNonzero)
-        newList.add(0, parts.get(ndx));
-    }
-
-    return newList.stream().reduce(1, (num1, num2) -> 31 * num1 + num2);
+    return relevantParts.hashCode();
   }
 
 //---------------------------------------------------------------------------
@@ -106,15 +101,9 @@ public class VersionNumber implements Comparable<VersionNumber>
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    VersionNumber other = (VersionNumber) obj;
+    if ((obj == null) || (getClass() != obj.getClass())) return false;
 
-    for (int ndx = 0; ndx < Math.max(parts.size(), other.numParts()); ndx++)
-      if (getPart(ndx) != other.getPart(ndx))
-        return false;
-
-    return true;
+    return compareTo((VersionNumber) obj) == 0;
   }
 
 //---------------------------------------------------------------------------

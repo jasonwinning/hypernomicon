@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.Exceptions.DuplicateSearchKeyException;
 import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
@@ -230,7 +231,7 @@ public final class SearchKeys
 
     synchronized (keywordStrToKeywordObj)
     {
-      return keywordStrToKeywordObj.values().stream().map(SearchKeyword::toString).reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+      return keywordStrToKeywordObj.values().stream().map(SearchKeyword::toString).collect(Collectors.joining("; "));
     }
   }
 

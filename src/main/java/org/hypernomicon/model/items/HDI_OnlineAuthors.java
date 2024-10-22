@@ -24,6 +24,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
@@ -172,7 +173,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
   {
     return getAuthors().stream().map(Author::getNameLastFirst)
                                 .filter(name -> name.length() > 0)
-                                .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+                                .collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------

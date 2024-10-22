@@ -22,6 +22,7 @@ import java.time.Month;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javafx.scene.control.*;
@@ -1274,7 +1275,7 @@ public class WorkDlgCtrlr extends HyperDlg
     String msg = "The current work record is not associated with a " +
                  db.bibLibraryUserFriendlyName() + " entry. Create one now?\n" +
                  "Otherwise, existing information for these fields will be lost: " +
-                 extFields.stream().map(BibFieldEnum::getUserFriendlyName).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+                 extFields.stream().map(BibFieldEnum::getUserFriendlyName).collect(Collectors.joining(", "));
 
     choice = confirmDialog(msg) ? Ternary.True : Ternary.False;
     chkCreateBibEntry.setSelected(choice.isTrue());

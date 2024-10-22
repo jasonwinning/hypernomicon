@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hypernomicon.bib.BibEntry;
@@ -307,7 +308,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     }
 
     if (bibFieldEnum.getType() == BibFieldType.bftMultiString)
-      return getMultiStr(bibFieldEnum).stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+      return getMultiStr(bibFieldEnum).stream().collect(Collectors.joining("; "));
 
     return "";
   }
@@ -344,7 +345,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
       case bfMisc :
       {
-        String miscStr = list.stream().map(StringBuilder::new).reduce((all, one) -> all.append("<br>").append(one)).orElse(new StringBuilder()).toString();
+        String miscStr = list.stream().collect(Collectors.joining("<br>"));
 
         if (jObj.getStrSafe(fieldKey).equals(safeStr(miscStr))) return;
 

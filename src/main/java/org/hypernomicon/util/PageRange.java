@@ -41,7 +41,7 @@ public class PageRange implements Comparable<PageRange>
   public PageRange(String input)
   {
     input = ultraTrim(safeStr(input));
-    String romanStr = extractValidRomanNumeral(input);
+    String romanStr = match(input, romanNumeralPattern);
 
     int tempRomanInt = 0, tempDecimalInt = 0;
 
@@ -51,7 +51,7 @@ public class PageRange implements Comparable<PageRange>
     }
     else
     {
-      String decimalStr = extractLeadingPositiveInteger(input);
+      String decimalStr = match(input, leadingNumberPattern);
 
       if (decimalStr.length() > 0)
         tempDecimalInt = parseInt(decimalStr, 0);
@@ -66,43 +66,23 @@ public class PageRange implements Comparable<PageRange>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static String match(String input, Pattern pattern)
+  {
+    if (input == null || input.isBlank()) return "";
+
+    Matcher matcher = pattern.matcher(input);
+
+    return matcher.find() ? matcher.group(1) : "";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   // Pattern for matching a valid Roman numeral at the start of the string
   private static final Pattern romanNumeralPattern = Pattern.compile("^(M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3}))([^A-Za-z]|$)", Pattern.CASE_INSENSITIVE);
 
   //Pattern for matching a leading positive integer
   private static final Pattern leadingNumberPattern = Pattern.compile("^(\\d+)");
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String extractValidRomanNumeral(String input)
-  {
-    if (input == null || input.isBlank())
-      return "";
-
-    Matcher matcher = romanNumeralPattern.matcher(input);
-
-    if (matcher.find())
-      return matcher.group(1);
-
-    return "";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String extractLeadingPositiveInteger(String input)
-  {
-    if (input == null || input.isBlank())
-      return "";
-
-    Matcher matcher = leadingNumberPattern.matcher(input);
-
-    if (matcher.find())
-      return matcher.group(1);
-
-    return "";
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -187,10 +167,8 @@ public class PageRange implements Comparable<PageRange>
 
       if ((current < 0) || (next < 0)) return 0;
 
-      if (current < next)
-        result -= current;
-      else
-        result += current;
+      if (current < next) result -= current;
+      else                result += current;
     }
 
     return result;

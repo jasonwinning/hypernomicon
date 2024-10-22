@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -92,7 +93,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
     };
 
     return stream().map(mapper)
-                   .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+                   .collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------
@@ -102,7 +103,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   {
     return stream().filter(bibAuthor -> bibAuthor.getType() == authorType)
                    .map(bibAuthor -> bibAuthor.getName().getLastFirst())
-                   .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+                   .collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------

@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.text.StringEscapeUtils.*;
 
@@ -520,8 +521,8 @@ public final class MainTextUtil
 
     Map<String, String> linkMap = keyWorkLinkMap(keyWorks, searchKeys, sortByName);
 
-    innerHtml.append(searchKeys.stream().map(searchKey -> new StringBuilder(linkMap.get(searchKey)))
-                               .reduce((sb1, sb2) -> sb1.append(", ").append(sb2)).orElse(new StringBuilder()));
+    innerHtml.append(searchKeys.stream().map(searchKey -> linkMap.get(searchKey))
+                                        .collect(Collectors.joining(", ")));
   }
 
 //---------------------------------------------------------------------------

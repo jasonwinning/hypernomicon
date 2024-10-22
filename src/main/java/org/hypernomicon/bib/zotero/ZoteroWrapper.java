@@ -69,10 +69,13 @@ import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.HttpHeader;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final String apiKey, userID;
   private long offlineLibVersion = -1, onlineLibVersion = -1;
   private Instant backoffTime = null, retryTime = null;
@@ -713,7 +716,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     List<String> errMsgList = Lists.newArrayList("Attempt(s) to upload changes to server failed:");
 
-    String unchanged = jUnchanged.keySet().stream().map(jUnchanged::getStr).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+    String unchanged = jUnchanged.keySet().stream().map(jUnchanged::getStr).collect(Collectors.joining(", "));
 
     if (unchanged.length() > 0)
       errMsgList.add("Unchanged: " + unchanged);

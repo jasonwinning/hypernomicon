@@ -17,6 +17,7 @@
 
 package org.hypernomicon.bib.reports;
 
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hypernomicon.util.Util;
@@ -42,7 +43,7 @@ public final class PlainTextReportGenerator extends ReportGenerator
   {
     String line = stream.filter(str -> safeStr(str).isBlank() == false)
                         .map(Util::ultraTrim)
-                        .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+                        .collect(Collectors.joining("; "));
 
     return makeRow(fieldName, line);
   }

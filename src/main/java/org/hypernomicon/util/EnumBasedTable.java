@@ -23,6 +23,7 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 
@@ -57,6 +58,20 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
     this.rowType = rowType;
     this.columnType = columnType;
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Set<R> rowKeySet()                            { return rowToColumnToValue.keySet(); }
+  @Override public Set<C> columnKeySet()                         { return columnToRowToValue.keySet(); }
+  @Override public boolean contains(Object row, Object column)   { return get(row, column) != null; }
+  @Override public boolean containsRow(Object row)               { return rowToColumnToValue.containsKey(row); }
+  @Override public boolean containsColumn(Object column)         { return columnToRowToValue.containsKey(column); }
+  @Override public Map<R, Map<C, V>> rowMap()                    { return Collections.unmodifiableMap(rowToColumnToValue); }
+  @Override public Map<C, Map<R, V>> columnMap()                 { return Collections.unmodifiableMap(columnToRowToValue); }
+  @Override public boolean containsValue(@Nullable Object value) { return rowToColumnToValue.values().stream().anyMatch(columnMap -> columnMap.containsValue(value)); }
+  @Override public int size()                                    { return rowToColumnToValue.values().stream().mapToInt(EnumMap::size).sum(); }
+  @Override public boolean isEmpty()                             { return size() == 0; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -101,67 +116,9 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public Set<R> rowKeySet()
-  {
-    return rowToColumnToValue.keySet();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Set<C> columnKeySet()
-  {
-    return columnToRowToValue.keySet();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public Collection<V> values()
   {
-    Set<V> values = new HashSet<>();
-
-    for (EnumMap<C, V> map : rowToColumnToValue.values())
-      values.addAll(map.values());
-
-    return values;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int size()
-  {
-    int size = 0;
-
-    for (EnumMap<C, V> map : rowToColumnToValue.values())
-      size += map.size();
-
-    return size;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean contains(Object row, Object column)
-  {
-    return get(row, column) != null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean containsRow(Object row)
-  {
-    return rowToColumnToValue.containsKey(row);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean containsColumn(Object column)
-  {
-    return columnToRowToValue.containsKey(column);
+    return rowToColumnToValue.values().stream().flatMap(map -> map.values().stream()).collect(Collectors.toSet());
   }
 
 //---------------------------------------------------------------------------
@@ -169,10 +126,7 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
 
   @Override public void putAll(Table<? extends R, ? extends C, ? extends V> table)
   {
-    for (Cell<? extends R, ? extends C, ? extends V> cell : table.cellSet())
-    {
-      put(cell.getRowKey(), cell.getColumnKey(), cell.getValue());
-    }
+    table.cellSet().forEach(cell -> put(cell.getRowKey(), cell.getColumnKey(), cell.getValue()));
   }
 
 //---------------------------------------------------------------------------
@@ -187,30 +141,6 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
         cellSet.add(Tables.immutableCell(row, column, get(row, column)));
 
     return cellSet;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Map<R, Map<C, V>> rowMap()
-  {
-    return Collections.unmodifiableMap(rowToColumnToValue);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Map<C, Map<R, V>> columnMap()
-  {
-    return Collections.unmodifiableMap(columnToRowToValue);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean isEmpty()
-  {
-    return size() == 0;
   }
 
 //---------------------------------------------------------------------------
@@ -233,20 +163,6 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
     }
 
     return oldValue;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean containsValue(@Nullable Object value)
-  {
-    for (EnumMap<C, V> columnMap : rowToColumnToValue.values())
-    {
-      if (columnMap.containsValue(value))
-        return true;
-    }
-
-    return false;
   }
 
 //---------------------------------------------------------------------------

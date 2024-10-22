@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
@@ -936,7 +937,7 @@ public class MainTextCtrlr
         addToSortedList(searchKeys, searchKey, String::compareToIgnoreCase);
       });
 
-      keyWorksText = searchKeys.stream().map(linkMap::get).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+      keyWorksText = searchKeys.stream().map(linkMap::get).collect(Collectors.joining(", "));
     }
     else
       if (borderPane.getTop() == tpKeyWorks)

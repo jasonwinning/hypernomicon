@@ -23,6 +23,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
@@ -299,7 +300,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
     }
 
     if (keyWorkLink == false)
-      return SearchKeys.prepSearchKey(keyToMultipleAuthors.keySet().stream().reduce((s1, s2) -> s1 + "; " + s2).orElse(""));
+      return SearchKeys.prepSearchKey(keyToMultipleAuthors.keySet().stream().collect(Collectors.joining("; ")));
 
     // Use first key configured as single author
 
