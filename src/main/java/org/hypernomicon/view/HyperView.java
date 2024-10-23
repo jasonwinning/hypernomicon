@@ -37,7 +37,14 @@ public class HyperView<HDT_CT extends HDT_Record>
   public static class TextViewInfo
   {
 
-//---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    public final HDT_Record record;
+    public Set<String> openDivits = null;
+    public int scrollPos = 0;
+    public boolean detailedWorks = false;
+
+  //---------------------------------------------------------------------------
 
     public TextViewInfo(HDT_Record record)
     {
@@ -59,12 +66,8 @@ public class HyperView<HDT_CT extends HDT_Record>
       detailedWorks = textViewInfo.detailedWorks;
     }
 
-//---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
-    public final HDT_Record record;
-    public Set<String> openDivits = null;
-    public int scrollPos = 0;
-    public boolean detailedWorks = false;
   }
 
 //---------------------------------------------------------------------------

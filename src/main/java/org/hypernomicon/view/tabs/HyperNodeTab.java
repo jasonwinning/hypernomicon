@@ -360,23 +360,41 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   synchronized private static void setUniteTooltip(Label label)
   {
     if (uniteToolTip == null) uniteToolTip = new WebTooltip("""
-      Click this link to choose another record to &ldquo;unite&rdquo; this record with.<br><br>
+<html lang="en">
+<head>
+  <style>
+    .topic      { color: #4682B4; }
+    .recname    { color: #FF6347; }
+    .large-text { font-size: 1.3em; font-weight: normal; }
+  </style>
+</head>
+<body>
+  <h4 class="large-text">Click here to <strong>unite</strong> this record with another one.</h4>
 
-      To understand what &ldquo;uniting&rdquo; two records means, consider the fact that sometimes, you might have multiple<br>
-      records of different types that represent the same topic and contain redundant information. For example, you<br>
-      might have a Term record for &ldquo;Cause&rdquo; and a Problem/Debate record for &ldquo;What is the nature of causation?&rdquo;.<br><br>
+  <hr/>
 
-      Instead of letting each one contain some information and key works relevant to the other and having to manually<br>
-      make sure they stay in sync with each other, you can &ldquo;unite&rdquo; these records, which causes them to always have<br>
-      the same description text and the same key works. Making a change to the description or key works of one record<br>
-      will automatically cause the other to be updated as well. Problem/Debate records, Position records, Term records,<br>
-      Note records, and Labels can all be united together (with the exception that a Problem/Debate record cannot be<br>
-      united with a Position record).<br><br>
+  <p><strong class="topic">What does &ldquo;uniting&rdquo; records mean?</strong> Sometimes, multiple records of different types<br/>
+  overlap on the same topic and contain redundant information. For instance, you might<br/>
+  have a Term record, <strong class="recname">&ldquo;Cause&rdquo;</strong>, and a Problem/Debate record called <strong class="recname">&ldquo;What is the nature<br/>
+  of causation?&rdquo;</strong>. Instead of having each record hold similar information and manually<br/>
+  keeping them in sync, you can unite these records. This means they will share the same<br/>
+  description and key works. Any updates made to one record will reflect in the other<br/>
+  one automatically. You can also unite them with additional records.</p>
 
-      Uniting records does not actually cause them to become merged into a single record. They will remain distinct<br>
-      records possessing some fields not possessed by the record(s) they are united with (a record cannot be united<br>
-      with another record of the same type). Once records are united together, you can right/secondary click this<br>
-      link to disunite them.""");
+  <p><strong class="topic">Which records can be united?</strong> You can unite Problem/Debate records, Position records,<br/>
+  Term records, Note records, and Labels. Exception: You cannot unite a Problem/Debate<br/>
+  record with a Position record. Additionally, you cannot unite multiple records of the<br/>
+  same type.</p>
+
+  <p><strong class="topic">What happens when records are united?</strong> Uniting records does not merge them into a<br/>
+  single record. They remain distinct, each maintaining unique fields that the other record<br/>
+  types do not possess.</p>
+
+  <p><strong class="topic">Disuniting records:</strong> Once records are united, you can right/secondary-click here to dis-<br/>
+  unite them if needed.</p>
+</body>
+</html>
+""");
 
     label.setTooltip(uniteToolTip);
   }
