@@ -1695,7 +1695,7 @@ public final class MainCtrlr
     {
       FilePath srcFilePath = null;
 
-      try (ZipInputStream zis = new ZipInputStream(App.class.getResourceAsStream("resources/blank_db.zip")))
+      try (ZipInputStream zis = new ZipInputStream(App.class.getResourceAsStream(BLANK_DB_RESOURCE_NAME)))
       {
         ZipEntry entry;
 

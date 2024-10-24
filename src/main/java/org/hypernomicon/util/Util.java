@@ -21,6 +21,8 @@ import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.util.filePath.FilePath;
 
+import static org.hypernomicon.Const.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,9 +42,11 @@ import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.security.CodeSource;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.ProtectionDomain;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -67,6 +71,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -779,14 +785,44 @@ public final class Util
 
   public static String manifestValue(String key)
   {
-    URL url = App.class.getResource("/META-INF/MANIFEST.MF");
+    URL jarUrl;
 
-    if (url != null) try
+    try
     {
-      URLConnection c = url.openConnection();
+      jarUrl = nullSwitch(nullSwitch(App.class.getProtectionDomain(), null, ProtectionDomain::getCodeSource), null, CodeSource::getLocation);
 
-      if (c instanceof JarURLConnection jarURLConnection)
-        return safeStr(nullSwitch(jarURLConnection.getManifest(), "", manifest -> manifest.getMainAttributes().getValue(key)));
+      if (jarUrl != null)
+      {
+        try (InputStream jarStream = jarUrl.openStream())
+        {
+          if (jarStream != null) try (JarInputStream jis = new JarInputStream(jarStream))
+          {
+            Manifest manifest = jis.getManifest();
+
+            return manifest == null ? "" : nullSwitch(manifest.getMainAttributes(), "", attributes -> safeStr(attributes.getValue(key)));
+          }
+        }
+      }
+    }
+    catch (SecurityException | IOException e)
+    {
+      noOp();
+    }
+
+    // Security exception likely happened so try less reliable method
+
+    jarUrl = App.class.getResource(BLANK_DB_RESOURCE_NAME);  // Get the URL for a resource that will only exist in the Hypernomicon jar file.
+                                                             // Most jar files will have META-INF/MANIFEST.MF so we are likely to get the
+    if (jarUrl != null) try                                  // wrong URL if we search for that resource name (even though it is the one we
+    {                                                        // really want, from the Hypernomicon jar file).
+      URLConnection conn = jarUrl.openConnection();
+
+      if (conn instanceof JarURLConnection jarURLConnection)
+      {
+        Manifest manifest = jarURLConnection.getManifest();
+
+        return manifest == null ? "" : nullSwitch(manifest.getMainAttributes(), "", attributes -> safeStr(attributes.getValue(key)));
+      }
     }
     catch (IOException e) { noOp(); }
 

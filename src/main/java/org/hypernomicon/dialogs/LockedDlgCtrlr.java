@@ -24,7 +24,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.InterComputerMsg;
 import org.hypernomicon.util.DesktopUtil;
@@ -130,19 +129,17 @@ public class LockedDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public LockedDlgCtrlr(String title, Throwable e)
+  public LockedDlgCtrlr(String title, String text)
   {
     super("LockedDlg", title, true);
 
     otherHostName = "";
     otherCompName = "";
 
-    String stacktrace = ExceptionUtils.getStackTrace(e);
-
-    taOutput.setText(stacktrace);
+    taOutput.setText(text);
 
     btnTryTerminate.setText("Copy to Clipboard");
-    btnTryTerminate.setOnAction(event -> copyToClipboard(stacktrace));
+    btnTryTerminate.setOnAction(event -> copyToClipboard(text));
 
     setAllVisible(false, btnTryComm, btnOverride, btnStop, lblSeconds);
   }

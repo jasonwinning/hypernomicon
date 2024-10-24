@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import javafx.beans.value.ObservableDoubleValue;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.dialogs.LockedDlgCtrlr;
@@ -637,9 +638,17 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static void showLongMessage(String title, String text)
+  {
+    new LockedDlgCtrlr(title, text).showModal();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void showStackTrace(Throwable e)
   {
-    new LockedDlgCtrlr("Error", e).showModal();
+    showLongMessage("Error", ExceptionUtils.getStackTrace(e));
   }
 
 //---------------------------------------------------------------------------

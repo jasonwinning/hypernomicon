@@ -56,6 +56,7 @@ public final class Const
   public static final String
 
     HDB_DEFAULT_FILENAME = "database.hdb",
+    BLANK_DB_RESOURCE_NAME = "resources/blank_db.zip",
 
     PREF_KEY_SETTINGS_VERSION = "settingsVersion",
     PREF_KEY_NOTIFY_USER_NOT_LINKED = "notifyUnlinked",
