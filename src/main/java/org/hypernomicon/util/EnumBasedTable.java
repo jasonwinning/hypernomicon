@@ -31,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.*;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -67,8 +67,6 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
   @Override public boolean contains(Object row, Object column)   { return get(row, column) != null; }
   @Override public boolean containsRow(Object row)               { return rowToColumnToValue.containsKey(row); }
   @Override public boolean containsColumn(Object column)         { return columnToRowToValue.containsKey(column); }
-  @Override public Map<R, Map<C, V>> rowMap()                    { return Collections.unmodifiableMap(rowToColumnToValue); }
-  @Override public Map<C, Map<R, V>> columnMap()                 { return Collections.unmodifiableMap(columnToRowToValue); }
   @Override public boolean containsValue(@Nullable Object value) { return rowToColumnToValue.values().stream().anyMatch(columnMap -> columnMap.containsValue(value)); }
   @Override public int size()                                    { return rowToColumnToValue.values().stream().mapToInt(EnumMap::size).sum(); }
   @Override public boolean isEmpty()                             { return size() == 0; }
@@ -85,21 +83,12 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public V put(R row, C column, V newValue)
+  @Override public V put(R rowKey, C columnKey, V newValue)
   {
-    V oldValue = get(row, column);
+    V oldValue = get(rowKey, columnKey);
 
-    EnumMap<C, V> columnToValue = rowToColumnToValue.get(row);
-    if (columnToValue == null)
-      rowToColumnToValue.put(row, columnToValue = new EnumMap<>(columnType));
-
-    columnToValue.put(column, newValue);
-
-    EnumMap<R, V> rowToValue = columnToRowToValue.get(column);
-    if (rowToValue == null)
-      columnToRowToValue.put(column, rowToValue = new EnumMap<>(rowType));
-
-    rowToValue.put(row, newValue);
+    rowToColumnToValue.computeIfAbsent(rowKey   , key -> new EnumMap<C, V>(columnType)).put(columnKey, newValue);
+    columnToRowToValue.computeIfAbsent(columnKey, key -> new EnumMap<R, V>(rowType   )).put(rowKey   , newValue);
 
     return oldValue;
   }
@@ -168,6 +157,16 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns a view of all mappings that have the given row key. For each row key / column key /
+   * value mapping in the table with that row key, the returned map associates the column key with
+   * the value. If no mappings in the table have the provided row key, an empty map is returned.
+   *
+   * <p>The returned map is not modifiable.
+   *
+   * @param rowKey key of row to search for in the table
+   * @return the corresponding map from column keys to values
+   */
   @Override public Map<C, V> row(R rowKey)
   {
     EnumMap<C, V> columnToValue = rowToColumnToValue.get(rowKey);
@@ -177,10 +176,56 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns a view of all mappings that have the given column key. For each row key / column key /
+   * value mapping in the table with that column key, the returned map associates the row key with
+   * the value. If no mappings in the table have the provided column key, an empty map is returned.
+   *
+   * <p>The returned map is not modifiable.
+   *
+   * @param columnKey key of column to search for in the table
+   * @return the corresponding map from row keys to values
+   */
   @Override public Map<R, V> column(C columnKey)
   {
     EnumMap<R, V> rowToValue = columnToRowToValue.get(columnKey);
     return rowToValue == null ? Collections.emptyMap() : Collections.unmodifiableMap(rowToValue);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Guaranteed to throw an exception and leave the table unmodified.
+   *
+   * @throws UnsupportedOperationException always
+   * @deprecated Unsupported operation.
+   */
+  @CanIgnoreReturnValue
+  @Deprecated
+  @DoNotCall("Always throws UnsupportedOperationException")
+  @CheckForNull
+  @Override public Map<R, Map<C, V>> rowMap()
+  {
+    throw new UnsupportedOperationException("Internal error: EnumMap does not support rowMap().");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Guaranteed to throw an exception and leave the table unmodified.
+   *
+   * @throws UnsupportedOperationException always
+   * @deprecated Unsupported operation.
+   */
+  @CanIgnoreReturnValue
+  @Deprecated
+  @DoNotCall("Always throws UnsupportedOperationException")
+  @CheckForNull
+  @Override public Map<C, Map<R, V>> columnMap()
+  {
+    throw new UnsupportedOperationException("Internal error: EnumMap does not support columnMap().");
   }
 
 //---------------------------------------------------------------------------

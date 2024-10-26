@@ -38,9 +38,11 @@ import org.hypernomicon.util.MediaUtil;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 
@@ -53,6 +55,7 @@ import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.client.methods.HttpGet;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -271,37 +274,66 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final String hypernomiconReleasesURL = "https://api.github.com/repos/jasonwinning/hypernomicon/releases";
+
   public static void checkForNewVersion(AsyncHttpClient httpClient, Consumer<VersionNumber> successHndlr, Runnable failHndlr)
   {
-    JsonHttpClient.getArrayAsync("https://api.github.com/repos/jasonwinning/hypernomicon/releases", httpClient, jsonArray ->
+    JsonHttpClient.getArrayAsync(hypernomiconReleasesURL, httpClient, jsonArray ->
     {
-      VersionNumber updateNum = appVersion;
+      processNewVersionJsonArray(jsonArray, successHndlr, failHndlr);
 
-      if (jsonArray.isEmpty())
+    }, e -> failHndlr.run());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void checkForNewVersionInThisThread(Consumer<VersionNumber> successHndlr, Runnable failHndlr)
+  {
+    try
+    {
+      JsonArray jsonArray = new JsonHttpClient().requestArrayInThisThread(new HttpGet(hypernomiconReleasesURL));
+
+      processNewVersionJsonArray(jsonArray, successHndlr, failHndlr);
+    }
+    catch (UnsupportedOperationException | ParseException | IOException e)
+    {
+      failHndlr.run();
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void processNewVersionJsonArray(JsonArray jsonArray, Consumer<VersionNumber> successHndlr, Runnable failHndlr)
+  {
+    VersionNumber updateNum = appVersion;
+
+    if (jsonArray.isEmpty())
+    {
+      failHndlr.run();
+      return;
+    }
+
+    Pattern p = Pattern.compile("(\\A|\\D)(\\d(\\d|(\\.\\d))+)(\\z|\\D)");
+
+    for (JsonObj jsonObj : jsonArray.getObjs())
+    {
+      if ((jsonObj.getBoolean("prerelease", false) == false) &&
+          (jsonObj.getBoolean("draft"     , false) == false))
       {
-        failHndlr.run();
-        return;
-      }
+        Matcher m = p.matcher(jsonObj.getStrSafe("tag_name"));
 
-      Pattern p = Pattern.compile("(\\A|\\D)(\\d(\\d|(\\.\\d))+)(\\z|\\D)");
-
-      for (JsonObj jsonObj : jsonArray.getObjs())
-      {
-        if (jsonObj.getBoolean("prerelease", false) == false)
+        if (m.find())
         {
-          Matcher m = p.matcher(jsonObj.getStrSafe("tag_name"));
-
-          if (m.find())
-          {
-            VersionNumber curNum = new VersionNumber(m.group(2));
-            if (curNum.compareTo(updateNum) > 0)
-              updateNum = curNum;
-          }
+          VersionNumber curNum = new VersionNumber(m.group(2));
+          if (curNum.compareTo(updateNum) > 0)
+            updateNum = curNum;
         }
       }
+    }
 
-      successHndlr.accept(updateNum);
-    }, e -> failHndlr.run());
+    successHndlr.accept(updateNum);
   }
 
 //---------------------------------------------------------------------------

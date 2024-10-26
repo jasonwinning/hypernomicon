@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.relations;
 
-import com.google.common.collect.ListMultimap;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
@@ -29,8 +28,6 @@ import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.EnumBasedTable;
-
-import com.google.common.collect.ArrayListMultimap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,19 +46,21 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Table.Cell;
 
 import javafx.application.Platform;
 
+import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
-import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
@@ -962,8 +961,25 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       subjOrdMap.put(newSubjList.get(ndx), ndx + 1);
   }
 
-  // Returns true if changed
-
+  /**
+   * Reorders the list associated with the given key in the provided ListMultimap if the new list
+   * contains the same elements as the existing list but in a different order.
+   *
+   * @param <HDT_Key> the type of the key, extending HDT_Record
+   * @param <HDT_Value> the type of the value, extending HDT_Record
+   * @param key the key whose associated list is to be reordered
+   * @param newValueList list containing the values in the desired order
+   * @param map the ListMultimap containing the existing list
+   * @return true if the list was changed, false otherwise
+   * @throws NullPointerException if the key is null
+   * <p>
+   * <br>The function performs the following steps:<br><br>
+   * 1. Checks if the provided key is non-null.<br>
+   * 2. Returns false if the map does not contain the key.<br>
+   * 3. Returns false if the sizes of the existing and new value lists are not equal or if the size is less than 2.<br>
+   * 4. Reorders the existing list to match the order of the new list, if they contain the same elements.<br>
+   * 5. Returns true if any changes were made to the existing list, false otherwise.<br>
+   */
   private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> boolean reorderList(HDT_Key key, List<HDT_Value> newValueList, ListMultimap<HDT_Key, HDT_Value> map)
   {
     Objects.requireNonNull(key);
@@ -974,9 +990,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     if ((existingValueList.size() != newValueList.size()) || (existingValueList.size() < 2)) return false;
 
-    if ((new HashSet<>(existingValueList).containsAll(newValueList) == false) ||
-        (new HashSet<>(newValueList).containsAll(existingValueList) == false))
-      return false;
+    if (getRecordCountMap(existingValueList).equals(getRecordCountMap(newValueList)) == false) return false;
 
     boolean changed = false;
 
@@ -988,6 +1002,18 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     }
 
     return changed;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static <HDT_Value extends HDT_Record> Map<HDT_Value, Integer> getRecordCountMap(List<HDT_Value> list)
+  {
+    Map<HDT_Value, Integer> counts = new HashMap<>();
+
+    list.forEach(record -> counts.merge(record, 1, Integer::sum));
+
+    return counts;
   }
 
 //---------------------------------------------------------------------------

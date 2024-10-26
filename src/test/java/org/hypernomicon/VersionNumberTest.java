@@ -282,6 +282,16 @@ public class VersionNumberTest
     assertEquals(version1.hashCode(), version2.hashCode());
   }
 
+  @Test
+  public void testNewVersionCheck()
+  {
+    App.checkForNewVersionInThisThread(version ->
+    {
+      assertTrue(new VersionNumber(1, 28).compareTo(version) < 0);
+      assertTrue(new VersionNumber(5).compareTo(version) > 0);
+
+    }, () -> fail());
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

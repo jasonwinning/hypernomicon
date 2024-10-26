@@ -30,6 +30,7 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypeException;
+
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
