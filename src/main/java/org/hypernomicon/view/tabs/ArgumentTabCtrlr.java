@@ -37,6 +37,7 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.PageRangeHTC;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
+import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import java.io.IOException;
 
@@ -80,7 +81,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_ARG_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 3);
-    htParents.addActionCol(ctBrowseBtn, 3);
+    htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select a record from the Tree");
 
     RecordByTypePopulator verdictPopulator = new RecordByTypePopulator();
 

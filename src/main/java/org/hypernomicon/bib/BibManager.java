@@ -82,6 +82,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
@@ -93,13 +94,14 @@ public class BibManager extends HyperDlg
   @FXML private Button btnCreateNew, btnAutofill, btnViewInRefMgr, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
   @FXML private CheckBox chkRequireByDefault;
   @FXML private ComboBox<EntryType> cbNewType;
-  @FXML private Label lblSelect;
+  @FXML private Label lblSelect, lblSelecting;
   @FXML private SplitPane spMain;
+  @FXML private BorderPane borderPane;
   @FXML private TableView<BibEntryRow> tableView;
   @FXML private TableView<HyperTableRow> tvRelatives;
   @FXML private TextField tfSearch;
   @FXML private TitledPane tpRelated;
-  @FXML private AnchorPane apRelated;
+  @FXML private AnchorPane apRelated, apSelecting;
   @FXML private ToolBar toolBar, toolBar2;
   @FXML private TreeView<BibCollectionRow> treeView;
   @FXML private WebView webView;
@@ -126,7 +128,7 @@ public class BibManager extends HyperDlg
 
   @Override protected boolean isValid()                  { return true; }
 
-  private void hideBottomControls()                      { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
+  private void hideBottomControls()                      { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); borderPane.setTop(null); }
   private void viewInRefMgr()                            { viewInRefMgr(tableView.getSelectionModel().getSelectedItem().getEntry()); }
   private static void viewInRefMgr(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getURLtoViewEntryInRefMgr()); }
   public void rebuildCollectionTree()                    { collTree.rebuild(libraryWrapper.getKeyToColl()); }
@@ -187,6 +189,12 @@ public class BibManager extends HyperDlg
 
       if ((newValue != null) && newValue.getBibEntryKey().isEmpty())
       {
+        borderPane.setTop(apSelecting);
+
+        String workStr = newValue.getCBText();
+
+        lblSelecting.setText("Select an entry that is not already assigned to a work and click the Assign to Work Record button to assign to " + workStr + ". Or, select an entry type below and click the Create New button.");
+
         lblSelect.setText("Assigning to work record: " + newValue.getCBText());
         setAllVisible(true, lblSelect, btnCreateNew, cbNewType);
         return;

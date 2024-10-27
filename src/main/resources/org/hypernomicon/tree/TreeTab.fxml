@@ -16,17 +16,47 @@
    limitations under the License.
 -->
 
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 <?import org.controlsfx.control.BreadCrumbBar?>
 
 <AnchorPane prefHeight="689.0" prefWidth="1227.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.TreeTabCtrlr">
-  <SplitPane fx:id="spMain" dividerPositions="0.7" minHeight="0.0" orientation="VERTICAL" AnchorPane.bottomAnchor="27.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-      <AnchorPane prefHeight="200.0" prefWidth="200.0" />
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-      <WebView fx:id="webView" layoutX="513.0" layoutY="53.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-    </AnchorPane>
-  </SplitPane>
-  <BreadCrumbBar fx:id="bcbPath" autoNavigationEnabled="false" layoutX="41.0" layoutY="675.0" prefHeight="25.0" prefWidth="1122.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+   <BorderPane fx:id="borderPane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <bottom>
+        <BreadCrumbBar fx:id="bcbPath" autoNavigationEnabled="false" prefHeight="25.0" prefWidth="1122.0" BorderPane.alignment="CENTER" />
+      </bottom>
+      <center>
+        <SplitPane fx:id="spMain" dividerPositions="0.7" minHeight="0.0" orientation="VERTICAL" BorderPane.alignment="CENTER">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" />
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+            <WebView fx:id="webView" layoutX="513.0" layoutY="53.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+          </AnchorPane>
+        </SplitPane>
+      </center>
+      <top>
+         <AnchorPane fx:id="apSelecting" prefHeight="65.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <children>
+               <Label fx:id="lblSelecting" layoutX="97.0" layoutY="32.0" text="Select a Note, Position, or Institution record and click the Select button." wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <font>
+                     <Font size="14.0" />
+                  </font>
+                  <padding>
+                     <Insets left="60.0" right="60.0" />
+                  </padding>
+                  <styleClass>
+                     <String fx:value="alert" />
+                     <String fx:value="information" />
+                     <String fx:value="dialog-pane" />
+                  </styleClass>
+               </Label>
+            </children>
+         </AnchorPane>
+      </top>
+   </BorderPane>
 </AnchorPane>

@@ -236,7 +236,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htLabels = new HyperTable(tvLabels, 2, true, PREF_KEY_HT_WORK_LABELS);
 
     htLabels.addActionCol(ctGoBtn, 2);
-    htLabels.addActionCol(ctBrowseBtn, 2);
+    htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
     htLabels.addCol(hdtWorkLabel, ctDropDownList);
 
     htLabels.addRemoveMenuItem();

@@ -30,6 +30,7 @@ import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
+import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -78,7 +79,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_POS_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 3);
-    htParents.addActionCol(ctBrowseBtn, 3);
+    htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
 

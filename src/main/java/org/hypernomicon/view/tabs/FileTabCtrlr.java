@@ -29,6 +29,7 @@ import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -114,7 +115,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htLabels = new HyperTable(tvLabels, 2, true, PREF_KEY_HT_FILE_LABELS);
 
     htLabels.addActionCol(ctGoBtn, 2);
-    htLabels.addActionCol(ctBrowseBtn, 2);
+    htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
     htLabels.addCol(hdtWorkLabel, ctDropDownList);
 
     htLabels.addRemoveMenuItem();

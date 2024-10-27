@@ -16,6 +16,7 @@
    limitations under the License.
 -->
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
@@ -32,9 +33,11 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
 <AnchorPane prefHeight="809.0" prefWidth="1417.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.bib.BibManager">
@@ -122,43 +125,66 @@
         <TextField fx:id="tfSearch" prefHeight="25.0" prefWidth="263.0" />
       </ToolBar>
     </AnchorPane>
-    <SplitPane fx:id="spMain" dividerPositions="0.17597173144876324, 0.8056537102473498" prefHeight="160.0" prefWidth="200.0" GridPane.rowIndex="1">
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-        <TreeView fx:id="treeView" layoutX="63.0" layoutY="284.0" prefHeight="758.0" prefWidth="277.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      </AnchorPane>
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-        <TableView fx:id="tableView" layoutX="180.0" layoutY="202.0" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-          <columns>
-            <TableColumn editable="false" prefWidth="75.0" text="Entry ID" />
-            <TableColumn editable="false" prefWidth="75.0" text="Type" />
-            <TableColumn editable="false" prefWidth="75.0" text="Authors" />
-            <TableColumn editable="false" prefWidth="362.0" text="Title" />
-            <TableColumn editable="false" minWidth="0.0" prefWidth="88.0" text="Date" />
-            <TableColumn editable="false" prefWidth="150.0" text="Work Record ID" />
-            <TableColumn editable="false" prefWidth="200.0" text="Published In" visible="false" />
-            <TableColumn editable="false" prefWidth="200.0" text="Publisher" visible="false" />
-          </columns>
-        </TableView>
-      </AnchorPane>
-      <AnchorPane>
-        <WebView fx:id="webView" layoutX="17.0" layoutY="468.0" prefHeight="267.0" prefWidth="272.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="468.0" />
-        <TitledPane fx:id="tpRelated" animated="false" layoutX="20.0" layoutY="94.0" text="Related entries" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-          <AnchorPane fx:id="apRelated" minHeight="0.0" minWidth="0.0" prefHeight="300.0" prefWidth="270.0" style="-fx-padding: 0em;">
-            <Button fx:id="btnUpdateRelatives" layoutX="9.600000381469727" layoutY="9.600000381469727" mnemonicParsing="false" prefHeight="46.0" prefWidth="251.0" text="Use this entry's book data to update child, sibling, and/or parent entries" textAlignment="CENTER" wrapText="true" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0" />
-            <TableView fx:id="tvRelatives" layoutX="14.0" layoutY="36.0" prefHeight="193.0" prefWidth="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="58.0">
-              <columns>
-                <TableColumn maxWidth="75.0" minWidth="75.0" prefWidth="75.0" resizable="false" text="Relation" />
-                <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" text="Type" />
-                <TableColumn maxWidth="1.7976931348623157E308" minWidth="1.0" prefWidth="1.0" text="Entry" />
-              </columns>
-              <columnResizePolicy>
-                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-              </columnResizePolicy>
-            </TableView>
-          </AnchorPane>
-        </TitledPane>
-      </AnchorPane>
-    </SplitPane>
+      <BorderPane fx:id="borderPane" GridPane.rowIndex="1">
+         <center>
+          <SplitPane fx:id="spMain" dividerPositions="0.17597173144876324, 0.8056537102473498" prefHeight="160.0" prefWidth="200.0">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+              <TreeView fx:id="treeView" layoutX="63.0" layoutY="284.0" prefHeight="758.0" prefWidth="277.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+              <TableView fx:id="tableView" layoutX="180.0" layoutY="202.0" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <columns>
+                  <TableColumn editable="false" prefWidth="75.0" text="Entry ID" />
+                  <TableColumn editable="false" prefWidth="75.0" text="Type" />
+                  <TableColumn editable="false" prefWidth="75.0" text="Authors" />
+                  <TableColumn editable="false" prefWidth="362.0" text="Title" />
+                  <TableColumn editable="false" minWidth="0.0" prefWidth="88.0" text="Date" />
+                  <TableColumn editable="false" prefWidth="150.0" text="Work Record ID" />
+                  <TableColumn editable="false" prefWidth="200.0" text="Published In" visible="false" />
+                  <TableColumn editable="false" prefWidth="200.0" text="Publisher" visible="false" />
+                </columns>
+              </TableView>
+            </AnchorPane>
+            <AnchorPane>
+              <WebView fx:id="webView" layoutX="17.0" layoutY="468.0" prefHeight="267.0" prefWidth="272.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="468.0" />
+              <TitledPane fx:id="tpRelated" animated="false" layoutX="20.0" layoutY="94.0" text="Related entries" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <AnchorPane fx:id="apRelated" minHeight="0.0" minWidth="0.0" prefHeight="300.0" prefWidth="270.0" style="-fx-padding: 0em;">
+                  <Button fx:id="btnUpdateRelatives" layoutX="9.600000381469727" layoutY="9.600000381469727" mnemonicParsing="false" prefHeight="46.0" prefWidth="251.0" text="Use this entry's book data to update child, sibling, and/or parent entries" textAlignment="CENTER" wrapText="true" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0" />
+                  <TableView fx:id="tvRelatives" layoutX="14.0" layoutY="36.0" prefHeight="193.0" prefWidth="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="58.0">
+                    <columns>
+                      <TableColumn maxWidth="75.0" minWidth="75.0" prefWidth="75.0" resizable="false" text="Relation" />
+                      <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" text="Type" />
+                      <TableColumn maxWidth="1.7976931348623157E308" minWidth="1.0" prefWidth="1.0" text="Entry" />
+                    </columns>
+                    <columnResizePolicy>
+                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                  </TableView>
+                </AnchorPane>
+              </TitledPane>
+            </AnchorPane>
+          </SplitPane>
+         </center>
+         <top>
+         <AnchorPane fx:id="apSelecting" prefHeight="65.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <children>
+               <Label fx:id="lblSelecting" layoutX="97.0" layoutY="32.0" text="Select an entry that is not already assigned to a work and click the Assign to Work Record button. Or, select an entry type below and click the Create New button." wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <font>
+                     <Font size="14.0" />
+                  </font>
+                  <padding>
+                     <Insets left="60.0" right="60.0" />
+                  </padding>
+                  <styleClass>
+                     <String fx:value="alert" />
+                     <String fx:value="information" />
+                     <String fx:value="dialog-pane" />
+                  </styleClass>
+               </Label>
+            </children>
+         </AnchorPane>
+       </top>
+      </BorderPane>
   </GridPane>
   <Label fx:id="lblSelect" alignment="CENTER_RIGHT" layoutX="2.0" layoutY="785.0" prefHeight="17.0" prefWidth="1118.0" text="Assigning to work record: Dennett 1991 Real Patterns" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="297.0" />
   <Button fx:id="btnCreateNew" layoutX="1129.0" layoutY="782.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="85.0" text="Create New:" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="203.0" />

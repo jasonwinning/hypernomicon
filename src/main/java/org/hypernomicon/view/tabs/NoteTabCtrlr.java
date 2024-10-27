@@ -49,6 +49,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -138,7 +139,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     htParents = new HyperTable(tvParents, 2, true, PREF_KEY_HT_NOTE_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 2);
-    htParents.addActionCol(ctBrowseBtn, 2);
+    htParents.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
     htParents.addColWithUpdateHandler(hdtNote, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       HDT_Note parentNote = cellVal.getRecord();

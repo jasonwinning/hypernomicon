@@ -60,19 +60,24 @@ import javafx.concurrent.Worker;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
 
 //---------------------------------------------------------------------------
 
 public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
+  @FXML private AnchorPane apSelecting;
+  @FXML private BorderPane borderPane;
   @FXML private BreadCrumbBar<TreeRow> bcbPath;
+  @FXML private Label lblSelecting;
   @FXML private SplitPane spMain;
   @FXML private WebView webView;
 
@@ -574,6 +579,26 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     if ((record != null) && HDT_Record.isEmpty(record)) return; // Record was probably just deleted; go with whatever is currently selected
 
     tree.selectRecord(record, record == null ? 0 : record.keyNdx(), false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void showSelectingMessage()
+  {
+    borderPane.setTop(apSelecting);
+
+    String typeStr = ui.treeSelector.getTypesStr();
+
+    lblSelecting.setText("Select " + (typeStr.startsWith("A") ? "an " : "a ") + typeStr + " and click the Select button.");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void hideSelectingMessage()
+  {
+    borderPane.setTop(null);
   }
 
 //---------------------------------------------------------------------------

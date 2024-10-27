@@ -2809,7 +2809,11 @@ public final class MainCtrlr
   public void updateBottomPanel(boolean refreshDropDown, boolean switchToRecordSearch)
   {
     ttDates.setText(NO_DATES_TOOLTIP);
-    if (db.isLoaded() == false) return;
+    if (db.isLoaded() == false)
+    {
+      treeHyperTab().hideSelectingMessage();
+      return;
+    }
 
     HyperTab<? extends HDT_Record, ? extends HDT_Record> curTab = activeTab();
     if (curTab == null) return;
@@ -2852,11 +2856,15 @@ public final class MainCtrlr
     {
       if (treeSelector.getBase() == null)
       {
+        treeHyperTab().hideSelectingMessage();
+
         btnSave.setDisable(true);
         btnSave.setText("Accept Edits");
       }
       else
       {
+        treeHyperTab().showSelectingMessage();
+
         btnSave.setDisable(false);
         btnSave.setText(TREE_SELECT_BTN_CAPTION);
       }

@@ -22,6 +22,7 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.SubjectPopulator;
+import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -263,7 +264,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
         HDT_Glossary generalGlossary = db.glossaries.getByID(1);                   // If these two lines are combined into one, there will be
         ui.goToTreeRecord(childConcept == null ? generalGlossary : childConcept);  // false-positive build errors
-      });
+
+      }).setTooltip(ButtonAction.baBrowse, "Select a Glossary or parent Concept from the Tree");
 
     htGlossaries.addColWithUpdateHandler(hdtGlossary, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) -> updateGlossaryRow(row))
                 .setDontCreateNewRecord(true);

@@ -22,6 +22,7 @@ import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import javafx.scene.control.Tab;
 
@@ -60,7 +61,7 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
     htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_DEBATE_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 3);
-    htParents.addActionCol(ctBrowseBtn, 3);
+    htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
 

@@ -134,14 +134,19 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String getTypesStr()
+  String getTypesStr()
   {
     int lastNdx = targetTypes.size() - 1;
     String msg = "";
 
     for (int ndx = 0; ndx <= lastNdx; ndx++)
     {
-      msg += getTypeName(targetTypes.get(ndx).targetType);
+      String typeName = getTypeName(targetTypes.get(ndx).targetType);
+
+      if (typeName.endsWith("Label"))
+        typeName = "Label";
+
+      msg += typeName;
 
       if      ((ndx == 0) && (lastNdx == 1)) msg += " or ";
       else if (ndx == (lastNdx - 1))         msg += ", or ";
