@@ -3,6 +3,7 @@ package org.hypernomicon;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.hypernomicon.util.VersionNumber;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 //---------------------------------------------------------------------------
@@ -290,7 +291,7 @@ public class VersionNumberTest
       assertTrue(new VersionNumber(1, 28).compareTo(version) < 0);
       assertTrue(new VersionNumber(5).compareTo(version) > 0);
 
-    }, () -> fail());
+    }, Assertions::fail);
   }
 
 //---------------------------------------------------------------------------

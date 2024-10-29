@@ -96,9 +96,10 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean isEditing()                { return state == editing; }
-  private boolean canEdit()          { return (curRecord != null) && (isUnstoredRecord(curRecord) == false); }
-  static WebEngine getEditorEngine() { return editCtrlr == null ? null : editCtrlr.getEngine(); }
+  boolean isEditing()                 { return state == editing; }
+  private boolean canEdit()           { return (curRecord != null) && (isUnstoredRecord(curRecord) == false); }
+  static WebEngine getEditorEngine()  { return editCtrlr == null ? null : editCtrlr.getEngine(); }
+  public static String getUserAgent() { return we.getUserAgent(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

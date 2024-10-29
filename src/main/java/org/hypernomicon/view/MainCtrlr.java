@@ -1173,7 +1173,7 @@ public final class MainCtrlr
       bibManagerDlg.showNonmodal();
     }
 
-    if (focusOnSearchField) Platform.runLater(() -> bibManagerDlg.focusOnSearchField());
+    if (focusOnSearchField) Platform.runLater(bibManagerDlg::focusOnSearchField);
   }
 
 //---------------------------------------------------------------------------

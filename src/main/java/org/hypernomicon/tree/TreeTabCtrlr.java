@@ -511,7 +511,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     new RecordTreeEdge(dlg.getParent(), child).attach(null, true);
 
-    Platform.runLater(() -> ui.update());
+    Platform.runLater(ui::update);
   }
 
 //---------------------------------------------------------------------------

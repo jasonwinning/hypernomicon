@@ -208,7 +208,7 @@ public class BibManager extends HyperDlg
 
     // In the next line, the refresh is done in a runLater because we might already be in a refresh when this is happening
 
-    tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> Platform.runLater(() -> refresh()));
+    tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> Platform.runLater(this::refresh));
 
     entryTable.addContextMenuItem(viewEntryInRefMgrCaptionSupplier, row -> row.getURLtoViewEntryInRefMgr().length() > 0, row -> viewInRefMgr(row.getEntry()));
 

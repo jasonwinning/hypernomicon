@@ -177,6 +177,11 @@
       <artifactId>javafx-graphics</artifactId>
       <version>${javafx.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-swing</artifactId>
+      <version>${javafx.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>jakarta.xml.bind</groupId>

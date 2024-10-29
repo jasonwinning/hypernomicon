@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +50,6 @@ import org.w3c.dom.html.HTMLAnchorElement;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.App;
-import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
 import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.dialogs.SearchKeySelectDlgCtrlr;
@@ -62,7 +62,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
@@ -725,49 +724,18 @@ public class MainTextCtrlr
 
   private void btnPictureClick()
   {
-    InsertMiscFileDlgCtrlr imfd = new InsertMiscFileDlgCtrlr();
-
-    if (imfd.showModal() == false) return;
-
-    HDT_MiscFile miscFile = imfd.getMiscFile();
-
-    if (miscFile == null)
+    Consumer<HDT_MiscFile> miscFileConsumer = miscFile ->
     {
-      miscFile = db.createNewBlankRecord(hdtMiscFile);
+      Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
 
-      FileDlgCtrlr fdc = new FileDlgCtrlr("Image File Record", miscFile, "", true);
+      String imageTag = '<' + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
 
-      if (fdc.showModal() == false)
-      {
-        db.deleteRecord(miscFile);
-        return;
-      }
+      engine.executeScript("insertHtmlAtCursor('" + htmlEscaper.escape(imageTag) + "<br>')");
+    };
 
-      if (miscFile != fdc.getFileRecord())
-      {
-        db.deleteRecord(miscFile);
-        miscFile = fdc.getFileRecord();
-      }
+    InsertMiscFileDlgCtrlr imfd = new InsertMiscFileDlgCtrlr(miscFileConsumer);
 
-      miscFile.setName(fdc.tfRecordName.getText());
-      HyperTableCell cell = fdc.hcbType.selectedHTC();
-      int fileTypeID = HyperTableCell.getCellID(cell);
-
-      if ((fileTypeID < 1) && (HyperTableCell.getCellText(cell).length() > 0))
-      {
-        HDT_FileType fileType = db.createNewBlankRecord(hdtFileType);
-        fileTypeID = fileType.getID();
-        fileType.setName(HyperTableCell.getCellText(cell));
-      }
-
-      miscFile.fileType.setID(fileTypeID);
-    }
-
-    Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
-
-    String imageTag = '<' + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
-
-    engine.executeScript("insertHtmlAtCursor('" + htmlEscaper.escape(imageTag) + "<br>')");
+    imfd.showModal();
   }
 
 //---------------------------------------------------------------------------

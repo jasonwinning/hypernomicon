@@ -75,6 +75,11 @@ public class FilePath implements Comparable<FilePath>
   public Instant lastModified()         { return Instant.ofEpochMilli(toFile().lastModified()); }
 
   /**
+   * @see File#deleteOnExit()
+   */
+  public void deleteOnExit()            { toFile().deleteOnExit(); }
+
+  /**
    * Gets the extension of a filename.
    * <p>
    * This method returns the textual part of the filename after the last dot.

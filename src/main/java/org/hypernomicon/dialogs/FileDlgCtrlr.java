@@ -238,6 +238,11 @@ public class FileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Set the source file to something different than the path of the misc. file
+   * @param newSrc The filePath to use
+   * @param initial Whether the dialog is just opening or not
+   */
   public void setSrcFilePath(FilePath newSrc, boolean initial)
   {
     if (FilePath.isEmpty(newSrc)) return;

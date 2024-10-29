@@ -38,6 +38,7 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.mainText.MainTextWrapper;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
@@ -147,7 +148,7 @@ public final class FileDownloadUtility
 
     HttpUriRequest request = RequestBuilder.get()
       .setUri(fileURL)
-      .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
+      .setHeader("User-Agent", MainTextWrapper.getUserAgent())
       .build();
 
     httpClient.doRequest(request, responseHndlr, failHndlr);

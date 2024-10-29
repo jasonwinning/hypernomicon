@@ -654,6 +654,7 @@ public class PictureDlgCtrlr extends HyperDlg
     try
     {
       FilePath tempFile = new FilePath(java.io.File.createTempFile("temp", bufferFileName));
+      tempFile.deleteOnExit();
       imageBuffer.saveToFile(tempFile);
       picture = new Image(tempFile.toURI().toString());
       tempFile.delete(true);

@@ -315,7 +315,7 @@ public final class App extends Application
       return;
     }
 
-    Pattern p = Pattern.compile("(\\A|\\D)(\\d(\\d|(\\.\\d))+)(\\z|\\D)");
+    Pattern p = Pattern.compile("([^\\d.]*)((?:\\d+\\.?)*\\d)$");
 
     for (JsonObj jsonObj : jsonArray.getObjs())
     {
