@@ -19,9 +19,11 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -128,7 +130,16 @@
                      <RadioButton fx:id="rbClipboard" layoutX="14.0" layoutY="8.0" mnemonicParsing="false" text="Image from clipboard" toggleGroup="$toggleGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
                   </children>
                </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                  <children>
+                     <Label layoutY="7.0" text="Save as" AnchorPane.leftAnchor="0.0" />
+                     <ToggleButton fx:id="btnJpg" layoutX="46.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0" minHeight="25.0" minWidth="55.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="55.0" selected="true" text="JPG" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="46.0">
+                        <toggleGroup>
+                           <ToggleGroup fx:id="tgFormat" />
+                        </toggleGroup>
+                     </ToggleButton>
+                     <ToggleButton fx:id="btnPng" layoutX="105.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0" minHeight="25.0" minWidth="55.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="55.0" text="PNG" toggleGroup="$tgFormat" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="105.0" />
+                  </children></AnchorPane>
                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
                   <children>
                      <GridPane layoutX="283.0" layoutY="-31.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

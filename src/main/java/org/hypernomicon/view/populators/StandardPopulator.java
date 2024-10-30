@@ -20,8 +20,10 @@ package org.hypernomicon.view.populators;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -38,7 +40,16 @@ public class StandardPopulator extends Populator
 
   public StandardPopulator(RecordType objType)
   {
-    this(objType, null);
+    this(objType, (Predicate<Integer>)null);
+  }
+
+  public StandardPopulator(RecordType objType, Predicate<Integer> filter, Function<HDT_Record, String> textFunction)
+  {
+    this.objType = objType;
+
+    rtp = new RecordByTypePopulator(filter, textFunction);
+
+    rtp.setRecordType(objType);
   }
 
   public StandardPopulator(RecordType objType, Predicate<Integer> filter)

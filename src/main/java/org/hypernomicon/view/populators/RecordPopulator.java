@@ -24,6 +24,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -37,6 +38,7 @@ public abstract class RecordPopulator extends Populator
 {
   private final DisplayKind displayKind;
   private final Predicate<Integer> idFilter;
+  private final Function<HDT_Record, String> textFunction;
 
 //---------------------------------------------------------------------------
 
@@ -44,6 +46,14 @@ public abstract class RecordPopulator extends Populator
   {
     this.idFilter = idFilter;
     this.displayKind = displayKind;
+    this.textFunction = null;
+  }
+
+  protected RecordPopulator(Predicate<Integer> idFilter, Function<HDT_Record, String> textFunction)
+  {
+    this.idFilter = idFilter;
+    this.displayKind = DisplayKind.custom;
+    this.textFunction = textFunction;
   }
 
 //---------------------------------------------------------------------------
@@ -118,6 +128,7 @@ public abstract class RecordPopulator extends Populator
     {
       case cbText   -> record.getCBText();
       case listName -> record.listName();
+      case custom   -> textFunction.apply(record);
       default       -> record.name();
     };
   }

@@ -29,12 +29,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_MiscFile;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -65,6 +67,8 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
   @FXML private ProgressBar progressBar;
   @FXML private RadioButton rbExistingRecord, rbLocalFile, rbWebAddress, rbClipboard;
   @FXML private TextField tfLocalFile, tfWebUrl;
+  @FXML private ToggleButton btnJpg, btnPng;
+  @FXML private ToggleGroup tgFormat;
   @FXML private WebView webView;
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
@@ -84,7 +88,17 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
   {
     super("InsertMiscFileDlg", "Insert Picture", true);
 
-    hcbExisting = new HyperCB(cbExisting, ctDropDownList, new StandardPopulator(hdtMiscFile));
+    Function<HDT_Record, String> textFunction = record ->
+    {
+      HDT_MiscFile miscFile = (HDT_MiscFile)record;
+
+      String text = miscFile.name(),
+             ext = miscFile.pathNotEmpty() ? miscFile.filePath().getExtensionOnly() : "";
+
+      return ext.isBlank() ? text : (text + " (" + ext + ")");
+    };
+
+    hcbExisting = new HyperCB(cbExisting, ctDropDownList, new StandardPopulator(hdtMiscFile, null, textFunction));
 
     hcbExisting.addListener((ov, nv) ->
     {
@@ -288,14 +302,16 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static FilePath writeBufferedImageToTempJpgFile(BufferedImage bufferedImage) throws IOException
+  private FilePath writeBufferedImageToTempFile(BufferedImage bufferedImage) throws IOException
   {
-    File tempFile = java.io.File.createTempFile("temp", ".jpg");
+    String format = tgFormat.getSelectedToggle() == btnJpg ? "jpg" : "png";
+
+    File tempFile = java.io.File.createTempFile("temp", "." + format);
     tempFile.deleteOnExit();
 
     try (FileOutputStream fos = new FileOutputStream(tempFile))
     {
-      ImageIO.write(bufferedImage, "jpg", fos);
+      ImageIO.write(bufferedImage, format, fos);
     }
 
     return new FilePath(tempFile);
@@ -316,7 +332,7 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
 
     try
     {
-      FilePath tempFile = writeBufferedImageToTempJpgFile(clipboardImageBuffer);
+      FilePath tempFile = writeBufferedImageToTempFile(clipboardImageBuffer);
 
       displayFilePath(tempFile);
 
@@ -466,7 +482,7 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
 
       try
       {
-        srcFilePath = writeBufferedImageToTempJpgFile(clipboardImageBuffer);
+        srcFilePath = writeBufferedImageToTempFile(clipboardImageBuffer);
       }
       catch (IOException e)
       {

@@ -74,7 +74,7 @@ public abstract class Populator
 
   public enum DisplayKind
   {
-    name, listName, cbText
+    name, listName, cbText, custom
   }
 
   public enum CellValueType

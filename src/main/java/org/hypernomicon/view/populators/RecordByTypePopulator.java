@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -28,6 +29,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
@@ -47,6 +49,11 @@ public class RecordByTypePopulator extends RecordPopulator
   public RecordByTypePopulator()
   {
     super(null, DisplayKind.cbText);
+  }
+
+  public RecordByTypePopulator(Predicate<Integer> idFilter, Function<HDT_Record, String> textFunction)
+  {
+    super(idFilter, textFunction);
   }
 
   public RecordByTypePopulator(Predicate<Integer> idFilter, DisplayKind displayKind)
