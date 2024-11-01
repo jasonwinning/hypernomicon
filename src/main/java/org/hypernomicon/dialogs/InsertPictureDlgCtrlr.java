@@ -56,7 +56,7 @@ import javafx.stage.FileChooser;
 
 //---------------------------------------------------------------------------
 
-public class InsertMiscFileDlgCtrlr extends HyperDlg
+public class InsertPictureDlgCtrlr extends HyperDlg
 {
 
 //---------------------------------------------------------------------------
@@ -84,9 +84,9 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public InsertMiscFileDlgCtrlr(Consumer<HDT_MiscFile> miscFileConsumer)
+  public InsertPictureDlgCtrlr(Consumer<HDT_MiscFile> miscFileConsumer)
   {
-    super("InsertMiscFileDlg", "Insert Picture", true);
+    super("InsertPictureDlg", "Insert Picture", true);
 
     Function<HDT_Record, String> textFunction = record ->
     {
@@ -212,7 +212,7 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
   </style>
 </head>
 <body>
-    <img id="responsiveImage" src="$url" alt="Centered Image">
+  <img id="responsiveImage" src="$url" alt="Centered Image">
   <script>
     var imageHeight, imageWidth;
 

@@ -27,25 +27,34 @@ import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys;
+import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_RecordWithDescription;
+import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.query.Query.FilteredRecordQuery;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.jsoup.nodes.Element;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
 public final class GeneralQueries
@@ -70,7 +79,8 @@ public final class GeneralQueries
                            QUERY_MATCHING_RECORD         = 11,  // "with any text that would link to this record"
                            QUERY_MATCHING_STRING         = 12;  // "with any text that would link to a record having this search key"
   private static final int QUERY_MENTIONED_BY            = 13,  // "that are mentioned by record"
-                           QUERY_WHERE_DISPLAYED_RECORDS = 14;  // "where displayed records"
+                           QUERY_WHERE_DISPLAYED_RECORDS = 14,  // "where displayed records"
+                           QUERY_WITH_ORPHANED_IMG_REFS  = 15;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -421,6 +431,46 @@ public final class GeneralQueries
       {
         return (queryType == qtAllRecords) || HDT_RecordWithDescription.class.isAssignableFrom(recordType.getRecordClass());
       }
+    });
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    allQueries.add(new RecordQuery(QUERY_WITH_ORPHANED_IMG_REFS, "with img tag pointing to non-existing Misc. File record")
+    {
+      @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+      {
+        clearOperands(row, 1);
+        return true;
+      }
+
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        if (record instanceof HDT_RecordWithMainText recordWMT)
+        {
+          MainText mainText = recordWMT.getMainText();
+
+          MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
+          Property<Element> elementProp = new SimpleObjectProperty<>();
+
+          Optional<HDT_MiscFile> optMiscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+
+          while (optMiscFile != null)
+          {
+            if (optMiscFile.isEmpty())
+              return true;
+
+            startNdx.add(1);
+            optMiscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+          }
+        }
+
+        return false;
+      }
+
+      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
+
+      @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
     });
   }
 

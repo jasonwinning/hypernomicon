@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.text.StringEscapeUtils.*;
@@ -806,7 +807,15 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_MiscFile nextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, Property<Element> elementProp)
+  /**
+   * Gets the next Misc. File referred to in a record's main text by a misc-file tag
+   * @param str The html of the record's main text
+   * @param startNdx Where in the main text to start looking; this will be set to the starting positon of the current misc-file tag
+   * @param endNdx This will be set to the ending position of the current misc-file tag
+   * @param elementProp This will be set to the parsed, current misc-file element
+   * @return Optional containing the Misc. File record, or empty Optional if the tag refers to a non-existing Misc. File record, or null if no such tag was found
+   */
+  public static Optional<HDT_MiscFile> nextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, Property<Element> elementProp)
   {
     startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.getValue()));
     elementProp.setValue(null);
@@ -824,9 +833,13 @@ public final class MainTextUtil
 
         elementProp.setValue(doc.getElementsByTag(EMBEDDED_FILE_TAG).first());
 
-        HDT_MiscFile miscFile = nullSwitch(elementProp.getValue(), null, element -> db.miscFiles.getByID(parseInt(element.attr("id"), -1)));
+        int miscFileID = nullSwitch(elementProp.getValue(), -1, element -> parseInt(element.attr("id"), -1));
 
-        if (miscFile != null) return miscFile;
+        if (miscFileID >= 1)
+        {
+          HDT_MiscFile miscFile = db.miscFiles.getByID(miscFileID);
+          return Optional.ofNullable(miscFile);
+        }
       }
 
       startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.getValue() + 1));
@@ -867,28 +880,33 @@ public final class MainTextUtil
     MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
     Property<Element> elementProp = new SimpleObjectProperty<>();
 
-    HDT_MiscFile miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
+    Optional<HDT_MiscFile> optMiscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
 
-    while (miscFile != null)
+    while (optMiscFile != null)
     {
-      String heightAttr = elementProp.getValue().attr("height"),
-             widthAttr  = elementProp.getValue().attr("width");
+      if (optMiscFile.isPresent())
+      {
+        HDT_MiscFile miscFile = optMiscFile.get();
 
-      if (heightAttr.isBlank() == false)
-        heightAttr = " height=\"" + heightAttr + '"';
+        String heightAttr = elementProp.getValue().attr("height"),
+               widthAttr  = elementProp.getValue().attr("width");
 
-      if (widthAttr.isBlank() == false)
-        widthAttr = " width=\"" + widthAttr + '"';
+        if (heightAttr.isBlank() == false)
+          heightAttr = " height=\"" + heightAttr + '"';
 
-      String url = nullSwitch(miscFile.filePath(), "", FilePath::toURLString);
+        if (widthAttr.isBlank() == false)
+          widthAttr = " width=\"" + widthAttr + '"';
 
-      String tag = "<img src=\"" + url + "\" alt=\"\"" + heightAttr + widthAttr + "/><br>" +
-            "<a hypncon=\"true\" href=\"\" title=\"Go to this misc. file record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + miscFile.name() + "</a>";
+        String url = nullSwitch(miscFile.filePath(), "", FilePath::toURLString);
 
-      str = str.substring(0, startNdx.getValue()) + tag + safeSubstring(str, endNdx.getValue(), str.length());
+        String tag = "<img src=\"" + url + "\" alt=\"\"" + heightAttr + widthAttr + "/><br>" +
+              "<a hypncon=\"true\" href=\"\" title=\"Go to this misc. file record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + miscFile.name() + "</a>";
+
+        str = str.substring(0, startNdx.getValue()) + tag + safeSubstring(str, endNdx.getValue(), str.length());
+      }
 
       startNdx.add(1);
-      miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
+      optMiscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
     }
 
     return str;

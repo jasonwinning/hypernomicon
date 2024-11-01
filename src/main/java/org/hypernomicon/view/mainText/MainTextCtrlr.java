@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,14 +49,13 @@ import org.w3c.dom.html.HTMLAnchorElement;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.App;
-import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
+import org.hypernomicon.dialogs.InsertPictureDlgCtrlr;
 import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.dialogs.SearchKeySelectDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Authors;
-import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
@@ -724,18 +722,15 @@ public class MainTextCtrlr
 
   private void btnPictureClick()
   {
-    Consumer<HDT_MiscFile> miscFileConsumer = miscFile ->
+    new InsertPictureDlgCtrlr(miscFile ->
     {
       Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
 
       String imageTag = '<' + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
 
       engine.executeScript("insertHtmlAtCursor('" + htmlEscaper.escape(imageTag) + "<br>')");
-    };
 
-    InsertMiscFileDlgCtrlr imfd = new InsertMiscFileDlgCtrlr(miscFileConsumer);
-
-    imfd.showModal();
+    }).showModal();
   }
 
 //---------------------------------------------------------------------------

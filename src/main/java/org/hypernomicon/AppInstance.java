@@ -49,7 +49,7 @@ class AppInstance
 
   @Override public String toString()
   {
-    return id + ';' + portNum + ';' + dbPath;
+    return String.join(";", id, Integer.toString(portNum), dbPath.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -63,9 +63,7 @@ class AppInstance
     int portNum = parseInt(splitStr.next(), -1);
     FilePath dbPath = new FilePath(splitStr.next());
 
-    if (safeStr(id).isBlank() || (portNum < 1)) return null;
-
-    return new AppInstance(id, portNum, dbPath);
+    return safeStr(id).isBlank() || (portNum < 1) ? null : new AppInstance(id, portNum, dbPath);
   }
 
 //---------------------------------------------------------------------------

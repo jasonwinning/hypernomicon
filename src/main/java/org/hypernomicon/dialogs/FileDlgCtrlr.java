@@ -387,6 +387,9 @@ public class FileDlgCtrlr extends HyperDlg
 
     if (recordType == hdtMiscFile)
     {
+      if (tfRecordName.getText().isBlank())
+        return falseWithWarningPopup("The record name is blank.", tfRecordName);
+
       int fileTypeID = hcbType.selectedID();
       if ((fileTypeID < 1) && hcbType.getText().isEmpty())
         return falseWithErrorPopup("You must enter a file type.", cbType);

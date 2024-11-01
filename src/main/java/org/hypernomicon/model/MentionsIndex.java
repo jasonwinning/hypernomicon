@@ -20,6 +20,7 @@ package org.hypernomicon.model;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -158,15 +159,20 @@ class MentionsIndex
       MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
       Property<Element> elementProp = new SimpleObjectProperty<>();
 
-      HDT_MiscFile miscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+      Optional<HDT_MiscFile> optMiscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
 
-      while (miscFile != null)
+      while (optMiscFile != null)
       {
-        mentionedAnywhereToMentioners.addForward(miscFile, record);
-        mentionedInDescToMentioners  .addForward(miscFile, record);
+        if (optMiscFile.isPresent())
+        {
+          HDT_MiscFile miscFile = optMiscFile.get();
+
+          mentionedAnywhereToMentioners.addForward(miscFile, record);
+          mentionedInDescToMentioners  .addForward(miscFile, record);
+        }
 
         startNdx.add(1);
-        miscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+        optMiscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
       }
 
       String plainText = mainText.getPlain();

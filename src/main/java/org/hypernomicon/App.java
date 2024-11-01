@@ -54,6 +54,7 @@ import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 import org.apache.http.client.methods.HttpGet;
 import org.apache.logging.log4j.Level;
@@ -344,13 +345,13 @@ public final class App extends Application
     List<RecordType> types = List.of(hdtPerson,   hdtInstitution, hdtInvestigation, hdtDebate,   hdtPosition,
                                      hdtArgument, hdtWork,        hdtTerm,          hdtMiscFile, hdtNote);
 
-    total = 0; ctr = 0; lastPercent = 0;
-    types.forEach(type -> total += db.records(type).size());
+    ctr = 0; lastPercent = 0;
 
-    total *= passes;
+    total = types.stream().mapToInt(type -> db.records(type).size()).sum() * passes;
 
-    for (int pass = 1; pass <= passes; pass++)
-      types.forEach(this::testUpdatingRecords);
+    IntStream.rangeClosed(1, passes)
+             .forEach(pass -> types.forEach(this::testUpdatingRecords));
+
   }
 
 //---------------------------------------------------------------------------
