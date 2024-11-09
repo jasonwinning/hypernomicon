@@ -186,11 +186,7 @@ public final class QueryCtrlr
     tabPane.getTabs().add(tabPane.getTabs().size() - 1, tab);
     tab.setOnCloseRequest(event -> queriesTabCtrlr.deleteView((Tab) event.getSource()));
 
-    tgLogic.selectedToggleProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null)
-        oldValue.setSelected(true);
-    });
+    forceToggleSelection(tgLogic);
 
     tfCustomLogic.textProperty().addListener((ob, oldValue, newValue) ->
     {

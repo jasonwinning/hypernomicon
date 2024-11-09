@@ -143,6 +143,8 @@ public class InsertPictureDlgCtrlr extends HyperDlg
         tfWebUrl.selectAll();
     }));
 
+    forceToggleSelection(tgFormat);
+
     rbExistingRecord.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbExistingRecordSelected(); });
     rbLocalFile     .selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbLocalFileSelected     (); });
     rbWebAddress    .selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbWebAddressSelected    (); });

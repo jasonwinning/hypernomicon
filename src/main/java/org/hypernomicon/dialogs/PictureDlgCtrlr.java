@@ -34,6 +34,7 @@ import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.FileDownloadUtility;
+import org.hypernomicon.util.MediaUtil;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
@@ -41,12 +42,19 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.tabs.PersonTabCtrlr;
 
+import java.awt.image.BufferedImage;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Set;
 
+import javax.imageio.ImageIO;
+
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.Point2D;
@@ -56,10 +64,12 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
@@ -77,9 +87,10 @@ public class PictureDlgCtrlr extends HyperDlg
   private Point2D mouseStart, mouseEnd, cropStart, cropEnd;
   private Rectangle cropRect = null;
   private Rectangle2D picRect;
-  private boolean changed = false, noRemoveCrop = false, bufferOutOfDate = true, dontRefresh = false;
-  private FileDownloadUtility.Buffer imageBuffer;
-  private String bufferFileName = "";
+  private boolean changed = false, noRemoveCrop = false, webBufferOutOfDate = true, dontRefresh = false;
+  private BufferedImage clipboardImageBuffer;
+  private FileDownloadUtility.Buffer webImageBuffer;
+  private String webBufferFileName = "";
 
   @FXML private AnchorPane apPicture;
   @FXML private Button btnBrowse, btnPaste, btnRefresh, btnDelete, btnShow, btnEdit, btnWebSrch, btnStop;
@@ -87,8 +98,9 @@ public class PictureDlgCtrlr extends HyperDlg
   @FXML private ImageView ivPicture;
   @FXML private Label lblChangeName;
   @FXML private ProgressBar progressBar;
-  @FXML private RadioButton rbNone, rbFile, rbWeb, rbCurrent;
+  @FXML private RadioButton rbNone, rbFile, rbWeb, rbCurrent, rbClipboard;
   @FXML private TextField tfCurrent, tfFile, tfWeb, tfName;
+  @FXML private ToggleButton btnJpg, btnPng;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -105,22 +117,26 @@ public class PictureDlgCtrlr extends HyperDlg
     btnPaste.setOnAction(event -> tfWeb.setText(getClipboardText(true)));
     setToolTip(btnPaste, "Paste text from clipboard");
 
-    apPicture.widthProperty ().addListener((ob, oldValue, newValue) -> resizeCrop(newValue .doubleValue(), apPicture.getHeight  ()));
-    apPicture.heightProperty().addListener((ob, oldValue, newValue) -> resizeCrop(apPicture.getWidth   (), newValue .doubleValue()));
+    apPicture.widthProperty ().addListener((ob, ov, nv) -> resizeCrop(nv       .doubleValue(), apPicture.getHeight  ()));
+    apPicture.heightProperty().addListener((ob, ov, nv) -> resizeCrop(apPicture.getWidth   (), nv       .doubleValue()));
 
     btnBrowse.setOnAction(event -> btnBrowseClick());
 
-    rbNone.   selectedProperty().addListener((ob, oldValue, newValue) -> { if (Boolean.TRUE.equals(newValue)) rbNoneSelected    (); });
-    rbCurrent.selectedProperty().addListener((ob, oldValue, newValue) -> { if (Boolean.TRUE.equals(newValue)) rbCurrentSelected (); });
-    rbFile.   selectedProperty().addListener((ob, oldValue, newValue) -> { if (Boolean.TRUE.equals(newValue)) rbFileSelected    (); });
-    rbWeb.    selectedProperty().addListener((ob, oldValue, newValue) -> { if (Boolean.TRUE.equals(newValue)) rbWebSelected     (); });
+    rbNone     .selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbNoneSelected     (); });
+    rbCurrent  .selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbCurrentSelected  (); });
+    rbFile     .selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbFileSelected     (); });
+    rbWeb      .selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbWebSelected      (); });
+    rbClipboard.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbClipboardSelected(); });
+
+    btnJpg.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) updateExtentionBasedOnClipboardSelection(); });
+    btnPng.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) updateExtentionBasedOnClipboardSelection(); });
 
     tfWeb.setTextFormatter(new TextFormatter<>(change ->
     {
       if (change.isContentChange() == false)
         return change;
 
-      bufferOutOfDate = true;
+      webBufferOutOfDate = true;
 
       if (change.getText().length() > 1)
       {
@@ -162,9 +178,10 @@ public class PictureDlgCtrlr extends HyperDlg
 
     btnRefresh.setOnAction(event ->
     {
-      if      (rbCurrent.isSelected()) rbCurrentSelected();
-      else if (rbFile   .isSelected()) rbFileSelected();
-      else if (rbWeb    .isSelected()) rbWebSelected();
+      if      (rbCurrent  .isSelected()) rbCurrentSelected  ();
+      else if (rbFile     .isSelected()) rbFileSelected     ();
+      else if (rbWeb      .isSelected()) rbWebSelected      ();
+      else if (rbClipboard.isSelected()) rbClipboardSelected();
     });
 
     btnShow   .disableProperty().bind(rbCurrent.selectedProperty().not().and(rbFile.selectedProperty().not()));
@@ -238,6 +255,8 @@ public class PictureDlgCtrlr extends HyperDlg
     btnDelete.setOnAction(event -> btnDeleteClick());
 
     btnDelete.disableProperty().bind(rbCurrent.selectedProperty().not());
+
+    forceToggleSelection(btnJpg.getToggleGroup());
 
     if (FilePath.isEmpty(personHyperTab.getCurPicture()) == false)
       rbCurrent.setSelected(true);
@@ -524,7 +543,7 @@ public class PictureDlgCtrlr extends HyperDlg
           return;
       }
     }
-    else if (rbFile.isSelected() || rbWeb.isSelected())
+    else if (rbFile.isSelected() || rbWeb.isSelected() || rbClipboard.isSelected())
     {
       boolean sameFile;
 
@@ -537,7 +556,8 @@ public class PictureDlgCtrlr extends HyperDlg
       }
       else
       {
-        if (tfWeb.getText().isEmpty()) return;
+        if (rbWeb.isSelected() && tfWeb.getText().isEmpty()) return;
+        if (rbClipboard.isSelected() && (clipboardImageBuffer == null)) return;
         sameFile = false;
       }
 
@@ -578,6 +598,52 @@ public class PictureDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void rbClipboardSelected()
+  {
+    removeCrop();
+
+    clipboardImageBuffer = MediaUtil.convertClipboardImageTo24BitBuffer();
+
+    if (clipboardImageBuffer == null)
+    {
+      ivPicture.setImage(null);
+      picture = null;
+      return;
+    }
+
+    picture = new WritableImage(clipboardImageBuffer.getWidth(), clipboardImageBuffer.getHeight());
+    SwingFXUtils.toFXImage(clipboardImageBuffer, (WritableImage) picture);
+
+    ivPicture.setImage(picture);
+
+    updateExtentionBasedOnClipboardSelection();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateExtentionBasedOnClipboardSelection()
+  {
+    if (rbClipboard.isSelected() == false) return;
+
+    FilePath fileName = new FilePath(tfName.getText());
+
+    if (FilePath.isEmpty(fileName)) return;
+
+    String oldExt = fileName.getExtensionOnly(),
+           newExt = btnJpg.getToggleGroup().getSelectedToggle() == btnJpg ? "jpg" : "png";
+
+    if (Objects.equals(oldExt, newExt)) return;
+
+    tfName.setText(oldExt.isEmpty() ?
+      (fileName.toString() + FilenameUtils.EXTENSION_SEPARATOR + newExt)
+    :
+      (StringUtils.removeEnd(fileName.toString(), oldExt) + newExt));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void rbWebSelected()
   {
     String url = tfWeb.getText();
@@ -595,9 +661,9 @@ public class PictureDlgCtrlr extends HyperDlg
       return;
     }
 
-    if (bufferOutOfDate == false)
+    if (webBufferOutOfDate == false)
     {
-      refreshFromBuffer();
+      refreshFromWebBuffer();
       return;
     }
 
@@ -610,9 +676,9 @@ public class PictureDlgCtrlr extends HyperDlg
 
     FileDownloadUtility.downloadToBuffer(url, fileName, true, httpClient, buffer ->
     {
-      imageBuffer = buffer;
-      bufferFileName = fileName.toString();
-      refreshFromBuffer();
+      webImageBuffer = buffer;
+      webBufferFileName = fileName.toString();
+      refreshFromWebBuffer();
 
       progressBar.setVisible(false);
       btnStop.setVisible(false);
@@ -649,13 +715,13 @@ public class PictureDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void refreshFromBuffer()
+  private void refreshFromWebBuffer()
   {
     try
     {
-      FilePath tempFile = new FilePath(java.io.File.createTempFile("temp", bufferFileName));
+      FilePath tempFile = new FilePath(java.io.File.createTempFile("temp", webBufferFileName));
       tempFile.deleteOnExit();
-      imageBuffer.saveToFile(tempFile);
+      webImageBuffer.saveToFile(tempFile);
       picture = new Image(tempFile.toURI().toString());
       tempFile.delete(true);
 
@@ -664,8 +730,8 @@ public class PictureDlgCtrlr extends HyperDlg
 
       ivPicture.setImage(picture);
 
-      tfName.setText(bufferFileName);
-      bufferOutOfDate = false;
+      tfName.setText(webBufferFileName);
+      webBufferOutOfDate = false;
     }
     catch (Exception e)
     {
@@ -846,10 +912,18 @@ public class PictureDlgCtrlr extends HyperDlg
     FilePath newFileSrc = null,
              newFileDest = getDestFilePath(tfName.getText());
 
-    if (rbWeb.isSelected())
+    if (rbWeb.isSelected() || rbClipboard.isSelected())
     {
-      if (tfWeb.getText().isBlank())
-        return falseWithErrorPopup("Please enter a web address.", tfWeb);
+      if (rbWeb.isSelected())
+      {
+        if (tfWeb.getText().isBlank())
+          return falseWithErrorPopup("Please enter a web address.", tfWeb);
+      }
+      else
+      {
+        if (clipboardImageBuffer == null)
+          return falseWithWarningPopup("An image has not been loaded from the clipboard. Try clicking Refresh button.", rbClipboard);
+      }
 
       set = HyperPath.getHyperPathSetForFilePath(newFileDest);
 
@@ -903,8 +977,8 @@ public class PictureDlgCtrlr extends HyperDlg
     {
       try
       {
-        if (bufferOutOfDate == false)
-          imageBuffer.saveToFile(newFileDest);
+        if (webBufferOutOfDate == false)
+          webImageBuffer.saveToFile(newFileDest);
         else
         {
           progressBar.setVisible(true);
@@ -924,6 +998,19 @@ public class PictureDlgCtrlr extends HyperDlg
 
           return false;
         }
+      }
+      catch (IOException e)
+      {
+        return falseWithErrorPopup("An error occurred while saving the file: " + getThrowableMessage(e));
+      }
+    }
+    else if (rbClipboard.isSelected())
+    {
+      String format = btnJpg.getToggleGroup().getSelectedToggle() == btnJpg ? "jpg" : "png";
+
+      try (FileOutputStream fos = new FileOutputStream(newFileDest.toFile()))
+      {
+        ImageIO.write(clipboardImageBuffer, format, fos);
       }
       catch (IOException e)
       {

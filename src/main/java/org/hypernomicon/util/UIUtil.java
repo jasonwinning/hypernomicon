@@ -883,4 +883,16 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static void forceToggleSelection(ToggleGroup tg)
+  {
+    tg.selectedToggleProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (newValue == null)
+        oldValue.setSelected(true);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

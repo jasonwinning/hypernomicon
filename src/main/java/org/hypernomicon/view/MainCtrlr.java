@@ -464,11 +464,7 @@ public final class MainCtrlr
         app.prefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
     });
 
-    btnPointerLaunch.getToggleGroup().selectedToggleProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null)
-        oldValue.setSelected(true);
-    });
+    forceToggleSelection(btnPointerLaunch.getToggleGroup());
 
     setToolTip(btnPointerLaunch , "On right/secondary click on link to work record, launch work file");
     setToolTip(btnPointerPreview, "On right/secondary click on link to work record, show in preview window");

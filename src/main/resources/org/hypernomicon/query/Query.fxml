@@ -32,9 +32,9 @@
          <TableColumn maxWidth="36.0" minWidth="36.0" prefWidth="36.0" resizable="false" sortable="false" />
          <TableColumn prefWidth="96.0" text="Query Type" />
          <TableColumn prefWidth="212.0" text="Query" />
-         <TableColumn prefWidth="220.0" text="Operand 1" />
-         <TableColumn prefWidth="225.0" text="Operand 2" />
-         <TableColumn prefWidth="209.0" text="Operand 3" />
+         <TableColumn prefWidth="220.0" text="Parameter 1" />
+         <TableColumn prefWidth="225.0" text="Parameter 2" />
+         <TableColumn prefWidth="209.0" text="Parameter 3" />
        </columns>
      </TableView>
       <AnchorPane maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0" style="-fx-background-color: -fx-background;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">

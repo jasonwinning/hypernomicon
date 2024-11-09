@@ -174,11 +174,7 @@ public class PreviewWindow extends HyperDlg
     addWrapper(pvsOther     , apOther  , tabOther  , btnOther  );
     addWrapper(pvsTreeTab   , apTree   , tabTree   , btnTree   );
 
-    btnPerson.getToggleGroup().selectedToggleProperty().addListener((ob, oldVal, newVal) ->
-    {
-      if (newVal == null)
-        oldVal.setSelected(true);
-    });
+    forceToggleSelection(btnPerson.getToggleGroup());
 
     tabToWrapper.values().forEach(PreviewWrapper::clearPreview);
 

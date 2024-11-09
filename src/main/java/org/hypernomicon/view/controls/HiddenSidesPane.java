@@ -19,6 +19,8 @@ package org.hypernomicon.view.controls;
 
 import javafx.geometry.Side;
 
+//---------------------------------------------------------------------------
+
 /**
  * Custom version of the ControlsFX HiddenSidesPane class that exposes
  * the hide and show methods
@@ -28,8 +30,16 @@ import javafx.geometry.Side;
  */
 public class HiddenSidesPane extends org.controlsfx.control.HiddenSidesPane
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public HiddenSidesPane()                         { setSkin(new HiddenSidesPaneSkin(this)); }
 
   @Override public void hide()                     { ((HiddenSidesPaneSkin) getSkin()).hide(); }
   public void show(Side side, boolean noInterrupt) { ((HiddenSidesPaneSkin) getSkin()).show(side, noInterrupt); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

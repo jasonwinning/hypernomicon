@@ -20,6 +20,7 @@ package org.hypernomicon.view.populators;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -49,15 +50,15 @@ public class CustomPopulator extends RecordPopulator
     super(null, DisplayKind.cbText);
 
     this.recordType = RecordType.hdtNone;
-    this.handler = handler;
-    this.cellValueType = cellValueType;
+    this.handler = Objects.requireNonNull(handler, "handler cannot be null");
+    this.cellValueType = Objects.requireNonNull(cellValueType, "cellValueType cannot be null");
   }
 
   public CustomPopulator(RecordType recordType, RecordPopulateHandler handler)
   {
     super(null, DisplayKind.cbText);
 
-    this.recordType = recordType;
+    this.recordType = Objects.requireNonNull(recordType, "recordType cannot be null");
     this.handler = (row, force) -> handler.handle(row, force).map(this::generateCell);
     this.cellValueType = cvtRecord;
   }
