@@ -128,8 +128,8 @@ public class PictureDlgCtrlr extends HyperDlg
     rbWeb      .selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbWebSelected      (); });
     rbClipboard.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) rbClipboardSelected(); });
 
-    btnJpg.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) updateExtentionBasedOnClipboardSelection(); });
-    btnPng.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) updateExtentionBasedOnClipboardSelection(); });
+    btnJpg.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) updateExtensionBasedOnClipboardSelection(); });
+    btnPng.selectedProperty().addListener((ob, ov, nv) -> { if (Boolean.TRUE.equals(nv)) updateExtensionBasedOnClipboardSelection(); });
 
     tfWeb.setTextFormatter(new TextFormatter<>(change ->
     {
@@ -616,13 +616,13 @@ public class PictureDlgCtrlr extends HyperDlg
 
     ivPicture.setImage(picture);
 
-    updateExtentionBasedOnClipboardSelection();
+    updateExtensionBasedOnClipboardSelection();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateExtentionBasedOnClipboardSelection()
+  private void updateExtensionBasedOnClipboardSelection()
   {
     if (rbClipboard.isSelected() == false) return;
 

@@ -19,14 +19,16 @@ package org.hypernomicon.query.ui;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.AbstractRow;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 //---------------------------------------------------------------------------
 
-public final class ResultRow extends AbstractRow<HDT_Record, ResultRow>
+public final class ResultRow extends AbstractRow<HDT_Record, ResultRow> implements HyperTableCell
 {
 
 //---------------------------------------------------------------------------
@@ -50,6 +52,16 @@ public final class ResultRow extends AbstractRow<HDT_Record, ResultRow>
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) record; }
+
+  @Override public int compareTo(HyperTableCell otherCell) { return HyperTableCell.compareCells(this, otherCell, smStandard); }
+  @Override public int getID()                             { return getRecordID(); }
+  @Override public String getText()                        { return getCBText(); }
+  @Override public String getImgRelPath()                  { return null; }
+  @Override public HyperTableCell getCopyWithID(int newID) { throw new UnsupportedOperationException("copy"); }
+  @Override public boolean getSortToBottom()               { return false; }
+
+  @Override public ResultRow clone()
+  { try { return (ResultRow) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -539,11 +539,15 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       alreadySettingSelection = true;
 
-      tvResults.getSelectionModel().clearSelection();
-      tvResults.getSelectionModel().select(newValue);
-      HyperTable.scrollToSelection(tvResults, false);
+      Platform.runLater(() ->
+      {
+        tvResults.getSelectionModel().clearSelection();
+        tvResults.getSelectionModel().select(newValue);
 
-      alreadySettingSelection = false;
+        HyperTable.scrollToSelection(tvResults, false);
+
+        alreadySettingSelection = false;
+      });
     };
 
     cb.getSelectionModel().selectedItemProperty().addListener(cbListenerToRemove);

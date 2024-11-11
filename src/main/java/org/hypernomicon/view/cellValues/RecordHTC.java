@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.cellValues;
 
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -27,16 +26,11 @@ import org.hypernomicon.util.MediaUtil;
 
 //---------------------------------------------------------------------------
 
-public class RecordHTC extends HyperTableCell
+public class RecordHTC extends AbstractHTC
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
-  public static final HyperTableCell trueCell  = new RecordHTC(TRUE_ID , "True" , hdtNone),
-                                     falseCell = new RecordHTC(FALSE_ID, "False", hdtNone),
-                                     unsetCell = new RecordHTC(UNSET_ID, "Unset", hdtNone),
-                                     blankCell = new RecordHTC("", hdtNone);
 
   private int id;
   private String imgRelPath;  // should only ever be accessed by getImgRelPath
@@ -52,13 +46,10 @@ public class RecordHTC extends HyperTableCell
 
 //---------------------------------------------------------------------------
 
-  public RecordHTC(                   String text, RecordType recordType)    { this(-1            , text, recordType); }
   public RecordHTC(int id           , String text, RecordType recordType)    { this(id            , text, recordType, false); }
   public RecordHTC(HDT_Record record, String text                       )    { this(record.getID(), text, record.getType()); }
 
-  public RecordHTC(String text, RecordType recordType, boolean sortToBottom) { this(-1, text, recordType, sortToBottom); }
-
-  private RecordHTC(int id, String text, RecordType recordType, boolean sortToBottom)
+  protected RecordHTC(int id, String text, RecordType recordType, boolean sortToBottom)
   {
     super(sortToBottom);
 
@@ -70,52 +61,12 @@ public class RecordHTC extends HyperTableCell
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int hashCode()
-  {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + id;
-    result = prime * result + (text == null ? 0 : text.hashCode());
-    result = prime * result + (recordType == null ? 0 : recordType.hashCode());
-    return result;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean equals(Object obj)
-  {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-
-    RecordHTC other = (RecordHTC) obj;
-
-    if (getCellType(this) != getCellType(other))
-    {
-      if ((getCellType(this) == hdtAuxiliary) || (getCellType(other) == hdtAuxiliary))
-        return false;
-
-      if ((id < 0) && (other.getID() < 0))
-        return safeStr(text).isEmpty() && safeStr(other.getText()).isEmpty();
-
-      return false;
-    }
-
-    if (((id >= 0) || (other.id >= 0)) && (id != other.getID())) return false;
-
-    return safeStr(text).equals(safeStr(other.getText()));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public String getImgRelPath()
   {
     if (imgRelPath != null)
       return imgRelPath;
 
-    return imgRelPath = safeStr(nullSwitch(getRecord(this), imgRelPathByType(recordType), MediaUtil::imgRelPath));
+    return imgRelPath = safeStr(nullSwitch(getRecord(), imgRelPathByType(recordType), MediaUtil::imgRelPath));
   }
 
 //---------------------------------------------------------------------------

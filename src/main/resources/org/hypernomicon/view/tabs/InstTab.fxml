@@ -29,7 +29,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstTabCtrlr">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstTabCtrlr">
   <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
@@ -67,8 +67,8 @@
         </rowConstraints>
         <AnchorPane prefHeight="200.0" prefWidth="200.0">
           <Label text="Country:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-          <ComboBox fx:id="cbCountry" layoutX="92.0" prefHeight="25.0" prefWidth="205.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
           <Button fx:id="btnNewCountry" layoutX="36.0" layoutY="2.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="New" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="3.0" />
+          <ComboBox fx:id="cbCountry" layoutX="92.0" prefHeight="25.0" prefWidth="205.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
         </AnchorPane>
         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
           <Label text="State/Region:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />

@@ -165,10 +165,10 @@ public class HyperTableColumn
       HyperTableCell cell1 = (HyperTableCell) obj1,
                      cell2 = (HyperTableCell) obj2;
 
-      if (cell1.sortToBottom)
+      if (cell1.getSortToBottom())
         return tc.getSortType() == SortType.ASCENDING ? 1 : -1;
 
-      if (cell2.sortToBottom)
+      if (cell2.getSortToBottom())
         return tc.getSortType() == SortType.ASCENDING ? -1 : 1;
 
       if (table.getCanAddRows())

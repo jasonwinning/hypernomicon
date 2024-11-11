@@ -17,6 +17,7 @@
 
 package org.hypernomicon.bib.zotero;
 
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 

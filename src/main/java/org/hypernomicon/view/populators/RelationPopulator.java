@@ -29,15 +29,30 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
+//---------------------------------------------------------------------------
 
 public class RelationPopulator extends Populator
 {
-  private final RecordType objType;
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static final class RelationCell extends GenericNonRecordHTC
+  {
+    private RelationCell(RelationType relType, RecordType objType)
+    {
+      super(relType.getCode(), relType.getTitle(), objType);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
+  private final RecordType objType;
+
 //---------------------------------------------------------------------------
 
   public RelationPopulator(RecordType objType)                 { this.objType = objType; }
@@ -57,7 +72,7 @@ public class RelationPopulator extends Populator
 
     relTypes.forEach(relType ->
     {
-      HyperTableCell cell = new RecordHTC(relType.getCode(), relType.getTitle(), objType);
+      HyperTableCell cell = new RelationCell(relType, objType);
       addToSortedList(cells, cell, Comparator.comparing(HyperTableCell::getCellText));
     });
 

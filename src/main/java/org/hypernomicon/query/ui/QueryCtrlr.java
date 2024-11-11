@@ -65,8 +65,8 @@ import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.ui.ColumnGroup.*;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator;
@@ -317,7 +317,7 @@ public final class QueryCtrlr
         }
         else
         {
-          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 2, cellVal, RecordHTC.blankCell))
+          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 2, cellVal, GenericNonRecordHTC.blankCell))
             htFields.edit(row, OPERAND_2_COL_NDX);
         }
       }
@@ -390,7 +390,7 @@ public final class QueryCtrlr
     if (includeReport == false) queryTypes.remove(qtReport);
 
     return Populator.create(cvtQueryType, queryTypes.stream()
-      .map(queryType -> new RecordHTC(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
+      .map(queryType -> new GenericNonRecordHTC(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
       .toList());
   }
 
@@ -582,7 +582,7 @@ public final class QueryCtrlr
         QueryRow queryRow = new QueryRow();
 
         for (int colNdx = QUERY_TYPE_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
-          queryRow.cells[colNdx - QUERY_TYPE_COL_NDX] = (RecordHTC) row.getCell(colNdx).clone();
+          queryRow.cells[colNdx - QUERY_TYPE_COL_NDX] = HyperTableCell.clone(row.getCell(colNdx));
 
         fav.rows.add(queryRow);
       });
@@ -1017,7 +1017,7 @@ public final class QueryCtrlr
 
   private static boolean queryHasOperand(Query<?> query, QueryType queryType, int opNum)
   {
-    return queryHasOperand(query, queryType, opNum, RecordHTC.blankCell, RecordHTC.blankCell);
+    return queryHasOperand(query, queryType, opNum, GenericNonRecordHTC.blankCell, GenericNonRecordHTC.blankCell);
   }
 
   private static boolean queryHasOperand(Query<?> query, QueryType queryType, int opNum, HyperTableCell op1, HyperTableCell op2)

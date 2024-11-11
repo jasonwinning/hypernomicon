@@ -45,12 +45,20 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 
 import static java.lang.management.ManagementFactory.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -429,6 +437,55 @@ public final class App extends Application
       text.setFont(new Font(fontSize));
 
     displayScale = text.getLayoutBounds().getWidth() / baseDisplayScale;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String manifestValue(String key)
+  {
+    URL jarUrl;
+
+    try
+    {
+      jarUrl = nullSwitch(nullSwitch(App.class.getProtectionDomain(), null, ProtectionDomain::getCodeSource), null, CodeSource::getLocation);
+
+      if (jarUrl != null)
+      {
+        try (InputStream jarStream = jarUrl.openStream())
+        {
+          if (jarStream != null) try (JarInputStream jis = new JarInputStream(jarStream))
+          {
+            Manifest manifest = jis.getManifest();
+
+            return manifest == null ? "" : nullSwitch(manifest.getMainAttributes(), "", attributes -> safeStr(attributes.getValue(key)));
+          }
+        }
+      }
+    }
+    catch (SecurityException | IOException e)
+    {
+      noOp();
+    }
+
+    // Security exception likely happened so try less reliable method
+
+    jarUrl = App.class.getResource(BLANK_DB_RESOURCE_NAME);  // Get the URL for a resource that will only exist in the Hypernomicon jar file.
+                                                             // Most jar files will have META-INF/MANIFEST.MF so we are likely to get the
+    if (jarUrl != null) try                                  // wrong URL if we search for that resource name (even though it is the one we
+    {                                                        // really want, from the Hypernomicon jar file).
+      URLConnection conn = jarUrl.openConnection();
+
+      if (conn instanceof JarURLConnection jarURLConnection)
+      {
+        Manifest manifest = jarURLConnection.getManifest();
+
+        return manifest == null ? "" : nullSwitch(manifest.getMainAttributes(), "", attributes -> safeStr(attributes.getValue(key)));
+      }
+    }
+    catch (IOException e) { noOp(); }
+
+    return "";
   }
 
 //---------------------------------------------------------------------------

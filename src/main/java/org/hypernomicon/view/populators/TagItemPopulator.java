@@ -29,12 +29,28 @@ import java.util.Set;
 
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
+//---------------------------------------------------------------------------
 
 public class TagItemPopulator extends Populator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static final class TagItemCell extends GenericNonRecordHTC
+  {
+    private TagItemCell(Tag tag, RecordType recordType)
+    {
+      super(tag.num, tag.header, recordType);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
   private final Set<Tag> tags;
   private final RecordType recordType;
   private final List<HyperTableCell> choices;
@@ -68,7 +84,7 @@ public class TagItemPopulator extends Populator
 
     tags.forEach(tag ->
     {
-      HyperTableCell cell = new RecordHTC(tag.num, tag.header, recordType);
+      HyperTableCell cell = new TagItemCell(tag, recordType);
       addToSortedList(choices, cell, Comparator.comparing(HyperTableCell::getCellText));
     });
 

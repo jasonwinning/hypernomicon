@@ -17,161 +17,99 @@
 
 package org.hypernomicon.view.cellValues;
 
-import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.cellValues.RecordHTC.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.query.ui.ResultRow;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 
 //---------------------------------------------------------------------------
 
-public abstract class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
+public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int TRUE_ID  = 1,
-                          FALSE_ID = 2,
-                          UNSET_ID = 3;
+  int TRUE_ID  = 1,
+      FALSE_ID = 2,
+      UNSET_ID = 3;
 
-  public final boolean sortToBottom;
-
-  public static HyperTableCell fromBoolean(boolean boolVal) { return boolVal ? trueCell : falseCell; }
-  public static int getCellID(HyperTableCell cell)          { return cell == null ? -1 : cell.getID(); }
-  public static String getCellText(HyperTableCell cell)     { return cell == null ? "" : safeStr(cell.getText()); }
-  public static RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.getRecordType() == null) ? hdtNone : cell.getRecordType(); }
-  public static boolean isEmpty(HyperTableCell cell)        { return (cell == null) || blankCell.equals(cell); }
+  static int getCellID(HyperTableCell cell)          { return cell == null ? -1 : cell.getID(); }
+  static String getCellText(HyperTableCell cell)     { return cell == null ? "" : safeStr(cell.getText()); }
+  static RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.getRecordType() == null) ? hdtNone : cell.getRecordType(); }
 
 //---------------------------------------------------------------------------
 
-  HyperTableCell(boolean sortToBottom)
+  int getID();
+  String getText();
+  RecordType getRecordType();
+  String getImgRelPath();
+  HyperTableCell getCopyWithID(int newID);
+  boolean getSortToBottom();
+  <HDT_T extends HDT_Record> HDT_T getRecord();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static HyperTableCell clone(HyperTableCell cell)
   {
-    this.sortToBottom = sortToBottom;
-  }
+    if (cell instanceof AbstractHTC abstractHTC)
+      return abstractHTC.clone();
 
-//---------------------------------------------------------------------------
+    if (cell instanceof ResultRow resultRow)
+      return resultRow.clone();
 
-  public abstract int getID();
-  public abstract String getText();
-  public abstract RecordType getRecordType();
-  public abstract String getImgRelPath();
-  public abstract HyperTableCell getCopyWithID(int newID);
-
-  public <HDT_T extends HDT_Record> HDT_T getRecord() { return getRecord(this); }
-
-  @Override public HyperTableCell clone()
-  { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  public static <HDT_T extends HDT_Record> HDT_T getRecord(HyperTableCell cell)
-  {
-    int id = getCellID(cell);
-    if (id < 1) return null;
-
-    RecordType type = getCellType(cell);
-    return type == hdtNone ? null : (HDT_T)db.records(type).getByID(id);
+    throw new AssertionError();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static int compareCells(HyperTableCell cell1, HyperTableCell cell2, CellSortMethod sortMethod)
+  static <HDT_T extends HDT_Record> HDT_T getRecord(HyperTableCell cell) { return cell == null ? null : cell.getRecord(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static int compareCells(HyperTableCell cell1, HyperTableCell cell2, CellSortMethod sortMethod)
   {
     if ((cell1 == null) && (cell2 == null)) return 0;
     if (cell1 == null) return -1;
-    if (cell2 == null) return 1;
+    if (cell2 == null) return  1;
 
-    if (cell1.sortToBottom)
-      return 1;
+    if (cell1.getSortToBottom()) return  1;
+    if (cell2.getSortToBottom()) return -1;
 
-    if (cell2.sortToBottom)
-      return -1;
+    if (anyIsInstanceOf(BibDateHTC  .class, cell1, cell2)) return BibDateHTC  .compareCells(cell1, cell2);
+    if (anyIsInstanceOf(PageRangeHTC.class, cell1, cell2)) return PageRangeHTC.compareCells(cell1, cell2);
 
-    if ((cell1 instanceof BibDateHTC) || (cell2 instanceof BibDateHTC))
-    {
-      return cell1 instanceof BibDateHTC bibDateHTC1 ?
-        (cell2 instanceof BibDateHTC bibDateHTC2 ?
-           bibDateHTC1.bibDate.compareTo(bibDateHTC2.bibDate)
-         : 1)
-      : -1;
-    }
-
-    if ((cell1 instanceof PageRangeHTC) || (cell2 instanceof PageRangeHTC))
-    {
-      return cell1 instanceof PageRangeHTC pageRangeHTC1 ?
-        (cell2 instanceof PageRangeHTC pageRangeHTC2 ?
-            pageRangeHTC1.pageRange.compareTo(pageRangeHTC2.pageRange)
-         : 1)
-      : -1;
-    }
-
-    if (sortMethod == smIcon)
-    {
-      int result = compareImgRelPaths(cell1.getImgRelPath(), cell2.getImgRelPath());
-
-      if (result == 0)
-      {
-        result = getCellType(cell1).compareTo(getCellType(cell2));
-
-        if (result == 0) result = cell1.getID() - cell2.getID();
-      }
-
-      return result;
-    }
-
-    if (sortMethod == smNumeric)
-    {
-      MutableInt result = new MutableInt();
-
-      if (compareNumberStrings(cell1.getText(), cell2.getText(), result))
-        return result.getValue();
-
+    if (allAreInstancesOf(GenericNonRecordHTC.class, cell1, cell2))
       sortMethod = smTextSimple;
-    }
 
-    if (sortMethod == smTextSimple)
-    {
-      int result = cell1.getText().compareToIgnoreCase(cell2.getText());
-      if (result == 0) result = cell1.getID() - cell2.getID();
-      return result;
-    }
+    if (sortMethod == smIcon      ) return compareIconCells      (cell1, cell2);
+    if (sortMethod == smNumeric   ) return compareNumericCells   (cell1, cell2);
+    if (sortMethod == smTextSimple) return compareSimpleTextCells(cell1, cell2);
 
     if (sortMethod == smWork)
     {
       HDT_Work work1 = cell1.getRecord(), work2 = cell2.getRecord();
 
-      if ((work1 == null) && (work2 != null))
-        return -1;
-
-      if ((work2 == null) && (work1 != null))
-        return 1;
-
-      if (work1 != null)
-        return work1.compareTo(work2);
+      if ((work1 != null) || (work2 != null))
+        return nullFriendlyNaturalCompare(work1, work2, true);
     }
 
-    String key1 = "", key2 = "";
-
-    if ((cell1.getID() > 0) && (cell1.getRecordType() != null) && (cell1.getRecordType() != hdtNone))
-      key1 = db.records(cell1.getRecordType()).getByID(cell1.getID()).getSortKey();
+    String key1 = nullSwitch(cell1.getRecord(), "", HDT_Record::getSortKey),
+           key2 = nullSwitch(cell2.getRecord(), "", HDT_Record::getSortKey);
 
     if (key1.isEmpty()) key1 = makeSortKeyByType(cell1.getText(), getCellType(cell1));
-
-    if ((cell2.getID() > 0) && (cell2.getRecordType() != null) && (cell2.getRecordType() != hdtNone))
-      key2 = db.records(cell2.getRecordType()).getByID(cell2.getID()).getSortKey();
-
     if (key2.isEmpty()) key2 = makeSortKeyByType(cell2.getText(), getCellType(cell2));
 
     return key1.compareTo(key2);
@@ -180,15 +118,38 @@ public abstract class HyperTableCell implements Comparable<HyperTableCell>, Clon
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int compareTo(HyperTableCell otherCell)
+  private static int compareNumericCells(HyperTableCell cell1, HyperTableCell cell2)
   {
-    if (sortToBottom)
-      return Integer.MAX_VALUE;
+    MutableInt result = new MutableInt();
 
-    if (otherCell.sortToBottom)
-      return Integer.MIN_VALUE + 1;
+    return compareNumberStrings(cell1.getText(), cell2.getText(), result) ?
+      result.getValue()
+    :
+      compareSimpleTextCells(cell1, cell2);
+  }
 
-    return compareCells(this, otherCell, smStandard);
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static int compareSimpleTextCells(HyperTableCell cell1, HyperTableCell cell2)
+  {
+    int result = cell1.getText().compareToIgnoreCase(cell2.getText());
+
+    return result != 0 ? result : (cell1.getID() - cell2.getID());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static int compareIconCells(HyperTableCell cell1, HyperTableCell cell2)
+  {
+    int result = compareImgRelPaths(cell1.getImgRelPath(), cell2.getImgRelPath());
+
+    if (result != 0) return result;
+
+    result = getCellType(cell1).compareTo(getCellType(cell2));
+
+    return result != 0 ? result : (cell1.getID() - cell2.getID());
   }
 
 //---------------------------------------------------------------------------

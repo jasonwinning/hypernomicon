@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.view.cellValues.BibEntryHTC;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class BibEntryPopulator extends Populator
@@ -58,10 +58,10 @@ public class BibEntryPopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     List<HyperTableCell> choices = handler.handle(row, force).stream()
-      .map(bibEntry -> new RecordHTC(bibEntry.numericID(), bibEntry.getCBText(), hdtNone))
+      .map(bibEntry -> new BibEntryHTC(bibEntry))
       .collect(Collectors.toCollection(ArrayList::new));
 
-    choices.add(RecordHTC.blankCell);
+    choices.add(GenericNonRecordHTC.blankCell);
     return choices;
   }
 

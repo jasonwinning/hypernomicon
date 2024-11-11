@@ -18,8 +18,8 @@
 package org.hypernomicon.dialogs;
 
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -42,7 +42,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
 
   public ValueSelectDlgCtrlr(List<HyperTableCell> list)
   {
-    super("ValueSelectDlg", "Choose a Value", true);
+    super("ValueSelectDlg", getTitle(list), true);
 
     if (collEmpty(list)) return;
 
@@ -53,7 +53,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
     StringConverter<HyperTableCell> strConv = new StringConverter<>()
     {
       @Override public String toString(HyperTableCell cell)     { return HyperTableCell.getCellText(cell); }
-      @Override public HyperTableCell fromString(String string) { return new RecordHTC(string, objType); }
+      @Override public HyperTableCell fromString(String string) { return new GenericNonRecordHTC(string, objType); }
     };
 
     listView.setCellFactory(TextFieldListCell.forListView(strConv));
@@ -63,6 +63,17 @@ public class ValueSelectDlgCtrlr extends HyperDlg
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
         btnOkClick();
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String getTitle(List<HyperTableCell> list)
+  {
+    return (collEmpty(list) == false) && (HyperTableCell.getRecord(list.get(0)) != null) ?
+      "Choose a Record"
+    :
+      "Choose a Value";
   }
 
 //---------------------------------------------------------------------------

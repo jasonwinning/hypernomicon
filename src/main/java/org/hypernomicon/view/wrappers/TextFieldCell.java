@@ -155,7 +155,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
       if (event.getCode() == KeyCode.ESCAPE)
       {
         HyperTableCell item = getItem();
-        textField.setText(HyperTableCell.getCellText(item));
+        textField.setText(getCellText(item));
         commitEdit(item);
         event.consume();
       }
@@ -174,9 +174,8 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
   {
     if (getGraphic() != textField) return;
 
-    HyperTableCell oldCell = getItem(), newCell;
-
-    newCell = switch (cellValueType)
+    HyperTableCell oldCell = getItem(),
+                   newCell = switch (cellValueType)
     {
       case cvtPageRange -> new PageRangeHTC(getRecord(oldCell), textField.getText()                      );
       default           -> new RecordHTC   (getCellID(oldCell), textField.getText(), getCellType(oldCell));

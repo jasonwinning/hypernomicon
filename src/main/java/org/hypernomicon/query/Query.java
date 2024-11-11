@@ -31,8 +31,8 @@ import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.FilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.ui.QueryCtrlr;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -176,12 +176,12 @@ public abstract class Query<HDT_T extends HDT_Record>
   {
     return Populator.create(cvtOperand,
 
-      new RecordHTC(EQUAL_TO_OPERAND_ID        , excludeRecordOps ? "Is exactly" : "Is or includes record", hdtNone),
-      new RecordHTC(NOT_EQUAL_TO_OPERAND_ID    , excludeRecordOps ? "Is not"     : "Excludes record"      , hdtNone),
-      new RecordHTC(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
-      new RecordHTC(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
-      new RecordHTC(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
-      new RecordHTC(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone));
+      new GenericNonRecordHTC(EQUAL_TO_OPERAND_ID        , excludeRecordOps ? "Is exactly" : "Is or includes record", hdtNone),
+      new GenericNonRecordHTC(NOT_EQUAL_TO_OPERAND_ID    , excludeRecordOps ? "Is not"     : "Excludes record"      , hdtNone),
+      new GenericNonRecordHTC(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
+      new GenericNonRecordHTC(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
+      new GenericNonRecordHTC(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
+      new GenericNonRecordHTC(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone));
   }
 
 //---------------------------------------------------------------------------

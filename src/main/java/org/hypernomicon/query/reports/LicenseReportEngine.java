@@ -18,6 +18,7 @@
 package org.hypernomicon.query.reports;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -26,7 +27,7 @@ import java.util.List;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -57,8 +58,8 @@ public class LicenseReportEngine extends ReportEngine
   @Override public List<HyperTableRow> getRows()
   {
     List<HyperTableRow> rows = Lists.newArrayList(
-      new HyperTableRow(FXCollections.observableArrayList(new RecordHTC("LICENSE.html", hdtNone)), ht),
-      new HyperTableRow(FXCollections.observableArrayList(new RecordHTC("NOTICE.html" , hdtNone)), ht));
+      new HyperTableRow(FXCollections.observableArrayList(new GenericNonRecordHTC("LICENSE.html", hdtNone)), ht),
+      new HyperTableRow(FXCollections.observableArrayList(new GenericNonRecordHTC("NOTICE.html" , hdtNone)), ht));
 
     synchronized (LicenseReportEngine.class)
     {

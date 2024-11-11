@@ -24,6 +24,7 @@ import javafx.scene.control.TableCell;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 
 class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
@@ -46,7 +47,7 @@ class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
       HyperTableRow row = getTableRow().getItem();
       if (row == null) return;
 
-      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), fromBoolean(Boolean.TRUE.equals(newValue)));
+      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), GenericNonRecordHTC.fromBoolean(Boolean.TRUE.equals(newValue)));
     });
   }
 
@@ -67,9 +68,9 @@ class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
     setAlignment(Pos.CENTER);
     chk.setSelected(getCellID(val) == TRUE_ID);
 
-    chk.setDisable(HyperTableCell.isEmpty(nullSwitch(getTableRow(), null, tableRow ->
-                                          nullSwitch(tableRow.getItem(), null, row ->
-                                          row.getCell(table.getMainColNdx())))));
+    chk.setDisable(GenericNonRecordHTC.isEmpty(nullSwitch(getTableRow(), null, tableRow ->
+                                               nullSwitch(tableRow.getItem(), null, row ->
+                                               row.getCell(table.getMainColNdx())))));
   }
 
 //---------------------------------------------------------------------------

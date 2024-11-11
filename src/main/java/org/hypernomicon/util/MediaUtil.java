@@ -17,13 +17,16 @@
 
 package org.hypernomicon.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
@@ -349,6 +352,31 @@ public final class MediaUtil
     output.setRGB(0, 0, width, height, px, 0, width);
 
     return output;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void readResourceTextFile(String relPath, StringBuilder strBuilder, boolean keepEOLchars) throws IOException
+  {
+    assignSB(strBuilder, "");
+
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(App.class.getResourceAsStream(relPath), UTF_8)))
+    {
+      String line;
+
+      while ((line = reader.readLine()) != null)
+      {
+        if (keepEOLchars && (strBuilder.length() > 0))
+          strBuilder.append('\n');
+
+        strBuilder.append(line);
+      }
+    }
+    catch (NullPointerException e)
+    {
+      throw new IOException(e);
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -41,6 +41,7 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.view.cellValues.BibDateHTC;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -129,10 +130,10 @@ public class OmniFinder
 
     for (int ndx = 0; ndx < ROWS_TO_SHOW; ndx++)
     {
-      ObservableList<HyperTableCell> oList = FXCollections.observableArrayList(new RecordHTC("", hdtWork),
-                                                                               new RecordHTC("", hdtWork),
-                                                                               new RecordHTC("", hdtWork),
-                                                                               new RecordHTC("", hdtPerson));
+      ObservableList<HyperTableCell> oList = FXCollections.observableArrayList(new GenericNonRecordHTC("", hdtWork),
+                                                                               new GenericNonRecordHTC("", hdtWork),
+                                                                               new GenericNonRecordHTC("", hdtWork),
+                                                                               new GenericNonRecordHTC("", hdtPerson));
       cellLists.add(oList);
       rows.add(new HyperTableRow(oList, htFind));
     }
@@ -316,7 +317,7 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    // Similar to HyperCB.cbOnAction
+    // Similar to AutoCompleteCBHelper.selectedCellOrCells
 
     private boolean isMatch(HDT_Record record)
     {
@@ -378,10 +379,10 @@ public class OmniFinder
       for (HDT_Record record : buffer)
       {
         ObservableList<HyperTableCell> cells = showingMore ?
-          FXCollections.observableArrayList(new RecordHTC("", hdtWork),
-                                            new RecordHTC("", hdtWork),
-                                            new RecordHTC("", hdtWork),
-                                            new RecordHTC("", hdtPerson))
+          FXCollections.observableArrayList(new GenericNonRecordHTC("", hdtWork),
+                                            new GenericNonRecordHTC("", hdtWork),
+                                            new GenericNonRecordHTC("", hdtWork),
+                                            new GenericNonRecordHTC("", hdtPerson))
         :
           cellLists.get(rowNdx);
 
@@ -420,7 +421,7 @@ public class OmniFinder
             List<HDT_Person> authorRecords = miscFile.authorRecords();
 
             if (authorRecords.isEmpty())
-              cells.set(3, new RecordHTC("", hdtPerson));
+              cells.set(3, new GenericNonRecordHTC("", hdtPerson));
             else if (authorRecords.size() == 1)
             {
               HDT_Person author = authorRecords.get(0);
@@ -472,10 +473,10 @@ public class OmniFinder
         {
           if (rowNdx == (ROWS_TO_SHOW - 1))  // This will be the "show more" row
           {
-            cells.set(0, new RecordHTC("", hdtNone     , true));
-            cells.set(1, new RecordHTC("", hdtAuxiliary, true));
-            cells.set(2, new RecordHTC("", hdtNone     , true));
-            cells.set(3, new RecordHTC("", hdtNone     , true));
+            cells.set(0, new GenericNonRecordHTC("", hdtNone     , true));
+            cells.set(1, new GenericNonRecordHTC("", hdtAuxiliary, true));
+            cells.set(2, new GenericNonRecordHTC("", hdtNone     , true));
+            cells.set(3, new GenericNonRecordHTC("", hdtNone     , true));
           }
 
           curRows.add(rows.get(rowNdx));

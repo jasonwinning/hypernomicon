@@ -35,7 +35,7 @@ import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.SplitString;
 import org.hypernomicon.util.Util;
-import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -194,7 +194,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     hyperTable = new HyperTable(tv, 0, true, "");
 
     Populator pop = Populator.create(CellValueType.cvtFileNameComponent,
-        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new RecordHTC(type.prefValue, type.caption, hdtNone)).toList());
+        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new GenericNonRecordHTC(type.prefValue, type.caption, hdtNone)).toList());
 
     hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDown, pop, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
 
@@ -216,7 +216,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     btnRevert.setOnAction(event -> reloadFromPrefs());
 
-    hyperTable.setDefaultValue(3, new RecordHTC(" ", hdtNone)); // Default within-separator is space
+    hyperTable.setDefaultValue(3, new GenericNonRecordHTC(" ", hdtNone)); // Default within-separator is space
     hyperTable.addRemoveMenuItem(row ->
     {
       HyperTableRow lastRow = hyperTable.getRows().get(hyperTable.getRows().size() - 1);
@@ -251,14 +251,14 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     hyperTable.buildRows(WorkFileNameComponent.loadFromPrefs(), (row, component) ->
     {
-      row.setCellValue(0, new RecordHTC(component.type.prefValue, component.type.caption, hdtNone));
+      row.setCellValue(0, new GenericNonRecordHTC(component.type.prefValue, component.type.caption, hdtNone));
 
       setExclWorkTypesCellValue(component.excludedWorkTypes.stream(), row);
 
-      row.setCellValue(2, new RecordHTC(component.beforeSep, hdtNone));
-      row.setCellValue(3, new RecordHTC(component.withinSep, hdtNone));
-      row.setCellValue(4, new RecordHTC(component.afterSep , hdtNone));
-      row.setCellValue(5, new RecordHTC(component.testStr  , hdtNone));
+      row.setCellValue(2, new GenericNonRecordHTC(component.beforeSep, hdtNone));
+      row.setCellValue(3, new GenericNonRecordHTC(component.withinSep, hdtNone));
+      row.setCellValue(4, new GenericNonRecordHTC(component.afterSep , hdtNone));
+      row.setCellValue(5, new GenericNonRecordHTC(component.testStr  , hdtNone));
     });
 
     refreshExample();

@@ -75,6 +75,7 @@ import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.RecordFavorite;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.controls.WebTooltip;
@@ -747,7 +748,7 @@ public final class MainCtrlr
     mnuFindWithinName.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new RecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new GenericNonRecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
         mnuFindWithinNameClick();
     });
@@ -757,9 +758,9 @@ public final class MainCtrlr
     mnuFindWithinAnyField.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new RecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new GenericNonRecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
-        showSearch(true, fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new RecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new GenericNonRecordHTC(tfSelector.getText(), hdtNone), null, tfSelector.getText());
     });
 
 //---------------------------------------------------------------------------
@@ -1255,7 +1256,7 @@ public final class MainCtrlr
 
     lblStatus.setText("");
 
-    if (!showSearch(true, fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new RecordHTC(query, hdtNone), null, query))
+    if (!showSearch(true, fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new GenericNonRecordHTC(query, hdtNone), null, query))
     {
       discardLastQuery(backClick);
       return;
@@ -1460,6 +1461,8 @@ public final class MainCtrlr
     cbResultGoTo.setEditable(true);
 
     copyRegionLayout(cbGoTo, cbResultGoTo);
+
+    noOp(new AutoCompleteCBHelper(cbResultGoTo, true, ResultRow::new));
 
     queryHyperTab().setCB(cbResultGoTo);
 
@@ -2122,7 +2125,7 @@ public final class MainCtrlr
     lblStatus.setText("");
 
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
-                   new RecordHTC("", type), new RecordHTC(record, ""), "Mentions: " + record.listName()))
+                   new GenericNonRecordHTC("", type), new RecordHTC(record, ""), "Mentions: " + record.listName()))
     {
       List<ResultRow> resultRows = queryHyperTab().results();
 
@@ -2982,7 +2985,7 @@ public final class MainCtrlr
       return;
     }
 
-    int nextID = hcbGoTo.somethingWasTyped ? HyperTableCell.getCellID(hcbGoTo.typedMatch) : -1;
+    int nextID = HyperTableCell.getCellID(hcbGoTo.getTypedMatch());
 
     if (nextID < 1)
       nextID = hcbGoTo.selectedID();

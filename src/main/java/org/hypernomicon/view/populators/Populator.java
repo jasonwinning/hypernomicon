@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public abstract class Populator
@@ -60,7 +60,7 @@ public abstract class Populator
 
     @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
     {
-      return nullSwitch(super.getChoiceByID(row, id), RecordHTC.blankCell);
+      return nullSwitch(super.getChoiceByID(row, id), GenericNonRecordHTC.blankCell);
     }
 
   //---------------------------------------------------------------------------
@@ -106,19 +106,18 @@ public abstract class Populator
   @SuppressWarnings("unused")
   public HyperTableCell addEntry(HyperTableRow row, int id, String text) { internalErrorPopup(90129); return null; }
 
-  public HyperTableCell addEntry(HyperTableRow row, String text)         { return addEntry(row, -1, text); }
-
   @SuppressWarnings("unused")
   public CellValueType getValueType(HyperTableRow row)                   { return getValueType(); }
 
-  public final List<? extends HyperTableCell> populate(boolean force) { return populate(dummyRow, force); }
-  public final void setChanged()                                      { setChanged(dummyRow); }
-  public final RecordType getRecordType()                             { return getRecordType(dummyRow); }
-  public final HyperTableCell addEntry(int id, String text)           { return addEntry(dummyRow, id, text); }
-  public final HyperTableCell addEntry(String text)                   { return addEntry(dummyRow, text); }
-  public final HyperTableCell getChoiceByID(int id)                   { return getChoiceByID(dummyRow, id); }
+  public final List<? extends HyperTableCell> populate(boolean force)  { return populate(dummyRow, force); }
+  public final void setChanged()                                       { setChanged(dummyRow); }
+  public final RecordType getRecordType()                              { return getRecordType(dummyRow); }
+  public final HyperTableCell addEntry(int id, String text)            { return addEntry(dummyRow, id, text); }
+  public final HyperTableCell addEntry(String text)                    { return addEntry(dummyRow, text); }
+  public final HyperTableCell addEntry(HyperTableRow row, String text) { return addEntry(row, -1, text); }
+  public final HyperTableCell getChoiceByID(int id)                    { return getChoiceByID(dummyRow, id); }
 
-  protected final boolean hasChanged()                                { return hasChanged(dummyRow); }
+  protected final boolean hasChanged()                                 { return hasChanged(dummyRow); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -172,7 +171,7 @@ public abstract class Populator
 
   protected static HyperTableCell addEntryToList(List<HyperTableCell> list, HyperTableCell cell)
   {
-    if ((RecordHTC.blankCell.equals(cell) == false) && (list.size() > 0) && RecordHTC.blankCell.equals(list.get(list.size() - 1)))
+    if ((GenericNonRecordHTC.blankCell.equals(cell) == false) && (list.size() > 0) && GenericNonRecordHTC.blankCell.equals(list.get(list.size() - 1)))
       list.add(list.size() - 1, cell);
     else
       list.add(cell);

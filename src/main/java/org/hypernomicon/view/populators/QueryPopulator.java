@@ -28,8 +28,8 @@ import java.util.Map;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class QueryPopulator extends Populator
@@ -100,7 +100,7 @@ public class QueryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class QueryCell extends RecordHTC
+  public static final class QueryCell extends GenericNonRecordHTC
   {
     private final Query<?> query;
 
@@ -108,6 +108,12 @@ public class QueryPopulator extends Populator
     {
       super(query.getID(), query.getDescription(), newType);
       this.query = query;
+    }
+
+    private QueryCell(int id, String text, RecordType newType)
+    {
+      super(id, text, newType);
+      this.query = null;
     }
 
     public Query<?> getQuery() { return query; }
@@ -118,7 +124,7 @@ public class QueryPopulator extends Populator
 
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
-    HyperTableCell cell = new RecordHTC(id, text, getRecordType(row));
+    HyperTableCell cell = new QueryCell(id, text, getRecordType(row));
 
     rowToChoices.putIfAbsent(row, new ArrayList<>());
 

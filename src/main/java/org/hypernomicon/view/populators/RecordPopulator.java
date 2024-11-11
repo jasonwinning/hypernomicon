@@ -24,13 +24,16 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
 
@@ -105,7 +108,7 @@ public abstract class RecordPopulator extends Populator
       }
     }
 
-    choices.add(RecordHTC.blankCell);
+    choices.add(GenericNonRecordHTC.blankCell);
   }
 
 //---------------------------------------------------------------------------
@@ -114,7 +117,7 @@ public abstract class RecordPopulator extends Populator
   protected HyperTableCell generateCell(HDT_Record record)
   {
     return (record == null) || ((idFilter != null) && (idFilter.test(record.getID()) == false)) ?
-      RecordHTC.blankCell
+      GenericNonRecordHTC.blankCell
     :
       new RecordHTC(record, getCellText(record));
   }
@@ -131,6 +134,21 @@ public abstract class RecordPopulator extends Populator
       case custom   -> textFunction.apply(record);
       default       -> record.name();
     };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static HyperTableCell createAndAddCell(HyperTableRow row, Map<HyperTableRow, List<HyperTableCell>> rowToChoices, int id, String text, RecordType type)
+  {
+    // Create RecordHTC if there is a type and ID, or if it is a blank cell. Otherwise, create a non-record HTC.
+
+    HyperTableCell cell = ((type != hdtNone) && (id > 0)) || (safeStr(text).isBlank() && (id < 1) && (type == hdtNone)) ?
+      new RecordHTC(id, text, type)
+    :
+      new GenericNonRecordHTC(id, text, type);
+
+    return addEntryToList(rowToChoices.computeIfAbsent(row, _row -> new ArrayList<>()), cell);
   }
 
 //---------------------------------------------------------------------------

@@ -31,8 +31,8 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ public class RecordByTypePopulator extends RecordPopulator
 
     if ((recordType == hdtNone) || (db.isLoaded() == false))
     {
-      choices.add(RecordHTC.blankCell);
+      choices.add(GenericNonRecordHTC.blankCell);
       return choices;
     }
 
@@ -138,7 +138,7 @@ public class RecordByTypePopulator extends RecordPopulator
     return ((rowRecordType == hdtNone) ||
             (id < 1) ||
             ((ignoreRecordType == false) && (rowRecordType != recordType))) ?
-      RecordHTC.blankCell
+      GenericNonRecordHTC.blankCell
     :
       generateCell(db.records(rowRecordType).getByID(id));
   }
@@ -184,11 +184,7 @@ public class RecordByTypePopulator extends RecordPopulator
   {
     RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
 
-    HyperTableCell cell = new RecordHTC(id, text, type);
-
-    rowToChoices.putIfAbsent(row, new ArrayList<>());
-
-    return addEntryToList(rowToChoices.get(row), cell);
+    return createAndAddCell(row, rowToChoices, id, text, type);
   }
 
 //---------------------------------------------------------------------------

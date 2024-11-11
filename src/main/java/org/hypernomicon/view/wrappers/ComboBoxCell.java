@@ -30,7 +30,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.util.AutoCompleteCB;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
@@ -54,7 +53,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private final EventHandler<ActionEvent> onAction;
   private final HyperTable table;
   private final MutableBoolean dontCreateNewRecord;
-  private Supplier<HDT_Work> workSupplier;
+  private final Supplier<HDT_Work> workSupplier;
   private final Function<HyperTableRow, String> textHndlr;
 
 //---------------------------------------------------------------------------
@@ -98,7 +97,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     runDelayedInFXThread(6, 50, () ->
     {
       cb.requestFocus();
-      AutoCompleteCB.scrollToValue(cb);
+      AutoCompleteCBHelper.scrollToValue(cb);
 
       cb.getEditor().selectAll();
     });
@@ -115,8 +114,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     HyperTableRow row = getTableRow().getItem();
     if (row == null) return;
 
-    if (hcb.somethingWasTyped && (hcb.typedMatch != null))
-      newValue = hcb.typedMatch;
+    if (hcb.getTypedMatch() != null)
+      newValue = hcb.getTypedMatch();
 
     row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
   }

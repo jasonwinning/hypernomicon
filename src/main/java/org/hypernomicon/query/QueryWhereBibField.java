@@ -36,7 +36,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.Query.WorkQuery;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
@@ -75,7 +75,7 @@ public class QueryWhereBibField extends WorkQuery
       List<? extends HyperTableCell> cells = EnumSet.allOf(BibFieldEnum.class).stream()
 
         .filter(field -> field != bfWorkType)
-        .map(field -> new RecordHTC(field.ordinal(), field.getUserFriendlyName(), hdtWork))
+        .map(field -> new GenericNonRecordHTC(field.ordinal(), field.getUserFriendlyName(), hdtWork))
         .collect(Collectors.toCollection(ArrayList::new));
 
       // cells needed to be initialized before the next line of code, separately from it,

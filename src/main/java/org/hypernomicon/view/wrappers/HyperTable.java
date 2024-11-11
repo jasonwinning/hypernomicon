@@ -40,8 +40,8 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
@@ -581,7 +581,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     HyperTableRow row = newDataRow();
 
     for (int colNdx = 0; colNdx < cols.size(); colNdx++)
-      row.setCellValue(colNdx, new RecordHTC("", cols.get(colNdx).getCtrlType() == ctIncremental ? hdtAuxiliary : hdtNone, true));
+      row.setCellValue(colNdx, new GenericNonRecordHTC("", cols.get(colNdx).getCtrlType() == ctIncremental ? hdtAuxiliary : hdtNone, true));
 
     return row;
   }

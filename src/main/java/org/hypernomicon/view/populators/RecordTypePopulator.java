@@ -33,8 +33,8 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class RecordTypePopulator extends Populator
@@ -104,7 +104,7 @@ public class RecordTypePopulator extends Populator
 
     types.forEach(type ->
     {
-      HyperTableCell cell = new RecordHTC(getTypeName(type), type);
+      HyperTableCell cell = new GenericNonRecordHTC(getTypeName(type), type);
       addToSortedList(choices, cell, Comparator.comparing(HyperTableCell::getCellText));
     });
 

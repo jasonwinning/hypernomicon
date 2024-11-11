@@ -18,6 +18,7 @@
 package org.hypernomicon.view.cellValues;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import java.util.Objects;
 
@@ -27,7 +28,7 @@ import org.hypernomicon.util.PageRange;
 
 //---------------------------------------------------------------------------
 
-public class PageRangeHTC extends HyperTableCell
+public class PageRangeHTC extends AbstractHTC
 {
 
 //---------------------------------------------------------------------------
@@ -108,6 +109,24 @@ public class PageRangeHTC extends HyperTableCell
     if (((id >= 0) || (other.id >= 0)) && (id != other.getID())) return false;
 
     return Objects.equals(pageRange, other.pageRange);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Assumes at least one of the cells is a PageRangeHTC
+   * @param cell1 First cell to be compared
+   * @param cell2 Second cell to be compared
+   * @return Usual return value for compare function
+   */
+  public static int compareCells(HyperTableCell cell1, HyperTableCell cell2)
+  {
+    return cell1 instanceof PageRangeHTC pageRangeHTC1 ?
+      (cell2 instanceof PageRangeHTC pageRangeHTC2 ?
+          pageRangeHTC1.pageRange.compareTo(pageRangeHTC2.pageRange)
+       : 1)
+    : -1;
   }
 
 //---------------------------------------------------------------------------

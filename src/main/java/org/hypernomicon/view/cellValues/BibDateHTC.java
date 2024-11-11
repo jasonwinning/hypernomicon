@@ -22,10 +22,11 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 //---------------------------------------------------------------------------
 
-public class BibDateHTC extends HyperTableCell
+public class BibDateHTC extends AbstractHTC
 {
 
 //---------------------------------------------------------------------------
@@ -109,6 +110,24 @@ public class BibDateHTC extends HyperTableCell
       return true;
 
     return bibDate.equals(other.bibDate);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Assumes at least one of the cells is a BibDateHTC
+   * @param cell1 First cell to be compared
+   * @param cell2 Second cell to be compared
+   * @return Usual return value for compare function
+   */
+  public static int compareCells(HyperTableCell cell1, HyperTableCell cell2)
+  {
+    return cell1 instanceof BibDateHTC bibDateHTC1 ?
+      (cell2 instanceof BibDateHTC bibDateHTC2 ?
+         bibDateHTC1.bibDate.compareTo(bibDateHTC2.bibDate)
+       : 1)
+    : -1;
   }
 
 //---------------------------------------------------------------------------

@@ -107,6 +107,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.SplitPane.Divider;
@@ -740,8 +741,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       getTab().setGraphic(imgViewForRecord(curWork));
     }
 
-  // Populate authors and investigations
-  // -----------------------------------
+  // Populate authors
+  // ----------------
 
     htAuthors.buildRows(curWork.getAuthors(), (row, author) ->
     {
@@ -762,12 +763,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     });
 
   // Populate Labels
-  // ------------------
+  // ---------------
 
     htLabels.buildRows(curWork.labelStream(), (row, label) -> row.setCellValue(2, label, label.extendedText()));
 
-  // Populate works
-  // ----------------------
+  // Populate parent and child works
+  // -------------------------------
 
     hcbLargerWork.selectIDofRecord(curWork.largerWork);
 
@@ -818,8 +819,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htMiscFiles.buildRows(curWork.miscFiles, (row, miscFile) -> row.setCellValue(1, miscFile, miscFile.name()));
 
-  // Populate key mentioners
-  // -----------------------
+  // Populate displayers, key mentioners, and investigations
+  // -------------------------------------------------------
 
     populateDisplayersAndKeyMentioners(curWork, htKeyMentioners);
 
@@ -830,9 +831,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         miscFileCnt = curWork.miscFiles.size(),
         workFileCnt = curWork.workFiles.size();
 
-    setTabCaption(tabWorkFiles     , workFileCnt);
-    setTabCaption(tabSubworks      , subworkCnt);
-    setTabCaption(tabMiscFiles     , miscFileCnt);
+    setTabCaption(tabWorkFiles, workFileCnt);
+    setTabCaption(tabSubworks , subworkCnt);
+    setTabCaption(tabMiscFiles, miscFileCnt);
 
     tfSearchKey.setText(curWork.getSearchKey());
     if (tfSearchKey.getText().isEmpty())
@@ -854,14 +855,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       bibManagerDlg.workRecordToAssign.setValue(null);
 
-      if (subworkCnt > 0)
-        tabPane.getSelectionModel().select(tabSubworks);
-      else if (workFileCnt > 1)
-        tabPane.getSelectionModel().select(tabWorkFiles);
-      else if (miscFileCnt > 0)
-        tabPane.getSelectionModel().select(tabMiscFiles);
-      else if (tabPane.getSelectionModel().getSelectedItem() != tabBibDetails)
-        tabPane.getSelectionModel().select(tabWorkFiles);
+      SingleSelectionModel<Tab> tpsm = tabPane.getSelectionModel();
+
+      if      (subworkCnt  > 0)                         tpsm.select(tabSubworks );
+      else if (workFileCnt > 1)                         tpsm.select(tabWorkFiles);
+      else if (miscFileCnt > 0)                         tpsm.select(tabMiscFiles);
+      else if (tpsm.getSelectedItem() != tabBibDetails) tpsm.select(tabWorkFiles);
 
       if (FilePath.isEmpty(filePath) == false)
         if (filePath.equals(previewWindow.getFilePath(pvsWorkTab)))
@@ -982,12 +981,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     GridPane.setColumnSpan(apLowerMid, 1);
 
-    AnchorPane.setLeftAnchor(btnURL, btnURLLeftAnchor);
-    AnchorPane.setLeftAnchor(tfURL, tfURLLeftAnchor);
-    AnchorPane.setRightAnchor(tfURL, tfURLRightAnchor);
+    AnchorPane.setLeftAnchor (btnURL, btnURLLeftAnchor);
+    AnchorPane.setLeftAnchor (tfURL , tfURLLeftAnchor);
+    AnchorPane.setRightAnchor(tfURL , tfURLRightAnchor);
 
-    apLowerMid.getChildren().remove(tfURL);
-    apLowerRight.getChildren().add(tfURL);
+    apLowerMid  .getChildren().remove(tfURL);
+    apLowerRight.getChildren().add   (tfURL);
 
     inNormalMode = true;
   }
@@ -1031,7 +1030,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     setAllVisible(false, cbLargerWork, apLowerRight, btnURL);
 
     apLowerRight.getChildren().remove(tfURL);
-    apLowerMid.getChildren().add(tfURL);
+    apLowerMid  .getChildren().add   (tfURL);
 
     btnFolder.setVisible(true);
 
@@ -1853,9 +1852,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spVert, PREF_KEY_WORK_MID_VERT, 0);
-    setDividerPosition(spVert, PREF_KEY_WORK_BOTTOM_VERT, 1);
-    setDividerPosition(spHoriz1, PREF_KEY_WORK_RIGHT_HORIZ, 0);
+    setDividerPosition(spVert      , PREF_KEY_WORK_MID_VERT    , 0);
+    setDividerPosition(spVert      , PREF_KEY_WORK_BOTTOM_VERT , 1);
+    setDividerPosition(spHoriz1    , PREF_KEY_WORK_RIGHT_HORIZ , 0);
     setDividerPosition(spMentioners, PREF_KEY_WORK_BOTTOM_HORIZ, 0);
   }
 
@@ -1864,9 +1863,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spVert, PREF_KEY_WORK_MID_VERT, 0);
-    getDividerPosition(spVert, PREF_KEY_WORK_BOTTOM_VERT, 1);
-    getDividerPosition(spHoriz1, PREF_KEY_WORK_RIGHT_HORIZ, 0);
+    getDividerPosition(spVert      , PREF_KEY_WORK_MID_VERT    , 0);
+    getDividerPosition(spVert      , PREF_KEY_WORK_BOTTOM_VERT , 1);
+    getDividerPosition(spHoriz1    , PREF_KEY_WORK_RIGHT_HORIZ , 0);
     getDividerPosition(spMentioners, PREF_KEY_WORK_BOTTOM_HORIZ, 0);
   }
 

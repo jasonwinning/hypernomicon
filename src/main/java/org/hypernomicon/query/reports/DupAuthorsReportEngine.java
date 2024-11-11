@@ -36,6 +36,7 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -96,17 +97,17 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     matchMap.forEach((author, authorList) -> authorList.forEach(match ->
     {
-      ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(RecordHTC.blankCell);
+      ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(GenericNonRecordHTC.blankCell);
 
       cells.add(author.getPerson() == null ?
-        new RecordHTC(author.getNameLastFirst(false), hdtNone)
+        new GenericNonRecordHTC(author.getNameLastFirst(false), hdtNone)
       :
         new RecordHTC(author.getPerson(), author.getNameLastFirst(false)));
 
       cells.add(getWorkCell(author));
 
       cells.add(match.getPerson() == null ?
-        new RecordHTC(match.getNameLastFirst(false), hdtNone)
+        new GenericNonRecordHTC(match.getNameLastFirst(false), hdtNone)
       :
         new RecordHTC(match.getPerson(), match.getNameLastFirst(false)));
 
@@ -125,7 +126,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
   private static HyperTableCell getWorkCell(Author author)
   {
-    return nullSwitch(author.getWork(), new RecordHTC("", hdtWork), work -> new RecordHTC(work, work.getCBText()));
+    return nullSwitch(author.getWork(), new GenericNonRecordHTC("", hdtWork), work -> new RecordHTC(work, work.getCBText()));
   }
 
 //---------------------------------------------------------------------------

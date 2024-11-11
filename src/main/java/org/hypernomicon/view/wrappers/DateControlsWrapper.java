@@ -55,7 +55,7 @@ public class DateControlsWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static class DateProperty extends SimpleObjectProperty<BibliographicDate>
+  private static final class DateProperty extends SimpleObjectProperty<BibliographicDate>
   {
     private DateProperty(BibliographicDate initialValue, String name)
     {

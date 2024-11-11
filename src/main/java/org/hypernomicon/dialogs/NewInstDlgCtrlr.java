@@ -24,6 +24,7 @@ import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.model.records.HDT_Institution;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -60,7 +61,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
     hcbParent.addListener((oldValue, newValue) ->
     {
-      if (isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
+      if (GenericNonRecordHTC.isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
 
       rbExistingInst.setSelected(true);
 
@@ -71,7 +72,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
     hcbExisting.addListener((oldValue, newValue) ->
     {
-      if (isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
+      if (GenericNonRecordHTC.isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
 
       rbExistingInst.setSelected(true);
       rbExistingDiv .setSelected(true);

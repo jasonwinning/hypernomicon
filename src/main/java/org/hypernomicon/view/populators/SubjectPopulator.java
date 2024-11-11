@@ -30,8 +30,8 @@ import java.util.function.Predicate;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
@@ -132,7 +132,7 @@ public class SubjectPopulator extends RecordPopulator
       return choices;
 
     choices.clear();
-    choices.add(RecordHTC.blankCell);
+    choices.add(GenericNonRecordHTC.blankCell);
 
     if (db.isLoaded() == false) return choices;
 
@@ -185,11 +185,7 @@ public class SubjectPopulator extends RecordPopulator
   {
     RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? db.getSubjType(relType) : hdtNone;
 
-    HyperTableCell cell = new RecordHTC(id, text, type);
-
-    rowToChoices.putIfAbsent(row, new ArrayList<>());
-
-    return addEntryToList(rowToChoices.get(row), cell);
+    return createAndAddCell(row, rowToChoices, id, text, type);
   }
 
 //---------------------------------------------------------------------------

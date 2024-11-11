@@ -17,6 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 

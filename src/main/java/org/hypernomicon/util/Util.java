@@ -17,24 +17,17 @@
 
 package org.hypernomicon.util;
 
-import org.hypernomicon.App;
+//import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.util.filePath.FilePath;
 
-import static org.hypernomicon.Const.*;
-
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import static java.nio.charset.StandardCharsets.*;
 
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
@@ -42,11 +35,9 @@ import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
-import java.security.CodeSource;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.ProtectionDomain;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -71,8 +62,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -97,6 +86,7 @@ import com.google.common.collect.Lists;
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
 import com.google.common.xml.XmlEscapers;
+
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.Transliterator;
 
@@ -783,55 +773,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String manifestValue(String key)
-  {
-    URL jarUrl;
-
-    try
-    {
-      jarUrl = nullSwitch(nullSwitch(App.class.getProtectionDomain(), null, ProtectionDomain::getCodeSource), null, CodeSource::getLocation);
-
-      if (jarUrl != null)
-      {
-        try (InputStream jarStream = jarUrl.openStream())
-        {
-          if (jarStream != null) try (JarInputStream jis = new JarInputStream(jarStream))
-          {
-            Manifest manifest = jis.getManifest();
-
-            return manifest == null ? "" : nullSwitch(manifest.getMainAttributes(), "", attributes -> safeStr(attributes.getValue(key)));
-          }
-        }
-      }
-    }
-    catch (SecurityException | IOException e)
-    {
-      noOp();
-    }
-
-    // Security exception likely happened so try less reliable method
-
-    jarUrl = App.class.getResource(BLANK_DB_RESOURCE_NAME);  // Get the URL for a resource that will only exist in the Hypernomicon jar file.
-                                                             // Most jar files will have META-INF/MANIFEST.MF so we are likely to get the
-    if (jarUrl != null) try                                  // wrong URL if we search for that resource name (even though it is the one we
-    {                                                        // really want, from the Hypernomicon jar file).
-      URLConnection conn = jarUrl.openConnection();
-
-      if (conn instanceof JarURLConnection jarURLConnection)
-      {
-        Manifest manifest = jarURLConnection.getManifest();
-
-        return manifest == null ? "" : nullSwitch(manifest.getMainAttributes(), "", attributes -> safeStr(attributes.getValue(key)));
-      }
-    }
-    catch (IOException e) { noOp(); }
-
-    return "";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static boolean isStringUrl(String selText)
   {
     selText = ultraTrim(selText);
@@ -976,31 +917,6 @@ public final class Util
     catch (InterruptedException e)
     {
       e.printStackTrace();
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void readResourceTextFile(String relPath, StringBuilder strBuilder, boolean keepEOLchars) throws IOException
-  {
-    assignSB(strBuilder, "");
-
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(App.class.getResourceAsStream(relPath), UTF_8)))
-    {
-      String line;
-
-      while ((line = reader.readLine()) != null)
-      {
-        if (keepEOLchars && (strBuilder.length() > 0))
-          strBuilder.append('\n');
-
-        strBuilder.append(line);
-      }
-    }
-    catch (NullPointerException e)
-    {
-      throw new IOException(e);
     }
   }
 
@@ -1487,6 +1403,59 @@ public final class Util
       className.substring(0, className.length() - 10)
     :
       className;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean anyIsInstanceOf(Class<?> clazz, Object... objects)
+  {
+    for (Object obj : objects)
+    {
+      if (clazz.isInstance(obj))
+       return true;
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean allAreInstancesOf(Class<?> clazz, Object... objects)
+  {
+    for (Object obj : objects)
+    {
+      if (clazz.isInstance(obj) == false)
+       return false;
+    }
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Comparator<?> nullsFirstComparator = Comparator.nullsFirst(Comparator.naturalOrder()),
+                                     nullsLastComparator  = Comparator.nullsLast (Comparator.naturalOrder());
+
+  /**
+   * Compares two Comparable objects in a null-friendly manner, using their natural order.
+   *
+   * @param <T> the type of the objects being compared, must be a Comparable type
+   * @param o1 the first object to be compared
+   * @param o2 the second object to be compared
+   * @param nullsFirst if true, null values are considered less than non-null values; if false, null values are considered greater
+   * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or greater than the second
+   */
+  @SuppressWarnings("unchecked")
+  public static <T extends Comparable<? super T>> int nullFriendlyNaturalCompare(T o1, T o2, boolean nullsFirst)
+  {
+    // Choose the appropriate comparator based on the nullsFirst parameter
+    Comparator<T> comparator = (Comparator<T>) (nullsFirst ? nullsFirstComparator : nullsLastComparator);
+
+    // Use the comparator to compare the two objects
+    return comparator.compare(o1, o2);
   }
 
 //---------------------------------------------------------------------------

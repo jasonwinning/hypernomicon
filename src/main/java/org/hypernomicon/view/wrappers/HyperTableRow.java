@@ -30,6 +30,7 @@ import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.*;
@@ -62,7 +63,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
   HyperTableRow(int colCount, HyperTable table)
   {
-    this(FXCollections.observableArrayList(Collections.nCopies(colCount, RecordHTC.blankCell)), table);
+    this(FXCollections.observableArrayList(Collections.nCopies(colCount, GenericNonRecordHTC.blankCell)), table);
   }
 
 //---------------------------------------------------------------------------
@@ -97,13 +98,13 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 //---------------------------------------------------------------------------
 
   public void setCheckboxValue(int colNdx, boolean boolVal) {
-    setCellValue(colNdx, HyperTableCell.fromBoolean(boolVal)); }
+    setCellValue(colNdx, GenericNonRecordHTC.fromBoolean(boolVal)); }
 
   public boolean setCellValue(int colNdx, HDT_Record record, String text) {
     return setCellValue(colNdx, new RecordHTC(record, text)); }
 
   public boolean setCellValue(int colNdx, String text, RecordType type) {
-    return setCellValue(colNdx, new RecordHTC(text, type)); }
+    return setCellValue(colNdx, new GenericNonRecordHTC(text, type)); }
 
   public boolean setCellValue(int colNdx, int id, String text, RecordType type) {
     return setCellValue(colNdx, new RecordHTC(id, text, type)); }
@@ -131,7 +132,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       HyperTableCell matchedCell = populator.match(this, newCell);
 
-      if (HyperTableCell.isEmpty(matchedCell) == false)
+      if (GenericNonRecordHTC.isEmpty(matchedCell) == false)
         newCell = matchedCell;
       else if (HyperTableCell.getCellText(newCell).length() > 0)
       {
@@ -141,7 +142,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     }
 
     if (newCell != null)
-      newCell = newCell.clone();  // Cells in a TableView always need to be unique so we can determine whether a cell is in the bottom row and if so, make sure it sorts to the bottom
+      newCell = HyperTableCell.clone(newCell);  // Cells in a TableView always need to be unique so we can determine whether a cell is in the bottom row and if so, make sure it sorts to the bottom
 
     cells.set(colNdx, newCell);
 
@@ -173,7 +174,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       HyperTableCell cell = cells.get(colNdx);
       if ((HyperTableCell.getCellID(cell) == oldID) && (HyperTableCell.getCellType(cell) == changedType))
-        cells.set(colNdx, new RecordHTC(newID, HyperTableCell.getCellText(cell), changedType));
+        cells.set(colNdx, cells.get(colNdx).getCopyWithID(newID));
     }
   }
 

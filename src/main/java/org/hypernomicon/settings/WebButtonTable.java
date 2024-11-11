@@ -29,8 +29,8 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.util.WebButton;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.CustomPopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
@@ -50,6 +50,16 @@ class WebButtonTable extends WebButtonCtrl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final class WebButtonCell extends GenericNonRecordHTC
+  {
+    private WebButtonCell(WebButton webButton)
+    {
+      super(webButton.getName(), hdtNone);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
   WebButtonTable(String prefKey, List<WebButton> webBtnList, List<WebButton> defaults, TableView<HyperTableRow> tv)
   {
     super(prefKey, webBtnList);
@@ -57,7 +67,7 @@ class WebButtonTable extends WebButtonCtrl
     ht = new HyperTable(tv, 0, true, "");
     this.defaults = defaults;
 
-    CustomPopulator pop = new CustomPopulator(cvtSrchBtnPreset, (row, force) -> webBtnList.stream().map(webButton -> new RecordHTC(webButton.getName(), hdtNone)));
+    CustomPopulator pop = new CustomPopulator(cvtSrchBtnPreset, (row, force) -> webBtnList.stream().map(WebButtonCell::new));
 
     ht.addTextEditCol(hdtNone, true);
     ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDownList, pop,
@@ -109,7 +119,7 @@ class WebButtonTable extends WebButtonCtrl
   private WebButton getWebButton(HyperTableRow row)
   {
     HyperTableCell cell = row.getCell(1);
-    if (HyperTableCell.isEmpty(cell))
+    if (GenericNonRecordHTC.isEmpty(cell))
       return null;
 
     WebButton webBtn = htcToWebButton(row.getCell(1));

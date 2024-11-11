@@ -15,12 +15,13 @@
  *
  */
 
-package org.hypernomicon.util;
+package org.hypernomicon.view.wrappers;
 
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.wrappers.HyperCB;
+import org.hypernomicon.view.populators.Populator.CellValueType;
 
-import javafx.event.EventHandler;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
@@ -30,12 +31,25 @@ import javafx.scene.input.KeyEvent;
 
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.App.ui;
 import static org.hypernomicon.model.records.RecordType.*;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_Work;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.hypernomicon.dialogs.ValueSelectDlgCtrlr;
+import org.hypernomicon.model.KeywordLinkList;
+import org.hypernomicon.model.KeywordLinkList.KeywordLink;
+import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 
 //---------------------------------------------------------------------------
@@ -51,108 +65,297 @@ import org.hypernomicon.model.records.HDT_Person;
  *
  * @since 1.0
  */
-
-public class AutoCompleteCB implements EventHandler<KeyEvent>
+public class AutoCompleteCBHelper
 {
-  private final ComboBox<HyperTableCell> cb;
-  private final HyperCB hcb;
+  private final ComboBox<? extends HyperTableCell> cb;
   private final boolean limitToChoices;
-  private HyperTableCell startValue;
-  private boolean gotKeyPressedYet = false;
+
+  private Runnable enterKeyHandler;
+
+  private HyperTableCell typedMatch,
+                         startValue; // This is the previous value that gets restored if no match is found for what the user typed
+                                     // and the user must select one of the existing values
+
+  private boolean somethingWasTyped = false, listenForActionEvents = true;
+
+  // Both somethingWasTyped and typedMatch are needed because somethingWasTyped determines whether it pops up the list of
+  // options even if typedMatch was not set to a match.
 
 //---------------------------------------------------------------------------
 
-  public AutoCompleteCB(HyperCB newHCB, boolean limitToChoices)
+  public AutoCompleteCBHelper(ComboBox<? extends HyperTableCell> cb, boolean limitToChoices, Function<String, HyperTableCell> cellFactory)
   {
-    this.limitToChoices = limitToChoices;
+    this(cb, null, limitToChoices, cellFactory);
+  }
 
-    hcb = newHCB;
-    cb = hcb.getComboBox();
+  AutoCompleteCBHelper(HyperCB hcb, boolean limitToChoices)
+  {
+    this(hcb.getComboBox(), hcb, limitToChoices, null);
+  }
+
+  private AutoCompleteCBHelper(ComboBox<? extends HyperTableCell> cb, HyperCB hcb, boolean limitToChoices, Function<String, HyperTableCell> cellFactory)
+  {
+    this.cb = cb;
+    this.limitToChoices = limitToChoices;
 
     cb.setEditable(true);
 
     // add a focus listener such that if not in focus, reset the filtered typed keys
     cb.getEditor().focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      hcb.somethingWasTyped = false;
+      somethingWasTyped = false;
 
       if (Boolean.TRUE.equals(newValue))
-        startValue = hcb.selectedHTC();
+      {
+        startValue = hcb == null ? HyperCB.selectedHTC(cb, cellFactory) : hcb.selectedHTC();
+        Platform.runLater(() -> cb.getEditor().selectAll());
+      }
       else
         selectClosestResultBasedOnTextFieldValue(false, false);
     });
 
     cb.setOnMouseClicked(event ->
     {
-      hcb.somethingWasTyped = false;
+      somethingWasTyped = false;
       selectClosestResultBasedOnTextFieldValue(true, true);
     });
 
     cb.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
-      gotKeyPressedYet = true;
-
       if (event.getCode() == KeyCode.ENTER)
       {
-        hcb.triggerOnAction();
+        triggerOnAction(hcb);
         event.consume();
 
-        hcb.triggerEnterKeyHandler();
+        if (enterKeyHandler != null) enterKeyHandler.run();
       }
     });
 
     cb.setOnAction(event ->
     {
-      if ((hcb.listenForActionEvents == false) || (hcb.somethingWasTyped == false))
+      if ((listenForActionEvents == false) || (somethingWasTyped == false))
         return;
 
-      hcb.triggerOnAction(event);
+      triggerOnAction(hcb, event);
 
-      hcb.somethingWasTyped = false;
+      somethingWasTyped = false;
     });
+
+    cb.setOnKeyReleased(this::handleKeyReleased);
+  }
+
+//---------------------------------------------------------------------------
+
+  void resetTypedMatch()         { somethingWasTyped = false; }
+  HyperTableCell getTypedMatch() { return somethingWasTyped ? typedMatch : null; }
+
+  void setEnterKeyHandler(Runnable handler) { enterKeyHandler = handler; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void triggerOnAction(HyperCB hcb)
+  {
+    triggerOnAction(hcb, new ActionEvent(null, cb));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void triggerOnAction(HyperCB hcb, ActionEvent event)
+  {
+    if (listenForActionEvents == false) return;
+
+    listenForActionEvents = false;
+
+    HyperTableCell actualTypedMatch = getTypedMatch();
+
+    if (HyperTableCell.getCellID(actualTypedMatch) >= 1)
+    {
+      HyperCB.select((ComboBox<HyperTableCell>)cb, actualTypedMatch);
+    }
+    else
+    {
+      String str = convertToEnglishChars(cb.getEditor().getText()).trim().toLowerCase();
+
+      if (str.length() > 0)
+      {
+        HyperTableCell selectedCell = selectedCellByText(str, hcb);
+        if (selectedCell != null)
+          HyperCB.select((ComboBox<HyperTableCell>)cb, selectedCell);
+      }
+    }
+
+    if (hcb != null)
+      hcb.endEditModeIfInTable(event);
+
+    listenForActionEvents = true;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void handle(KeyEvent event)
+  private HyperTableCell selectedCellByText(String str, HyperCB hcb)
   {
-    if (gotKeyPressedYet == false)
-      return;
+    List<HyperTableCell> cells = new ArrayList<>();
+    MutableBoolean atLeastOneStrongMatch = new MutableBoolean((hcb == null) || hcb.creatingPersonNotAllowed());
 
-    KeyCode keyCode = event.getCode();
+    HyperTableCell selection = selectedCellOrCells(cells, str, atLeastOneStrongMatch);
+    if (selection != null)
+      return selection;
 
-    if (shortcutKeyIsDown(event)  || keyCode == KeyCode.BACK_SPACE ||
-        keyCode == KeyCode.RIGHT  || keyCode == KeyCode.LEFT       ||
-        keyCode == KeyCode.DELETE || keyCode == KeyCode.HOME       ||
-        keyCode == KeyCode.END    || keyCode == KeyCode.TAB        ||
-        keyCode == KeyCode.ESCAPE)
+    // There was no exact match
+
+    if (atLeastOneStrongMatch.isTrue())
     {
-      hcb.typedMatch = null;
+      if ((cells.size() > 1) && (ui.isShuttingDown() == false))
+      {
+        if ((hcb != null) && (hcb.getPopulator().getValueType(hcb.getRow()) == CellValueType.cvtRecord))
+        {
+          selection = hcb.showPopupToSelectFromMatches(cells);  // If the populator is StandardPopulator or RecordByTypePopulator, this ignores cells
+        }                                                       // and does a different search using the OmniFinder criteria; if that produces no results,
+        else                                                    // cells is used as a fallback
+        {
+          ValueSelectDlgCtrlr ctrlr = new ValueSelectDlgCtrlr(cells);
+          selection = ctrlr.showModal() ? ctrlr.listView.getSelectionModel().getSelectedItem() : null;
+        }
+
+        if (hcb != null)                      // If we are in a table context, by the time we get back here, the
+          hcb.selectValueInTable(selection);  // ComboBox is gone and the table is already out of edit mode
+
+        return selection;
+      }
+
+      if (cells.size() == 1)
+      {
+        selection = cells.get(0);
+
+        if (HyperTableCell.getCellID(selection) > 0)
+          return selection;
+      }
+    }
+
+    return hcb == null ? null : hcb.handleLackOfStrongMatch();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Similar to OmniFinder.FinderThread.isMatch
+
+  private HyperTableCell selectedCellOrCells(Collection<HyperTableCell> cells, String str, MutableBoolean atLeastOneStrongMatch)
+  {
+    boolean containsNum = Pattern.compile("\\d").matcher(str).find();
+    PersonName personName = null;
+
+    List<KeywordLink> linkList = KeywordLinkList.generate(str);
+
+    cbItemsLoop: for (HyperTableCell cell : cb.getItems())
+    {
+      HDT_Record record = HyperTableCell.getRecord(cell);
+      String lcCellText = HyperTableCell.getCellText(cell).toLowerCase();
+
+      if (lcCellText.equals(str) || ((record != null) && record.getNameEngChar().toLowerCase().equals(str)))
+        return cell;
+
+      if (record != null)
+      {
+        if (record.getSearchKey().toLowerCase().contains(str))
+        {
+          cells.add(cell);
+          atLeastOneStrongMatch.setTrue();
+          continue cbItemsLoop;
+        }
+
+        if ((record.getType() == hdtWork) && (containsNum == false))
+        {
+          if (personName == null)
+            personName = new PersonName(str).toLowerCase();
+
+          for (Author author : ((HDT_Work)record).getAuthors())
+          {
+            if ((personName.getFirst().length() > 0) &&
+                (author.getFirstName(true).toLowerCase().contains(personName.getFirst()) ||
+                 author.getLastName (true).toLowerCase().contains(personName.getFirst())))
+            {
+              cells.add(cell);
+              continue cbItemsLoop;
+            }
+
+            if ((personName.getLast().length() > 0) &&
+                (author.getFirstName(true).toLowerCase().contains(personName.getLast()) ||
+                 author.getLastName (true).toLowerCase().contains(personName.getLast())))
+            {
+              cells.add(cell);
+              continue cbItemsLoop;
+            }
+          }
+        }
+
+        if (linkList.size() > 0)
+          for (KeywordLink keyLink : linkList)
+            if (keyLink.key().record == record)
+            {
+              cells.add(cell);
+              continue cbItemsLoop;
+            }
+
+        if (record.getNameEngChar().trim().toLowerCase().contains(str))
+        {
+          cells.add(cell);
+          atLeastOneStrongMatch.setTrue();
+          continue cbItemsLoop;
+        }
+      }
+
+      if (lcCellText.contains(str) &&
+          ((HyperTableCell.getCellType(cell) != hdtPerson) || (record != null))) // Don't use non-record author partial matches
+      {
+        cells.add(cell);
+        atLeastOneStrongMatch.setTrue();
+        continue cbItemsLoop;
+      }
+    }
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void handleKeyReleased(KeyEvent event)
+  {
+    if (notNormalTypingEvent(event))  // arrow keys, page up/down, escape, etc.
+    {
+      typedMatch = null;
       return;
     }
 
-    hcb.somethingWasTyped = true;
+    somethingWasTyped = true;
 
-    List<HyperTableCell> items = cb.getItems();
+    List<? extends HyperTableCell> items = cb.getItems();
 
     if (collEmpty(items))
     {
-      hcb.typedMatch = null;
+      typedMatch = null;
       return;
     }
 
     TextField editor = cb.getEditor();
     String typed = editor.getText().substring(0, editor.getSelection().getStart()), // Get unselected text
            typedLC = convertToEnglishChars(typed).toLowerCase();
-    boolean match = false;
 
-    Iterator<HyperTableCell> it = items.iterator();
+    typedMatch = findMatch(items, editor, typed, typedLC);
+  }
 
-    while (it.hasNext() && (match == false))
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private HyperTableCell findMatch(List<? extends HyperTableCell> items, TextField editor, String typed, String typedLC)
+  {
+    if (typed.isEmpty())
+      return null;
+
+    for (HyperTableCell cell : items)
     {
-      HyperTableCell cell = it.next();
-
       HDT_Record record = HyperTableCell.getRecord(cell);
       String cellText = convertToEnglishChars(HyperTableCell.getCellText(cell));
 
@@ -160,48 +363,63 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       {
         if ((HyperTableCell.getCellType(cell) != hdtPerson) || (record != null))
         {
-          match = true;
-          editor.setText(typed + cellText.substring(typed.length()));
+          updateEditorText(editor, typed, cellText);
+          return HyperTableCell.clone(cell);
         }
       }
 
-      if ((match == false) && (record != null))
+      if (record != null)
       {
         if (record.getType() == hdtPerson)
         {
           HDT_Person person = (HDT_Person)record;
           if (person.getFullName(true).toLowerCase().startsWith(typedLC))
           {
-            match = true;
-            editor.setText(typed + person.getFullName(true).substring(typed.length()));
+            updateEditorText(editor, typed, person.getFullName(true));
+            return HyperTableCell.clone(cell);
           }
         }
         else if (record.getNameEngChar().toLowerCase().startsWith(typedLC))
         {
-          match = true;
-          editor.setText(typed + record.getNameEngChar().substring(typed.length()));
+          updateEditorText(editor, typed, record.getNameEngChar());
+          return HyperTableCell.clone(cell);
         }
-      }
-
-      if (match)
-      {
-        hcb.typedMatch = cell.clone();
-
-        editor.positionCaret(typed.length());
-        editor.selectEnd();
       }
     }
 
-    if (match == false)
-      hcb.typedMatch = null;
+    return null;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean scrollToValue(ComboBox<HyperTableCell> cb)
+  private void updateEditorText(TextField editor, String typed, String matchText)
   {
-    List<HyperTableCell> items = cb.getItems();
+    editor.setText(typed + matchText.substring(typed.length()));
+    editor.positionCaret(typed.length());
+    editor.selectEnd();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Set<KeyCode> IGNORED_KEYS = EnumSet.of(
+
+      KeyCode.BACK_SPACE, KeyCode.RIGHT, KeyCode.LEFT   , KeyCode.DELETE ,
+      KeyCode.HOME      , KeyCode.END  , KeyCode.TAB    , KeyCode.ESCAPE,
+      KeyCode.UP        , KeyCode.DOWN , KeyCode.PAGE_UP, KeyCode.PAGE_DOWN);
+
+  private boolean notNormalTypingEvent(KeyEvent event)
+  {
+    return shortcutKeyIsDown(event) || IGNORED_KEYS.contains(event.getCode());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static boolean scrollToValue(ComboBox<? extends HyperTableCell> cb)
+  {
+    List<? extends HyperTableCell> items = cb.getItems();
     if (items == null) return false;
 
     String editorText = cb.getEditor().getText();
@@ -214,7 +432,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
       if (editorText.equalsIgnoreCase(cellText))
       {
-        ListView<HyperTableCell> lv = getCBListView(cb);
+        ListView<? extends HyperTableCell> lv = getCBListView(cb);
 
         if (lv.getItems().size() > ndx)
         {
@@ -239,9 +457,10 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
    * @param affect true if combobox is clicked to show popup so text and caret position will be readjusted.
    * @param inFocus true if combobox has focus. If not, programmatically press enter key to add new entry to list.
    */
+  @SuppressWarnings("unchecked")
   private void selectClosestResultBasedOnTextFieldValue(boolean affect, boolean inFocus)
   {
-    SingleSelectionModel<HyperTableCell> selectionModel = cb.getSelectionModel();
+    SingleSelectionModel<HyperTableCell> selectionModel = (SingleSelectionModel<HyperTableCell>)cb.getSelectionModel();
     TextField editor = cb.getEditor();
     String editorText = editor.getText();
     boolean found = scrollToValue(cb);

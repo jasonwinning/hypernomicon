@@ -28,8 +28,8 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.query.Query.RecordQuery;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -54,10 +54,10 @@ public class QueryWhereKeyWorks extends RecordQuery
   {
     vp1.setPopulator(row, Populator.create(cvtOperand,
 
-        new RecordHTC(EQUAL_TO_OPERAND_ID    , "Include record", hdtNone),
-        new RecordHTC(NOT_EQUAL_TO_OPERAND_ID, "Exclude record", hdtNone),
-        new RecordHTC(IS_EMPTY_OPERAND_ID    , "Empty"         , hdtNone),
-        new RecordHTC(IS_NOT_EMPTY_OPERAND_ID, "Not empty"     , hdtNone)));
+        new GenericNonRecordHTC(EQUAL_TO_OPERAND_ID    , "Include record", hdtNone),
+        new GenericNonRecordHTC(NOT_EQUAL_TO_OPERAND_ID, "Exclude record", hdtNone),
+        new GenericNonRecordHTC(IS_EMPTY_OPERAND_ID    , "Empty"         , hdtNone),
+        new GenericNonRecordHTC(IS_NOT_EMPTY_OPERAND_ID, "Not empty"     , hdtNone)));
 
     return true;
   }

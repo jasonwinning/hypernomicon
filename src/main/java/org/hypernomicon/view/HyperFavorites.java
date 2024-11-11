@@ -20,6 +20,7 @@ package org.hypernomicon.view;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
 
@@ -111,7 +112,7 @@ public class HyperFavorites
 
   public static class QueryRow
   {
-    public final RecordHTC[] cells = new RecordHTC[QUERY_FAV_ROW_COLUMN_COUNT];
+    public final HyperTableCell[] cells = new HyperTableCell[QUERY_FAV_ROW_COLUMN_COUNT];
   }
 
 //---------------------------------------------------------------------------
@@ -234,7 +235,10 @@ public class HyperFavorites
             String text    = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("text", ""),
                    typeStr = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("type", "all");
 
-            row.cells[colNdx] = new RecordHTC(id, text, "all".equals(typeStr) ? hdtNone : Tag.parseTypeTagStr(typeStr));
+            row.cells[colNdx] = colNdx < 2 ?
+              new GenericNonRecordHTC(id, text, "all".equals(typeStr) ? hdtNone : Tag.parseTypeTagStr(typeStr))
+            :
+              new RecordHTC(id, text, "all".equals(typeStr) ? hdtNone : Tag.parseTypeTagStr(typeStr));
           }
 
           query.rows.add(row);
@@ -284,7 +288,7 @@ public class HyperFavorites
     {
       for (int colNdx = 0; colNdx < QUERY_FAV_ROW_COLUMN_COUNT; colNdx++)
       {
-        RecordHTC cell = row.cells[colNdx];
+        HyperTableCell cell = row.cells[colNdx];
 
         if ((getCellID(cell) == oldID) && (getCellType(cell) == changedType))
           row.cells[colNdx] = cell.getCopyWithID(newID);
