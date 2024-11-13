@@ -20,6 +20,7 @@ package org.hypernomicon.model.relations;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -47,56 +48,55 @@ public final class ObjectGroup
 
   @Override public int hashCode()
   {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + map.hashCode();
-    result = prime * result + (primary    == null ? 0 : primary   .hashCode());
-    result = prime * result + (primaryStr == null ? 0 : primaryStr.hashCode());
+    int result = primary != null ? primary.hashCode() : 0;
+    result = 31 * result + (primaryStr != null ? primaryStr.hashCode() : 0);
+    result = 31 * result + mapHashCode(map);
     return result;
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private int mapHashCode(Map<Tag, NestedValue> map)
+  {
+    int result = 0;
+
+    for (Entry<Tag, NestedValue> entry : map.entrySet())
+    {
+      NestedValue value = entry.getValue();
+
+      if ((value != null) && (value.isEmpty() == false))
+        result += entry.getKey().hashCode() * value.hashCode();
+    }
+
+    return result;
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if ((obj == null) || (getClass() != obj.getClass())) return false;
 
     ObjectGroup other = (ObjectGroup) obj;
 
     if (primary != other.primary) return false;
     if (safeStr(primaryStr).equals(safeStr(other.primaryStr)) == false) return false;
 
-    for (Entry<Tag, NestedValue> entry : map.entrySet())
+    return Stream.concat(map.keySet().stream(), other.map.keySet().stream())
+                 .distinct()
+                 .allMatch(key ->
     {
-      NestedValue otherVal = other.map.get(entry.getKey());
+      NestedValue value1 =       map.get(key),
+                  value2 = other.map.get(key);
 
-      if (otherVal == null)
-      {
-        if (entry.getValue().isEmpty() == false) return false;
-      }
-      else
-      {
-        if (otherVal.equals(entry.getValue()) == false) return false;
-      }
-    }
-
-    for (Entry<Tag, NestedValue> entry : other.map.entrySet())
-    {
-      NestedValue val = map.get(entry.getKey());
-
-      if (val == null)
-      {
-        if (entry.getValue().isEmpty() == false) return false;
-      }
-      else
-      {
-        if (val.equals(entry.getValue()) == false) return false;
-      }
-    }
-
-    return true;
+      return value1 == null ?
+        ((value2 == null) || value2.isEmpty())
+      :
+        (((value2 != null) && value1.equals(value2)) || ((value2 == null) && value1.isEmpty()));
+    });
   }
 
 //---------------------------------------------------------------------------

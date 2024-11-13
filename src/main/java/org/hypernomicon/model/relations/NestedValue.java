@@ -29,6 +29,8 @@ import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class NestedValue
 {
   public String str = "";
@@ -69,11 +71,18 @@ public class NestedValue
   {
     final int prime = 31;
     int result = 1;
-    result = prime * result + (bool ? 1231 : 1237);
+
     result = prime * result + (hdc == null ? 0 : hdc.hashCode());
-    result = prime * result + (str == null ? 0 : str.hashCode());
-    result = prime * result + (target == null ? 0 : target.hashCode());
-    result = prime * result + (ternary == null ? 0 : ternary.hashCode());
+
+    result = prime * result + (isEmpty() ? 0 : switch (hdc)
+    {
+      case hdcString        -> str.hashCode();
+      case hdcBoolean       -> Boolean.hashCode(bool);
+      case hdcTernary       -> ternary.hashCode();
+      case hdcNestedPointer -> target.hashCode();
+      default               -> 0;
+    });
+
     return result;
   }
 
@@ -83,10 +92,12 @@ public class NestedValue
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
-    if (obj == null) return false;
+    if (obj == null) return isEmpty();
     if (getClass() != obj.getClass()) return false;
 
     NestedValue other = (NestedValue) obj;
+
+    if (isEmpty() && other.isEmpty()) return true;
 
     return (hdc == other.hdc) && switch (hdc)
     {

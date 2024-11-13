@@ -17,7 +17,6 @@
 
 package org.hypernomicon.util;
 
-//import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.util.filePath.FilePath;
 
@@ -485,24 +484,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static int indexOfAny(String chars, String text)
-  {
-    int lowestPos = -1;
-
-    for (char c : chars.toCharArray())
-    {
-      int curPos = text.indexOf(c);
-
-      if ((curPos > -1) && ((lowestPos == -1) || (curPos < lowestPos)))
-        lowestPos = curPos;
-    }
-
-    return lowestPos;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static double round(double n)
   {
     return Math.round(n);
@@ -692,18 +673,10 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean strContainsAnyStr(String container, String... strings)
-  {
-    return Arrays.stream(strings).parallel().anyMatch(container::contains);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static String safeStr(String s)           { return s == null ? "" : s; }
 
-  public static boolean collEmpty(Collection<?> c) { return (c == null) || c.isEmpty(); }
-  public static boolean collEmpty(Map<?, ?> m)     { return (m == null) || m.isEmpty(); }
+  public static boolean collEmpty(Collection<?> c) { return (c == null) || c.isEmpty(); }  // See ObjectUtils.isEmpty
+  public static boolean collEmpty(Map<?, ?> m)     { return (m == null) || m.isEmpty(); }  // See ObjectUtils.isEmpty
 
   public static <E> List<E> safeListOf(E e1)       { return e1 == null ? List.of() : List.of(e1); }
 
@@ -1410,13 +1383,7 @@ public final class Util
 
   public static boolean anyIsInstanceOf(Class<?> clazz, Object... objects)
   {
-    for (Object obj : objects)
-    {
-      if (clazz.isInstance(obj))
-       return true;
-    }
-
-    return false;
+    return Arrays.stream(objects).anyMatch(clazz::isInstance);
   }
 
 //---------------------------------------------------------------------------
@@ -1424,38 +1391,7 @@ public final class Util
 
   public static boolean allAreInstancesOf(Class<?> clazz, Object... objects)
   {
-    for (Object obj : objects)
-    {
-      if (clazz.isInstance(obj) == false)
-       return false;
-    }
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static final Comparator<?> nullsFirstComparator = Comparator.nullsFirst(Comparator.naturalOrder()),
-                                     nullsLastComparator  = Comparator.nullsLast (Comparator.naturalOrder());
-
-  /**
-   * Compares two Comparable objects in a null-friendly manner, using their natural order.
-   *
-   * @param <T> the type of the objects being compared, must be a Comparable type
-   * @param o1 the first object to be compared
-   * @param o2 the second object to be compared
-   * @param nullsFirst if true, null values are considered less than non-null values; if false, null values are considered greater
-   * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or greater than the second
-   */
-  @SuppressWarnings("unchecked")
-  public static <T extends Comparable<? super T>> int nullFriendlyNaturalCompare(T o1, T o2, boolean nullsFirst)
-  {
-    // Choose the appropriate comparator based on the nullsFirst parameter
-    Comparator<T> comparator = (Comparator<T>) (nullsFirst ? nullsFirstComparator : nullsLastComparator);
-
-    // Use the comparator to compare the two objects
-    return comparator.compare(o1, o2);
+    return Arrays.stream(objects).allMatch(clazz::isInstance);
   }
 
 //---------------------------------------------------------------------------

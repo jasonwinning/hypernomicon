@@ -35,6 +35,7 @@ import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.model.Tag;
 
 //---------------------------------------------------------------------------
@@ -94,6 +95,16 @@ public interface HDT_Record
   void resolvePointers() throws HDB_InternalError;
   void updateSortKey();
   Iterable<SearchKeyword> getSearchKeys();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static String getDescHtml(HDT_Record record)
+  {
+    if (HDT_Record.isEmpty(record)) return "";
+
+    return record.hasDesc() ? ((HDT_RecordWithDescription) record).getDesc().getHtml() : "";
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

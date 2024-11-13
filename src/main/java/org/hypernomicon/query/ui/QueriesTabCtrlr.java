@@ -49,7 +49,6 @@ import javafx.scene.web.WebView;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.query.*;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
@@ -178,9 +177,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       HDT_Record record = activeRecord();
       if (record == null) return;
 
-      String mainText = record.hasDesc() ? ((HDT_RecordWithDescription) record).getDesc().getHtml() : "";
-
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine());
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());

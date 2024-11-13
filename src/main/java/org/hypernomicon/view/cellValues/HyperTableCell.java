@@ -23,6 +23,7 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -103,7 +104,7 @@ public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
       HDT_Work work1 = cell1.getRecord(), work2 = cell2.getRecord();
 
       if ((work1 != null) || (work2 != null))
-        return nullFriendlyNaturalCompare(work1, work2, true);
+        return ObjectUtils.compare(work1, work2);
     }
 
     String key1 = nullSwitch(cell1.getRecord(), "", HDT_Record::getSortKey),

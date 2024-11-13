@@ -22,7 +22,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.apache.commons.io.FilenameUtils;
-
+import org.apache.commons.lang3.StringUtils;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -209,7 +209,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
       case fncTitleNoSub : // similar to fncContainerNoSub case
 
         compStr = title;
-        pos = indexOfAny(":?*|\"<>/\\", compStr);
+        pos = StringUtils.indexOfAny(compStr, ":?*|\"<>/\\");
 
         if (pos >= 0)
           compStr = compStr.substring(0, pos);
@@ -219,7 +219,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
       case fncContainerNoSub: // similar to fncTitleNoSub case
 
         compStr = container;
-        pos = indexOfAny(":?*|\"<>/\\", compStr);
+        pos = StringUtils.indexOfAny(compStr, ":?*|\"<>/\\");
 
         if (pos >= 0)
           compStr = compStr.substring(0, pos);

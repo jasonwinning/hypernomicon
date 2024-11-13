@@ -54,7 +54,6 @@ import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
@@ -429,11 +428,9 @@ public final class QueryCtrlr
     }
     else
     {
-      String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
-
       int scrollPos = queriesTabCtrlr.getUseTextViewInfo() ? queriesTabCtrlr.getView().getTextInfo().scrollPos : (activatingTab ? scrollPosPriorToBeingDeactivated : 0);
 
-      MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), scrollPos, ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
+      MainTextWrapper.setReadOnlyHTML(HDT_Record.getDescHtml(curResult), webView.getEngine(), scrollPos, ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
     }
 
     setPreview();

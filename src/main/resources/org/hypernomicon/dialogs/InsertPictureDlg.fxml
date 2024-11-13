@@ -132,7 +132,7 @@
                </AnchorPane>
                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                   <children>
-                     <Label layoutY="7.0" text="Save as" AnchorPane.leftAnchor="0.0" />
+                     <Label layoutY="7.0" text="Save as:" AnchorPane.leftAnchor="0.0" />
                      <ToggleButton fx:id="btnJpg" layoutX="46.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0" minHeight="25.0" minWidth="55.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="55.0" selected="true" text="JPG" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="46.0">
                         <toggleGroup>
                            <ToggleGroup fx:id="tgFormat" />

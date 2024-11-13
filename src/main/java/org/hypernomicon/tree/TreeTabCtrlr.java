@@ -28,7 +28,6 @@ import org.hypernomicon.App;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.Highlighter;
 import org.hypernomicon.view.mainText.MainTextUtil;
@@ -180,35 +179,31 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
       textToHilite = lastTextHilited;
-      String mainText = "";
 
-      HDT_Record record = tree.selectedRecord();
-      if (record == null) return;
+      HDT_Record record = activeRecord();
+      if (HDT_Record.isEmpty(record)) return;
 
-      if (record.hasDesc())
-        mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
-
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine());
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
     webView.getEngine().getLoadWorker().stateProperty().addListener((ob, oldState, newState) ->
     {
-      if (newState == Worker.State.SUCCEEDED)
+      if (newState != Worker.State.SUCCEEDED) return;
+
+      String text = ui.currentFindInDescriptionText();
+
+      if (text.length() > 0)
       {
-        String text = ui.currentFindInDescriptionText();
-        if (text.length() > 0)
-        {
-          highlighter.hilite(text);
-          return;
-        }
-
-        highlighter.hilite(textToHilite, true);
-
-        lastTextHilited = textToHilite;
-        textToHilite = "";
+        highlighter.hilite(text);
+        return;
       }
+
+      highlighter.hilite(textToHilite, true);
+
+      lastTextHilited = textToHilite;
+      textToHilite = "";
     });
 
     webView.setOnDragOver(Event::consume);
@@ -299,6 +294,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       return;
     }
 
+    updateWebView(activeRecord());
+
     ttv.getColumns().forEach(col ->
     {
       if (col.isVisible() == false)
@@ -382,9 +379,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             default : break;
           }
 
-          String desc = record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getHtml() : "";
-
-          MainTextWrapper.setReadOnlyHTML(desc, webView.getEngine(), getUseTextViewInfo() ? getView().getTextInfo().scrollPos : 0);
+          updateWebView(record);
           clearWV = false;
         }
       }
@@ -403,6 +398,20 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     tree.reset(ttv, false, true);
 
     Platform.runLater(() -> OneTouchExpandableWrapper.wrap(spMain, () -> "tree", () -> "description of currently selected record", 0.7, CollapsedState.ShowingOnlyFirstRegion));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateWebView(HDT_Record record)
+  {
+    if (HDT_Record.isEmpty(record))
+    {
+      webView.getEngine().loadContent("");
+      return;
+    }
+
+    MainTextWrapper.setReadOnlyHTML(HDT_Record.getDescHtml(record), webView.getEngine(), getUseTextViewInfo() ? getView().getTextInfo().scrollPos : 0);
   }
 
 //---------------------------------------------------------------------------

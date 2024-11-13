@@ -115,6 +115,26 @@
     <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="3">
       <Button fx:id="btnWebSrch" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="Google" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
+      <RadioButton fx:id="rbClipboard" mnemonicParsing="false" text="Image on Clipboard" toggleGroup="$tgPicture" GridPane.rowIndex="4" />
+      <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="4">
+         <children>
+            <Label layoutX="28.0" layoutY="7.0" text="Save as:" AnchorPane.rightAnchor="8.0" />
+         </children>
+      </AnchorPane>
+      <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="4">
+         <children>
+            <ToggleButton fx:id="btnJpg" layoutX="-12.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" selected="true" text="JPG" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+               <toggleGroup>
+                  <ToggleGroup fx:id="tgFormat" />
+               </toggleGroup>
+            </ToggleButton>
+         </children>
+      </AnchorPane>
+      <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="4">
+         <children>
+            <ToggleButton fx:id="btnPng" layoutX="-14.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="PNG" toggleGroup="$tgFormat" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+         </children>
+      </AnchorPane>
     <Label fx:id="lblChangeName" text="Change file name:" underline="true" GridPane.rowIndex="5">
       <cursor>
         <Cursor fx:constant="HAND" />
@@ -141,26 +161,6 @@
     <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="7">
       <Button fx:id="btnCancel" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" text="Cancel" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" GridPane.columnIndex="4" GridPane.rowIndex="4" />
     </AnchorPane>
-      <RadioButton fx:id="rbClipboard" mnemonicParsing="false" text="Image on Clipboard" toggleGroup="$tgPicture" GridPane.rowIndex="4" />
-      <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="4">
-         <children>
-            <Label layoutX="28.0" layoutY="7.0" text="Save as:" AnchorPane.rightAnchor="8.0" />
-         </children>
-      </AnchorPane>
-      <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="4">
-         <children>
-            <ToggleButton fx:id="btnJpg" layoutX="-12.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" selected="true" text="JPG" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-               <toggleGroup>
-                  <ToggleGroup fx:id="tgFormat" />
-               </toggleGroup>
-            </ToggleButton>
-         </children>
-      </AnchorPane>
-      <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="4">
-         <children>
-            <ToggleButton fx:id="btnPng" layoutX="-14.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="PNG" toggleGroup="$tgFormat" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-         </children>
-      </AnchorPane>
   </GridPane>
   <Label alignment="CENTER" contentDisplay="CENTER" layoutX="90.0" layoutY="7.0" text="Draw a box over the image to crop." textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="7.0" />
 </AnchorPane>

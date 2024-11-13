@@ -85,7 +85,7 @@ public class PreviewWindow extends HyperDlg
 
   public enum PreviewSource { pvsPersonTab, pvsWorkTab, pvsQueriesTab, pvsManager, pvsTreeTab, pvsOther }
 
-  private static final String dialogTitle = "Work Viewer",
+  private static final String dialogTitle = "Preview Work/File",
                               TEXT_TO_SHOW_IF_NONE = "(none)";
 
   public boolean disablePreviewUpdating = false;

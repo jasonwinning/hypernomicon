@@ -43,7 +43,17 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   @Override public boolean hasPrevious()   { return nextNdx > 0; }
   @Override public int nextIndex()         { return nextNdx; }
   @Override public int previousIndex()     { return nextNdx - 1; }
-  @Override public void add(HDT_ObjType e) { list.add(nextNdx, e); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void add(HDT_ObjType e)
+  {
+    list.add(nextNdx, e);
+
+    if (list.lastException == null)
+      lastNdx = nextNdx++;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -73,7 +83,6 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
     }
 
     throw new NoSuchElementException();
-
   }
 
 //---------------------------------------------------------------------------

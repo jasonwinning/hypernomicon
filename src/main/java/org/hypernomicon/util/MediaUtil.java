@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -153,9 +154,9 @@ public final class MediaUtil
       imageName = "document-code";
     else if (mimetype == MediaType.APPLICATION_ZIP)
       imageName = "vise-drawer";
-    else if (strContainsAnyStr(typeStr, "pdf", "postscript", "framemaker"))
+    else if (StringUtils.containsAny(typeStr, "pdf", "postscript", "framemaker"))
       imageName = "document-pdf";
-    else if (strContainsAnyStr(typeStr, "djv", "book", "epub"))
+    else if (StringUtils.containsAny(typeStr, "djv", "book", "epub"))
       imageName = "book";
     else if ("image".equals(mimetype.getType()))
       imageName = "image";
@@ -167,32 +168,32 @@ public final class MediaUtil
       imageName = "json";
     else if (typeStr.endsWith("tex"))
       imageName = "document-tex";
-    else if (strContainsAnyStr(typeStr, "word", "rtf", "publisher", "mswrite", "writer", "msword", "xps"))
+    else if (StringUtils.containsAny(typeStr, "word", "rtf", "publisher", "mswrite", "writer", "msword", "xps"))
       imageName = "paper";
-    else if (strContainsAnyStr(typeStr, "excel", "spread", "calc"))
+    else if (StringUtils.containsAny(typeStr, "excel", "spread", "calc"))
       imageName = "table-sheet";
-    else if (strContainsAnyStr(typeStr, "power", "presen", "impress"))
+    else if (StringUtils.containsAny(typeStr, "power", "presen", "impress"))
       imageName = "from_current_slide";
-    else if (strContainsAnyStr(typeStr, "archi", "packa", "install", "diskimage"))
+    else if (StringUtils.containsAny(typeStr, "archi", "packa", "install", "diskimage"))
       imageName = "vise-drawer";
-    else if (strContainsAnyStr(typeStr, "compress", "stuffit", "x-tar", "zip", "x-gtar", "lzma", "lzop", "x-xz"))
+    else if (StringUtils.containsAny(typeStr, "compress", "stuffit", "x-tar", "zip", "x-gtar", "lzma", "lzop", "x-xz"))
       imageName = "vise-drawer";
     else if (typeStr.contains("note"))
       imageName = "notebook-pencil";
-    else if (strContainsAnyStr(typeStr, "chart", "ivio"))
+    else if (StringUtils.containsAny(typeStr, "chart", "ivio"))
       imageName = "chart";
-    else if (typeStr.endsWith("eps") || strContainsAnyStr(typeStr, "emf", "wmf", "cgm", "corel", "kontour", "freehand", "msmetafile",
-                                                                   "dwg", "cmx", "cdr", "draw" , "karbon" , "vector"  , "illustr"))
+    else if (typeStr.endsWith("eps") || StringUtils.containsAny(typeStr, "emf", "wmf", "cgm", "corel", "kontour", "freehand", "msmetafile",
+                                                                         "dwg", "cmx", "cdr", "draw" , "karbon" , "vector"  , "illustr"))
       imageName = "page_white_vector";
-    else if (strContainsAnyStr(typeStr, "formul", "math"))
+    else if (StringUtils.containsAny(typeStr, "formul", "math"))
       imageName = "edit_mathematics";
-    else if (strContainsAnyStr(typeStr, "graphic", "image"))
+    else if (StringUtils.containsAny(typeStr, "graphic", "image"))
       imageName = "image";
     else if ("audio".equals(mimetype.getType()))
       imageName = "sound_wave";
-    else if ("video".equals(mimetype.getType()) || strContainsAnyStr(typeStr, "flash", "mp4"))
+    else if ("video".equals(mimetype.getType()) || StringUtils.containsAny(typeStr, "flash", "mp4"))
       imageName = "recording";
-    else if (strContainsAnyStr(typeStr, "text", "docu"))
+    else if (StringUtils.containsAny(typeStr, "text", "docu"))
       imageName = "document-text";
     else
       imageName = "document";
@@ -313,8 +314,8 @@ public final class MediaUtil
     RecordType type1 = imgRelPathToType(path1),
                type2 = imgRelPathToType(path2);
 
-    if ((type1 != hdtNone) && (type2 == hdtNone)) return type1.compareTo(hdtWork);
-    if ((type2 != hdtNone) && (type1 == hdtNone)) return hdtWork.compareTo(type2);
+    if ((type1 != hdtNone) && (type2 == hdtNone)) return type1  .compareTo(hdtWork);
+    if ((type2 != hdtNone) && (type1 == hdtNone)) return hdtWork.compareTo(type2  );
 
     return type1 == hdtNone ? strCompResult : type1.compareTo(type2);
   }
