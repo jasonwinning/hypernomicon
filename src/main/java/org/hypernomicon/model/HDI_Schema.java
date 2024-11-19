@@ -22,7 +22,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
@@ -49,11 +48,11 @@ public record HDI_Schema(HyperDataCategory category, RelationType relType, Recor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HDI_Schema(HyperDataCategory category, Tag... tags) throws HDB_InternalError { this(category, rtNone, hdtNone, tags); }
+  HDI_Schema(HyperDataCategory category, Tag... tags) { this(category, rtNone, hdtNone, tags); }
 
-  public HDI_Schema(HyperDataCategory category, RelationType relType, Tag... tags) throws HDB_InternalError { this(category, relType, hdtNone, tags); }
+  public HDI_Schema(HyperDataCategory category, RelationType relType, Tag... tags) { this(category, relType, hdtNone, tags); }
 
-  public HDI_Schema(HyperDataCategory category, RelationType relType, RecordType nestedTargetType, Tag... tags) throws HDB_InternalError
+  public HDI_Schema(HyperDataCategory category, RelationType relType, RecordType nestedTargetType, Tag... tags)
   {
     this(category, relType, nestedTargetType, buildTagsList(category, nestedTargetType, tags));
   }
@@ -61,11 +60,15 @@ public record HDI_Schema(HyperDataCategory category, RelationType relType, Recor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static List<Tag> buildTagsList(HyperDataCategory category, RecordType nestedTargetType, Tag[] tags) throws HDB_InternalError
+  private static List<Tag> buildTagsList(HyperDataCategory category, RecordType nestedTargetType, Tag[] tags)
   {
-    if (((category == hdcNestedPointer) && ((tags.length != 1) || (nestedTargetType == hdtNone))) ||
-        ((category != hdcNestedPointer) && (nestedTargetType != hdtNone)))
-      throw new HDB_InternalError(56814);
+    if (category == hdcNestedPointer)
+    {
+      assert(tags.length == 1);
+      assert(nestedTargetType != hdtNone);
+    }
+    else
+      assert(nestedTargetType == hdtNone);
 
     Builder<Tag> builder = ImmutableList.builder();
     builder.add(tags);

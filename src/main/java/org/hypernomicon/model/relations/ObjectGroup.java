@@ -27,14 +27,24 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 
+//---------------------------------------------------------------------------
+
 public final class ObjectGroup
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HDT_Record primary;
   private final String primaryStr;
   private final Map<Tag, NestedValue> map = new EnumMap<>(Tag.class);
 
+//---------------------------------------------------------------------------
+
   public ObjectGroup(HDT_Record primary) { this.primary = primary; primaryStr = null;       }
   public ObjectGroup(String primaryStr)  { primary = null;    this.primaryStr = primaryStr; }
+
+//---------------------------------------------------------------------------
 
   public void addNestedEntry(Tag tag, NestedValue val) { map.put(tag, val); }
 

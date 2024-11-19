@@ -40,7 +40,6 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   private Exception lastException;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public HyperObjPointer(RelationSet<HDT_SubjType, HDT_ObjType> relSet, HDT_SubjType subj, boolean modTracking)
   {
@@ -51,7 +50,6 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
     lastException = null;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_ObjType get()        { return relSet.getObjectCount(subj) == 0 ? null : relSet.getObject(subj, 0); }

@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
@@ -119,17 +121,17 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private RelationSet(RelationType newType, Class<HDT_Subj> subjClass, Class<HDT_Obj> objClass) throws HDB_InternalError
+  private RelationSet(RelationType newType, Class<HDT_Subj> subjClass, Class<HDT_Obj> objClass)
   {
     this(newType, subjClass, objClass, false);
   }
 
-  private RelationSet(RelationType newType, Class<HDT_Subj> subjClass, Class<HDT_Obj> objClass, HDI_Schema... nestedSchemas) throws HDB_InternalError
+  private RelationSet(RelationType newType, Class<HDT_Subj> subjClass, Class<HDT_Obj> objClass, HDI_Schema... nestedSchemas)
   {
     this(newType, subjClass, objClass, false, nestedSchemas);
   }
 
-  private RelationSet(RelationType newType, Class<HDT_Subj> subjClass, Class<HDT_Obj> objClass, boolean trackOrphans, HDI_Schema... nestedSchemas) throws HDB_InternalError
+  private RelationSet(RelationType newType, Class<HDT_Subj> subjClass, Class<HDT_Obj> objClass, boolean trackOrphans, HDI_Schema... nestedSchemas)
   {
     type = newType;
 
@@ -150,8 +152,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       Tag tag = nestedSchema.tags().get(0);
 
-      if (tagToSchema.containsKey(tag))
-        throw new HDB_InternalError(98925);
+      assert(tagToSchema.containsKey(tag) == false);
 
       tagToSchema.put(tag, nestedSchema);
     }
@@ -160,7 +161,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static RelationSet<? extends HDT_Record, ? extends HDT_Record> createSet(RelationType relType) throws HDB_InternalError
+  private static RelationSet<? extends HDT_Record, ? extends HDT_Record> createSet(RelationType relType)
   {
     return switch (relType)
     {
@@ -225,14 +226,14 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtFolderOfNote             -> new RelationSet<>(relType, HDT_Note         .class, HDT_Folder         .class);
       case rtPictureFolderOfPerson    -> new RelationSet<>(relType, HDT_Person       .class, HDT_Folder         .class);
 
-      default                         -> throw new HDB_InternalError(84723);
+      default                         -> throw new AssertionError(new HDB_InternalError(84723));
     };
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void init(Map<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> dbRelationSets) throws HDB_InternalError
+  public static void init(Map<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> dbRelationSets)
   {
     for (RelationType relType : RelationType.values())
       if ((relType != rtUnited) && (relType != rtKeyWork) && (relType != rtNone))
@@ -1011,11 +1012,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   private static <HDT_Value extends HDT_Record> Map<HDT_Value, Integer> getRecordCountMap(List<HDT_Value> list)
   {
-    Map<HDT_Value, Integer> counts = new HashMap<>();
-
-    list.forEach(record -> counts.merge(record, 1, Integer::sum));
-
-    return counts;
+    return list.stream().collect(Collectors.toMap(Function.identity(), record -> 1, Integer::sum));
   }
 
 //---------------------------------------------------------------------------

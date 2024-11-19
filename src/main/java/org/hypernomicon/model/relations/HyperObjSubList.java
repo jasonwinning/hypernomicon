@@ -24,13 +24,18 @@ import java.util.stream.IntStream;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+//---------------------------------------------------------------------------
+
 public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> extends HyperObjList<HDT_SubjType, HDT_ObjType>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperObjList<HDT_SubjType, HDT_ObjType> parentList;
   private final int startNdx;
   private int endNdx;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HyperObjSubList(HyperObjList<HDT_SubjType, HDT_ObjType> parentList, int startNdx, int endNdx)
@@ -42,7 +47,6 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
     this.endNdx = endNdx;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public int size()                { return endNdx - startNdx; }

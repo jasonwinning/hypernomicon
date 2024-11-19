@@ -1532,7 +1532,7 @@ public final class MainCtrlr
 
       boolean watcherWasRunning = folderTreeWatcher.stop();
 
-      boolean rv = db.saveAllToDisk(favorites);
+      boolean rv = db.saveAllToPersistentStorage(favorites);
 
       if (restartWatcher && watcherWasRunning)
         folderTreeWatcher.createNewWatcherAndStart();
@@ -1668,12 +1668,22 @@ public final class MainCtrlr
       resetUIPreClose();
       boolean success;
 
-      try { success = db.newDB(rootPath, dlg.getChoices(), dlg.getFolders()); }
+      try
+      {
+        success = db.newDB(rootPath, dlg.getChoices(), dlg.getFolders());
+      }
+      catch (HDB_InternalErrorDuringClose e)
+      {
+        errorPopup("Unable to create new database: " + getThrowableMessage(e));
+
+        shutDown(false, true, false); // An error in db.close is unrecoverable.
+        return false;
+      }
       catch (HDB_InternalError e)
       {
         errorPopup("Unable to create new database: " + getThrowableMessage(e));
-        shutDown(false, true, false); // An error in db.close is unrecoverable.
-        return false;
+
+        success = false;
       }
 
       if (success == false)
@@ -1864,7 +1874,7 @@ public final class MainCtrlr
     resetUIPreClose();
 
     try { db.close(null); }
-    catch (HDB_InternalError e)
+    catch (HDB_InternalErrorDuringClose e)
     {
       errorPopup(e);
       shutDown(false, true, false); // An error in db.close is unrecoverable.
@@ -2415,12 +2425,24 @@ public final class MainCtrlr
 
     boolean success;
 
-    try { success = db.loadAllFromDisk(creatingNew, favorites); }
-    catch (HDB_InternalError e)
+    FilePath newRootFilePath = new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
+    String hdbFileName = app.prefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME);
+
+    try
+    {
+      success = db.loadAllFromPersistentStorage(creatingNew, favorites, newRootFilePath, hdbFileName);
+    }
+    catch (HDB_InternalErrorDuringClose e)
     {
       errorPopup("Unable to load database. Reason: " + getThrowableMessage(e));
       shutDown(false, true, false); // An error in db.close is unrecoverable.
       return false;
+    }
+    catch (HDB_InternalError e)
+    {
+      errorPopup("Unable to load database. Reason: " + getThrowableMessage(e));
+
+      success = false;
     }
 
     if (success)

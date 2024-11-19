@@ -35,6 +35,7 @@ import javafx.concurrent.Worker.State;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
+import org.hypernomicon.model.HyperDataset.CoreAccessor;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
@@ -237,8 +238,7 @@ class MentionsIndex
 
         clear();
 
-        ctr = -1.0; total = 0.0;
-        types.forEach(type -> total += db.records(type).size());
+        ctr = -1.0; total = types.stream().map(db::records).mapToLong(CoreAccessor::size).sum();
 
         for (RecordType type : types) for (HDT_Record record : db.records(type))
         {

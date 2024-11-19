@@ -160,18 +160,18 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void bringAllRecordsOnline() throws RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException, CancelledTaskException
+  void bringAllRecordsOnline(boolean interactive) throws RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException, CancelledTaskException
   {
     if (online) throw new HDB_InternalError(89842);
 
     for (HDT_DT record : getAccessor())
     {
-      if (db.task.isCancelled()) throw new CancelledTaskException();
+      if (interactive && db.task.isCancelled()) throw new CancelledTaskException();
 
       record.bringStoredCopyOnline(false);
       db.addToInitialNavList(record);
 
-      if ((++db.curTaskCount % 50) == 0)
+      if (interactive && ((++db.curTaskCount % 50) == 0))
         db.task.updateProgress(db.curTaskCount, db.totalTaskCount);
     }
 
@@ -305,12 +305,11 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void addSchema(HDI_Schema schema) throws HDB_InternalError
+  void addSchema(HDI_Schema schema)
   {
     for (Tag tag : schema.tags())
     {
-      if (tagToSchema.containsKey(tag))
-        throw new HDB_InternalError(98921);
+      assert(tagToSchema.containsKey(tag) == false);
 
       if (tag != tagMainText)
         tagToSchema.put(tag, schema);

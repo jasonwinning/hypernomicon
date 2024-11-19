@@ -22,14 +22,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
-import java.util.stream.IntStream;
+import java.util.Objects;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+//---------------------------------------------------------------------------
+
 public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements List<HDT_SubjType>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   final HDT_ObjType obj;
+
+//---------------------------------------------------------------------------
 
   public HyperSubjList(RelationSet<HDT_SubjType, HDT_ObjType> relSet, HDT_ObjType obj)
   {
@@ -37,7 +45,6 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
     this.obj = obj;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   static UnsupportedOperationException uoe() { return new UnsupportedOperationException("Internal error: An attempt was made to modify a subject list."); }
@@ -130,11 +137,18 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   {
     if ((o instanceof List) == false) return false;
 
-    List<?> list = (List<?>)o;
+    List<?> list = (List<?>) o;
 
     if (list.size() != size()) return false;
 
-    return IntStream.range(0, list.size()).noneMatch(ndx -> list.get(ndx) != get(ndx));
+    Iterator<?> it1 = list.iterator(),
+                it2 =      iterator();
+
+    while (it1.hasNext())
+      if (Objects.equals(it1.next(), it2.next()) == false)
+        return false;
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -22,12 +22,17 @@ import java.util.NoSuchElementException;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+//---------------------------------------------------------------------------
+
 class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements Iterator<HDT_ObjType>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperObjList<HDT_SubjType, HDT_ObjType> list;
   private int nextNdx = 0, lastNdx = -1;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HyperObjIterator(HyperObjList<HDT_SubjType, HDT_ObjType> list)
@@ -35,7 +40,6 @@ class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_
     this.list = list;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public boolean hasNext() { return nextNdx < list.size();  }
