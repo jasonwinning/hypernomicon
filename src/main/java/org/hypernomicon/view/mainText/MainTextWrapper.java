@@ -705,7 +705,7 @@ public final class MainTextWrapper
       case hdtArgument ->
       {
         HDT_Argument arg = (HDT_Argument) curRecord;
-        yield arg.counterArgs.contains(displayer);
+        yield arg.responseArgs.contains(displayer);
       }
 
       default -> false;

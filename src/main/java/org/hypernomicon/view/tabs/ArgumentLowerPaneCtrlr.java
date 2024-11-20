@@ -31,9 +31,9 @@ public class ArgumentLowerPaneCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML TableView<HyperTableRow> tvWhereMade, tvCounters;
+  @FXML TableView<HyperTableRow> tvWhereMade, tvResponses;
   @FXML TabPane tabPane;
-  @FXML Tab tabWhereMade, tabCounters;
+  @FXML Tab tabWhereMade, tabResponses;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

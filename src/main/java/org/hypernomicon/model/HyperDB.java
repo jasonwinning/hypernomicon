@@ -443,7 +443,7 @@ public final class HyperDB
       addStringItem(hdtArgument, tagName);
       addPointerMulti(hdtArgument, rtWorkOfArgument, tagWork);
       addPointerMulti(hdtArgument, rtPositionOfArgument, tagPosition);
-      addPointerMulti(hdtArgument, rtCounterOfArgument, tagCounterargument);
+      addPointerMulti(hdtArgument, rtTargetArgOfArg, tagTargetArgument);
       addMainTextItem(hdtArgument, tagDescription, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtDebate, tagName);

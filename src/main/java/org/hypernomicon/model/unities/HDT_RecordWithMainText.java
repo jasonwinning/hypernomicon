@@ -180,8 +180,8 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 
         if (argument.positions.isEmpty() == false)
           parent = argument.positions.get(0);
-        else if (argument.counteredArgs.isEmpty() == false)
-          parent = argument.counteredArgs.get(0);
+        else if (argument.targetArgs.isEmpty() == false)
+          parent = argument.targetArgs.get(0);
 
         break;
 

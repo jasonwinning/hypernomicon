@@ -167,7 +167,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtParentWorkOfWork         -> new RelationSet<>(relType, HDT_Work         .class, HDT_Work           .class);
       case rtParentGroupOfGroup       -> new RelationSet<>(relType, HDT_PersonGroup  .class, HDT_PersonGroup    .class, true );
       case rtParentLabelOfLabel       -> new RelationSet<>(relType, HDT_WorkLabel    .class, HDT_WorkLabel      .class, true );
-      case rtCounterOfArgument        -> new RelationSet<>(relType, HDT_Argument     .class, HDT_Argument       .class,
+      case rtTargetArgOfArg           -> new RelationSet<>(relType, HDT_Argument     .class, HDT_Argument       .class,
 
         new HDI_Schema(hdcNestedPointer, relType, hdtArgumentVerdict, tagArgumentVerdict));
 
@@ -865,7 +865,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtWorkOfArgument          ( 7, tagArgument            , "Argument(s) having this work as source"),
 
     rtParentLabelOfLabel      (11, "Child Label(s)"       , "Label(s) under this parent label"),
-    rtCounterOfArgument       (14, "Countered Argument(s)", "Argument(s) countered by this argument"),
+    rtTargetArgOfArg          (14, "Response Argument(s)" , "Argument(s) responding to this argument"),
     rtStatusOfPerson          (15, tagPerson              , "Person(s) having this status"),
     rtFieldOfPerson           (16, tagPerson              , "Person(s) having this field"),
     rtSubfieldOfPerson        (17, tagPerson              , "Person(s) having this subfield"),

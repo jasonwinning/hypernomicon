@@ -82,9 +82,9 @@ public class NewArgDlgCtrlr extends HyperDlg
     this("New Argument", position);
   }
 
-  public NewArgDlgCtrlr(HDT_Argument counteredArg)
+  public NewArgDlgCtrlr(HDT_Argument targetArg)
   {
-    this("New Counterargument", counteredArg);
+    this("New Response Argument", targetArg);
   }
 
   private NewArgDlgCtrlr(String title, HDT_RecordWithMainText target)
@@ -332,10 +332,10 @@ public class NewArgDlgCtrlr extends HyperDlg
       argument.addPosition((HDT_Position)target, (HDT_PositionVerdict)verdict);
     else
     {
-      HDT_Argument counteredArg = (HDT_Argument)target;
+      HDT_Argument targetArg = (HDT_Argument)target;
 
-      try { argument.addCounteredArg(counteredArg, (HDT_ArgumentVerdict)verdict); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
-      counteredArg.positions.forEach(position -> argument.addPosition(position, null));
+      try { argument.addTargetArg(targetArg, (HDT_ArgumentVerdict)verdict); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+      targetArg.positions.forEach(position -> argument.addPosition(position, null));
     }
 
     if      (rbArgName1.isSelected()) argument.setName(tfArgName1.getText());

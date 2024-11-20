@@ -128,7 +128,7 @@ class RecordTreeEdge
 
     try
     {
-      if ((relType == rtPositionOfArgument) || (relType == rtCounterOfArgument))
+      if ((relType == rtPositionOfArgument) || (relType == rtTargetArgOfArg))
       {
         HDT_Argument childArg = (HDT_Argument) subj;
 
@@ -140,7 +140,7 @@ class RecordTreeEdge
         if (obj.getType() == hdtPosition)
           childArg.addPosition((HDT_Position)obj, vdc.hcbVerdict.selectedRecord());
         else if (obj.getType() == hdtArgument)
-          childArg.addCounteredArg((HDT_Argument)obj, vdc.hcbVerdict.selectedRecord());
+          childArg.addTargetArg((HDT_Argument)obj, vdc.hcbVerdict.selectedRecord());
       }
       else if (relType == rtKeyWork)
       {

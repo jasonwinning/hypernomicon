@@ -154,9 +154,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       pos -> db.isLoaded(),
       pos -> createChild(pos, rtParentPosOfPos)));
 
-    addCreateNewSchema(tree.addContextMenuItem("Create new counterargument to this argument", HDT_Argument.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new counter/response argument to this argument", HDT_Argument.class,
       arg -> db.isLoaded(),
-      arg -> ui.argumentHyperTab().newCounterargumentClick(arg)));
+      arg -> ui.argumentHyperTab().newResponseArgumentClick(arg)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new note under this note", HDT_Note.class,
       note -> db.isLoaded(),
@@ -240,7 +240,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     debateTree.addParentChildRelation(rtParentPosOfDebate   , true);
     debateTree.addParentChildRelation(rtParentPosOfPos      , true);
     debateTree.addParentChildRelation(rtPositionOfArgument  , true);
-    debateTree.addParentChildRelation(rtCounterOfArgument   , true);
+    debateTree.addParentChildRelation(rtTargetArgOfArg      , true);
     debateTree.addParentChildRelation(rtWorkOfArgument      , false);
 
     noteTree.addParentChildRelation(rtParentNoteOfNote, true);

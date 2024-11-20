@@ -51,7 +51,7 @@ import javafx.scene.layout.AnchorPane;
 public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argument>
 {
   private final ArgumentLowerPaneCtrlr lowerCtrlr;
-  private final HyperTable htParents, htWhereMade, htCounters;
+  private final HyperTable htParents, htWhereMade, htResponses;
 
   private HDT_Argument curArgument;
 
@@ -156,12 +156,12 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);
 
-    htCounters = new HyperTable(lowerCtrlr.tvCounters, 3, true, PREF_KEY_HT_ARG_COUNTERS);
+    htResponses = new HyperTable(lowerCtrlr.tvResponses, 3, true, PREF_KEY_HT_ARG_RESPONSES);
 
-    htCounters.addActionCol(ctGoNewBtn, 3);
-    htCounters.addLabelCol(hdtPerson);
-    htCounters.addLabelCol(hdtArgumentVerdict);
-    htCounters.addLabelCol(hdtArgument);
+    htResponses.addActionCol(ctGoNewBtn, 3);
+    htResponses.addLabelCol(hdtPerson);
+    htResponses.addLabelCol(hdtArgumentVerdict);
+    htResponses.addLabelCol(hdtArgument);
 
     htWhereMade.getTV().focusedProperty().addListener((ob, oldValue, newValue) -> updateArgCounts());
 
@@ -195,12 +195,12 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       nullSwitch(curArgument.getPosVerdict(position), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
     });
 
-    htParents.buildRows(curArgument.counteredArgs, (row, counteredArg) ->
+    htParents.buildRows(curArgument.targetArgs, (row, targetArg) ->
     {
       row.setCellValue(2, getTypeName(hdtArgument), hdtArgument);
-      row.setCellValue(3, counteredArg, counteredArg.listName());
+      row.setCellValue(3, targetArg, targetArg.listName());
 
-      nullSwitch(curArgument.getArgVerdict(counteredArg), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
+      nullSwitch(curArgument.getArgVerdict(targetArg), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
     });
 
   // Populate the authors, works, and years
@@ -218,41 +218,41 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       row.setCellValue(4, new BibDateHTC(work, work.getBibDate()));
     });
 
-  // Populate the counterarguments
-  // -----------------------------
+  // Populate the response arguments
+  // -------------------------------
 
-    htCounters.buildRows(curArgument.counterArgs, (row, counterArg) ->
+    htResponses.buildRows(curArgument.responseArgs, (row, responseArg) ->
     {
-      if (counterArg.works.size() > 0)
+      if (responseArg.works.size() > 0)
       {
-        HDT_Work work = counterArg.works.get(0);
+        HDT_Work work = responseArg.works.get(0);
 
         if (work.authorRecords.size() > 0)
           row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr(true));
         else
-          row.setCellValue(1, counterArg, work.getLongAuthorsStr(true));
+          row.setCellValue(1, responseArg, work.getLongAuthorsStr(true));
       }
 
-      nullSwitch(counterArg.getArgVerdict(curArgument), verdict -> row.setCellValue(2, counterArg, verdict.listName()));
+      nullSwitch(responseArg.getArgVerdict(curArgument), verdict -> row.setCellValue(2, responseArg, verdict.listName()));
 
-      row.setCellValue(3, counterArg, counterArg.listName());
+      row.setCellValue(3, responseArg, responseArg.listName());
     });
 
-    lowerCtrlr.tabCounters.setText("Counterarguments (" + curArgument.counterArgs.size() + ')');
+    lowerCtrlr.tabResponses.setText("Counter/Response Arguments (" + curArgument.responseArgs.size() + ')');
 
   // Set active tab
   // --------------
 
-    boolean noWorks    = curArgument.works.isEmpty(),
-            noCounters = curArgument.counterArgs.isEmpty();
+    boolean noWorks     = curArgument.works       .isEmpty(),
+            noResponses = curArgument.responseArgs.isEmpty();
 
     Tab tab = lowerCtrlr.tabPane.getSelectionModel().getSelectedItem();
 
     if (((tab == lowerCtrlr.tabWhereMade) && noWorks) ||
-        ((tab == lowerCtrlr.tabCounters) && noCounters))
+        ((tab == lowerCtrlr.tabResponses) && noResponses))
     {
-      if (noCounters == false) tab = lowerCtrlr.tabCounters;
-      else if (noWorks == false) tab = lowerCtrlr.tabWhereMade;
+      if      (noResponses == false) tab = lowerCtrlr.tabResponses;
+      else if (noWorks     == false) tab = lowerCtrlr.tabWhereMade;
 
       lowerCtrlr.tabPane.getSelectionModel().select(tab);
     }
@@ -281,18 +281,18 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
 
-    htCounters.addContextMenuItem("Launch work", HDT_Argument.class,
+    htResponses.addContextMenuItem("Launch work", HDT_Argument.class,
       arg -> HDT_Work.hasLaunchableWork(arg.works),
       arg -> HDT_Work.getLaunchableWork(arg.works).launch(-1));
 
-    htCounters.addContextMenuItem("Go to work record", HDT_Argument.class,
+    htResponses.addContextMenuItem("Go to work record", HDT_Argument.class,
       arg -> arg.works.size() > 0,
       arg -> ui.goToRecord(nullSwitch(HDT_Work.getLaunchableWork(arg.works), arg.works.get(0)), true));
 
-    htCounters.addContextMenuItem("Go to person record", HDT_Person.class,
+    htResponses.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
 
-    htCounters.addContextMenuItem("Go to argument record", HDT_Argument.class,
+    htResponses.addContextMenuItem("Go to argument record", HDT_Argument.class,
       argument -> ui.goToRecord(argument, true));
   }
 
@@ -307,7 +307,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     htParents  .clear();
     htWhereMade.clear();
-    htCounters .clear();
+    htResponses.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -335,7 +335,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       return false;
 
     htParents.saveObjectsAndSingleNestedItem(curArgument, rtPositionOfArgument, tagPositionVerdict, 3, 4);
-    htParents.saveObjectsAndSingleNestedItem(curArgument, rtCounterOfArgument , tagArgumentVerdict, 3, 4);
+    htParents.saveObjectsAndSingleNestedItem(curArgument, rtTargetArgOfArg    , tagArgumentVerdict, 3, 4);
 
     return true;
   }
@@ -351,7 +351,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     {
       case hdtArgument :
 
-        newCounterargumentClick(curArgument);
+        newResponseArgumentClick(curArgument);
         break;
 
       case hdtWork :
@@ -370,7 +370,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void newCounterargumentClick(HDT_Argument target)
+  public void newResponseArgumentClick(HDT_Argument target)
   {
     NewArgDlgCtrlr newArgDialog = new NewArgDlgCtrlr(target);
 

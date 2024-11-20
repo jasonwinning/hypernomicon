@@ -790,19 +790,19 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       if (arg.positions.size() > 0)
       {
-        HDT_Position position = arg.positions.get(0);
-        row.setCellValue(0, position, "");
-        row.setCellValue(1, position, position.listName());
+        HDT_Position target = arg.positions.get(0);
+        row.setCellValue(0, target, "");
+        row.setCellValue(1, target, target.listName());
 
-        nullSwitch(arg.getPosVerdict(position), verdict -> row.setCellValue(2, verdict, verdict.listName()));
+        nullSwitch(arg.getPosVerdict(target), verdict -> row.setCellValue(2, verdict, verdict.listName()));
       }
-      else if (arg.counteredArgs.size() > 0)
+      else if (arg.targetArgs.size() > 0)
       {
-        HDT_Argument countered = arg.counteredArgs.get(0);
-        row.setCellValue(0, countered, "");
-        row.setCellValue(1, countered, countered.listName());
+        HDT_Argument target = arg.targetArgs.get(0);
+        row.setCellValue(0, target, "");
+        row.setCellValue(1, target, target.listName());
 
-        nullSwitch(arg.getArgVerdict(countered), verdict -> row.setCellValue(2, verdict, verdict.listName()));
+        nullSwitch(arg.getArgVerdict(target), verdict -> row.setCellValue(2, verdict, verdict.listName()));
       }
 
       row.setCellValue(3, arg, arg.listName());

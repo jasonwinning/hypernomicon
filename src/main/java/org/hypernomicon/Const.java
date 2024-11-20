@@ -125,7 +125,7 @@ public final class Const
 
     PREF_KEY_HT_ARG_PARENTS = "htArgParents",
     PREF_KEY_HT_ARG_SRC = "htArgSrc",
-    PREF_KEY_HT_ARG_COUNTERS = "htArgCounters",
+    PREF_KEY_HT_ARG_RESPONSES = "htArgCounters",
     PREF_KEY_HT_CONTENTS_DLG = "htContentsDlg",
     PREF_KEY_HT_DEBATE_PARENTS = "htDebateParents",
     PREF_KEY_HT_DEBATE_POS = "htDebatePos",

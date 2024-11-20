@@ -42,17 +42,17 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 public class HDT_Argument extends HDT_RecordWithMainText
 {
   public final List<HDT_Position> positions;
-  public final List<HDT_Argument> counteredArgs, counterArgs;
+  public final List<HDT_Argument> targetArgs, responseArgs;
   public final List<HDT_Work> works;
 
   public HDT_Argument(RecordState xmlState, HyperDataset<HDT_Argument> dataset)
   {
     super(xmlState, dataset, tagName);
 
-    positions = Collections.unmodifiableList(getObjList(rtPositionOfArgument));
-    counteredArgs = Collections.unmodifiableList(getObjList(rtCounterOfArgument));
+    positions  = Collections.unmodifiableList(getObjList(rtPositionOfArgument));
+    targetArgs = Collections.unmodifiableList(getObjList(rtTargetArgOfArg    ));
     works = getObjList(rtWorkOfArgument);
-    counterArgs = getSubjList(rtCounterOfArgument);
+    responseArgs = getSubjList(rtTargetArgOfArg);
   }
 
 //---------------------------------------------------------------------------
@@ -87,15 +87,15 @@ public class HDT_Argument extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addCounteredArg(HDT_Argument countered, HDT_ArgumentVerdict verdict) throws RelationCycleException
+  public void addTargetArg(HDT_Argument target, HDT_ArgumentVerdict verdict) throws RelationCycleException
   {
-    HyperObjList<HDT_Argument, HDT_Argument> list = getObjList(rtCounterOfArgument);
-    list.add(countered);
-    list.throwLastException();
+    HyperObjList<HDT_Argument, HDT_Argument> targets = getObjList(rtTargetArgOfArg);
+    targets.add(target);
+    targets.throwLastException();
 
     if (verdict == null) return;
 
-    db.updateNestedPointer(this, countered, tagArgumentVerdict, verdict);
+    db.updateNestedPointer(this, target, tagArgumentVerdict, verdict);
   }
 
 //---------------------------------------------------------------------------
@@ -131,7 +131,7 @@ public class HDT_Argument extends HDT_RecordWithMainText
   {
     HDT_Debate debate = findFirstHaving(positions, HDT_Position::getLargerDebate);
 
-    return nullSwitch(debate, findFirstHaving(counteredArgs, HDT_Argument::getDebate));
+    return nullSwitch(debate, findFirstHaving(targetArgs, HDT_Argument::getDebate));
   }
 
 //---------------------------------------------------------------------------

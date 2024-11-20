@@ -73,7 +73,7 @@ public enum Tag
   tagLargerWork      ("larger_work"       , "Larger Work"              , hdtWork),
   tagParentLabel     ("parent_label"      , "Parent Label"             , hdtWorkLabel),
   tagParentGroup     ("parent_group"      , "Parent Group"             , hdtPersonGroup),
-  tagCounterargument ("counterargument"   , "Counterargument"          , hdtArgument),
+  tagTargetArgument  ("counterargument"   , "Target Argument"          , hdtArgument),
   tagParentFolder    ("parent_folder"     , "Parent Folder"            , hdtFolder),
   tagParentInst      ("parent_institution", "Parent Institution"       , hdtInstitution),
   tagPictureFolder   ("picture_folder"    , "Picture Folder"           , hdtFolder),

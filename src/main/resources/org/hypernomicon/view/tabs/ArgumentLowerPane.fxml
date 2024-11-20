@@ -34,7 +34,7 @@
         <TableView fx:id="tvWhereMade" editable="true" layoutX="200.0" layoutY="86.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <columns>
             <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" resizable="false" sortable="false" />
-            <TableColumn prefWidth="75.0" text="Author" />
+            <TableColumn prefWidth="75.0" text="Author(s)" />
             <TableColumn prefWidth="302.0" text="Work" />
             <TableColumn prefWidth="96.0" text="Pages" />
             <TableColumn maxWidth="75.0" minWidth="75.0" prefWidth="75.0" resizable="false" text="Date" />
@@ -45,7 +45,7 @@
         </TableView>
       </AnchorPane>
     </Tab>
-    <Tab fx:id="tabCounters" text="Counterarguments">
+    <Tab fx:id="tabResponses" text="Counter/Response Arguments">
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
         <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <columnConstraints>
@@ -55,15 +55,15 @@
             <RowConstraints maxHeight="25.0" minHeight="25.0" prefHeight="25.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="1.7976931348623157E308" minHeight="10.0" prefHeight="342.0" vgrow="ALWAYS" />
           </rowConstraints>
-          <Label text="This argument is countered by the following argument(s):">
+          <Label text="This argument is responded to by the following argument(s):">
             <font>
               <Font size="12.0" />
             </font>
           </Label>
-          <TableView fx:id="tvCounters" editable="true" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+          <TableView fx:id="tvResponses" editable="true" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
             <columns>
               <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" resizable="false" sortable="false" />
-              <TableColumn prefWidth="75.0" text="Person" />
+              <TableColumn prefWidth="75.0" text="Author(s)" />
               <TableColumn prefWidth="75.0" text="Argues that:" />
               <TableColumn prefWidth="75.0" text="Argument Name" />
             </columns>
