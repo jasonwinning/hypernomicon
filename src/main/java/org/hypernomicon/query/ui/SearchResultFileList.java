@@ -28,13 +28,9 @@ import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.multipdf.PDFCloneUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
@@ -42,8 +38,6 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
-
-import com.google.common.collect.Iterators;
 
 //---------------------------------------------------------------------------
 
@@ -152,17 +146,6 @@ class SearchResultFileList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-    // This class is necessary because the PDFBox developers decided to reduce
-    // the visibility of the PDFCloneUtility constructor without providing an
-    // alternate way to clone a PDF page in memory.
-
-    private static final class PDFCloneUtility2 extends PDFCloneUtility
-    {
-      private PDFCloneUtility2(PDDocument dest) { super(dest); }  // Make callable from outer class
-    }
-
-//---------------------------------------------------------------------------
-
     private void copyToResultsFolder(boolean excludeAnnots, List<String> errList)
     {
       try
@@ -188,38 +171,37 @@ class SearchResultFileList
 
             if (excludeAnnots && (startPage == 1) && (numPages == endPage))
               excludeAnnots = hasAnnotations(srcPdf);
-          }
 
-          if (numPages > 0)
-          {
             if ((startPage == 1) && (numPages == endPage) && !excludeAnnots)
             {
               filePath.copyTo(destFilePath, false);
             }
             else try (PDDocument destPdf = new PDDocument())
             {
-              PDFCloneUtility cloneUtil = new PDFCloneUtility2(destPdf);
-
               for (int curPageNdx = startPage - 1; curPageNdx < endPage; curPageNdx++)
               {
-                COSDictionary dict = cloneUtil.cloneForNewDocument(srcPdf.getPage(curPageNdx).getCOSObject());
+                // Make a copy of the page and add it to the new document
+
+                PDPage newPage = destPdf.importPage(srcPdf.getPage(curPageNdx));
+
+                // Remove annotations
 
                 if (excludeAnnots)
                 {
-                  COSArray annots = (COSArray) dict.getItem(COSName.ANNOTS);
+                  List<PDAnnotation> annotations = newPage.getAnnotations();
 
-                  if (annots != null)
+                  // The reason for iterating over index numbers and calling the list remove(ndx) method
+                  // is that other methods for removing from a collection don't seem to be implemented
+                  // correctly.
+
+                  for (int ndx = annotations.size() - 1; ndx >= 0; ndx--)
                   {
-                    Iterators.removeIf(annots.iterator(), annot ->
-                    {
-                      String subtype = ((COSName) ((COSDictionary) annot).getItem(COSName.SUBTYPE)).getName();
+                    String subtype = annotations.get(ndx).getSubtype();
 
-                      return ("Link".equals(subtype) == false) && ("Widget".equals(subtype) == false);
-                    });
+                    if (("Link".equals(subtype) == false) && ("Widget".equals(subtype) == false))
+                      annotations.remove(ndx);
                   }
                 }
-
-                destPdf.addPage(new PDPage(dict));
               }
 
               destPdf.save(destFilePath.toString());
