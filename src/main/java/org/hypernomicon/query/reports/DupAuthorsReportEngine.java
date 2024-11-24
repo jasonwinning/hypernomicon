@@ -76,18 +76,18 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     PersonForDupCheck person = list.poll();
 
-    int ndx = 0, total = list.size();
-    total = total * (total + 1) / 2;
+    task.totalCount = list.size() * (list.size() + 1) / 2;
 
     while (list.size() > 0)
     {
       List<Author> matchedAuthors = new ArrayList<>();
-      doDupCheck(person, list, matchedAuthors, task, ndx, total);
+
+      doDupCheck(person, list, matchedAuthors, task);
 
       if (matchedAuthors.size() > 0)
         matchMap.put(person.getAuthor(), matchedAuthors);
 
-      ndx = ndx + list.size();
+      task.completedCount += list.size();
 
       person = list.poll();
     }

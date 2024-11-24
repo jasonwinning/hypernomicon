@@ -295,7 +295,7 @@ public final class DesktopUtil
 
     if (url.isEmpty()) return;
 
-    if (url.startsWith(EXT_1) && (extPath() == null))
+    if (url.startsWith(EXT_1) && (db.extPath() == null))
     {
       warningPopup(WorkTabCtrlr.NO_EXT_PATH_MESSAGE);
       return;

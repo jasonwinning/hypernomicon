@@ -36,6 +36,8 @@ import org.apache.commons.io.FileUtils;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.util.filePath.FilePath;
 
+//---------------------------------------------------------------------------
+
 public final class InterProcClient
 {
 
@@ -48,11 +50,11 @@ public final class InterProcClient
 
   private static final String tempFileName = "hypernomiconInstances.tmp",
                               thisInstanceID = randomAlphanumericStr(8);
+
   static final String UPDATE_CMD = "update";
 
   private static int portNum = -1;
   private static FilePath dbPath = new FilePath("");
-  private static Map<String, AppInstance> idToInstance = new HashMap<>();
   private static InterProcDaemon daemon = null;
 
 //---------------------------------------------------------------------------
@@ -66,12 +68,12 @@ public final class InterProcClient
 
   private static boolean firstRun = true;
 
-  private static void loadFromFile()
+  private static Map<String, AppInstance> loadFromFile()
   {
-    idToInstance.clear();
+    Map<String, AppInstance> idToInstance = new HashMap<>();
 
     FilePath filePath = tempDir().resolve(new FilePath(tempFileName));
-    if (filePath.exists() == false) return;
+    if (filePath.exists() == false) return idToInstance;
 
     List<String> lines = null;
 
@@ -90,12 +92,14 @@ public final class InterProcClient
       PDFJSWrapper.clearContextFolder();
 
     firstRun = false;
+
+    return idToInstance;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void writeToFile()
+  private static void writeToFile(Map<String, AppInstance> idToInstance)
   {
     FilePath filePath = tempDir().resolve(new FilePath(tempFileName));
 
@@ -125,10 +129,15 @@ public final class InterProcClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void updateInstances()
+  /**
+   * For each running instance in the instance map (read from temp file), ask that instance
+   * for updated information. Then, update the instance map with the updated information.
+   * @param idToInstance The instance map
+   */
+  private static void updateInstances(Map<String, AppInstance> idToInstance)
   {
-    Map<String, AppInstance> oldMap = idToInstance;
-    idToInstance = new HashMap<>();
+    Map<String, AppInstance> oldMap = new HashMap<>(idToInstance);
+    idToInstance.clear();
 
     oldMap.forEach((instanceID, instance) ->
     {
@@ -156,50 +165,56 @@ public final class InterProcClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void refresh(FilePath newDbPath)
+  public static void updateRunningInstancesFile(FilePath newDbPath)
   {
     dbPath = FilePath.isEmpty(newDbPath) ? new FilePath("") : newDbPath;
-    refresh();
+    updateRunningInstancesFile();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void removeThisInstance()
+  public static void removeThisInstanceFromInstancesTempFile()
   {
-    loadFromFile();
+    Map<String, AppInstance> idToInstance = loadFromFile();
     idToInstance.remove(thisInstanceID);
-    writeToFile();
+    writeToFile(idToInstance);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void refresh()
+  private static Map<String, AppInstance> updateRunningInstancesFile()
   {
-    loadFromFile();
-    updateInstances();
-    writeToFile();
+    Map<String, AppInstance> idToInstance = loadFromFile();
+    updateInstances(idToInstance);
+    writeToFile(idToInstance);
+
+    return idToInstance;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean checkFolder(FilePath newDbPath)
+  /**
+   * Check to make sure there is not already a running instance of Hypernomicon
+   * using the same database folder
+   * @param newDbPath The folder to check
+   * @return True if there is another conflicting instance; false otherwise
+   */
+  public static boolean folderInUseByAnotherInstance(FilePath newDbPath)
   {
-    refresh();
-
     newDbPath = newDbPath.getDirOnly();
 
-    for (AppInstance instance : idToInstance.values())
+    for (AppInstance instance : updateRunningInstancesFile().values())
     {
       if (instance.getID().equals(thisInstanceID) == false)
         if (FilePath.isEmpty(instance.getDBPath()) == false)
           if (instance.getDBPath().isSubpath(newDbPath) || newDbPath.isSubpath(instance.getDBPath()))
-            return false;
+            return true;
     }
 
-    return true;
+    return false;
   }
 
 //---------------------------------------------------------------------------

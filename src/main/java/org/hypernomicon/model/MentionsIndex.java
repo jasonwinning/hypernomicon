@@ -62,16 +62,17 @@ class MentionsIndex
   private final List<Runnable> ndxCompleteHandlers;
   private final EnumSet<RecordType> types;
   private final List<String> strList = new ArrayList<>();
+  private final boolean asynchronous;
 
   private HyperTask task = null;
-  private double ctr, total;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MentionsIndex(List<Runnable> ndxCompleteHandlers)
+  MentionsIndex(List<Runnable> ndxCompleteHandlers, boolean asynchronous)
   {
     this.ndxCompleteHandlers = ndxCompleteHandlers;
+    this.asynchronous = asynchronous;
 
     types = EnumSet.allOf(RecordType.class);
     types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
@@ -79,7 +80,7 @@ class MentionsIndex
 
 //---------------------------------------------------------------------------
 
-  boolean waitUntilRebuildIsDone() { return (isRebuilding() == false) || (task.runWithProgressDialog() == State.SUCCEEDED); }
+  boolean waitUntilRebuildIsDone() { return (asynchronous == false) || (isRebuilding() == false) || (task.runWithProgressDialog() == State.SUCCEEDED); }
   boolean isRebuilding()           { return (task != null) && task.threadIsAlive(); }
   void stopRebuild()               { if (isRebuilding()) task.cancelAndWait(); }
 
@@ -217,48 +218,63 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * If asynchronous is true, the rebuild task will be started in its own thread. Otherwise,
+   * the mentionsIndex is completely rebuilt in this thread before this function returns.
+   */
   void startRebuild()
+  {
+    if (asynchronous)
+    {
+      startRebuildTask();
+      return;
+    }
+
+    for (RecordType type : types)
+      for (HDT_Record record : db.records(type))
+        reindexMentioner(record);
+
+    ndxCompleteHandlers.forEach(Runnable::run);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void startRebuildTask()
   {
     stopRebuild();
 
-    task = new HyperTask("MentionsIndex")
+    task = new HyperTask("MentionsIndex", "The requested operation will be performed after indexing has completed...")
     {
       @Override protected void done() { Platform.runLater(() ->
       {
         waitUntilThreadDies();
 
-        ui.updateProgress("", -1.0);
+        ui.updateProgress("", -1);
 
         ndxCompleteHandlers.forEach(Runnable::run);
       }); }
 
       @Override protected void call() throws CancelledTaskException
       {
-        updateMessage("The requested operation will be performed after indexing has completed...");
-
         clear();
 
-        ctr = -1.0; total = types.stream().map(db::records).mapToLong(CoreAccessor::size).sum();
+        totalCount = types.stream().map(db::records).mapToLong(CoreAccessor::size).sum();
 
-        for (RecordType type : types) for (HDT_Record record : db.records(type))
-        {
-          if ((((int)ctr++) % 50) == 0)
+        for (RecordType type : types)
+          for (HDT_Record record : db.records(type))
           {
-            if (isCancelled())
-              throw new CancelledTaskException();
+            incrementAndUpdateProgress(50);
 
-            updateProgress(ctr, total);
+            reindexMentioner(record);
           }
-
-          reindexMentioner(record);
-        }
       }
     };
 
     task.progressProperty().addListener((ob, oldValue, newValue) -> Platform.runLater(() ->
     {
       if (task.isDone() == false)
-        ui.updateProgress("Indexing:", ctr / total);
+        ui.updateProgress("Indexing:", (double)task.completedCount / (double)task.totalCount);
     }));
 
     new RebuildThread(task).start();

@@ -554,13 +554,13 @@ public class FolderTreeWatcher
         {
           case hmtEchoRequest :
 
-            new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply).writeToDisk(false);
+            new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply).writeToFile(false);
             sentResponse = true;
             return true;
 
           case hmtUnlockRequest :
 
-            new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete).writeToDisk(false);
+            new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete).writeToFile(false);
             sentResponse = true;
             return true;
 

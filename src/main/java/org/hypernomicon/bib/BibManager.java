@@ -441,7 +441,7 @@ public class BibManager extends HyperDlg
       refresh();
 
       ui.update();
-      ui.saveAllToDisk(true, true, true);
+      ui.saveAllToXML(true, true, true);
     });
 
     syncTask.startWithNewThreadAsDaemon();
@@ -486,7 +486,7 @@ public class BibManager extends HyperDlg
                                                        .map(HDT_WorkFile::filePath)
                                                        .toList();
       if (collEmpty(pdfFilePaths))
-        pdfFilePaths = safeListOf(resolveExtFilePath(entry.getWork().getURL()));
+        pdfFilePaths = safeListOf(db.resolveExtFilePath(entry.getWork().getURL()));
     }
     else
       pdfFilePaths = Collections.emptyList();

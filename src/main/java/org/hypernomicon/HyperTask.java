@@ -74,14 +74,23 @@ public abstract class HyperTask
 
   private class InnerTask extends Task<Void>
   {
+    private final String startingMessage;
+
+    private InnerTask(String startingMessage)
+    {
+      this.startingMessage = startingMessage;
+    }
+
     @Override protected Void call() throws HyperDataException
     {
+      updateMessage(startingMessage);
+      updateProgress(0, 1);
+
       try                              { HyperTask.this.call(); }
       catch (CancelledTaskException e) { cancel();              }
       return null;
     }
 
-    @Override protected void updateMessage(String msg)                { super.updateMessage(msg); }         // Make visible to outer class
     @Override protected void updateProgress(double cur, double total) { super.updateProgress(cur, total); } // Make visible to outer class
     @Override protected void done()                                   { HyperTask.this.done(); }
 
@@ -101,14 +110,32 @@ public abstract class HyperTask
 
   public HyperTask(String threadName)
   {
-    this.threadName = threadName;
+    this(threadName, "Working...");
+  }
 
-    innerTask = new InnerTask();
+  public HyperTask(String threadName, String message)
+  {
+    this(threadName, message, 1);
+  }
+
+  public HyperTask(String threadName, String message, long totalCount)
+  {
+    this.threadName = threadName;
+    this.totalCount = totalCount;
+
+    innerTask = new InnerTask(message);
   }
 
   private final InnerTask innerTask;
   private final String threadName;
+
   private HyperThread thread;
+
+  /**
+   * If completedCount is negative, then the progress will be shown as indeterminate, regardless of what totalCount is.
+   * This is due to the behavior of how the Task class uses its corresponding properties.
+   */
+  public long completedCount = 0, totalCount;
 
   protected abstract void call() throws HyperDataException, CancelledTaskException;
 
@@ -142,8 +169,21 @@ public abstract class HyperTask
   public boolean isCancelled()   { return innerTask.isCancelled(); }
   public boolean isDone()        { return innerTask.isDone(); }
 
-  protected void updateMessage(String msg)             { innerTask.updateMessage(msg); }
-  public void updateProgress(double cur, double total) { innerTask.updateProgress(cur, total); }
+  public void incrementAndUpdateProgress() throws CancelledTaskException { completedCount++; updateProgress(); }
+
+  private void updateProgress() throws CancelledTaskException { updateProgress(completedCount, totalCount); }
+
+  public void incrementAndUpdateProgress(int updateInterval) throws CancelledTaskException
+  {
+    if ((++completedCount % updateInterval) == 0)
+      updateProgress();
+  }
+
+  public void updateProgress(double cur, double total) throws CancelledTaskException
+  {
+    innerTask.updateProgress(cur, total);
+    throwExceptionIfCancelled(this);
+  }
 
   public State runWithProgressDialog() { return ProgressDlgCtrlr.performTask(this); }
 
@@ -173,6 +213,15 @@ public abstract class HyperTask
       return false;
 
     return waitUntilThreadDies();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void throwExceptionIfCancelled(HyperTask task) throws CancelledTaskException
+  {
+    if ((task != null) && task.isCancelled())
+      throw new CancelledTaskException();
   }
 
 //---------------------------------------------------------------------------

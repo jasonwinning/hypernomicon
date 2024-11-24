@@ -102,7 +102,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   protected boolean didMergeDuringSync = false;
 
   public abstract SyncTask createNewSyncTask();
-  public abstract void loadFromDisk(FilePath filePath) throws IOException, ParseException, HDB_InternalError;
+  public abstract void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HDB_InternalError;
   public abstract LibraryType type();
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
   protected abstract void safePrefs();
@@ -120,8 +120,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public BibEntry_T getEntryByKey(String key)            { return keyToAllEntry.get(key); }
   public BibEntry_T getEntryByID(int id)                 { return keyToAllEntry.get(keyList.get(id - 1)); }
-
-  protected boolean syncTaskIsCancelled()                { return (syncTask != null) && syncTask.isCancelled(); }
 
   public final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { keyChangeHndlr = hndlr; }
 
@@ -286,7 +284,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveToDisk()
+  public void saveAllToJsonFile()
   {
     StringBuilder json = null;
 
@@ -296,21 +294,21 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       JsonArray jArr = new JsonArray();
 
       for (BibEntry_T entry : (Iterable<BibEntry_T>)getNonTrashEntries()::iterator)
-        entry.saveToDisk(jArr);
+        entry.saveToJsonArray(jArr);
 
       jMainObj.put(entryFileNode(), jArr);
 
       jArr = new JsonArray();
 
       for (BibEntry_T entry : keyToTrashEntry.values())
-        entry.saveToDisk(jArr);
+        entry.saveToJsonArray(jArr);
 
       jMainObj.put("trash", jArr);
 
       jArr = new JsonArray();
 
       for (BibCollection_T coll : keyToColl.values())
-        coll.saveToDisk(jArr);
+        coll.saveToJsonArray(jArr);
 
       jMainObj.put(collectionFileNode(), jArr);
 

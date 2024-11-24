@@ -59,7 +59,7 @@ public class InterComputerMsg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void writeToDisk(boolean getFolderFromAppPrefs) throws IOException
+  public void writeToFile(boolean getFolderFromAppPrefs) throws IOException
   {
     List<String> lines = Lists.newArrayList(source, dest);
 

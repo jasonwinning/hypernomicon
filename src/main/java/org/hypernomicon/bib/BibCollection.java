@@ -38,7 +38,7 @@ public abstract class BibCollection implements BibEntity
 
 //---------------------------------------------------------------------------
 
-  @Override public void saveToDisk(JsonArray jArr) { jArr.add(jObj.clone()); }
+  @Override public void saveToJsonArray(JsonArray jArr) { jArr.add(jObj.clone()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -399,13 +399,13 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     String url = getURL();
 
-    if (url.startsWith(EXT_1) && (extPath() == null))
+    if (url.startsWith(EXT_1) && (db.extPath() == null))
     {
       warningPopup(WorkTabCtrlr.NO_EXT_PATH_MESSAGE);
       return;
     }
 
-    FilePath filePath = resolveExtFilePath(url);
+    FilePath filePath = db.resolveExtFilePath(url);
 
     if (FilePath.isEmpty(filePath))
       openWebLink(url);
@@ -461,7 +461,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
       HDT_Work work = (HDT_Work)record;
 
       if (work.getURL().isBlank() == false)
-        return nullSwitch(resolveExtFilePath(work.getURL()), "web", filePath2 -> filePath2.getExtensionOnly().toLowerCase());
+        return nullSwitch(db.resolveExtFilePath(work.getURL()), "web", filePath2 -> filePath2.getExtensionOnly().toLowerCase());
     }
 
     return "";
@@ -565,7 +565,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public FilePath filePathIncludeExt()
   {
-    return workFiles.isEmpty() ? resolveExtFilePath(getURL()) : filePath();
+    return workFiles.isEmpty() ? db.resolveExtFilePath(getURL()) : filePath();
   }
 
 //---------------------------------------------------------------------------

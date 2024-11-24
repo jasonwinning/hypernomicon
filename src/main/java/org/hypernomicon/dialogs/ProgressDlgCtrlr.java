@@ -55,8 +55,6 @@ public final class ProgressDlgCtrlr extends HyperDlg
     lblPercent.setText("Progress: 0 %");
     progressBar.setProgress(0.0);
 
-    task.updateProgress(0, 1);
-
     lblTask    .textProperty    ().bind(task.messageProperty ());
     progressBar.progressProperty().bind(task.progressProperty());
 

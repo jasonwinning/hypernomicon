@@ -191,8 +191,6 @@ public class FileManager extends HyperDlg
   private final FileTable fileTable;
   private final HyperTable recordTable;
   private final FolderHistory history;
-  private static HyperTask task;
-  private static long totalTaskCount, curTaskCount;
 
   FileRow getFolderRow()                { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
   public void clearHistory()            { history.clear(); }
@@ -528,10 +526,9 @@ public class FileManager extends HyperDlg
     final FilePathSet srcSet = new FilePathSet(), destSet = new FilePathSet();
     srcPathToHilite = null;
 
-    task = new HyperTask("BuildFileList") { @Override protected void call() throws HyperDataException
+    if (new HyperTask("BuildFileList", "Building list of files...") { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
-      updateMessage("Building list of files...");
-      updateProgress(-1, -1);
+      updateProgress(-1, 1);
 
       for (AbstractEntityWithPath pathItem : getSrcPaths(dragging))
       {
@@ -543,26 +540,16 @@ public class FileManager extends HyperDlg
 
         srcSet.add(pathItem.getFilePath());
       }
-    }};
 
-    if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
+    }}.runWithProgressDialog() != State.SUCCEEDED) return false;
 
-    task = new HyperTask("PasteChecks") { @Override protected void call() throws CancelledTaskException, HyperDataException
+    if (new HyperTask("PasteChecks", "Performing checks...", srcSet.size() * 2L) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
-      updateMessage("Performing checks...");
-      updateProgress(0, 1);
-
-      totalTaskCount = srcSet.size() * 2L;
-      curTaskCount = 0;
-
       FilePath baseDir = getSrcPaths(dragging).get(0).getFilePath().getParent();
 
       for (FilePath srcFilePath : srcSet)
       {
-        updateProgress(curTaskCount++, totalTaskCount);
-
-        if (isCancelled())
-          throw new CancelledTaskException();
+        incrementAndUpdateProgress();
 
         if (copying == false)
         {
@@ -584,10 +571,7 @@ public class FileManager extends HyperDlg
 
       for (FilePath destFilePath : destSet)
       {
-        updateProgress(curTaskCount++, totalTaskCount);
-
-        if (isCancelled())
-          throw new CancelledTaskException();
+        incrementAndUpdateProgress();
 
         if (srcSet.contains(destFilePath))
           throw new HyperDataException("Destination path \"" + destFilePath + "\" is also one of the source paths.");
@@ -600,9 +584,8 @@ public class FileManager extends HyperDlg
             throw new HyperDataException("Cannot overwrite destination path: \"" + destFilePath + "\".");
         }
       }
-    }};
 
-    if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
+    }}.runWithProgressDialog() != State.SUCCEEDED) return false;
 
     PasteAnswer paUnrelated = PasteAnswer.check,
                 paRelated   = PasteAnswer.check;
@@ -707,22 +690,13 @@ public class FileManager extends HyperDlg
 
     folderTreeWatcher.stop();
 
-    task = new HyperTask("ObtainLocks") { @Override protected void call() throws CancelledTaskException, HyperDataException
+    return (new HyperTask("ObtainLocks", "Obtaining locks...", srcToDest.size()) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
-      updateMessage("Obtaining locks...");
-      updateProgress(0, 1);
-
-      totalTaskCount = srcToDest.size();
-      curTaskCount = 0;
-
       try
       {
         for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
         {
-          updateProgress(curTaskCount++, totalTaskCount);
-
-          if (isCancelled())
-            throw new CancelledTaskException();
+          incrementAndUpdateProgress();
 
           if ((copying == false) && (entry.getKey().canObtainLock() == false))
             throw new HyperDataException("Unable to obtain lock on path: \"" + entry.getKey() + '"');
@@ -735,9 +709,8 @@ public class FileManager extends HyperDlg
       {
         throw new HyperDataException("Unable to obtain lock: " + getThrowableMessage(e), e);
       }
-    }};
 
-    return (task.runWithProgressDialog() == State.SUCCEEDED) && (srcToDest.isEmpty() == false);
+    }}.runWithProgressDialog() == State.SUCCEEDED) && (srcToDest.isEmpty() == false);
   }
 
 //---------------------------------------------------------------------------
@@ -761,22 +734,9 @@ public class FileManager extends HyperDlg
 
     folderTreeWatcher.stop();
 
-    task = new HyperTask("PasteOperation") { @Override protected void call() throws CancelledTaskException, HyperDataException
+    boolean success = new HyperTask("PasteOperation", copying ? "Copying..." : "Moving...",
+                                    srcToDest.size() * (copying ? 2L : 4L)) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
-      if (copying)
-      {
-        updateMessage("Copying...");
-        totalTaskCount = srcToDest.size() * 2L;
-      }
-      else
-      {
-        updateMessage("Moving...");
-        totalTaskCount = srcToDest.size() * 4L;
-      }
-
-      updateProgress(0, 1);
-      curTaskCount = 0;
-
       suppressNeedRefresh = true;
 
       try
@@ -787,10 +747,7 @@ public class FileManager extends HyperDlg
 
         for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
         {
-          updateProgress(curTaskCount++, totalTaskCount);
-
-          if (isCancelled())
-            throw new CancelledTaskException();
+          incrementAndUpdateProgress();
 
           FilePath srcFilePath  = entry.getKey(),
                    destFilePath = entry.getValue();
@@ -806,10 +763,7 @@ public class FileManager extends HyperDlg
         {
           for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
           {
-            updateProgress(curTaskCount++, totalTaskCount);
-
-            if (isCancelled())
-              throw new CancelledTaskException();
+            incrementAndUpdateProgress();
 
             FilePath srcFilePath = entry.getKey(),
                      destFilePath = entry.getValue();
@@ -828,10 +782,7 @@ public class FileManager extends HyperDlg
         {
           for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
           {
-            updateProgress(curTaskCount++, totalTaskCount);
-
-            if (isCancelled())
-              throw new CancelledTaskException();
+            incrementAndUpdateProgress();
 
             FilePath srcFilePath = entry.getKey(),
                      destFilePath = entry.getValue();
@@ -856,9 +807,12 @@ public class FileManager extends HyperDlg
       // if moving, update note records
       // ------------------------------
 
-          srcToDest.forEach((srcFilePath, destFilePath) ->
+          for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
           {
-            updateProgress(curTaskCount++, totalTaskCount);
+            FilePath srcFilePath = entry.getKey(),
+                     destFilePath = entry.getValue();
+
+            incrementAndUpdateProgress();
 
             if (srcFilePath.isDirectory() == false) return;
 
@@ -866,14 +820,14 @@ public class FileManager extends HyperDlg
 
             if (folder != null)
               List.copyOf(folder.notes).forEach(note -> note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false)));
-          });
+          }
 
       // If moving, remove source directories that are now empty
       // -------------------------------------------------------
 
           for (FilePath srcFilePath : srcToDest.keySet())
           {
-            updateProgress(curTaskCount++, totalTaskCount);
+            incrementAndUpdateProgress();
 
             if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false) && (srcFilePath.isSubpath(db.getRootPath()) == false))
             {
@@ -892,9 +846,8 @@ public class FileManager extends HyperDlg
       }
 
       suppressNeedRefresh = false;
-    }};
 
-    boolean success = task.runWithProgressDialog() == State.SUCCEEDED;
+    }}.runWithProgressDialog() == State.SUCCEEDED;
 
     suppressNeedRefresh = false;
 
@@ -1120,7 +1073,7 @@ public class FileManager extends HyperDlg
 
     if (dlg.showModal() == false) return;
 
-    FilePath newFilePath = null;
+    FilePath newFilePath;
 
     suppressNeedRefresh = true;
 

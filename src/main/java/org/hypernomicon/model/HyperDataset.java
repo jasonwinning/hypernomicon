@@ -23,6 +23,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet;
@@ -160,19 +161,17 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void bringAllRecordsOnline(boolean interactive) throws RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException, CancelledTaskException
+  void bringAllRecordsOnline(HyperTask task) throws RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException, CancelledTaskException
   {
     if (online) throw new HDB_InternalError(89842);
 
     for (HDT_DT record : getAccessor())
     {
-      if (interactive && db.task.isCancelled()) throw new CancelledTaskException();
-
       record.bringStoredCopyOnline(false);
       db.addToInitialNavList(record);
 
-      if (interactive && ((++db.curTaskCount % 50) == 0))
-        db.task.updateProgress(db.curTaskCount, db.totalTaskCount);
+      if (task != null)
+        task.incrementAndUpdateProgress(50);
     }
 
     online = true;
@@ -272,7 +271,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void writeToXML(StringBuilder xml) throws HDB_InternalError, CancelledTaskException
+  void writeToXML(StringBuilder xml, HyperTask task) throws HDB_InternalError, CancelledTaskException
   {
     if (core.size() == 0) return;
 
@@ -293,10 +292,10 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       {
         record.saveToStoredState();
         record.writeStoredStateToXML(xml);
-        db.task.updateProgress(db.curTaskCount + ndx, db.totalTaskCount);
-      }
 
-      if (db.task.isCancelled()) throw new CancelledTaskException();
+        if (task != null)
+          task.updateProgress(task.completedCount + ndx, task.totalCount);
+      }
     }
 
     xml.append(System.lineSeparator()).append(System.lineSeparator()).append(System.lineSeparator());

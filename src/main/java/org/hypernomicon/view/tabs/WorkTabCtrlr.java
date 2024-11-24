@@ -629,13 +629,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     String url = tfURL.getText();
 
-    if (url.startsWith(EXT_1) && (extPath() == null))
+    if (url.startsWith(EXT_1) && (db.extPath() == null))
     {
       warningPopup(WorkTabCtrlr.NO_EXT_PATH_MESSAGE);
       return;
     }
 
-    FilePath filePath = resolveExtFilePath(url);
+    FilePath filePath = db.resolveExtFilePath(url);
 
     if (FilePath.isEmpty(filePath))
       openWebLink(url);
@@ -1093,7 +1093,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     FilePathSet files = new FilePathSet();
 
-    curWork.workFiles.forEach(workFile -> files.add(workFile.filePath()));
+    curWork.workFiles.stream().map(HDT_RecordWithPath::filePath).forEach(files::add);
 
     MutableBoolean allSame = new MutableBoolean();
     FilePath folder = pickDirectory(true, files, allSame);
@@ -1656,7 +1656,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       pdfBDprop.setValue(PDFBibData.createFromFiles(pdfFilePaths));
 
       if (pdfBDprop.getValue() == null)
-        pdfBDprop.setValue(PDFBibData.createFromFiles(safeListOf(resolveExtFilePath(tfURL.getText()))));
+        pdfBDprop.setValue(PDFBibData.createFromFiles(safeListOf(db.resolveExtFilePath(tfURL.getText()))));
 
       if (pdfBDprop.getValue() == null)
         taPdfMetadata.setText("[No PDF file.]");
@@ -1766,7 +1766,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
                                                             .map(HDT_WorkFile::filePath)
                                                             .toList();
     if (collEmpty(pdfFilePaths))
-      pdfFilePaths = safeListOf(resolveExtFilePath(tfURL.getText()));
+      pdfFilePaths = safeListOf(db.resolveExtFilePath(tfURL.getText()));
 
     BibData workBD = curWork.getBibData();
 
@@ -1943,7 +1943,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (db.getRootPath().isSubpath(filePath))
       return false;
 
-    FilePath extPath = extPath();
+    FilePath extPath = db.extPath();
     if (FilePath.isEmpty(extPath))
     {
       errorPopup(NO_EXT_PATH_MESSAGE);

@@ -240,7 +240,7 @@ public final class App extends Application
       if (srcPath.isBlank() == false)
       {
         FilePath hdbPath = new FilePath(srcPath).resolve(srcName);
-        if (hdbPath.exists() && InterProcClient.checkFolder(new FilePath(srcPath)))
+        if (hdbPath.exists() && (InterProcClient.folderInUseByAnotherInstance(new FilePath(srcPath)) == false))
           hdbExists = true;
       }
     }
@@ -260,7 +260,7 @@ public final class App extends Application
       }
     }
 
-    if (hdbExists) ui.loadDB(false);
+    if (hdbExists) ui.loadAllFromXmlAndResetUI(false);
     else           ui.startEmpty();
 
     if (args.size() > 0)

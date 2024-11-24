@@ -60,6 +60,7 @@ import com.google.common.collect.Lists;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
+import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
@@ -257,7 +258,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       while (retryTime.compareTo(Instant.now()) > 0)
       {
         sleepForMillis(30);
-        if (syncTaskIsCancelled()) throw new CancelledTaskException();
+        HyperTask.throwExceptionIfCancelled(syncTask);
       }
     }
 
@@ -266,7 +267,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       while (backoffTime.compareTo(Instant.now()) > 0)
       {
         sleepForMillis(30);
-        if (syncTaskIsCancelled()) throw new CancelledTaskException();
+        HyperTask.throwExceptionIfCancelled(syncTask);
       }
     }
 
@@ -304,8 +305,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       request = null;
 
-      if (syncTaskIsCancelled())
-        throw new CancelledTaskException();
+      HyperTask.throwExceptionIfCancelled(syncTask);
 
       throw e;
     }
@@ -344,7 +344,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     request = null;
 
-    if (syncTaskIsCancelled()) throw new CancelledTaskException();
+    HyperTask.throwExceptionIfCancelled(syncTask);
 
     return jsonArray;
   }
@@ -551,7 +551,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       int statusCode = HttpStatus.SC_OK;
 
-      while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && (syncTaskIsCancelled() == false))
+      while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && ((syncTask == null) || (syncTask.isCancelled() == false)))
       {
         jArr.clear();
 
@@ -735,7 +735,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void loadFromDisk(FilePath filePath) throws IOException, ParseException, HDB_InternalError
+  @Override public void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HDB_InternalError
   {
     JsonObj jMainObj = null;
     clear();

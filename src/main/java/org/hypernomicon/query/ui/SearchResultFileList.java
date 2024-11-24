@@ -328,17 +328,17 @@ class SearchResultFileList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void copyAll(boolean excludeAnnots, HyperTask task) throws CancelledTaskException
+  HyperTask newCopyAllTask(boolean excludeAnnots) { return new HyperTask("CopyingFiles", "Copying files...") { @Override protected void call() throws CancelledTaskException
   {
-    int ndx = 0; for (SearchResultFile resultFile : list)
+    totalCount = list.size();
+
+    for (SearchResultFile resultFile : list)
     {
       resultFile.copyToResultsFolder(excludeAnnots, errList);
-      task.updateProgress(ndx++, list.size());
 
-      if (task.isCancelled())
-        throw new CancelledTaskException();
+      incrementAndUpdateProgress();
     }
-  }
+  }}; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

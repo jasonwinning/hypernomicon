@@ -215,16 +215,16 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void saveToDisk(JsonArray jArr)
+  @Override public void saveToJsonArray(JsonArray jArr)
   {
     if (thisIsBackup) return;
 
-    JsonObj jDiskObj = jObj.clone();
+    JsonObj jObjToSave = jObj.clone();
 
     if (backupItem != null)
-      jDiskObj.put("backupItem", backupItem.jObj);
+      jObjToSave.put("backupItem", backupItem.jObj);
 
-    jArr.add(jDiskObj);
+    jArr.add(jObjToSave);
   }
 
 //---------------------------------------------------------------------------

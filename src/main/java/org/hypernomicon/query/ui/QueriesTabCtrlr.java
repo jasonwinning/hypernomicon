@@ -392,42 +392,26 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     if ((db.isLoaded() == false) || results().isEmpty()) return false;
 
-    HyperTask task = new HyperTask("BuildListOfFilesToCopy") { @Override protected void call() throws CancelledTaskException
+    if (new HyperTask("BuildListOfFilesToCopy", "Building list...") { @Override protected void call() throws CancelledTaskException
     {
-      updateMessage("Building list...");
-
-      updateProgress(0, 1);
-
       List<ResultRow> resultRowList = onlySelected ? curQueryCtrlr.getResultsTV().getSelectionModel().getSelectedItems() : results();
 
-      int ndx = 0; for (ResultRow row : resultRowList)
+      totalCount = resultRowList.size();
+
+      for (ResultRow row : resultRowList)
       {
         HDT_Record record = row.getRecord();
         if (record instanceof HDT_RecordWithPath recordWithPath)
           fileList.addRecord(recordWithPath);
 
-        if (isCancelled())
-          throw new CancelledTaskException();
-
-        updateProgress(ndx++, resultRowList.size());
+        incrementAndUpdateProgress();
       }
-    }};
 
-    if (task.runWithProgressDialog() != State.SUCCEEDED)
-      return false;
+    }}.runWithProgressDialog() != State.SUCCEEDED) return false;
 
     boolean startWatcher = folderTreeWatcher.stop();
 
-    task = new HyperTask("CopyingFiles") { @Override protected void call() throws CancelledTaskException
-    {
-      updateMessage("Copying files...");
-
-      updateProgress(0, 1);
-
-      fileList.copyAll(excludeAnnots.getValue(), this);
-    }};
-
-    task.runWithProgressDialog();
+    fileList.newCopyAllTask(excludeAnnots.getValue()).runWithProgressDialog();
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();

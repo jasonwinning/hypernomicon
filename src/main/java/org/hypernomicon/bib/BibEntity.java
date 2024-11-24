@@ -31,7 +31,7 @@ public interface BibEntity
   boolean isSynced();
   void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
   String getKey();
-  void saveToDisk(JsonArray jArr);
+  void saveToJsonArray(JsonArray jArr);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -34,6 +34,10 @@ public class FilePathSet implements Set<FilePath>
 {
   private final FilenameMap<Set<FilePath>> nameToPaths = new FilenameMap<>();
 
+  public FilePathSet() { }
+
+  public FilePathSet(Collection<? extends FilePath> c) { addAll(c); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -161,7 +161,7 @@ public final class MainCtrlr
   @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
                          mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
                          mnuImportBibFile, mnuNewCountry, mnuNewDatabase, mnuNewField, mnuNewPersonStatus, mnuNewRank, mnuVideos,
-                         mnuRecordSelect, mnuRevertToDiskCopy, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile,
+                         mnuRecordSelect, mnuRevertToXmlVersion, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile,
                          mnuShortcuts, mnuChangeFieldOrder, mnuChangeRankOrder, mnuChangeCountryOrder, mnuChangePersonStatusOrder,
                          mnuChangeFileTypeOrder, mnuChangeWorkTypeOrder, mnuChangeArgVerdictOrder, mnuChangePosVerdictOrder,
                          mnuChangeInstitutionTypeOrder, mnuTestConsole;
@@ -426,7 +426,7 @@ public final class MainCtrlr
     mnuFindNextInName    .setOnAction(event -> tree().find(true,  true ));
     mnuFindPreviousInName.setOnAction(event -> tree().find(false, true ));
 
-    btnSaveAll           .setOnAction(event -> saveAllToDisk(true, true, false));
+    btnSaveAll           .setOnAction(event -> saveAllToXML(true, true, false));
     btnDelete            .setOnAction(event -> deleteCurrentRecord(true));
     btnRevert            .setOnAction(event -> update());
     btnAdvancedSearch    .setOnAction(event -> showSearch(false, null, -1, null, null, null, ""));
@@ -842,10 +842,10 @@ public final class MainCtrlr
 
     scene.getAccelerators().putAll(Map.of
     (
-      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) saveAllToDisk(true, true, false);   },
-      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { if (db.isLoaded()) hideFindTable();                    },
-      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) omniFocus(true);                    },
-      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) omniFocus(false);                   }
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) saveAllToXML(true, true, false); },
+      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { if (db.isLoaded()) hideFindTable();                 },
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) omniFocus(true);                 },
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> { if (db.isLoaded()) omniFocus(false);                }
     ));
 
     scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
@@ -1316,7 +1316,7 @@ public final class MainCtrlr
         if ((shuttingDown == false) && app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
           return;
 
-        if (saveAllToDisk(false, false, false) == false)
+        if (saveAllToXML(false, false, false) == false)
         {
           shuttingDown = false;
           return;
@@ -1371,7 +1371,7 @@ public final class MainCtrlr
       HyperTable.saveColWidthsToPrefs();
     }
 
-    InterProcClient.removeThisInstance();
+    InterProcClient.removeThisInstanceFromInstancesTempFile();
 
     if (jxBrowserInitialized)
       Platform.runLater(PreviewWindow::cleanup); // This eventually closes the application main window
@@ -1425,9 +1425,9 @@ public final class MainCtrlr
 
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
-    enableAllIff(enabled, mnuCloseDatabase,      mnuImportWork,     mnuImportFile,       mnuExitNoSave, mnuChangeID,           mnuChangeFieldOrder.getParentMenu(),
-                          mnuImportBibClipboard, mnuImportBibFile,  mnuRevertToDiskCopy, btnFileMgr,    btnBibMgr,             mnuNewRank.getParentMenu(),
-                          btnPreviewWindow,      btnMentions,       btnAdvancedSearch,   btnSaveAll,    mnuAddToQueryResults,  mnuSaveReloadAll);
+    enableAllIff(enabled, mnuCloseDatabase,      mnuImportWork,     mnuImportFile,         mnuExitNoSave, mnuChangeID,           mnuChangeFieldOrder.getParentMenu(),
+                          mnuImportBibClipboard, mnuImportBibFile,  mnuRevertToXmlVersion, btnFileMgr,    btnBibMgr,             mnuNewRank.getParentMenu(),
+                          btnPreviewWindow,      btnMentions,       btnAdvancedSearch,     btnSaveAll,    mnuAddToQueryResults,  mnuSaveReloadAll);
     if (disabled)
       tree().clear();
 
@@ -1509,7 +1509,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean saveAllToDisk(boolean saveRecord, boolean restartWatcher, boolean updateUI)
+  public boolean saveAllToXML(boolean saveRecord, boolean restartWatcher, boolean updateUI)
   {
     try
     {
@@ -1556,12 +1556,12 @@ public final class MainCtrlr
 
   @FXML private void mnuSaveReloadAllClick()
   {
-    if (saveAllToDisk(true, false, false) == false) return;
+    if (saveAllToXML(true, false, false) == false) return;
 
     app.prefs.put(PREF_KEY_SOURCE_FILENAME, db.getHdbPath().getNameOnly().toString());
     app.prefs.put(PREF_KEY_SOURCE_PATH, db.getRootPath().toString());
 
-    if (loadDataFromDisk(false))
+    if (loadAllFromXML(false))
     {
       // Update record pointers
       viewSequence.refreshRecordPtrs();
@@ -1605,7 +1605,7 @@ public final class MainCtrlr
     app.prefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
     app.prefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
 
-    loadDB(false);
+    loadAllFromXmlAndResetUI(false);
   }
 
 //---------------------------------------------------------------------------
@@ -1641,7 +1641,7 @@ public final class MainCtrlr
     }
 
     if (createNewDB(rootPath))
-      loadDB(true);
+      loadAllFromXmlAndResetUI(true);
   }
 
 //---------------------------------------------------------------------------
@@ -1657,7 +1657,7 @@ public final class MainCtrlr
 
       if (result == mrCancel) return false;
 
-      if ((result == mrYes) && (saveAllToDisk(false, false, false) == false))
+      if ((result == mrYes) && (saveAllToXML(false, false, false) == false))
         return false;
 
       NewDatabaseDlgCtrlr dlg = new NewDatabaseDlgCtrlr(rootPath.toString());
@@ -1668,11 +1668,13 @@ public final class MainCtrlr
       resetUIPreClose();
       boolean success;
 
+      String hdbFileName = app.prefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME);
+
       try
       {
-        success = db.newDB(rootPath, dlg.getChoices(), dlg.getFolders());
+        success = db.newDB(rootPath, hdbFileName, dlg.getChoices(), dlg.getFolders());
       }
-      catch (HDB_InternalErrorDuringClose e)
+      catch (HDB_UnrecoverableInternalError e)
       {
         errorPopup("Unable to create new database: " + getThrowableMessage(e));
 
@@ -1694,7 +1696,7 @@ public final class MainCtrlr
 
       clearAllTabsAndViews();
 
-      if (saveAllToDisk(false, false, false) == false)
+      if (saveAllToXML(false, false, false) == false)
       {
         close(false);
         return false;
@@ -1866,7 +1868,7 @@ public final class MainCtrlr
       {
         if (cantSaveRecord()) return false;
 
-        if (saveAllToDisk(false, false, false) == false)
+        if (saveAllToXML(false, false, false) == false)
           return false;
       }
     }
@@ -1874,7 +1876,7 @@ public final class MainCtrlr
     resetUIPreClose();
 
     try { db.close(null); }
-    catch (HDB_InternalErrorDuringClose e)
+    catch (HDB_UnrecoverableInternalError e)
     {
       errorPopup(e);
       shutDown(false, true, false); // An error in db.close is unrecoverable.
@@ -2211,7 +2213,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private boolean mnuRevertToDiskCopyClick()
+  @FXML private boolean mnuRevertToXmlVersionClick()
   {
     if (db.isLoaded() == false)
       return falseWithErrorPopup("No database is currently loaded.");
@@ -2249,7 +2251,7 @@ public final class MainCtrlr
                       "Name: " + name + '\n' +
                       "ID: " + record.getID() + "\n\n" + msg + additionalMsg) == false) return false;
 
-    revertToDiskCopy(record);
+    revertToXmlVersion(record);
 
     update();
     return true;
@@ -2258,7 +2260,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void revertToDiskCopy(HDT_Record record)
+  private static void revertToXmlVersion(HDT_Record record)
   {
     boolean success = true;
     String recordStr = getTypeName(record.getType()) + " \"" + record.getCBText() + '"';
@@ -2321,14 +2323,14 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadDB(boolean creatingNew)
+  public void loadAllFromXmlAndResetUI(boolean creatingNew)
   {
-    loadDB(creatingNew, false);
+    loadAllFromXmlAndResetUI(creatingNew, false);
   }
 
-  public void loadDB(boolean creatingNew, boolean dontAskAboutRefMgr)
+  public void loadAllFromXmlAndResetUI(boolean creatingNew, boolean dontAskAboutRefMgr)
   {
-    if (loadDataFromDisk(creatingNew) == false)
+    if (loadAllFromXML(creatingNew) == false)
     {
       if (db.isLoaded() == false)
         clearAllTabsAndViews();
@@ -2380,7 +2382,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean loadDataFromDisk(boolean creatingNew)
+  private boolean loadAllFromXML(boolean creatingNew)
   {
     if (SystemUtils.IS_OS_MAC)
       Platform.runLater(() -> adjustToolBar(0));
@@ -2402,7 +2404,7 @@ public final class MainCtrlr
     if (hdbExists == false)
       return (hdbPath != null) && falseWithErrorPopup("Unable to load database. The file does not exist: " + hdbPath);
 
-    if (InterProcClient.checkFolder(hdbPath) == false)
+    if (InterProcClient.folderInUseByAnotherInstance(hdbPath))
       return falseWithErrorPopup("Unable to load database: Database folder(s) are already in use by another instance of " + appTitle);
 
     if (internetNotCheckedYet && app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
@@ -2432,7 +2434,7 @@ public final class MainCtrlr
     {
       success = db.loadAllFromPersistentStorage(creatingNew, favorites, newRootFilePath, hdbFileName);
     }
-    catch (HDB_InternalErrorDuringClose e)
+    catch (HDB_UnrecoverableInternalError e)
     {
       errorPopup("Unable to load database. Reason: " + getThrowableMessage(e));
       shutDown(false, true, false); // An error in db.close is unrecoverable.
@@ -3513,7 +3515,7 @@ public final class MainCtrlr
     if (createNewDB(transientDBFilePath) == false)
       return;
 
-    loadDB(true, true);
+    loadAllFromXmlAndResetUI(true, true);
 
     if (libraryType == null)
     {

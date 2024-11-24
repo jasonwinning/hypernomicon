@@ -174,12 +174,12 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class HDB_InternalErrorDuringClose extends HDB_InternalError
+  public static class HDB_UnrecoverableInternalError extends HDB_InternalError
   {
-    public HDB_InternalErrorDuringClose(int num             ) { super(num   ); }
-    public HDB_InternalErrorDuringClose(int num, Throwable e) { super(num, e); }
+    public HDB_UnrecoverableInternalError(int num             ) { super(num   ); }
+    public HDB_UnrecoverableInternalError(int num, Throwable e) { super(num, e); }
 
-    public HDB_InternalErrorDuringClose(HDB_InternalError e ) { super(e.num, e.getCause()); }
+    public HDB_UnrecoverableInternalError(HDB_InternalError e ) { super(e.num, e.getCause()); }
   }
 
 //---------------------------------------------------------------------------

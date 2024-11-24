@@ -18,7 +18,6 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
@@ -77,7 +76,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.compare.ComparableUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -91,8 +89,8 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
+import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper;
@@ -115,7 +113,6 @@ import org.hypernomicon.util.BidiOneToManyMainTextMap;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.FilenameMap;
 import org.hypernomicon.util.PopupDialog.DialogResult;
-import org.hypernomicon.util.UIUtil;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.prefs.XmlSupport;
@@ -129,21 +126,37 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public abstract boolean isInteractive();
   public abstract FilePath getRequestMessageFilePath(boolean useAppPrefs);
   public abstract FilePath getResponseMessageFilePath(boolean useAppPrefs);
   public abstract FilePath getLockFilePath(boolean useAppPrefs);
   public abstract String getLockOwner();
+  public abstract FilePath extPath();
+  public abstract void updateMainTextTemplate(RecordType recordType, String html) throws IOException;
+  public abstract String getMainTextTemplate(RecordType recordType);
 
   protected abstract void lock() throws IOException;
   protected abstract void unlock();
-  protected abstract void refreshInterProcClient(FilePath newRootFilePath);
+
+  protected abstract MentionsIndex createMentionsIndex(List<Runnable> completeHandlers);
+
+  /**
+   * Updates the temp file with information about running instances of Hypernomicon
+   * on this computer
+   * @param newRootFilePath Currently open database folder for this instance
+   */
+  protected abstract void updateRunningInstancesFile(FilePath newRootFilePath);
+
+  protected abstract void saveSourcePathToSystemSettings(String newPathStr);
+  protected abstract FolderTreeWatcher getFolderTreeWatcher();
+  protected abstract void checkWhetherFoldersExist();
   protected abstract void loadMainTextTemplates();
   protected abstract void warningMessage(String msg);
   protected abstract void errorMessage(String msg);
 
+  protected abstract void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException;
   protected abstract boolean loadFromXMLFiles(List<FilePath> xmlFileList, boolean creatingNew, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion, SetMultimap<Integer, Integer> workIDtoInvIDs);
   protected abstract boolean bringAllRecordsOnline();
+  protected abstract boolean checkChecksums();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -166,7 +179,7 @@ public abstract class AbstractHyperDB
   protected final Map<String, String> xmlChecksums = new HashMap<>();
 
   private final SearchKeys searchKeys = new SearchKeys();
-  private final MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
+  private final MentionsIndex mentionsIndex = createMentionsIndex(dbMentionsNdxCompleteHandlers);
   private final List<HDT_Record> initialNavList = new ArrayList<>();
   private final EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
   private final Map<HDT_RecordWithAuthors<? extends Authors>, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
@@ -178,13 +191,12 @@ public abstract class AbstractHyperDB
   public Preferences prefs = null;
   private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bibLibrary = null;
 
-  HyperTask task;
-  long totalTaskCount, curTaskCount;
   private Instant dbCreationDate;
 
   protected DialogResult deleteFileAnswer;
 
-  protected FilePath rootFilePath, hdbFilePath;
+  protected FilePath rootFilePath;
+  private FilePath hdbFilePath;
 
   private boolean loaded       = false, pointerResolutionInProgress     = false, deletionInProgress      = false, resolveAgain = false,
                   initialized  = false, startMentionsRebuildAfterDelete = false, alreadyShowedUpgradeMsg = false;
@@ -197,7 +209,6 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 
   public boolean isDeletionInProgress()                             { return deletionInProgress; }
-  public boolean isInitialized()                                    { return initialized; }
   public boolean resolvingPointers()                                { return pointerResolutionInProgress; }
   public int getNextID(RecordType type)                             { return datasets.get(type).getNextID(); }
   public boolean idAvailable(RecordType type, int id)               { return datasets.get(type).idAvailable(id); }
@@ -305,7 +316,7 @@ public abstract class AbstractHyperDB
   public <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
   { ((RelationSet<HDT_SubjType, HDT_ObjType>)relationSets.get(relType)).resolvePointers(subj); }
 
-  protected HDT_Folder xmlFolder, booksFolder, papersFolder, miscFilesFolder, picturesFolder, resultsFolder, unenteredFolder, topicalFolder;
+  private HDT_Folder xmlFolder, booksFolder, papersFolder, miscFilesFolder, picturesFolder, resultsFolder, unenteredFolder, topicalFolder;
 
   public HDT_Folder getRootFolder     () { return folders.getByID(ROOT_FOLDER_ID); }
   public HDT_Folder getXmlFolder      () { return xmlFolder      ; }
@@ -660,15 +671,6 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FilePath extPath()
-  {
-    String path = app.prefs.get(PREF_KEY_EXT_FILES_1, "");
-    return path.isBlank() ? null : new FilePath(path);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @SuppressWarnings({ "unused", "unchecked" })
   private <HDT_T extends HDT_Record> Set<HDT_T> getOrphans(RelationType relType, Class<HDT_T> klazz)
   {
@@ -730,7 +732,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static void finalizeXMLFile(List<StringBuilder> xmlList, List<String> filenameList, String fileName)
+  private static void finalizeXMLFile(List<StringBuilder> xmlList, List<String> filenameList, String fileName)
   {
     xmlList.get(xmlList.size() - 1).append(System.lineSeparator()).append("</records>");
     filenameList.add(fileName);
@@ -740,7 +742,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void writeDatasetToXML(List<StringBuilder> xmlList, RecordType type) throws HDB_InternalError, CancelledTaskException
+  private void writeDatasetToXML(List<StringBuilder> xmlList, HyperTask task, RecordType type) throws HDB_InternalError, CancelledTaskException
   {
     StringBuilder xml = xmlList.get(xmlList.size() - 1);
 
@@ -754,48 +756,32 @@ public abstract class AbstractHyperDB
          .append('>').append(System.lineSeparator()).append(System.lineSeparator());
     }
 
-    datasets.get(type).writeToXML(xml);
+    datasets.get(type).writeToXML(xml, task);
 
-    curTaskCount += records(type).size();
+    if (task != null)
+    {
+      task.completedCount += records(type).size();
 
-    if (EnumSet.of(hdtDebate, hdtNote, hdtPersonGroup, hdtWorkLabel, hdtGlossary).contains(type))
-      curTaskCount--;
+      if (EnumSet.of(hdtDebate, hdtNote, hdtPersonGroup, hdtWorkLabel, hdtGlossary).contains(type))
+        task.completedCount--;
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final boolean saveAllToPersistentStorage(HyperFavorites favorites)
+  public boolean saveAllToPersistentStorage(HyperFavorites favorites)
   {
     if (loaded == false) return false;
 
-    for (Entry<String, String> entry : xmlChecksums.entrySet())
-    {
-      String hex = "";
-
-      try (InputStream is = Files.newInputStream(xmlPath(entry.getKey()).toPath()))
-      {
-        hex = DigestUtils.md5Hex(is);
-      }
-      catch (IOException e) { noOp(); }
-
-      if (hex.equalsIgnoreCase(entry.getValue()) == false)
-      {
-        if (UIUtil.confirmDialog("Changes have been made to the XML files from outside of this instance of " + appTitle + ". Overwrite these changes?"))
-          break;
-
-        return false;
-      }
-    }
+    if (checkChecksums() == false) return false;
 
     if (bibLibraryIsLinked())
-      bibLibrary.saveToDisk();
+      bibLibrary.saveAllToJsonFile();
 
-    task = new HyperTask("SaveAllToDisk") { @Override protected void call() throws CancelledTaskException, HyperDataException
+    HyperTask task = new HyperTask("SaveAllToXML", "Saving to XML files...") { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
-      updateMessage("Saving to XML files...");
-
-      curTaskCount = 0; totalTaskCount = 0;
+      totalCount = 0;
       accessors.forEach((type, accessor) ->
       {
         switch (type)
@@ -804,11 +790,11 @@ public abstract class AbstractHyperDB
             break;
 
           case hdtDebate : case hdtNote : case hdtPersonGroup : case hdtWorkLabel : case hdtGlossary :
-            totalTaskCount += accessor.size() - 1;
+            totalCount += accessor.size() - 1;
             break;
 
           default :
-            totalTaskCount += accessor.size();
+            totalCount += accessor.size();
             break;
         }
       });
@@ -818,30 +804,30 @@ public abstract class AbstractHyperDB
         List<String> filenameList = new ArrayList<>();
         List<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
 
-        writeDatasetToXML(xmlList, hdtPersonStatus);    writeDatasetToXML(xmlList, hdtRank);            writeDatasetToXML(xmlList, hdtField);
-        writeDatasetToXML(xmlList, hdtSubfield);        writeDatasetToXML(xmlList, hdtWorkType);        writeDatasetToXML(xmlList, hdtFileType);
-        writeDatasetToXML(xmlList, hdtCountry);         writeDatasetToXML(xmlList, hdtRegion);          writeDatasetToXML(xmlList, hdtPositionVerdict);
-        writeDatasetToXML(xmlList, hdtArgumentVerdict); writeDatasetToXML(xmlList, hdtInstitutionType); writeDatasetToXML(xmlList, hdtPersonGroup);
+        writeDatasetToXML(xmlList, this, hdtPersonStatus);    writeDatasetToXML(xmlList, this, hdtRank);            writeDatasetToXML(xmlList, this, hdtField);
+        writeDatasetToXML(xmlList, this, hdtSubfield);        writeDatasetToXML(xmlList, this, hdtWorkType);        writeDatasetToXML(xmlList, this, hdtFileType);
+        writeDatasetToXML(xmlList, this, hdtCountry);         writeDatasetToXML(xmlList, this, hdtRegion);          writeDatasetToXML(xmlList, this, hdtPositionVerdict);
+        writeDatasetToXML(xmlList, this, hdtArgumentVerdict); writeDatasetToXML(xmlList, this, hdtInstitutionType); writeDatasetToXML(xmlList, this, hdtPersonGroup);
 
-                                                        finalizeXMLFile(xmlList, filenameList, OTHER_FILE_NAME);
+                                                              finalizeXMLFile(xmlList, filenameList, OTHER_FILE_NAME);
 
-        writeDatasetToXML(xmlList, hdtPerson);          finalizeXMLFile(xmlList, filenameList, PERSON_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtInstitution);     finalizeXMLFile(xmlList, filenameList, INSTITUTION_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtInvestigation);   finalizeXMLFile(xmlList, filenameList, INVESTIGATION_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtDebate);          finalizeXMLFile(xmlList, filenameList, DEBATE_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtArgument);        finalizeXMLFile(xmlList, filenameList, ARGUMENT_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtPosition);        finalizeXMLFile(xmlList, filenameList, POSITION_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtGlossary);
-        writeDatasetToXML(xmlList, hdtConceptSense);
-        writeDatasetToXML(xmlList, hdtTerm);
-        writeDatasetToXML(xmlList, hdtConcept);         finalizeXMLFile(xmlList, filenameList, TERM_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtFolder);
-        writeDatasetToXML(xmlList, hdtMiscFile);
-        writeDatasetToXML(xmlList, hdtWorkFile);        finalizeXMLFile(xmlList, filenameList, FILE_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtWorkLabel);
-        writeDatasetToXML(xmlList, hdtWork);            finalizeXMLFile(xmlList, filenameList, WORK_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtNote);            finalizeXMLFile(xmlList, filenameList, NOTE_FILE_NAME);
-        writeDatasetToXML(xmlList, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtPerson);          finalizeXMLFile(xmlList, filenameList, PERSON_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtInstitution);     finalizeXMLFile(xmlList, filenameList, INSTITUTION_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtInvestigation);   finalizeXMLFile(xmlList, filenameList, INVESTIGATION_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtDebate);          finalizeXMLFile(xmlList, filenameList, DEBATE_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtArgument);        finalizeXMLFile(xmlList, filenameList, ARGUMENT_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtPosition);        finalizeXMLFile(xmlList, filenameList, POSITION_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtGlossary);
+        writeDatasetToXML(xmlList, this, hdtConceptSense);
+        writeDatasetToXML(xmlList, this, hdtTerm);
+        writeDatasetToXML(xmlList, this, hdtConcept);         finalizeXMLFile(xmlList, filenameList, TERM_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtFolder);
+        writeDatasetToXML(xmlList, this, hdtMiscFile);
+        writeDatasetToXML(xmlList, this, hdtWorkFile);        finalizeXMLFile(xmlList, filenameList, FILE_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtWorkLabel);
+        writeDatasetToXML(xmlList, this, hdtWork);            finalizeXMLFile(xmlList, filenameList, WORK_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtNote);            finalizeXMLFile(xmlList, filenameList, NOTE_FILE_NAME);
+        writeDatasetToXML(xmlList, this, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
 
         for (int ndx = 0; ndx < filenameList.size(); ndx++)
           xmlChecksums.put(filenameList.get(ndx), saveStringBuilderToFile(xmlList.get(ndx), xmlPath(filenameList.get(ndx))));
@@ -906,7 +892,7 @@ public abstract class AbstractHyperDB
 
   public boolean loadAllFromPersistentStorage(boolean creatingNew, HyperFavorites favorites, FilePath newRootFilePath, String hdbFileName) throws HDB_InternalError
   {
-    if (isInitialized() == false)
+    if (initialized == false)
       return false;
 
     if (getLockOwner() != null)
@@ -919,7 +905,7 @@ public abstract class AbstractHyperDB
 
     close(null);
 
-    refreshInterProcClient(newRootFilePath);
+    updateRunningInstancesFile(newRootFilePath);
 
     rootFilePath = newRootFilePath;
     hdbFilePath = rootFilePath.resolve(hdbFileName);
@@ -935,8 +921,6 @@ public abstract class AbstractHyperDB
     {
       FilePath filePath = xmlPath(fileName);
 
-      if (filePath.exists() == false)
-        return falseWithErrorMessage("Unable to load database. Reason: File does not exist: " + filePath);
 
       xmlFileList.add(filePath);
     }
@@ -964,140 +948,9 @@ public abstract class AbstractHyperDB
 
     try
     {
-      MessageDigest md = newMessageDigest();
-
-      try (InputStream is = Files.newInputStream(xmlPath(SETTINGS_FILE_NAME).toPath());
-           DigestInputStream dis = new DigestInputStream(is, md))
-      {
-        prefs = XmlSupport.importPreferences(dis).node("org").node("hypernomicon").node("model");
-
-        xmlChecksums.put(SETTINGS_FILE_NAME, digestHexStr(md));
-
-        favorites.loadFromPrefNode();
-
-        String versionStr = prefs.get(PREF_KEY_SETTINGS_VERSION, "");
-        if (versionStr.isBlank())
-          throw new HyperDataException("XML settings data version number not found.");
-
-        VersionNumber settingsVersion = new VersionNumber(versionStr);
-        checkVersion(creatingNew, settingsVersion, "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
-
-        boolean writeFolderIDs = false;
-
-        if (ComparableUtils.is(settingsVersion).lessThanOrEqualTo(new VersionNumber(1)))  // Backwards compatibility with settings version 1.0
-        {
-          papersFolder    = folders.getByID(2);
-          booksFolder     = folders.getByID(3);
-          miscFilesFolder = folders.getByID(4);
-          picturesFolder  = folders.getByID(5);
-          topicalFolder   = folders.getByID(6);
-          unenteredFolder = folders.getByID(7);
-          resultsFolder   = folders.getByID(8);
-          xmlFolder       = HyperPath.getFolderFromFilePath(getRootPath(DEFAULT_XML_PATH), true);
-
-          writeFolderIDs = true;
-        }
-        else
-        {
-          xmlFolder       = folders.getByID(prefs.getInt(PREF_KEY_XML_FOLDER_ID       , -1));
-          picturesFolder  = folders.getByID(prefs.getInt(PREF_KEY_PICTURES_FOLDER_ID  , -1));
-          booksFolder     = folders.getByID(prefs.getInt(PREF_KEY_BOOKS_FOLDER_ID     , -1));
-          papersFolder    = folders.getByID(prefs.getInt(PREF_KEY_PAPERS_FOLDER_ID    , -1));
-          resultsFolder   = folders.getByID(prefs.getInt(PREF_KEY_RESULTS_FOLDER_ID   , -1));
-          unenteredFolder = folders.getByID(prefs.getInt(PREF_KEY_UNENTERED_FOLDER_ID , -1));
-          miscFilesFolder = folders.getByID(prefs.getInt(PREF_KEY_MISC_FILES_FOLDER_ID, -1));
-          topicalFolder   = folders.getByID(prefs.getInt(PREF_KEY_TOPICAL_FOLDER_ID   , -1));
-        }
-
-        if (HDT_Record.isEmpty(picturesFolder ) ||
-            HDT_Record.isEmpty(booksFolder    ) ||
-            HDT_Record.isEmpty(papersFolder   ) ||
-            HDT_Record.isEmpty(resultsFolder  ) ||
-            HDT_Record.isEmpty(unenteredFolder) ||
-            HDT_Record.isEmpty(miscFilesFolder) ||
-            HDT_Record.isEmpty(xmlFolder      ) ||
-            HDT_Record.isEmpty(topicalFolder  ))
-        {
-          throw new HyperDataException("Unable to load information about paths from database settings file.");
-        }
-
-        if (writeFolderIDs)  // Backwards compatibility with settings version 1.0
-        {
-          prefs.putInt(PREF_KEY_XML_FOLDER_ID       , xmlFolder      .getID());
-          prefs.putInt(PREF_KEY_PICTURES_FOLDER_ID  , picturesFolder .getID()); prefs.remove("picturesPath" );
-          prefs.putInt(PREF_KEY_BOOKS_FOLDER_ID     , booksFolder    .getID()); prefs.remove("booksPath"    );
-          prefs.putInt(PREF_KEY_PAPERS_FOLDER_ID    , papersFolder   .getID()); prefs.remove("papersPath"   );
-          prefs.putInt(PREF_KEY_RESULTS_FOLDER_ID   , resultsFolder  .getID()); prefs.remove("resultsPath"  );
-          prefs.putInt(PREF_KEY_UNENTERED_FOLDER_ID , unenteredFolder.getID()); prefs.remove("unenteredPath"); prefs.remove("unenteredPat");
-          prefs.putInt(PREF_KEY_MISC_FILES_FOLDER_ID, miscFilesFolder.getID()); prefs.remove("suppFilesPath");
-          prefs.putInt(PREF_KEY_TOPICAL_FOLDER_ID   , topicalFolder  .getID()); prefs.remove("topicsPath"   );
-        }
-
-        try { resolvePointers(); }
-        catch (HDB_InternalError e)
-        {
-          errorMessage(e);
-
-          close(null);
-          return false;
-        }
-
-        String dbCreationDateStr = prefs.get(PREF_KEY_DB_CREATION_DATE, "");
-        if (safeStr(dbCreationDateStr).length() > 0)
-        {
-          dbCreationDate = parseIso8601offset(dbCreationDateStr);
-
-          if (dbCreationDate.isAfter(Instant.now())) // Creation date in template is year 9999 so it will be set
-            dbCreationDate = Instant.now();          // to the current date when loaded for the first time
-        }
-
-        String bibEncApiKey       = prefs.get(PREF_KEY_BIB_API_KEY      , ""),
-               bibUserID          = prefs.get(PREF_KEY_BIB_USER_ID      , ""),
-               bibTypeDescriptor  = prefs.get(PREF_KEY_BIB_LIBRARY_TYPE , ""),
-               bibEncAccessToken  = prefs.get(PREF_KEY_BIB_ACCESS_TOKEN , ""),
-               bibEncRefreshToken = prefs.get(PREF_KEY_BIB_REFRESH_TOKEN, "");
-
-        if ((((bibEncApiKey.length() > 0) && (bibUserID.length() > 0)) || ((bibEncAccessToken.length() > 0) && (bibEncRefreshToken.length() > 0))) &&
-            (bibTypeDescriptor.length() > 0))
-        {
-          LibraryType libType = LibraryType.getByDescriptor(bibTypeDescriptor);
-
-          try
-          {
-            loadBibLibrary(libType, bibEncApiKey, bibUserID, bibEncAccessToken, bibEncRefreshToken);
-          }
-          catch (Exception e)
-          {
-            throw new HyperDataException("Unable to initialize link to " + libType.userFriendlyName + ": " + getThrowableMessage(e), e);
-          }
-        }
-      }
-      catch (IOException | InvalidPreferencesFormatException e)
-      {
-        throw new HyperDataException("An error occurred while attempting to read database settings: " + getThrowableMessage(e), e);
-      }
-
-      if (workIDtoInvIDs.isEmpty() == false)
-        doInvestigationConversion(workIDtoInvIDs);
-
-      // Backwards compatibility with records XML version 1.3
-      if (ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWorkType, new VersionNumber(1))).lessThanOrEqualTo(new VersionNumber(1, 3)))
-      {
-        int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
-
-        nullSwitch(records(hdtWorkType).getByID(thesisID), (HDT_Record record) -> record.changeID(datasets.get(hdtWorkType).getNextID()));
-
-        try
-        {
-          createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", "", ""), true);
-        }
-        catch (HyperDataException e)
-        {
-          throw new HyperDataException("Internal error while creating thesis work type record: " + getThrowableMessage(e), e);
-        }
-      }
+      loadSettings(creatingNew, favorites);
     }
-    catch (HDB_InternalErrorDuringClose e)
+    catch (HDB_UnrecoverableInternalError e)
     {
       throw e;
     }
@@ -1107,6 +960,29 @@ public abstract class AbstractHyperDB
 
       close(null);
       return false;
+    }
+
+    if (workIDtoInvIDs.isEmpty() == false)
+      doInvestigationConversion(workIDtoInvIDs);
+
+    // Backwards compatibility with records XML version 1.3
+    if (ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWorkType, new VersionNumber(1))).lessThanOrEqualTo(new VersionNumber(1, 3)))
+    {
+      int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
+
+      nullSwitch(records(hdtWorkType).getByID(thesisID), (HDT_Record record) -> record.changeID(datasets.get(hdtWorkType).getNextID()));
+
+      try
+      {
+        createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", "", ""), true);
+      }
+      catch (HyperDataException e)
+      {
+        errorMessage(new HyperDataException("Internal error while creating thesis work type record: " + getThrowableMessage(e), e));
+
+        close(null);
+        return false;
+      }
     }
 
     loadMainTextTemplates();
@@ -1126,7 +1002,7 @@ public abstract class AbstractHyperDB
     if (bibLibraryIsLinked() && ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWork, new VersionNumber(1))).lessThan(new VersionNumber(1, 8)))
       doBibDateConversion();
 
-    getRootFolder().checkExists();
+    checkWhetherFoldersExist();
 
     loaded = true;
     dbLoadedHandlers.forEach(Runnable::run);
@@ -1195,7 +1071,7 @@ public abstract class AbstractHyperDB
   {
     if (bibLibrary == null) return;
 
-    boolean startWatcher = folderTreeWatcher.stop();
+    boolean startWatcher = nullSwitch(getFolderTreeWatcher(), false, FolderTreeWatcher::stop);
 
     bibLibrary = null;
 
@@ -1214,7 +1090,7 @@ public abstract class AbstractHyperDB
     bibChangedHandlers.forEach(Runnable::run);
 
     if (startWatcher)
-      folderTreeWatcher.createNewWatcherAndStart();
+      getFolderTreeWatcher().createNewWatcherAndStart();
   }
 
 //---------------------------------------------------------------------------
@@ -1233,7 +1109,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void linkBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  protected void linkBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21174);
@@ -1242,12 +1118,12 @@ public abstract class AbstractHyperDB
 
     if (bibJsonFilePath.exists())
     {
-      boolean startWatcher = folderTreeWatcher.stop();
+      boolean startWatcher = nullSwitch(getFolderTreeWatcher(), false, FolderTreeWatcher::stop);
 
       bibJsonFilePath.deletePromptOnFail(true);
 
       if (startWatcher)
-        folderTreeWatcher.createNewWatcherAndStart();
+        getFolderTreeWatcher().createNewWatcherAndStart();
     }
 
     loadBibLibrary(libType, bibEncApiKey, bibUserID, bibEncAccessToken, bibEncRefreshToken);
@@ -1271,7 +1147,7 @@ public abstract class AbstractHyperDB
       case ltMendeley -> new MendeleyWrapper(bibAccessToken, bibRefreshToken);
     };
 
-    bLibrary.loadFromDisk(xmlPath(BIB_FILE_NAME));
+    bLibrary.loadAllFromJsonFile(xmlPath(BIB_FILE_NAME));
 
     bibLibrary = bLibrary;
 
@@ -1394,10 +1270,12 @@ public abstract class AbstractHyperDB
     deletionInProgress = false;
     deleteFileAnswer = mrNone;
 
-    if (folderTreeWatcher.isDisabled())
+    FolderTreeWatcher watcher = getFolderTreeWatcher();
+
+    if ((watcher != null) && watcher.isDisabled())
     {
-      folderTreeWatcher.enable();
-      folderTreeWatcher.createNewWatcherAndStart();
+      watcher.enable();
+      watcher.createNewWatcherAndStart();
     }
 
     if (startMentionsRebuildAfterDelete == false)
@@ -1448,18 +1326,130 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void bringAllDatasetsOnline() throws HyperDataException, CancelledTaskException
+  protected void bringAllDatasetsOnline(HyperTask task) throws HyperDataException, CancelledTaskException
   {
     try
     {
       for (HyperDataset<? extends HDT_Record> dataset : datasets.values()) // Folders must be brought online first. See HyperPath.assignNameInternal
-        dataset.bringAllRecordsOnline(isInteractive());
+        dataset.bringAllRecordsOnline(task);
 
       addRootFolder();
     }
     catch (RestoreException e)
     {
       throw new HDB_InternalError(42837, e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected void loadSettingsFromStream(InputStream is, boolean creatingNew, HyperFavorites favorites) throws HyperDataException
+  {
+    MessageDigest md = newMessageDigest();
+
+    try (DigestInputStream dis = new DigestInputStream(is, md))
+    {
+      prefs = XmlSupport.importPreferences(dis).node("org").node("hypernomicon").node("model");
+
+      xmlChecksums.put(SETTINGS_FILE_NAME, digestHexStr(md));
+
+      if (favorites != null)
+        favorites.loadFromPrefNode();
+
+      String versionStr = prefs.get(PREF_KEY_SETTINGS_VERSION, "");
+      if (versionStr.isBlank())
+        throw new HyperDataException("XML settings data version number not found.");
+
+      VersionNumber settingsVersion = new VersionNumber(versionStr);
+      checkVersion(creatingNew, settingsVersion, "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
+
+      boolean writeFolderIDs = false;
+
+      if (ComparableUtils.is(settingsVersion).lessThanOrEqualTo(new VersionNumber(1)))  // Backwards compatibility with settings version 1.0
+      {
+        papersFolder    = folders.getByID(2);
+        booksFolder     = folders.getByID(3);
+        miscFilesFolder = folders.getByID(4);
+        picturesFolder  = folders.getByID(5);
+        topicalFolder   = folders.getByID(6);
+        unenteredFolder = folders.getByID(7);
+        resultsFolder   = folders.getByID(8);
+        xmlFolder       = HyperPath.getFolderFromFilePath(getRootPath(DEFAULT_XML_PATH), true);
+
+        writeFolderIDs = true;
+      }
+      else
+      {
+        xmlFolder       = folders.getByID(prefs.getInt(PREF_KEY_XML_FOLDER_ID       , -1));
+        picturesFolder  = folders.getByID(prefs.getInt(PREF_KEY_PICTURES_FOLDER_ID  , -1));
+        booksFolder     = folders.getByID(prefs.getInt(PREF_KEY_BOOKS_FOLDER_ID     , -1));
+        papersFolder    = folders.getByID(prefs.getInt(PREF_KEY_PAPERS_FOLDER_ID    , -1));
+        resultsFolder   = folders.getByID(prefs.getInt(PREF_KEY_RESULTS_FOLDER_ID   , -1));
+        unenteredFolder = folders.getByID(prefs.getInt(PREF_KEY_UNENTERED_FOLDER_ID , -1));
+        miscFilesFolder = folders.getByID(prefs.getInt(PREF_KEY_MISC_FILES_FOLDER_ID, -1));
+        topicalFolder   = folders.getByID(prefs.getInt(PREF_KEY_TOPICAL_FOLDER_ID   , -1));
+      }
+
+      if (HDT_Record.isEmpty(picturesFolder ) ||
+          HDT_Record.isEmpty(booksFolder    ) ||
+          HDT_Record.isEmpty(papersFolder   ) ||
+          HDT_Record.isEmpty(resultsFolder  ) ||
+          HDT_Record.isEmpty(unenteredFolder) ||
+          HDT_Record.isEmpty(miscFilesFolder) ||
+          HDT_Record.isEmpty(xmlFolder      ) ||
+          HDT_Record.isEmpty(topicalFolder  ))
+      {
+        throw new HyperDataException("Unable to load information about paths from database settings file.");
+      }
+
+      if (writeFolderIDs)  // Backwards compatibility with settings version 1.0
+      {
+        prefs.putInt(PREF_KEY_XML_FOLDER_ID       , xmlFolder      .getID());
+        prefs.putInt(PREF_KEY_PICTURES_FOLDER_ID  , picturesFolder .getID()); prefs.remove("picturesPath" );
+        prefs.putInt(PREF_KEY_BOOKS_FOLDER_ID     , booksFolder    .getID()); prefs.remove("booksPath"    );
+        prefs.putInt(PREF_KEY_PAPERS_FOLDER_ID    , papersFolder   .getID()); prefs.remove("papersPath"   );
+        prefs.putInt(PREF_KEY_RESULTS_FOLDER_ID   , resultsFolder  .getID()); prefs.remove("resultsPath"  );
+        prefs.putInt(PREF_KEY_UNENTERED_FOLDER_ID , unenteredFolder.getID()); prefs.remove("unenteredPath"); prefs.remove("unenteredPat");
+        prefs.putInt(PREF_KEY_MISC_FILES_FOLDER_ID, miscFilesFolder.getID()); prefs.remove("suppFilesPath");
+        prefs.putInt(PREF_KEY_TOPICAL_FOLDER_ID   , topicalFolder  .getID()); prefs.remove("topicsPath"   );
+      }
+
+      resolvePointers();
+
+      String dbCreationDateStr = prefs.get(PREF_KEY_DB_CREATION_DATE, "");
+      if (safeStr(dbCreationDateStr).length() > 0)
+      {
+        dbCreationDate = parseIso8601offset(dbCreationDateStr);
+
+        if (dbCreationDate.isAfter(Instant.now())) // Creation date in template is year 9999 so it will be set
+          dbCreationDate = Instant.now();          // to the current date when loaded for the first time
+      }
+
+      String bibEncApiKey       = prefs.get(PREF_KEY_BIB_API_KEY      , ""),
+             bibUserID          = prefs.get(PREF_KEY_BIB_USER_ID      , ""),
+             bibTypeDescriptor  = prefs.get(PREF_KEY_BIB_LIBRARY_TYPE , ""),
+             bibEncAccessToken  = prefs.get(PREF_KEY_BIB_ACCESS_TOKEN , ""),
+             bibEncRefreshToken = prefs.get(PREF_KEY_BIB_REFRESH_TOKEN, "");
+
+      if ((((bibEncApiKey.length() > 0) && (bibUserID.length() > 0)) || ((bibEncAccessToken.length() > 0) && (bibEncRefreshToken.length() > 0))) &&
+          (bibTypeDescriptor.length() > 0))
+      {
+        LibraryType libType = LibraryType.getByDescriptor(bibTypeDescriptor);
+
+        try
+        {
+          loadBibLibrary(libType, bibEncApiKey, bibUserID, bibEncAccessToken, bibEncRefreshToken);
+        }
+        catch (Exception e)
+        {
+          throw new HyperDataException("Unable to initialize link to " + libType.userFriendlyName + ": " + getThrowableMessage(e), e);
+        }
+      }
+    }
+    catch (IOException | InvalidPreferencesFormatException e)
+    {
+      throw new HyperDataException("An error occurred while attempting to read database settings: " + getThrowableMessage(e), e);
     }
   }
 
@@ -1628,7 +1618,7 @@ public abstract class AbstractHyperDB
     }
 
     if (ComparableUtils.is(oldestTooNewAppVersion).lessThanOrEqualTo(appVersion))
-      throw new HyperDataException("A version of " + appTitle + " older than v" + oldestTooNewAppVersion + " is required to load " + dataName + '.');
+      throw new HyperDataException("A version of Hypernomicon older than v" + oldestTooNewAppVersion + " is required to load " + dataName + '.');
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
     {
@@ -1638,7 +1628,7 @@ public abstract class AbstractHyperDB
     }
 
     if (ComparableUtils.is(newestTooOldAppVersion).greaterThanOrEqualTo(appVersion))
-      throw new HyperDataException("A version of " + appTitle + " newer than v" + newestTooOldAppVersion + " is required to load " + dataName + '.');
+      throw new HyperDataException("A version of Hypernomicon newer than v" + newestTooOldAppVersion + " is required to load " + dataName + '.');
 
     VersionNumber savingAs = getVersionNumberSavingAs(appVersionToMaxVersion);
 
@@ -1660,15 +1650,14 @@ public abstract class AbstractHyperDB
           newestTooOldAppVersion = entry.getKey();
     }
 
-    warningMessage("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with " + appTitle +
-                   " v" + newestTooOldAppVersion + " or older.");
+    warningMessage("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with Hypernomicon v" + newestTooOldAppVersion + " or older.");
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   protected void loadFromXMLStream(boolean creatingNew, InputStream is, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion, SetMultimap<Integer, Integer> workIDtoInvIDs,
-                                   String fileDescription, String fileName, long fileSize) throws HyperDataException, CancelledTaskException
+                                   String fileDescription, String fileName, long fileSize, HyperTask task) throws HyperDataException, CancelledTaskException
   {
     MessageDigest md = newMessageDigest();
 
@@ -1704,7 +1693,7 @@ public abstract class AbstractHyperDB
 
         while (notDoneReadingRecord)
         {
-          if (task.isCancelled()) throw new CancelledTaskException();
+          HyperTask.throwExceptionIfCancelled(task);
 
           event = eventReader.nextEvent();
 
@@ -1824,12 +1813,13 @@ public abstract class AbstractHyperDB
             throw new HyperDataException("Multiple " + getTypeName(xmlRecord.type) + " records found with incompatible XML record data version numbers. ID: " + xmlRecord.id + " File: " + fileDescription);
         }
 
-        if (event != null)
-          task.updateProgress(curTaskCount + event.getLocation().getCharacterOffset(), totalTaskCount);
+        if ((task != null) && (event != null))
+          task.updateProgress(task.completedCount + event.getLocation().getCharacterOffset(), task.totalCount);
 
       }  // End of main loop for single XML file
 
-      curTaskCount += fileSize;
+      if (task != null)
+        task.completedCount += fileSize;
     }
     catch (IOException | DuplicateRecordException | InvalidItemException e)
     {
@@ -1977,11 +1967,11 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void close(Set<RecordType> datasetsToKeep) throws HDB_InternalErrorDuringClose
+  public void close(Set<RecordType> datasetsToKeep) throws HDB_UnrecoverableInternalError
   {
     boolean bringOnline = datasetsToKeep != null; // Datasets remain online through process of creating a new database
 
-    folderTreeWatcher.stop();
+    nullSwitch(getFolderTreeWatcher(), FolderTreeWatcher::stop);
 
     unlock();
 
@@ -1989,7 +1979,7 @@ public abstract class AbstractHyperDB
     mentionsIndex.clear();
 
     loaded = false;
-    InterProcClient.refresh(new FilePath(""));
+    updateRunningInstancesFile(new FilePath(""));
     clearAllDataSets(datasetsToKeep);
 
     try
@@ -1998,7 +1988,7 @@ public abstract class AbstractHyperDB
     }
     catch (HDB_InternalError e)
     {
-      throw new HDB_InternalErrorDuringClose(e);
+      throw new HDB_UnrecoverableInternalError(e);
     }
 
     initialNavList   .clear();
@@ -2057,7 +2047,7 @@ public abstract class AbstractHyperDB
     }
     catch (HDB_InternalError e)
     {
-      throw new HDB_InternalErrorDuringClose(e);
+      throw new HDB_UnrecoverableInternalError(e);
     }
   }
 
@@ -2079,7 +2069,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean newDB(FilePath newPath, Set<RecordType> datasetsToKeep, Map<String, String> folderMap) throws HDB_InternalError
+  public boolean newDB(FilePath newPath, String hdbFileName, Set<RecordType> datasetsToKeep, Map<String, String> folderMap) throws HDB_InternalError
   {
     if (loaded == false) return false;
 
@@ -2091,9 +2081,9 @@ public abstract class AbstractHyperDB
     dbCreationDate = Instant.now();
     prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
-    app.prefs.put(PREF_KEY_SOURCE_PATH, newPath.toString());
     rootFilePath = newPath;
-    hdbFilePath = rootFilePath.resolve(app.prefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
+    saveSourcePathToSystemSettings(newPath.toString());
+    hdbFilePath = rootFilePath.resolve(hdbFileName);
 
     addRootFolder();
 
@@ -2118,7 +2108,7 @@ public abstract class AbstractHyperDB
     resolvePointers();
 
     loaded = true;
-    InterProcClient.refresh(rootFilePath);
+    updateRunningInstancesFile(rootFilePath);
 
     return true;
   }
@@ -2463,19 +2453,13 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FilePath resolveExtFilePath(String url)
+  public FilePath resolveExtFilePath(String url)
   {
     return (url != null) && url.startsWith(EXT_1) && (extPath() != null) ?
       extPath().resolve(FilenameUtils.separatorsToSystem(url.substring(7)))
     :
       null;
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public abstract void updateMainTextTemplate(RecordType recordType, String html) throws IOException;
-  public abstract String getMainTextTemplate(RecordType recordType);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

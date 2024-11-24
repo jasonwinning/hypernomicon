@@ -710,15 +710,11 @@ public final class QueryCtrlr
 
     reportTable.format(reportEngine);
 
-    HyperTask task = new HyperTask("GenerateReport") { @Override protected void call() throws HyperDataException, CancelledTaskException
+    if (new HyperTask("GenerateReport", "Generating report...") { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
-      updateMessage("Generating report...");
-      updateProgress(0, 1);
-
       reportEngine.generate(this, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
-    }};
 
-    if (task.runWithProgressDialog() != State.SUCCEEDED) return;
+    }}.runWithProgressDialog() != State.SUCCEEDED) return;
 
     reportTable.inject(reportEngine);
 
@@ -836,22 +832,18 @@ public final class QueryCtrlr
     QuerySource combinedSource = getCombinedRecordSource(sources);
 
     searchLinkedRecords = combinedSource.recordType() != hdtNone;
-    int total = combinedSource.size();
 
     tvResults.setItems(FXCollections.emptyObservableList());
 
     // Evaluate record queries
 
-    HyperTask task = new HyperTask("Query")
+    HyperTask task = new HyperTask("Query", "Running query...", combinedSource.size())
     {
       //---------------------------------------------------------------------------
 
       @Override protected void call() throws CancelledTaskException, HyperDataException
       {
         resultsBackingList.clear();
-
-        updateMessage("Running query...");
-        updateProgress(0, 1);
 
         Map<HyperTableRow, Integer> rowNumbers = new HashMap<>(sources.size());
         Map<Integer, Boolean> results = new HashMap<>(sources.size());
@@ -868,13 +860,9 @@ public final class QueryCtrlr
         {
           BoolExpression expr = BoolExpression.create(tfCustomLogic.getText());
 
-          for (int recordNdx = 0; recordIterator.hasNext(); recordNdx++)
+          while (recordIterator.hasNext())
           {
-            if (isCancelled())
-              throw new CancelledTaskException();
-
-            if ((recordNdx % 50) == 0)
-              updateProgress(recordNdx, total);
+            incrementAndUpdateProgress(50);
 
             HDT_Record record = recordIterator.next();
 

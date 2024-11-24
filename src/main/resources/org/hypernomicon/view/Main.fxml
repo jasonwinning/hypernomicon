@@ -89,7 +89,7 @@
           <CheckMenuItem fx:id="mnuAutoImport" mnemonicParsing="false" text="Automatically watch for and import PDF files added" />
           <MenuItem fx:id="mnuAddToQueryResults" mnemonicParsing="false" onAction="#mnuAddToQueryResultsClick" text="Add this record to query results" />
           <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick" text="Change record ID..." />
-          <MenuItem fx:id="mnuRevertToDiskCopy" mnemonicParsing="false" onAction="#mnuRevertToDiskCopyClick" text="Revert this record to XML version" />
+          <MenuItem fx:id="mnuRevertToXmlVersion" mnemonicParsing="false" onAction="#mnuRevertToXmlVersionClick" text="Revert this record to XML version" />
           <MenuItem fx:id="mnuSaveReloadAll" mnemonicParsing="false" onAction="#mnuSaveReloadAllClick" text="Save/Reload All" />
         </Menu>
         <Menu fx:id="mnuFavorites" mnemonicParsing="false" text="Favorites">

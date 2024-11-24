@@ -351,7 +351,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, List<Author> matchedAuthors, HyperTask task, int ctr, int total) throws CancelledTaskException
+  public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, List<Author> matchedAuthors, HyperTask task) throws CancelledTaskException
   {
     if (person1.fullLCNameEngChar.isEmpty()) return;
 
@@ -359,11 +359,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     for (PersonForDupCheck person2 : list)
     {
-      if (task.isCancelled()) throw new CancelledTaskException();
-
-      if ((ctr % 10) == 0) task.updateProgress(ctr, total);
-
-      ctr++;
+      task.incrementAndUpdateProgress(10);
 
       if (nullSwitch(person1.author     , false, author1    -> author1    == person2.author     )) continue;
       if (nullSwitch(person1.getPerson(), false, personRec1 -> personRec1 == person2.getPerson())) continue;
@@ -411,11 +407,9 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, List<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
   {
-    return new HyperTask("CheckForDupAuthors") { @Override protected void call() throws CancelledTaskException
+    return new HyperTask("CheckForDupAuthors", "Checking for duplicates...") { @Override protected void call() throws CancelledTaskException
     {
       matchedAuthorsList.clear();
-
-      updateMessage("Checking for duplicates...");
 
       LinkedList<PersonForDupCheck> list = createListForDupCheck();
 
@@ -425,7 +419,10 @@ public class NewPersonDlgCtrlr extends HyperDlg
         matchedAuthorsList.add(matchedAuthors);
         PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), queryAuthors.get(ndx));
 
-        doDupCheck(person, list, matchedAuthors, this, ndx * list.size(), nameList.size() * list.size());
+        completedCount = ndx * list.size();
+        totalCount = nameList.size() * list.size();
+
+        doDupCheck(person, list, matchedAuthors, this);
       }
 
       if (finishHndlr != null) runInFXThread(finishHndlr);
@@ -451,8 +448,6 @@ public class NewPersonDlgCtrlr extends HyperDlg
       origAuthor;
 
     task = createDupCheckTask(personName, author, matchedAuthorsList, this::finishDupSearch);
-
-    task.updateProgress(0, 1);
 
     progressIndicator.progressProperty().bind(task.progressProperty());
 

@@ -235,7 +235,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
     try
     {
-      sentMsg.writeToDisk(true);
+      sentMsg.writeToFile(true);
     }
     catch (IOException e)
     {

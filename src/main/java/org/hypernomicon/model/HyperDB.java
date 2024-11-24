@@ -22,7 +22,7 @@ import static java.util.Collections.*;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.Tag.getTag;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
@@ -34,16 +34,18 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map.Entry;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.InterProcClient;
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.HyperFavorites;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
 
 import com.google.common.collect.SetMultimap;
@@ -58,7 +60,7 @@ public final class HyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HyperDB db;
+  public static AbstractHyperDB db;
 
   private final FolderTreeWatcher folderTreeWatcher;
 
@@ -89,38 +91,41 @@ public final class HyperDB extends AbstractHyperDB
 
 //---------------------------------------------------------------------------
 
-  @Override public boolean isInteractive() { return true; }
+  @Override protected FolderTreeWatcher getFolderTreeWatcher() { return folderTreeWatcher; }
 
-  @Override protected void refreshInterProcClient(FilePath newRootFilePath) { InterProcClient.refresh(newRootFilePath); }
+  @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { InterProcClient.updateRunningInstancesFile(newRootFilePath); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override protected boolean loadFromXMLFiles(List<FilePath> xmlFileList, boolean creatingNew, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion, SetMultimap<Integer, Integer> workIDtoInvIDs)
   {
-    task = new HyperTask("LoadDatabase") { @Override protected void call() throws HyperDataException, CancelledTaskException
+    return new HyperTask("LoadDatabase", "Loading database from folder " + rootFilePath + "...") { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
-      updateMessage("Loading database from folder " + rootFilePath + "...");
-      updateProgress(0, 1);
-
-      totalTaskCount = 0; curTaskCount = 0;
+      totalCount = 0;
 
       try
       {
-        for (FilePath filePath : xmlFileList) totalTaskCount += filePath.size();
+        for (FilePath filePath : xmlFileList)
+        {
+          if (filePath.exists() == false)
+            throw new HyperDataException("Unable to load database. Reason: File does not exist: " + filePath);
+
+          totalCount += filePath.size();
+        }
       }
       catch (IOException e) { throw new HyperDataException(e); }
 
-      for (FilePath filePath : xmlFileList) loadFromXMLFile(creatingNew, filePath, recordTypeToDataVersion, workIDtoInvIDs);
-    }};
+      for (FilePath filePath : xmlFileList) loadFromXMLFile(creatingNew, filePath, recordTypeToDataVersion, workIDtoInvIDs, this);
 
-    return task.runWithProgressDialog() == State.SUCCEEDED;
+    }}.runWithProgressDialog() == State.SUCCEEDED;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadFromXMLFile(boolean creatingNew, FilePath filePath, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion, SetMultimap<Integer, Integer> workIDtoInvIDs) throws HyperDataException, CancelledTaskException
+  private void loadFromXMLFile(boolean creatingNew, FilePath filePath, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion,
+                               SetMultimap<Integer, Integer> workIDtoInvIDs, HyperTask task) throws HyperDataException, CancelledTaskException
   {
     String fileDescription = filePath.toString(),
            fileName        = filePath.getNameOnly().toString();
@@ -131,7 +136,7 @@ public final class HyperDB extends AbstractHyperDB
 
       try (InputStream is = Files.newInputStream(filePath.toPath()))
       {
-        loadFromXMLStream(creatingNew, is, recordTypeToDataVersion, workIDtoInvIDs, fileDescription, fileName, fileSize);
+        loadFromXMLStream(creatingNew, is, recordTypeToDataVersion, workIDtoInvIDs, fileDescription, fileName, fileSize, task);
       }
     }
     catch (IOException e)
@@ -331,24 +336,88 @@ public final class HyperDB extends AbstractHyperDB
   @Override protected void errorMessage  (String msg)           { errorPopup  (msg); }
   @Override protected void warningMessage(String msg)           { warningPopup(msg); }
 
+  @Override protected void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException
+  {
+    try (InputStream is = Files.newInputStream(xmlPath(SETTINGS_FILE_NAME).toPath()))
+    {
+      loadSettingsFromStream(is, creatingNew, favorites);
+    }
+    catch (IOException e)
+    {
+      throw new HyperDataException("An error occurred while attempting to read database settings: " + getThrowableMessage(e), e);
+    }
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override protected boolean bringAllRecordsOnline()
   {
-    totalTaskCount = totalRecordCount();
-
-    task = new HyperTask("BringDatabaseOnline") { @Override protected void call() throws HyperDataException, CancelledTaskException
+    return new HyperTask("BringDatabaseOnline", "Starting database session...", totalRecordCount()) { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
-      updateMessage("Starting database session...");
-      updateProgress(0, 1);
+      bringAllDatasetsOnline(this);
 
-      curTaskCount = 0;
+    }}.runWithProgressDialog() == State.SUCCEEDED;
+  }
 
-      bringAllDatasetsOnline();
-    }};
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    return task.runWithProgressDialog() == State.SUCCEEDED;
+  @Override protected void saveSourcePathToSystemSettings(String newPathStr)
+  {
+    app.prefs.put(PREF_KEY_SOURCE_PATH, newPathStr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public FilePath extPath()
+  {
+    String path = app.prefs.get(PREF_KEY_EXT_FILES_1, "");
+    return path.isBlank() ? null : new FilePath(path);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean checkChecksums()
+  {
+    for (Entry<String, String> entry : xmlChecksums.entrySet())
+    {
+      String hex = "";
+
+      try (InputStream is = Files.newInputStream(xmlPath(entry.getKey()).toPath()))
+      {
+        hex = DigestUtils.md5Hex(is);
+      }
+      catch (IOException e) { noOp(); }
+
+      if (hex.equalsIgnoreCase(entry.getValue()) == false)
+      {
+        if (confirmDialog("Changes have been made to the XML files from outside of this instance of " + appTitle + ". Overwrite these changes?"))
+          break;
+
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected MentionsIndex createMentionsIndex(List<Runnable> completeHandlers)
+  {
+    return new MentionsIndex(completeHandlers, true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected void checkWhetherFoldersExist()
+  {
+    getRootFolder().checkExists();
   }
 
 //---------------------------------------------------------------------------
