@@ -271,7 +271,7 @@ public final class Const
    * Change this and the version in pom.xml to set the application version
    * <br>
    */
-  public static final VersionNumber appVersion = new VersionNumber(1, 29); // 1.29
+  public static final VersionNumber appVersion = new VersionNumber(1, 29, 1); // 1.29.1
 
   /**
    * This is the minimum version that the application version is able to load
@@ -305,7 +305,8 @@ public final class Const
     .put(new VersionNumber(1, 23, 1), new VersionNumber(1, 5))
     .put(new VersionNumber(1, 25, 1), new VersionNumber(1, 6))
     .put(new VersionNumber(1, 28   ), new VersionNumber(1, 7))
-    .put(appVersion, new VersionNumber(1, 8))
+    .put(new VersionNumber(1, 29   ), new VersionNumber(1, 8))
+    .put(appVersion, new VersionNumber(1, 9))
     .build();
 
   /**

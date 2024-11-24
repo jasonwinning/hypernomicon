@@ -110,6 +110,8 @@ public class HDX_Element
     {
       if ("year".equals(tagName) && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 7)))
         tag = tagBibDate; // Backwards compatibility for record data version 1.7 or lower
+      else if ("counterargument".equals(tagName) && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 8)))
+        tag = tagTargetArgument; // Backwards compatibility for record data version 1.8 or lower
       else
         throw new InvalidItemException(xmlRecord.id, xmlRecord.type, tagName);
     }
