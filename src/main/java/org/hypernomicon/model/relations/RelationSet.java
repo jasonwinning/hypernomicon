@@ -632,7 +632,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       orphans.remove(subj);
 
-      Platform.runLater(() -> changeHandlers.forEach(handler -> handler.handle(subj, obj, true)));
+      if (changeHandlers.size() > 0)
+        Platform.runLater(() -> changeHandlers.forEach(handler -> handler.handle(subj, obj, true)));
 
       return;
     }
@@ -654,7 +655,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
             orphans.add(subj);
 
           if ((HDT_Record.isEmpty(subj) == false) && (HDT_Record.isEmpty(obj) == false))  // Only run change handlers if the record is not in the process of being deleted
-            Platform.runLater(() -> changeHandlers.forEach(handler -> handler.handle(subj, obj, false)));
+            if (changeHandlers.size() > 0)
+              Platform.runLater(() -> changeHandlers.forEach(handler -> handler.handle(subj, obj, false)));
         }
       }
     }
