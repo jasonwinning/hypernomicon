@@ -62,8 +62,9 @@ import java.util.function.Predicate;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.*;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -935,21 +936,13 @@ public abstract class AbstractHyperDB
     if (dbChanged)
       dbPreChangeHandlers.forEach(Runnable::run);
 
-    final List<FilePath> xmlFileList = new ArrayList<>();
-
-    for (String fileName : new String[]{ OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
-                                         DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
-                                         TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME })
-    {
-      FilePath filePath = xmlPath(fileName);
-
-
-      xmlFileList.add(filePath);
-    }
-
     alreadyShowedUpgradeMsg = false;
     EnumMap<RecordType, VersionNumber> recordTypeToDataVersion = new EnumMap<>(RecordType.class);
     SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
+
+    final List<FilePath> xmlFileList = Stream.of(OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
+                                                 DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
+                                                 TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME ).map(this::xmlPath).collect(toList());
 
     if (loadFromXMLFiles(xmlFileList, creatingNew, recordTypeToDataVersion, workIDtoInvIDs) == false)
     {
@@ -2215,8 +2208,7 @@ public abstract class AbstractHyperDB
       tags.addAll(datasets.get(recordType).getTags(false, substituteMainText));
     else
       tags = datasets.values().stream().flatMap(dataset -> dataset.getTags(false, substituteMainText).stream())
-                                       .collect(Collectors.toCollection(() -> EnumSet.noneOf(Tag.class)));
-
+                                       .collect(toCollection(() -> EnumSet.noneOf(Tag.class)));
     return tags;
   }
 
@@ -2233,7 +2225,7 @@ public abstract class AbstractHyperDB
 
   public Set<HDI_Schema> getSchemasByTag(Tag tag)
   {
-    return datasets.values().stream().map(dataset -> dataset.getSchema(tag)).filter(Objects::nonNull).collect(Collectors.toSet());
+    return datasets.values().stream().map(dataset -> dataset.getSchema(tag)).filter(Objects::nonNull).collect(toSet());
   }
 
 //---------------------------------------------------------------------------

@@ -30,9 +30,10 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.RelationSet;
+import org.hypernomicon.model.unities.HDT_Hub;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -194,21 +195,40 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private HDT_DT createRecord(RecordState recordState)
+  private HDT_DT createRecord(RecordState recordState) { return (HDT_DT) switch (recordState.type)
   {
-    Class<HDT_DT> klazz = (Class<HDT_DT>) recordState.type.getRecordClass();
+    case hdtArgument        -> new HDT_Argument        (recordState, (DatasetAccessor<HDT_Argument       >) core);
+    case hdtArgumentVerdict -> new HDT_ArgumentVerdict (recordState, (DatasetAccessor<HDT_ArgumentVerdict>) core);
+    case hdtConcept         -> new HDT_Concept         (recordState, (DatasetAccessor<HDT_Concept        >) core);
+    case hdtConceptSense    -> new HDT_ConceptSense    (recordState, (DatasetAccessor<HDT_ConceptSense   >) core);
+    case hdtCountry         -> new HDT_Country         (recordState, (DatasetAccessor<HDT_Country        >) core);
+    case hdtDebate          -> new HDT_Debate          (recordState, (DatasetAccessor<HDT_Debate         >) core);
+    case hdtField           -> new HDT_Field           (recordState, (DatasetAccessor<HDT_Field          >) core);
+    case hdtFileType        -> new HDT_FileType        (recordState, (DatasetAccessor<HDT_FileType       >) core);
+    case hdtFolder          -> new HDT_Folder          (recordState, (DatasetAccessor<HDT_Folder         >) core);
+    case hdtGlossary        -> new HDT_Glossary        (recordState, (DatasetAccessor<HDT_Glossary       >) core);
+    case hdtHub             -> new HDT_Hub             (recordState, (DatasetAccessor<HDT_Hub            >) core);
+    case hdtInstitution     -> new HDT_Institution     (recordState, (DatasetAccessor<HDT_Institution    >) core);
+    case hdtInstitutionType -> new HDT_InstitutionType (recordState, (DatasetAccessor<HDT_InstitutionType>) core);
+    case hdtInvestigation   -> new HDT_Investigation   (recordState, (DatasetAccessor<HDT_Investigation  >) core);
+    case hdtMiscFile        -> new HDT_MiscFile        (recordState, (DatasetAccessor<HDT_MiscFile       >) core);
+    case hdtNote            -> new HDT_Note            (recordState, (DatasetAccessor<HDT_Note           >) core);
+    case hdtPerson          -> new HDT_Person          (recordState, (DatasetAccessor<HDT_Person         >) core);
+    case hdtPersonGroup     -> new HDT_PersonGroup     (recordState, (DatasetAccessor<HDT_PersonGroup    >) core);
+    case hdtPersonStatus    -> new HDT_PersonStatus    (recordState, (DatasetAccessor<HDT_PersonStatus   >) core);
+    case hdtPosition        -> new HDT_Position        (recordState, (DatasetAccessor<HDT_Position       >) core);
+    case hdtPositionVerdict -> new HDT_PositionVerdict (recordState, (DatasetAccessor<HDT_PositionVerdict>) core);
+    case hdtRank            -> new HDT_Rank            (recordState, (DatasetAccessor<HDT_Rank           >) core);
+    case hdtRegion          -> new HDT_Region          (recordState, (DatasetAccessor<HDT_Region         >) core);
+    case hdtSubfield        -> new HDT_Subfield        (recordState, (DatasetAccessor<HDT_Subfield       >) core);
+    case hdtTerm            -> new HDT_Term            (recordState, (DatasetAccessor<HDT_Term           >) core);
+    case hdtWork            -> new HDT_Work            (recordState, (DatasetAccessor<HDT_Work           >) core);
+    case hdtWorkFile        -> new HDT_WorkFile        (recordState, (DatasetAccessor<HDT_WorkFile       >) core);
+    case hdtWorkLabel       -> new HDT_WorkLabel       (recordState, (DatasetAccessor<HDT_WorkLabel      >) core);
+    case hdtWorkType        -> new HDT_WorkType        (recordState, (DatasetAccessor<HDT_WorkType       >) core);
 
-    try
-    {
-      return klazz.getConstructor(RecordState.class, DatasetAccessor.class).newInstance(recordState, core);
-    }
-    catch (NoSuchMethodException    | InstantiationException    | IllegalAccessException |
-           IllegalArgumentException | InvocationTargetException | SecurityException e)
-    {
-      e.printStackTrace();
-      return null;
-    }
-  }
+    default -> throw new AssertionError("Cannot create record for type: " + recordState.type.name());
+  }; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
