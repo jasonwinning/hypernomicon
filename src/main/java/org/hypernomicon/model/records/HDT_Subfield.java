@@ -22,7 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Field;
 import org.hypernomicon.model.relations.HyperObjPointer;
 
@@ -40,7 +40,7 @@ public class HDT_Subfield extends HDT_RecordBase
 
 //---------------------------------------------------------------------------
 
-  public HDT_Subfield(RecordState xmlState, HyperDataset<HDT_Subfield> dataset)
+  public HDT_Subfield(RecordState xmlState, DatasetAccessor<HDT_Subfield> dataset)
   {
     super(xmlState, dataset, tagName);
 

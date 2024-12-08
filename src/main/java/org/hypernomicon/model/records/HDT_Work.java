@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.WorkBibData;
 import org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr;
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.Author;
@@ -74,7 +74,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Work(RecordState xmlState, HyperDataset<HDT_Work> dataset)
+  public HDT_Work(RecordState xmlState, DatasetAccessor<HDT_Work> dataset)
   {
     super(xmlState, dataset, tagTitle);
 

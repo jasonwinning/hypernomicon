@@ -29,7 +29,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.InvalidPathException;
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.util.filePath.FilePath;
 
@@ -45,7 +45,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   private final HyperPath path;
   private boolean checkedForExistence;
 
-  public HDT_Folder(RecordState xmlState, HyperDataset<HDT_Folder> dataset)
+  public HDT_Folder(RecordState xmlState, DatasetAccessor<HDT_Folder> dataset)
   {
     super(xmlState, dataset, tagName); // tagName is not actually used; name should always be blank
 

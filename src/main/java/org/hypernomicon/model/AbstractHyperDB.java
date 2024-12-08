@@ -100,6 +100,7 @@ import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.data.HyperDataset;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
@@ -160,6 +161,9 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FunctionalInterface
+  public interface ChangeRecordIDHandler { void changeRecordID(HDT_Record record, int newID); }
+
   private final EnumMap<RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(RecordType.class);
   private final EnumMap<RecordType, DatasetAccessor<? extends HDT_Record>> accessors = new EnumMap<>(RecordType.class);
 
@@ -173,6 +177,8 @@ public abstract class AbstractHyperDB
                                            dbPreChangeHandlers           = new ArrayList<>(),
                                            dbMentionsNdxCompleteHandlers = new ArrayList<>(),
                                            bibChangedHandlers            = new ArrayList<>();
+
+  private final List<ChangeRecordIDHandler> changeRecordIDHandlers = new ArrayList<>();
 
   protected final EnumMap<RecordType, String> mainTextTemplates = new EnumMap<>(RecordType.class);
   protected final Map<String, String> xmlChecksums = new HashMap<>();
@@ -243,6 +249,7 @@ public abstract class AbstractHyperDB
   public void addMentionsNdxCompleteHandler(Runnable handler)                               { dbMentionsNdxCompleteHandlers.add(handler); }
   public void addBibChangedHandler(Runnable handler)                                        { bibChangedHandlers.add(handler); }
   public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
+  public void addChangeRecordIDHandler(ChangeRecordIDHandler handler)                       { changeRecordIDHandlers.add(handler); }
   public void replaceMainText(MainText oldMT, MainText newMT)                               { displayedAtIndex.replaceItem(oldMT, newMT); }
   public void rebuildMentions()                                                             { if (loaded) mentionsIndex.startRebuild(); }
   public void updateMentioner(HDT_Record record)                                            { if (loaded) mentionsIndex.updateMentioner(record); }
@@ -574,11 +581,18 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static boolean creatingDataset = false;
+
+  public static boolean isCreatingDataset() { return creatingDataset; }
+
   private <HDT_T extends HDT_Record> DatasetAccessor<HDT_T> getAccessor(Class<HDT_T> klass)
   {
     RecordType type = typeByRecordClass(klass);
 
-    HyperDataset<HDT_T> dataset = new HyperDataset<>(type);
+    creatingDataset = true;
+    HyperDataset<HDT_T> dataset = HyperDataset.create(type);
+    creatingDataset = false;
+
     DatasetAccessor<HDT_T> accessor = dataset.getAccessor();
     datasets.put(type, dataset);
     accessors.put(type, accessor);
@@ -978,7 +992,9 @@ public abstract class AbstractHyperDB
     {
       int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
 
-      nullSwitch(records(hdtWorkType).getByID(thesisID), (HDT_Record record) -> record.changeID(datasets.get(hdtWorkType).getNextID()));
+      HDT_WorkType thesisWorkType = workTypes.getByID(thesisID);
+      if (thesisWorkType != null)
+        changeRecordID(thesisWorkType, datasets.get(hdtWorkType).getNextID());
 
       try
       {
@@ -1025,6 +1041,24 @@ public abstract class AbstractHyperDB
     {
       warningMessage("An error occurred while writing lock file: " + getThrowableMessage(e));
     }
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean changeRecordID(HDT_Record record, int newID) throws HDB_InternalError
+  {
+    int oldID = record.getID();
+
+    if (isProtectedRecord(oldID, record.getType(), false) ||
+        idAvailable(record.getType(), newID) == false)
+      return false;
+
+    changeRecordIDHandlers.forEach(handler -> handler.changeRecordID(record, newID));
+
+    datasets.get(record.getType()).changeRecordID(oldID, newID);
 
     return true;
   }
@@ -1225,10 +1259,12 @@ public abstract class AbstractHyperDB
 
   public void deleteRecord(HDT_Record record)
   {
+    Objects.requireNonNull(record, "Record to delete is null");
+
     if (deletionInProgress == false)
       startMentionsRebuildAfterDelete = false;
 
-    if ((record != null) && record.isExpired())
+    if (record.isExpired())
     {
       errorMessage("The record has already been deleted.");
       return;
@@ -1351,8 +1387,25 @@ public abstract class AbstractHyperDB
   {
     try
     {
-      for (HyperDataset<? extends HDT_Record> dataset : datasets.values()) // Folders must be brought online first. See HyperPath.assignNameInternal
-        dataset.bringAllRecordsOnline(task);
+      for (Entry<RecordType, HyperDataset<? extends HDT_Record>> entry : datasets.entrySet()) // Folders must be brought online first. See HyperPath.assignNameInternal
+      {
+        RecordType recordType = entry.getKey();
+        HyperDataset<? extends HDT_Record> dataset = entry.getValue();
+
+        if (dataset.online)
+          throw new HDB_InternalError(89842);
+
+        for (HDT_Record record : accessors.get(recordType))
+        {
+          record.bringStoredCopyOnline(false);
+          addToInitialNavList(record);
+
+          if (task != null)
+            task.incrementAndUpdateProgress(50);
+        }
+
+        dataset.online = true;
+      }
 
       addRootFolder();
     }
@@ -1928,7 +1981,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void addToInitialNavList(HDT_Record record)
+  private void addToInitialNavList(HDT_Record record)
   {
     if (isUnstoredRecord(record)) return;
 

@@ -22,7 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public class HDT_WorkLabel extends HDT_RecordWithMainText
@@ -32,7 +32,7 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_WorkLabel(RecordState xmlState, HyperDataset<HDT_WorkLabel> dataset)
+  public HDT_WorkLabel(RecordState xmlState, DatasetAccessor<HDT_WorkLabel> dataset)
   {
     super(xmlState, dataset, tagText);
 

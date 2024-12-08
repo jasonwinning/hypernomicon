@@ -28,9 +28,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
@@ -45,7 +45,7 @@ public class HDT_Argument extends HDT_RecordWithMainText
   public final List<HDT_Argument> targetArgs, responseArgs;
   public final List<HDT_Work> works;
 
-  public HDT_Argument(RecordState xmlState, HyperDataset<HDT_Argument> dataset)
+  public HDT_Argument(RecordState xmlState, DatasetAccessor<HDT_Argument> dataset)
   {
     super(xmlState, dataset, tagName);
 
@@ -62,7 +62,6 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
   public String pagesInWork(HDT_Work work)                { return db.getNestedString(this, work, tagPages); }
   public void setPagesInWork(HDT_Work work, String pages) { db.updateNestedString(this, work, tagPages, pages); }
-  public boolean setWorks(List<HDT_Work> list)            { return updateObjectsFromList(rtWorkOfArgument, list); }
 
   public static final int truePositionVerdictID  = 1,
                           falsePositionVerdictID = 2,

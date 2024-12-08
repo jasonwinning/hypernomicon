@@ -24,7 +24,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -37,7 +37,7 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Note(RecordState xmlState, HyperDataset<HDT_Note> dataset)
+  public HDT_Note(RecordState xmlState, DatasetAccessor<HDT_Note> dataset)
   {
     super(xmlState, dataset, tagName);
 

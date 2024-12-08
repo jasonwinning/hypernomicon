@@ -41,7 +41,6 @@ public interface HDT_Record
   int keyNdx();
   int getID();
   RecordType getType();
-  void assignID() throws HDB_InternalError;
 
   void bringStoredCopyOnline(boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError;
   boolean hasStoredState();
@@ -67,7 +66,6 @@ public interface HDT_Record
   void expire();
   boolean isExpired();
   boolean isDummy();
-  boolean changeID(int newID);
   boolean updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags);
 
   void getAllStrings(List<String> list, boolean searchLinkedRecords);

@@ -36,7 +36,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 //---------------------------------------------------------------------------
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ObjListIteratorTest
+class ObjListIteratorTest
 {
 
 //---------------------------------------------------------------------------
@@ -52,7 +52,7 @@ public class ObjListIteratorTest
 //---------------------------------------------------------------------------
 
   @BeforeAll
-  public static void setUpOnce()
+  static void setUpOnce()
   {
     // This code will run once before all tests
 
@@ -73,13 +73,13 @@ public class ObjListIteratorTest
 //---------------------------------------------------------------------------
 
   @BeforeEach
-  public void setUp()
+  void setUp()
   {
     // This code will run before each test
 
     position.largerDebates.clear();
 
-    list.forEach(position.largerDebates::add);
+    position.largerDebates.addAll(list);
 
     objIterator     = position.largerDebates.iterator();
     objListIterator = position.largerDebates.listIterator();
@@ -89,7 +89,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(1)
-  public void testHasNext()
+  void testHasNext()
   {
     assertTrue(objIterator.hasNext());
     objIterator.next();
@@ -112,7 +112,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(2)
-  public void testHasPrevious()
+  void testHasPrevious()
   {
     objListIterator.next();
     objListIterator.next();
@@ -126,7 +126,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(3)
-  public void testPrevious()
+  void testPrevious()
   {
     objListIterator.next();
     objListIterator.next();
@@ -138,7 +138,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(4)
-  public void testNextIndex()
+  void testNextIndex()
   {
     assertEquals(0, objListIterator.nextIndex());
     objListIterator.next();
@@ -149,7 +149,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(5)
-  public void testPreviousIndex()
+  void testPreviousIndex()
   {
     assertEquals(-1, objListIterator.previousIndex());
     objListIterator.next();
@@ -160,7 +160,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(6)
-  public void testRemove()
+  void testRemove()
   {
     objIterator.next();
     objIterator.remove();
@@ -171,7 +171,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(7)
-  public void testListRemove()
+  void testListRemove()
   {
     objListIterator.next();
     objListIterator.remove();
@@ -182,7 +182,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(8)
-  public void testSet()
+  void testSet()
   {
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
     objListIterator.next();
@@ -194,7 +194,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(9)
-  public void testAdd()
+  void testAdd()
   {
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
     objListIterator.add(debate);
@@ -205,7 +205,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(10)
-  public void testNoSuchElementException()
+  void testNoSuchElementException()
   {
     objIterator.next();
     objIterator.next();
@@ -219,7 +219,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(11)
-  public void testIllegalStateException()
+  void testIllegalStateException()
   {
     assertThrows(IllegalStateException.class, objIterator::remove);
   }
@@ -228,7 +228,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(12)
-  public void testNoSuchElementExceptionList()
+  void testNoSuchElementExceptionList()
   {
     objListIterator.next();
     objListIterator.next();
@@ -242,7 +242,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(13)
-  public void testIllegalStateExceptionList()
+  void testIllegalStateExceptionList()
   {
     assertThrows(IllegalStateException.class, objListIterator::remove);
   }
@@ -251,7 +251,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(14)
-  public void testComodificationOnDelete()
+  void testComodificationOnDelete()
   {
     HDT_Debate newDebate = db.createNewBlankRecord(hdtDebate);
     position.largerDebates.add(newDebate);
@@ -279,7 +279,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(15)
-  public void testComodificationOnRemove()
+  void testComodificationOnRemove()
   {
     objIterator.next();
     objListIterator.next();
@@ -300,7 +300,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(16)
-  public void testComodificationOnAdd()
+  void testComodificationOnAdd()
   {
     objIterator.next();
     objListIterator.add(db.createNewBlankRecord(hdtDebate));
@@ -320,14 +320,14 @@ public class ObjListIteratorTest
 
   @Test
   @Order(17)
-  public void testEmptyList()
+  void testEmptyList()
   {
     HDT_Position newPosition = db.createNewBlankRecord(hdtPosition);
 
     Iterator<HDT_Debate> emptyIterator = newPosition.largerDebates.iterator();
 
     assertFalse(emptyIterator.hasNext());
-    assertThrows(NoSuchElementException.class, () -> emptyIterator.next());
+    assertThrows(NoSuchElementException.class, emptyIterator::next);
 
     ListIterator<HDT_Debate> emptyListIterator = newPosition.largerDebates.listIterator();
 
@@ -356,7 +356,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(18)
-  public void testAddAndRemoveCombination()
+  void testAddAndRemoveCombination()
   {
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
     objListIterator.add(debate);
@@ -370,7 +370,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(19)
-  public void testBoundaryConditions()
+  void testBoundaryConditions()
   {
     objListIterator.next();
     objListIterator.remove();  // Remove first element
@@ -435,7 +435,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(20)
-  public void testSetWithoutNextOrPrevious()
+  void testSetWithoutNextOrPrevious()
   {
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
     assertThrows(IllegalStateException.class, () -> objListIterator.set(debate));
@@ -445,7 +445,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(21)
-  public void testAddAtDifferentPositions()
+  void testAddAtDifferentPositions()
   {
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
 
@@ -464,7 +464,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(22)
-  public void testSingleElementList()
+  void testSingleElementList()
   {
     HDT_Position newPosition = db.createNewBlankRecord(hdtPosition);
     HDT_Debate newDebate = db.createNewBlankRecord(hdtDebate);
@@ -519,7 +519,7 @@ public class ObjListIteratorTest
 
   @Test
   @Order(999)
-  public void testComodificationOnLoadDB()
+  void testComodificationOnLoadDB()
   {
     objIterator.next();
     objListIterator.next();

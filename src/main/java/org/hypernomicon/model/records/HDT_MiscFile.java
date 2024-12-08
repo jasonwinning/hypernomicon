@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.FileAuthors;
@@ -45,7 +45,7 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_MiscFile(RecordState xmlState, HyperDataset<HDT_MiscFile> dataset)
+  public HDT_MiscFile(RecordState xmlState, DatasetAccessor<HDT_MiscFile> dataset)
   {
     super(xmlState, dataset, tagName);
 

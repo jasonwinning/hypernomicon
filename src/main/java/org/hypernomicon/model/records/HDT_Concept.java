@@ -25,9 +25,9 @@ import static org.hypernomicon.util.Util.*;
 import java.util.Collections;
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.DuplicateSearchKeyException;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
@@ -46,7 +46,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Concept(RecordState xmlState, HyperDataset<HDT_Concept> dataset)
+  public HDT_Concept(RecordState xmlState, DatasetAccessor<HDT_Concept> dataset)
   {
     super(xmlState, dataset, tagName);
 

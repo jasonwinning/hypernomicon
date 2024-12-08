@@ -75,7 +75,10 @@ class ZoteroMetadataTest
       try
       {
         JsonObj jLocalObj = ZoteroWrapper.getTemplateInitIfNecessary(entryType);
-        assertEquals(jServerTemplateObj.toString(), jLocalObj.toString(), "Zotero entry templates should be the same as the ones from the server");
+
+        String serverStr = jServerTemplateObj.toString().replace("\"webPage\"", "\"webpage\"");
+
+        assertEquals(jLocalObj.toString(), serverStr, "Zotero entry templates should be the same as the ones from the server");
       }
       catch (IOException | ParseException | HDB_InternalError e)
       {

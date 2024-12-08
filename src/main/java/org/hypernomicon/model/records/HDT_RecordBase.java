@@ -30,10 +30,10 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.*;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
@@ -60,7 +60,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final HyperDataset<? extends HDT_Record> dataset;
+  private final DatasetAccessor<? extends HDT_Record> dataset;
   private final Tag nameTag;
   private final NameItem name;
   private final Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
@@ -79,7 +79,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final Tag getNameTag()                  { return nameTag; }
   @Override public final boolean isDummy()                 { return dummyFlag; }
   @Override public final int getID()                       { return id; }
-  @Override public final int keyNdx()                      { return db.records(type).getKeyNdxByID(id); }
+  @Override public final int keyNdx()                      { return dataset.getKeyNdxByID(id); }
   @Override public final void viewNow()                    { if (db.viewTestingInProgress == false) viewDate = Instant.now(); }
   @Override public final String getSortKeyAttr()           { return sortKeyAttr; }
   @Override public final String getSortKey()               { return safeStr(dataset.getKeyByID(id)); }
@@ -87,7 +87,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final Set<Tag> getAllTags()             { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
   @Override public final boolean getTagBoolean(Tag tag)    { return ((HDI_OnlineBoolean)items.get(tag)).get(); }
   @Override public final boolean hasStoredState()          { return xmlState.stored; }
-  @Override public final void updateSortKey()              { dataset.updateSortKey(this); }
+  @Override public final void updateSortKey()              { dataset.setKey(getID(), makeSortKey()); }
   @Override public final HDI_Schema getSchema(Tag tag)     { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
   @Override public final RecordType getType()              { return type; }
 
@@ -132,8 +132,16 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected HDT_RecordBase(RecordState xmlState, HyperDataset<? extends HDT_Record> dataset, Tag nameTag)
+  private static boolean addedChangeIDHandler = false;
+
+  protected HDT_RecordBase(RecordState xmlState, DatasetAccessor<? extends HDT_Record> dataset, Tag nameTag)
   {
+    if (addedChangeIDHandler == false)
+    {
+      db.addChangeRecordIDHandler((record, newID) -> ((HDT_RecordBase)record).id = newID);
+      addedChangeIDHandler = true;
+    }
+
     name = new NameItem();
     type = typeByRecordClass(getClass());
 
@@ -251,24 +259,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final boolean changeID(int newID)
-  {
-    if ((type == hdtNone) ||
-        db.isProtectedRecord(id, type, false) ||
-        db.idAvailable(type, newID) == false)
-      return false;
-
-    int oldID = id;
-    id = newID;
-
-    try { dataset.changeRecordID(oldID, newID); } catch (HDB_InternalError e) { throw new AssertionError(e); }
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void bringStoredCopyOnline(boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
   {
     restoreTo(xmlState, rebuildMentions);
@@ -347,17 +337,6 @@ public abstract class HDT_RecordBase implements HDT_Record
     newState.items.forEach((tag, offlineItem) -> ((HDI_OnlineBase<HDI_OfflineBase>) items.get(tag)).getToOfflineValue(offlineItem, tag));
 
     return newState;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public final void assignID() throws HDB_InternalError
-  {
-    if (id != -1)
-      throw new HDB_InternalError(74102);
-
-    id = dataset.recordIDtoAssign(this);
   }
 
 //---------------------------------------------------------------------------

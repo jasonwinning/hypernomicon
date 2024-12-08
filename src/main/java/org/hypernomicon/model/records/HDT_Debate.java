@@ -22,7 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public class HDT_Debate extends HDT_RecordWithMainText
@@ -33,7 +33,7 @@ public class HDT_Debate extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Debate(RecordState xmlState, HyperDataset<HDT_Debate> dataset)
+  public HDT_Debate(RecordState xmlState, DatasetAccessor<HDT_Debate> dataset)
   {
     super(xmlState, dataset, tagName);
 

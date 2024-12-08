@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model;
+package org.hypernomicon.model.data;
 
 import static java.util.Collections.*;
 
@@ -25,12 +25,14 @@ import java.util.stream.Stream;
 
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.RecordType;
 
 //---------------------------------------------------------------------------
 
-final class HyperCore<HDT_DT extends HDT_Record>
+final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_DT>
 {
 
 //---------------------------------------------------------------------------
@@ -72,20 +74,103 @@ final class HyperCore<HDT_DT extends HDT_Record>
   private final Map<Integer, String> idToKey    = new HashMap<>();
   private final Map<Integer, HDT_DT> idToRecord = new HashMap<>();
 
-  int size()                   { return sortedIDs.size(); }
-  Stream<HDT_DT> stream()      { return sortedIDs.stream().map(idToRecord::get); }
-  String getKeyByID(int id)    { return idToKey.get(id); }
-  int getIDbyIDNdx(int ndx)    { return sortedIDs.get(ndx); }
-  int getIDbyKeyNdx(int ndx)   { return sortedKeys.get(ndx).id(); }
-  boolean containsID(int id)   { return idToRecord.containsKey(id); }
-  HDT_DT getRecordByID(int id) { return idToRecord.get(id); }
-  int getIDNdxByID(int id)     { return Math.max(-1, binarySearch(sortedIDs, id)); }
-  int getKeyNdxByID(int id)    { return Math.max(-1, binarySearch(sortedKeys, new KeyIDpair(id, idToKey.get(id)))); }
+  private final RecordType type;
+
+  HyperCore(RecordType type)
+  {
+    this.type = type;
+  }
+
+  private int getIDbyIDNdx(int ndx)    { return sortedIDs.get(ndx); }
+  private int getIDbyKeyNdx(int ndx)   { return sortedKeys.get(ndx).id(); }
+  private HDT_DT getByIDNdx(int ndx)   { return getByID(getIDbyIDNdx(ndx)); }
+
+  boolean containsID(int id)           { return idToRecord.containsKey(id); }
+
+  @Override public int size()                           { return sortedIDs.size(); }
+  @Override public Stream<HDT_DT> stream()              { return sortedIDs.stream().map(idToRecord::get); }
+  @Override public int getIDNdxByID(int id)             { return Math.max(-1, binarySearch(sortedIDs, id)); }
+  @Override public int getKeyNdxByID(int id)            { return Math.max(-1, binarySearch(sortedKeys, new KeyIDpair(id, idToKey.get(id)))); }
+
+  @Override public String getKeyByID(int id)            { return idToKey.get(id); }
+  @Override public HDT_DT getByID(int id)               { return idToRecord.get(id); }
+  @Override public HDT_DT getByKeyNdx(int ndx)          { return getByID(getIDbyKeyNdx(ndx)); }
+
+  @Override public Iterable<HDT_DT> keyIterable()       { return this::keyIterator; }
+  @Override public Iterator<HDT_DT> keyIterator()       { return new CoreIterator(true); }
+
+  @Override public Iterator<HDT_DT> iterator()          { return new CoreIterator(false); }
+
+  @Override public boolean isEmpty()                    { return size() == 0; }
+  @Override public boolean containsAll(Collection<?> c) { return c.stream().allMatch(this::contains); }
+  @Override public Object[] toArray()                   { return stream().toArray(); }
+
+  //---------------------------------------------------------------------------
+
+  @Override public boolean contains(Object o)
+  {
+    if (o instanceof HDT_Record record)
+    {
+      if ((record.getType() != type) || (record.getID() < 1))
+        return false;
+
+      return getByID(record.getID()) == record;
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  @Override public <T> T[] toArray(T[] a)
+  {
+    Objects.requireNonNull(a,"The provided array is null");
+    return stream().toArray(size -> a.length >= size ? a : (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Override public boolean add(HDT_DT e)                          { throw new UnsupportedOperationException("Add operation is not supported."      ); }
+  @Override public boolean remove(Object o)                       { throw new UnsupportedOperationException("Remove operation is not supported."   ); }
+  @Override public boolean addAll(Collection<? extends HDT_DT> c) { throw new UnsupportedOperationException("AddAll operation is not supported."   ); }
+  @Override public boolean removeAll(Collection<?> c)             { throw new UnsupportedOperationException("RemoveAll operation is not supported."); }
+  @Override public boolean retainAll(Collection<?> c)             { throw new UnsupportedOperationException("RetainAll operation is not supported."); }
+  @Override public void clear()                                   { throw new UnsupportedOperationException("Clear operation is not supported."    ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void clear()
+  private final class CoreIterator implements Iterator<HDT_DT>
+  {
+    private final boolean byKey;
+
+    private int nextNdx = 0;
+
+    @Override public boolean hasNext() { return nextNdx < size(); }
+    @Override public void remove()     { throw new UnsupportedOperationException("Internal error: A 'remove' call was made to a core iterator."); }
+
+    //---------------------------------------------------------------------------
+
+    private CoreIterator(boolean byKey)
+    {
+      this.byKey = byKey;
+    }
+
+  //---------------------------------------------------------------------------
+
+    @Override public HDT_DT next()
+    {
+      if (hasNext() == false) throw new NoSuchElementException();
+
+      return byKey ? getByKeyNdx(nextNdx++) : getByIDNdx(nextNdx++);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void clearInternal()
   {
     idToRecord.clear();
     idToKey   .clear();
@@ -98,10 +183,10 @@ final class HyperCore<HDT_DT extends HDT_Record>
 
   void changeRecordID(int oldID, int newID) throws HDB_InternalError
   {
-    HDT_DT record = getRecordByID(oldID);
+    HDT_DT record = getByID(oldID);
 
     if (record.getID() != newID)          // The record ID should have been changed to the new one already
-      throw new HDB_InternalError(35468); // This function should only be called from HDT_Record.changeID
+      throw new HDB_InternalError(35468);
 
     String key = getKeyByID(oldID);
     remove(oldID);
@@ -176,7 +261,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setKey(int id, String newKey)
+  @Override public void setKey(int id, String newKey)
   {
     String oldKey = idToKey.get(id);
 

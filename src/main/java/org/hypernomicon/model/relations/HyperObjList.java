@@ -40,11 +40,13 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private final List<HDT_ObjType> before = new ArrayList<>();
+
   final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   final HDT_SubjType subj;
+  final boolean modTracking;
+
   Exception lastException;
-  protected final boolean modTracking;
-  private final List<HDT_ObjType> before = new ArrayList<>();
 
 //---------------------------------------------------------------------------
 
@@ -139,7 +141,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
       try
       {
-        relSet.setObject(subj, obj, -1, true);
+        relSet.setObject(subj, obj, -1, true, false);
       }
       catch (RelationCycleException e)
       {
@@ -165,7 +167,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     if (db.isLoaded())
       throw new HDB_InternalError(71634);
 
-    relSet.setObject(subj, obj, -1, subjOrd, true);
+    relSet.setObject(subj, obj, -1, subjOrd, true, false);
   }
 
 //---------------------------------------------------------------------------
@@ -216,7 +218,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     {
       modStart();
 
-      try { relSet.setObject(subj, obj, -1, false); }
+      try { relSet.setObject(subj, obj, -1, false, true); }
       catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
       modEnd();
@@ -523,7 +525,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
       try
       {
-        relSet.setObject(subj, obj, index, true);
+        relSet.setObject(subj, obj, index, true, false);
       }
       catch (RelationCycleException e)
       {
@@ -554,7 +556,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
       modStart();
 
-      try { relSet.setObject(subj, obj, index, false); }
+      try { relSet.setObject(subj, obj, index, false, true); }
       catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
       modEnd();

@@ -67,7 +67,7 @@ public final class ObjectGroup
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int mapHashCode(Map<Tag, NestedValue> map)
+  private static int mapHashCode(Map<Tag, NestedValue> map)
   {
     int result = 0;
 
@@ -105,7 +105,7 @@ public final class ObjectGroup
       return value1 == null ?
         ((value2 == null) || value2.isEmpty())
       :
-        (((value2 != null) && value1.equals(value2)) || ((value2 == null) && value1.isEmpty()));
+        (value1.equals(value2) || ((value2 == null) && value1.isEmpty()));
     });
   }
 

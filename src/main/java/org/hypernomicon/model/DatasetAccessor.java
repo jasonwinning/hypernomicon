@@ -30,10 +30,12 @@ public interface DatasetAccessor<HDT_DT extends HDT_Record> extends Collection<H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  String getKeyByID(int id);
   int getKeyNdxByID(int id);
   int getIDNdxByID(int id);
   HDT_DT getByID(int id);
   HDT_DT getByKeyNdx(int ndx);
+  void setKey(int id, String newKey);
   Iterable<HDT_DT> keyIterable();
   Iterator<HDT_DT> keyIterator();
 

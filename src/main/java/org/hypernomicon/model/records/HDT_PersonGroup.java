@@ -22,7 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 
 //---------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ public class HDT_PersonGroup extends HDT_RecordBase
 
 //---------------------------------------------------------------------------
 
-  public HDT_PersonGroup(RecordState xmlState, HyperDataset<HDT_PersonGroup> dataset)
+  public HDT_PersonGroup(RecordState xmlState, DatasetAccessor<HDT_PersonGroup> dataset)
   {
     super(xmlState, dataset, tagName);
 

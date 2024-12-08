@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Note;
@@ -48,7 +48,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
   final Map<RecordType, HDT_RecordWithMainText> spokes = new EnumMap<>(RecordType.class);
 
-  public HDT_Hub(RecordState xmlState, HyperDataset<HDT_Hub> dataset)
+  public HDT_Hub(RecordState xmlState, DatasetAccessor<HDT_Hub> dataset)
   {
     super(xmlState, dataset, tagName);
 

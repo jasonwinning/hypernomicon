@@ -38,7 +38,7 @@ class HyperSubjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT
 
 //---------------------------------------------------------------------------
 
-  public HyperSubjIterator(HyperSubjList<HDT_SubjType, HDT_ObjType> list)
+  HyperSubjIterator(HyperSubjList<HDT_SubjType, HDT_ObjType> list)
   {
     this.list = list;
 

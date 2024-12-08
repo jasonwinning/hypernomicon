@@ -611,12 +611,12 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, boolean affirm) throws RelationCycleException
+  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, boolean affirm, boolean skipCycleCheck) throws RelationCycleException
   {
-    setObject(subj, obj, ndx, -1, affirm);
+    setObject(subj, obj, ndx, -1, affirm, skipCycleCheck);
   }
 
-  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, int subjOrd, boolean affirm) throws RelationCycleException
+  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, int subjOrd, boolean affirm, boolean skipCycleCheck) throws RelationCycleException
   {
     if ((subj == null) || (obj == null))
     {
@@ -634,7 +634,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       // Add the object to the object list if not already there
       if (objList.contains(obj)) return;
 
-      cycleCheck(subj, obj);
+      if (skipCycleCheck == false)
+        cycleCheck(subj, obj);
 
       if (ndx == -1) objList.add(obj);
       else           objList.add(ndx, obj);
@@ -783,7 +784,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     while (getObjectCount(subj) > 0)
     {
       HDT_Obj obj = getObject(subj, 0);
-      try { setObject(subj, obj, 0, false); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+      try { setObject(subj, obj, 0, false, true); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
     }
   }
 
@@ -888,7 +889,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       if (HDT_Record.isEmptyThrowsException(obj, false))
       {
-        try { setObject(subj, obj, ndx, false); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+        try { setObject(subj, obj, ndx, false, true); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
         ndx--;
       }
       else if (hasNestedItems)

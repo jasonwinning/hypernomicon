@@ -23,7 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_InstitutionType;
 import org.hypernomicon.model.relations.HyperObjPointer;
@@ -50,7 +50,7 @@ public class HDT_Institution extends HDT_RecordBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Institution(RecordState xmlState, HyperDataset<HDT_Institution> dataset)
+  public HDT_Institution(RecordState xmlState, DatasetAccessor<HDT_Institution> dataset)
   {
     super(xmlState, dataset, tagName);
 

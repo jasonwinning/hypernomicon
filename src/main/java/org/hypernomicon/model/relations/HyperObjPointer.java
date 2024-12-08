@@ -23,7 +23,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Objects;
 
-import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Record;
 
 //---------------------------------------------------------------------------
@@ -70,25 +70,43 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   {
     if (get() == obj) return true;
 
-    relSet.clearObjects(subj);
-
     try
     {
-      if (obj != null)
+      globalLock.lock();
+
+      try
       {
-        if (obj.getType() != relSet.getObjType())
-          return falseWithInternalErrorPopup(2055);
+        if (obj != null)
+        {
+          if (obj.getType() != relSet.getObjType())
+            throw new HDB_InternalError(2055);
 
-        relSet.setObject(subj, obj, -1, true);
+          relSet.cycleCheck(subj, obj);
+
+          relSet.clearObjects(subj);
+
+          relSet.setObject(subj, obj, -1, true, true);
+        }
+        else
+          relSet.clearObjects(subj);
+
+        if (modTracking) subj.modifyNow();
       }
-
-      if (modTracking) subj.modifyNow();
+      catch (HyperDataException e)
+      {
+        lastException = e;
+        throw e;
+      }
+      finally
+      {
+        globalLock.unlock();
+      }
     }
-    catch (RelationCycleException e)
+    catch (HyperDataException e)
     {
-      errorPopup(e);
+      if (e instanceof RelationCycleException)
+        errorPopup(e);
 
-      lastException = e;
       return false;
     }
 

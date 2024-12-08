@@ -66,7 +66,7 @@ public final class Exceptions
 
   public static class DuplicateRecordException extends HyperDataException
   {
-    DuplicateRecordException(int id, RecordType type)
+    public DuplicateRecordException(int id, RecordType type)
     {
       super("Duplicate record: type = " + Tag.getTypeTagStr(type) + ", ID = " + id);
     }

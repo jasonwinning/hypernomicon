@@ -24,8 +24,8 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HubChangedException;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -71,7 +71,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordWithMainText(RecordState xmlState, HyperDataset<? extends HDT_RecordWithMainText> dataset, Tag nameTag)
+  public HDT_RecordWithMainText(RecordState xmlState, DatasetAccessor<? extends HDT_RecordWithMainText> dataset, Tag nameTag)
   {
     super(xmlState, dataset, nameTag);
 

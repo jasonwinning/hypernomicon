@@ -22,7 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.model.relations.HyperObjPointer;
 
@@ -32,7 +32,7 @@ public class HDT_Region extends HDT_RecordBase
 
   public final HyperObjPointer<HDT_Region, HDT_Country> country;
 
-  public HDT_Region(RecordState xmlState, HyperDataset<HDT_Region> dataset)
+  public HDT_Region(RecordState xmlState, DatasetAccessor<HDT_Region> dataset)
   {
     super(xmlState, dataset, tagName);
 

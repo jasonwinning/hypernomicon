@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.records;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.HyperPath;
@@ -63,7 +63,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Person(RecordState xmlState, HyperDataset<HDT_Person> dataset)
+  public HDT_Person(RecordState xmlState, DatasetAccessor<HDT_Person> dataset)
   {
     super(xmlState, dataset, tagNone);
 

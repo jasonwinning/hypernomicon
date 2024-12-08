@@ -23,6 +23,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -116,8 +117,15 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 
     HDT_Record record = db.records(hcbRecord.selectedType()).getByID(parseInt(tfOldID.getText(), -1));
 
-    if ((record == null) || (record.changeID(parseInt(tfNewID.getText(), -1)) == false))
-      return falseWithErrorPopup("Unable to change record ID.");
+    try
+    {
+      if ((record == null) || (db.changeRecordID(record, parseInt(tfNewID.getText(), -1)) == false))
+        return falseWithErrorPopup("Unable to change record ID.");
+    }
+    catch (HDB_InternalError e)
+    {
+      return falseWithErrorPopup("Unable to change record ID: " + getThrowableMessage(e));
+    }
 
     infoPopup("The record ID was changed successfully.");
     return true;

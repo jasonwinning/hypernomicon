@@ -35,7 +35,7 @@ import org.junit.jupiter.api.*;
 //---------------------------------------------------------------------------
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class SubjListIteratorTest
+class SubjListIteratorTest
 {
 
 //---------------------------------------------------------------------------
@@ -51,7 +51,7 @@ public class SubjListIteratorTest
 //---------------------------------------------------------------------------
 
   @BeforeAll
-  public static void setUpOnce()
+  static void setUpOnce()
   {
     // This code will run once before all tests
 
@@ -72,7 +72,7 @@ public class SubjListIteratorTest
 //---------------------------------------------------------------------------
 
   @BeforeEach
-  public void setUp()
+  void setUp()
   {
     // This code will run before each test
 
@@ -90,7 +90,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(1)
-  public void testHasNext()
+  void testHasNext()
   {
     assertTrue(subjIterator.hasNext());
     subjIterator.next();
@@ -113,7 +113,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(2)
-  public void testHasPrevious()
+  void testHasPrevious()
   {
     subjListIterator.next();
     subjListIterator.next();
@@ -127,7 +127,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(3)
-  public void testPrevious()
+  void testPrevious()
   {
     subjListIterator.next();
     subjListIterator.next();
@@ -139,7 +139,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(4)
-  public void testNextIndex()
+  void testNextIndex()
   {
     assertEquals(0, subjListIterator.nextIndex());
     subjListIterator.next();
@@ -150,7 +150,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(5)
-  public void testPreviousIndex()
+  void testPreviousIndex()
   {
     assertEquals(-1, subjListIterator.previousIndex());
     subjListIterator.next();
@@ -161,7 +161,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(10)
-  public void testNoSuchElementException()
+  void testNoSuchElementException()
   {
     subjIterator.next();
     subjIterator.next();
@@ -175,7 +175,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(12)
-  public void testNoSuchElementExceptionList()
+  void testNoSuchElementExceptionList()
   {
     subjListIterator.next();
     subjListIterator.next();
@@ -189,7 +189,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(14)
-  public void testComodificationOnDelete()
+  void testComodificationOnDelete()
   {
     HDT_Position newPosition = db.createNewBlankRecord(hdtPosition);
     newPosition.largerDebates.add(debate);
@@ -216,7 +216,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(15)
-  public void testComodificationOnRemove()
+  void testComodificationOnRemove()
   {
     subjIterator.next();
     subjListIterator.next();
@@ -232,7 +232,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(16)
-  public void testComodificationOnAdd()
+  void testComodificationOnAdd()
   {
     subjIterator.next();
     subjListIterator.next();
@@ -253,7 +253,7 @@ public class SubjListIteratorTest
 
   @Test
   @Order(999)
-  public void testComodificationOnLoadDB()
+  void testComodificationOnLoadDB()
   {
     subjIterator.next();
     subjListIterator.next();

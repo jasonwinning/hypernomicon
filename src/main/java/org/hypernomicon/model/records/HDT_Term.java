@@ -31,8 +31,8 @@ import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HDI_OfflinePointerMulti;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.relations.HyperObjList;
@@ -46,7 +46,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Term(RecordState xmlState, HyperDataset<HDT_Term> dataset)
+  public HDT_Term(RecordState xmlState, DatasetAccessor<HDT_Term> dataset)
   {
     super(xmlState, dataset, tagTerm);
 

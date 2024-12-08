@@ -24,7 +24,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
@@ -37,7 +37,7 @@ public class HDT_Position extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Position(RecordState xmlState, HyperDataset<HDT_Position> dataset)
+  public HDT_Position(RecordState xmlState, DatasetAccessor<HDT_Position> dataset)
   {
     super(xmlState, dataset, tagName);
 

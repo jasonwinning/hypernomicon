@@ -22,7 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.relations.HyperSubjList;
 
 //---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ public class HDT_Glossary extends HDT_RecordBase
 
 //---------------------------------------------------------------------------
 
-  public HDT_Glossary(RecordState xmlState, HyperDataset<HDT_Glossary> dataset)
+  public HDT_Glossary(RecordState xmlState, DatasetAccessor<HDT_Glossary> dataset)
   {
     super(xmlState, dataset, tagName);
 

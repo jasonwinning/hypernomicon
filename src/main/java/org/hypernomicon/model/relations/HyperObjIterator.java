@@ -39,7 +39,7 @@ class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_
 
 //---------------------------------------------------------------------------
 
-  public HyperObjIterator(HyperObjList<HDT_SubjType, HDT_ObjType> list)
+  HyperObjIterator(HyperObjList<HDT_SubjType, HDT_ObjType> list)
   {
     this.list = list;
 

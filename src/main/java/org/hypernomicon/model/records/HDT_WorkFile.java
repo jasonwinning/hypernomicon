@@ -23,7 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponent;
@@ -41,7 +41,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
   private final HyperPath path;
   public final List<HDT_Work> works;
 
-  public HDT_WorkFile(RecordState xmlState, HyperDataset<HDT_WorkFile> dataset)
+  public HDT_WorkFile(RecordState xmlState, DatasetAccessor<HDT_WorkFile> dataset)
   {
     super(xmlState, dataset, tagName);
 
