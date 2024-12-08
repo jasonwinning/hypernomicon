@@ -251,25 +251,24 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void waitUntilItIs(Instant time) throws CancelledTaskException
+  {
+    if (time == null) return;
+
+    while (time.isAfter(Instant.now()))
+    {
+      sleepForMillis(30);
+      HyperTask.throwExceptionIfCancelled(syncTask);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private JsonArray doHttpRequest(String url, HttpRequestType requestType, String postJsonData) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
   {
-    if (retryTime != null)
-    {
-      while (retryTime.compareTo(Instant.now()) > 0)
-      {
-        sleepForMillis(30);
-        HyperTask.throwExceptionIfCancelled(syncTask);
-      }
-    }
-
-    if (backoffTime != null)
-    {
-      while (backoffTime.compareTo(Instant.now()) > 0)
-      {
-        sleepForMillis(30);
-        HyperTask.throwExceptionIfCancelled(syncTask);
-      }
-    }
+    waitUntilItIs(retryTime);
+    waitUntilItIs(backoffTime);
 
     RequestBuilder rb = switch (requestType)
     {
@@ -364,7 +363,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     JsonObj jObj = new JsonObj();
 
-    for (String zType : entryTypeMap.values())
+    for (String zType : streamToIterable(entryTypeMap.values().stream().sorted()))
     {
       jObj.put(zType, doHttpRequest("https://api.zotero.org/itemTypeCreatorTypes?itemType=" + zType, HttpRequestType.get, null));
     }
@@ -379,7 +378,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     JsonArray jArr = new JsonArray();
 
-    for (String zType : entryTypeMap.values())
+    for (String zType : streamToIterable(entryTypeMap.values().stream().sorted()))
     {
       jArr.add(doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, HttpRequestType.get, null).getObj(0));
     }

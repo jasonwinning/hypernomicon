@@ -51,7 +51,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 
   @Override public void resolvePointers()
   {
-    if (HDT_Record.isEmpty(target))
+    if (HDT_Record.isEmpty(target, false))
       target = null;
   }
 
@@ -70,7 +70,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
   {
     val.objID = -1;
 
-    if (HDT_Record.isEmpty(target) == false)
+    if (HDT_Record.isEmpty(target, false) == false)
       val.objID = target.getID();
   }
 

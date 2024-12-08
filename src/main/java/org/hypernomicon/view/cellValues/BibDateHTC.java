@@ -43,7 +43,7 @@ public class BibDateHTC extends AbstractHTC
   {
     super(false);
 
-    boolean isEmpty = HDT_Record.isEmpty(record);
+    boolean isEmpty = HDT_Record.isEmpty(record, false);
 
     this.id = isEmpty ? -1 : record.getID();
     this.recordType = isEmpty ? hdtNone : record.getType();

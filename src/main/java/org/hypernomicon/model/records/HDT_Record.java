@@ -26,12 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.Exceptions.DuplicateSearchKeyException;
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.Exceptions.RestoreException;
-import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -101,15 +96,15 @@ public interface HDT_Record
 
   static String getDescHtml(HDT_Record record)
   {
-    return (HDT_Record.isEmpty(record) == false) && record.hasDesc() ? ((HDT_RecordWithDescription) record).getDesc().getHtml() : "";
+    return (HDT_Record.isEmpty(record, false) == false) && record.hasDesc() ? ((HDT_RecordWithDescription) record).getDesc().getHtml() : "";
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static boolean isEmpty(HDT_Record record)
+  static boolean isEmpty(HDT_Record record, boolean newerInstanceOK)
   {
-    try { return isEmptyThrowsException(record); }
+    try { return isEmptyThrowsException(record, newerInstanceOK); }
     catch (HDB_InternalError e) { errorPopup(e); }
 
     return true;
@@ -118,14 +113,16 @@ public interface HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static boolean isEmptyThrowsException(HDT_Record record) throws HDB_InternalError
+  static boolean isEmptyThrowsException(HDT_Record record, boolean newerInstanceOK) throws HDB_InternalError
   {
     if ((record == null) || record.isExpired()) return true;
 
     if (record.getID() < 1)
       throw new HDB_InternalError(28883);
 
-    return getCurrentInstance(record) == null;
+    HDT_Record curInstance = getCurrentInstance(record);
+
+    return newerInstanceOK ? (curInstance == null) : (curInstance != record);
   }
 
 //---------------------------------------------------------------------------

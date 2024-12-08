@@ -132,7 +132,7 @@ public class KeyWork implements Comparable<KeyWork>
     @Override RecordType getType()   { return record.getType(); }
     @Override HDT_Record getRecord() { return record; }
 
-    @Override boolean isExpired()    { return HDT_Record.isEmpty(record); }
+    @Override boolean isExpired()    { return HDT_Record.isEmpty(record, false); }
 
 //---------------------------------------------------------------------------
 

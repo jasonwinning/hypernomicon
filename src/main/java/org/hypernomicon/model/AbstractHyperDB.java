@@ -99,7 +99,6 @@ import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
-import org.hypernomicon.model.HyperDataset.CoreAccessor;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
@@ -162,7 +161,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 
   private final EnumMap<RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(RecordType.class);
-  private final EnumMap<RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(RecordType.class);
+  private final EnumMap<RecordType, DatasetAccessor<? extends HDT_Record>> accessors = new EnumMap<>(RecordType.class);
 
   private final EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
   private final EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
@@ -214,7 +213,7 @@ public abstract class AbstractHyperDB
   public boolean idAvailable(RecordType type, int id)               { return datasets.get(type).idAvailable(id); }
   public Tag mainTextTagForRecordType(RecordType type)              { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
   public boolean isLoaded()                                         { return loaded; }
-  public long totalRecordCount()                                    { return accessors.values().stream().mapToLong(CoreAccessor::size).sum(); }
+  public long totalRecordCount()                                    { return accessors.values().stream().mapToLong(Collection::size).sum(); }
   public boolean bibLibraryIsLinked()                               { return bibLibrary != null; }
   public String bibLibraryUserFriendlyName()                        { return bibLibraryIsLinked() ? bibLibrary.getUserFriendlyName() : ""; }
   public Instant getCreationDate()                                  { return dbCreationDate; }
@@ -371,35 +370,35 @@ public abstract class AbstractHyperDB
 
 //---------------------------------------------------------------------------
 
-  public final HyperDataset<HDT_Person         >.CoreAccessor persons;
-  public final HyperDataset<HDT_PersonStatus   >.CoreAccessor personStatuses;
-  public final HyperDataset<HDT_Institution    >.CoreAccessor institutions;
-  public final HyperDataset<HDT_InstitutionType>.CoreAccessor institutionTypes;
-  public final HyperDataset<HDT_Region         >.CoreAccessor regions;
-  public final HyperDataset<HDT_Country        >.CoreAccessor countries;
-  public final HyperDataset<HDT_Rank           >.CoreAccessor ranks;
-  public final HyperDataset<HDT_Investigation  >.CoreAccessor investigations;
-  public final HyperDataset<HDT_Debate         >.CoreAccessor debates;
-  public final HyperDataset<HDT_Argument       >.CoreAccessor arguments;
-  public final HyperDataset<HDT_Position       >.CoreAccessor positions;
-  public final HyperDataset<HDT_Field          >.CoreAccessor fields;
-  public final HyperDataset<HDT_Subfield       >.CoreAccessor subfields;
-  public final HyperDataset<HDT_Term           >.CoreAccessor terms;
-  public final HyperDataset<HDT_Concept        >.CoreAccessor concepts;
-  public final HyperDataset<HDT_ConceptSense   >.CoreAccessor conceptSenses;
-  public final HyperDataset<HDT_Work           >.CoreAccessor works;
-  public final HyperDataset<HDT_WorkType       >.CoreAccessor workTypes;
-  public final HyperDataset<HDT_WorkLabel      >.CoreAccessor workLabels;
-  public final HyperDataset<HDT_PositionVerdict>.CoreAccessor positionVerdicts;
-  public final HyperDataset<HDT_ArgumentVerdict>.CoreAccessor argumentVerdicts;
-  public final HyperDataset<HDT_MiscFile       >.CoreAccessor miscFiles;
-  public final HyperDataset<HDT_WorkFile       >.CoreAccessor workFiles;
-  public final HyperDataset<HDT_Folder         >.CoreAccessor folders;
-  public final HyperDataset<HDT_Note           >.CoreAccessor notes;
-  public final HyperDataset<HDT_Glossary       >.CoreAccessor glossaries;
-  public final HyperDataset<HDT_Hub            >.CoreAccessor hubs;
-  public final HyperDataset<HDT_PersonGroup    >.CoreAccessor personGroups;
-  public final HyperDataset<HDT_FileType       >.CoreAccessor fileTypes;
+  public final DatasetAccessor<HDT_Person         > persons;
+  public final DatasetAccessor<HDT_PersonStatus   > personStatuses;
+  public final DatasetAccessor<HDT_Institution    > institutions;
+  public final DatasetAccessor<HDT_InstitutionType> institutionTypes;
+  public final DatasetAccessor<HDT_Region         > regions;
+  public final DatasetAccessor<HDT_Country        > countries;
+  public final DatasetAccessor<HDT_Rank           > ranks;
+  public final DatasetAccessor<HDT_Investigation  > investigations;
+  public final DatasetAccessor<HDT_Debate         > debates;
+  public final DatasetAccessor<HDT_Argument       > arguments;
+  public final DatasetAccessor<HDT_Position       > positions;
+  public final DatasetAccessor<HDT_Field          > fields;
+  public final DatasetAccessor<HDT_Subfield       > subfields;
+  public final DatasetAccessor<HDT_Term           > terms;
+  public final DatasetAccessor<HDT_Concept        > concepts;
+  public final DatasetAccessor<HDT_ConceptSense   > conceptSenses;
+  public final DatasetAccessor<HDT_Work           > works;
+  public final DatasetAccessor<HDT_WorkType       > workTypes;
+  public final DatasetAccessor<HDT_WorkLabel      > workLabels;
+  public final DatasetAccessor<HDT_PositionVerdict> positionVerdicts;
+  public final DatasetAccessor<HDT_ArgumentVerdict> argumentVerdicts;
+  public final DatasetAccessor<HDT_MiscFile       > miscFiles;
+  public final DatasetAccessor<HDT_WorkFile       > workFiles;
+  public final DatasetAccessor<HDT_Folder         > folders;
+  public final DatasetAccessor<HDT_Note           > notes;
+  public final DatasetAccessor<HDT_Glossary       > glossaries;
+  public final DatasetAccessor<HDT_Hub            > hubs;
+  public final DatasetAccessor<HDT_PersonGroup    > personGroups;
+  public final DatasetAccessor<HDT_FileType       > fileTypes;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -563,9 +562,9 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperDataset<? extends HDT_Record>.CoreAccessor records(RecordType type)
+  public DatasetAccessor<? extends HDT_Record> records(RecordType type)
   {
-    HyperDataset<? extends HDT_Record>.CoreAccessor accessor = accessors.get(type);
+    DatasetAccessor<? extends HDT_Record> accessor = accessors.get(type);
 
     if (accessor == null) throw new NoSuchElementException("Internal error: null dataset");
 
@@ -575,12 +574,12 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private <HDT_T extends HDT_Record> HyperDataset<HDT_T>.CoreAccessor getAccessor(Class<HDT_T> klass)
+  private <HDT_T extends HDT_Record> DatasetAccessor<HDT_T> getAccessor(Class<HDT_T> klass)
   {
     RecordType type = typeByRecordClass(klass);
 
     HyperDataset<HDT_T> dataset = new HyperDataset<>(type);
-    HyperDataset<HDT_T>.CoreAccessor accessor = dataset.getAccessor();
+    DatasetAccessor<HDT_T> accessor = dataset.getAccessor();
     datasets.put(type, dataset);
     accessors.put(type, accessor);
 
@@ -720,8 +719,17 @@ public abstract class AbstractHyperDB
 
   private void cleanupRelations() throws HDB_InternalError
   {
-    for (RelationSet<? extends HDT_Record, ? extends HDT_Record> relationSet : relationSets.values())
-      relationSet.cleanup();
+    globalLock.lock();
+
+    try
+    {
+      for (RelationSet<? extends HDT_Record, ? extends HDT_Record> relationSet : relationSets.values())
+        relationSet.cleanup();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1226,7 +1234,7 @@ public abstract class AbstractHyperDB
       return;
     }
 
-    if (HDT_Record.isEmpty(record) || isProtectedRecord(record, true))
+    if (HDT_Record.isEmpty(record, false) || isProtectedRecord(record, true))
     {
       errorMessage("Unable to delete record.");
       return;
@@ -1255,7 +1263,16 @@ public abstract class AbstractHyperDB
     deletionInProgress = true;
     deleteFileAnswer = mrNone;
 
-    record.expire();
+    globalLock.lock();
+
+    try
+    {
+      record.expire();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
 
     try
     {
@@ -1303,6 +1320,8 @@ public abstract class AbstractHyperDB
 
     pointerResolutionInProgress = true;
 
+    globalLock.lock();
+
     try
     {
       do
@@ -1316,6 +1335,8 @@ public abstract class AbstractHyperDB
     }
     finally
     {
+      globalLock.unlock();
+
       pointerResolutionInProgress = false;
 
       if (startMentionsRebuild)
@@ -1391,14 +1412,14 @@ public abstract class AbstractHyperDB
         topicalFolder   = folders.getByID(prefs.getInt(PREF_KEY_TOPICAL_FOLDER_ID   , -1));
       }
 
-      if (HDT_Record.isEmpty(picturesFolder ) ||
-          HDT_Record.isEmpty(booksFolder    ) ||
-          HDT_Record.isEmpty(papersFolder   ) ||
-          HDT_Record.isEmpty(resultsFolder  ) ||
-          HDT_Record.isEmpty(unenteredFolder) ||
-          HDT_Record.isEmpty(miscFilesFolder) ||
-          HDT_Record.isEmpty(xmlFolder      ) ||
-          HDT_Record.isEmpty(topicalFolder  ))
+      if (HDT_Record.isEmpty(picturesFolder , false) ||
+          HDT_Record.isEmpty(booksFolder    , false) ||
+          HDT_Record.isEmpty(papersFolder   , false) ||
+          HDT_Record.isEmpty(resultsFolder  , false) ||
+          HDT_Record.isEmpty(unenteredFolder, false) ||
+          HDT_Record.isEmpty(miscFilesFolder, false) ||
+          HDT_Record.isEmpty(xmlFolder      , false) ||
+          HDT_Record.isEmpty(topicalFolder  , false))
       {
         throw new HyperDataException("Unable to load information about paths from database settings file.");
       }
@@ -2361,7 +2382,7 @@ public abstract class AbstractHyperDB
     return displayedAtIndex.getForwardStream(displayed.getMainText()).filter(Predicate.not(mainText ->
     {
       HDT_RecordWithMainText record = mainText.getRecord();
-      return HDT_Record.isEmpty(record) || (record.getMainText() != mainText);
+      return HDT_Record.isEmpty(record, false) || (record.getMainText() != mainText);
 
     })).map(displayerText -> displayerText.getRecord().mainSpoke());
   }

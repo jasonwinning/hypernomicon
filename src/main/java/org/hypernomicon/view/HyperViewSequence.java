@@ -131,12 +131,12 @@ public class HyperViewSequence
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = tabOfViewInCurrentSlot();
 
     HDT_Record record = hyperTab.activeRecord();
-    if ((record != null) && HDT_Record.isEmpty(record)) // Make sure active record was not just deleted
+    if ((record != null) && HDT_Record.isEmpty(record, true)) // Make sure active record was not just deleted
       return;
 
-    record = hyperTab.viewRecord();                     // Make sure view record was not just deleted
-    if ((record != null) && HDT_Record.isEmpty(record)) // If concept was just deleted, active record (term) will be null
-      return;                                           // so we also have to check view record (concept)
+    record = hyperTab.viewRecord();                           // Make sure view record was not just deleted
+    if ((record != null) && HDT_Record.isEmpty(record, true)) // If concept was just deleted, active record (term) will be null
+      return;                                                 // so we also have to check view record (concept)
 
     saveViewToCurrentSlotAndTab(hyperTab.newView(record));
   }

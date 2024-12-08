@@ -18,6 +18,7 @@
 package org.hypernomicon.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,6 @@ import javafx.concurrent.Worker.State;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.HyperDataset.CoreAccessor;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
@@ -259,7 +259,7 @@ class MentionsIndex
       {
         clear();
 
-        totalCount = types.stream().map(db::records).mapToLong(CoreAccessor::size).sum();
+        totalCount = types.stream().map(db::records).mapToLong(Collection::size).sum();
 
         for (RecordType type : types)
           for (HDT_Record record : db.records(type))

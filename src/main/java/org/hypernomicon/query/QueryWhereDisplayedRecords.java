@@ -65,7 +65,7 @@ public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks
       case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
 
         HDT_Record specifiedRecord = HyperTableCell.getRecord(op3);
-        if (HDT_Record.isEmpty(specifiedRecord) || (specifiedRecord.hasMainText() == false))
+        if (HDT_Record.isEmpty(specifiedRecord, false) || (specifiedRecord.hasMainText() == false))
           return false;
 
         HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText)specifiedRecord;

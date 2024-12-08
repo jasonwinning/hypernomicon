@@ -60,6 +60,12 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  long getSizeModCount()                                 { return relSet.getObjListSizeModCount(subj); }
+  void checkForComodification(long expectedSizeModCount) { relSet.checkForObjListComodification(subj, expectedSizeModCount); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public int size()
   {
     lastException = null;
@@ -124,19 +130,30 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
   {
     lastException = null;
     if (relSet.alreadyHasAsObject(subj, obj)) return false;
-    modStart();
+
+    globalLock.lock();
 
     try
     {
-      relSet.setObject(subj, obj, -1, true);
+      modStart();
+
+      try
+      {
+        relSet.setObject(subj, obj, -1, true);
+      }
+      catch (RelationCycleException e)
+      {
+        lastException = e;
+        return false;
+      }
+
+      modEnd();
     }
-    catch (RelationCycleException e)
+    finally
     {
-      lastException = e;
-      return false;
+      globalLock.unlock();
     }
 
-    modEnd();
     return true;
   }
 
@@ -193,12 +210,21 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
     if (relSet.alreadyHasAsObject(subj, obj) == false) return false;
 
-    modStart();
+    globalLock.lock();
 
-    try { relSet.setObject(subj, obj, -1, false); }
-    catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+    try
+    {
+      modStart();
 
-    modEnd();
+      try { relSet.setObject(subj, obj, -1, false); }
+      catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
 
     return true;
   }
@@ -232,12 +258,21 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   @Override public void clear()
   {
-    modStart();
+    globalLock.lock();
 
-    lastException = null;
-    relSet.clearObjects(subj);
+    try
+    {
+      modStart();
 
-    modEnd();
+      lastException = null;
+      relSet.clearObjects(subj);
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -271,29 +306,39 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     lastException = null;
     List<HDT_ObjType> added = new ArrayList<>();
 
-    modStart();
+    globalLock.lock();
 
-    for (HDT_ObjType record : c)
+    try
     {
-      if (add(record))
-        added.add(record);
-      else
+      modStart();
+
+      for (HDT_ObjType record : c)
       {
-        if (lastException != null)
+        if (add(record))
+          added.add(record);
+        else
         {
-          Exception e = lastException;
+          if (lastException != null)
+          {
+            Exception e = lastException;
 
-          added.forEach(this::remove);
+            added.forEach(this::remove);
 
-          lastException = e;
+            lastException = e;
 
-          modEnd();
-          return false;
+            modEnd();
+            return false;
+          }
         }
       }
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
     }
 
-    modEnd();
     return added.size() > 0;
   }
 
@@ -321,32 +366,42 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     lastException = null;
     List<HDT_ObjType> added = new ArrayList<>();
 
-    modStart();
+    globalLock.lock();
 
-    for (HDT_ObjType record : c)
+    try
     {
-      if (contains(record) == false)
+      modStart();
+
+      for (HDT_ObjType record : c)
       {
-        add(index, record);
-        if (lastException == null)
+        if (contains(record) == false)
         {
-          index++;
-          added.add(record);
-        }
-        else
-        {
-          Exception e = lastException;
+          add(index, record);
+          if (lastException == null)
+          {
+            index++;
+            added.add(record);
+          }
+          else
+          {
+            Exception e = lastException;
 
-          added.forEach(this::remove);
+            added.forEach(this::remove);
 
-          lastException = e;
-          modEnd();
-          return false;
+            lastException = e;
+            modEnd();
+            return false;
+          }
         }
       }
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
     }
 
-    modEnd();
     return added.size() > 0;
   }
 
@@ -358,14 +413,24 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     lastException = null;
     boolean removedAny = false;
 
-    modStart();
+    globalLock.lock();
 
-    for (Object o : c)
-      while (contains(o))
-        if (remove(o))
-          removedAny = true;
+    try
+    {
+      modStart();
 
-    modEnd();
+      for (Object o : c)
+        while (contains(o))
+          if (remove(o))
+            removedAny = true;
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
+
     return removedAny;
   }
 
@@ -377,19 +442,29 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     lastException = null;
     boolean removedAny = false;
 
-    modStart();
+    globalLock.lock();
 
-    for (int cnt = relSet.getObjectCount(subj), ndx = 0; ndx < cnt; ndx++)
+    try
     {
-      if (c.contains(relSet.getObject(subj, ndx)) == false)
+      modStart();
+
+      for (int cnt = relSet.getObjectCount(subj), ndx = 0; ndx < cnt; ndx++)
       {
-        remove(ndx--);
-        removedAny = true;
-        cnt--;
+        if (c.contains(relSet.getObject(subj, ndx)) == false)
+        {
+          remove(ndx--);
+          removedAny = true;
+          cnt--;
+        }
       }
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
     }
 
-    modEnd();
     return removedAny;
   }
 
@@ -398,14 +473,26 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   @Override public HDT_ObjType set(int index, HDT_ObjType element)
   {
-    lastException = null;
+    globalLock.lock();
 
-    modStart();
+    HDT_ObjType record;
 
-    HDT_ObjType record = remove(index);
-    add(index, element);
+    try
+    {
+      lastException = null;
 
-    modEnd();
+      modStart();
+
+      record = remove(index);
+      add(index, element);
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
+
     return record;
   }
 
@@ -428,18 +515,27 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     lastException = null;
     if (relSet.alreadyHasAsObject(subj, obj)) return;
 
-    modStart();
+    globalLock.lock();
 
     try
     {
-      relSet.setObject(subj, obj, index, true);
-    }
-    catch (RelationCycleException e)
-    {
-      lastException = e;
-    }
+      modStart();
 
-    modEnd();
+      try
+      {
+        relSet.setObject(subj, obj, index, true);
+      }
+      catch (RelationCycleException e)
+      {
+        lastException = e;
+      }
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -448,14 +544,25 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
   @Override public HDT_ObjType remove(int index)
   {
     lastException = null;
-    HDT_ObjType obj = get(index);
+    HDT_ObjType obj;
 
-    modStart();
+    globalLock.lock();
 
-    try { relSet.setObject(subj, obj, index, false); }
-    catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+    try
+    {
+      obj = get(index);
 
-    modEnd();
+      modStart();
+
+      try { relSet.setObject(subj, obj, index, false); }
+      catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+
+      modEnd();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
 
     return obj;
   }
@@ -495,21 +602,30 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   public void reorder(List<HDT_ObjType> list)
   {
-    boolean changed = false;
+    globalLock.lock();
 
-    if (size() != list.size()) throw new NoSuchElementException();
-
-    for (HDT_ObjType record : list)
-      if (contains(record) == false) throw new NoSuchElementException();
-
-    for (int ndx = 0; ndx < size(); ndx++)
+    try
     {
-      if (list.contains(get(ndx)) == false) throw new NoSuchElementException();
-      if (list.get(ndx) != get(ndx)) changed = true;
-    }
+      boolean changed = false;
 
-    relSet.reorderObjects(subj, list);
-    if (modTracking && changed) subj.modifyNow();
+      if (size() != list.size()) throw new NoSuchElementException();
+
+      for (HDT_ObjType record : list)
+        if (contains(record) == false) throw new NoSuchElementException();
+
+      for (int ndx = 0; ndx < size(); ndx++)
+      {
+        if (list.contains(get(ndx)) == false) throw new NoSuchElementException();
+        if (list.get(ndx) != get(ndx)) changed = true;
+      }
+
+      relSet.reorderObjects(subj, list);
+      if (modTracking && changed) subj.modifyNow();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -181,7 +181,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       textToHilite = lastTextHilited;
 
       HDT_Record record = activeRecord();
-      if (HDT_Record.isEmpty(record)) return;
+      if (HDT_Record.isEmpty(record, false)) return;
 
       MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
     });
@@ -405,7 +405,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void updateWebView(HDT_Record record)
   {
-    if (HDT_Record.isEmpty(record))
+    if (HDT_Record.isEmpty(record, false))
     {
       webView.getEngine().loadContent("");
       return;
@@ -585,7 +585,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @Override protected void setRecord(HDT_Record record)
   {
-    if ((record != null) && HDT_Record.isEmpty(record)) return; // Record was probably just deleted; go with whatever is currently selected
+    if ((record != null) && HDT_Record.isEmpty(record, false)) return; // Record was probably just deleted; go with whatever is currently selected
 
     tree.selectRecord(record, record == null ? 0 : record.keyNdx(), false);
   }

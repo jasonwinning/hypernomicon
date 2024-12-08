@@ -32,6 +32,8 @@ class HyperSubjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT
 //---------------------------------------------------------------------------
 
   private final HyperSubjList<HDT_SubjType, HDT_ObjType> list;
+  private final long expectedSizeModCount;
+
   private int nextNdx = 0;
 
 //---------------------------------------------------------------------------
@@ -39,6 +41,8 @@ class HyperSubjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT
   public HyperSubjIterator(HyperSubjList<HDT_SubjType, HDT_ObjType> list)
   {
     this.list = list;
+
+    expectedSizeModCount = list.getSizeModCount();
   }
 
 //---------------------------------------------------------------------------
@@ -46,13 +50,19 @@ class HyperSubjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT
   @Override public boolean hasNext() { return nextNdx < list.size(); }
   @Override public void remove()     { throw uoe(); }
 
+  private void checkForComodification() { list.checkForComodification(expectedSizeModCount); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public HDT_SubjType next()
   {
     if (hasNext())
+    {
+      checkForComodification();
+
       return list.get(nextNdx++);
+    }
 
     throw new NoSuchElementException();
   }

@@ -1213,7 +1213,7 @@ public class FileManager extends HyperDlg
 
     folderTree.refresh();
 
-    if (HDT_Record.isEmpty(curFolder))
+    if (HDT_Record.isEmpty(curFolder, false))
       curFolder = null;
 
     if (curFolder == null)

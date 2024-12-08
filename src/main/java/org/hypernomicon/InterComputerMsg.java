@@ -48,6 +48,7 @@ public class InterComputerMsg
     this.source = source;
     this.dest = dest;
     this.type = type;
+
     sentTime = Instant.now().getEpochSecond();
   }
 

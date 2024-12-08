@@ -58,12 +58,14 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javafx.animation.KeyFrame;
@@ -93,6 +95,12 @@ import com.ibm.icu.text.Transliterator;
 
 public final class Util
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static final ReentrantLock globalLock = new ReentrantLock();
+
   public static final StopWatch stopWatch1 = new StopWatch(), stopWatch2 = new StopWatch(), stopWatch3 = new StopWatch(),
                                 stopWatch4 = new StopWatch(), stopWatch5 = new StopWatch(), stopWatch6 = new StopWatch();
 
@@ -1392,6 +1400,40 @@ public final class Util
   public static boolean allAreInstancesOf(Class<?> clazz, Object... objects)
   {
     return Arrays.stream(objects).allMatch(clazz::isInstance);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Utility function to convert a {@link java.util.stream.Stream} into an {@link java.lang.Iterable}.
+   *
+   * <p>This method is particularly useful when you need to integrate streams with APIs
+   * or components that operate on {@code Iterable}. It leverages the stream's {@code iterator}
+   * method reference to create the {@code Iterable}.
+   *
+   * <p><strong>Note:</strong> Since a {@code Stream} can only be traversed once, ensure that
+   * the stream has not been consumed prior to calling this function. Once the iterator method
+   * is called, the stream cannot be used again.
+   *
+   * <p>Example usage:<pre>
+   * {@code
+   * Stream<String> stream = Stream.of("one", "two", "three");
+   *
+   * for (String s : streamToIterable(stream))
+   * {
+   *   System.out.println(s);
+   * }
+   * </pre>
+   *
+   * @param <T> the type of elements in the stream
+   * @param stream the stream to be converted into an iterable
+   * @return an iterable that uses the stream's iterator
+   * @throws NullPointerException if the stream is null
+   */
+  public static <T> Iterable<T> streamToIterable(Stream<T> stream)
+  {
+    return stream::iterator;
   }
 
 //---------------------------------------------------------------------------

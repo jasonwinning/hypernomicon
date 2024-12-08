@@ -468,23 +468,32 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final <HDT_T extends HDT_RecordBase> boolean updateObjectsFromList(RelationType relType, List<HDT_T> list)
   {
-    HyperObjList<HDT_Record, HDT_Record> objList = getObjList(relType);
-    if (objList.equals(list)) return true;
+    globalLock.lock();
 
     try
     {
-      objList.cycleCheck(list);
+      HyperObjList<HDT_Record, HDT_Record> objList = getObjList(relType);
+      if (objList.equals(list)) return true;
+
+      try
+      {
+        objList.cycleCheck(list);
+      }
+      catch (RelationCycleException e)
+      {
+        errorPopup(e);
+        return false;
+      }
+
+      objList.clear();
+
+      objList.addAll(list);
+      return true;
     }
-    catch (RelationCycleException e)
+    finally
     {
-      errorPopup(e);
-      return false;
+      globalLock.unlock();
     }
-
-    objList.clear();
-
-    objList.addAll(list);
-    return true;
   }
 
 //---------------------------------------------------------------------------

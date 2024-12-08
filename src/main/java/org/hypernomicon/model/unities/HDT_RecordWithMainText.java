@@ -97,7 +97,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
   {
     super.resolvePointers();
 
-    if (HDT_Record.isEmptyThrowsException(hub))
+    if (HDT_Record.isEmptyThrowsException(hub, false))
       hub = null;
 
     mainText.resolvePointers();

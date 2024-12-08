@@ -22,6 +22,8 @@ import java.util.NoSuchElementException;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+import static org.hypernomicon.util.Util.*;
+
 //---------------------------------------------------------------------------
 
 class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements ListIterator<HDT_ObjType>
@@ -32,6 +34,7 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   private final HyperObjList<HDT_SubjType, HDT_ObjType> list;
   private int nextNdx, lastNdx = -1;
+  private long expectedSizeModCount;
 
 //---------------------------------------------------------------------------
 
@@ -39,6 +42,8 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   {
     this.list = list;
     nextNdx = startNdx;
+
+    expectedSizeModCount = list.getSizeModCount();
   }
 
 //---------------------------------------------------------------------------
@@ -48,30 +53,21 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   @Override public int nextIndex()         { return nextNdx; }
   @Override public int previousIndex()     { return nextNdx - 1; }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void add(HDT_ObjType e)
-  {
-    list.add(nextNdx, e);
-
-    if (list.lastException == null)
-      lastNdx = nextNdx++;
-  }
+  private void checkForComodification()    { list.checkForComodification(expectedSizeModCount); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public HDT_ObjType next()
   {
-    if (hasNext())
-    {
-      HDT_ObjType record = list.get(nextNdx);
-      lastNdx = nextNdx++;
-      return record;
-    }
+    if (hasNext() == false)
+      throw new NoSuchElementException();
 
-    throw new NoSuchElementException();
+    checkForComodification();
+
+    HDT_ObjType record = list.get(nextNdx);
+    lastNdx = nextNdx++;
+    return record;
   }
 
 //---------------------------------------------------------------------------
@@ -79,14 +75,40 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   @Override public HDT_ObjType previous()
   {
-    if (hasPrevious())
-    {
-      HDT_ObjType record = list.get(--nextNdx);
-      lastNdx = nextNdx;
-      return record;
-    }
+    if (hasPrevious() == false)
+      throw new NoSuchElementException();
 
-    throw new NoSuchElementException();
+    checkForComodification();
+
+    HDT_ObjType record = list.get(--nextNdx);
+    lastNdx = nextNdx;
+    return record;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void add(HDT_ObjType e)
+  {
+    globalLock.lock();
+
+    try
+    {
+      checkForComodification();
+
+      list.add(nextNdx, e);
+
+      if (list.lastException == null)
+      {
+        lastNdx = nextNdx++;
+
+        expectedSizeModCount = list.getSizeModCount();
+      }
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -94,14 +116,30 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   @Override public void remove()
   {
-    if ((lastNdx < 0) || (lastNdx >= list.size()))
-      throw new IllegalStateException();
+    if (lastNdx < 0)
+      throw new IllegalStateException("No element to remove");
 
-    list.remove(lastNdx);
+    if (lastNdx >= list.size())
+      throw new IllegalStateException("Index out of bounds");
 
-    if (nextNdx > lastNdx) nextNdx--;
+    globalLock.lock();
 
-    lastNdx = -1;
+    try
+    {
+      checkForComodification();
+
+      list.remove(lastNdx);
+
+      if (nextNdx > lastNdx) nextNdx--;
+
+      lastNdx = -1;
+
+      expectedSizeModCount = list.getSizeModCount();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -109,10 +147,27 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   @Override public void set(HDT_ObjType e)
   {
-    if ((lastNdx < 0) || (lastNdx >= list.size()))
-      throw new IllegalStateException();
+    if (lastNdx < 0)
+      throw new IllegalStateException("No element to set");
 
-    list.set(lastNdx, e);
+    if (lastNdx >= list.size())
+      throw new IllegalStateException("Index out of bounds");
+
+    globalLock.lock();
+
+    try
+    {
+      checkForComodification();
+
+      list.set(lastNdx, e);
+
+      if (list.lastException == null)
+        expectedSizeModCount = list.getSizeModCount();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------

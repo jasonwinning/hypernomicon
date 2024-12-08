@@ -269,7 +269,7 @@ public class MainText
 
   void resolvePointers()
   {
-    displayItems.removeIf(item -> (item.type == diRecord) && HDT_Record.isEmpty(item.record));
+    displayItems.removeIf(item -> (item.type == diRecord) && HDT_Record.isEmpty(item.record, false));
 
     removeKeyWorks(true);
   }

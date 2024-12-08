@@ -92,7 +92,7 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
     for (HDT_RecordWithMainText spoke : List.copyOf(hub.spokes.values()))
     {
-      if (HDT_Record.isEmptyThrowsException(spoke))
+      if (HDT_Record.isEmptyThrowsException(spoke, false))
         hub.spokes.remove(spoke.getType());
       else
         spokeCount++;

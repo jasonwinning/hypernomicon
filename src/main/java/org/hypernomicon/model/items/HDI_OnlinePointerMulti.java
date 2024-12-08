@@ -74,40 +74,49 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
   @Override public void setFromOfflineValue(HDI_OfflinePointerMulti val, Tag tag) throws RelationCycleException, HDB_InternalError
   {
-    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
-    List<HDT_Record> newList = new ArrayList<>();
+    globalLock.lock();
 
-    RecordType objType = db.getObjType(relType);
-
-    val.objIDs.forEach(objID -> nullSwitch((HDT_Record)db.records(objType).getByID(objID), newList::add));
-
-    boolean wasEmpty = objList.isEmpty();
-
-    for (HDT_Record obj : newList)
+    try
     {
-      if (objList.contains(obj) == false)
+      HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
+      List<HDT_Record> newList = new ArrayList<>();
+
+      RecordType objType = db.getObjType(relType);
+
+      val.objIDs.forEach(objID -> nullSwitch((HDT_Record)db.records(objType).getByID(objID), newList::add));
+
+      boolean wasEmpty = objList.isEmpty();
+
+      for (HDT_Record obj : newList)
       {
-        objList.add(obj);
-        objList.throwLastException();
+        if (objList.contains(obj) == false)
+        {
+          objList.add(obj);
+          objList.throwLastException();
+        }
+
+        Map<Tag, HDI_OfflineBase> tagToNestedItem = val.objIDtoMaps.get(obj.getID());
+        if (tagToNestedItem != null)
+          for (Entry<Tag, HDI_OfflineBase> entry : tagToNestedItem.entrySet())
+            db.setNestedItemFromOfflineValue(record, obj, entry.getKey(), entry.getValue());
       }
 
-      Map<Tag, HDI_OfflineBase> tagToNestedItem = val.objIDtoMaps.get(obj.getID());
-      if (tagToNestedItem != null)
-        for (Entry<Tag, HDI_OfflineBase> entry : tagToNestedItem.entrySet())
-          db.setNestedItemFromOfflineValue(record, obj, entry.getKey(), entry.getValue());
+      if (wasEmpty) return;
+
+      for (HDT_Record obj : objList)
+        if (newList.contains(obj) == false)
+        {
+          objList.remove(obj);
+          objList.throwLastException();
+        }
+
+      objList.reorder(newList);
+      objList.throwLastException();
     }
-
-    if (wasEmpty) return;
-
-    for (HDT_Record obj : objList)
-      if (newList.contains(obj) == false)
-      {
-        objList.remove(obj);
-        objList.throwLastException();
-      }
-
-    objList.reorder(newList);
-    objList.throwLastException();
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -74,26 +74,19 @@ public final class TestHyperDB extends AbstractHyperDB
 
 //---------------------------------------------------------------------------
 
-  public static AbstractHyperDB instance()
+  public static TestHyperDB instance()
   {
     if (HyperDB.db != null)
     {
       if ((HyperDB.db instanceof TestHyperDB) == false)
         throw new AssertionError("HyperDB already exists");
 
-      return HyperDB.db;
+      return (TestHyperDB) HyperDB.db;
     }
 
-    AbstractHyperDB db = new TestHyperDB();
+    TestHyperDB db = new TestHyperDB();
 
-    try
-    {
-      db.loadAllFromPersistentStorage(true, null, DesktopUtil.tempDir(), HDB_DEFAULT_FILENAME);
-    }
-    catch (HDB_InternalError e)
-    {
-      throw new AssertionError(e);
-    }
+    db.open();
 
     return db;
   }
@@ -207,6 +200,44 @@ public final class TestHyperDB extends AbstractHyperDB
     }
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void open()
+  {
+    if (isLoaded())
+      throw new AssertionError("Already open");
+
+    try
+    {
+      loadAllFromPersistentStorage(true, null, DesktopUtil.tempDir(), HDB_DEFAULT_FILENAME);
+    }
+    catch (HDB_InternalError e)
+    {
+      throw new AssertionError(e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void closeAndOpen()
+  {
+    if (isLoaded() == false)
+      throw new AssertionError("Already closed");
+
+    try
+    {
+      close(null);
+    }
+    catch (HDB_UnrecoverableInternalError e)
+    {
+      throw new AssertionError(e);
+    }
+
+    open();
   }
 
 //---------------------------------------------------------------------------

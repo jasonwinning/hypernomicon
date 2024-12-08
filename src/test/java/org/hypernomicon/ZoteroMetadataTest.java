@@ -63,7 +63,11 @@ class ZoteroMetadataTest
 
     for (JsonObj jServerTemplateObj : jServerTemplatesArr.getObjs())
     {
-      EntryType entryType = zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(jServerTemplateObj.getStrSafe("itemType"), etOther);
+      String entryTypeStr = jServerTemplateObj.getStrSafe("itemType");
+
+      // Sometimes the server says that "webPage" is an entry type, and sometimes "webpage"
+
+      EntryType entryType = entryTypeStr.equalsIgnoreCase("webPage") ? etWebPage : zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(entryTypeStr, etOther);
       assertNotEquals(etOther, entryType, "Unrecognized Zotero item type found in templates JSON from server: " + jServerTemplateObj.getStrSafe("itemType"));
 
       unusedTypes.remove(entryType);

@@ -22,6 +22,8 @@ import java.util.NoSuchElementException;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+import static org.hypernomicon.util.Util.*;
+
 //---------------------------------------------------------------------------
 
 class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements Iterator<HDT_ObjType>
@@ -31,6 +33,8 @@ class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_
 //---------------------------------------------------------------------------
 
   private final HyperObjList<HDT_SubjType, HDT_ObjType> list;
+  private long expectedSizeModCount;
+
   private int nextNdx = 0, lastNdx = -1;
 
 //---------------------------------------------------------------------------
@@ -38,11 +42,15 @@ class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_
   public HyperObjIterator(HyperObjList<HDT_SubjType, HDT_ObjType> list)
   {
     this.list = list;
+
+    expectedSizeModCount = list.getSizeModCount();
   }
 
 //---------------------------------------------------------------------------
 
-  @Override public boolean hasNext() { return nextNdx < list.size();  }
+  @Override public boolean hasNext()    { return nextNdx < list.size();  }
+
+  private void checkForComodification() { list.checkForComodification(expectedSizeModCount); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -51,6 +59,8 @@ class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_
   {
     if (hasNext())
     {
+      checkForComodification();
+
       lastNdx = nextNdx++;
       return list.get(lastNdx);
     }
@@ -66,9 +76,22 @@ class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_
     if (lastNdx == -1)
       throw new IllegalStateException();
 
-    list.remove(lastNdx);
-    nextNdx--;
-    lastNdx = -1;
+    globalLock.lock();
+
+    try
+    {
+      checkForComodification();
+
+      list.remove(lastNdx);
+      nextNdx--;
+      lastNdx = -1;
+
+      expectedSizeModCount = list.getSizeModCount();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -275,7 +275,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     htGlossaries.addColAltPopulatorWithUpdateHandler(hdtConcept, ctDropDownList, new SubjectPopulator(rtGlossaryOfConcept, true,
       id -> // Populator ID filter
       {
-        if ((id < 1) || HDT_Record.isEmpty(curTerm)) return false;
+        if ((id < 1) || HDT_Record.isEmpty(curTerm, false)) return false;
 
         return curTerm.concepts.contains(db.concepts.getByID(id)) == false;
       }, DisplayKind.listName),

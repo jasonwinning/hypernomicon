@@ -49,24 +49,59 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final class CoreAccessor implements Iterable<HDT_DT>
+  private final class CoreAccessor implements DatasetAccessor<HDT_DT>
   {
-    private CoreAccessor()                       { }
+    @Override public int size()                           { return core.size(); }
+    @Override public Stream<HDT_DT> stream()              { return core.stream(); }
 
-    public int size()                            { return core.size(); }
-    public Stream<HDT_DT> stream()               { return core.stream(); }
+    @Override public int getKeyNdxByID(int id)            { return core.getKeyNdxByID(id); }
+    @Override public int getIDNdxByID(int id)             { return core.getIDNdxByID(id); }
 
-    public int getKeyNdxByID(int id)             { return core.getKeyNdxByID(id); }
-    public int getIDNdxByID(int id)              { return core.getIDNdxByID(id); }
+    @Override public HDT_DT getByID(int id)               { return core.getRecordByID(id); }
+    @Override public HDT_DT getByKeyNdx(int ndx)          { return core.getRecordByID(core.getIDbyKeyNdx(ndx)); }
 
-    public HDT_DT getByID(int id)                { return core.getRecordByID(id); }
-    public HDT_DT getByKeyNdx(int ndx)           { return core.getRecordByID(core.getIDbyKeyNdx(ndx)); }
-    private HDT_DT getByIDNdx(int ndx)           { return core.getRecordByID(core.getIDbyIDNdx(ndx)); }
+    private HDT_DT getByIDNdx(int ndx)                    { return core.getRecordByID(core.getIDbyIDNdx(ndx)); }
 
-    public Iterable<HDT_DT> keyIterable()        { return this::keyIterator; }
-    public Iterator<HDT_DT> keyIterator()        { return new CoreIterator(this, true); }
+    @Override public Iterable<HDT_DT> keyIterable()       { return this::keyIterator; }
+    @Override public Iterator<HDT_DT> keyIterator()       { return new CoreIterator(this, true); }
 
-    @Override public Iterator<HDT_DT> iterator() { return new CoreIterator(this, false); }
+    @Override public Iterator<HDT_DT> iterator()          { return new CoreIterator(this, false); }
+
+    @Override public boolean isEmpty()                    { return core.size() == 0; }
+    @Override public boolean containsAll(Collection<?> c) { return c.stream().allMatch(this::contains); }
+    @Override public Object[] toArray()                   { return core.stream().toArray(); }
+
+  //---------------------------------------------------------------------------
+
+    @Override public boolean contains(Object o)
+    {
+      if (o instanceof HDT_Record record)
+      {
+        if ((record.getType() != HyperDataset.this.type) || (record.getID() < 1))
+          return false;
+
+        return core.getRecordByID(record.getID()) == record;
+      }
+
+      return false;
+    }
+
+  //---------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    @Override public <T> T[] toArray(T[] a)
+    {
+      return core.stream().toArray(size -> a.length >= size ? a : (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size));
+    }
+
+  //---------------------------------------------------------------------------
+
+    @Override public boolean add(HDT_DT e)                          { throw new UnsupportedOperationException("Add operation is not supported."      ); }
+    @Override public boolean remove(Object o)                       { throw new UnsupportedOperationException("Remove operation is not supported."   ); }
+    @Override public boolean addAll(Collection<? extends HDT_DT> c) { throw new UnsupportedOperationException("AddAll operation is not supported."   ); }
+    @Override public boolean removeAll(Collection<?> c)             { throw new UnsupportedOperationException("RemoveAll operation is not supported."); }
+    @Override public boolean retainAll(Collection<?> c)             { throw new UnsupportedOperationException("RetainAll operation is not supported."); }
+    @Override public void clear()                                   { throw new UnsupportedOperationException("Clear operation is not supported."    ); }
   }
 
 //---------------------------------------------------------------------------
@@ -127,7 +162,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
   Tag getMainTextTag()                             { return mainTextTag; }
   void resolvePointers() throws HDB_InternalError  { core.resolvePointers(); }
-  CoreAccessor getAccessor()                       { return new CoreAccessor(); }
+  DatasetAccessor<HDT_DT> getAccessor()            { return new CoreAccessor(); }
   boolean idAvailable(int id)                      { return (isUnstoredRecord(id, type) == false) && (core.containsID(id) == false); }
   public String getKeyByID(int id)                 { return core.getKeyByID(id); }
 
@@ -186,7 +221,8 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
     for (HDT_DT record : needIDs)
     {
-      for (; idAvailable(nextID) == false; nextID++);
+      while (idAvailable(nextID) == false)
+        nextID++;
 
       idToAssign = nextID++;
       recordToAssign = record;
@@ -279,23 +315,16 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
     for (HDT_DT record : getAccessor())
     {
-      boolean write = !isUnstoredRecord(record.getID(), type);
       ndx++;
 
-      if (write && (type == hdtFolder))
-      {
-        if (((HDT_Folder)record).hasNoNonFolderRecordDependencies())
-          write = false;
-      }
+      if (isUnstoredRecord(record .getID(), type) || ((record.getType() == hdtFolder) && ((HDT_Folder)record).hasNoNonFolderRecordDependencies()))
+        continue;
 
-      if (write)
-      {
-        record.saveToStoredState();
-        record.writeStoredStateToXML(xml);
+      record.saveToStoredState();
+      record.writeStoredStateToXML(xml);
 
-        if (task != null)
-          task.updateProgress(task.completedCount + ndx, task.totalCount);
-      }
+      if (task != null)
+        task.updateProgress(task.completedCount + ndx, task.totalCount);
     }
 
     xml.append(System.lineSeparator()).append(System.lineSeparator()).append(System.lineSeparator());

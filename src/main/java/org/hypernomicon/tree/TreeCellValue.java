@@ -48,7 +48,7 @@ class TreeCellValue implements Comparable<TreeCellValue>
     HDT_Record record1 = row == null ? null : row.getRecord();
     HDT_Record record2 = other.row == null ? null : other.row.getRecord();
 
-    if ((HDT_Record.isEmpty(record1) == false) && (HDT_Record.isEmpty(record2) == false))
+    if ((HDT_Record.isEmpty(record1, false) == false) && (HDT_Record.isEmpty(record2, false) == false))
     {
       if ((record1.getType() == hdtWork) && (record2.getType() == hdtWork))
         return ((HDT_Work)record1).compareTo((HDT_Work)record2);

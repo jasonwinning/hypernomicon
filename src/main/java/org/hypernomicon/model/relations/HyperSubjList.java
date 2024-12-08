@@ -73,6 +73,9 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   public int getOrd(HDT_SubjType subj)   { return relSet.getSubjectOrd(obj, subj); }
 
+  long getSizeModCount()                                 { return relSet.getSubjListSizeModCount(obj); }
+  void checkForComodification(long expectedSizeModCount) { relSet.checkForSubjListComodification(obj, expectedSizeModCount); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

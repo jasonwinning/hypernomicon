@@ -217,7 +217,7 @@ public final class GeneralQueries
       @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         HDT_Record specifiedRecord = getRecord(op2);
-        if (HDT_Record.isEmpty(specifiedRecord) == false)
+        if (HDT_Record.isEmpty(specifiedRecord, false) == false)
           records.add(specifiedRecord);
       }
 
@@ -270,7 +270,7 @@ public final class GeneralQueries
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
         HDT_Record specifiedRecord = getRecord(op2);
-        if (HDT_Record.isEmpty(specifiedRecord)) return false;
+        if (HDT_Record.isEmpty(specifiedRecord, false)) return false;
 
         boolean result = db.firstMentionsSecond(record, specifiedRecord, true, choseNotToWait);
 
@@ -317,7 +317,7 @@ public final class GeneralQueries
       @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
         HDT_Record specifiedRecord = getRecord(op2);
-        if (HDT_Record.isEmpty(specifiedRecord)) return;
+        if (HDT_Record.isEmpty(specifiedRecord, false)) return;
 
         records.addAll(db.getMentionerSet(specifiedRecord, false, choseNotToWait));
         records.remove(specifiedRecord);
@@ -413,7 +413,7 @@ public final class GeneralQueries
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
         HDT_Record specifiedRecord = getRecord(op2);
-        if (HDT_Record.isEmpty(specifiedRecord)) return false;
+        if (HDT_Record.isEmpty(specifiedRecord, false)) return false;
 
         boolean result = db.firstMentionsSecond(specifiedRecord, record, true, choseNotToWait);
 

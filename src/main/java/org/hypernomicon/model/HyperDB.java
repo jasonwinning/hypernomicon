@@ -242,7 +242,7 @@ public final class HyperDB extends AbstractHyperDB
 
     if (folderPath.exists() == false) return;
 
-    for (RecordType recordType : (Iterable<RecordType>)MainTextCtrlr.displayedTypesStream()::iterator)
+    for (RecordType recordType : streamToIterable(MainTextCtrlr.displayedTypesStream()))
     {
       FilePath filePath = mainTextTemplateFilePath(recordType);
       if (filePath.exists() == false) continue;

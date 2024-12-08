@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -43,6 +44,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -73,6 +75,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   private ArrayListMultimap<HDT_Subj, HDT_Obj> subjToObjList = ArrayListMultimap.create();
   private final HashBasedTable<HDT_Subj, HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objectGroups = HashBasedTable.create();
   private final Map<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
+  private final Map<HDT_Subj, Long> objListSizeModCount  = new HashMap<>();
+  private final Map<HDT_Obj , Long> subjListSizeModCount = new HashMap<>();
   private final List<RelationChangeHandler> changeHandlers = new ArrayList<>();
   private final Set<RelationType> cycleGroup;
 
@@ -93,7 +97,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   public Set<Tag> getNestedTags()                         { return EnumSet.copyOf(tagToSchema.keySet()); }
   public void addChangeHandler(RelationChangeHandler rch) { changeHandlers.add(rch); }
   public Set<HDT_Subj> getOrphans()                       { return ImmutableSet.copyOf(orphans); } // Make a new copy of the set to prevent concurrent modification exception
-  private void addObjAndMod(HDT_Subj subj, HDT_Obj obj)   { new HyperObjList<>(this, subj, true).add(obj); }
+
   List<HDT_Obj> getUnmodifiableObjectList(HDT_Subj subj)  { return Collections.unmodifiableList(subjToObjList.get(subj)); }
   List<HDT_Subj> getUnmodifiableSubjectList(HDT_Obj obj)  { return Collections.unmodifiableList(objToSubjList.get(obj)); }
   int getSubjectCount(HDT_Obj obj)                        { return objToSubjList.get(obj).size(); }
@@ -102,9 +106,15 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   int getSubjectNdx(HDT_Obj obj, HDT_Subj subj)           { return objToSubjList.get(obj).indexOf(subj); }
   int getObjectNdx(HDT_Subj subj, HDT_Obj obj)            { return subjToObjList.get(subj).indexOf(obj); }
   HDT_Obj getObject(HDT_Subj subj, int ndx)               { return subjToObjList.get(subj).get(ndx); }
+  long getObjListSizeModCount(HDT_Subj subj)              { return objListSizeModCount .computeIfAbsent(subj, _subj -> 0L); }
+  long getSubjListSizeModCount(HDT_Obj obj)               { return subjListSizeModCount.computeIfAbsent(obj , _obj  -> 0L); }
 
   boolean alreadyHasAsObject(HDT_Subj subj, HDT_Obj obj)  { return subjToObjList.containsEntry(subj, obj); }
   boolean alreadyHasAsSubject(HDT_Obj obj, HDT_Subj subj) { return objToSubjList.containsEntry(obj, subj); }
+
+  private void incrObjListSizeModCount (HDT_Subj subj)    { objListSizeModCount .merge(subj, 1L, Long::sum); }
+  private void incrSubjListSizeModCount(HDT_Obj obj)      { subjListSizeModCount.merge(obj , 1L, Long::sum); }
+  private void addObjAndMod(HDT_Subj subj, HDT_Obj obj)   { new HyperObjList<>(this, subj, true).add(obj); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -322,10 +332,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       switch (schema.category())
       {
-        case hdcString        : if (NestedValue.isEmpty(((HDI_OnlineString       ) onlineItem).get()) == false) offlineItem = new HDI_OfflineString       (schema, recordState); break;
-        case hdcBoolean       : if (NestedValue.isEmpty(((HDI_OnlineBoolean      ) onlineItem).get()) == false) offlineItem = new HDI_OfflineBoolean      (schema, recordState); break;
-        case hdcTernary       : if (NestedValue.isEmpty(((HDI_OnlineTernary      ) onlineItem).get()) == false) offlineItem = new HDI_OfflineTernary      (schema, recordState); break;
-        case hdcNestedPointer : if (HDT_Record .isEmpty(((HDI_OnlineNestedPointer) onlineItem).get()) == false) offlineItem = new HDI_OfflineNestedPointer(schema, recordState); break;
+        case hdcString        : if (NestedValue.isEmpty(((HDI_OnlineString       ) onlineItem).get()       ) == false) offlineItem = new HDI_OfflineString       (schema, recordState); break;
+        case hdcBoolean       : if (NestedValue.isEmpty(((HDI_OnlineBoolean      ) onlineItem).get()       ) == false) offlineItem = new HDI_OfflineBoolean      (schema, recordState); break;
+        case hdcTernary       : if (NestedValue.isEmpty(((HDI_OnlineTernary      ) onlineItem).get()       ) == false) offlineItem = new HDI_OfflineTernary      (schema, recordState); break;
+        case hdcNestedPointer : if (HDT_Record .isEmpty(((HDI_OnlineNestedPointer) onlineItem).get(), false) == false) offlineItem = new HDI_OfflineNestedPointer(schema, recordState); break;
 
         default : break;
       }
@@ -429,7 +439,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   {
     if (hasNestedItems == false) return falseWithInternalErrorPopup(49223);
 
-    boolean isEmpty = HDT_Record.isEmpty(target);
+    boolean isEmpty = HDT_Record.isEmpty(target, false);
     if (isEmpty == false) addObjAndMod(subj, obj);
 
     HDI_OnlineNestedPointer item = getNestedItem(subj, obj, tag, isEmpty);
@@ -618,6 +628,9 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     if (affirm)
     {
+      if (HDT_Record.isEmpty(subj, false) || HDT_Record.isEmpty(obj, false))
+        throw new NoSuchElementException("Invalid record");
+
       // Add the object to the object list if not already there
       if (objList.contains(obj)) return;
 
@@ -630,6 +643,9 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
         initOrderedSubject(obj, subj, subjOrd);
       else
         objToSubjList.put(obj, subj);
+
+      incrObjListSizeModCount (subj);
+      incrSubjListSizeModCount(obj);
 
       orphans.remove(subj);
 
@@ -645,17 +661,21 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       if (ndx == -1) objList.remove(obj);
       else           objList.remove(ndx);
 
+      incrObjListSizeModCount(subj);
+
       if (objList.contains(obj) == false)
       {
         objToSubjList.remove(obj, subj);
         subjOrdMap.remove(subj); // This map is only used for ordered pointer-single items so the subject will no longer have any objects
 
-        if (HDT_Record.isEmpty(subj) == false) // skip if record is in the process of being deleted
+        incrSubjListSizeModCount(obj);
+
+        if (HDT_Record.isEmpty(subj, false) == false) // skip if record is in the process of being deleted
         {
           if (trackOrphans && objList.isEmpty() && (isUnstoredRecord(subj.getID(), subjType) == false))
             orphans.add(subj);
 
-          if ((HDT_Record.isEmpty(subj) == false) && (HDT_Record.isEmpty(obj) == false))  // Only run change handlers if the record is not in the process of being deleted
+          if ((HDT_Record.isEmpty(subj, false) == false) && (HDT_Record.isEmpty(obj, false) == false))  // Only run change handlers if the record is not in the process of being deleted
             if (changeHandlers.size() > 0)
               Platform.runLater(() -> changeHandlers.forEach(handler -> handler.handle(subj, obj, false)));
         }
@@ -740,6 +760,24 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  void checkForObjListComodification(HDT_Subj subj, long expectedModCount)
+  {
+    if ((objListSizeModCount.containsKey(subj) == false) || (objListSizeModCount.get(subj) != expectedModCount))
+      throw new ConcurrentModificationException();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void checkForSubjListComodification(HDT_Obj obj, long expectedModCount)
+  {
+    if ((subjListSizeModCount.containsKey(obj) == false) || (subjListSizeModCount.get(obj) != expectedModCount))
+      throw new ConcurrentModificationException();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   void clearObjects(HDT_Subj subj)
   {
     while (getObjectCount(subj) > 0)
@@ -752,7 +790,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> ArrayListMultimap<HDT_Key, HDT_Value> rebuildMultimap(ArrayListMultimap<HDT_Key, HDT_Value> oldMap) throws HDB_InternalError
+  @SuppressWarnings("unlikely-arg-type")
+  private <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> ArrayListMultimap<HDT_Key, HDT_Value> rebuildMultimap(ArrayListMultimap<HDT_Key, HDT_Value> oldMap, boolean keyIsSubj) throws HDB_InternalError
   {
     ArrayListMultimap<HDT_Key, HDT_Value> newMap = ArrayListMultimap.create();
 
@@ -760,11 +799,27 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       HDT_Key key = entry.getKey();
 
-      if (HDT_Record.isEmptyThrowsException(key) == false)
+      if (HDT_Record.isEmptyThrowsException(key, false) == false)
       {
         HDT_Value value = entry.getValue();
-        if (HDT_Record.isEmptyThrowsException(value) == false)
+        if (HDT_Record.isEmptyThrowsException(value, false) == false)
+        {
           newMap.put(key, value);
+        }
+        else
+        {
+          if (keyIsSubj)
+            subjListSizeModCount.remove(value);
+          else
+            objListSizeModCount .remove(value);
+        }
+      }
+      else
+      {
+        if (keyIsSubj)
+          objListSizeModCount .remove(key);
+        else
+          subjListSizeModCount.remove(key);
       }
     }
 
@@ -776,14 +831,14 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public void cleanup() throws HDB_InternalError
   {
-    subjToObjList = rebuildMultimap(subjToObjList);
-    objToSubjList = rebuildMultimap(objToSubjList);
+    subjToObjList = rebuildMultimap(subjToObjList, true);
+    objToSubjList = rebuildMultimap(objToSubjList, false);
 
     Iterator<HDT_Subj> orphanIt = orphans.iterator();
 
     while (orphanIt.hasNext())
     {
-      if (HDT_Record.isEmptyThrowsException(orphanIt.next()))
+      if (HDT_Record.isEmptyThrowsException(orphanIt.next(), false))
         orphanIt.remove();
     }
 
@@ -791,7 +846,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     while (subjOrdMapIt.hasNext())
     {
-      if (HDT_Record.isEmptyThrowsException(subjOrdMapIt.next().getKey()))
+      if (HDT_Record.isEmptyThrowsException(subjOrdMapIt.next().getKey(), false))
         subjOrdMapIt.remove();
     }
 
@@ -803,8 +858,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       Cell<HDT_Subj, HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> cell = cellIt.next();
 
-      if      (HDT_Record.isEmptyThrowsException(cell.getRowKey   ())) cellIt.remove();
-      else if (HDT_Record.isEmptyThrowsException(cell.getColumnKey())) cellIt.remove();
+      if      (HDT_Record.isEmptyThrowsException(cell.getRowKey   (), false)) cellIt.remove();
+      else if (HDT_Record.isEmptyThrowsException(cell.getColumnKey(), false)) cellIt.remove();
       else
       {
         Iterator<Entry<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> targetIt = cell.getValue().entrySet().iterator();
@@ -813,7 +868,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
         {
           HDI_OnlineBase<? extends HDI_OfflineBase> item = targetIt.next().getValue();
 
-          if ((item.category() == hdcNestedPointer) && HDT_Record.isEmptyThrowsException(((HDI_OnlineNestedPointer)item).get()))
+          if ((item.category() == hdcNestedPointer) && HDT_Record.isEmptyThrowsException(((HDI_OnlineNestedPointer)item).get(), false))
             targetIt.remove();
         }
       }
@@ -831,7 +886,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       HDT_Obj obj = list.get(ndx);
 
-      if (HDT_Record.isEmptyThrowsException(obj))
+      if (HDT_Record.isEmptyThrowsException(obj, false))
       {
         try { setObject(subj, obj, ndx, false); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
         ndx--;

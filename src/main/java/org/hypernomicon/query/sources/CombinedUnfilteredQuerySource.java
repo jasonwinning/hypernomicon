@@ -17,11 +17,11 @@
 
 package org.hypernomicon.query.sources;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.hypernomicon.model.HyperDataset.CoreAccessor;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 
@@ -57,7 +57,7 @@ public class CombinedUnfilteredQuerySource extends QuerySource
 
 //---------------------------------------------------------------------------
 
-  @Override public int size()                       { return types.stream().map(db::records).mapToInt(CoreAccessor::size).sum(); }
+  @Override public int size()                       { return types.stream().map(db::records).mapToInt(Collection::size).sum(); }
   @Override public QuerySourceType sourceType()     { return QuerySourceType.QST_combinedUnfilteredRecords; }
   @Override public Iterator<HDT_Record> iterator()  { return Iterators.concat(types.stream().map(type -> db.records(type).iterator()).iterator()); }
   @Override public RecordType recordType()          { return types.size() == 1 ? (RecordType) types.toArray()[0] : hdtNone; }

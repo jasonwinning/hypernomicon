@@ -48,8 +48,8 @@ import org.hypernomicon.bib.data.RISBibData;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.fileManager.FileRow;
+import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.WorkAuthors;
@@ -2699,7 +2699,7 @@ public final class MainCtrlr
 
     if (count > 0)
     {
-      if (HDT_Record.isEmpty(record))
+      if (HDT_Record.isEmpty(record, true))
       {
         int ndx = tab.getView().getTabRecordKeyNdx();
 
@@ -2722,7 +2722,7 @@ public final class MainCtrlr
 
     updateBottomPanel(true, true);
 
-    if (HDT_Record.isEmpty(record))
+    if (HDT_Record.isEmpty(record, true))
     {
       tab.clear(true);
       tab.enable(false);
@@ -3037,7 +3037,7 @@ public final class MainCtrlr
       return;
     }
 
-    HyperDataset<? extends HDT_Record>.CoreAccessor records = db.records(activeType());
+    DatasetAccessor<? extends HDT_Record> records = db.records(activeType());
 
     int ndx = activeRecord().keyNdx() + (increment ? 1 : -1);
     if ((ndx >= 0) && (ndx < records.size()))

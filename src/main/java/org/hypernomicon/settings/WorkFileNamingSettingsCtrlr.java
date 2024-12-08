@@ -121,7 +121,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       {
         String trimmedWorkTypeStr = ultraTrim(workTypeStr);
         HDT_WorkType workType = db.workTypes.getByID(parseInt(trimmedWorkTypeStr, -1));
-        if (HDT_Record.isEmpty(workType) == false)
+        if (HDT_Record.isEmpty(workType, false) == false)
           excludedWorkTypes.add(workType);
       });
     }

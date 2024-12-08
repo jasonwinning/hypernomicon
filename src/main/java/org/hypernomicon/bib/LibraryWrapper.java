@@ -291,26 +291,38 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     try
     {
       JsonObj jMainObj = new JsonObj();
-      JsonArray jArr = new JsonArray();
 
-      for (BibEntry_T entry : (Iterable<BibEntry_T>)getNonTrashEntries()::iterator)
-        entry.saveToJsonArray(jArr);
+//---------------------------------------------------------------------------
 
-      jMainObj.put(entryFileNode(), jArr);
+      {
+        JsonArray jArr = new JsonArray();
 
-      jArr = new JsonArray();
+        getNonTrashEntries().forEach(entry -> entry.saveToJsonArray(jArr));
 
-      for (BibEntry_T entry : keyToTrashEntry.values())
-        entry.saveToJsonArray(jArr);
+        jMainObj.put(entryFileNode(), jArr);
+      }
 
-      jMainObj.put("trash", jArr);
+//---------------------------------------------------------------------------
 
-      jArr = new JsonArray();
+      {
+        JsonArray jArr = new JsonArray();
 
-      for (BibCollection_T coll : keyToColl.values())
-        coll.saveToJsonArray(jArr);
+        keyToTrashEntry.values().forEach(entry -> entry.saveToJsonArray(jArr));
 
-      jMainObj.put(collectionFileNode(), jArr);
+        jMainObj.put("trash", jArr);
+      }
+
+//---------------------------------------------------------------------------
+
+      {
+        JsonArray jArr = new JsonArray();
+
+        keyToColl.values().forEach(coll -> coll.saveToJsonArray(jArr));
+
+        jMainObj.put(collectionFileNode(), jArr);
+      }
+
+//---------------------------------------------------------------------------
 
       json = new StringBuilder(jMainObj.toString());
     }

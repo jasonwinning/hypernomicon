@@ -379,14 +379,10 @@ public class PictureDlgCtrlr extends HyperDlg
         y1 = Double.valueOf((cropStart.getY() * picture.getHeight()) + 0.5).intValue(),
         y2 = Double.valueOf((cropEnd  .getY() * picture.getHeight()) + 0.5).intValue();
 
-    if (x1 < 0) x1 = 0;
-    if (x1 > (picture.getWidth() - 1)) x1 = (int) (picture.getWidth() - 1);
-    if (x2 < 0) x2 = 0;
-    if (x2 > (picture.getWidth() - 1)) x2 = (int) (picture.getWidth() - 1);
-    if (y1 < 0) y1 = 0;
-    if (y1 > (picture.getHeight() - 1)) y1 = (int) (picture.getHeight() - 1);
-    if (y2 < 0) y2 = 0;
-    if (y2 > (picture.getHeight() - 1)) y2 = (int) (picture.getHeight() - 1);
+    if (x1 < 0) x1 = 0;  if (x1 > (picture.getWidth () - 1)) x1 = (int) (picture.getWidth () - 1);
+    if (x2 < 0) x2 = 0;  if (x2 > (picture.getWidth () - 1)) x2 = (int) (picture.getWidth () - 1);
+    if (y1 < 0) y1 = 0;  if (y1 > (picture.getHeight() - 1)) y1 = (int) (picture.getHeight() - 1);
+    if (y2 < 0) y2 = 0;  if (y2 > (picture.getHeight() - 1)) y2 = (int) (picture.getHeight() - 1);
 
     return new Rectangle2D(x1, y1, (x2 + 1) - x1, (y2 + 1) - y1);
   }
@@ -413,23 +409,23 @@ public class PictureDlgCtrlr extends HyperDlg
     if (mouseStart.getX() < mouseEnd.getX())
     {
       x1 = mouseStart.getX();
-      x2 = mouseEnd.getX();
+      x2 = mouseEnd  .getX();
     }
     else
     {
       x2 = mouseStart.getX();
-      x1 = mouseEnd.getX();
+      x1 = mouseEnd  .getX();
     }
 
     if (mouseStart.getY() < mouseEnd.getY())
     {
       y1 = mouseStart.getY();
-      y2 = mouseEnd.getY();
+      y2 = mouseEnd  .getY();
     }
     else
     {
       y2 = mouseStart.getY();
-      y1 = mouseEnd.getY();
+      y1 = mouseEnd  .getY();
     }
 
     if (x1 < .001) x1 = .001;
@@ -442,7 +438,7 @@ public class PictureDlgCtrlr extends HyperDlg
     if (y2 > .999) y2 = .999;
 
     cropStart = new Point2D(x1, y1);
-    cropEnd = new Point2D(x2, y2);
+    cropEnd   = new Point2D(x2, y2);
   }
 
 //---------------------------------------------------------------------------
@@ -636,7 +632,7 @@ public class PictureDlgCtrlr extends HyperDlg
     if (Objects.equals(oldExt, newExt)) return;
 
     tfName.setText(oldExt.isEmpty() ?
-      (fileName.toString() + FilenameUtils.EXTENSION_SEPARATOR + newExt)
+      (ultraTrim(fileName.toString()) + FilenameUtils.EXTENSION_SEPARATOR + newExt)
     :
       (StringUtils.removeEnd(fileName.toString(), oldExt) + newExt));
   }
@@ -907,10 +903,8 @@ public class PictureDlgCtrlr extends HyperDlg
     if (FilePath.isFilenameValid(newFileDestName) == false)
       return falseWithErrorPopup("Invalid file name: \"" + newFileDestName + '"', tfName);
 
-    Set<HyperPath> set;
-
     FilePath newFileSrc = null,
-             newFileDest = getDestFilePath(tfName.getText());
+             newFileDest = getDestFilePath(newFileDestName);
 
     if (rbWeb.isSelected() || rbClipboard.isSelected())
     {
@@ -923,18 +917,18 @@ public class PictureDlgCtrlr extends HyperDlg
       {
         if (clipboardImageBuffer == null)
           return falseWithWarningPopup("An image has not been loaded from the clipboard. Try clicking Refresh button.", rbClipboard);
-      }
 
-      set = HyperPath.getHyperPathSetForFilePath(newFileDest);
-
-      if (set.size() > 0)
-      {
-        for (HyperPath hyperPath : set)
+        if (newFileDest.getExtensionOnly().isBlank())
         {
-          if (hyperPath.getRecord() != personHyperTab.activeRecord())
-            return falseWithErrorPopup("Destination file is already in use.");
+          updateExtensionBasedOnClipboardSelection();
+          newFileDestName = tfName.getText();
+          newFileDest = getDestFilePath(newFileDestName);
         }
       }
+
+      for (HyperPath hyperPath : HyperPath.getHyperPathSetForFilePath(newFileDest))
+        if (hyperPath.getRecord() != personHyperTab.activeRecord())
+          return falseWithErrorPopup("Destination file is already in use.");
 
       if (newFileDest.exists())
       {
@@ -973,6 +967,8 @@ public class PictureDlgCtrlr extends HyperDlg
   // Put new image in place
   //---------------------------------------------------------------------------
 
+    FilePath finalNewFileDest = newFileDest;
+
     if (rbWeb.isSelected())
     {
       try
@@ -987,7 +983,7 @@ public class PictureDlgCtrlr extends HyperDlg
           FileDownloadUtility.downloadToFile(tfWeb.getText(), db.picturesPath(), newFileDestName,
                                              new StringBuilder(), true, httpClient, buffer ->
           {
-            personHyperTab.assignPicture(newFileDest, true);
+            personHyperTab.assignPicture(finalNewFileDest, true);
             noRemoveCrop = true;
             rbCurrent.setSelected(true);
 
@@ -1042,9 +1038,9 @@ public class PictureDlgCtrlr extends HyperDlg
         if (newFileSrc.isDirectory())
           return falseWithErrorPopup("Source file cannot be a directory.");
 
-        set = HyperPath.getHyperPathSetForFilePath(newFileSrc);
+        Set<HyperPath> setOfHyperPathsAlreadyAssignedToSourcePathOfNewFile = HyperPath.getHyperPathSetForFilePath(newFileSrc);
 
-        if (set.isEmpty())
+        if (setOfHyperPathsAlreadyAssignedToSourcePathOfNewFile.isEmpty())
         {
           DialogResult result = mrMove;
 
@@ -1087,7 +1083,7 @@ public class PictureDlgCtrlr extends HyperDlg
         {
           HDT_Folder destFolder = HyperPath.getFolderFromFilePath(newFileDest.getDirOnly(), true);
 
-          for (HyperPath hyperPath : set)
+          for (HyperPath hyperPath : setOfHyperPathsAlreadyAssignedToSourcePathOfNewFile)
           {
             try
             {
