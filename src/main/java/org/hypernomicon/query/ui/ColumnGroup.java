@@ -27,12 +27,15 @@ import static org.hypernomicon.query.ui.ResultColumn.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
+import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
 
 /**
@@ -84,7 +87,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
   @FunctionalInterface
   interface NonGeneralColumnGroup
   {
-    void addColumnsToTable();
+    void addColumnsToTable(EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow);
   }
 
 //---------------------------------------------------------------------------
@@ -117,7 +120,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
      * <br>If so, set this item's column equal to that one.
      * <br>Otherwise, add a new column.
      */
-    @Override public void addColumnsToTable()
+    @Override public void addColumnsToTable(EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
     {
       for (NonGeneralColumnGroupItem item : this)
       {
@@ -152,8 +155,8 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
               {
                 col = (NonGeneralColumn) otherItem.col;
 
-                if (item.relType == rtNone) // Only subject columns have a relType set. They are invisible by default.
-                  col.setVisible(true);
+                if ((item.relType == rtNone) || ((item.relType != null) && relationsToShow.contains(item.relType)))
+                  col.setVisible(true);  // Only subject columns have a relType set. They are invisible by default.
 
                 col.map.putAll(map);
                 map = col.map;
@@ -163,7 +166,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
         }
 
         if (col == null)
-          col = resultsTable.addNonGeneralColumn(map);
+          col = resultsTable.addNonGeneralColumn(map, relationsToShow);
 
         for (ColumnGroupItem otherItem : map.values())
           otherItem.col = col;
@@ -185,12 +188,12 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
       super("Reference Manager Fields", resultsTable);
     }
 
-    @Override public void addColumnsToTable()
+    @Override public void addColumnsToTable(EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
     {
       List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition,
               bfVolume   , bfIssue         , bfLanguage , bfISSNs , bfPages)
 
-        .forEach(field -> addColumn(new BibFieldColumn(field, false)));
+        .forEach(field -> addColumn(new BibFieldColumn(field, false, bibFieldsToShow)));
     }
   }
 

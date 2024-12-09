@@ -44,16 +44,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+
 import java.util.Map.Entry;
 
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
@@ -96,6 +99,8 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
+
+//---------------------------------------------------------------------------
 
 public final class QueryCtrlr
 {
@@ -141,6 +146,8 @@ public final class QueryCtrlr
                           OPERAND_1_COL_NDX  = 3,
                           OPERAND_2_COL_NDX  = 4,
                           OPERAND_3_COL_NDX  = 5;
+
+  private static final int[] OPERAND_COL_INDICES = {OPERAND_1_COL_NDX, OPERAND_2_COL_NDX, OPERAND_3_COL_NDX};
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -442,8 +449,8 @@ public final class QueryCtrlr
     programmaticFavNameChange = false;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void setPreview()
   {
@@ -467,8 +474,8 @@ public final class QueryCtrlr
     }
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void favNameChange()
   {
@@ -477,8 +484,8 @@ public final class QueryCtrlr
     queriesTabCtrlr.setFavNameToggle(false);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void setRecord(HDT_Record record)
   {
@@ -492,8 +499,8 @@ public final class QueryCtrlr
     HyperTable.scrollToSelection(tvResults, false);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   // Returns true if search was completed
 
@@ -655,8 +662,8 @@ public final class QueryCtrlr
     });
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void switchToReportMode()
   {
@@ -673,8 +680,8 @@ public final class QueryCtrlr
     queriesTabCtrlr.updateCB(this);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void switchToRecordMode()
   {
@@ -690,8 +697,8 @@ public final class QueryCtrlr
     queriesTabCtrlr.updateCB(this);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void executeReport(HyperTableRow row, boolean setCaption)
   {
@@ -722,8 +729,8 @@ public final class QueryCtrlr
       lowerOneTouchExpandableWrapper.setCollapsedState(CollapsedState.Expanded);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   // sources parameter is assumed empty and needs to be populated by this function so it can be used by the caller
 
@@ -765,8 +772,8 @@ public final class QueryCtrlr
     return new CombinedUnfilteredQuerySource(EnumSet.noneOf(RecordType.class));
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
  // If any of the queries are unfiltered, they will all be treated as unfiltered
 
@@ -876,10 +883,10 @@ public final class QueryCtrlr
 
               boolean result = source.contains(record) && evaluate(query, record, row, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
 
-              if (customLogic)              results.put(rowNumbers.get(row), result);
-              else if (firstRow)            add = result;
-              else if (orLogic)             add = add || result;
-              else                          add = add && result;
+              if (customLogic)    results.put(rowNumbers.get(row), result);
+              else if (firstRow)  add = result;
+              else if (orLogic)   add = add || result;
+              else                add = add && result;
 
               firstRow = false;
             }
@@ -921,10 +928,15 @@ public final class QueryCtrlr
 
     if (succeeded == false) return false;
 
+    EnumSet<RelationType> relationsToShow = EnumSet.noneOf(RelationType.class);
+    EnumSet<BibFieldEnum> bibFieldsToShow = EnumSet.noneOf(BibFieldEnum.class);
+
+    getExtraResultColumnsToShow(queries, relationsToShow, bibFieldsToShow);
+
     recordTypeToColumnGroups.forEach((recordType, colGroup) ->
     {
       if (recordType != hdtNone)
-        ((NonGeneralColumnGroup) colGroup).addColumnsToTable();
+        ((NonGeneralColumnGroup) colGroup).addColumnsToTable(relationsToShow, bibFieldsToShow);
     });
 
     if (showDesc)
@@ -953,8 +965,42 @@ public final class QueryCtrlr
     return true;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Relation and bib. field columns are hidden by default but should be shown if the relation/bib. field is
+   * explicitly mentioned by a query. This loops over the queries and finds explicit
+   * mentions, building a set of mentioned relations and bib. fields.
+   * @param queries Queries to check
+   * @param relationsToShow Set of mentioned relations
+   * @param bibFieldsToShow Set of mentioned bib. fields
+   */
+  private void getExtraResultColumnsToShow(Map<HyperTableRow, Query<?>> queries, EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
+  {
+    for (HyperTableRow row : queries.keySet())
+    {
+      for (int opColNdx : OPERAND_COL_INDICES)
+      {
+        VariablePopulator vp = row.getPopulator(opColNdx);
+        if (vp.getValueType(row) == cvtRelation)
+        {
+          RelationType relType = RelationType.codeToVal(getCellID(row.getCell(opColNdx)));
+          if ((relType != null) && (relType != RelationType.rtNone))
+            relationsToShow.add(relType);
+        }
+        else if (vp.getValueType(row) == cvtBibField)
+        {
+          BibFieldEnum field = getEnumVal(getCellID(row.getCell(opColNdx)), BibFieldEnum.class);
+          if (field != null)
+            bibFieldsToShow.add(field);
+        }
+      }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
   public void addRecord(HDT_Record record, boolean addToObsList)
@@ -973,7 +1019,7 @@ public final class QueryCtrlr
       recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
 
       if (addToObsList)
-        colGroup.addColumnsToTable();
+        colGroup.addColumnsToTable(EnumSet.noneOf(RelationType.class), EnumSet.noneOf(BibFieldEnum.class));
 
       if ((recordType == hdtWork) && db.bibLibraryIsLinked())
       {
@@ -981,7 +1027,7 @@ public final class QueryCtrlr
         recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
 
         if (addToObsList)
-          colGroup.addColumnsToTable();
+          colGroup.addColumnsToTable(EnumSet.noneOf(RelationType.class), EnumSet.noneOf(BibFieldEnum.class));
       }
     }
 
@@ -997,8 +1043,8 @@ public final class QueryCtrlr
       resultsBackingList.add(row);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private static boolean queryHasOperand(Query<?> query, QueryType queryType, int opNum)
   {
@@ -1045,7 +1091,7 @@ public final class QueryCtrlr
     {
       if (row.getID(QUERY_COL_NDX) > -1)
       {
-        for (int colNdx = OPERAND_1_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
+        for (int colNdx : OPERAND_COL_INDICES)
         {
           if (((VariablePopulator) htFields.getPopulator(colNdx)).getRestricted(row) == false)
           {
@@ -1060,8 +1106,8 @@ public final class QueryCtrlr
     return "";
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static void clearOperands(HyperTableRow row, int startOpNum)
   {
@@ -1079,8 +1125,8 @@ public final class QueryCtrlr
     clearOperand(row, 3);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private static boolean clearingOperand = false;
 

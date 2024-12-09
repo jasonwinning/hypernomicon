@@ -26,6 +26,7 @@ import static org.hypernomicon.util.Util.*;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.function.Function;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -170,7 +171,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static class BibFieldColumn extends ResultColumn { BibFieldColumn(BibFieldEnum field, boolean caseSensitive)
+  static class BibFieldColumn extends ResultColumn { BibFieldColumn(BibFieldEnum field, boolean caseSensitive, EnumSet<BibFieldEnum> bibFieldsToShow)
   {
     super(field.getUserFriendlyName(), caseSensitive);
 
@@ -181,7 +182,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
       return observableCellValue(cellData, text);
     });
 
-    setVisible(false);
+    setVisible(bibFieldsToShow.contains(field));
   }}
 
 //---------------------------------------------------------------------------
@@ -199,7 +200,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
 //---------------------------------------------------------------------------
 
-    static NonGeneralColumn create(NonGeneralColumnGroupItem firstItem, EnumMap<RecordType, NonGeneralColumnGroupItem> recordTypeToItem)
+    static NonGeneralColumn create(NonGeneralColumnGroupItem firstItem, EnumMap<RecordType, NonGeneralColumnGroupItem> recordTypeToItem, EnumSet<RelationType> relationsToShow)
     {
       NonGeneralColumn col = switch (firstItem.tag)
       {
@@ -212,7 +213,10 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
       };
 
       // Only subject columns have a relType set. They are invisible by default.
-      col.setVisible(recordTypeToItem.values().stream().anyMatch(item -> item.relType == RelationType.rtNone));
+      col.setVisible(recordTypeToItem.values().stream().anyMatch(item ->
+      {
+        return (item.relType == RelationType.rtNone) || ((item.relType != null) && relationsToShow.contains(item.relType));
+      }));
 
       col.setCellValueFactory(cellData ->
       {

@@ -25,6 +25,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
 
@@ -195,11 +196,11 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  NonGeneralColumn addNonGeneralColumn(EnumMap<RecordType, NonGeneralColumnGroupItem> recordTypeToItem)
+  NonGeneralColumn addNonGeneralColumn(EnumMap<RecordType, NonGeneralColumnGroupItem> recordTypeToItem, EnumSet<RelationType> relationsToShow)
   {
     NonGeneralColumnGroupItem firstItem = recordTypeToItem.entrySet().iterator().next().getValue();
 
-    NonGeneralColumn col = NonGeneralColumn.create(firstItem, recordTypeToItem);
+    NonGeneralColumn col = NonGeneralColumn.create(firstItem, recordTypeToItem, relationsToShow);
 
     addColumn(col, EnumSet.of(tagAuthor, tagBibDate, tagWorkType, tagMainText).contains(firstItem.tag));
 

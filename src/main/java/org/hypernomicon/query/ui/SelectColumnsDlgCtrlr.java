@@ -149,6 +149,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
       chkType.selectedProperty().addListener((ob, oldValue, newValue) ->
       {
         if (noListen) return;
+
         noListen = true;
 
         if (Boolean.TRUE.equals(newValue))
@@ -171,6 +172,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
     chkSelectAll.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (noListen) return;
+
       noListen = true;
 
       if (Boolean.TRUE.equals(newValue))
@@ -198,6 +200,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
     chkSelectNone.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (noListen) return;
+
       noListen = true;
 
       if (Boolean.TRUE.equals(newValue))
