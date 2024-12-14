@@ -611,12 +611,27 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, boolean affirm, boolean skipCycleCheck) throws RelationCycleException
+  void removeObject(HDT_Subj subj, HDT_Obj obj, int ndx) throws RelationCycleException
   {
-    setObject(subj, obj, ndx, -1, affirm, skipCycleCheck);
+    setObject(subj, obj, ndx, -1, false, true);
   }
 
-  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, int subjOrd, boolean affirm, boolean skipCycleCheck) throws RelationCycleException
+  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx) throws RelationCycleException
+  {
+    setObject(subj, obj, ndx, -1, true, false);
+  }
+
+  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, int subjOrd) throws RelationCycleException
+  {
+    setObject(subj, obj, ndx, subjOrd, true, false);
+  }
+
+  void setObjectSkipCycleCheck(HDT_Subj subj, HDT_Obj obj, int ndx) throws RelationCycleException
+  {
+    setObject(subj, obj, ndx, -1, true, true);
+  }
+
+  private void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, int subjOrd, boolean affirm, boolean skipCycleCheck) throws RelationCycleException
   {
     if ((subj == null) || (obj == null))
     {
@@ -784,7 +799,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     while (getObjectCount(subj) > 0)
     {
       HDT_Obj obj = getObject(subj, 0);
-      try { setObject(subj, obj, 0, false, true); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+      try { removeObject(subj, obj, 0); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
     }
   }
 
@@ -883,14 +898,13 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   {
     List<HDT_Obj> list = subjToObjList.get(subj);
 
-    for (int ndx = 0; ndx < getObjectCount(subj); ndx++)
+    for (int ndx = getObjectCount(subj) - 1; ndx >= 0; ndx--)
     {
       HDT_Obj obj = list.get(ndx);
 
       if (HDT_Record.isEmptyThrowsException(obj, false))
       {
-        try { setObject(subj, obj, ndx, false, true); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
-        ndx--;
+        try { removeObject(subj, obj, ndx); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
       }
       else if (hasNestedItems)
       {

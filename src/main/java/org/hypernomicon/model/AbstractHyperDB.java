@@ -913,7 +913,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean loadAllFromPersistentStorage(boolean creatingNew, HyperFavorites favorites, FilePath newRootFilePath, String hdbFileName) throws HDB_InternalError
+  public boolean loadAllFromPersistentStorage(boolean creatingNew, HyperFavorites favorites, FilePath newRootFilePath, String hdbFileName) throws HDB_UnrecoverableInternalError
   {
     if (initialized == false)
       return false;
@@ -942,7 +942,7 @@ public abstract class AbstractHyperDB
 
     final List<FilePath> xmlFileList = Stream.of(OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
                                                  DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
-                                                 TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME ).map(this::xmlPath).collect(toList());
+                                                 TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME ).map(this::xmlPath).toList();
 
     if (loadFromXMLFiles(xmlFileList, creatingNew, recordTypeToDataVersion, workIDtoInvIDs) == false)
     {
@@ -950,8 +950,18 @@ public abstract class AbstractHyperDB
       return false;
     }
 
-    for (HyperDataset<? extends HDT_Record> dataset : datasets.values())
-      dataset.assignIDs();
+    try
+    {
+      for (HyperDataset<? extends HDT_Record> dataset : datasets.values())
+        dataset.assignIDs();
+    }
+    catch (HDB_InternalError e)
+    {
+      errorMessage(e);
+
+      close(null);
+      return false;
+    }
 
     if (bringAllRecordsOnline() == false)
     {
@@ -964,10 +974,6 @@ public abstract class AbstractHyperDB
     try
     {
       loadSettings(creatingNew, favorites);
-    }
-    catch (HDB_UnrecoverableInternalError e)
-    {
-      throw e;
     }
     catch (HyperDataException e)
     {
@@ -986,11 +992,12 @@ public abstract class AbstractHyperDB
       int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
 
       HDT_WorkType thesisWorkType = workTypes.getByID(thesisID);
-      if (thesisWorkType != null)
-        changeRecordID(thesisWorkType, datasets.get(hdtWorkType).getNextID());
 
       try
       {
+        if (thesisWorkType != null)
+          changeRecordID(thesisWorkType, datasets.get(hdtWorkType).getNextID());
+
         createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", "", ""), true);
       }
       catch (HyperDataException e)
@@ -1041,19 +1048,19 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean changeRecordID(HDT_Record record, int newID) throws HDB_InternalError
+  public void changeRecordID(HDT_Record record, int newID) throws HyperDataException
   {
     int oldID = record.getID();
 
-    if (isProtectedRecord(oldID, record.getType(), false) ||
-        idAvailable(record.getType(), newID) == false)
-      return false;
+    if (isProtectedRecord(oldID, record.getType(), false))
+      throw new HyperDataException("That record's ID cannot be changed.");
+
+    if (idAvailable(record.getType(), newID) == false)
+      throw new HDB_InternalError(42973);
 
     changeRecordIDHandlers.forEach(handler -> handler.changeRecordID(record, newID));
 
     datasets.get(record.getType()).changeRecordID(oldID, newID);
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -1382,13 +1389,12 @@ public abstract class AbstractHyperDB
     {
       for (Entry<RecordType, HyperDataset<? extends HDT_Record>> entry : datasets.entrySet()) // Folders must be brought online first. See HyperPath.assignNameInternal
       {
-        RecordType recordType = entry.getKey();
         HyperDataset<? extends HDT_Record> dataset = entry.getValue();
 
         if (dataset.online)
           throw new HDB_InternalError(89842);
 
-        for (HDT_Record record : accessors.get(recordType))
+        for (HDT_Record record : accessors.get(entry.getKey()))
         {
           record.bringStoredCopyOnline(false);
           addToInitialNavList(record);

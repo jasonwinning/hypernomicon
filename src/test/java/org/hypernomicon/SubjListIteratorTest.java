@@ -30,6 +30,8 @@ import java.util.NoSuchElementException;
 
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.relations.HyperSubjList;
+import org.hypernomicon.model.relations.HyperSubjSubList;
 import org.junit.jupiter.api.*;
 
 //---------------------------------------------------------------------------
@@ -43,7 +45,9 @@ class SubjListIteratorTest
 
   private static TestHyperDB db;
   private static HDT_Debate debate;
-  private static List<HDT_Position> list;
+  private static List<HDT_Position> srcList;
+  private static HyperSubjList<HDT_Position, HDT_Debate> subjList;
+  private static HyperSubjSubList<HDT_Position, HDT_Debate> subjSubList;
 
   private Iterator<HDT_Position> subjIterator;
   private ListIterator<HDT_Position> subjListIterator;
@@ -59,7 +63,7 @@ class SubjListIteratorTest
 
     debate = db.createNewBlankRecord(hdtDebate);
 
-    list = new ArrayList<>(Arrays.asList
+    srcList = new ArrayList<>(Arrays.asList
     (
       db.createNewBlankRecord(hdtPosition),
       db.createNewBlankRecord(hdtPosition),
@@ -76,7 +80,7 @@ class SubjListIteratorTest
   {
     // This code will run before each test
 
-    list.forEach(position ->
+    srcList.forEach(position ->
     {
       position.largerDebates.clear();
       position.largerDebates.add(debate);
@@ -84,6 +88,9 @@ class SubjListIteratorTest
 
     subjIterator = debate.subPositions.iterator();
     subjListIterator = debate.subPositions.listIterator();
+
+    subjList = (HyperSubjList<HDT_Position, HDT_Debate>) debate.subPositions;
+    subjSubList = (HyperSubjSubList<HDT_Position, HDT_Debate>) subjList.subList(1, 4); // SubList from index 1 to 4
   }
 
 //---------------------------------------------------------------------------
@@ -221,7 +228,7 @@ class SubjListIteratorTest
     subjIterator.next();
     subjListIterator.next();
 
-    list.get(1).largerDebates.remove(debate);
+    srcList.get(1).largerDebates.remove(debate);
 
     assertThrows(ConcurrentModificationException.class, subjIterator::next);
     assertThrows(ConcurrentModificationException.class, subjListIterator::next);
@@ -237,7 +244,7 @@ class SubjListIteratorTest
     subjIterator.next();
     subjListIterator.next();
 
-    list.get(1).largerDebates.add(db.createNewBlankRecord(hdtDebate));
+    srcList.get(1).largerDebates.add(db.createNewBlankRecord(hdtDebate));
 
     subjIterator.next();
     subjListIterator.next();
@@ -260,8 +267,8 @@ class SubjListIteratorTest
 
     db.closeAndOpen();
 
-    assertThrows(NoSuchElementException.class, () -> list.get(0).largerDebates.add(debate));
-    assertThrows(NoSuchElementException.class, () -> list.get(0).largerDebates.add(db.createNewBlankRecord(hdtDebate)));
+    assertThrows(NoSuchElementException.class, () -> srcList.get(0).largerDebates.add(debate));
+    assertThrows(NoSuchElementException.class, () -> srcList.get(0).largerDebates.add(db.createNewBlankRecord(hdtDebate)));
 
     HDT_Position newPosition = db.createNewBlankRecord(hdtPosition);
 
@@ -272,6 +279,161 @@ class SubjListIteratorTest
     assertThrows(NoSuchElementException.class, () -> subjListIterator.next());
 
     assertThrows(ConcurrentModificationException.class, () -> subjListIterator.previous());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//
+//   SubList Tests
+//
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(100)
+  void testSize()
+  {
+    assertEquals(3, subjSubList.size());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(101)
+  void testIsEmpty()
+  {
+    assertFalse(subjSubList.isEmpty());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(103)
+  void testGet()
+  {
+    assertEquals(subjList.get(1), subjSubList.get(0));
+    assertEquals(subjList.get(2), subjSubList.get(1));
+    assertEquals(subjList.get(3), subjSubList.get(2));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(104)
+  void testToArray()
+  {
+    Object[] array = subjSubList.toArray();
+    assertEquals(3, array.length);
+    assertEquals(subjList.get(1), array[0]);
+    assertEquals(subjList.get(2), array[1]);
+    assertEquals(subjList.get(3), array[2]);
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(105)
+  void testToArrayTyped()
+  {
+    HDT_Position[] array = subjSubList.toArray(new HDT_Position[0]);
+    assertEquals(3, array.length);
+    assertEquals(subjList.get(1), array[0]);
+    assertEquals(subjList.get(2), array[1]);
+    assertEquals(subjList.get(3), array[2]);
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(106)
+  void testContains()
+  {
+    assertTrue(subjSubList.contains(subjList.get(2)));
+    assertFalse(subjSubList.contains(subjList.get(0)));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(112)
+  void testSubList()
+  {
+    List<HDT_Position> innerSubList = subjSubList.subList(1, 3);
+    assertEquals(2, innerSubList.size());
+    assertEquals(subjList.get(2), innerSubList.get(0));
+    assertEquals(subjList.get(3), innerSubList.get(1));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(115)
+  void testIndexOf()
+  {
+    assertEquals(0, subjSubList.indexOf(subjList.get(1)));
+    assertEquals(1, subjSubList.indexOf(subjList.get(2)));
+    assertEquals(-1, subjSubList.indexOf(subjList.get(0))); // Not in sublist
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(116)
+  void testLastIndexOf()
+  {
+    assertEquals(0, subjSubList.lastIndexOf(subjList.get(1)));
+    assertEquals(2, subjSubList.lastIndexOf(subjList.get(3)));
+    assertEquals(-1, subjSubList.lastIndexOf(subjList.get(4))); // Not in sublist
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(117)
+  void testContainsAll()
+  {
+    List<HDT_Position> subListRecords = Arrays.asList(subjList.get(1), subjList.get(2), subjList.get(3));
+    assertTrue(subjSubList.containsAll(subListRecords));
+    assertFalse(subjSubList.containsAll(Arrays.asList(subjList.get(0), subjList.get(1))));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(118)
+  void testEmptySubList()
+  {
+    subjSubList = (HyperSubjSubList<HDT_Position, HDT_Debate>) debate.subPositions.subList(1, 1); // Empty sublist
+    assertTrue(subjSubList.isEmpty());
+    assertEquals(0, subjSubList.size());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(119)
+  void testBoundarySubList()
+  {
+    subjSubList = (HyperSubjSubList<HDT_Position, HDT_Debate>) debate.subPositions.subList(0, 5); // Full range
+    assertFalse(subjSubList.isEmpty());
+    assertEquals(5, subjSubList.size());
+    assertEquals(subjList.get(0), subjSubList.get(0));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  @Order(120)
+  void testInvalidIndices()
+  {
+    // Invalid get indices
+    assertThrows(IndexOutOfBoundsException.class, () -> subjSubList.get(-1));
+    assertThrows(IndexOutOfBoundsException.class, () -> subjSubList.get(4)); // size is 3
+
+    // Invalid subjSubList indices
+    assertThrows(IndexOutOfBoundsException.class, () -> subjSubList.subList(-1, 2));
+    assertThrows(IndexOutOfBoundsException.class, () -> subjSubList.subList(1, 4));
+    assertThrows(IndexOutOfBoundsException.class, () -> subjSubList.subList(3, 2));
   }
 
 //---------------------------------------------------------------------------

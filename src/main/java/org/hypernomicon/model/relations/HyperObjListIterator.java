@@ -40,6 +40,9 @@ class HyperObjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   HyperObjListIterator(HyperObjList<HDT_SubjType, HDT_ObjType> list, int startNdx)
   {
+    if ((startNdx < 0) || (startNdx > list.size()))
+      throw new IndexOutOfBoundsException("Invalid index: " + startNdx);
+
     this.list = list;
     nextNdx = startNdx;
 

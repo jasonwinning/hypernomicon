@@ -141,7 +141,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
       try
       {
-        relSet.setObject(subj, obj, -1, true, false);
+        relSet.setObject(subj, obj, -1);
       }
       catch (RelationCycleException e)
       {
@@ -167,7 +167,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     if (db.isLoaded())
       throw new HDB_InternalError(71634);
 
-    relSet.setObject(subj, obj, -1, subjOrd, true, false);
+    relSet.setObject(subj, obj, -1, subjOrd);
   }
 
 //---------------------------------------------------------------------------
@@ -218,7 +218,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     {
       modStart();
 
-      try { relSet.setObject(subj, obj, -1, false, true); }
+      try { relSet.removeObject(subj, obj, -1); }
       catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
       modEnd();
@@ -282,6 +282,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   @Override public HDT_ObjType get(int ndx)
   {
+    if ((ndx < 0) || (ndx >= size()))
+      throw new IndexOutOfBoundsException();
+
     lastException = null;
     return relSet.getObject(subj, ndx);
   }
@@ -475,6 +478,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   @Override public HDT_ObjType set(int index, HDT_ObjType element)
   {
+    if ((index < 0) || (index >= size()))
+      throw new IndexOutOfBoundsException();
+
     globalLock.lock();
 
     HDT_ObjType record;
@@ -514,6 +520,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
    */
   @Override public void add(int index, HDT_ObjType obj)
   {
+    if ((index < 0) || (index > size()))
+      throw new IndexOutOfBoundsException();
+
     lastException = null;
     if (relSet.alreadyHasAsObject(subj, obj)) return;
 
@@ -525,7 +534,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
       try
       {
-        relSet.setObject(subj, obj, index, true, false);
+        relSet.setObject(subj, obj, index);
       }
       catch (RelationCycleException e)
       {
@@ -545,6 +554,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   @Override public HDT_ObjType remove(int index)
   {
+    if ((index < 0) || (index >= size()))
+      throw new IndexOutOfBoundsException();
+
     lastException = null;
     HDT_ObjType obj;
 
@@ -556,7 +568,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
       modStart();
 
-      try { relSet.setObject(subj, obj, index, false, true); }
+      try { relSet.removeObject(subj, obj, index); }
       catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
       modEnd();
@@ -635,6 +647,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   @Override public List<HDT_ObjType> subList(int fromIndex, int toIndex)
   {
+    if ((fromIndex < 0) || (toIndex > size()) || (fromIndex > toIndex))
+      throw new IndexOutOfBoundsException("Invalid subList range: from=" + fromIndex + ", to=" + toIndex);
+
     lastException = null;
     return new HyperObjSubList<>(this, fromIndex, toIndex);
   }
@@ -662,6 +677,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   @Override public ListIterator<HDT_ObjType> listIterator(int index)
   {
+    if ((index < 0) || (index > size()))
+      throw new IndexOutOfBoundsException("Invalid index: " + index);
+
     lastException = null;
     return new HyperObjListIterator<>(this, index);
   }

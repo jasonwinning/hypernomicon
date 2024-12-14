@@ -85,7 +85,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 
           relSet.clearObjects(subj);
 
-          relSet.setObject(subj, obj, -1, true, true);
+          relSet.setObjectSkipCycleCheck(subj, obj, -1);
         }
         else
           relSet.clearObjects(subj);

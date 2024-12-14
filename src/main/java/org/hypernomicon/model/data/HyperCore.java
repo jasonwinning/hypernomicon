@@ -148,7 +148,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
     private int nextNdx = 0;
 
     @Override public boolean hasNext() { return nextNdx < size(); }
-    @Override public void remove()     { throw new UnsupportedOperationException("Internal error: A 'remove' call was made to a core iterator."); }
+    @Override public void remove()     { throw new UnsupportedOperationException("Remove operation is not supported."); }
 
     //---------------------------------------------------------------------------
 

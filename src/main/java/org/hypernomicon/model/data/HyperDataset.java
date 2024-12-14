@@ -112,7 +112,18 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
       idToAssign = nextID++;
 
-      db.changeRecordID(record, idToAssign);
+      try
+      {
+        db.changeRecordID(record, idToAssign);
+      }
+      catch (HDB_InternalError e)
+      {
+        throw e;
+      }
+      catch (HyperDataException e)
+      {
+        throw new HDB_InternalError(49827, e);
+      }
 
       idToAssign = -1;
 

@@ -51,12 +51,9 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   @Override public int size()                                             { return relSet.getSubjectCount(obj); }
   @Override public boolean isEmpty()                                      { return size() == 0; }
-  @Override public HDT_SubjType get(int ndx)                              { return relSet.getSubject(obj, ndx); }
   @Override public int lastIndexOf(Object o)                              { return indexOf(o); }
-  @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex) { return new HyperSubjSubList<>(this, fromIndex, toIndex); }
   @Override public Iterator<HDT_SubjType> iterator()                      { return new HyperSubjIterator<>(this); }
   @Override public ListIterator<HDT_SubjType> listIterator()              { return new HyperSubjListIterator<>(this, 0); }
-  @Override public ListIterator<HDT_SubjType> listIterator(int index)     { return new HyperSubjListIterator<>(this, index); }
   @Override public Object[] toArray()                                     { return relSet.getUnmodifiableSubjectList(obj).toArray(); }
   @Override public <T> T[] toArray(T[] a)                                 { return relSet.getUnmodifiableSubjectList(obj).toArray(a); }
 
@@ -75,6 +72,39 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   long getSizeModCount()                                 { return relSet.getSubjListSizeModCount(obj); }
   void checkForComodification(long expectedSizeModCount) { relSet.checkForSubjListComodification(obj, expectedSizeModCount); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public ListIterator<HDT_SubjType> listIterator(int index)
+  {
+    if ((index < 0) || (index > size()))
+      throw new IndexOutOfBoundsException("Invalid index: " + index);
+
+    return new HyperSubjListIterator<>(this, index);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex)
+  {
+    if ((fromIndex < 0) || (toIndex > size()) || (fromIndex > toIndex))
+      throw new IndexOutOfBoundsException("Invalid subList range: from=" + fromIndex + ", to=" + toIndex);
+
+    return new HyperSubjSubList<>(this, fromIndex, toIndex);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public HDT_SubjType get(int ndx)
+  {
+    if ((ndx < 0) || (ndx >= size()))
+      throw new IndexOutOfBoundsException();
+
+    return relSet.getSubject(obj, ndx);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

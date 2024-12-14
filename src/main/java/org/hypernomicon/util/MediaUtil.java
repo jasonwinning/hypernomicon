@@ -25,6 +25,7 @@ import static org.hypernomicon.util.Util.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -84,6 +85,40 @@ public final class MediaUtil
     {
       return MediaType.OCTET_STREAM;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final int BUFFER_SIZE = 8192; // Buffer size for reading chunks
+  private static final int MAX_BYTES_TO_CHECK = 8192 * 128; // 1MB limit; if first MB is ASCII, assume whole file is
+
+  public static boolean isAsciiFile(FilePath filePath)
+  {
+    try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath.toFile()), BUFFER_SIZE))
+    {
+      byte[] buffer = new byte[BUFFER_SIZE];
+      int bytesRead,
+          totalBytesRead = 0;
+
+      while ((bytesRead = bis.read(buffer)) != -1)
+      {
+        for (int i = 0; i < bytesRead; i++)
+          if ((buffer[i] & 0xFF) > 127)
+            return false; // Found a non-ASCII character
+
+        totalBytesRead += bytesRead;
+
+        if (totalBytesRead >= MAX_BYTES_TO_CHECK)
+          return true; // Stop after checking 1 MB; if first MB is ASCII, assume whole file is
+      }
+    }
+    catch (IOException e)
+    {
+      return false;
+    }
+
+    return true; // All checked characters are within the ASCII range
   }
 
 //---------------------------------------------------------------------------

@@ -584,7 +584,7 @@ public class PreviewWrapper
 
     OfficePreviewer.stopPreview(jsWrapper);
 
-    // For PDF, no conversion is necessary. We display it as-is.
+    // For PDF, no conversion is necessary. We display it as-is using the PDF viewer.
 
     if (mimetypeStr.contains("pdf"))
     {
@@ -592,7 +592,7 @@ public class PreviewWrapper
       return mimetypeStr;
     }
 
-    // Look for format that JodConverter can convert
+    // Look for format that JodConverter can convert to PDF and display it using the PDF viewer.
 
     try
     {
@@ -613,10 +613,22 @@ public class PreviewWrapper
       {
         OfficePreviewer.preview(mimetypeStr, filePath, pageNum, jsWrapper, previewWrapper);
       }
+
+      // Treat as an HTML file (removing scripts and making links external) if it appears to be HTML and load directly into browser.
+
       else if (mimetypeStr.contains("html"))
         jsWrapper.loadFile(filePath, true);
-      else if (mimetypeStr.contains("image")  || mimetypeStr.contains("plain") || mimetypeStr.contains("video") || mimetypeStr.contains("audio"))
+
+      // Otherwise load into the browser as-is if it appears to be an ASCII text file or embeddable media file.
+
+      else if (mimetypeStr.contains("image")  || mimetypeStr.contains("plain") || mimetypeStr.contains("video") || mimetypeStr.contains("audio") ||
+               "application/xml".equalsIgnoreCase(mimetypeStr) ||
+               "application/json".equalsIgnoreCase(mimetypeStr) ||
+               isAsciiFile(filePath))
         jsWrapper.loadFile(filePath, false);
+
+      // None of the above, so tell the user it cannot be previewed
+
       else
         jsWrapper.setUnable(filePath);
     }

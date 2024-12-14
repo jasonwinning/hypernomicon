@@ -72,6 +72,7 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.populators.QueryPopulator.QueryCell;
 import org.hypernomicon.view.populators.VariablePopulator;
@@ -846,7 +847,8 @@ public final class QueryCtrlr
 
     HyperTask task = new HyperTask("Query", "Running query...", combinedSource.size())
     {
-      //---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
 
       @Override protected void call() throws CancelledTaskException, HyperDataException
       {
@@ -906,7 +908,7 @@ public final class QueryCtrlr
         }
       }
 
-      //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
       @SuppressWarnings("unchecked")
       private static <HDT_T extends HDT_Record> boolean evaluate(Query<?> query, HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
@@ -914,7 +916,8 @@ public final class QueryCtrlr
         return ((Query<HDT_T>)query).evaluate(record, row, op1, op2, op3);
       }
 
-      //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
     };
 
     task.runWhenFinalStateSet(state -> queries.values().forEach(query -> query.cleanup(state)));
@@ -969,9 +972,10 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 
   /**
-   * Relation and bib. field columns are hidden by default but should be shown if the relation/bib. field is
-   * explicitly mentioned by a query. This loops over the queries and finds explicit
-   * mentions, building a set of mentioned relations and bib. fields.
+   * Relation and bib. field columns are hidden by default but should be shown
+   * if the relation/bib. field is explicitly mentioned by a query. This loops
+   * over the queries and finds explicit mentions, building a set of mentioned
+   * relations and bib. fields.
    * @param queries Queries to check
    * @param relationsToShow Set of mentioned relations
    * @param bibFieldsToShow Set of mentioned bib. fields
@@ -982,14 +986,15 @@ public final class QueryCtrlr
     {
       for (int opColNdx : OPERAND_COL_INDICES)
       {
-        VariablePopulator vp = row.getPopulator(opColNdx);
-        if (vp.getValueType(row) == cvtRelation)
+        CellValueType valueType = ((VariablePopulator)row.getPopulator(opColNdx)).getValueType(row);
+
+        if (valueType == cvtRelation)
         {
           RelationType relType = RelationType.codeToVal(getCellID(row.getCell(opColNdx)));
           if ((relType != null) && (relType != RelationType.rtNone))
             relationsToShow.add(relType);
         }
-        else if (vp.getValueType(row) == cvtBibField)
+        else if (valueType == cvtBibField)
         {
           BibFieldEnum field = getEnumVal(getCellID(row.getCell(opColNdx)), BibFieldEnum.class);
           if (field != null)

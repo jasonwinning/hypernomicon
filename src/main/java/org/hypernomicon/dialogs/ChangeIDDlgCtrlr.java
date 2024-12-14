@@ -23,7 +23,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -109,20 +109,22 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (hcbRecord.selectedID() < 1)
+    HDT_Record record = hcbRecord.selectedRecord();
+
+    if (record == null)
       return falseWithErrorPopup("You must select a record.", cbRecord);
+
+    if (HDT_Record.isEmpty(record, false))
+      return falseWithErrorPopup("Unable to change record ID.", cbRecord);
 
     if ((parseInt(tfNewID.getText(), -1) < 1) || lblNotAvailable.isVisible())
       return falseWithErrorPopup("You must enter a valid numeric ID.", tfNewID);
 
-    HDT_Record record = db.records(hcbRecord.selectedType()).getByID(parseInt(tfOldID.getText(), -1));
-
     try
     {
-      if ((record == null) || (db.changeRecordID(record, parseInt(tfNewID.getText(), -1)) == false))
-        return falseWithErrorPopup("Unable to change record ID.");
+      db.changeRecordID(record, parseInt(tfNewID.getText(), -1));
     }
-    catch (HDB_InternalError e)
+    catch (HyperDataException e)
     {
       return falseWithErrorPopup("Unable to change record ID: " + getThrowableMessage(e));
     }

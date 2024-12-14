@@ -42,6 +42,9 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   {
     super(parentList.relSet, parentList.subj, parentList.modTracking);
 
+    if ((startNdx < 0) || (endNdx > parentList.size()) || (startNdx > endNdx))
+      throw new IndexOutOfBoundsException("Invalid sublist range: startNdx=" + startNdx + ", endNdx=" + endNdx);
+
     this.parentList = parentList;
     this.startNdx = startNdx;
     this.endNdx = endNdx;
@@ -50,19 +53,48 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 //---------------------------------------------------------------------------
 
   @Override public int size()                { return endNdx - startNdx; }
-  @Override public boolean isEmpty()         { return size() > 0; }
+  @Override public boolean isEmpty()         { return size() == 0; }
   @Override public void clear()              { while (endNdx > startNdx) remove(0); }
-  @Override public HDT_ObjType get(int ndx)  { return parentList.get(startNdx + ndx); }
   @Override public Object[] toArray()        { return relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx).toArray(); }
   @Override public <T> T[] toArray(T[] a)    { return relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx).toArray(a); }
-  @Override public int indexOf(Object o)     { return IntStream.range(startNdx, endNdx).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
-  @Override public int lastIndexOf(Object o) { return IntStream.iterate(endNdx - 1, ndx -> ndx >= startNdx, ndx -> ndx - 1).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
+  @Override public int indexOf(Object o)     { return IntStream.range(0, size()).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
+  @Override public int lastIndexOf(Object o) { return IntStream.iterate(size() - 1, ndx -> ndx >= 0, ndx -> ndx - 1).filter(ndx -> get(ndx) == o).findFirst().orElse(-1); }
 
+  @Override public boolean contains(Object o)            { return IntStream.range(startNdx, endNdx).anyMatch(ndx -> parentList.get(ndx) == o); }
+  @Override public boolean containsAll(Collection<?> c)  { return c.stream().allMatch(this::contains); }
 
-  @Override public boolean contains(Object o)                    { return IntStream.range(startNdx, endNdx).anyMatch(ndx -> parentList.get(ndx) == o); }
-  @Override public boolean containsAll(Collection<?> c)          { return c.stream().allMatch(this::contains); }
-  @Override public HDT_ObjType set(int ndx, HDT_ObjType element) { return parentList.set(startNdx + ndx, element); }
-  @Override public List<HDT_ObjType> subList(int from, int to)   { return new HyperObjSubList<>(parentList, startNdx + from, startNdx + to); }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public List<HDT_ObjType> subList(int from, int to)
+  {
+    if ((from < 0) || (to > size()) || (from > to))
+      throw new IndexOutOfBoundsException("Invalid subList range: from=" + from + ", to=" + to);
+
+    return new HyperObjSubList<>(parentList, startNdx + from, startNdx + to);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public HDT_ObjType get(int ndx)
+  {
+    if ((ndx < 0) || (ndx >= size()))
+      throw new IndexOutOfBoundsException();
+
+    return parentList.get(startNdx + ndx);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public HDT_ObjType set(int ndx, HDT_ObjType element)
+  {
+    if ((ndx < 0) || (ndx >= size()))
+      throw new IndexOutOfBoundsException();
+
+    return parentList.set(startNdx + ndx, element);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -182,6 +214,9 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 
   @Override public void add(int index, HDT_ObjType element)
   {
+    if ((index < 0) || (index > size()))
+      throw new IndexOutOfBoundsException();
+
     int oldSize = parentList.size();
 
     parentList.add(startNdx + index, element);
@@ -194,6 +229,9 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 
   @Override public HDT_ObjType remove(int index)
   {
+    if ((index < 0) || (index >= size()))
+      throw new IndexOutOfBoundsException();
+
     int oldSize = parentList.size();
 
     HDT_ObjType record = parentList.remove(startNdx + index);

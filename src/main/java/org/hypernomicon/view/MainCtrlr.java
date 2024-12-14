@@ -2440,12 +2440,6 @@ public final class MainCtrlr
       shutDown(false, true, false); // An error in db.close is unrecoverable.
       return false;
     }
-    catch (HDB_InternalError e)
-    {
-      errorPopup("Unable to load database. Reason: " + getThrowableMessage(e));
-
-      success = false;
-    }
 
     if (success)
     {
