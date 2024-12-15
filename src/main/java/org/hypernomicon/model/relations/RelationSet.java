@@ -853,18 +853,14 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     Iterator<HDT_Subj> orphanIt = orphans.iterator();
 
     while (orphanIt.hasNext())
-    {
       if (HDT_Record.isEmptyThrowsException(orphanIt.next(), false))
         orphanIt.remove();
-    }
 
     Iterator<Entry<HDT_Subj, Integer>> subjOrdMapIt = subjOrdMap.entrySet().iterator();
 
     while (subjOrdMapIt.hasNext())
-    {
       if (HDT_Record.isEmptyThrowsException(subjOrdMapIt.next().getKey(), false))
         subjOrdMapIt.remove();
-    }
 
     if (hasNestedItems == false) return;
 

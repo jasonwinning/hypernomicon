@@ -61,14 +61,35 @@ public class HDT_Position extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Retrieves the first debate record from the largerDebates list of this position or its ancestor positions.
+   * <p>
+   * This method starts from the current position and checks if its largerDebates list is non-empty.
+   * If the largerDebates list is empty, the method moves up to the first parent position in the largerPositions list
+   * and repeats the check. This process continues until a non-empty largerDebates list is found or
+   * there are no more parent positions to check.
+   * </p>
+   *
+   * @return the first {@link HDT_Debate} from a non-empty largerDebates list; {@code null} if none is found.
+   */
   public HDT_Debate getLargerDebate()
   {
-    HDT_Position position = this;
+    HDT_Position currentPosition = this;
 
-    while (position.largerDebates.isEmpty() && (position.largerPositions.size() > 0))
-      position = position.largerPositions.get(0);
+    do
+    {
+      if (currentPosition.largerDebates.isEmpty() == false)
+        return currentPosition.largerDebates.get(0);
 
-    return position.largerDebates.size() > 0 ? position.largerDebates.get(0) : null;
+      if (currentPosition.largerPositions.isEmpty())
+        return null;
+
+      currentPosition = currentPosition.largerPositions.get(0);
+    }
+    while (Boolean.TRUE);
+
+    // This line is technically unreachable but necessary to satisfy the compiler
+    return null;
   }
 
 //---------------------------------------------------------------------------

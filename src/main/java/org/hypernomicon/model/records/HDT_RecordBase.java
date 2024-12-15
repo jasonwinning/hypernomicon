@@ -269,6 +269,22 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Restores the "live" or "online" data of a record from a backup state.
+   * <p>
+   * This method updates the record's data based on the provided {@code backupState}.
+   * If the object is of type {@code hdtConcept} and is online, certain tags such as
+   * {@code tagGlossary}, {@code tagParentConcept}, and {@code nameTag} are ignored during
+   * restoration. The method also handles special cases for {@code tagFirstName}, {@code tagLastName},
+   * and {@code nameTag}.
+   *
+   * @param backupState the state to restore from
+   * @param rebuildMentions a flag indicating whether the mentions index should be rebuilt
+   * @throws RelationCycleException if a relation cycle is detected during restoration
+   * @throws SearchKeyException if there's an error with the search key during restoration
+   * @throws RestoreException if an error occurs during the restore process
+   * @throws HDB_InternalError if an internal database error occurs during restoration
+   */
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
   public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
   {
@@ -337,6 +353,40 @@ public abstract class HDT_RecordBase implements HDT_Record
     newState.items.forEach((tag, offlineItem) -> ((HDI_OnlineBase<HDI_OfflineBase>) items.get(tag)).getToOfflineValue(offlineItem, tag));
 
     return newState;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void revertToXmlVersion() throws HyperDataException
+  {
+    HDT_Hub hub = isUnitable() ? ((HDT_RecordWithMainText) this).getHub() : null;
+    RecordState backupState = getRecordStateBackup(),
+                hubState = hub == null ? null : hub.getRecordStateBackup();
+
+    try
+    {
+      if (hub != null)
+        hub.bringStoredCopyOnline(true);
+
+      bringStoredCopyOnline(true);
+    }
+    catch (HyperDataException e)
+    {
+      try
+      {
+        if (hub != null)
+          hub.restoreTo(hubState, true);
+
+        restoreTo(backupState, true);
+      }
+      catch (HyperDataException e1)
+      {
+        throw new AssertionError(e1);
+      }
+
+      throw e;
+    }
   }
 
 //---------------------------------------------------------------------------

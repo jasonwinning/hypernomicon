@@ -191,9 +191,9 @@ public class MainText
         }
         else
           displayItems.add(new DisplayItem(srcItem.type));
-
-        setInternal(mainText.getHtml());
       });
+
+      setInternal(mainText.getHtml());
     }
   }
 

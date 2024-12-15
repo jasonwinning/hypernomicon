@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Note;
@@ -214,12 +215,12 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean uniteRecords(HDT_RecordWithMainText spoke1, HDT_RecordWithMainText spoke2, String newDesc)
+  public static void uniteRecords(HDT_RecordWithMainText spoke1, HDT_RecordWithMainText spoke2, String newDesc) throws HyperDataException
   {
     StringBuilder sb = new StringBuilder();
 
     if (canUnite(spoke1, spoke2, sb) == false)
-      return falseWithErrorPopup(sb.toString());
+      throw new HyperDataException(sb.toString());
 
     HDT_Hub hub;
 
@@ -248,8 +249,6 @@ public class HDT_Hub extends HDT_RecordWithMainText
     });
 
     hub.modifyNow();
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -828,7 +828,7 @@ public final class MainCtrlr
 
     scaleNodeForDPI(rootNode);
     MainTextWrapper.rescale();
-    personHyperTab().rescale();
+    forEachHyperTab(HyperTab::rescale);
 
     forEachHyperTab(HyperTab::setDividerPositions);
   }
@@ -2249,54 +2249,26 @@ public final class MainCtrlr
 
     if (confirmDialog("Type: " + getTypeName(type) + '\n' +
                       "Name: " + name + '\n' +
-                      "ID: " + record.getID() + "\n\n" + msg + additionalMsg) == false) return false;
+                      "ID: " + record.getID() + "\n\n" + msg + additionalMsg) == false)
+      return false;
 
-    revertToXmlVersion(record);
-
-    update();
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void revertToXmlVersion(HDT_Record record)
-  {
-    boolean success = true;
-    String recordStr = getTypeName(record.getType()) + " \"" + record.getCBText() + '"';
-
-    HDT_Hub hub = record.isUnitable() ? ((HDT_RecordWithMainText) record).getHub() : null;
-    RecordState backupState = record.getRecordStateBackup(),
-                hubState = hub == null ? null : hub.getRecordStateBackup();
+    String recordStr = getTypeName(record.getType()) + " \"" + name + '"';
 
     try
     {
-      if (hub != null)
-        hub.bringStoredCopyOnline(true);
-
-      record.bringStoredCopyOnline(true);
+      record.revertToXmlVersion();
     }
     catch (RelationCycleException e)
     {
       errorPopup("Unable to revert " + recordStr + ": Records would be organized in a cycle as a result.");
-      success = false;
     }
-    catch (RestoreException | SearchKeyException | HDB_InternalError e)
+    catch (HyperDataException e)
     {
       errorPopup("Unable to revert " + recordStr + ": " + getThrowableMessage(e));
-      success = false;
     }
 
-    if (success) return;
-
-    try
-    {
-      if (hub != null)
-        hub.restoreTo(hubState, true);
-
-      record.restoreTo(backupState, true);
-    }
-    catch (RelationCycleException | SearchKeyException | HDB_InternalError | RestoreException e) { throw new AssertionError(e); }
+    update();
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -2477,7 +2449,7 @@ public final class MainCtrlr
   private static void saveHdbMRUs(List<String> mruList)
   {
     mruList.removeIf(String::isBlank);
-    removeDupsInStrList(mruList);
+    removeDuplicatesInPlace(mruList);
 
     for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
       app.prefs.put(PREF_KEY_HDB_MRU + (ndx + 1), mruList.size() > ndx ? mruList.get(ndx) : "");
@@ -3059,10 +3031,16 @@ public final class MainCtrlr
       desc = frmMerge.getDesc();
     }
 
-    if (HDT_Hub.uniteRecords(record1, record2, desc))
+    try
+    {
+      HDT_Hub.uniteRecords(record1, record2, desc);
       goToRecord(goToRecord2 ? record2 : record1, false);
-    else
+    }
+    catch (HyperDataException e)
+    {
+      errorPopup(e.getMessage());
       update();
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -405,7 +405,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       case bfContainerTitle : case bfTitle : newStr = strListToStr(list, false); break;
       case bfMisc           :                newStr = strListToStr(list, true ); break;
 
-      case bfISBNs          : case bfISSNs : newStr = collEmpty(list) ? "" : strListToSpaceDelimitedStr(removeDupsInStrList(new ArrayList<>(list))); break;
+      case bfISBNs          : case bfISSNs : newStr = collEmpty(list) ? "" : strListToSpaceDelimitedStr(removeDuplicatesInPlace(new ArrayList<>(list))); break;
 
       default               : return;
     }

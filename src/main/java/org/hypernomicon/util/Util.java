@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -139,6 +140,23 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Converts multiline text into a single line by replacing various newline and vertical
+   * whitespace characters with spaces. This method also removes a specific Unicode character
+   * (\ufffd) that is often appended when copying text from Acrobat.
+   * <p>
+   * The function performs the following transformations:
+   * <ul>
+   *   <li>Removes the specific Unicode character \ufffd.</li>
+   *   <li>Collapses consecutive newline characters into a single space.</li>
+   *   <li>Collapses consecutive vertical whitespace characters into a single space.</li>
+   *   <li>Collapses consecutive horizontal whitespace characters into a single space.</li>
+   *   <li>Replaces any remaining newline, vertical, or horizontal whitespace characters with spaces.</li>
+   * </ul>
+   *
+   * @param text the multiline text to convert
+   * @return the single-line text with newline and vertical spaces replaced by spaces
+   */
   public static String convertToSingleLine(String text)
   {
     return text.replace("\ufffd", "")  // I don't know what this is but it is usually appended at the end when copying text from Acrobat
@@ -162,9 +180,25 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Trims each line of the input string, also removing leading and trailing
+   * blank lines.
+   * <p>
+   * This function performs the following transformations:
+   * <ul>
+   *   <li>Ensures the input string is non-null by using {@code safeStr}.</li>
+   *   <li>Splits the input string into lines based on newline and vertical tab characters.</li>
+   *   <li>Trims each line to remove leading and trailing whitespace.</li>
+   *   <li>Removes leading and trailing blank lines.</li>
+   *   <li>Joins the trimmed lines back into a single string with newline characters.</li>
+   * </ul>
+   *
+   * @param input the multiline input string to process
+   * @return the processed string with each line trimmed and unnecessary whitespace removed
+   */
   public static String trimLines(String input)
   {
-    input = safeStr(input);
+    input = safeStr(input).replace("\ufffd", "");  // I don't know what this is but it is usually appended at the end when copying text from Acrobat
 
     if (ultraTrim(convertToSingleLine(input)).isEmpty()) return "";
 
@@ -178,9 +212,26 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static List<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
+  /**
+   * Converts a multiline string into a list of strings, with an option to preserve intermediate empty lines.
+   * <p>
+   * This method will remove any leading and trailing empty lines from the resulting list. The parameter
+   * {@code preserveIntermediateEmpties} determines whether intermediate empty lines should be preserved.
+   *
+   * @param str the multiline string to convert
+   * @param preserveIntermediateEmpties if true, includes intermediate empty lines in the result; otherwise, excludes them
+   * @return a list of strings, each representing a line from the input string
+   */
+  public static List<String> convertMultiLineStrToStrList(String str, boolean preserveIntermediateEmpties)
   {
-    List<String> list = Lists.newArrayList(str.split("\\r?\\n"));
+    //List<String> list = Lists.newArrayList(str.split("\\r?\\n"));
+
+    // Normalize newlines to ensure \r\n is treated as a single newline
+    str = str.replace("\r\n", "\n").replace("\r", "\n");
+
+    // Split the input string by newline and vertical tab characters
+    List<String> list = Lists.newArrayList(str.split("[\\n\\v]"));
+
 
     if (list.isEmpty()) return list;
 
@@ -196,7 +247,7 @@ public final class Util
       if (list.isEmpty()) return list;
     }
 
-    if (emptiesOK == false)
+    if (preserveIntermediateEmpties == false)
       list.removeIf(s -> ultraTrim(s).isBlank());
 
     return list;
@@ -205,14 +256,33 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String strListToStr(List<String> list, boolean emptiesOK)
+  /**
+   * Converts a list of strings into a single string, with an option to include or exclude empty lines.
+   * This method uses the default newline character ('\n').
+   *
+   * @param list the list of strings to convert
+   * @param includeEmptyLines if true, includes empty lines in the result; otherwise, excludes them
+   * @return the concatenated string with lines separated by the default newline character
+   */
+  public static String strListToStr(List<String> list, boolean includeEmptyLines)
   {
-    return strListToStr(list, emptiesOK, false);
+    return strListToStr(list, includeEmptyLines, false);
   }
 
-  public static String strListToStr(List<String> list, boolean emptiesOK, boolean useSystemNewLineChar)
+  /**
+   * Converts a list of strings into a single string, with options to include or exclude empty lines
+   * and to use the system's newline character or a default newline character ('\n').
+   *
+   * @param list the list of strings to convert
+   * @param includeEmptyLines if true, includes empty lines in the result; otherwise, excludes them
+   * @param useSystemNewLineChar if true, uses the system's newline character; otherwise, uses '\n'
+   * @return the concatenated string with lines separated by the chosen newline character
+   */
+  public static String strListToStr(List<String> list, boolean includeEmptyLines, boolean useSystemNewLineChar)
   {
-    return list.stream().filter(one -> emptiesOK || (safeStr(one).length() > 0))
+    if (list == null) return "";
+
+    return list.stream().filter(one -> includeEmptyLines || (safeStr(one).length() > 0))
                         .collect(Collectors.joining(useSystemNewLineChar ? System.lineSeparator() : "\n"));
   }
 
@@ -259,19 +329,22 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static List<String> removeDupsInStrList(List<String> list)
+  /**
+   * Removes duplicate elements from the provided list while preserving the original order.
+   * This method modifies the original list in place.
+   *
+   * @param <T> the type of elements in the list
+   * @param list the list from which duplicates should be removed
+   * @return the modified list with duplicates removed
+   */
+  public static <T> List<T> removeDuplicatesInPlace(List<T> list)
   {
-    Set<String> set = new HashSet<>();
-    Iterator<String> it = list.iterator();
+    Set<T> set = new HashSet<>();
+    Iterator<T> it = list.iterator();
 
     while (it.hasNext())
-    {
-      String str = it.next();
-      if (set.contains(str))
+      if (set.add(it.next()) == false)
         it.remove();
-      else
-        set.add(str);
-    }
 
     return list;
   }
@@ -287,7 +360,8 @@ public final class Util
 
     for (int ndx = 0; ndx < list1.size(); ndx++)
     {
-      String str1 = ultraTrim(list1.get(ndx)), str2 = ultraTrim(list2.get(ndx));
+      String str1 = ultraTrim(list1.get(ndx)),
+             str2 = ultraTrim(list2.get(ndx));
 
       if ((ignoreCase ? str1.equalsIgnoreCase(str2) : str1.equals(str2)) == false)
         return false;
@@ -565,6 +639,7 @@ public final class Util
     while (str.matches(".*[(]\\h.*"))
       str = str.replaceFirst("([(])\\h", "$1");   // remove space after character
 
+    outerLoop:
     for (String word = getNextWord(str, pos); word.length() > 0; word = getNextWord(str, pos))
     {
       int end = pos.intValue(), start = end - word.length();
@@ -597,6 +672,13 @@ public final class Util
           endsWithDot = true;
       }
 
+      for (String prefix : COMMON_PREFIXES)
+        if (word.startsWith(prefix) && isCorrectlyCapitalized(word, prefix))
+        {
+          str = pre + word + post;
+          continue outerLoop;
+        }
+
       word = word.toLowerCase();
 
       if (noCaps == false)
@@ -607,9 +689,13 @@ public final class Util
           word = word.substring(0, 1).toUpperCase();
         else
         {
-          switch (word)
+          int ndx = word.indexOf('\'');
+
+          switch (ndx == -1 ? word : word.substring(0, ndx))
           {
             case "\u00e0": // Latin small letter a with grave accent, as in 'vis a vis' or 'a la'
+
+            case "isn":    // Need 'isn't' to be lowercase if 'is' is lowercase
 
             case "a"    : case "also" : case "amid" : case "an"   : case "and"  :
             case "as"   : case "at"   : case "atop" : case "but"  : case "by"   :
@@ -623,7 +709,7 @@ public final class Util
               break;
 
             default :
-              word = word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
+              word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();
           }
         }
       }
@@ -632,6 +718,25 @@ public final class Util
     }
 
     return str;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final List<String> COMMON_PREFIXES = Arrays.asList("Mc", "Mac", "De", "Van", "O'", "Fitz");
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean isCorrectlyCapitalized(String word, String prefix)
+  {
+    int prefixLength = prefix.length();
+    if (word.length() <= (prefixLength + 1))
+      return false;
+
+    // Check the capitalization after the prefix
+    char nextChar = word.charAt(prefixLength);
+    return Character.isUpperCase(nextChar) && word.substring(prefixLength + 1).equals(word.substring(prefixLength + 1).toLowerCase());
   }
 
 //---------------------------------------------------------------------------
@@ -654,6 +759,11 @@ public final class Util
 
     for (end = start + 1; end < str.length(); end++)
     {
+      char c = str.charAt(end);
+
+      if ((c == '\'') && (end < (str.length() - 1)) && Character.isAlphabetic(str.charAt(end + 1)))
+        continue;  // Treat O'Connor and ain't as a word
+
       if (Character.isAlphabetic(str.charAt(end)) == false)
       {
         posObj.setValue(end);
@@ -754,6 +864,11 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Pattern domainPattern = Pattern.compile("^[A-Za-z\\-]+(\\.[A-Za-z\\-]+)+/?$"),
+                               pathPattern = Pattern.compile(".*/\\w.*"),
+                               fileExtensionPattern = Pattern.compile(".*\\.[a-zA-Z].*"),
+                               whitespaceExtensionPattern = Pattern.compile(".*\\.\\h.*");
+
   public static boolean isStringUrl(String selText)
   {
     selText = ultraTrim(selText);
@@ -768,8 +883,9 @@ public final class Util
            selText.contains(".site") || selText.contains(".gov" ) ||
            selText.contains("://"  ) ||
 
-           selText.matches("^[A-Za-z\\-]+(\\.[A-Za-z\\-]+)+/?$") ||
-           selText.matches(".*/\\w.*") && selText.matches(".*\\.[a-zA-Z].*") && !selText.matches(".*\\.\\h.*");
+           domainPattern.matcher(selText).matches() ||
+
+           (pathPattern.matcher(selText).matches() && fileExtensionPattern.matcher(selText).matches() && !whitespaceExtensionPattern.matcher(selText).matches());
   }
 
 //---------------------------------------------------------------------------
@@ -794,7 +910,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void runDelayedInFXThread(int cycles, int delayMS, Runnable runnable)
+  /**
+   * Runs a task inside the JavaFX thread with a specified delay and number of cycles.
+   *
+   * @param cycles the number of times the task should be executed
+   * @param delayMS the delay in milliseconds before each execution of the task
+   * @param runnable the task to be executed
+   */
+  public static void runDelayedInFXThread1(int cycles, int delayMS, Runnable runnable)
   {
     Timeline timeline = new Timeline();
     timeline.setCycleCount(cycles);
@@ -803,9 +926,42 @@ public final class Util
     timeline.play();
   }
 
+  /**
+   * Runs a task inside the JavaFX thread with a specified delay and number of cycles.
+   *
+   * @param cycles the number of times the task should be executed (must be positive)
+   * @param delayMS the delay in milliseconds before each execution of the task (must be non-negative)
+   * @param runnable the task to be executed
+   * @throws IllegalArgumentException if cycles is less than 1 or delayMS is negative
+   */
+  public static void runDelayedInFXThread(int cycles, int delayMS, Runnable runnable)
+  {
+    if (cycles < 1)
+      throw new IllegalArgumentException("Cycle count must be at least 1");
+
+    if (delayMS < 0)
+      throw new IllegalArgumentException("Delay must be non-negative");
+
+    Timeline timeline = new Timeline();
+    timeline.setCycleCount(cycles);
+
+    timeline.getKeyFrames().add(new KeyFrame(Duration.millis(delayMS), event ->
+    {
+      try { runnable.run(); }
+      catch (Exception e) { e.printStackTrace(); }  // Handle the exception or log it as needed
+    }));
+    timeline.play();
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Runs a task outside the JavaFX thread after a specified delay.
+   *
+   * @param delayMS the delay in milliseconds before the task is executed
+   * @param runnable the task to be executed
+   */
   public static void runOutsideFXThread(int delayMS, Runnable runnable)
   {
     new Timer(true).schedule(new TimerTask() { @Override public void run() { runnable.run(); }}, delayMS);
@@ -814,6 +970,11 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Runs a task outside the JavaFX thread immediately.
+   *
+   * @param runnable the task to be executed
+   */
   public static void runOutsideFXThread(Runnable runnable)
   {
     new HyperThread(runnable, "Util").start();
@@ -822,6 +983,15 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Halts the Java Virtual Machine (JVM) after a specified delay.
+   * <p>
+   * This method is a "nuclear option" that stops the JVM immediately and non-gracefully,
+   * bypassing shutdown hooks and finalizers. It should be used only in critical situations
+   * where an immediate halt is required.
+   *
+   * @param delayMS the delay in milliseconds before the JVM is halted
+   */
   public static void nuclearOption(int delayMS)
   {
     runOutsideFXThread(delayMS, () -> Runtime.getRuntime().halt(0));
@@ -904,33 +1074,154 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <T>      void nullSwitch(T  obj,         Consumer<T>      ex) { if (obj != null)           ex.accept(obj); }
-  public static <T>      T    nullSwitch(T  obj, T  def                     ) { return obj == null ? def : obj           ; }
-  public static <T1, T2> T1   nullSwitch(T2 obj, T1 def, Function<T2, T1> ex) { return obj == null ? def : ex.apply(obj) ; }
+  /**
+   * Executes a consumer function if the provided object is not null.
+   * <p>
+   * This method checks if the given object is not null. If the object is non-null, it executes the specified consumer function with the object.
+   * </p>
+   *
+   * @param <T> the type of the object to be tested and passed to the consumer
+   * @param obj the object to be tested for null
+   * @param ex the consumer function to be executed if the object is non-null
+   */
+  public static <T> void nullSwitch(T obj, Consumer<T> ex)
+  {
+    if (obj != null)
+      ex.accept(obj);
+  }
+
+  /**
+   * Returns a default value if the provided object is null, otherwise returns the object itself.
+   * <p>
+   * This method checks if the given object is null. If the object is null, it returns the specified default value.
+   * Otherwise, it returns the object itself.
+   * </p>
+   *
+   * @param <T> the type of the object and the default value
+   * @param obj the object to be tested for null
+   * @param def the default value to return if the object is null
+   * @return the object if it is non-null, otherwise the default value
+   */
+  public static <T> T nullSwitch(T obj, T def)
+  {
+    return obj == null ? def : obj;
+  }
+
+  /**
+   * Applies a transformation function to an object if it is not null, otherwise returns a default value.
+   * <p>
+   * This method checks if the given object is null. If the object is null, it returns the specified default value.
+   * If the object is non-null, it applies the specified function to the object and returns the result.
+   * </p>
+   *
+   * @param <T1> the type of the result produced by the transformation function and the default value
+   * @param <T2> the type of the object to be tested for null
+   * @param obj the object to be tested for null
+   * @param def the default value to return if the object is null
+   * @param ex the function to apply to the object if it is non-null
+   * @return the result of applying the function to the object if it is non-null, otherwise the default value
+   */
+  public static <T1, T2> T1 nullSwitch(T2 obj, T1 def, Function<T2, T1> ex)
+  {
+    return obj == null ? def : ex.apply(obj);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Finds the first non-null result by applying a function to each element of an iterable.
+   * <p>
+   * This method streams over the given iterable, applies the specified function to each
+   * element, and returns the first non-null result. If no non-null result is found, it
+   * returns {@code null}.
+   * </p>
+   *
+   * @param <T1> the type of the result produced by the function
+   * @param <T2> the type of elements in the iterable
+   * @param iterable the iterable to be processed
+   * @param func the function to apply to each element of the iterable
+   * @return the first non-null result produced by the function, or {@code null} if no
+   * non-null result is found
+   */
   public static <T1, T2> T1 findFirstHaving(Iterable<T2> iterable, Function<T2, T1> func)
   {
     return StreamSupport.stream(iterable.spliterator(), false).map(func).filter(Objects::nonNull).findFirst().orElse(null);
   }
 
+  /**
+   * Finds the first element in an iterable that, when transformed by a function, matches a given predicate.
+   * <p>
+   * This method streams over the provided iterable, applies the specified function to each element,
+   * and filters the results based on the given predicate. It returns the first non-null element
+   * that satisfies the predicate or {@code null} if no such element is found.
+   * </p>
+   *
+   * @param <T1> the type of the result produced by the function and tested by the predicate
+   * @param <T2> the type of elements in the iterable
+   * @param iterable the iterable to be processed
+   * @param func the function to apply to each element of the iterable
+   * @param pred the predicate to test the transformed elements
+   * @return the first non-null result that satisfies the predicate, or {@code null} if none is found
+   */
   public static <T1, T2> T1 findFirstHaving(Iterable<T2> iterable, Function<T2, T1> func, Predicate<T1> pred)
   {
     return StreamSupport.stream(iterable.spliterator(), false).map(func).filter(obj -> (obj != null) && pred.test(obj)).findFirst().orElse(null);
   }
 
+  /**
+   * Finds the first element in an iterable that matches a given predicate and applies a transformation function.
+   * <p>
+   * This method searches through the provided iterable to find the first element that satisfies the given predicate.
+   * If such an element is found, it is transformed using the specified function and the result is returned.
+   * If no matching element is found, the method returns the provided default value.
+   * </p>
+   *
+   * @param <T1> the type of the result produced by the transformation function
+   * @param <T2> the type of elements in the iterable
+   * @param iterable the iterable to be processed
+   * @param pred the predicate to test each element of the iterable
+   * @param def the default value to return if no element matches the predicate
+   * @param func the function to apply to the element found by the predicate
+   * @return the transformed result of the first matching element, or the default value if no match is found
+   */
   public static <T1, T2> T1 findFirst(Iterable<T2> iterable, Predicate<T2> pred, T1 def, Function<T2, T1> func)
   {
     return nullSwitch(findFirst(iterable, pred), def, func);
   }
 
+  /**
+   * Finds the first element in an iterable that matches a given predicate and applies a transformation function.
+   * <p>
+   * This method searches through the provided iterable to find the first element that satisfies the given predicate.
+   * If such an element is found, it is transformed using the specified function and the result is returned.
+   * If no matching element is found, the method returns {@code null}.
+   * </p>
+   *
+   * @param <T1> the type of the result produced by the transformation function
+   * @param <T2> the type of elements in the iterable
+   * @param iterable the iterable to be processed
+   * @param pred the predicate to test each element of the iterable
+   * @param func the function to apply to the element found by the predicate
+   * @return the transformed result of the first matching element, or {@code null} if no match is found
+   */
   public static <T1, T2> T1 findFirst(Iterable<T2> iterable, Predicate<T2> pred, Function<T2, T1> func)
   {
     return nullSwitch(findFirst(iterable, pred), null, func);
   }
 
+  /**
+   * Finds the first element in an iterable that matches a given predicate.
+   * <p>
+   * This method streams over the provided iterable and filters the elements based on the given predicate.
+   * It returns the first element that matches the predicate, or {@code null} if no such element is found.
+   * </p>
+   *
+   * @param <T> the type of elements in the iterable
+   * @param iterable the iterable to be processed
+   * @param pred the predicate to test each element of the iterable
+   * @return the first element that matches the predicate, or {@code null} if no match is found
+   */
   public static <T> T findFirst(Iterable<T> iterable, Predicate<T> pred)
   {
     return StreamSupport.stream(iterable.spliterator(), false).filter(pred).findFirst().orElse(null);
@@ -951,20 +1242,33 @@ public final class Util
   public static String randomHexStr(int size)          { return randomStr(size, "0123456789abcdef"); }
   public static String randomAlphanumericStr(int size) { return randomStr(size, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILJLMNOPQRSTUVWXYZ"); }
 
+  /**
+   * Generates a random string of the specified size using the characters from the given string.
+   *
+   * @param size the length of the random string to generate
+   * @param charsStr the string containing characters to use for generating the random string
+   * @return a random string of the specified size
+   * @throws IllegalArgumentException if size is negative or charsStr is null/empty
+   */
   private static String randomStr(int size, String charsStr)
   {
-    if (size < 0) return "";
+    if (size < 0)
+      throw new IllegalArgumentException("Size must be non-negative");
 
-    char[] chars = charsStr.toCharArray(), out = new char[size];
-    double numChars = chars.length;
+    if ((charsStr == null) || (charsStr.isEmpty()))
+      throw new IllegalArgumentException("charsStr must not be null or empty");
 
-    for (int j = 0; j < size; j++)
-    {
-      double x = Math.random() * numChars;
-      out[j] = chars[(int)x];
-    }
+    if (size == 0) return "";
 
-    return new String(out);
+    char[] chars  = charsStr.toCharArray(),
+           result = new char[size];
+
+    Random random = new Random();
+
+    for (int i = 0; i < size; i++)
+      result[i] = chars[random.nextInt(chars.length)];
+
+    return new String(result);
   }
 
 //---------------------------------------------------------------------------
@@ -1111,42 +1415,138 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-// DOI legal characters according to Crossref: "a-z", "A-Z", "0-9" and "-._;()/"
-// But I've seen at least one Crossref DOI that included a colon
-
+  /**
+   * Attempts to extract and normalize a DOI (Digital Object Identifier) from a given string.
+   * Handles common OCR errors and removes trailing punctuation, except for slashes.
+   *
+   * <p>This method first attempts to match a DOI within the provided string. If no match is found,
+   * it unescapes URL-encoded characters and tries again. Finally, it removes any trailing punctuation
+   * (except slashes) from the matched DOI.</p>
+   *
+   * @param str the input string to search for a DOI
+   * @return the normalized DOI if found, otherwise an empty string
+   */
   public static String matchDOI(String str)
   {
+    // DOI legal characters according to Crossref: "a-z", "A-Z", "0-9" and "-._;()/"
+    // But I've seen at least one Crossref DOI that included a colon
+
+    if (safeStr(str).isBlank()) return "";
+
     String doi = matchDOIiteration(str);
 
     if (doi.isBlank())
       doi = matchDOIiteration(unescapeURL(str));
 
+    doi = doi.replaceAll("[\\p{Punct}&&[^/]]+$", ""); // Removes trailing punctuation except slash
+
     return StringUtils.removeEndIgnoreCase(doi, ".pdf");
   }
+
+  private static final Pattern doiPattern1 = Pattern.compile("(\\A|\\D)(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)"),
+                               doiPattern2 = Pattern.compile("([dD0][oO0][iI1])?\\\\s*(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
 
   private static String matchDOIiteration(String str)
   {
     str = prepareForIDMatch(str, false);
 
-    Pattern p = Pattern.compile("(\\A|\\D)(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
-    Matcher m = p.matcher(str);
+    Matcher m = doiPattern1.matcher(str);
 
     if (m.find()) return m.group(2);
 
     str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign
 
-    m = p.matcher(str);
+    m = doiPattern1.matcher(str);
 
     if (m.find()) return m.group(2);
 
-    p = Pattern.compile("([dD]0[i1])(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
-    m = p.matcher(str);
+    m = doiPattern2.matcher(str);
 
     return m.find() ? m.group(2) : "";
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  private static String prepareForIDMatch(String str, boolean disregardLetters)
+  {
+    str = str.replaceAll("\\p{Pd}", "-")  // treat all dashes the same
+             .replaceAll("\\u00AD", "-")  // "soft hyphen" is not included in the \p{Pd} class
+             .replace('\u0002', '/');     // sometimes slash in DOI is encoded as STX control character
+
+    str = convertUnicodeNumeralsToAscii(str);
+
+    if (disregardLetters)
+      str = str.replace('l', '1')
+               .replace('|', '1')
+               .replace('I', '1')
+               .replace('o', '0')
+               .replace('O', '0')
+               .replace('B', '8')
+               .replace('S', '5')
+               .replace('g', '9')
+               .replace('q', '9')
+               .replace('D', '0')
+               .replace('\u00B0', '0'); // degree sign
+
+    while (str.contains("--"))
+      str = str.replace("--", "-");
+
+    return str;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Pattern UNICODE_NUMERALS_PATTERN = Pattern.compile
+  (
+    "[\\u2070\\u2080\\uFF10\\u24EA\\u2460\\u00B9\\u2081\\uFF11\\u00B2\\u2082\\u2072\\uFF12\\u00B3\\u2083\\u2073\\uFF13" +
+    "\\u2074\\u2084\\uFF14\\u2075\\u2085\\uFF15\\u2076\\u2086\\uFF16\\u2077\\u2087\\uFF17\\u2078\\u2088\\uFF18\\u2079" +
+    "\\u2089\\uFF19]"
+  );
+
+  public static String convertUnicodeNumeralsToAscii(String input)
+  {
+    Matcher matcher = UNICODE_NUMERALS_PATTERN.matcher(input);
+    StringBuilder result = new StringBuilder();
+
+    while (matcher.find())
+    {
+      char unicodeChar = matcher.group().charAt(0);
+      char asciiChar = unicodeToAsciiNumeral(unicodeChar);
+      matcher.appendReplacement(result, String.valueOf(asciiChar));
+    }
+
+    matcher.appendTail(result);
+    return result.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static char unicodeToAsciiNumeral(char unicodeChar)
+  {
+    return switch (unicodeChar)
+    {
+      case '\u2070', '\u2080', '\uFF10', '\u24EA' -> '0';  // Superscript, subscript, fullwidth, circled zero
+      case '\u00B9', '\u2081', '\uFF11', '\u2460' -> '1';  // Superscript, subscript, fullwidth, circled one
+      case '\u00B2', '\u2082', '\uFF12', '\u2461' -> '2';  // Superscript, subscript, fullwidth, circled two
+      case '\u00B3', '\u2083', '\uFF13', '\u2462' -> '3';  // Superscript, subscript, fullwidth, circled three
+      case '\u2074', '\u2084', '\uFF14', '\u2463' -> '4';  // Superscript, subscript, fullwidth, circled four
+      case '\u2075', '\u2085', '\uFF15', '\u2464' -> '5';  // Superscript, subscript, fullwidth, circled five
+      case '\u2076', '\u2086', '\uFF16', '\u2465' -> '6';  // Superscript, subscript, fullwidth, circled six
+      case '\u2077', '\u2087', '\uFF17', '\u2466' -> '7';  // Superscript, subscript, fullwidth, circled seven
+      case '\u2078', '\u2088', '\uFF18', '\u2467' -> '8';  // Superscript, subscript, fullwidth, circled eight
+      case '\u2079', '\u2089', '\uFF19', '\u2468' -> '9';  // Superscript, subscript, fullwidth, circled nine
+
+      default -> unicodeChar;  // Default case for characters not explicitly matched
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Pattern issnPattern = Pattern.compile("(\\A|\\G|[^0-9\\-])(\\d{4}-\\d{3}[\\dxX])(\\z|[^0-9\\-])");
 
   public static List<String> matchISSN(String str)
   {
@@ -1160,8 +1560,7 @@ public final class Util
 
     str = prepareForIDMatch(str, true);
 
-    Pattern p = Pattern.compile("(\\A|\\G|[^0-9\\-])(\\d{4}-\\d{3}[\\dxX])(\\z|[^0-9\\-])");
-    Matcher m = p.matcher(str);
+    Matcher m = issnPattern.matcher(str);
 
     while (m.find())
     {
@@ -1211,31 +1610,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String prepareForIDMatch(String str, boolean disregardLetters)
-  {
-    str = str.replaceAll("\\p{Pd}", "-")  // treat all dashes the same
-             .replaceAll("\\u00AD", "-")  // "soft hyphen" is not included in the \p{Pd} class
-
-        .replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
-
-    if (disregardLetters)
-      str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign
-
-    while (str.contains("--"))
-      str = str.replace("--", "-");
-
-    return str;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  private static final Pattern isbnPattern1 = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){12}\\d)(\\z|[^0-9\\-])"),
+                               isbnPattern2 = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){9}[0-9xX])(\\z|[^0-9xX\\-])");
 
   private static void matchISBNiteration(String str, List<String> list)
   {
     str = prepareForIDMatch(str, true);
 
-    Pattern p = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){12}\\d)(\\z|[^0-9\\-])");
-    Matcher m = p.matcher(str);
+    Matcher m = isbnPattern1.matcher(str);
 
     while (m.find())
     {
@@ -1258,8 +1640,7 @@ public final class Util
       }
     }
 
-    p = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){9}[0-9xX])(\\z|[^0-9xX\\-])");
-    m = p.matcher(str);
+    m = isbnPattern2.matcher(str);
 
     while (m.find())
     {
@@ -1283,8 +1664,22 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Detects the charset of the given byte array using the ICU CharsetDetector.
+   *
+   * <p>This method uses the ICU4J library's CharsetDetector to analyze the given byte array
+   * and identify the most likely charset. It then returns the detected charset as a Charset object.</p>
+   *
+   * @param byteData the byte array for which to detect the charset
+   * @return the detected charset as a Charset object
+   * @throws IllegalArgumentException if the input byte array is null
+   * @throws java.nio.charset.UnsupportedCharsetException if the detected charset is not supported
+   */
   public static Charset detectCharset(byte[] byteData)
   {
+    if (byteData == null)
+      throw new IllegalArgumentException("Input byte array cannot be null");
+
     CharsetDetector detector = new CharsetDetector();
 
     detector.setText(byteData);
@@ -1295,8 +1690,24 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Detects the charset of the given input stream using the ICU CharsetDetector.
+   *
+   * <p>This method uses the ICU4J library's CharsetDetector to analyze the given input stream
+   * and identify the most likely charset. It then returns the detected charset as a Charset object.</p>
+   *
+   * <p>If the input stream is null, an IllegalArgumentException is thrown. If an IOException occurs
+   * while setting the text of the CharsetDetector, null is returned.</p>
+   *
+   * @param streamData the input stream for which to detect the charset
+   * @return the detected charset as a Charset object, or null if an IOException occurs
+   * @throws IllegalArgumentException if the input stream is null
+   */
   public static Charset detectCharset(InputStream streamData)
   {
+    if (streamData == null)
+      throw new IllegalArgumentException("Input byte array cannot be null");
+
     CharsetDetector detector = new CharsetDetector();
 
     try
@@ -1338,6 +1749,13 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns a user-friendly message for the given throwable.
+   * Handles specific exceptions with tailored messages and generic exceptions with class names.
+   *
+   * @param e the throwable for which to get the message
+   * @return a user-friendly message for the throwable
+   */
   public static String getThrowableMessage(Throwable e)
   {
     String msg = e.getMessage();
@@ -1368,6 +1786,23 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Converts a class name to a user-friendly title by converting camel case to spaces and capitalizing words.
+   *
+   * <p>This method transforms a camel case class name into a more readable format by inserting spaces between words
+   * and capitalizing each word. It is particularly useful for creating readable error messages or user interfaces
+   * that display class names.</p>
+   *
+   * <p>Examples:</p>
+   * <pre>
+   *     {@code userFriendlyClassName(MyCustomException.class)} returns {@code "My Custom Exception"}
+   *     {@code userFriendlyClassName(IOException.class)} returns {@code "IO Exception"}
+   *     {@code userFriendlyClassName(AccessDeniedException.class)} returns {@code "Access Denied Exception"}
+   * </pre>
+   *
+   * @param klass the class for which to get the user-friendly name
+   * @return the user-friendly class name
+   */
   public static String userFriendlyClassName(Class<?> klass)
   {
     return camelToTitle(klass.getSimpleName()).trim();
@@ -1376,14 +1811,15 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns a user-friendly name for the given throwable by removing the "Exception" suffix if present.
+   *
+   * @param e the throwable for which to get the user-friendly name
+   * @return the user-friendly throwable name
+   */
   public static String userFriendlyThrowableName(Throwable e)
   {
-    String className = userFriendlyClassName(e.getClass());
-
-    return className.endsWith(" Exception") ?
-      className.substring(0, className.length() - 10)
-    :
-      className;
+    return StringUtils.removeEnd(userFriendlyClassName(e.getClass()), "Exception").trim();
   }
 
 //---------------------------------------------------------------------------

@@ -48,6 +48,7 @@ public interface HDT_Record
   void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError;
   void saveToStoredState() throws HDB_InternalError;
   void writeStoredStateToXML(StringBuilder xml);
+  void revertToXmlVersion() throws HyperDataException;
 
   void modifyNow();
   void viewNow();
