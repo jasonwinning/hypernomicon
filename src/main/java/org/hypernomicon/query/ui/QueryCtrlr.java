@@ -57,6 +57,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
@@ -1019,6 +1020,9 @@ public final class QueryCtrlr
 
       Set<Tag> tags = record.getAllTags();
       removeAll(tags, tagHub, tagPictureCrop, tagMainText);
+
+      if (MainText.typeHasKeyWorks(recordType) == false)
+        tags.remove(tagKeyWork);
 
       NonGeneralColumnGroup colGroup = new RecordTypeColumnGroup(recordType, tags, resultsTable);
       recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);

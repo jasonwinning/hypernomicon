@@ -60,6 +60,8 @@ public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extend
 
   public abstract String getResultTextForTag(Tag tag);
 
+  public abstract int getResultCount(Tag tag);
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

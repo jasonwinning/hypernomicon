@@ -67,7 +67,7 @@ class ZoteroMetadataTest
 
       // Sometimes the server says that "webPage" is an entry type, and sometimes "webpage"
 
-      EntryType entryType = entryTypeStr.equalsIgnoreCase("webPage") ? etWebPage : zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(entryTypeStr, etOther);
+      EntryType entryType = "webPage".equalsIgnoreCase(entryTypeStr) ? etWebPage : zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(entryTypeStr, etOther);
       assertNotEquals(etOther, entryType, "Unrecognized Zotero item type found in templates JSON from server: " + jServerTemplateObj.getStrSafe("itemType"));
 
       unusedTypes.remove(entryType);

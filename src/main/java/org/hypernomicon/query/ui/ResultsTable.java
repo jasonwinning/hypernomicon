@@ -19,10 +19,13 @@ package org.hypernomicon.query.ui;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -34,6 +37,7 @@ import com.google.common.collect.Multimap;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.query.ui.ResultColumn.*;
 import static org.hypernomicon.util.Util.*;
@@ -204,6 +208,9 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
     addColumn(col, EnumSet.of(tagAuthor, tagBibDate, tagWorkType, tagMainText).contains(firstItem.tag));
 
+    for (ColumnGroupItem otherItem : recordTypeToItem.values())
+      otherItem.col = col;
+
     return col;
   }
 
@@ -215,6 +222,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
     if (addToFront == false)
     {
       tv.getColumns().add(newCol);
+      addCountColIfNeeded(newCol);
       return;
     }
 
@@ -235,7 +243,83 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
       }
     }
 
-    tv.getColumns().add(colNdx, newCol);
+    columns.add(colNdx, newCol);
+
+    addCountColIfNeeded(newCol);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Adds a count column to the right of the specified target column if needed.
+   * <p>
+   * Some result columns display a list of items within a single cell. For such columns,
+   * this method adds a count column immediately to the right of the target column,
+   * which shows the count of items in each cell. The need for a count column is determined
+   * based on specific criteria related to the type of the target column.
+   * </p>
+   *
+   * @param targetCol The {@link ResultColumn} for which a count column may be needed.
+   *                  If a count column is already associated with the target column,
+   *                  this method does nothing.
+   */
+  void addCountColIfNeeded(ResultColumn targetCol)
+  {
+    if (targetCol.countCol != null)
+      return;
+
+    boolean needCountCol = false;
+
+    if (targetCol instanceof NonGeneralColumn ngCol)
+    {
+      Iterator<Entry<RecordType, NonGeneralColumnGroupItem>> it = ngCol.map.entrySet().iterator();
+
+      while ((needCountCol == false) && it.hasNext())
+      {
+        Entry<RecordType, NonGeneralColumnGroupItem> entry = it.next();
+        NonGeneralColumnGroupItem item = entry.getValue();
+
+        if ((item.relType != RelationType.rtNone) || (item.tag == tagKeyWork) || (item.tag == tagDisplayRecord) || (item.tag == tagISBN))
+          needCountCol = true;
+        else
+        {
+          HDI_Schema schema = db.getSchema(entry.getKey(), item.tag);
+
+          if (schema != null)
+          {
+            switch (schema.category())
+            {
+              case hdcAuthors: case hdcPointerMulti:
+                needCountCol = true;
+                break;
+
+              default:
+                break;
+            }
+          }
+        }
+      }
+    }
+    else if (targetCol instanceof BibFieldColumn bfCol)
+    {
+      switch (bfCol.field.getType())
+      {
+        case bftAuthor: case bftMultiString:
+          needCountCol = true;
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    if (needCountCol == false)
+      return;
+
+    targetCol.countCol = new CountColumn(targetCol);
+    List<TableColumn<ResultRow, ?>> columns = tv.getColumns();
+    columns.add(columns.indexOf(targetCol) + 1, targetCol.countCol);
   }
 
 //---------------------------------------------------------------------------

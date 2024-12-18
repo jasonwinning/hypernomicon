@@ -274,4 +274,26 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public int getValueCount(BibFieldEnum bibFieldEnum)
+  {
+    return switch (bibFieldEnum.getType())
+    {
+      case bftAuthor      -> (int) getAuthors().stream().filter(author -> author.getType() == AuthorType.fromBibFieldEnum(bibFieldEnum)).count();
+      case bftBibDate     -> BibliographicDate.isEmpty(getDate()) ? 0 : 1;
+      case bftMultiString -> nullSwitch(getMultiStr(bibFieldEnum), 0, List::size);
+      case bftString      -> safeStr(getStr(bibFieldEnum)).isBlank() ? 0 : 1;
+      case bftWorkType    -> getWorkType() == null ? 0 : 1;
+
+      case bftEntryType ->
+      {
+        EntryType entryType = getEntryType();
+
+        yield (entryType == null) || (entryType == etUnentered) || (entryType == etNone) ? 0 : 1;
+      }
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

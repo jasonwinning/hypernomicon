@@ -29,7 +29,7 @@ import org.junit.jupiter.api.*;
 
 //---------------------------------------------------------------------------
 
-public class UnitiesTest
+class UnitiesTest
 {
 
 //---------------------------------------------------------------------------
@@ -118,7 +118,7 @@ public class UnitiesTest
 
     position.getMainText().setHtml(html1);
 
-    assertNotEquals(position.getMainText(), html2);
+    assertNotEquals(position.getMainText().getHtml(), html2);
 
     assertEquals(note .getMainText().getHtml(), html2);
     assertEquals(label.getMainText().getHtml(), html2);
@@ -128,7 +128,7 @@ public class UnitiesTest
 
     note.getMainText().setHtml(html3);
 
-    assertNotEquals(position.getMainText(), html3);
+    assertNotEquals(position.getMainText().getHtml(), html3);
 
     assertEquals(note .getMainText().getHtml(), html3);
     assertEquals(label.getMainText().getHtml(), html3);

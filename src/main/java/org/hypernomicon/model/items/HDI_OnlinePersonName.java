@@ -70,4 +70,12 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public int getResultCount(Tag tag)
+  {
+    return (tag == tagFirstName ? person.getFirstName().isBlank() : person.getLastName().isBlank()) ? 0 : 1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

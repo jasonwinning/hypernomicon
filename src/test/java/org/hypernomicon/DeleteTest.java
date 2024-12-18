@@ -29,7 +29,7 @@ import org.junit.jupiter.api.*;
 
 //---------------------------------------------------------------------------
 
-public class DeleteTest
+class DeleteTest
 {
 
 //---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ public class DeleteTest
     HDT_Debate rootDebate = position.getLargerDebate();  // Root debate is assigned automatically to new position
 
     assertNotNull(rootDebate);
-    Assertions.assertEquals(rootDebate.getID(), 1);
+    assertEquals(rootDebate.getID(), 1);
 
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
 
@@ -69,7 +69,7 @@ public class DeleteTest
 
     assertFalse(position.largerDebates.contains(rootDebate));
     assertFalse(rootDebate.subPositions.contains(position));
-    assertTrue(position.largerDebates.size() == 1);
+    assertEquals(1, position.largerDebates.size());
     assertTrue(position.largerDebates.contains(debate));
     assertTrue(debate.subPositions.contains(position));
 

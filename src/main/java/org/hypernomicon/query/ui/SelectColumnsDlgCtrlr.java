@@ -102,46 +102,11 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         if (item.col == null) continue;
 
         posY += itemMargin;
-        ColumnCheckBox chkField = new ColumnCheckBox(item.caption);
-        chkType.children.add(chkField);
-        chkField.parent = chkType;
-        chkField.setLayoutX(fieldLeft);
-        chkField.setLayoutY(posY);
-        chkField.selectedProperty().bindBidirectional(item.col.visibleProperty());
 
-        chkField.setOnAction(event ->
-        {
-          if (Boolean.TRUE.equals(chkField.isSelected()))
-            item.col.getTableView().scrollToColumn(item.col);
-        });
+        addColumnCheckBox(item, chkType, fieldLeft, posY, false);
 
-        if (chkField.isSelected())
-          chkType.setSelected(true);
-
-        innerPane.getChildren().add(chkField);
-
-        chkField.selectedProperty().addListener((ob, oldValue, newValue) ->
-        {
-          if (noListen) return;
-          noListen = true;
-
-          TypeCheckBox tcb = chkField.parent;
-
-          if (Boolean.TRUE.equals(newValue))
-          {
-            chkSelectNone.setSelected(false);
-            if (tcb.children.stream().allMatch(CheckBox::isSelected))
-              tcb.setSelected(true);
-          }
-          else
-          {
-            chkSelectAll.setSelected(false);
-            if (tcb.children.stream().noneMatch(CheckBox::isSelected))
-              tcb.setSelected(false);
-          }
-
-          noListen = false;
-        });
+        if (item.col.countCol != null)
+          addColumnCheckBox(item, chkType, fieldLeft, posY, true);
       }
 
 //---------------------------------------------------------------------------
@@ -219,6 +184,65 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
       }
       else
         chkSelectNone.setSelected(true);
+
+      noListen = false;
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addColumnCheckBox(ColumnGroupItem item, TypeCheckBox chkType, double fieldLeft, double posY, boolean isCount)
+  {
+    ColumnCheckBox chkField = new ColumnCheckBox(isCount ? "Count" : item.caption);
+    chkType.children.add(chkField);
+    chkField.parent = chkType;
+    ResultColumn col;
+
+    if (isCount)
+    {
+      col = item.col.countCol;
+      AnchorPane.setRightAnchor(chkField, 3.0);
+    }
+    else
+    {
+      col = item.col;
+      chkField.setLayoutX(fieldLeft);
+    }
+
+    chkField.setLayoutY(posY);
+    chkField.selectedProperty().bindBidirectional(col.visibleProperty());
+
+    chkField.setOnAction(event ->
+    {
+      if (Boolean.TRUE.equals(chkField.isSelected()))
+        col.getTableView().scrollToColumn(col);
+    });
+
+    if (chkField.isSelected())
+      chkType.setSelected(true);
+
+    innerPane.getChildren().add(chkField);
+
+    chkField.selectedProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (noListen) return;
+      noListen = true;
+
+      TypeCheckBox tcb = chkField.parent;
+
+      if (Boolean.TRUE.equals(newValue))
+      {
+        chkSelectNone.setSelected(false);
+        if (tcb.children.stream().allMatch(CheckBox::isSelected))
+          tcb.setSelected(true);
+      }
+      else
+      {
+        chkSelectAll.setSelected(false);
+        if (tcb.children.stream().noneMatch(CheckBox::isSelected))
+          tcb.setSelected(false);
+      }
 
       noListen = false;
     });

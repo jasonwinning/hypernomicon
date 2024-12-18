@@ -20,6 +20,7 @@ package org.hypernomicon.query.ui;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.HDT_RecordBase.makeSortKeyByType;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.query.ui.ResultCellValue.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -48,6 +49,8 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  ResultColumn countCol;
 
   private ResultColumn(String caption, boolean caseSensitive)
   {
@@ -98,6 +101,47 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
       return comp.compare(cell1, cell2);
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static class CountColumn extends ResultColumn
+  {
+    CountColumn(ResultColumn targetCol)
+    {
+      super(targetCol.getText() + " Count", Util::compareNumberStrings);
+
+      setVisible(false);
+
+      setCellValueFactory(cellData ->
+      {
+        int count = -1;
+        HDT_Record record = cellData.getValue().getRecord();
+
+        if (record != null)
+        {
+          if (targetCol instanceof NonGeneralColumn ngTargetCol)
+          {
+            NonGeneralColumnGroupItem item = ngTargetCol.map.get(record.getType());
+
+            if (item != null)
+            {
+              count = item.relType != rtNone ?
+                db.getSubjectList(item.relType, record).size()
+              :
+                record.resultCount(item.tag);
+            }
+          }
+          else if (targetCol instanceof BibFieldColumn bfTargetCol)
+          {
+            count = record.getType() == hdtWork ? ((HDT_Work)record).getBibData().getValueCount(bfTargetCol.field) : 0;
+          }
+        }
+
+        return observableCellValue(cellData, count < 0 ? "" : String.valueOf(count));
+      });
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -171,19 +215,26 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static class BibFieldColumn extends ResultColumn { BibFieldColumn(BibFieldEnum field, boolean caseSensitive, EnumSet<BibFieldEnum> bibFieldsToShow)
+  static class BibFieldColumn extends ResultColumn
   {
-    super(field.getUserFriendlyName(), caseSensitive);
+    final BibFieldEnum field;
 
-    setCellValueFactory(cellData ->
+    BibFieldColumn(BibFieldEnum field, boolean caseSensitive, EnumSet<BibFieldEnum> bibFieldsToShow)
     {
-      HDT_Record record = cellData.getValue().getRecord();
-      String text = record.getType() == hdtWork ? ((HDT_Work)record).getBibData().getStr(field) : "";
-      return observableCellValue(cellData, text);
-    });
+      super(field.getUserFriendlyName(), caseSensitive);
 
-    setVisible(bibFieldsToShow.contains(field));
-  }}
+      this.field = field;
+
+      setCellValueFactory(cellData ->
+      {
+        HDT_Record record = cellData.getValue().getRecord();
+        String text = record.getType() == hdtWork ? ((HDT_Work)record).getBibData().getStr(field) : "";
+        return observableCellValue(cellData, text);
+      });
+
+      setVisible(bibFieldsToShow.contains(field));
+    }
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -212,11 +263,10 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
         default               -> new NonGeneralColumn(firstItem, false);
       };
 
+      col.map.putAll(recordTypeToItem);
+
       // Only subject columns have a relType set. They are invisible by default.
-      col.setVisible(recordTypeToItem.values().stream().anyMatch(item ->
-      {
-        return (item.relType == RelationType.rtNone) || ((item.relType != null) && relationsToShow.contains(item.relType));
-      }));
+      col.setVisible(recordTypeToItem.values().stream().anyMatch(item -> (item.relType == rtNone) || relationsToShow.contains(item.relType)));
 
       col.setCellValueFactory(cellData ->
       {
@@ -225,11 +275,11 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
         if (record != null)
         {
-          NonGeneralColumnGroupItem item = recordTypeToItem.get(record.getType());
+          NonGeneralColumnGroupItem item = col.map.get(record.getType());
 
           if (item != null)
           {
-            str = item.relType != RelationType.rtNone ?
+            str = item.relType != rtNone ?
               HDI_OnlinePointerMulti.recordStreamResultText(db.getObjType(item.relType), db.getSubjectList(item.relType, record).stream())
             :
               record.resultTextForTag(item.tag);

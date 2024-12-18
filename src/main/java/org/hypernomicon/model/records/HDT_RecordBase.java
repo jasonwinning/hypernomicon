@@ -606,6 +606,17 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public int resultCount(Tag tag)
+  {
+    return (tag == nameTag) || (tag == tagName) ?
+      (listName().isBlank() ? 0 : 1)
+    :
+      nullSwitch(items.get(tag), -1, item -> item.getResultCount(tag));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void setRootRecordDates()
   {
     Instant dbCreationDate = db.getCreationDate();

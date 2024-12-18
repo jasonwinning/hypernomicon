@@ -241,4 +241,16 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public int getResultCount(Tag tag) { return switch (tag)
+  {
+    case tagDisplayRecord -> (int) getMainText().displayItems.stream().filter(item -> item.type == diRecord).count();
+    case tagKeyWork       -> getMainText().keyWorks.size();
+    case tagHub           -> recordWMT.getHub() == null ? 0 : 1;
+
+    default               -> getMainText().getPlain().isBlank() ? 0 : 1;
+  };}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

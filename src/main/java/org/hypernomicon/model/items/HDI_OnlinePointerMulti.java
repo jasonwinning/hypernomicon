@@ -139,6 +139,14 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public int getResultCount(Tag tag)
+  {
+    return db.getObjectList(relType, record, false).size();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String recordStreamResultText(RecordType objType, Stream<HDT_Record> stream)
   {
     Function<? super HDT_Record, String> strFunction = objType == RecordType.hdtWork ? HDT_Record::getCBText : HDT_Record::listName;

@@ -48,7 +48,7 @@ public class EnumBasedTableTest
 //---------------------------------------------------------------------------
 
   @Test
-  public void testPutAndGet()
+  void testPutAndGet()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     assertNull(table.put(RowType.ROW1, ColumnType.COL1, "Value1"));
@@ -56,7 +56,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testRemove()
+  void testRemove()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -65,7 +65,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testContains()
+  void testContains()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -74,7 +74,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testContainsRowAndColumn()
+  void testContainsRowAndColumn()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -85,7 +85,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testRowAndColumnKeySet()
+  void testRowAndColumnKeySet()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -103,7 +103,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testValues()
+  void testValues()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -115,7 +115,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testClear()
+  void testClear()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -127,7 +127,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testSize()
+  void testSize()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -136,7 +136,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testOperationsOnEmptyTable()
+  void testOperationsOnEmptyTable()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     assertNull(table.get(RowType.ROW1, ColumnType.COL1));
@@ -151,7 +151,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testDuplicateEntries()
+  void testDuplicateEntries()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -160,7 +160,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testDenseData()
+  void testDenseData()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     for (RowType row : RowType.values())
@@ -183,7 +183,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testSparseData()
+  void testSparseData()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -195,7 +195,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testDataConsistency()
+  void testDataConsistency()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -222,7 +222,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testColumnConsistencyAfterRemove()
+  void testColumnConsistencyAfterRemove()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -244,7 +244,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testRowMethod()
+  void testRowMethod()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");
@@ -261,7 +261,7 @@ public class EnumBasedTableTest
   }
 
   @Test
-  public void testColumnMethod()
+  void testColumnMethod()
   {
     EnumBasedTable<RowType, ColumnType, String> table = new EnumBasedTable<>(RowType.class, ColumnType.class);
     table.put(RowType.ROW1, ColumnType.COL1, "Value1");

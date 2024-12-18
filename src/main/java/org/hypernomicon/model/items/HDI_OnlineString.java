@@ -45,6 +45,14 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public String getResultTextForTag(Tag tag) { return convertToSingleLine(get()); }
 
+  @Override public int getResultCount(Tag tag)
+  {
+    return (tag == tagISBN) ?
+      matchISBN(get()).size()
+    :
+      (safeStr(get()).isBlank() ? 0 : 1);
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

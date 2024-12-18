@@ -58,6 +58,7 @@ public interface HDT_Record
 
   HDI_Schema getSchema(Tag tag);
   String resultTextForTag(Tag tag);
+  int resultCount(Tag tag);
   boolean getTagBoolean(Tag tag);
   Set<Tag> getAllTags();
   boolean isUnitable();

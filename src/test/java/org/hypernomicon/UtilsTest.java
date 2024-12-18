@@ -33,7 +33,7 @@ import org.junit.jupiter.api.*;
  *
  * @see org.hypernomicon.util.Util
  */
-public class UtilsTest
+class UtilsTest
 {
 
 //---------------------------------------------------------------------------

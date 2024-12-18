@@ -47,7 +47,23 @@ class InnerFilePath
 //---------------------------------------------------------------------------
 
   @Override public String toString() { return getPathStr(); }
-  @Override public int hashCode()    { return getPath().hashCode(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int hashCode()
+  {
+    try
+    {
+      // Use the canonical path if available
+      return getFile().getCanonicalFile().hashCode();
+    }
+    catch (IOException e)
+    {
+      // Fallback to normalized path if canonical path is not available
+      return getPath().normalize().hashCode();
+    }
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -93,6 +109,7 @@ class InnerFilePath
 
   @Override public boolean equals(Object other)
   {
+    if (this == other) return true;
     if ((other instanceof InnerFilePath) == false) return false;
 
     InnerFilePath otherFilePath = (InnerFilePath) other;

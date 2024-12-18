@@ -44,6 +44,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
   public void set(HDT_Record target) { this.target = target; }
 
   @Override public String getResultTextForTag(Tag tag) { return nullSwitch(target, "", HDT_Record::listName); }
+  @Override public int getResultCount(Tag tag)         { return target == null ? 0 : 1; }
   @Override public void expire()                       { target = null; }
 
 //---------------------------------------------------------------------------

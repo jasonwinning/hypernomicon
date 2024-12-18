@@ -2221,6 +2221,14 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public HDI_Schema getSchema(RecordType type, Tag tag)
+  {
+    return nullSwitch(datasets.get(type), null, dataset -> dataset.getSchema(tag));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public Collection<HDI_Schema> getSchemasByRecordType(RecordType type)
   {
     return nullSwitch(datasets.get(type), null, HyperDataset::getSchemas);

@@ -46,7 +46,7 @@ public final class ArgumentQueries
 
   public static void addQueries(List<Query<?>> allQueries)
   {
-    if (app.debugging) allQueries.add(new ArgumentQuery(QUERY_SOURCES_AT_LEAST, "with at least ___ sources")
+    if (app.debugging && Boolean.FALSE) allQueries.add(new ArgumentQuery(QUERY_SOURCES_AT_LEAST, "with at least ___ sources")
     {
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {

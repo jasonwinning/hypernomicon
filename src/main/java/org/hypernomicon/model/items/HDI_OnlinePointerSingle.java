@@ -114,6 +114,14 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public int getResultCount(Tag tag)
+  {
+    return db.getObjectList(relType, record, false).size();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void getToOfflineValue(HDI_OfflinePointerSingle val, Tag tag)
   {
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);

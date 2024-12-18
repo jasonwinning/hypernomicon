@@ -23,8 +23,8 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane minHeight="300.0" minWidth="300.0" prefWidth="349.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.SelectColumnsDlgCtrlr">
-  <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="130.0" layoutY="142.0" prefViewportHeight="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<AnchorPane minHeight="300.0" minWidth="300.0" prefWidth="349.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.SelectColumnsDlgCtrlr">  
+  <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="130.0" layoutY="142.0" prefViewportHeight="500.0" AnchorPane.bottomAnchor="44.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <BorderPane>
          <center>
           <AnchorPane fx:id="innerPane">
@@ -40,5 +40,5 @@
          </padding>
       </BorderPane>
   </ScrollPane>
-  <Button fx:id="btnOk" defaultButton="true" mnemonicParsing="false" prefHeight="22.0" prefWidth="48.0" text="OK" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="14.0" />
+  <Button fx:id="btnOk" defaultButton="true" layoutX="279.0" layoutY="512.0" maxHeight="26.0" maxWidth="56.0" minHeight="26.0" minWidth="56.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="56.0" text="OK" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="14.0" />
 </AnchorPane>

@@ -37,12 +37,12 @@ public class NestedValue
   public boolean bool = false;
   public Ternary ternary = Ternary.Unset;
   public HDT_Record target = null;
-  public final HyperDataCategory hdc;
+  final HyperDataCategory hdc;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public NestedValue(HDI_OnlineBase<? extends HDI_OfflineBase> item)
+  NestedValue(HDI_OnlineBase<? extends HDI_OfflineBase> item)
   {
     this(item.category());
 
@@ -74,16 +74,21 @@ public class NestedValue
 
     result = prime * result + (hdc == null ? 0 : hdc.hashCode());
 
-    result = prime * result + (isEmpty() ? 0 : switch (hdc)
-    {
-      case hdcString        -> str.hashCode();
-      case hdcBoolean       -> Boolean.hashCode(bool);
-      case hdcTernary       -> ternary.hashCode();
-      case hdcNestedPointer -> target.hashCode();
-      default               -> 0;
-    });
+    int valHashCode = 0;
 
-    return result;
+    if ((hdc != null) && (isEmpty() == false))
+    {
+      valHashCode = switch (hdc)
+      {
+        case hdcString        -> str.hashCode();
+        case hdcBoolean       -> Boolean.hashCode(bool);
+        case hdcTernary       -> ternary.hashCode();
+        case hdcNestedPointer -> target.hashCode();
+        default               -> 0;
+      };
+    }
+
+    return prime * result + valHashCode;
   }
 
 //---------------------------------------------------------------------------

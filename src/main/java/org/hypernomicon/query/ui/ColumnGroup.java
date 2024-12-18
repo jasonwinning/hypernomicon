@@ -133,6 +133,10 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
 
         if (item.tag != tagNone) // Relation subject columns will sometimes have tagNone
         {
+          // In this loop we are trying to see if another ColumnGroupItem exists with
+          // the same tag as the current item. If so, add mapping from that group's
+          // record type to the item to the map.
+
           for (AbstractColumnGroup<? extends ColumnGroupItem> grp : recordTypeToColumnGroups.values())
           {
             if (this == grp)
@@ -151,6 +155,8 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
               RecordTypeColumnGroup rtcGroup = (RecordTypeColumnGroup)grp;
               map.put(rtcGroup.recordType, otherItem);
 
+              // If a column has been added to the table already for that ColumnGroupItem,
+
               if (otherItem.col != null)
               {
                 col = (NonGeneralColumn) otherItem.col;
@@ -158,18 +164,24 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
                 if ((item.relType == rtNone) || ((item.relType != null) && relationsToShow.contains(item.relType)))
                   col.setVisible(true);  // Only subject columns have a relType set. They are invisible by default.
 
+                // Add the ColumnGroupItems found so far to that column's record type to item map,
+                // and use that column's map as the running map.
+
                 col.map.putAll(map);
+                resultsTable.addCountColIfNeeded(col);
+
                 map = col.map;
               }
             }
           }
         }
 
+        // If there was no column added yet for the current item's tag,
+        // add a new column and add the current map's entries to that
+        // column's map.
+
         if (col == null)
           col = resultsTable.addNonGeneralColumn(map, relationsToShow);
-
-        for (ColumnGroupItem otherItem : map.values())
-          otherItem.col = col;
       }
     }
 
