@@ -60,6 +60,7 @@ public class DateControlsWrapper
     private DateProperty(BibliographicDate initialValue, String name)
     {
       super(initialValue == null ? BibliographicDate.EMPTY_DATE : initialValue, name);
+      setValue(initialValue);
     }
 
     @Override public void set(BibliographicDate newValue)
@@ -96,6 +97,8 @@ public class DateControlsWrapper
     this.cbMonth = cbMonth;
 
     value = new DateProperty(BibliographicDate.EMPTY_DATE, "value");
+
+    setDateValueToUI(getDate());
 
     setToolTip(tfYear , "Year" );
     setToolTip(cbMonth, "Month");
@@ -136,9 +139,7 @@ public class DateControlsWrapper
       if (programmaticChange) return;
       programmaticChange = true;
 
-      tfYear.setText(nv.getYearStr());
-      cbMonth.getSelectionModel().select(nv.hasMonth() ? Month.of(nv.month) : null);
-      tfDay.setText(nv.hasDay() ? String.valueOf(nv.day) : "");
+      setDateValueToUI(nv);
 
       programmaticChange = false;
     });
@@ -155,6 +156,16 @@ public class DateControlsWrapper
   public void setDate(BibliographicDate date)        { value.setValue(date); }
   public void clear()                                { value.setValue(BibliographicDate.EMPTY_DATE); }
   public void setDisable(boolean value)              { disableAllIff(value, tfYear, cbMonth, tfDay); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setDateValueToUI(BibliographicDate nv)
+  {
+    tfYear.setText(nv.getYearStr());
+    cbMonth.getSelectionModel().select(nv.hasMonth() ? Month.of(nv.month) : null);
+    tfDay.setText(nv.hasDay() ? String.valueOf(nv.day) : "");
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
