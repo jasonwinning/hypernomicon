@@ -100,11 +100,31 @@ public class MainText
   void setInternal(String newHtml)                { htmlAndPlainText = new HtmlAndPlainText(newHtml); }
   public HDT_RecordWithMainText getRecord()       { return recordWMT; }
   private boolean hasKeyWork(HDT_Record rec)      { return getKeyWork(rec) != null; }
-  public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
-  public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
-  public List<KeyWork> getKeyWorksUnmod()         { return Collections.unmodifiableList(keyWorks); }
-  public List<KeyWork> getKeyWorksCopy()          { return new ArrayList<>(keyWorks); }
   void expire()                                   { removeKeyWorks(false); }
+
+  /**
+   * Returns an unmodifiable view of the list of DisplayItems.
+   * @return Unmodifiable view of the list of DisplayItems.
+   */
+  public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
+
+  /**
+   * Returns a modifiable copy of the list of DisplayItems.
+   * @return Modifiable copy of the list of DisplayItems.
+   */
+  public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
+
+  /**
+   * Returns an unmodifiable view of the list of KeyWorks.
+   * @return Unmodifiable view of the list of KeyWorks.
+   */
+  public List<KeyWork> getKeyWorksUnmod()         { return Collections.unmodifiableList(keyWorks); }
+
+  /**
+   * Returns a modifiable copy of the list of KeyWorks.
+   * @return Modifiable copy of the list of KeyWorks.
+   */
+  public List<KeyWork> getKeyWorksCopy()          { return new ArrayList<>(keyWorks); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -156,7 +176,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MainText(HDT_RecordWithMainText recordWMT)  // called by HDT_RecordWithMainText constructor
+  public MainText(HDT_RecordWithMainText recordWMT)  // called by HDT_RecordWithMainText constructor
   {
     this.recordWMT = recordWMT;
 

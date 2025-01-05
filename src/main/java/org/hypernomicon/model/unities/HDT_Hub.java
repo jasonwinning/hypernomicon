@@ -254,6 +254,13 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Disconnects a spoke from the hub and optionally deletes the hub if it has no more spokes.
+   *
+   * @param spokeType the type of the spoke to disconnect.
+   * @param deleteHub if true, deletes the hub if it has no more spokes.
+   * @return true if the spoke was successfully disconnected, false if the spoke was not found.
+   */
   public boolean disuniteRecord(RecordType spokeType, boolean deleteHub)
   {
     // Disconnect the spoke

@@ -17,105 +17,141 @@
 
 package org.hypernomicon.util;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.unities.MainText;
-
-public class BidiOneToManyMainTextMap
+public class BidiOneToManyMap<T>
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final Map<MainText, Set<MainText>> forwardMap = new ConcurrentHashMap<>(),
-                                             reverseMap = new ConcurrentHashMap<>();
+  private final Map<T, Set<T>> forwardMap = new ConcurrentHashMap<>(),
+                               reverseMap = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()                                             { forwardMap.clear(); reverseMap.clear(); }
-  public Stream<MainText> getForwardStream(MainText fromMainText) { return getSet(forwardMap, fromMainText).stream(); }
+  public void clear()                      { forwardMap.clear(); reverseMap.clear();  }
+  public Stream<T> getForwardStream(T key) { return getSet(forwardMap, key).stream(); }
+
+  public Stream<Entry<T, Set<T>>> getForwardStream() { return forwardMap.entrySet().stream(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addForward(MainText fromMainText, MainText toMainText)
+  public synchronized void addForward(T key, T value)
   {
-    getSet(forwardMap, fromMainText).add(toMainText);
-    getSet(reverseMap, toMainText).add(fromMainText);
+    getSet(forwardMap, key  ).add(value);
+    getSet(reverseMap, value).add(key  );
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeForward(MainText fromMainText, MainText toMainText)
+  public synchronized void removeForward(T key, T value)
   {
-    getSet(forwardMap, fromMainText).remove(toMainText);
-    getSet(reverseMap, toMainText).remove(fromMainText);
+    getSet(forwardMap, key  ).remove(value);
+    getSet(reverseMap, value).remove(key  );
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void replaceItem(MainText oldItem, MainText newItem)
+  public void removeItem(T item)
   {
-    if ((oldItem == null) || (newItem == null) || (oldItem == newItem)) return;
+    removeKey(forwardMap, reverseMap, item);
+    removeKey(reverseMap, forwardMap, item);
+  }
 
-    Set<MainText> oldSet, newSet;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    if (forwardMap.containsKey(oldItem))
+  public void removeReverseKey(T key)
+  {
+    removeKey(reverseMap, forwardMap, key);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void removeKey(Map<T, Set<T>> keyMap, Map<T, Set<T>> valueMap, T key)
+  {
+    if (keyMap.containsKey(key) == false) return;
+
+    keyMap.get(key).removeIf(target ->
     {
-      oldSet = forwardMap.remove(oldItem);
+      getSet(valueMap, target).remove(key);
+      return true;
+    });
+  }
 
-      oldSet.forEach(mt ->
-      {
-        reverseMap.get(mt).remove(oldItem);
-        reverseMap.get(mt).add(newItem);
-      });
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-      if (forwardMap.containsKey(newItem))
-      {
-        newSet = forwardMap.get(newItem);
-        newSet.addAll(oldSet);
-      }
-      else
-        forwardMap.put(newItem, oldSet);
-    }
+  /**
+   * Replaces an old key with a new key in both maps.
+   *
+   * @param oldItem the old key
+   * @param newItem the new key
+   */
+  public void replaceItem(T oldItem, T newItem)
+  {
+    if ((oldItem == null) || (newItem == null) || (oldItem == newItem))
+      return;
 
-    if (reverseMap.containsKey(oldItem))
+    synchronized (this)
     {
-      oldSet = reverseMap.remove(oldItem);
-
-      oldSet.forEach(mt ->
-      {
-        forwardMap.get(mt).remove(oldItem);
-        forwardMap.get(mt).add(newItem);
-      });
-
-      if (reverseMap.containsKey(newItem))
-      {
-        newSet = reverseMap.get(newItem);
-        newSet.addAll(oldSet);
-      }
-      else
-        reverseMap.put(newItem, oldSet);
+      replaceInMap(forwardMap, reverseMap, oldItem, newItem);
+      replaceInMap(reverseMap, forwardMap, oldItem, newItem);
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static Set<MainText> getSet(Map<MainText, Set<MainText>> map1, MainText mainText1)
+  private static <T> void replaceInMap(Map<T, Set<T>> keyToValueMap, Map<T, Set<T>> valueToKeyMap, T oldKey, T newKey)
   {
-    if (map1.containsKey(mainText1)) return map1.get(mainText1);
+    if (keyToValueMap.containsKey(oldKey) == false)
+      return;
 
-    Set<MainText> set = ConcurrentHashMap.newKeySet();
+    Set<T> oldSet = keyToValueMap.remove(oldKey);
 
-    map1.put(mainText1, set);
-    return set;
+    oldSet.forEach(relatedMT ->
+    {
+      valueToKeyMap.get(relatedMT).remove(oldKey);
+      valueToKeyMap.get(relatedMT).add   (newKey);
+    });
+
+    keyToValueMap.merge(newKey, oldSet, (newSet, oldSet_) -> { newSet.addAll(oldSet_); return newSet; });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static <T> Set<T> getSet(Map<T, Set<T>> map, T key)
+  {
+    return map.computeIfAbsent(key, key_ -> ConcurrentHashMap.newKeySet());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Set<T> getForwardSet(T key)
+  {
+    return Collections.unmodifiableSet(getSet(forwardMap, key));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Set<T> getReverseSet(T value)
+  {
+    return Collections.unmodifiableSet(getSet(reverseMap, value));
   }
 
 //---------------------------------------------------------------------------

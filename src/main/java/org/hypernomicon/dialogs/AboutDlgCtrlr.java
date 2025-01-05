@@ -106,7 +106,6 @@ public class AboutDlgCtrlr extends HyperDlg
       "<li>" + anchorTag("ScribeJava", "https://github.com/scribejava/scribejava") + "</li>" +
       "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
       "<li>" + anchorTag("JODConverter", "https://github.com/jodconverter/jodconverter") + "</li>" +
-      "<li>" + anchorTag("Jakarta XML Binding", "https://jakarta.ee/specifications/xml-binding/4.0/") + "</li>" +
       "<li>" + anchorTag("JUnit Jupiter", "https://junit.org/junit5/") + "</li>" +
       "<li>" + anchorTag("SLF4J Simple", "http://www.slf4j.org") + "</li>" +
       "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +

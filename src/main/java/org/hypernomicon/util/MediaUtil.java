@@ -25,9 +25,12 @@ import static org.hypernomicon.util.Util.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Base64;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.TikaConfig;
@@ -56,15 +59,28 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static TikaConfig tikaConfig;
+  private static volatile TikaConfig tikaConfig;
 
   private MediaUtil() { throw new UnsupportedOperationException(); }
 
 //---------------------------------------------------------------------------
 
-  public static void init()
+  /**
+   * Provides access to the singleton TikaConfig instance.
+   * @return the singleton TikaConfig instance
+   */
+  private static TikaConfig getTikaConfig()
   {
-    tikaConfig = TikaConfig.getDefaultConfig();
+    if (tikaConfig == null)
+    {
+      synchronized (MediaUtil.class)
+      {
+        if (tikaConfig == null)
+          tikaConfig = TikaConfig.getDefaultConfig();
+      }
+    }
+
+    return tikaConfig;
   }
 
 //---------------------------------------------------------------------------
@@ -79,7 +95,7 @@ public final class MediaUtil
 
     try (TikaInputStream stream = TikaInputStream.get(filePath.toPath()))
     {
-      return tikaConfig.getDetector().detect(stream, metadata);
+      return getTikaConfig().getDetector().detect(stream, metadata);
     }
     catch (IOException e)
     {
@@ -124,15 +140,31 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Converts an image file at the given relative path to a Data URI.
+   * Shows a popup window if there is an error.
+   *
+   * @param relativePath the relative path of the image file
+   * @return a Data URI string representing the image, or an empty string if an error occurs
+   */
   public static String imgDataURI(String relativePath)
   {
-    try (BufferedInputStream stream = new BufferedInputStream(App.class.getResourceAsStream(relativePath)))
+    try (InputStream is = App.class.getResourceAsStream(relativePath))
     {
-      byte[] array = new byte[stream.available()];
+      if (is == null)
+        throw new IOException("Resource not found: " + relativePath);
 
-      noOp(stream.read(array));
+      try (BufferedInputStream stream = new BufferedInputStream(is);
+           ByteArrayOutputStream baos = new ByteArrayOutputStream())
+      {
+        byte[] buffer = new byte[1024];
+        int bytesRead;
 
-      return "data:image/png;base64," + jakarta.xml.bind.DatatypeConverter.printBase64Binary(array);
+        while ((bytesRead = stream.read(buffer)) != -1)
+          baos.write(buffer, 0, bytesRead);
+
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(baos.toByteArray());
+      }
     }
     catch (IOException e)
     {
@@ -163,7 +195,7 @@ public final class MediaUtil
 
   static String getContentTypeExtension(String contentType)
   {
-    try { return tikaConfig.getMimeRepository().forName(contentType).getExtension(); }
+    try { return getTikaConfig().getMimeRepository().forName(contentType).getExtension(); }
     catch (MimeTypeException e) { return ""; }
   }
 

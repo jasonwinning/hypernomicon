@@ -114,6 +114,12 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Copies the given string to the system clipboard.
+   * If the string is null, the clipboard will be cleared.
+   *
+   * @param str the string to be copied to the clipboard, may be null
+   */
   public static void copyToClipboard(String str)
   {
     ClipboardContent content = new ClipboardContent();
@@ -297,8 +303,18 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Parses the given string into an integer.
+   * If the string is not a valid number or is null, it returns the default value.
+   *
+   * @param value the string to be parsed
+   * @param def the default value to return if parsing fails or if the input is null
+   * @return the parsed integer value, or the default value if parsing fails or if the input is null
+   */
   public static int parseInt(String value, int def)
   {
+    if (value == null) return def;
+
     try { return Integer.parseInt(value); }
     catch (NumberFormatException e) { return def; }
   }
@@ -306,11 +322,19 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Parses a hexadecimal string into an integer.
+   * If the string is null, invalid, or cannot be parsed, it returns the default value.
+   *
+   * @param value the hexadecimal string to be parsed
+   * @param def the default value to return if parsing fails or if the input is null
+   * @return the parsed integer value, or the default value if parsing fails or if the input is null
+   */
   public static int parseHex(String value, int def)
   {
     if (value == null) return def;
 
-    if ((value.length() > 2) && ((value.startsWith("0x") || value.startsWith("0X"))))
+    if ((value.length() > 2) && (value.charAt(0) == '0') && ((value.charAt(1) == 'x') || (value.charAt(1) == 'X')))
       value = value.substring(2);
 
     try { return Integer.parseInt(value, 16); }
@@ -320,8 +344,18 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Parses the given string into a long.
+   * If the string is not a valid number, returns the default value.
+   *
+   * @param value the string to be parsed
+   * @param def the default value to return if parsing fails or if the input is null
+   * @return the parsed long value, or the default value if parsing fails or if the input is null
+   */
   public static long parseLong(String value, long def)
   {
+    if (value == null) return def;
+
     try { return Long.parseLong(value); }
     catch (NumberFormatException e) { return def; }
   }

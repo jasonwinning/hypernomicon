@@ -107,7 +107,6 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
   * [ScribeJava](https://github.com/scribejava/scribejava)
   * [XMP Toolkit for Java](https://www.adobe.com/devnet/xmp.html)
   * [JODConverter](https://github.com/jodconverter/jodconverter)
-  * [Jakarta XML Binding](https://jakarta.ee/specifications/xml-binding/4.0/)
   * [JUnit Jupiter](https://junit.org/junit5/)
   * [SLF4J Simple](http://www.slf4j.org)
   * [JBibTex](https://github.com/jbibtex/jbibtex)

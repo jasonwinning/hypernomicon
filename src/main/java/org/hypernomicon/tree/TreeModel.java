@@ -142,8 +142,8 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   void removeRecord(HDT_Record record)
   {
-    ImmutableSet.<HDT_Record>copyOf(parentToChildren.getForwardSet(record)).forEach(child  -> unassignParent(child , record));
-    ImmutableSet.<HDT_Record>copyOf(parentToChildren.getReverseSet(record)).forEach(parent -> unassignParent(record, parent));
+    ImmutableSet.<HDT_Record>copyOf(parentToChildren.getForwardRecordSet(record)).forEach(child  -> unassignParent(child , record));
+    ImmutableSet.<HDT_Record>copyOf(parentToChildren.getReverseRecordSet(record)).forEach(parent -> unassignParent(record, parent));
   }
 
 //---------------------------------------------------------------------------
@@ -152,7 +152,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
   void copyTo(TreeModel<RowType> dest)
   {
     parentToChildren.getAllHeads().forEach(parent ->
-      parentToChildren.getForwardSet(parent).forEach(child ->
+      parentToChildren.getForwardRecordSet(parent).forEach(child ->
         dest.assignParent(child, parent)));
   }
 
@@ -161,7 +161,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   private void unassignParent(HDT_Record child, HDT_Record parent)
   {
-    if (parentToChildren.getForwardSet(parent).contains(child) == false) return;
+    if (parentToChildren.getForwardRecordSet(parent).contains(child) == false) return;
 
     List.copyOf(recordToRows.getRowsForRecord(parent)).forEach(row -> row.treeItem.getChildren().removeIf(childItem ->
     {
@@ -199,7 +199,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   private void assignParent(HDT_Record child, HDT_Record parent)
   {
-    if (parentToChildren.getForwardSet(parent).contains(child)) return;
+    if (parentToChildren.getForwardRecordSet(parent).contains(child)) return;
 
     parentToChildren.addForward(parent, child);
 
@@ -226,7 +226,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   private void addChildRows(RowType parentRow)
   {
-    parentToChildren.getForwardSet(parentRow.getRecord()).forEach(child ->
+    parentToChildren.getForwardRecordSet(parentRow.getRecord()).forEach(child ->
     {
       RowType childRow = treeWrapper.newRow(child, this);
       recordToRows.addRow(childRow);

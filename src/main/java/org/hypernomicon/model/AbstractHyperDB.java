@@ -110,7 +110,7 @@ import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
-import org.hypernomicon.util.BidiOneToManyMainTextMap;
+import org.hypernomicon.util.BidiOneToManyMap;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.FilenameMap;
 import org.hypernomicon.util.PopupDialog.DialogResult;
@@ -186,11 +186,11 @@ public abstract class AbstractHyperDB
 
   private final SearchKeys searchKeys = new SearchKeys();
   private final MentionsIndex mentionsIndex = createMentionsIndex(dbMentionsNdxCompleteHandlers);
+  private final Map<HDT_RecordWithAuthors<? extends Authors>, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
+  private final BidiOneToManyMap<MainText> displayedAtIndex = new BidiOneToManyMap<>();
+  private final Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
   private final List<HDT_Record> initialNavList = new ArrayList<>();
   private final EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
-  private final Map<HDT_RecordWithAuthors<? extends Authors>, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
-  private final BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
-  private final Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
 
   public final FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
 
@@ -251,7 +251,17 @@ public abstract class AbstractHyperDB
   public void addBibChangedHandler(Runnable handler)                                        { bibChangedHandlers.add(handler); }
   public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
   public void addChangeRecordIDHandler(ChangeRecordIDHandler handler)                       { changeRecordIDHandlers.add(handler); }
+
+  /**
+   * This updates the displayedAt index when the MainText object for a record is being replaced.
+   * This does not assume that the record's MainText reference has been changed yet, and does
+   * not change the record's MainText reference; the caller usually does that right after calling
+   * this function.
+   * @param oldMT The previous MainText object the record was pointing to
+   * @param newMT The new MainText object the record will be pointing to
+   */
   public void replaceMainText(MainText oldMT, MainText newMT)                               { displayedAtIndex.replaceItem(oldMT, newMT); }
+
   public void rebuildMentions()                                                             { if (loaded) mentionsIndex.startRebuild(); }
   public void updateMentioner(HDT_Record record)                                            { if (loaded) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                                                   { return mentionsIndex.waitUntilRebuildIsDone(); }

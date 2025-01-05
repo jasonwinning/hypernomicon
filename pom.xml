@@ -184,11 +184,6 @@
     </dependency>
 
     <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>4.0.2</version>
-    </dependency>
-    <dependency>
       <groupId>com.teamdev.jxbrowser</groupId>
       <artifactId>jxbrowser-cross-platform</artifactId>
       <version>6.24.3</version>

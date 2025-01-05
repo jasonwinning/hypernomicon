@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -39,8 +41,10 @@ import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
+import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithAuthors;
+import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
@@ -105,8 +109,8 @@ class MentionsIndex
       return;
     }
 
-    mentionedInDescToMentioners  .removeRecord(record);
-    mentionedAnywhereToMentioners.removeRecord(record);
+    mentionedInDescToMentioners  .removeItem(record);
+    mentionedAnywhereToMentioners.removeItem(record);
     removedRecords.add(record);
   }
 
@@ -151,8 +155,21 @@ class MentionsIndex
     mentionedAnywhereToMentioners.removeReverseKey(record);
     mentionedInDescToMentioners  .removeReverseKey(record);
 
-    strList.forEach(str ->
-      KeywordLinkList.generate(str.toLowerCase()).forEach(link -> mentionedAnywhereToMentioners.addForward(link.key().record, record)));
+    strList.forEach(str -> KeywordLinkList.generate(str.toLowerCase()).forEach(link ->
+    {
+      HDT_Record otherRecord = link.key().record;
+
+      // A record should not be considered as "mentioning" itself, and a term should not
+      // be considered as "mentioning" its concepts or vice versa. This happens because
+      // getAllStrings for concepts includes the term's search key.
+
+      if ((record == otherRecord) ||
+          ((record.getType() == hdtTerm) && ((HDT_Term)record).concepts.contains(otherRecord)) ||
+          ((record.getType() == hdtConcept) && (((HDT_Concept)record).term.get() == otherRecord)))
+        return;
+
+      mentionedAnywhereToMentioners.addForward(link.key().record, record);
+    }));
 
     if (record.hasMainText())
     {
@@ -294,10 +311,26 @@ class MentionsIndex
     if (choseNotToWait.isTrue())
       return null;
 
-    if (target.getType() == hdtConcept)
-      target = ((HDT_Concept)target).term.get();
+    BidiOneToManyRecordMap map = descOnly ? mentionedInDescToMentioners : mentionedAnywhereToMentioners;
 
-    return (descOnly ? mentionedInDescToMentioners : mentionedAnywhereToMentioners).getForwardSet(target);
+    Stream<HDT_Record> mentioners = map.getForwardStream(target);
+
+    mentioners = switch(target.getType())
+    {
+      // A term's "mentioners" should include mentioners of its concepts because they may be
+      // displayed records.
+
+      case hdtConcept -> Stream.concat(mentioners, map.getForwardStream(((HDT_Concept)target).term.get()));
+      case hdtTerm    -> Stream.concat(mentioners, ((HDT_Term)target).concepts.stream().flatMap(map::getForwardStream));
+
+      // Include mentioners of investigations as mentioners of the corresponding person
+
+      case hdtPerson  -> Stream.concat(mentioners, ((HDT_Person)target).investigations.stream().flatMap(map::getForwardStream));
+
+      default -> mentioners;
+    };
+
+    return mentioners.collect(Collectors.toSet());
   }
 
 //---------------------------------------------------------------------------

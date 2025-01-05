@@ -34,7 +34,6 @@ import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
-import org.hypernomicon.util.MediaUtil;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
@@ -135,8 +134,6 @@ public final class App extends Application
     debugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
 
     BrowserPreferences.setChromiumSwitches("--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses");
-
-    MediaUtil.init();
 
     Preferences appPrefs = null;
 
