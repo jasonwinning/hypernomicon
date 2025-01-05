@@ -191,7 +191,7 @@ class RecordTreeEdge
       @SuppressWarnings("unchecked")
       HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
 
-      if (db.keyWorkMentionerStream(kwRecord).anyMatch(mentioner -> mentioner == obj))
+      if (db.keyWorkMentionerStream(kwRecord, false).anyMatch(mentioner -> mentioner == obj))
         return falseWithErrPopupCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
     }
     else if (db.getObjectList(relType, subj, true).contains(obj))

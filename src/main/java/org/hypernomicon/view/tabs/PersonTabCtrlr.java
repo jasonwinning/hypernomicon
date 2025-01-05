@@ -633,7 +633,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     if      (mentioned.getType() == hdtWork    ) ((HDT_Work    ) mentioned).labelStream().forEach(consumer);
     else if (mentioned.getType() == hdtMiscFile) ((HDT_MiscFile) mentioned).labelStream().forEach(consumer);
 
-    db.keyWorkMentionerStream(mentioned).forEachOrdered(mentioner ->
+    db.keyWorkMentionerStream(mentioned, true).forEachOrdered(mentioner ->
     {
       if (topicRecordsAdded.contains(mentioner) == false)
       {

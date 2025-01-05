@@ -2459,11 +2459,25 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends Authors> record)
+  /**
+   * Returns a stream of the {@link HDT_RecordWithMainText} records having the provided record as a key work.
+   *
+   * @param Key work record
+   * @param mainSpokes a boolean flag indicating whether to return all key work mentioners or just main spokes
+   * @return a stream of {@link HDT_RecordWithMainText} objects; an empty stream if the input record is not found in the keyWorkIndex
+   */
+  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends Authors> record, boolean mainSpokes)
   {
-    return nullSwitch(keyWorkIndex.get(record),
-                      Stream.empty(),
-                      set -> set.stream().map(HDT_RecordWithMainText::mainSpoke));
+    Set<HDT_RecordWithMainText> set = keyWorkIndex.get(record);
+
+    if (set == null) return Stream.empty();
+
+    Stream<HDT_RecordWithMainText> stream = set.stream();
+
+    return mainSpokes ?
+      stream.map(HDT_RecordWithMainText::mainSpoke).distinct()
+    :
+      stream;
   }
 
 //---------------------------------------------------------------------------

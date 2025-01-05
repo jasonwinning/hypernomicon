@@ -21,6 +21,7 @@ import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
 import org.junit.jupiter.api.*;
@@ -110,6 +111,58 @@ class MentionsAndDisplayIndexTest
 
     Set<HDT_Record> set = db.getMentionerSet(concept, false);
     assertTrue(set.contains(person));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void testKeyWorkIndex()
+  {
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
+    HDT_WorkLabel label = db.createNewBlankRecord(hdtWorkLabel);
+
+    assertTrue(db.keyWorkMentionerStream(work, true ).findAny().isEmpty());
+    assertTrue(db.keyWorkMentionerStream(work, false).findAny().isEmpty());
+
+    debate.getMainText().setKeyWorksFromList(List.of(new KeyWork(work)));
+    label .getMainText().setKeyWorksFromList(List.of(new KeyWork(work)));
+
+    assertTrue(db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == debate));
+    assertTrue(db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == debate));
+    assertTrue(db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == label ));
+    assertTrue(db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == label ));
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(debate, label, ""));
+
+    assertTrue (db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == debate));
+    assertTrue (db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == debate));
+    assertFalse(db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == label ));  // Label is not the main spoke
+    assertTrue (db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == label ));
+
+    assertTrue (db.keyWorkMentionerStream(work, HDT_Debate.class).anyMatch(rec -> rec == debate));
+    assertTrue (db.keyWorkMentionerStream(work, hdtDebate).anyMatch(rec -> rec == debate));
+    assertFalse(db.keyWorkMentionerStream(work, hdtDebate).anyMatch(rec -> rec == label ));
+
+    assertTrue (db.keyWorkMentionerStream(work, HDT_WorkLabel.class).anyMatch(rec -> rec == label));
+    assertFalse(db.keyWorkMentionerStream(work, hdtWorkLabel).anyMatch(rec -> rec == debate));
+    assertTrue (db.keyWorkMentionerStream(work, hdtWorkLabel).anyMatch(rec -> rec == label ));
+
+    debate.getHub().disuniteRecord(hdtWorkLabel, true);
+
+    assertTrue(db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == debate));
+    assertTrue(db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == debate));
+    assertTrue(db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == label ));
+    assertTrue(db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == label ));
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(debate, label, ""));
+
+    db.deleteRecord(debate);
+
+    assertFalse(db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == debate));
+    assertFalse(db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == debate));
+    assertTrue (db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == label ));
+    assertTrue (db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == label ));
   }
 
 //---------------------------------------------------------------------------

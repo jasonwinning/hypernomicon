@@ -940,7 +940,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     Set<HDT_RecordWithMainText> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
 
-    Stream<HDT_RecordWithMainText> stream = db.keyWorkMentionerStream(record).filter(recordWMT -> recordWMT.getType() != hdtWorkLabel);
+    Stream<HDT_RecordWithMainText> stream = db.keyWorkMentionerStream(record, true).filter(recordWMT -> recordWMT.getType() != hdtWorkLabel);
 
     if (record.hasMainText())
       stream = Stream.concat(stream, db.displayerStream((HDT_RecordWithMainText)record));
