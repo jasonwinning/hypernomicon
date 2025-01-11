@@ -1528,7 +1528,12 @@ public final class MainCtrlr
       db.prefs.putInt(PREF_KEY_FILE_ID       , fileHyperTab    ().activeID());
       db.prefs.putInt(PREF_KEY_NOTE_ID       , noteHyperTab    ().activeID());
 
-      db.prefs.put(PREF_KEY_RECORD_TYPE, Tag.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
+      RecordType startingTypeForNextTime = viewSequence.lastActiveRecordType();
+
+      if (startingTypeForNextTime == hdtNone)
+        startingTypeForNextTime = hdtPerson;
+
+      db.prefs.put(PREF_KEY_RECORD_TYPE, Tag.getTypeTagStr(startingTypeForNextTime));
 
       boolean watcherWasRunning = folderTreeWatcher.stop();
 
@@ -1666,6 +1671,7 @@ public final class MainCtrlr
         return false;
 
       resetUIPreClose();
+      viewSequence.clear();
       boolean success;
 
       String hdbFileName = app.prefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME);
@@ -1678,7 +1684,7 @@ public final class MainCtrlr
       {
         errorPopup("Unable to create new database: " + getThrowableMessage(e));
 
-        shutDown(false, true, false); // An error in db.close is unrecoverable.
+        shutDown(false, true, false);
         return false;
       }
       catch (HDB_InternalError e)
@@ -1875,11 +1881,14 @@ public final class MainCtrlr
 
     resetUIPreClose();
 
-    try { db.close(null); }
+    try
+    {
+      db.close(null);
+    }
     catch (HDB_UnrecoverableInternalError e)
     {
       errorPopup(e);
-      shutDown(false, true, false); // An error in db.close is unrecoverable.
+      shutDown(false, true, false);
       return false;
     }
 
@@ -2284,12 +2293,15 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HDT_Record getInitialTabRecord(RecordType type, String prefID)
+  private static HDT_Record getInitialTabRecord(Map<RecordType, HDT_Record> typeToMostRecentlyViewedRecord, RecordType type, String prefID)
   {
     HDT_Record record = db.records(type).getByID(db.prefs.getInt(prefID, -1));
     if (record != null) return record;
 
-    return db.records(type).size() > 0 ? db.records(type).getByKeyNdx(0) : null;
+    record = typeToMostRecentlyViewedRecord.get(type);
+    if (record != null) return record;
+
+    return db.records(type).isEmpty() ? null : db.records(type).getByKeyNdx(0);
   }
 
 //---------------------------------------------------------------------------
@@ -2311,19 +2323,23 @@ public final class MainCtrlr
       return;
     }
 
-    saveViewToViewsTab(new HyperView<>(personTabEnum  , getInitialTabRecord(hdtPerson     , PREF_KEY_PERSON_ID     )));
-    saveViewToViewsTab(new HyperView<>(instTabEnum    , getInitialTabRecord(hdtInstitution, PREF_KEY_INSTITUTION_ID)));
-    saveViewToViewsTab(new HyperView<>(debateTabEnum  , getInitialTabRecord(hdtDebate     , PREF_KEY_DEBATE_ID     )));
-    saveViewToViewsTab(new HyperView<>(positionTabEnum, getInitialTabRecord(hdtPosition   , PREF_KEY_POSITION_ID   )));
-    saveViewToViewsTab(new HyperView<>(argumentTabEnum, getInitialTabRecord(hdtArgument   , PREF_KEY_ARGUMENT_ID   )));
-    saveViewToViewsTab(new HyperView<>(workTabEnum    , getInitialTabRecord(hdtWork       , PREF_KEY_WORK_ID       )));
+    Map<RecordType, HDT_Record> typeToMostRecentlyViewedRecord = new HashMap<>();
 
-    HDT_Concept concept = nullSwitch((HDT_Term)getInitialTabRecord(hdtTerm, PREF_KEY_TERM_ID), null, term -> term.concepts.get(0));
+    db.initialNavHistory().forEach(record -> typeToMostRecentlyViewedRecord.put(record.getType(), record));
+
+    saveViewToViewsTab(new HyperView<>(personTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPerson     , PREF_KEY_PERSON_ID     )));
+    saveViewToViewsTab(new HyperView<>(instTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtInstitution, PREF_KEY_INSTITUTION_ID)));
+    saveViewToViewsTab(new HyperView<>(debateTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtDebate     , PREF_KEY_DEBATE_ID     )));
+    saveViewToViewsTab(new HyperView<>(positionTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPosition   , PREF_KEY_POSITION_ID   )));
+    saveViewToViewsTab(new HyperView<>(argumentTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtArgument   , PREF_KEY_ARGUMENT_ID   )));
+    saveViewToViewsTab(new HyperView<>(workTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtWork       , PREF_KEY_WORK_ID       )));
+
+    HDT_Concept concept = nullSwitch((HDT_Term)getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtTerm, PREF_KEY_TERM_ID), null, term -> term.concepts.get(0));
 
     saveViewToViewsTab(new HyperView<>(termTabEnum,     concept));
 
-    saveViewToViewsTab(new HyperView<>(fileTabEnum    , getInitialTabRecord(hdtMiscFile   , PREF_KEY_FILE_ID       )));
-    saveViewToViewsTab(new HyperView<>(noteTabEnum    , getInitialTabRecord(hdtNote       , PREF_KEY_NOTE_ID       )));
+    saveViewToViewsTab(new HyperView<>(fileTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtMiscFile   , PREF_KEY_FILE_ID       )));
+    saveViewToViewsTab(new HyperView<>(noteTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtNote       , PREF_KEY_NOTE_ID       )));
     saveViewToViewsTab(new HyperView<>(queryTabEnum   , null));
     saveViewToViewsTab(new HyperView<>(treeTabEnum    , null));
 
@@ -2409,7 +2425,7 @@ public final class MainCtrlr
     catch (HDB_UnrecoverableInternalError e)
     {
       errorPopup("Unable to load database. Reason: " + getThrowableMessage(e));
-      shutDown(false, true, false); // An error in db.close is unrecoverable.
+      shutDown(false, true, false);
       return false;
     }
 

@@ -55,14 +55,18 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
 
+//---------------------------------------------------------------------------
+
 class FileTable extends DragNDropContainer<FileRow>
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private final FileManager dlg;
   private final TableView<FileRow> fileTV;
   private final ObservableList<FileRow> rows;
+
   List<? extends AbstractEntityWithPath> draggingItems;
 
   void clear() { rows.clear(); }

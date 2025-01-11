@@ -40,10 +40,13 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperPath hyperPath;
   private final boolean isDir;
   private MediaType mimetype = null;

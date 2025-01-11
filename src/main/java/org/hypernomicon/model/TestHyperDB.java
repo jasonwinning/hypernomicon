@@ -51,6 +51,23 @@ import com.google.common.collect.SetMultimap;
 
 //---------------------------------------------------------------------------
 
+/**
+ * TestHyperDB is a specialized implementation of AbstractHyperDB used primarily for unit testing
+ * and internal Hypernomicon database verification. It initializes from a template database
+ * (blank_db.zip) and operates entirely in-memory, ensuring no modifications to persistent storage.
+ * After calling TestHyperDB.instance(), the database is opened and online.
+ * This class is designed to be non-interactive, making it ideal for automated testing scenarios.
+ * <p>
+ * Usage Example:
+ * <pre>
+ * {@code
+ * TestHyperDB db = TestHyperDB.instance();
+ * // Perform database operations
+ * db.}{@link #closeAndOpen()};
+ * </pre>
+ * </p>
+ * @see #closeAndOpen()
+ */
 public final class TestHyperDB extends AbstractHyperDB
 {
 
@@ -223,6 +240,13 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Closes the current in-memory instance of the TestHyperDB and reopens it to ensure a clean state.
+   * <p>
+   * This method is useful for resetting the database state between different test scenarios.
+   *
+   * @throws AssertionError if the database is already closed or if an error occurs during closing.
+   */
   public void closeAndOpen()
   {
     if (isLoaded() == false)

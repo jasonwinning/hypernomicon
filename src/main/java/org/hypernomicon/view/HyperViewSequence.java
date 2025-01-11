@@ -417,4 +417,22 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public RecordType lastActiveRecordType()
+  {
+    if (slots.isEmpty())
+      return hdtNone;
+
+    for (int ndx = curNdx; ndx >= 0; ndx--)
+    {
+      RecordType recordType = slots.get(ndx).getTabRecordType();
+      if (recordType != hdtNone)
+        return recordType;
+    }
+
+    return hdtNone;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

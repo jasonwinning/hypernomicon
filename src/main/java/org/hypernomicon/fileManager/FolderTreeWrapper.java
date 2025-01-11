@@ -45,13 +45,18 @@ import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 
+//---------------------------------------------------------------------------
+
 public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final TreeView<FileRow> tv;
   private final TreeModel<FileRow> treeModel;
   private final FileTable fileTable;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   TreeModel<FileRow> getTreeModel()                                      { return treeModel; }
