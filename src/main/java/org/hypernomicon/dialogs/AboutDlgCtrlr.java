@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Jason Winning
+ * Copyright 2015-2025 Jason Winning
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,7 +178,7 @@ public class AboutDlgCtrlr extends HyperDlg
 
       "Version: " + appVersion + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
       "Build date: " + buildDate + "<br>" +
-      "Copyright \u00a9 2015-2024 Jason Winning.<br><br>" +
+      "Copyright \u00a9 2015-2025 Jason Winning.<br><br>" +
       "Operating system: " + SystemUtils.OS_NAME + (safeStr(distro).isBlank() ? "" : (" (" + distro + ")")) + "<br>" +
       "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
       "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + ' ' + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
