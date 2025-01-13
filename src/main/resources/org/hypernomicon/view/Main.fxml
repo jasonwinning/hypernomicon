@@ -156,8 +156,7 @@
           </graphic>
         </ToggleButton>
         <Separator orientation="VERTICAL" prefHeight="200.0" />
-        <Button fx:id="btnMentions" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" onAction="#btnMentionsClick" prefHeight="22.0" text="Mentions" />
-        <Button fx:id="btnAdvancedSearch" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" text="Adv Search" />
+        <Button fx:id="btnMentions" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" onAction="#btnMentionsClick" prefHeight="22.0" text="Mentions" />        
       </ToolBar>
     </HBox>
   </top>
@@ -318,8 +317,7 @@
             </AnchorPane>
           </Tab>
         </TabPane>
-
-
+        <Label fx:id="lblFindToast" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" style="-fx-padding: 0em 1em 0em 1em;" styleClass="tooltip" text="Find within all fields" visible="false" AnchorPane.leftAnchor="92.0" AnchorPane.topAnchor="29.0" />
       </AnchorPane>
       <AnchorPane GridPane.columnIndex="2">
         <Button fx:id="btnSave" layoutX="2.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnSaveClick" prefHeight="24.0" prefWidth="78.0" text="Accept Edits" AnchorPane.rightAnchor="214.0" AnchorPane.topAnchor="5.0" />

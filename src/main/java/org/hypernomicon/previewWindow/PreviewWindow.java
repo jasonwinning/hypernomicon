@@ -268,6 +268,10 @@ public class PreviewWindow extends HyperDlg
     setToolTip(btnHiliteNext    , "Go to next annotated page");
     setToolTip(btnRefresh       , "Refresh current view");
     setToolTip(btnContents      , "Show list of works and page numbers assigned to this work file");
+    setToolTip(btnStartPage     , "Jump to this page");
+    setToolTip(btnEndPage       , "Jump to this page");
+    setToolTip(btnSetStart      , "Set start page to page currently showing");
+    setToolTip(btnSetEnd        , "Set end page to page currently showing");
     setToolTip(sldPreview       , "Navigate to different page");
 
     chbBack.setOnAction(event ->

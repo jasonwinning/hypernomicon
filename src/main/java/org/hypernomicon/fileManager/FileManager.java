@@ -321,7 +321,7 @@ public class FileManager extends HyperDlg
     setToolTip(btnRename       , "Rename selected file or folder");
     setToolTip(btnRefresh      , "Refresh");
     setToolTip(btnMainWindow   , "Return to main application window");
-    setToolTip(btnPreviewWindow, "Show preview window");
+    setToolTip(btnPreviewWindow, "View selected record/file in Preview Window");
   }
 
 //---------------------------------------------------------------------------

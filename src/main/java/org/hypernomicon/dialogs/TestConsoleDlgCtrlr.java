@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.util.filePath.FilePath;
 
@@ -167,7 +168,7 @@ public class TestConsoleDlgCtrlr extends HyperDlg
   {
     String folderNameStr = tfFolderName.getText();
 
-    FilePath transientDBFilePath = safeStr(folderNameStr).isBlank() ? getParentFilePath() : getTransientDBFilePath(false, false);
+    FilePath transientDBFilePath = safeStr(folderNameStr).isBlank() ? getParentFilePath() : getTransientDBFilePath(false, false, null);
 
     if (FilePath.isEmpty(transientDBFilePath)) return;
 
@@ -180,7 +181,7 @@ public class TestConsoleDlgCtrlr extends HyperDlg
   private void createTransientTestDB(boolean fromScratch)
   {
     boolean restartWatcher = folderTreeWatcher.stop();
-    FilePath transientDBFilePath = getTransientDBFilePath(true, false);
+    FilePath transientDBFilePath = getTransientDBFilePath(true, false, null);
     if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
 
     if (FilePath.isEmpty(transientDBFilePath)) return;
@@ -253,7 +254,9 @@ public class TestConsoleDlgCtrlr extends HyperDlg
 
   @FXML private void btnDeleteClick()
   {
-    FilePath transientDBFilePath = getTransientDBFilePath(true, true);
+    MutableBoolean nonEmptyWithNoHdbFile = new MutableBoolean(false);
+
+    FilePath transientDBFilePath = getTransientDBFilePath(true, true, nonEmptyWithNoHdbFile);
 
     if (FilePath.isEmpty(transientDBFilePath)) return;
 
@@ -263,7 +266,12 @@ public class TestConsoleDlgCtrlr extends HyperDlg
       return;
     }
 
-    if (confirmDialog("Delete folder \"" + transientDBFilePath + "\" and everything in it?") == false)
+    String prompt = nonEmptyWithNoHdbFile.isTrue() ?
+      "Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file. Are you sure you want to delete it?"
+    :
+      "Delete folder \"" + transientDBFilePath + "\" and everything in it?";
+
+    if (confirmDialog(prompt) == false)
       return;
 
     try
@@ -319,9 +327,11 @@ public class TestConsoleDlgCtrlr extends HyperDlg
    * Validate transient test database directory path and return FilePath object
    * @param modifying If true, means it should perform checks for modifying the directory
    * @param deleting If true, means it should perform checks for deleting the directory
+   * @param nonEmptyWithNoHdbFile Output parameter set to true if the directory is non-empty
+   * with no HDB file. Can be set to null if you don't need that information.
    * @return FilePath object
    */
-  private FilePath getTransientDBFilePath(boolean modifying, boolean deleting)
+  private FilePath getTransientDBFilePath(boolean modifying, boolean deleting, MutableBoolean nonEmptyWithNoHdbFile)
   {
     FilePath parentFilePath = getParentFilePath();
 
@@ -375,8 +385,14 @@ public class TestConsoleDlgCtrlr extends HyperDlg
                                   .filter(FilePath::isFile)
                                   .noneMatch(filePath -> "hdb".equalsIgnoreCase(filePath.getExtensionOnly())))
     {
-      falseWithErrorPopup("Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file.", tfFolderName);
-      return null;
+      if (nonEmptyWithNoHdbFile != null)
+        nonEmptyWithNoHdbFile.setTrue();
+
+      if (deleting == false)
+      {
+        falseWithErrorPopup("Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file.", tfFolderName);
+        return null;
+      }
     }
 
     return transientDBFilePath.anyOpenFilesInDir() ? null : transientDBFilePath;  // anyOpenFilesInDir shows a popup if it returns true

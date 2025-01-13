@@ -18,6 +18,7 @@
 package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.view.MainCtrlr.OmniSearchMode;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 
@@ -248,10 +249,10 @@ public class HyperViewSequence
     if (activeRecord.getType() == hdtPerson)
     {
       if (((HDT_Person)activeRecord).getLastName().length() > 0)
-        ui.omniFocus(true);
+        ui.omniFocus(OmniSearchMode.asYouType, false);
     }
     else if (activeRecord.name().length() > 0)
-      ui.omniFocus(true);
+      ui.omniFocus(OmniSearchMode.asYouType, false);
   }
 
 //---------------------------------------------------------------------------

@@ -357,6 +357,19 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Executes a search based on the provided parameters.
+   *
+   * @param doSearch If true, performs the search; if false, skips the search, invokes the favorite if one was passed in, and returns false.
+   * @param type The type of query to be executed. Either this parameter should be null or fav should be.
+   * @param query The query ID to be executed. Pass in -1 if fav is non-null.
+   * @param fav The favorite query to be invoked, if any. Should be left null if type and query parameters are used.
+   * @param op1 The first operand for the query.
+   * @param op2 The second operand for the query.
+   * @param caption The caption to set for the query sub-tab within the Queries tab.
+   * @return True if the query ran successfully, regardless of whether there were any results;
+   * false if the query did not run, encountered an error during execution, or was cancelled by the user.
+   */
   public boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite fav, HyperTableCell op1, HyperTableCell op2, String caption)
   {
     if ((type != qtReport) && (db.isLoaded() == false)) return false;

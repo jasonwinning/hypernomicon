@@ -504,15 +504,37 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Returns true if search was completed
-
+  /**
+   * Executes a search based on the provided parameters.
+   *
+   * @param doSearch If true, performs the search; if false, skips the search, invokes the favorite if one was passed in, and returns false.
+   * @param type The type of query to be executed. Either this parameter should be null or newFav should be.
+   * @param query The query ID to be executed. Pass in -1 if newFav is non-null.
+   * @param newFav The favorite query to be invoked, if any. Should be left null if type and query parameters are used.
+   * @param op1 The first operand for the query.
+   * @param op2 The second operand for the query.
+   * @param caption The caption to set for the query sub-tab within the Queries tab.
+   * @return True if the query ran successfully, regardless of whether there were any results;
+   * false if the query did not run, encountered an error during execution, or was cancelled by the user.
+   */
   boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite newFav, HyperTableCell op1, HyperTableCell op2, String caption)
   {
     if ((type != qtReport) && (db.isLoaded() == false)) return false;
 
-    fav = newFav;
+    if (newFav != null)
+    {
+      if ((type != null) || (query != -1))
+        return falseWithInternalErrorPopup(82467);
 
-    if (newFav != null) invokeFavorite(newFav);
+      fav = newFav;
+      invokeFavorite(newFav);
+    }
+    else if ((type == null) || (query < 0))
+    {
+      return falseWithInternalErrorPopup(82468);
+    }
+
+    fav = newFav;
 
     if (doSearch == false)
     {
@@ -779,6 +801,12 @@ public final class QueryCtrlr
 
  // If any of the queries are unfiltered, they will all be treated as unfiltered
 
+  /**
+   * Execute a query.
+   * @param setCaption Whether to set the caption of this query sub-tab within the Queries tab
+   * @return True if the query ran successfully, regardless of whether there were any results;
+   * false if the query did not run, encountered an error during execution, or was cancelled by the user.
+   */
   boolean btnExecuteClick(boolean setCaption)
   {
     for (HyperTableRow row : htFields.dataRows())
@@ -946,11 +974,16 @@ public final class QueryCtrlr
     if (showDesc)
       lowerOneTouchExpandableWrapper.setCollapsedState(CollapsedState.Expanded);
 
+    boolean focusOnFirstResult = false;
+
     if (resultsBackingList.isEmpty() == false)
     {
       if (getRecordToHilite() != null)
       {
         ui.switchToRecordSearch();
+
+        if (showDesc)
+          focusOnFirstResult = true;
 
         refreshView(false);
       }
@@ -960,11 +993,22 @@ public final class QueryCtrlr
 
         String textToHilite = getTextToHilite();
         if (textToHilite.isBlank() == false)
+        {
           ui.findInDescription(textToHilite);
+
+          if (showDesc)
+            focusOnFirstResult = true;
+        }
       }
     }
     else
       refreshView(false);
+
+    if (focusOnFirstResult) Platform.runLater(() ->
+    {
+      safeFocus(tvResults);
+      tvResults.getSelectionModel().clearAndSelect(0);
+    });
 
     return true;
   }
