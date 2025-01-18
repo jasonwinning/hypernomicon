@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -160,7 +159,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     cb.setMaxWidth(Double.MAX_VALUE);
     cb.setPrefWidth(getWidth() - getGraphicTextGap() * 2);
 
-    setHeights(cb, 18.0 * displayScale);
+    setHeights(cb, scalePropertyValueForDPI(18));
 
     HyperTableRow row = getTableRow().getItem();
 

@@ -100,6 +100,12 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * A placeholder object used to differentiate method signatures and avoid type erasure conflicts.
+   * This constant is meant to be passed as an argument to indicate that the parameter is unused.
+   */
+  public static final Object UNUSED = new Object();
+
   public static final ReentrantLock globalLock = new ReentrantLock();
 
   public static final StopWatch stopWatch1 = new StopWatch(), stopWatch2 = new StopWatch(), stopWatch3 = new StopWatch(),

@@ -438,10 +438,10 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void clear(boolean resetRecord)
   {
-    setHeights(btnFolder      , 24.0 * displayScale);
-    setHeights(tfFolder       , 24.0 * displayScale);
-    setHeights(btnCreateFolder, 24.0 * displayScale);
-    setHeights(btnBrowse      , 24.0 * displayScale);
+    setHeights(btnFolder      , scalePropertyValueForDPI(24));
+    setHeights(tfFolder       , scalePropertyValueForDPI(24));
+    setHeights(btnCreateFolder, scalePropertyValueForDPI(24));
+    setHeights(btnBrowse      , scalePropertyValueForDPI(24));
 
     super       .clear(resetRecord);
     htParents   .clear();

@@ -22,6 +22,7 @@ import static org.hypernomicon.model.records.HDT_RecordBase.makeSortKeyByType;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.query.ui.ResultCellValue.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.time.Instant;
@@ -50,13 +51,16 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  static final double COL_MAX_WIDTH = 1200.0,
+                      COL_DEFAULT_WIDTH = 80.0,
+                      ID_COL_WIDTH  = 55.0,
+                      RECORD_NAME_COL_WIDTH = 230.0;
+
   ResultColumn countCol;
 
   private ResultColumn(String caption, boolean caseSensitive)
   {
-    super(caption);
-
-    setSafeComparator((cell1, cell2) ->
+    this(caption, (cell1, cell2) ->
     {
       if (caseSensitive)
         return safeStr(cell1.text).trim().compareTo(safeStr(cell2.text).trim());
@@ -70,9 +74,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   @SuppressWarnings({ "unchecked", "rawtypes" })
   private ResultColumn(String caption, Function<ResultCellValue, Comparable<?>> sortFunction)
   {
-    super(caption);
-
-    setSafeComparator((cell1, cell2) ->
+    this(caption, (cell1, cell2) ->
     {
       Comparable value1 = sortFunction.apply(cell1);
       return value1.compareTo(sortFunction.apply(cell2));
@@ -81,18 +83,24 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
 //---------------------------------------------------------------------------
 
-  private ResultColumn(String caption, Comparator<String> comparator)
+  private ResultColumn(String caption, Comparator<String> comparator, Object unused)
   {
-    super(caption);
+    this(caption, (cell1, cell2) -> comparator.compare(safeStr(cell1.text).trim(), safeStr(cell2.text).trim()));
 
-    setSafeComparator((cell1, cell2) -> comparator.compare(safeStr(cell1.text).trim(), safeStr(cell2.text).trim()));
+    // Assert that the unused parameter is the expected constant
+    assert unused == UNUSED : "The unused parameter must be the UNUSED constant";
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setSafeComparator(Comparator<ResultCellValue> comp)
+  private ResultColumn(String caption, Comparator<ResultCellValue> comp)
   {
+    super(caption);
+
+    setPrefWidth(scalePropertyValueForDPI(COL_DEFAULT_WIDTH));
+    setMaxWidth(COL_MAX_WIDTH);
+
     setComparator((cell1, cell2) ->
     {
       if ((cell1 == null) && (cell2 == null)) return 0;
@@ -110,7 +118,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   {
     CountColumn(ResultColumn targetCol)
     {
-      super(targetCol.getText() + " Count", Util::compareNumberStrings);
+      super(targetCol.getText() + " Count", Util::compareNumberStrings, UNUSED);
 
       setVisible(false);
 
@@ -167,6 +175,8 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   {
     super("ID", cell -> cell.record == null ? -1 : cell.record.getID());
 
+    setPrefWidth(scalePropertyValueForDPI(ID_COL_WIDTH));
+
     setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordIDStr()));
   }}
 
@@ -176,6 +186,8 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   static class RecordNameColumn extends ResultColumn { RecordNameColumn()
   {
     super("Name", cell -> makeSortKeyByType(safeStr(cell.text).trim(), hdtWork));
+
+    setPrefWidth(scalePropertyValueForDPI(RECORD_NAME_COL_WIDTH));
 
     setCellValueFactory(cellData -> observableCellValue(cellData, cellData.getValue().getRecordName()));
   }}
@@ -245,9 +257,9 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
 //---------------------------------------------------------------------------
 
-    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, boolean caseSensitive                                ) { super(captionItem.caption, caseSensitive); }
-    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Comparator<String> comparator                        ) { super(captionItem.caption, comparator   ); }
-    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Function<ResultCellValue, Comparable<?>> sortFunction) { super(captionItem.caption, sortFunction ); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, boolean caseSensitive                                ) { super(captionItem.caption, caseSensitive        ); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Comparator<String> comparator                        ) { super(captionItem.caption, comparator   , UNUSED); }
+    private NonGeneralColumn(NonGeneralColumnGroupItem captionItem, Function<ResultCellValue, Comparable<?>> sortFunction) { super(captionItem.caption, sortFunction         ); }
 
 //---------------------------------------------------------------------------
 
@@ -288,8 +300,6 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
         return observableCellValue(cellData, str);
       });
-
-      col.setMaxWidth(ColumnGroupItem.RESULT_COL_MAX_WIDTH);
 
       return col;
     }

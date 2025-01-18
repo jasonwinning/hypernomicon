@@ -30,7 +30,6 @@ import org.hypernomicon.model.records.HDT_Person.PotentialKeySet;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -492,7 +491,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
       if (tabPane.isVisible() == false) // Expand dialog vertically to reveal duplicate author tabs
       {
-        double height = round(419.0 * displayScale),
+        double height = scalePropertyValueForDPI(419),
                diff = dialogStage.getHeight() - stagePane.getHeight();
 
         setHeights(stagePane  , height);

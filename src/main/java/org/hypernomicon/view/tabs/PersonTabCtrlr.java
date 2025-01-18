@@ -408,8 +408,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @Override public void rescale()
   {
-    ivPerson.setFitHeight(round(ivPerson.getFitHeight() * displayScale));
-    ivPerson.setFitWidth (round(ivPerson.getFitWidth () * displayScale));
+    ivPerson.setFitHeight(scalePropertyValueForDPI(ivPerson.getFitHeight()));
+    ivPerson.setFitWidth (scalePropertyValueForDPI(ivPerson.getFitWidth ()));
   }
 
 //---------------------------------------------------------------------------

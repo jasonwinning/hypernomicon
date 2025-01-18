@@ -36,8 +36,6 @@ class ColumnGroupItem
   final String caption;
   ResultColumn col;
 
-  static final double RESULT_COL_MAX_WIDTH = 600.0;
-
 //---------------------------------------------------------------------------
 
   // Constructor for all items in the General and BibField column groups
@@ -46,7 +44,6 @@ class ColumnGroupItem
   {
     this.col = col;
     caption = col.getText();
-    col.setMaxWidth(RESULT_COL_MAX_WIDTH);
   }
 
   private ColumnGroupItem(String caption)

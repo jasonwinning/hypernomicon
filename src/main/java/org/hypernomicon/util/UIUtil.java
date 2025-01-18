@@ -27,8 +27,6 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.function.Supplier;
 
-import javafx.beans.value.ObservableDoubleValue;
-
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -575,19 +573,19 @@ public final class UIUtil
 
       Double val = AnchorPane.getBottomAnchor(node);
       if ((val != null) && (val > 0.0))
-        AnchorPane.setBottomAnchor(node, round(val * displayScale));
+        AnchorPane.setBottomAnchor(node, scalePropertyValueForDPI(val));
 
       val = AnchorPane.getTopAnchor(node);
       if ((val != null) && (val > 0.0))
-        AnchorPane.setTopAnchor(node, round(val * displayScale));
+        AnchorPane.setTopAnchor(node, scalePropertyValueForDPI(val));
 
       val = AnchorPane.getLeftAnchor(node);
       if ((val != null) && (val > 0.0))
-        AnchorPane.setLeftAnchor(node, round(val * displayScale));
+        AnchorPane.setLeftAnchor(node, scalePropertyValueForDPI(val));
 
       val = AnchorPane.getRightAnchor(node);
       if ((val != null) && (val > 0.0))
-        AnchorPane.setRightAnchor(node, round(val * displayScale));
+        AnchorPane.setRightAnchor(node, scalePropertyValueForDPI(val));
     }
 
     if (node instanceof GridPane gridPane)
@@ -621,17 +619,22 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static double scalePropertyValueForDPI(double val)
+  {
+    return round(val * displayScale);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static void scalePropertiesForDPI(DoubleProperty... props)
   {
-    double[] vals = Arrays.stream(props).mapToDouble(ObservableDoubleValue::get).toArray();
-
-    for (int ndx = 0; ndx < props.length; ndx++)
+    for (DoubleProperty prop : props)
     {
-      if (vals[ndx] > 0.0)
-      {
-        vals[ndx] = round(vals[ndx] * displayScale);
-        props[ndx].set(vals[ndx]);
-      }
+      double val = prop.get();
+
+      if (val > 0.0)
+        prop.set(scalePropertyValueForDPI(val));
     }
   }
 

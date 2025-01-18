@@ -336,7 +336,7 @@ public class HyperTableColumn
   {
     Button cellButton = new Button();
 
-    setHeights(cellButton, 18.0 * displayScale);
+    setHeights(cellButton, scalePropertyValueForDPI(18));
     cellButton.setPadding(new Insets(0.0, 7.0, 0.0, 7.0));
 
     tableCell.emptyProperty().addListener((ob, oldValue, newValue) -> cellButton.setVisible(Boolean.FALSE.equals(newValue)));

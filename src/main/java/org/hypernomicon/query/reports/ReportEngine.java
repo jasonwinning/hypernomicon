@@ -20,8 +20,7 @@ package org.hypernomicon.query.reports;
 import java.util.List;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -30,6 +29,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import static org.hypernomicon.App.app;
+import static org.hypernomicon.util.UIUtil.*;
 
 public abstract class ReportEngine
 {
@@ -76,7 +76,7 @@ public abstract class ReportEngine
   protected TableColumn<HyperTableRow, HyperTableCell> addCol(String caption, int prefWidth)
   {
     TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>(caption);
-    col.setPrefWidth(prefWidth);
+    col.setPrefWidth(scalePropertyValueForDPI(prefWidth));
     tv.getColumns().add(col);
     return col;
   }

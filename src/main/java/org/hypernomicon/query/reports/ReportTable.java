@@ -42,7 +42,6 @@ public class ReportTable
 
     setAnchors(tv, 0.0, 0.0, 0.0, 0.0);
 
-    scaleNodeForDPI(tv);
     setFontSize(tv);
 
     tv.setPlaceholder(new Label("There are no query results to display."));
