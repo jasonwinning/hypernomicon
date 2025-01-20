@@ -116,25 +116,23 @@
       <Button fx:id="btnWebSrch" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="Google" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </AnchorPane>
       <RadioButton fx:id="rbClipboard" mnemonicParsing="false" text="Image on Clipboard" toggleGroup="$tgPicture" GridPane.rowIndex="4" />
-      <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="4">
-         <children>
-            <Label layoutX="28.0" layoutY="7.0" text="Save as:" AnchorPane.rightAnchor="8.0" />
-         </children>
-      </AnchorPane>
-      <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="4">
-         <children>
-            <ToggleButton fx:id="btnJpg" layoutX="-12.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" selected="true" text="JPG" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-               <toggleGroup>
-                  <ToggleGroup fx:id="tgFormat" />
-               </toggleGroup>
-            </ToggleButton>
-         </children>
-      </AnchorPane>
-      <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="4">
-         <children>
-            <ToggleButton fx:id="btnPng" layoutX="-14.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="PNG" toggleGroup="$tgFormat" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-         </children>
-      </AnchorPane>
+    <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="4">
+      <Label layoutX="28.0" layoutY="7.0" text="Save as:" AnchorPane.rightAnchor="8.0"/>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="4">
+      <ToggleButton fx:id="btnJpg" layoutX="-12.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
+                    mnemonicParsing="false" prefHeight="25.0" selected="true" text="JPG" AnchorPane.bottomAnchor="2.0"
+                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <toggleGroup>
+          <ToggleGroup fx:id="tgFormat"/>
+        </toggleGroup>
+      </ToggleButton>
+    </AnchorPane>
+    <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="4">
+      <ToggleButton fx:id="btnPng" layoutX="-14.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
+                    mnemonicParsing="false" prefHeight="25.0" text="PNG" toggleGroup="$tgFormat"
+                    AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+    </AnchorPane>
     <Label fx:id="lblChangeName" text="Change file name:" underline="true" GridPane.rowIndex="5">
       <cursor>
         <Cursor fx:constant="HAND" />

@@ -24,9 +24,10 @@ import org.hypernomicon.util.Util;
 
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public final class PlainTextReportGenerator extends ReportGenerator
 {
-  PlainTextReportGenerator() { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

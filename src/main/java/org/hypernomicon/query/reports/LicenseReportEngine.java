@@ -40,12 +40,17 @@ import com.google.common.collect.Lists;
 import javafx.collections.FXCollections;
 import javafx.scene.control.TableView;
 
+//---------------------------------------------------------------------------
+
 public class LicenseReportEngine extends ReportEngine
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private HyperTable ht;
   private static StringBuilder license = null, notice = null;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public boolean autoShowDescription() { return true; }

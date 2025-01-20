@@ -17,7 +17,9 @@
 
 package org.hypernomicon.query.ui;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.dialogs.HyperDlg;
 
@@ -57,7 +59,13 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return (tfName.getText().length() > 0) || falseWithErrorPopup("Name cannot be zero-length.", tfName);
+    if (tfName.getText().isBlank())
+      return falseWithErrorPopup("Name cannot be zero-length.", tfName);
+
+    if (ui.favorites.queryFavNameExists(ultraTrim(tfName.getText())))
+      return falseWithErrorPopup("A favorite with that name already exists.", tfName);
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

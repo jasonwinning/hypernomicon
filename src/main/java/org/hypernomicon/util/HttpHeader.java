@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.apache.http.Header;
 
+//---------------------------------------------------------------------------
+
 public enum HttpHeader
 {
 

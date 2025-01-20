@@ -337,15 +337,15 @@ public class BibManager extends HyperDlg
     });
 
     Tooltip tooltip = new WebTooltip("""
-        Use this search field to search entries in your reference manager.<br><br>
-        In order to match a phrase, put it in double quotes.<br><br>
-        If a search term should be required, prefix it with + (plus sign).<br><br>
-        If a search term should be excluded, prefix it with - (minus sign).<br><br>
-        For example, if you want to find all entries that include Smith and the phrase Journal of,<br>
-        and that don't include Philosophy, you can enter:<br>
-        <blockquote><code>+Smith +&quot;Journal of&quot; -Philosophy</code></blockquote>
-        Select [Implicit +] to treat all terms as required unless prefixed by minus sign.<br><br>
-        The search is not case-sensitive.""");
+      Use this search field to search entries in your reference manager.<br><br>
+      In order to match a phrase, put it in double quotes.<br><br>
+      If a search term should be required, prefix it with + (plus sign).<br><br>
+      If a search term should be excluded, prefix it with - (minus sign).<br><br>
+      For example, if you want to find all entries that include Smith and the phrase Journal of,<br>
+      and that don't include Philosophy, you can enter:<br>
+      <blockquote><code>+Smith +&quot;Journal of&quot; -Philosophy</code></blockquote>
+      Select [Implicit +] to treat all terms as required unless prefixed by minus sign.<br><br>
+      The search is not case-sensitive.""");
 
     ctf.setTooltip(tooltip);
     chkRequireByDefault.setTooltip(tooltip);

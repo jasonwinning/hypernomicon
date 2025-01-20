@@ -44,8 +44,14 @@ import org.json.simple.parser.ParseException;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
+//---------------------------------------------------------------------------
+
 public class JsonHttpClient
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private List<Header> headers;
   private int statusCode;
   private String reasonPhrase = "", lastUrl = "";

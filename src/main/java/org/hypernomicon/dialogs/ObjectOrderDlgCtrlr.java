@@ -35,6 +35,10 @@ import javafx.scene.control.TableView;
 
 public class ObjectOrderDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Button btnMoveUp, btnMoveDown;
   @FXML private TableView<HyperTableRow> tv;
 
@@ -42,7 +46,6 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid() { return true; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public ObjectOrderDlgCtrlr(HyperTable ht, List<HyperTableRow> rows)
@@ -83,7 +86,7 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
     btnMoveUp  .setOnAction(event -> moveUp  ());
     btnMoveDown.setOnAction(event -> moveDown());
 
-    tv.getSelectionModel().clearAndSelect(0);
+    tv.getSelectionModel().selectFirst();
   }
 
 //---------------------------------------------------------------------------

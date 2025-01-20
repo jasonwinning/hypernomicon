@@ -282,6 +282,15 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public boolean queryFavNameExists(String str)
+  {
+    return queryFavList.stream().map(menuItem -> (QueryFavorite)menuItem)
+                                .anyMatch(fav -> fav.name.equals(str));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   void changeRecordID(RecordType changedType, int oldID, int newID)
   {
     queryFavList.stream().map(menuItem -> (QueryFavorite)menuItem).forEach(favItem -> favItem.rows.forEach(row ->

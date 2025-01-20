@@ -21,9 +21,12 @@ import javafx.scene.control.Tooltip;
 import javafx.concurrent.Worker;
 import javafx.scene.CacheHint;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Control;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
+
+//---------------------------------------------------------------------------
 
 public class WebTooltip extends Tooltip
 {
@@ -71,6 +74,34 @@ public class WebTooltip extends Tooltip
 
     setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
     setGraphic(webView);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * <p>Sets up a click handler for a control that displays the tooltip of another control (potentially the same one) when clicked.
+   * This function assumes that the tooltip has already been set for the `tooltipSrc` control.
+   * The tooltip will be displayed at the position of the mouse click with an offset.
+   * The tooltip will be hidden when the mouse exits the `eventSrc` control.
+   *
+   * <p>Note: This has the side effect of clearing the OnMouseExited event handler of eventSrc.
+   *
+   * @param eventSrc   the control that will trigger the display of the tooltip when clicked
+   * @param tooltipSrc the control whose tooltip will be displayed
+   */
+  public static void setupClickHandler(Control eventSrc, Control tooltipSrc)
+  {
+    eventSrc.setOnMouseClicked(event ->
+    {
+      tooltipSrc.getTooltip().show(tooltipSrc, event.getScreenX() + 7, event.getScreenY() + 10);
+
+      eventSrc.setOnMouseExited(exitEvent ->
+      {
+        tooltipSrc.getTooltip().hide();
+        eventSrc.setOnMouseExited(null);
+      });
+    });
   }
 
 //---------------------------------------------------------------------------

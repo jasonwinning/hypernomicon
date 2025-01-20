@@ -17,8 +17,9 @@
 -->
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
@@ -28,19 +29,43 @@
 <?import javafx.scene.web.WebView?>
 
 <AnchorPane prefHeight="677.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueriesTabCtrlr">
-  <Button fx:id="btnToggleFavorite" layoutX="200.0" layoutY="2.0" maxHeight="24.0" minHeight="24.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="146.0" text="Remove from Favorites" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="2.0" />
-  <Label layoutX="356.0" layoutY="6.0" text="Name:" AnchorPane.leftAnchor="160.0" AnchorPane.topAnchor="6.0" />
-  <TextField fx:id="tfFavName" layoutX="394.0" layoutY="2.0" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" prefWidth="477.0" AnchorPane.leftAnchor="198.0" AnchorPane.rightAnchor="241.0" />
-  <Button fx:id="btnClear" layoutX="874.0" layoutY="2.0" maxHeight="24.0" minHeight="24.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="82.0" text="Reset Fields" AnchorPane.rightAnchor="157.0" AnchorPane.topAnchor="2.0" />
-  <Button fx:id="btnExecute" layoutX="958.0" layoutY="2.0" maxHeight="24.0" minHeight="24.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="82.0" style="-fx-font-weight: bold;" text="Execute" AnchorPane.rightAnchor="73.0" AnchorPane.topAnchor="2.0">
+  <Button fx:id="btnExecute" layoutX="9.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="143.0" style="-fx-font-weight: bold;" text="Execute Query" AnchorPane.leftAnchor="9.0" AnchorPane.topAnchor="9.0">
     <graphic>
       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
         <Image url="@../resources/images/glasses-db.png" />
       </ImageView>
     </graphic>
   </Button>
-   <ComboBox fx:id="cbFile" layoutX="1081.0" layoutY="2.0" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" prefWidth="71.0" promptText="Files" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0" />
-  <TabPane fx:id="tabPane" layoutY="28.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0">
+  <Button fx:id="btnToggleFavorite" layoutX="161.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="173.0" text="Remove from Favorites" AnchorPane.leftAnchor="161.0" AnchorPane.topAnchor="9.0">
+    <graphic>
+      <ImageView fitHeight="19.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+        <Image url="@../resources/images/star-empty.png"/>
+      </ImageView>
+    </graphic></Button>
+  <Label layoutX="348.0" layoutY="15.0" text="Favorite name:" AnchorPane.leftAnchor="348.0" AnchorPane.topAnchor="15.0" />
+  <TextField fx:id="tfFavName" layoutX="429.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" prefHeight="28.0" prefWidth="245.0" AnchorPane.leftAnchor="429.0" AnchorPane.topAnchor="9.0" />
+   <MenuButton fx:id="btnFileActions" layoutX="914.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="157.0" text="File Actions" AnchorPane.rightAnchor="42.0" AnchorPane.topAnchor="9.0">
+     <items>
+         <MenuItem fx:id="mnuClearAndAdd" mnemonicParsing="false" text="Clear Search Results Folder and Add All Results" />
+         <MenuItem fx:id="mnuClear" mnemonicParsing="false" text="Clear Search Results Folder" />
+       <MenuItem fx:id="mnuAddSelected" mnemonicParsing="false" text="Copy Selected to Search Results Folder" />
+       <MenuItem fx:id="mnuShowInSysExplorer" mnemonicParsing="false" text="Show Search Results Folder in System Explorer" />
+         <MenuItem fx:id="mnuShowInFileMgr" mnemonicParsing="false" text="Show Search Results Folder in File Manager" />
+     </items>
+      <graphic>
+        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+          <Image url="@../resources/images/documents-stack.png"/>
+        </ImageView>
+      </graphic>
+   </MenuButton>
+   <Button fx:id="btnFileActionsHelp" layoutX="870.0" maxHeight="28.0" maxWidth="28.0" minHeight="28.0" minWidth="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" AnchorPane.rightAnchor="9.0" AnchorPane.topAnchor="9.0">
+   <graphic>
+     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+       <Image url="@../resources/images/question.png" />
+     </ImageView>
+   </graphic>
+ </Button>
+  <TabPane fx:id="tabPane" layoutY="28.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
     <Tab fx:id="tabNew" closable="false" text="+">
       <AnchorPane fx:id="apOrigDescription" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
         <WebView fx:id="webView" layoutX="455.0" layoutY="3.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />

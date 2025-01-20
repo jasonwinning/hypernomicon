@@ -92,13 +92,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
 
@@ -110,13 +104,14 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FXML private AnchorPane apDescription, apResults;
+  @FXML private Button btnResetFields;
   @FXML private SplitPane spMain, spLower;
   @FXML private TableView<HyperTableRow> tvFields;
   @FXML private TableView<ResultRow> tvResults;
-  @FXML private AnchorPane apDescription, apResults;
-  @FXML private ToggleGroup tgLogic;
   @FXML private TextField tfCustomLogic;
   @FXML private ToggleButton btnCustom, btnAnd, btnOr;
+  @FXML private ToggleGroup tgLogic;
 
   private final List<ResultRow> resultsBackingList = new ArrayList<>();
   private final Map<HDT_Record, ResultRow> recordToRow = new HashMap<>();
@@ -371,6 +366,8 @@ public final class QueryCtrlr
       refreshView(newValue.intValue(), false);
       tabPane.requestLayout();
     });
+
+    btnResetFields.setOnAction(event -> resetFields());
 
     switchToRecordMode();
 
@@ -1007,7 +1004,7 @@ public final class QueryCtrlr
     if (focusOnFirstResult) Platform.runLater(() ->
     {
       safeFocus(tvResults);
-      tvResults.getSelectionModel().clearAndSelect(0);
+      tvResults.getSelectionModel().selectFirst();
     });
 
     return true;

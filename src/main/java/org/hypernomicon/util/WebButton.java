@@ -30,6 +30,8 @@ import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.lang3.StringUtils;
 
+//---------------------------------------------------------------------------
+
 public class WebButton
 {
 
@@ -110,12 +112,12 @@ public class WebButton
 
   public WebButton(String name, String caption) { this.name = name; this.caption = caption; }
 
-  public List<UrlPattern> getPatterns()      { return Collections.unmodifiableList(patterns); }
-  public void addPattern(UrlPattern pattern) { patterns.add(pattern); }
-  public String getCaption()                 { return caption; }
-  public void setCaption(String caption)     { this.caption = caption; }
-  public String getName()                    { return name; }
-  public void setName(String name)           { this.name = name; }
+  public List<UrlPattern> getPatterns()         { return Collections.unmodifiableList(patterns); }
+  public void addPattern(UrlPattern pattern)    { patterns.add(pattern); }
+  public String getCaption()                    { return caption; }
+  public void setCaption(String caption)        { this.caption = caption; }
+  public String getName()                       { return name; }
+  public void setName(String name)              { this.name = name; }
 
   public void addPattern(String str, WebButtonField...       requiredFields) { patterns.add(new UrlPattern(str, requiredFields)); }
   public void addPattern(String str, EnumSet<WebButtonField> requiredFields) { patterns.add(new UrlPattern(str, requiredFields)); }

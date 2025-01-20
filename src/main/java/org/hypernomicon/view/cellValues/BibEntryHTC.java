@@ -28,9 +28,11 @@ import org.hypernomicon.model.records.RecordType;
 public class BibEntryHTC extends AbstractHTC
 {
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final BibEntry<?, ?> bibEntry;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public BibEntryHTC(BibEntry<?, ?> bibEntry)
@@ -39,6 +41,8 @@ public class BibEntryHTC extends AbstractHTC
 
     this.bibEntry = bibEntry;
   }
+
+//---------------------------------------------------------------------------
 
   @Override public int getID()                { return bibEntry.numericID(); }
   @Override public String getText()           { return bibEntry.getCBText(); }

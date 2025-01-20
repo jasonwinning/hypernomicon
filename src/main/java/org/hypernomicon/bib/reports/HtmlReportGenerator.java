@@ -26,9 +26,10 @@ import java.util.stream.Stream;
 import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.view.mainText.MainTextUtil;
 
+//---------------------------------------------------------------------------
+
 public final class HtmlReportGenerator extends ReportGenerator
 {
-  HtmlReportGenerator() { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

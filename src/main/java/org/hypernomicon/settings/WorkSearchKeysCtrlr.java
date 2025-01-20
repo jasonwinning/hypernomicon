@@ -83,7 +83,7 @@ public class WorkSearchKeysCtrlr implements SettingsControl
       }
     });
 
-    tpWorkSearchKeys.getSelectionModel().select(0);
+    tpWorkSearchKeys.getSelectionModel().selectFirst();
     Platform.runLater(this::refreshExamples);
   }
 

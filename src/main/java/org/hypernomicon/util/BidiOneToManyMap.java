@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+//---------------------------------------------------------------------------
+
 public class BidiOneToManyMap<T>
 {
 

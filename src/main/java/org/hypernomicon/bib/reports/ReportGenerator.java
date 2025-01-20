@@ -24,16 +24,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+//---------------------------------------------------------------------------
+
 public abstract class ReportGenerator
 {
-  ReportGenerator() { }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private final List<ReportField> fieldList = new ArrayList<>();
+
+//---------------------------------------------------------------------------
 
   public static ReportGenerator create(boolean html)
   {
     return html ? new HtmlReportGenerator() : new PlainTextReportGenerator();
   }
-
-  private final List<ReportField> fieldList = new ArrayList<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -58,9 +58,12 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
+//---------------------------------------------------------------------------
+
 public final class UIUtil
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private UIUtil() { throw new UnsupportedOperationException(); }

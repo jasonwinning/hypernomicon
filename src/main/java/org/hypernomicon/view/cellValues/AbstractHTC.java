@@ -28,9 +28,12 @@ import java.util.Objects;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public abstract class AbstractHTC implements HyperTableCell
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private final boolean sortToBottom;

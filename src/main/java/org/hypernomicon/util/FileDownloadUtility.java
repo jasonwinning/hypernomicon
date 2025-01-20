@@ -35,7 +35,6 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 
-import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.mainText.MainTextWrapper;
@@ -45,6 +44,19 @@ import static org.hypernomicon.util.MediaUtil.*;
 
 //---------------------------------------------------------------------------
 
+/**
+ * FileDownloadUtility provides methods for downloading files from a given URL. It supports
+ * downloading files to the file system or into memory buffers. The utility handles HTTP
+ * connections, responses, and saving the file data.
+ *
+ * <p>Example usage:<pre>
+ * // Download to file
+ * FileDownloadUtility.downloadToFile(fileURL, dirPath, fileNameStr, fileName, assumeIsImage, httpClient, successHandler, failHandler);
+ *
+ * // Download to buffer
+ * FileDownloadUtility.downloadToBuffer(fileURL, fileName, assumeIsImage, httpClient, successHandler, failHandler);</pre>
+ * <p>This class is not intended to be instantiated.
+ */
 public final class FileDownloadUtility
 {
 
@@ -120,6 +132,18 @@ public final class FileDownloadUtility
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Downloads a file from the specified URL and saves it to the given directory with the specified file name.
+   *
+   * @param fileURL       the URL of the file to be downloaded
+   * @param dirPath       the directory path where the file should be saved
+   * @param fileNameStr   the name of the file to be saved (if empty, it will try to use the file name from the server)
+   * @param fileName      output-only parameter; a StringBuilder to hold the resulting file name
+   * @param assumeIsImage a flag indicating whether to assume the file is an image if no file extension is found
+   * @param httpClient    the AsyncHttpClient to handle HTTP requests
+   * @param successHndlr  a consumer to handle the Buffer upon successful download
+   * @param failHndlr     a consumer to handle exceptions in case of failure
+   */
   public static void downloadToFile(String fileURL, FilePath dirPath, String fileNameStr, StringBuilder fileName, boolean assumeIsImage,
                                     AsyncHttpClient httpClient, Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
   {
@@ -129,6 +153,18 @@ public final class FileDownloadUtility
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Downloads a file from the specified URL and stores it in an in-memory buffer.
+   * The {@code fileName} parameter will be set to the server-specified file name if it's available.
+   * The {@code fileName} parameter is always cleared before the download begins.
+   *
+   * @param fileURL       the URL of the file to be downloaded
+   * @param fileName      a StringBuilder to hold the resulting file name; it will be cleared before use
+   * @param assumeIsImage a flag indicating whether to assume the file is an image if no file extension is found
+   * @param httpClient    the AsyncHttpClient to handle HTTP requests
+   * @param successHndlr  a consumer to handle the Buffer upon successful download
+   * @param failHndlr     a consumer to handle exceptions in case of failure
+   */
   public static void downloadToBuffer(String fileURL, StringBuilder fileName, boolean assumeIsImage,
                                       AsyncHttpClient httpClient, Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
   {
@@ -213,7 +249,7 @@ public final class FileDownloadUtility
         origFileNameStr = origFileNameStr.endsWith(":") ? "" : origFileNameStr.substring(origFileNameStr.lastIndexOf(':') + 1);
 
       if (origFileNameStr.isEmpty())
-        origFileNameStr = (assumeIsImage ? "image" : "file") + ZoteroWrapper.generateWriteToken();
+        origFileNameStr = (assumeIsImage ? "image" : "file") + randomHexStr(32);
 
       String ext = FilenameUtils.getExtension(origFileNameStr);
 

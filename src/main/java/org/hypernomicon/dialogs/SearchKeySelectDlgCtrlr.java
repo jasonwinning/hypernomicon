@@ -123,7 +123,7 @@ public class SearchKeySelectDlgCtrlr extends HyperDlg
       record.getSearchKeys().forEach(keyword -> cbKey.getItems().add(keyword.text));
 
       if (cbKey.getItems().size() == 1)
-        cbKey.getSelectionModel().clearAndSelect(0);
+        cbKey.getSelectionModel().selectFirst();
     });
 
 //---------------------------------------------------------------------------

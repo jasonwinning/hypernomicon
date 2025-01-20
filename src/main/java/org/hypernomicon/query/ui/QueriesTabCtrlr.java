@@ -24,25 +24,24 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.concurrent.Worker.State;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
 
@@ -54,18 +53,20 @@ import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.controls.CheckBoxMenuItem;
+import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.Highlighter;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.*;
-import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.DesktopUtil.*;
@@ -79,8 +80,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 
   @FXML private AnchorPane apOrigDescription;
-  @FXML private Button btnClear, btnToggleFavorite;
-  @FXML private ComboBox<CheckBoxOrCommand> cbFile;
+  @FXML private Button btnToggleFavorite, btnFileActionsHelp;
+  @FXML private MenuButton btnFileActions;
+  @FXML private MenuItem mnuClear, mnuClearAndAdd, mnuAddSelected, mnuShowInSysExplorer, mnuShowInFileMgr;
   @FXML private Tab tabNew;
   @FXML private TabPane tabPane;
   @FXML private TextField tfFavName;
@@ -88,15 +90,12 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @FXML Button btnExecute;
 
-  private ComboBox<CheckBoxOrCommand> fileBtn = null;
+  private CheckBoxMenuItem mnuIncludeEdited, mnuExcludeAnnots, mnuEntirePDF;
+
   private Property<ObservableList<ResultRow>> propToUnbind = null;
   private ChangeListener<ResultRow> cbListenerToRemove = null, tvListenerToRemove = null;
   private ComboBox<ResultRow> cb;
   private boolean clearingViews = false;
-
-  private final BooleanProperty includeEdited = new SimpleBooleanProperty(),
-                                excludeAnnots = new SimpleBooleanProperty(),
-                                entirePDF     = new SimpleBooleanProperty();
 
   private final List<QueryCtrlr> queryCtrlrs = new ArrayList<>();
   private final Highlighter highlighter;
@@ -133,7 +132,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void previousSearchResult()       { highlighter.previousSearchResult(); }
 
   @FXML private void mnuCopyToFolderClick()          { copyFilesToFolder(true); }
-  @FXML private void mnuShowSearchFolderClick()      { if (db.isLoaded()) launchFile(db.resultsPath()); }
 
   @Override public TextViewInfo mainTextInfo(HDT_Record record) { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
 
@@ -153,7 +151,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 
     btnExecute.setOnAction(event -> btnExecuteClick());
-    btnClear.setOnAction(event -> curQueryCtrlr.resetFields());
     btnToggleFavorite.setOnAction(event -> curQueryCtrlr.btnFavoriteClick());
 
     tabPane.getTabs().addListener((Change<? extends Tab> c) -> Platform.runLater(tabPane::requestLayout));
@@ -205,7 +202,83 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       curQueryCtrlr.favNameChange();
     });
 
-    addFilesButton();
+    initFileActions();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initFileActions()
+  {
+    mnuClear            .setOnAction(event -> mnuClearSearchFolderClick());
+    mnuClearAndAdd      .setOnAction(event -> mnuCopyAllClick          ());
+    mnuAddSelected      .setOnAction(event -> mnuCopyToFolderClick     ());
+
+    mnuShowInSysExplorer.setOnAction(event -> mnuShowSearchFolderClick (false));
+    mnuShowInFileMgr    .setOnAction(event -> mnuShowSearchFolderClick (true ));
+
+    mnuIncludeEdited = new CheckBoxMenuItem("Include edited works"          , btnFileActions.showingProperty());
+    mnuExcludeAnnots = new CheckBoxMenuItem("Copy files without annotations", btnFileActions.showingProperty());
+    mnuEntirePDF     = new CheckBoxMenuItem("Always copy entire PDF file"   , btnFileActions.showingProperty());
+
+    btnFileActions.getItems().addAll(List.of(mnuIncludeEdited, mnuExcludeAnnots, mnuEntirePDF));
+
+    btnFileActions.setTooltip(new WebTooltip("""
+      <html lang="en">
+      <head>
+        <style>
+          .topic      { color: #4682B4; }
+          .recname    { color: #FF6347; }
+          .large-text { font-size: 1.3em; font-weight: normal; }
+        </style>
+      </head>
+      <body>
+        <p>The File Actions menu allows you to copy files associated with the results of your queries to the<br/>
+           Search Results database folder. Then you can easily perform actions on the subset of files you are<br/>
+           interested in, for example full-text search, combining PDFs into a single PDF or zip file, sending<br/>
+           the files to colleagues, or making the files available to students as course readings.</p>
+        <p>Below is an overview of each menu option:</p>
+        <h4 class="topic">File Actions</h4>
+        <ul>
+          <li><strong>Clear Search Results Folder and Add All Results:</strong> This option clears the current contents<br/>
+                      of the Search Results folder and then copies all files associated with the query results to the<br/>
+                      folder.</li>
+          <li><strong>Clear Search Results Folder:</strong> Use this option to clear all files currently in the Search<br/>
+                      Results folder without adding any new files.</li>
+          <li><strong>Copy Selected to Search Results Folder:</strong> This option copies the files associated with the<br/>
+                      selected query results to the Search Results folder.</li>
+          <li><strong>Show Search Results Folder in System Explorer:</strong> Opens the Search Results folder in your<br/>
+                      system's file explorer (e.g., Windows Explorer on Windows).</li>
+          <li><strong>Show Search Results Folder in File Manager:</strong> Opens the Search Results folder in the<br/>
+                      Hypernomicon File Manager.</li>
+        </ul>
+        <h4 class="topic">Options</h4>
+        <ul>
+          <li><strong>Include Edited Works:</strong> By default, files associated with edited works are not copied. Check<br/>
+                      this option to include them in the copying process.</li>
+          <li><strong>Copy Files Without Annotations:</strong> Select this option if you want to copy PDF files without<br/>
+                      any annotations or highlights, useful for sharing clean versions of the documents.</li>
+          <li><strong>Always Copy Entire PDF File:</strong> Check this option to ensure the entire PDF file is copied. By<br/>
+                      default, only the specific pages related to the query result are copied.</li>
+        </ul>
+      </body>
+      </html>
+      """));
+
+    WebTooltip.setupClickHandler(btnFileActionsHelp, btnFileActions);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void mnuShowSearchFolderClick(boolean inFileMgr)
+  {
+    if (db.isLoaded() == false) return;
+
+    if (inFileMgr)
+      ui.goToFileInManager(db.resultsPath());
+    else
+      launchFile(db.resultsPath());
   }
 
 //---------------------------------------------------------------------------
@@ -214,44 +287,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public void removeRecord(HDT_Record record)
   {
     queryCtrlrs.forEach(queryCtrlr -> queryCtrlr.getResultsTV().getItems().removeIf(row -> row.getRecord() == record));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void addFilesButton()
-  {
-    ObservableList<Node> children = ((AnchorPane) getTab().getContent()).getChildren();
-    ObservableList<CheckBoxOrCommand> items;
-
-    if (fileBtn != null)
-    {
-      items = fileBtn.getItems();
-      fileBtn.setItems(null);
-      children.remove(fileBtn);
-    }
-    else
-    {
-      items = FXCollections.observableArrayList(
-
-        new CheckBoxOrCommand("Include edited works", includeEdited),
-        new CheckBoxOrCommand("Copy files without annotations", excludeAnnots),
-        new CheckBoxOrCommand("Always copy entire PDF file", entirePDF),
-        new CheckBoxOrCommand("Clear Search Results Folder and Add All Results", () -> { mnuCopyAllClick          (); fileBtn.hide(); }),
-        new CheckBoxOrCommand("Clear Search Results Folder",                     () -> { mnuClearSearchFolderClick(); fileBtn.hide(); }),
-        new CheckBoxOrCommand("Copy Selected to Search Results Folder",          () -> { mnuCopyToFolderClick     (); fileBtn.hide(); }),
-        new CheckBoxOrCommand("Show Search Results Folder",                      () -> { mnuShowSearchFolderClick (); fileBtn.hide(); }));
-
-      cbFile.setVisible(false);
-    }
-
-    fileBtn = CheckBoxOrCommand.createComboBox(items, "Files");
-
-    copyRegionLayout(cbFile, fileBtn);
-
-    children.add(children.indexOf(cbFile), fileBtn);
-
-    fileBtn.setOnHidden(event -> addFilesButton()); // This is necessary to deselect list item without making the button caption disappear
   }
 
 //---------------------------------------------------------------------------
@@ -390,7 +425,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     mnuClearSearchFolderClick();
 
     if (copyFilesToFolder(false))
-      mnuShowSearchFolderClick();
+      mnuShowSearchFolderClick(false);
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
@@ -401,7 +436,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private boolean copyFilesToFolder(boolean onlySelected)
   {
-    SearchResultFileList fileList = new SearchResultFileList(entirePDF.get(), includeEdited.get());
+    SearchResultFileList fileList = new SearchResultFileList(mnuEntirePDF.isSelected(), mnuIncludeEdited.isSelected());
 
     if ((db.isLoaded() == false) || results().isEmpty()) return false;
 
@@ -424,7 +459,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     boolean startWatcher = folderTreeWatcher.stop();
 
-    fileList.newCopyAllTask(excludeAnnots.getValue()).runWithProgressDialog();
+    fileList.newCopyAllTask(mnuExcludeAnnots.isSelected()).runWithProgressDialog();
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
@@ -563,9 +598,33 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private ImageView ivStar, ivStarEmpty;
+
   void setFavNameToggle(boolean selected)
   {
-    btnToggleFavorite.setText(selected ? "Remove from favorites" : "Add to favorites");
+    // Things are done in a certain way in this function to avoid problems with
+    // the query control refreshing after running a query.
+
+    if (ivStar == null)
+    {
+      ivStar      = imgViewFromRelPath("resources/images/star.png");
+      ivStarEmpty = imgViewFromRelPath("resources/images/star-empty.png");
+    }
+
+    if (selected)
+    {
+      btnToggleFavorite.setText("Remove from favorites");
+
+      if (btnToggleFavorite.getGraphic() != ivStar)
+        btnToggleFavorite.setGraphic(ivStar);
+    }
+    else
+    {
+      btnToggleFavorite.setText("Add to favorites");
+
+      if (btnToggleFavorite.getGraphic() != ivStarEmpty)
+        btnToggleFavorite.setGraphic(ivStarEmpty);
+    }
   }
 
 //---------------------------------------------------------------------------

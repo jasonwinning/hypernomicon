@@ -37,6 +37,15 @@ import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
+/**
+ * EnumBasedTable is a specialized table implementation that uses two Enum types for its rows and columns.
+ * This class provides efficient access and management of values stored in a table structure, leveraging
+ * EnumMaps for performance.
+ *
+ * @param <R> the type of the enum representing the rows
+ * @param <C> the type of the enum representing the columns
+ * @param <V> the type of the values stored in the table
+ */
 public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements Table<R, C, V>
 {
 

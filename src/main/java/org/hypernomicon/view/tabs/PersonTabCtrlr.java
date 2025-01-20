@@ -307,7 +307,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       headersRegion.widthProperty().addListener((obs, ov, nv) -> lblInvHelp.setLayoutX(nv.doubleValue() + invHelpGap));
     });
 
-    setInvHelpTooltip();
+    lblInvHelp.setTooltip(invHelpTooltip());
+
+    WebTooltip.setupClickHandler(lblInvHelp, lblInvHelp);
 
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
@@ -365,25 +367,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         Overall, it is a way of grouping a given author&rsquo;s works and prevents you from needing to write<br>
         a large amount of text on the Person&rsquo;s main description field (the &ldquo;Overview&rdquo; sub-tab).""");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void setInvHelpTooltip()
-  {
-    lblInvHelp.setTooltip(invHelpTooltip());
-
-    lblInvHelp.setOnMouseClicked(event ->
-    {
-      lblInvHelp.getTooltip().show(lblInvHelp, event.getScreenX() + 7, event.getScreenY() + 10);
-
-      lblInvHelp.setOnMouseExited(exitEvent ->
-      {
-        lblInvHelp.getTooltip().hide();
-        lblInvHelp.setOnMouseExited(null);
-      });
-    });
   }
 
 //---------------------------------------------------------------------------

@@ -191,10 +191,10 @@ public final class MainCtrlr
   public final ComboBox<TreeRow> cbTreeGoTo = new ComboBox<>();
   public final TreeSelector treeSelector = new TreeSelector();
   public final Tooltip ttDates;
+  public final HyperFavorites favorites;
 
   private final EnumHashBiMap<TabEnum, Tab> selectorTabs = EnumHashBiMap.create(TabEnum.class);
   private final Stage stage;
-  private final HyperFavorites favorites;
   private final OmniFinder omniFinder;
   private final CustomTextField ctfOmniGoTo;
   private final ClickHoldButton chbBack, chbForward;

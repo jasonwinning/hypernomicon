@@ -360,41 +360,41 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   synchronized private static void setUniteTooltip(Label label)
   {
     if (uniteToolTip == null) uniteToolTip = new WebTooltip("""
-<html lang="en">
-<head>
-  <style>
-    .topic      { color: #4682B4; }
-    .recname    { color: #FF6347; }
-    .large-text { font-size: 1.3em; font-weight: normal; }
-  </style>
-</head>
-<body>
-  <h4 class="large-text">Click here to <strong>unite</strong> this record with another one.</h4>
+      <html lang="en">
+      <head>
+        <style>
+          .topic      { color: #4682B4; }
+          .recname    { color: #FF6347; }
+          .large-text { font-size: 1.3em; font-weight: normal; }
+        </style>
+      </head>
+      <body>
+        <h4 class="large-text">Click here to <strong>unite</strong> this record with another one.</h4>
 
-  <hr/>
+        <hr/>
 
-  <p><strong class="topic">What does &ldquo;uniting&rdquo; records mean?</strong> Sometimes, multiple records of different types<br/>
-  overlap on the same topic and contain redundant information. For instance, you might<br/>
-  have a Term record, <strong class="recname">&ldquo;Cause&rdquo;</strong>, and a Problem/Debate record called <strong class="recname">&ldquo;What is the nature<br/>
-  of causation?&rdquo;</strong>. Instead of having each record hold similar information and manually<br/>
-  keeping them in sync, you can unite these records. This means they will share the same<br/>
-  description and key works. Any updates made to one record will reflect in the other<br/>
-  one automatically. You can also unite them with additional records.</p>
+        <p><strong class="topic">What does &ldquo;uniting&rdquo; records mean?</strong> Sometimes, multiple records of different types<br/>
+        overlap on the same topic and contain redundant information. For instance, you might<br/>
+        have a Term record, <strong class="recname">&ldquo;Cause&rdquo;</strong>, and a Problem/Debate record called <strong class="recname">&ldquo;What is the nature<br/>
+        of causation?&rdquo;</strong>. Instead of having each record hold similar information and manually<br/>
+        keeping them in sync, you can unite these records. This means they will share the same<br/>
+        description and key works. Any updates made to one record will reflect in the other<br/>
+        one automatically. You can also unite them with additional records.</p>
 
-  <p><strong class="topic">Which records can be united?</strong> You can unite Problem/Debate records, Position records,<br/>
-  Term records, Note records, and Labels. Exception: You cannot unite a Problem/Debate<br/>
-  record with a Position record. Additionally, you cannot unite multiple records of the<br/>
-  same type.</p>
+        <p><strong class="topic">Which records can be united?</strong> You can unite Problem/Debate records, Position records,<br/>
+        Term records, Note records, and Labels. Exception: You cannot unite a Problem/Debate<br/>
+        record with a Position record. Additionally, you cannot unite multiple records of the<br/>
+        same type.</p>
 
-  <p><strong class="topic">What happens when records are united?</strong> Uniting records does not merge them into a<br/>
-  single record. They remain distinct, each maintaining unique fields that the other record<br/>
-  types do not possess.</p>
+        <p><strong class="topic">What happens when records are united?</strong> Uniting records does not merge them into a<br/>
+        single record. They remain distinct, each maintaining unique fields that the other record<br/>
+        types do not possess.</p>
 
-  <p><strong class="topic">Disuniting records:</strong> Once records are united, you can right/secondary-click here to dis-<br/>
-  unite them if needed.</p>
-</body>
-</html>
-""");
+        <p><strong class="topic">Disuniting records:</strong> Once records are united, you can right/secondary-click here to dis-<br/>
+        unite them if needed.</p>
+      </body>
+      </html>
+      """);
 
     label.setTooltip(uniteToolTip);
   }

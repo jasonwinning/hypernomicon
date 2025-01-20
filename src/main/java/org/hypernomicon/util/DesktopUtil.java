@@ -54,11 +54,11 @@ import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import com.google.common.collect.Lists;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public final class DesktopUtil
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private DesktopUtil() { throw new UnsupportedOperationException(); }

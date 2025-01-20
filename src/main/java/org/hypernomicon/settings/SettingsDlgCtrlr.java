@@ -726,16 +726,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       Warning: If the file is moved or renamed, e.g. using the File Manager while the &ldquo;owner&rdquo; database<br>
       is open, the path will not be automatically updated in the corresponding work in this database.""".formatted(EXT_1)));
 
-    btnExtFilesHelp.setOnMouseClicked(event ->
-    {
-      tfExtFiles.getTooltip().show(tfExtFiles, event.getScreenX() + 7, event.getScreenY() + 10);
-
-      btnExtFilesHelp.setOnMouseExited(exitEvent ->
-      {
-        tfExtFiles.getTooltip().hide();
-        btnExtFilesHelp.setOnMouseExited(null);
-      });
-    });
+    WebTooltip.setupClickHandler(btnExtFilesHelp, tfExtFiles);
   }
 
 //---------------------------------------------------------------------------

@@ -351,7 +351,12 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String generateWriteToken()
+  /**
+   * Generates a random hexadecimal string of 32 characters
+   * <br>Example: 981579dd7bbb22edbcd44a8b21458bd3
+   * @return the generated string
+   */
+  private static String generateWriteToken()
   {
     return randomHexStr(32);
   }

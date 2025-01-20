@@ -40,23 +40,24 @@
         </SplitPane>
       </center>
       <top>
-         <AnchorPane fx:id="apSelecting" prefHeight="65.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-            <children>
-               <Label fx:id="lblSelecting" layoutX="97.0" layoutY="32.0" text="Select a Note, Position, or Institution record and click the Select button." wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                  <font>
-                     <Font size="14.0" />
-                  </font>
-                  <padding>
-                     <Insets left="60.0" right="60.0" />
-                  </padding>
-                  <styleClass>
-                     <String fx:value="alert" />
-                     <String fx:value="information" />
-                     <String fx:value="dialog-pane" />
-                  </styleClass>
-               </Label>
-            </children>
-         </AnchorPane>
+        <AnchorPane fx:id="apSelecting" prefHeight="65.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+          <Label fx:id="lblSelecting" layoutX="97.0" layoutY="32.0"
+                 text="Select a Note, Position, or Institution record and click the Select button." wrapText="true"
+                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                 AnchorPane.topAnchor="0.0">
+            <font>
+              <Font size="14.0"/>
+            </font>
+            <padding>
+              <Insets left="60.0" right="60.0"/>
+            </padding>
+            <styleClass>
+              <String fx:value="alert"/>
+              <String fx:value="information"/>
+              <String fx:value="dialog-pane"/>
+            </styleClass>
+          </Label>
+        </AnchorPane>
       </top>
    </BorderPane>
 </AnchorPane>

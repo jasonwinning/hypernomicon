@@ -1279,7 +1279,22 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Generates a random hexadecimal string of the specified number of characters
+   * <br>Example: 981579dd7bbb22edbcd44a8b21458bd3
+   * @param size the length of the random string to generate
+   * @return the generated string
+   * @throws IllegalArgumentException if size is negative
+   */
   public static String randomHexStr(int size)          { return randomStr(size, "0123456789abcdef"); }
+
+  /**
+   * Generates a random alphanumeric string of the specified number of characters
+   * <br>Example: t3oVGLLzqT1fPeaAWHTZo5LQNxlWLsMt
+   * @param size the length of the random string to generate
+   * @return the generated string
+   * @throws IllegalArgumentException if size is negative
+   */
   public static String randomAlphanumericStr(int size) { return randomStr(size, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILJLMNOPQRSTUVWXYZ"); }
 
   /**

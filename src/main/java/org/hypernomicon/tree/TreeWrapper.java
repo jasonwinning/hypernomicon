@@ -65,8 +65,14 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.control.TreeTableColumn.SortType;
 
+//---------------------------------------------------------------------------
+
 public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private TreeTableView<TreeRow> ttv;
   private final Map<TreeRow, Integer> breadCrumbRowToRecordNdx = new HashMap<>();
   private final Set<RecordType> recordTypesInTree = EnumSet.noneOf(RecordType.class);
@@ -78,7 +84,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   private String lastSearchTerm = "";
   final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   TreeWrapper(BreadCrumbBar<TreeRow> bcbPath, boolean hasTerms, ComboBox<TreeRow> comboBox)

@@ -44,132 +44,132 @@
          </WebView>
       </center>
       <bottom>
-         <GridPane BorderPane.alignment="CENTER">
-           <columnConstraints>
-             <ColumnConstraints hgrow="NEVER" maxWidth="180.0" minWidth="180.0" prefWidth="180.0" />
-               <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-             <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="90.0" minWidth="90.0" prefWidth="90.0" />
-           </columnConstraints>
-           <rowConstraints>
-               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-           </rowConstraints>
-            <children>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-                  <children>
-                     <ProgressBar fx:id="progressBar" layoutY="7.0" prefWidth="200.0" visible="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-                  <children>
-                     <Button fx:id="btnStop" layoutX="14.0" layoutY="3.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" visible="false" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="0.0">
-                        <graphic>
-                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                              <image>
-                                 <Image url="@../resources/images/cancel.png" />
-                              </image>
-                           </ImageView>
-                        </graphic>
-                     </Button>
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-                  <children>
-                     <RadioButton fx:id="rbExistingRecord" layoutY="6.0" mnemonicParsing="false" text="Existing Misc. File Record:" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0">
-                        <toggleGroup>
-                           <ToggleGroup fx:id="toggleGroup" />
-                        </toggleGroup>
-                     </RadioButton>
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
-                  <children>
-                    <ComboBox fx:id="cbExisting" editable="true" layoutX="-216.0" layoutY="-1.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="611.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                  <children>
-                     <RadioButton fx:id="rbLocalFile" layoutX="14.0" layoutY="7.0" mnemonicParsing="false" selected="true" text="Local file:" toggleGroup="$toggleGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                  <children>
-                     <TextField fx:id="tfLocalFile" editable="false" layoutX="14.0" layoutY="14.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                  <children>
-                     <Button layoutX="14.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnBrowseClick" prefHeight="25.0" text="Browse" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="0.0" />
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-                  <children>
-                     <RadioButton fx:id="rbWebAddress" layoutX="14.0" layoutY="8.0" mnemonicParsing="false" text="Web address:" toggleGroup="$toggleGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
-                  <children>
-                     <Button fx:id="btnPasteUrl" layoutY="2.0" maxHeight="25.0" maxWidth="40.0" minHeight="25.0" minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0">
-                        <graphic>
-                           <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                              <image>
-                                 <Image url="@../resources/images/page_paste.png" />
-                              </image>
-                           </ImageView>
-                        </graphic>
-                     </Button>
-                     <TextField fx:id="tfWebUrl" layoutX="46.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="576.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="46.0" AnchorPane.rightAnchor="0.0" />
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-                  <children>
-                     <RadioButton fx:id="rbClipboard" layoutX="14.0" layoutY="8.0" mnemonicParsing="false" text="Image from clipboard" toggleGroup="$toggleGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
-                  </children>
-               </AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                  <children>
-                     <Label layoutY="7.0" text="Save as:" AnchorPane.leftAnchor="0.0" />
-                     <ToggleButton fx:id="btnJpg" layoutX="46.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0" minHeight="25.0" minWidth="55.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="55.0" selected="true" text="JPG" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="46.0">
-                        <toggleGroup>
-                           <ToggleGroup fx:id="tgFormat" />
-                        </toggleGroup>
-                     </ToggleButton>
-                     <ToggleButton fx:id="btnPng" layoutX="105.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0" minHeight="25.0" minWidth="55.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="55.0" text="PNG" toggleGroup="$tgFormat" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="105.0" />
-                  </children></AnchorPane>
-               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
-                  <children>
-                     <GridPane layoutX="283.0" layoutY="-31.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                       <columnConstraints>
-                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                       </columnConstraints>
-                       <rowConstraints>
-                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                       </rowConstraints>
-                        <children>
-                           <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                              <children>
-                                 <Button defaultButton="true" layoutX="353.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="90.0" text="OK" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="4.0" />
-                              </children>
-                           </AnchorPane>
-                           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-                              <children>
-                              <Button cancelButton="true" layoutX="-24.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="90.0" text="Cancel" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="4.0" />
-                              </children>
-                           </AnchorPane>
-                        </children>
-                     </GridPane>
-                  </children>
-               </AnchorPane>
-            </children>
-            <BorderPane.margin>
-               <Insets bottom="8.0" left="8.0" right="8.0" />
-            </BorderPane.margin>
-         </GridPane>
+        <GridPane BorderPane.alignment="CENTER">
+          <columnConstraints>
+            <ColumnConstraints hgrow="NEVER" maxWidth="180.0" minWidth="180.0" prefWidth="180.0"/>
+            <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308"/>
+            <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="90.0" minWidth="90.0" prefWidth="90.0"/>
+          </columnConstraints>
+          <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+          </rowConstraints>
+          <BorderPane.margin>
+            <Insets bottom="8.0" left="8.0" right="8.0"/>
+          </BorderPane.margin>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+            <ProgressBar fx:id="progressBar" layoutY="7.0" prefWidth="200.0" visible="false"
+                         AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+            <Button fx:id="btnStop" layoutX="14.0" layoutY="3.0" maxHeight="25.0" minHeight="25.0"
+                    mnemonicParsing="false" prefHeight="25.0" visible="false" AnchorPane.bottomAnchor="2.0"
+                    AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="0.0">
+              <graphic>
+                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                  <Image url="@../resources/images/cancel.png"/>
+                </ImageView>
+              </graphic>
+            </Button>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+            <RadioButton fx:id="rbExistingRecord" layoutY="6.0" mnemonicParsing="false"
+                         text="Existing Misc. File Record:" AnchorPane.bottomAnchor="5.0"
+                         AnchorPane.leftAnchor="0.0">
+              <toggleGroup>
+                <ToggleGroup fx:id="toggleGroup"/>
+              </toggleGroup>
+            </RadioButton>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647"
+                      GridPane.rowIndex="1">
+            <ComboBox fx:id="cbExisting" editable="true" layoutX="-216.0" layoutY="-1.0" maxHeight="25.0"
+                      minHeight="25.0" prefHeight="25.0" prefWidth="611.0" AnchorPane.bottomAnchor="2.0"
+                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+            <RadioButton fx:id="rbLocalFile" layoutX="14.0" layoutY="7.0" mnemonicParsing="false" selected="true"
+                         text="Local file:" toggleGroup="$toggleGroup" AnchorPane.bottomAnchor="5.0"
+                         AnchorPane.leftAnchor="0.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <TextField fx:id="tfLocalFile" editable="false" layoutX="14.0" layoutY="14.0" maxHeight="25.0"
+                       minHeight="25.0" prefHeight="25.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0"
+                       AnchorPane.rightAnchor="0.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+            <Button layoutX="14.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                    onAction="#btnBrowseClick" prefHeight="25.0" text="Browse" AnchorPane.bottomAnchor="2.0"
+                    AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="0.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+            <RadioButton fx:id="rbWebAddress" layoutX="14.0" layoutY="8.0" mnemonicParsing="false"
+                         text="Web address:" toggleGroup="$toggleGroup" AnchorPane.bottomAnchor="5.0"
+                         AnchorPane.leftAnchor="0.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647"
+                      GridPane.rowIndex="3">
+            <Button fx:id="btnPasteUrl" layoutY="2.0" maxHeight="25.0" maxWidth="40.0" minHeight="25.0"
+                    minWidth="40.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0"
+                    AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0">
+              <graphic>
+                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                  <Image url="@../resources/images/page_paste.png"/>
+                </ImageView>
+              </graphic>
+            </Button>
+            <TextField fx:id="tfWebUrl" layoutX="46.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
+                       prefWidth="576.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="46.0"
+                       AnchorPane.rightAnchor="0.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+            <RadioButton fx:id="rbClipboard" layoutX="14.0" layoutY="8.0" mnemonicParsing="false"
+                         text="Image from clipboard" toggleGroup="$toggleGroup" AnchorPane.bottomAnchor="5.0"
+                         AnchorPane.leftAnchor="0.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <Label layoutY="7.0" text="Save as:" AnchorPane.leftAnchor="0.0"/>
+            <ToggleButton fx:id="btnJpg" layoutX="46.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0"
+                          minHeight="25.0" minWidth="55.0" mnemonicParsing="false" prefHeight="25.0"
+                          prefWidth="55.0" selected="true" text="JPG" AnchorPane.bottomAnchor="2.0"
+                          AnchorPane.leftAnchor="46.0">
+              <toggleGroup>
+                <ToggleGroup fx:id="tgFormat"/>
+              </toggleGroup>
+            </ToggleButton>
+            <ToggleButton fx:id="btnPng" layoutX="105.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0"
+                          minHeight="25.0" minWidth="55.0" mnemonicParsing="false" prefHeight="25.0"
+                          prefWidth="55.0" text="PNG" toggleGroup="$tgFormat" AnchorPane.bottomAnchor="2.0"
+                          AnchorPane.leftAnchor="105.0"/>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
+            <GridPane layoutX="283.0" layoutY="-31.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              </rowConstraints>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                <Button defaultButton="true" layoutX="353.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
+                        mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="90.0"
+                        text="OK" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="4.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+                <Button cancelButton="true" layoutX="-24.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
+                        mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0"
+                        prefWidth="90.0" text="Cancel" AnchorPane.bottomAnchor="2.0"
+                        AnchorPane.leftAnchor="4.0"/>
+              </AnchorPane>
+            </GridPane>
+          </AnchorPane>
+        </GridPane>
       </bottom>
    </BorderPane>
 </AnchorPane>

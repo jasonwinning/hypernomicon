@@ -247,9 +247,9 @@ class SearchResultFileList
       case hdtWork :
 
         HDT_Work work = (HDT_Work)record;
-        boolean isAuthored = work.getAuthors().stream().allMatch(author -> author.getIsEditor() || author.getIsTrans()) == false;
 
-        if ((isAuthored == false) && (includeEdited == false)) return;
+        if ((includeEdited == false) && work.getAuthors().stream().allMatch(author -> author.getIsEditor() || author.getIsTrans()))
+          return;
 
         if (work.workFiles.isEmpty())
         {
