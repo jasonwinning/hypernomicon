@@ -248,7 +248,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           <li><strong>Copy Selected to Search Results Folder:</strong> This option copies the files associated with the<br/>
                       selected query results to the Search Results folder.</li>
           <li><strong>Show Search Results Folder in System Explorer:</strong> Opens the Search Results folder in your<br/>
-                      system's file explorer (e.g., Windows Explorer on Windows).</li>
+                      system's file explorer (e.g., Finder on macOS).</li>
           <li><strong>Show Search Results Folder in File Manager:</strong> Opens the Search Results folder in the<br/>
                       Hypernomicon File Manager.</li>
         </ul>

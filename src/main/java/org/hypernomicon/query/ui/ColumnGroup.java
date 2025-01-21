@@ -21,7 +21,6 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.query.ui.ResultsTable.*;
 import static org.hypernomicon.query.ui.ResultColumn.*;
 
 import java.util.ArrayList;
@@ -37,6 +36,8 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
+
+import com.google.common.collect.Multimap;
 
 /**
  * <p>A column group is a collection of result columns that can be made visible or invisible all
@@ -87,7 +88,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
   @FunctionalInterface
   interface NonGeneralColumnGroup
   {
-    void addColumnsToTable(EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow);
+    void addColumnsToTable(Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups, EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow);
   }
 
 //---------------------------------------------------------------------------
@@ -120,7 +121,8 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
      * <br>If so, set this item's column equal to that one.
      * <br>Otherwise, add a new column.
      */
-    @Override public void addColumnsToTable(EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
+    @Override public void addColumnsToTable(Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups,
+                                            EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
     {
       for (NonGeneralColumnGroupItem item : this)
       {
@@ -200,7 +202,8 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
       super("Reference Manager Fields", resultsTable);
     }
 
-    @Override public void addColumnsToTable(EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
+    @Override public void addColumnsToTable(Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups,
+                                            EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
     {
       List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition,
               bfVolume   , bfIssue         , bfLanguage , bfISSNs , bfPages)

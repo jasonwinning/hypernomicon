@@ -20,12 +20,10 @@ package org.hypernomicon.query.ui;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.query.GeneralQueries.*;
 import static org.hypernomicon.query.QueryType.*;
-import static org.hypernomicon.query.ui.ResultsTable.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
@@ -42,22 +40,17 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import java.util.Map.Entry;
 
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
@@ -65,7 +58,6 @@ import org.hypernomicon.query.reports.ReportTable;
 import org.hypernomicon.query.sources.CombinedFilteredQuerySource;
 import org.hypernomicon.query.sources.CombinedUnfilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
-import org.hypernomicon.query.ui.ColumnGroup.*;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
@@ -73,7 +65,6 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator;
-import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.populators.QueryPopulator.QueryCell;
 import org.hypernomicon.view.populators.VariablePopulator;
@@ -144,7 +135,7 @@ public final class QueryCtrlr
                           OPERAND_2_COL_NDX  = 4,
                           OPERAND_3_COL_NDX  = 5;
 
-  private static final int[] OPERAND_COL_INDICES = {OPERAND_1_COL_NDX, OPERAND_2_COL_NDX, OPERAND_3_COL_NDX};
+  static final int[] OPERAND_COL_INDICES = {OPERAND_1_COL_NDX, OPERAND_2_COL_NDX, OPERAND_3_COL_NDX};
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -356,7 +347,7 @@ public final class QueryCtrlr
 
     htFields.addRefreshHandler(tabPane::requestLayout);
 
-    resultsTable = new ResultsTable(tvResults);
+    resultsTable = new ResultsTable(tvResults, this);
     tvResults.setItems(FXCollections.observableList(resultsBackingList));
 
     reportTable = new ReportTable(this);
@@ -547,30 +538,26 @@ public final class QueryCtrlr
       HyperTableRow row = htFields.newDataRow();
 
       htFields.selectID(QUERY_TYPE_COL_NDX, row, type.getCode());
+      htFields.selectID(QUERY_COL_NDX     , row, query);
 
-      if (query > -1)
+      if (op1 != null)
       {
-        htFields.selectID(QUERY_COL_NDX, row, query);
+        if (getCellID(op1) > 0)
+          htFields.selectID(OPERAND_1_COL_NDX, row, getCellID(op1));
+        else if (getCellText(op1).isEmpty())
+          htFields.selectType(OPERAND_1_COL_NDX, row, getCellType(op1));
+        else
+          row.setCellValue(OPERAND_1_COL_NDX, op1);
+      }
 
-        if (op1 != null)
-        {
-          if (getCellID(op1) > 0)
-            htFields.selectID(OPERAND_1_COL_NDX, row, getCellID(op1));
-          else if (getCellText(op1).isEmpty())
-            htFields.selectType(OPERAND_1_COL_NDX, row, getCellType(op1));
-          else
-            row.setCellValue(OPERAND_1_COL_NDX, op1);
-        }
-
-        if (op2 != null)
-        {
-          if (getCellID(op2) > 0)
-            htFields.selectID(OPERAND_2_COL_NDX, row, getCellID(op2));
-          else if (getCellText(op2).isEmpty())
-            htFields.selectType(OPERAND_2_COL_NDX, row, getCellType(op2));
-          else
-            row.setCellValue(OPERAND_2_COL_NDX, op2);
-        }
+      if (op2 != null)
+      {
+        if (getCellID(op2) > 0)
+          htFields.selectID(OPERAND_2_COL_NDX, row, getCellID(op2));
+        else if (getCellText(op2).isEmpty())
+          htFields.selectType(OPERAND_2_COL_NDX, row, getCellType(op2));
+        else
+          row.setCellValue(OPERAND_2_COL_NDX, op2);
       }
 
       disableAutoShowDropdownList = false;
@@ -856,7 +843,7 @@ public final class QueryCtrlr
         showDesc = true;
     }
 
-    resultsTable.reset();
+    resultsTable.reset(this);
     recordToRow.clear();
     webView.getEngine().loadContent("");
 
@@ -909,8 +896,10 @@ public final class QueryCtrlr
               QuerySource source = entry.getValue();
               Query<?> query = queries.get(row);
 
-              boolean result = source.contains(record) && evaluate(query, record, row, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
-
+              @SuppressWarnings("unchecked")
+              boolean result = source.contains(record) && ((Query<HDT_Record>)query).evaluate(record, row, row.getCell(OPERAND_1_COL_NDX),
+                                                                                                           row.getCell(OPERAND_2_COL_NDX),
+                                                                                                           row.getCell(OPERAND_3_COL_NDX));
               if (customLogic)    results.put(rowNumbers.get(row), result);
               else if (firstRow)  add = result;
               else if (orLogic)   add = add || result;
@@ -936,14 +925,6 @@ public final class QueryCtrlr
 
 //---------------------------------------------------------------------------
 
-      @SuppressWarnings("unchecked")
-      private static <HDT_T extends HDT_Record> boolean evaluate(Query<?> query, HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
-      {
-        return ((Query<HDT_T>)query).evaluate(record, row, op1, op2, op3);
-      }
-
-//---------------------------------------------------------------------------
-
     };
 
     task.runWhenFinalStateSet(state -> queries.values().forEach(query -> query.cleanup(state)));
@@ -957,16 +938,7 @@ public final class QueryCtrlr
 
     if (succeeded == false) return false;
 
-    EnumSet<RelationType> relationsToShow = EnumSet.noneOf(RelationType.class);
-    EnumSet<BibFieldEnum> bibFieldsToShow = EnumSet.noneOf(BibFieldEnum.class);
-
-    getExtraResultColumnsToShow(queries, relationsToShow, bibFieldsToShow);
-
-    recordTypeToColumnGroups.forEach((recordType, colGroup) ->
-    {
-      if (recordType != hdtNone)
-        ((NonGeneralColumnGroup) colGroup).addColumnsToTable(relationsToShow, bibFieldsToShow);
-    });
+    resultsTable.addExtraColumnsToTable(queries);
 
     if (showDesc)
       lowerOneTouchExpandableWrapper.setCollapsedState(CollapsedState.Expanded);
@@ -1013,73 +985,9 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Relation and bib. field columns are hidden by default but should be shown
-   * if the relation/bib. field is explicitly mentioned by a query. This loops
-   * over the queries and finds explicit mentions, building a set of mentioned
-   * relations and bib. fields.
-   * @param queries Queries to check
-   * @param relationsToShow Set of mentioned relations
-   * @param bibFieldsToShow Set of mentioned bib. fields
-   */
-  private void getExtraResultColumnsToShow(Map<HyperTableRow, Query<?>> queries, EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
-  {
-    for (HyperTableRow row : queries.keySet())
-    {
-      for (int opColNdx : OPERAND_COL_INDICES)
-      {
-        CellValueType valueType = ((VariablePopulator)row.getPopulator(opColNdx)).getValueType(row);
-
-        if (valueType == cvtRelation)
-        {
-          RelationType relType = RelationType.codeToVal(getCellID(row.getCell(opColNdx)));
-          if ((relType != null) && (relType != RelationType.rtNone))
-            relationsToShow.add(relType);
-        }
-        else if (valueType == cvtBibField)
-        {
-          BibFieldEnum field = getEnumVal(getCellID(row.getCell(opColNdx)), BibFieldEnum.class);
-          if (field != null)
-            bibFieldsToShow.add(field);
-        }
-      }
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
   public void addRecord(HDT_Record record, boolean addToObsList)
   {
-    RecordType recordType = record.getType();
-
-    if (recordTypeToColumnGroups.containsKey(recordType) == false)
-    {
-      if (recordType.getDisregardDates() == false)
-        resultsTable.addDateColumns();
-
-      Set<Tag> tags = record.getAllTags();
-      removeAll(tags, tagHub, tagPictureCrop, tagMainText);
-
-      if (MainText.typeHasKeyWorks(recordType) == false)
-        tags.remove(tagKeyWork);
-
-      NonGeneralColumnGroup colGroup = new RecordTypeColumnGroup(recordType, tags, resultsTable);
-      recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
-
-      if (addToObsList)
-        colGroup.addColumnsToTable(EnumSet.noneOf(RelationType.class), EnumSet.noneOf(BibFieldEnum.class));
-
-      if ((recordType == hdtWork) && db.bibLibraryIsLinked())
-      {
-        colGroup = new BibFieldsColumnGroup(resultsTable);
-        recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
-
-        if (addToObsList)
-          colGroup.addColumnsToTable(EnumSet.noneOf(RelationType.class), EnumSet.noneOf(BibFieldEnum.class));
-      }
-    }
+    resultsTable.addColumnsForRecord(record, addToObsList);
 
     ResultRow row = new ResultRow(record);
     recordToRow.put(record, row);
@@ -1258,7 +1166,7 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void deactivate()
+  void deactivate()
   {
     scrollPosPriorToBeingDeactivated = MainTextUtil.webEngineScrollPos(webView.getEngine());
 
@@ -1268,7 +1176,7 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void activate()
+  void activate()
   {
     apDescription.getChildren().setAll(webView);
   }

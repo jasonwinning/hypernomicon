@@ -21,16 +21,26 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.query.Query;
+import org.hypernomicon.query.ui.ColumnGroup.*;
 import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
+import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
+import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -39,8 +49,11 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
+import static org.hypernomicon.query.ui.QueryCtrlr.*;
 import static org.hypernomicon.query.ui.ResultColumn.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.cellValues.HyperTableCell.getCellID;
+import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -63,13 +76,14 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 //---------------------------------------------------------------------------
 
   private final TableView<ResultRow> tv;
+  private final Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups = LinkedHashMultimap.create();  // Has to be a multimap because there are two ColumnGroups for hdtWork
+
+  private ColumnGroup generalGroup;
   private boolean datesAdded = false;
-  static final Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups = LinkedHashMultimap.create();  // Has to be a multimap because there are two ColumnGroups for hdtWork
-  private static ColumnGroup generalGroup;
 
 //---------------------------------------------------------------------------
 
-  ResultsTable(TableView<ResultRow> tvResults)
+  ResultsTable(TableView<ResultRow> tvResults, QueryCtrlr queryCtrlr)
   {
     tv = tvResults;
 
@@ -78,7 +92,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
     tv.setPlaceholder(new Label("There are no query results to display."));
     tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-    reset();
+    reset(queryCtrlr);
 
     tv.setRowFactory(theTV ->
     {
@@ -106,8 +120,9 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
   /**
    * Similar to OneTouchExpandableWrapper.addOneTouchExpansion
+   * @param queryCtrlr Reference to the current query control; used to refresh the table after editing column visibility
    */
-  void reset()
+  void reset(QueryCtrlr queryCtrlr)
   {
     tv.getColumns().clear();
     tv.getItems().clear();
@@ -156,8 +171,9 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
                 showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
                 {
-                  new SelectColumnsDlgCtrlr().showModal();
+                  new SelectColumnsDlgCtrlr(recordTypeToColumnGroups).showModal();
                   event.consume();
+                  queryCtrlr.refreshView(false);
                 });
               });
             }
@@ -184,7 +200,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void addDateColumns()
+  private void addDateColumns()
   {
     if (datesAdded) return;
     datesAdded = true;
@@ -246,6 +262,41 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
     columns.add(colNdx, newCol);
 
     addCountColIfNeeded(newCol);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked") void addColumnsForRecord(HDT_Record record, boolean addToTable)
+  {
+    RecordType recordType = record.getType();
+
+    if (recordTypeToColumnGroups.containsKey(recordType) == false)
+    {
+      if (recordType.getDisregardDates() == false)
+        addDateColumns();
+
+      Set<Tag> tags = record.getAllTags();
+      removeAll(tags, tagHub, tagPictureCrop, tagMainText);
+
+      if (MainText.typeHasKeyWorks(recordType) == false)
+        tags.remove(tagKeyWork);
+
+      NonGeneralColumnGroup colGroup = new RecordTypeColumnGroup(recordType, tags, this);
+      recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
+
+      if (addToTable)
+        colGroup.addColumnsToTable(recordTypeToColumnGroups, EnumSet.noneOf(RelationType.class), EnumSet.noneOf(BibFieldEnum.class));
+
+      if ((recordType == hdtWork) && db.bibLibraryIsLinked())
+      {
+        colGroup = new BibFieldsColumnGroup(this);
+        recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
+
+        if (addToTable)
+          colGroup.addColumnsToTable(recordTypeToColumnGroups, EnumSet.noneOf(RelationType.class), EnumSet.noneOf(BibFieldEnum.class));
+      }
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -320,6 +371,49 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
     targetCol.countCol = new CountColumn(targetCol);
     List<TableColumn<ResultRow, ?>> columns = tv.getColumns();
     columns.add(columns.indexOf(targetCol) + 1, targetCol.countCol);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Relation and bib. field columns are hidden by default but should be shown
+   * if the relation/bib. field is explicitly mentioned by a query. This loops
+   * over the queries and finds explicit mentions, building a set of mentioned
+   * relations and bib. fields, and adds the corresponding columns to the table.
+   * @param queries Queries to check
+   */
+  void addExtraColumnsToTable(Map<HyperTableRow, Query<?>> queries)
+  {
+    EnumSet<RelationType> relationsToShow = EnumSet.noneOf(RelationType.class);
+    EnumSet<BibFieldEnum> bibFieldsToShow = EnumSet.noneOf(BibFieldEnum.class);
+
+    for (HyperTableRow row : queries.keySet())
+    {
+      for (int opColNdx : OPERAND_COL_INDICES)
+      {
+        CellValueType valueType = row.getPopulator(opColNdx).getValueType(row);
+
+        if (valueType == cvtRelation)
+        {
+          RelationType relType = RelationType.codeToVal(getCellID(row.getCell(opColNdx)));
+          if ((relType != null) && (relType != RelationType.rtNone))
+            relationsToShow.add(relType);
+        }
+        else if (valueType == cvtBibField)
+        {
+          BibFieldEnum field = getEnumVal(getCellID(row.getCell(opColNdx)), BibFieldEnum.class);
+          if (field != null)
+            bibFieldsToShow.add(field);
+        }
+      }
+    }
+
+    recordTypeToColumnGroups.forEach((recordType, colGroup) ->
+    {
+      if (recordType != hdtNone)
+        ((NonGeneralColumnGroup) colGroup).addColumnsToTable(recordTypeToColumnGroups, relationsToShow, bibFieldsToShow);
+    });
   }
 
 //---------------------------------------------------------------------------

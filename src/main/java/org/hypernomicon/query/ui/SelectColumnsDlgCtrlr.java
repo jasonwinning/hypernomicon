@@ -17,12 +17,13 @@
 
 package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.query.ui.ResultsTable.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.model.records.RecordType;
+
+import com.google.common.collect.Multimap;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -67,7 +68,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  SelectColumnsDlgCtrlr()
+  SelectColumnsDlgCtrlr(Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups)
   {
     super("query/SelectColumnsDlg", "Select Columns", true, true);
 
