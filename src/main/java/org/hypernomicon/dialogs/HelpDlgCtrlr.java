@@ -46,7 +46,7 @@ public class HelpDlgCtrlr extends HyperDlg
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    webView.setOnDragOver(Event::consume);
+    webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
     StringBuilder html = new StringBuilder();

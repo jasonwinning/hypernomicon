@@ -42,6 +42,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.Exceptions.*;
@@ -70,6 +71,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -79,6 +81,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
@@ -169,13 +172,14 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FXML private Button btnForward, btnBack, btnCut, btnCopy, btnPaste, btnDelete, btnRename, btnRefresh,
+                       btnMainWindow, btnPreviewWindow, btnNewFolder;
+  @FXML private Label lblDescPlaceholder;
+  @FXML private SplitPane spMain, spFiles, spRecords;
   @FXML private TreeView<FileRow> treeView;
   @FXML private TableView<FileRow> fileTV;
   @FXML private TableView<HyperTableRow> recordTV;
   @FXML private WebView webView;
-  @FXML private Button btnForward, btnBack, btnCut, btnCopy, btnPaste, btnDelete, btnRename, btnRefresh,
-                       btnMainWindow, btnPreviewWindow, btnNewFolder;
-  @FXML private SplitPane spMain, spFiles, spRecords;
 
   private static final String dialogTitle = "File Manager";
 
@@ -208,7 +212,7 @@ public class FileManager extends HyperDlg
 
     fileTable = new FileTable(fileTV, this);
     folderTree = new FolderTreeWrapper(treeView, fileTable);
-    recordTable = new HyperTable(recordTV, 1, false, PREF_KEY_HT_FM_RECORDS, this);
+    recordTable = new HyperTable(recordTV, 1, false, TablePrefKey.FM_RECORDS, this);
 
     initContainers();
 
@@ -293,7 +297,7 @@ public class FileManager extends HyperDlg
       event.consume();
     });
 
-    webView.setOnDragOver(Event::consume);
+    webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
     Scene scene = dialogStage.getScene();
@@ -414,7 +418,7 @@ public class FileManager extends HyperDlg
               record = workFile.works.get(0);
           }
 
-          MainTextWrapper.setReadOnlyHTML(HDT_Record.getDescHtml(record), webView.getEngine());
+          showRecordDesc(record);
 
           setPreviewFromRecordTable();
 
@@ -424,8 +428,10 @@ public class FileManager extends HyperDlg
 
       setPreviewFromRecordTable();
 
-      webView.getEngine().loadContent("");
+      clearRecordDesc();
     });
+
+    recordTV.setPlaceholder(new Text("The selected file or folder has no associated records."));
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -437,7 +443,25 @@ public class FileManager extends HyperDlg
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    MainTextUtil.webViewAddZoom(webView, PREF_KEY_FILEMGR_ZOOM);
+    MainTextUtil.webViewAddZoom(webView, ZoomPrefKey.FILEMGR);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void showRecordDesc(HDT_Record record)
+  {
+    lblDescPlaceholder.setVisible(false);
+    MainTextWrapper.setReadOnlyHTML(HDT_Record.getDescHtml(record), webView.getEngine());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void clearRecordDesc()
+  {
+    webView.getEngine().loadContent("");
+    lblDescPlaceholder.setVisible(true);
   }
 
 //---------------------------------------------------------------------------
@@ -1434,7 +1458,7 @@ public class FileManager extends HyperDlg
 
     if (folderRecord != null)
     {
-      webView.getEngine().loadContent("");
+      clearRecordDesc();
 
       hasMore = db.getRelatives(folderRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, false);
     }
@@ -1443,7 +1467,7 @@ public class FileManager extends HyperDlg
       HDT_RecordWithPath fileRecord = fileRow.getRecord();
       if (fileRecord == null)
       {
-        webView.getEngine().loadContent("");
+        clearRecordDesc();
 
         folderRecord = fileRow.getFolder();
         hasMore = db.getRelatives(folderRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, true);
@@ -1517,9 +1541,9 @@ public class FileManager extends HyperDlg
 
   private void setDividerPositions()
   {
-    setDividerPosition(spMain, PREF_KEY_MGR_MAIN_HORIZ, 0);
-    setDividerPosition(spFiles, PREF_KEY_MGR_FILES_VERT, 0);
-    setDividerPosition(spRecords, PREF_KEY_MGR_RECORDS_HORIZ, 0);
+    setDividerPosition(spMain   , DividerPositionPrefKey.MGR_MAIN_HORIZ   , 0);
+    setDividerPosition(spFiles  , DividerPositionPrefKey.MGR_FILES_VERT   , 0);
+    setDividerPosition(spRecords, DividerPositionPrefKey.MGR_RECORDS_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -1529,9 +1553,9 @@ public class FileManager extends HyperDlg
   {
     if (shownAlready() == false) return;
 
-    getDividerPosition(spMain, PREF_KEY_MGR_MAIN_HORIZ, 0);
-    getDividerPosition(spFiles, PREF_KEY_MGR_FILES_VERT, 0);
-    getDividerPosition(spRecords, PREF_KEY_MGR_RECORDS_HORIZ, 0);
+    getDividerPosition(spMain   , DividerPositionPrefKey.MGR_MAIN_HORIZ   , 0);
+    getDividerPosition(spFiles  , DividerPositionPrefKey.MGR_FILES_VERT   , 0);
+    getDividerPosition(spRecords, DividerPositionPrefKey.MGR_RECORDS_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

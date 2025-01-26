@@ -229,7 +229,7 @@ public final class MainTextUtil
 
       case JS_EVENT_SET_SORT_KEY_METHOD :
 
-        db.prefs.putBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, (Boolean)jsToJava.getMember("sortByName"));
+        db.prefs.putBoolean(PrefKey.KEY_WORK_SORT_BY_NAME, (Boolean)jsToJava.getMember("sortByName"));
         break;
 
       case JS_EVENT_DETAILED_KEY_WORKS :
@@ -541,7 +541,7 @@ public final class MainTextUtil
     if (collEmpty(keyWorks))
       return embeddedHtml;
 
-    boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
+    boolean sortByName = db.prefs.getBoolean(PrefKey.KEY_WORK_SORT_BY_NAME, true);
 
     StringBuilder secondaryHtml = new StringBuilder("<div class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\" style=\"display: ").append(sortByName ? "none" : "block").append(";\"><b>Key Works:&nbsp;</b>");
     appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, false, tagNdx, false, textViewInfo);
@@ -795,8 +795,8 @@ public final class MainTextUtil
   {
     return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
            "body { " + MARGIN_STYLE +
-           " font-family: \"" + getDBStylePref(PREF_KEY_DEF_DESC_FONT_FAMILY, "arial") + "\";" +
-           " font-size: " + getDBStylePref(PREF_KEY_DEF_DESC_FONT_SIZE, "10pt") + "; } </style>";
+           " font-family: \"" + getDBStylePref(PrefKey.DEF_DESC_FONT_FAMILY, "arial") + "\";" +
+           " font-size: " + getDBStylePref(PrefKey.DEF_DESC_FONT_SIZE, "10pt") + "; } </style>";
   }
 
   private static String getDBStylePref(String key, String def)

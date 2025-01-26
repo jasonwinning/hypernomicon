@@ -106,7 +106,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   }
 
   @Override public LibraryType type()          { return LibraryType.ltMendeley; }
-  @Override public void safePrefs()            { db.prefs.put(PREF_KEY_BIB_LAST_SYNC_TIME, dateTimeToIso8601(lastSyncTime)); }
+  @Override public void safePrefs()            { db.prefs.put(PrefKey.BIB_LAST_SYNC_TIME, dateTimeToIso8601(lastSyncTime)); }
   @Override public String entryFileNode()      { return "documents"; }
   @Override public String collectionFileNode() { return "folders"; }
 
@@ -231,8 +231,8 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
             try
             {
-              db.prefs.put(PREF_KEY_BIB_ACCESS_TOKEN , CryptoUtil.encrypt("", accessToken ));
-              db.prefs.put(PREF_KEY_BIB_REFRESH_TOKEN, CryptoUtil.encrypt("", refreshToken));
+              db.prefs.put(PrefKey.BIB_ACCESS_TOKEN , CryptoUtil.encrypt("", accessToken ));
+              db.prefs.put(PrefKey.BIB_REFRESH_TOKEN, CryptoUtil.encrypt("", refreshToken));
             }
             catch (Exception e)
             {
@@ -669,7 +669,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     if (jMainObj == null) return;
 
-    lastSyncTime = getSyncInstantFromJsonStr(db.prefs.get(PREF_KEY_BIB_LAST_SYNC_TIME, ""));
+    lastSyncTime = getSyncInstantFromJsonStr(db.prefs.get(PrefKey.BIB_LAST_SYNC_TIME, ""));
 
     loadFromJSON(jMainObj);
 

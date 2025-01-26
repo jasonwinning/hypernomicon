@@ -36,6 +36,7 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
@@ -103,6 +104,10 @@ import javafx.stage.Stage;
 
 public class WorkDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private AnchorPane apMain;
   @FXML private Button btnRegenerateFilename, btnStop, btnDest, btnPaste;
   @FXML private CheckBox chkSetDefault, chkCreateBibEntry, chkKeepFilenameUnchanged;
@@ -144,6 +149,10 @@ public class WorkDlgCtrlr extends HyperDlg
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
+
+  private static final String MovePrefVal = "move",
+                              CopyPrefVal = "copy",
+                              NonePrefVal = "none";
 
   public List<ObjectGroup> getAuthorGroups() { return htAuthors.getAuthorGroups(curWork, 0, 2, 3, 4); }
   public boolean getCreateEntry()            { return chkCreateBibEntry.isVisible() && chkCreateBibEntry.isSelected(); }
@@ -207,11 +216,11 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       oldWorkFile = null;
 
-      switch (db.prefs.get(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE))
+      switch (db.prefs.get(PrefKey.IMPORT_ACTION_DEFAULT, MovePrefVal))
       {
-        case PREF_KEY_IMPORT_ACTION_MOVE : rbMove   .setSelected(true); break;
-        case PREF_KEY_IMPORT_ACTION_COPY : rbCopy   .setSelected(true); break;
-        case PREF_KEY_IMPORT_ACTION_NONE : rbCurrent.setSelected(true); break;
+        case MovePrefVal : rbMove   .setSelected(true); break;
+        case CopyPrefVal : rbCopy   .setSelected(true); break;
+        case NonePrefVal : rbCurrent.setSelected(true); break;
       }
     }
     else
@@ -370,7 +379,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
   private HyperTable initAuthorsTable()
   {
-    HyperTable hyperTable = new HyperTable(tvAuthors, 0, true, PREF_KEY_HT_WORK_DLG);
+    HyperTable hyperTable = new HyperTable(tvAuthors, 0, true, TablePrefKey.WORK_DLG);
 
     hyperTable.addAuthorEditCol(() -> curWork, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -861,7 +870,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (bdToUse != null)
       populateFieldsFromBibData(bdToUse, true, true);
     else if (tfTitle.getText().isEmpty() && BibliographicDate.isEmpty(dateCtrls.getDate()))
-      extractDataFromPdf(app.prefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
+      extractDataFromPdf(app.prefs.getBoolean(PrefKey.AUTO_RETRIEVE_BIB, true), false, true);
   }
 
 //---------------------------------------------------------------------------
@@ -912,7 +921,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
         if ((pdfBD == null) && (queryBD == null))
         {
-          if (launchIfNoData && app.prefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+          if (launchIfNoData && app.prefs.getBoolean(PrefKey.AUTO_OPEN_PDF, true))
             mdp.setShowDetailNode(true);
 
           return;
@@ -926,7 +935,7 @@ public class WorkDlgCtrlr extends HyperDlg
         {
           populateFieldsFromBibData(pdfBD, true, true);
 
-          if (launchIfNoData && app.prefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+          if (launchIfNoData && app.prefs.getBoolean(PrefKey.AUTO_OPEN_PDF, true))
             mdp.setShowDetailNode(true);
         }
       });
@@ -951,7 +960,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (pdfBD == null)
     {
-      if (launchIfNoData && app.prefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+      if (launchIfNoData && app.prefs.getBoolean(PrefKey.AUTO_OPEN_PDF, true))
         mdp.setShowDetailNode(true);
 
       return;
@@ -1289,9 +1298,9 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     if (chkSetDefault.isSelected() == false) return;
 
-    if      (rbMove.isSelected()) db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE);
-    else if (rbCopy.isSelected()) db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_COPY);
-    else                          db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_NONE);
+    if      (rbMove.isSelected()) db.prefs.put(PrefKey.IMPORT_ACTION_DEFAULT, MovePrefVal);
+    else if (rbCopy.isSelected()) db.prefs.put(PrefKey.IMPORT_ACTION_DEFAULT, CopyPrefVal);
+    else                          db.prefs.put(PrefKey.IMPORT_ACTION_DEFAULT, NonePrefVal);
   }
 
 //---------------------------------------------------------------------------

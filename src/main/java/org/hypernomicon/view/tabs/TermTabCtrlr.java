@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.MergeTermDlgCtrlr;
 import org.hypernomicon.dialogs.RecordDropdownDlgCtrlr;
 import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
@@ -67,6 +68,10 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 
 public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final class ConceptTab extends Tab
   {
     private HDT_Concept concept;
@@ -213,7 +218,6 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public TermTabCtrlr(Tab tab) throws IOException
   {
@@ -239,7 +243,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     tvRightChildren.getColumns().add(new TableColumn<>("Description"));
     spMain.setDividerPosition(1, 0.85);
 
-    htGlossaries = new HyperTable(tvParents, 2, true, PREF_KEY_HT_TERM_GLOSSARIES);
+    htGlossaries = new HyperTable(tvParents, 2, true, TablePrefKey.TERM_GLOSSARIES);
 
     htGlossaries.addActionColWithButtonHandler(ctGoBtn, 2,
       (row, colNdx) ->
@@ -341,13 +345,13 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         ht.triggerChangeOrder(false, completeHndlr);
       });
 
-    htSubConcepts = new HyperTable(tvLeftChildren, 2, true, PREF_KEY_HT_CONCEPT_SUB);
+    htSubConcepts = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.CONCEPT_SUB);
 
     htSubConcepts.addActionCol(ctGoNewBtn, 2);
     htSubConcepts.addLabelCol(hdtConcept);
     htSubConcepts.addLabelCol(hdtConcept, smTextSimple);
 
-    htDisplayers = new HyperTable(tvRightChildren, 1, false, PREF_KEY_HT_TERM_DISPLAYERS);
+    htDisplayers = new HyperTable(tvRightChildren, 1, false, TablePrefKey.TERM_DISPLAYERS);
 
     htDisplayers.addIconCol();
     htDisplayers.addLabelCol(hdtNone);
@@ -395,7 +399,6 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     });
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override protected RecordType type()                { return hdtTerm; }
@@ -631,16 +634,16 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     if (oldGlossaryRow == null)
       oldGlossaryRow = new GlossaryRow((HDT_Glossary)null, null);
 
-    // First, check to see if parent concept from row being edited should be removed
-    // -----------------------------------------------------------------------------
+// First, check to see if parent concept from row being edited should be removed
+// -----------------------------------------------------------------------------
 
     if ((oldGlossaryRow.parentConcept != null) && (newGlossaryRow.parentConcept != oldGlossaryRow.parentConcept))
       oldGlossaryRow.childConcept.removeParent(oldGlossaryRow.parentConcept);
 
     HDT_Concept newChildConcept = newGlossaryRow.childConcept;
 
-    // Second, check to see if existing glossary for row being edited should be removed/replaced
-    // -----------------------------------------------------------------------------------------
+// Second, check to see if existing glossary for row being edited should be removed/replaced
+// -----------------------------------------------------------------------------------------
 
     if (newGlossaryRow.glossary != oldGlossaryRow.glossary)
     {
@@ -666,15 +669,15 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         }
       }
 
-    // Third, add new concept for row that was edited if needed
-    // --------------------------------------------------------
+// Third, add new concept for row that was edited if needed
+// --------------------------------------------------------
 
       if ((newGlossaryRow.glossary != null) && (newChildConcept == null))
         newChildConcept = addConceptInGlossary(newGlossaryRow.glossary, newGlossaryRow.sense);
     }
 
-    // Fourth, add parent concept for row that was edited if needed
-    // ------------------------------------------------------------
+// Fourth, add parent concept for row that was edited if needed
+// ------------------------------------------------------------
 
     if ((newChildConcept != null) && (newGlossaryRow.parentConcept != null))
     {
@@ -983,9 +986,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spMain, PREF_KEY_TERM_TOP_VERT, 0);
-    setDividerPosition(spMain, PREF_KEY_TERM_BOTTOM_VERT, 1);
-    setDividerPosition(spChildren, PREF_KEY_TERM_BOTTOM_HORIZ, 0);
+    setDividerPosition(spMain    , DividerPositionPrefKey.TERM_TOP_VERT    , 0);
+    setDividerPosition(spMain    , DividerPositionPrefKey.TERM_BOTTOM_VERT , 1);
+    setDividerPosition(spChildren, DividerPositionPrefKey.TERM_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -993,9 +996,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spMain, PREF_KEY_TERM_TOP_VERT, 0);
-    getDividerPosition(spMain, PREF_KEY_TERM_BOTTOM_VERT, 1);
-    getDividerPosition(spChildren, PREF_KEY_TERM_BOTTOM_HORIZ, 0);
+    getDividerPosition(spMain    , DividerPositionPrefKey.TERM_TOP_VERT    , 0);
+    getDividerPosition(spMain    , DividerPositionPrefKey.TERM_BOTTOM_VERT , 1);
+    getDividerPosition(spChildren, DividerPositionPrefKey.TERM_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

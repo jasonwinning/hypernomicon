@@ -40,6 +40,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.view.MainCtrlr.ShutDownMode;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.json.simple.parser.ParseException;
 
@@ -154,11 +155,11 @@ public final class App extends Application
 
     try
     {
-      if (prefs == null) throw new HDB_InternalError(37546);
+      if (prefs == null) throw new HDB_UnrecoverableInternalError(37546);
 
       HyperDB.create(folderTreeWatcher);
     }
-    catch (HDB_InternalError e)
+    catch (HDB_UnrecoverableInternalError e)
     {
       errorPopup("Initialization error: " + getThrowableMessage(e));
 
@@ -213,7 +214,7 @@ public final class App extends Application
       errorPopup("Initialization error: " + getThrowableMessage(e));
 
       if (ui != null)
-        ui.shutDown(false, false, false);
+        ui.shutDown(ShutDownMode.InitializationFailure);
       else
         Platform.exit();
 
@@ -225,15 +226,15 @@ public final class App extends Application
     if ((safeStr(versionStr).isEmpty() == false) && (new VersionNumber(versionStr).equals(appVersion) == false))
     {
       internalErrorPopup(69698);
-      ui.shutDown(false, false, false);
+      ui.shutDown(ShutDownMode.InitializationFailure);
       return;
     }
 
     boolean hdbExists = false;
-    String srcName = prefs.get(PREF_KEY_SOURCE_FILENAME, "");
+    String srcName = prefs.get(PrefKey.SOURCE_FILENAME, "");
     if (srcName.isBlank() == false)
     {
-      String srcPath = prefs.get(PREF_KEY_SOURCE_PATH, "");
+      String srcPath = prefs.get(PrefKey.SOURCE_PATH, "");
       if (srcPath.isBlank() == false)
       {
         FilePath hdbPath = new FilePath(srcPath).resolve(srcName);
@@ -250,8 +251,8 @@ public final class App extends Application
 
       if ("hdb".equalsIgnoreCase(filePath.getExtensionOnly()))
       {
-        prefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
-        prefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
+        prefs.put(PrefKey.SOURCE_FILENAME, filePath.getNameOnly().toString());
+        prefs.put(PrefKey.SOURCE_PATH    , filePath.getDirOnly ().toString());
         hdbExists = true;
         args.remove(0);
       }
@@ -266,7 +267,7 @@ public final class App extends Application
       return;
     }
 
-    if (prefs.getBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, true)) checkForNewVersion(new AsyncHttpClient(), newVersion ->
+    if (prefs.getBoolean(PrefKey.CHECK_FOR_NEW_VERSION, true)) checkForNewVersion(new AsyncHttpClient(), newVersion ->
     {
       if (newVersion.compareTo(appVersion) > 0)
         noOp(new NewVersionDlgCtrlr());
@@ -398,7 +399,7 @@ public final class App extends Application
     MainCtrlr.create(stage);
 
     bibManagerDlg = new BibManager();
-    bibManagerDlg.initBounds(PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_WIDTH, PREF_KEY_BM_WINDOW_HEIGHT);
+    bibManagerDlg.initBounds(PrefKey.BM_WINDOW_X, PrefKey.BM_WINDOW_Y, PrefKey.BM_WINDOW_WIDTH, PrefKey.BM_WINDOW_HEIGHT);
 
     db.addBibChangedHandler(() ->
     {
@@ -414,13 +415,13 @@ public final class App extends Application
     });
 
     fileManagerDlg = new FileManager();
-    fileManagerDlg.initBounds(PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_WIDTH, PREF_KEY_FM_WINDOW_HEIGHT);
+    fileManagerDlg.initBounds(PrefKey.FM_WINDOW_X, PrefKey.FM_WINDOW_Y, PrefKey.FM_WINDOW_WIDTH, PrefKey.FM_WINDOW_HEIGHT);
 
     previewWindow = new PreviewWindow();
-    previewWindow.initBounds(PREF_KEY_PREV_WINDOW_X, PREF_KEY_PREV_WINDOW_Y, PREF_KEY_PREV_WINDOW_WIDTH, PREF_KEY_PREV_WINDOW_HEIGHT);
+    previewWindow.initBounds(PrefKey.PREV_WINDOW_X, PrefKey.PREV_WINDOW_Y, PrefKey.PREV_WINDOW_WIDTH, PrefKey.PREV_WINDOW_HEIGHT);
 
     contentsWindow = new ContentsWindow();
-    contentsWindow.initBounds(PREF_KEY_CONTENTS_WINDOW_X, PREF_KEY_CONTENTS_WINDOW_Y, PREF_KEY_CONTENTS_WINDOW_WIDTH, PREF_KEY_CONTENTS_WINDOW_HEIGHT);
+    contentsWindow.initBounds(PrefKey.CONTENTS_WINDOW_X, PrefKey.CONTENTS_WINDOW_Y, PrefKey.CONTENTS_WINDOW_WIDTH, PrefKey.CONTENTS_WINDOW_HEIGHT);
   }
 
 //---------------------------------------------------------------------------
@@ -429,7 +430,7 @@ public final class App extends Application
   private static void initScaling(Preferences prefs)
   {
     Text text = new Text("Mac @Wow Cem");
-    double fontSize = prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+    double fontSize = prefs.getDouble(PrefKey.FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize > 0)
       text.setFont(new Font(fontSize));
 

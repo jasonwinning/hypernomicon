@@ -104,7 +104,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   static JsonObj getTemplate(EntryType type)   { return templates.get(type); }
 
   @Override public LibraryType type()          { return LibraryType.ltZotero; }
-  @Override public void safePrefs()            { db.prefs.putLong(PREF_KEY_BIB_LIBRARY_VERSION, offlineLibVersion); }
+  @Override public void safePrefs()            { db.prefs.putLong(PrefKey.BIB_LIBRARY_VERSION, offlineLibVersion); }
   @Override public String entryFileNode()      { return "items"; }
   @Override public String collectionFileNode() { return "collections"; }
 
@@ -755,7 +755,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     if (jMainObj != null)
     {
-      offlineLibVersion = db.prefs.getLong(PREF_KEY_BIB_LIBRARY_VERSION, -1);
+      offlineLibVersion = db.prefs.getLong(PrefKey.BIB_LIBRARY_VERSION, -1);
 
       loadFromJSON(jMainObj);
     }

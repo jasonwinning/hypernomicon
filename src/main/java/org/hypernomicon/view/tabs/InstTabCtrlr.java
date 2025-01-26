@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.tabs;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
@@ -69,6 +70,10 @@ import javafx.scene.control.TextField;
 
 public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private TextField tfCity, tfName, tfURL;
   @FXML private Button btnURL, btnParent, btnNewRegion, btnNewCountry;
   @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbRegion, cbCountry;
@@ -87,7 +92,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   {
     super(instTabEnum, tab, "view/tabs/InstTab");
 
-    htSubInst = new HyperTable(tvSubInstitutions, 0, true, PREF_KEY_HT_INST_SUB);
+    htSubInst = new HyperTable(tvSubInstitutions, 0, true, TablePrefKey.INST_SUB);
 
     htSubInst.addTextEditCol(hdtInstitution, true);
     htSubInst.addCol(hdtInstitutionType, ctDropDownList);
@@ -98,9 +103,9 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
       if (link.isBlank())
       {
-        ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText())
-                                               .next (WebButtonField.DivisionName, row.getText(0))
-                                               .go();
+        ui.webButtonMap.get(WebButtonContextPrefKey.INST).first(WebButtonField.Name, tfName.getText())
+                                                         .next (WebButtonField.DivisionName, row.getText(0))
+                                                         .go();
       }
       else
         DesktopUtil.openWebLink(row.getText(colNdx));
@@ -120,7 +125,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     htSubInst.addChangeOrderMenuItem(true, () -> curInst.subInstitutions.reorder(htSubInst.saveToList(0, hdtInstitution), true));
 
-    htPersons = new HyperTable(tvPersons, 0, false, PREF_KEY_HT_INST_PEOPLE);
+    htPersons = new HyperTable(tvPersons, 0, false, TablePrefKey.INST_PEOPLE);
 
     htPersons.addLabelCol(hdtPerson             );
     htPersons.addLabelCol(hdtRank               );
@@ -186,7 +191,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       if (tfURL.getText().isBlank() == false)
         DesktopUtil.openWebLink(tfURL.getText());
       else
-        ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText()).go();
+        ui.webButtonMap.get(WebButtonContextPrefKey.INST).first(WebButtonField.Name, tfName.getText()).go();
     });
 
     setToolTip(btnURL, "Search for website (if not entered) or navigate to website (if entered) in browser");
@@ -198,8 +203,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @Override protected void setRecord(HDT_Institution rec) { curInst = rec; }
 
   @Override public String recordName()                    { return tfName.getText(); }
-  @Override public void setDividerPositions()             { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void getDividerPositions()             { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void setDividerPositions()             { setDividerPosition(spHoriz, DividerPositionPrefKey.INST_MID_HORIZ, 0); }
+  @Override public void getDividerPositions()             { getDividerPosition(spHoriz, DividerPositionPrefKey.INST_MID_HORIZ, 0); }
   @Override public void findWithinDesc()                  { internalErrorPopup(52009); }
 
 //---------------------------------------------------------------------------
@@ -313,11 +318,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   @FXML private void linkClick()
   {
-    ui.webButtonMap.get(PREF_KEY_INST_MAP_SRCH).first(WebButtonField.Name, tfName.getText())
-                                               .next (WebButtonField.City, tfCity.getText())
-                                               .next (WebButtonField.Region, hcbRegion.getText())
-                                               .next (WebButtonField.Country, hcbCountry.getText())
-                                               .go();
+    ui.webButtonMap.get(WebButtonContextPrefKey.INST_MAP).first(WebButtonField.Name, tfName.getText())
+                                                         .next (WebButtonField.City, tfCity.getText())
+                                                         .next (WebButtonField.Region, hcbRegion.getText())
+                                                         .next (WebButtonField.Country, hcbCountry.getText())
+                                                         .go();
   }
 
 //---------------------------------------------------------------------------
@@ -432,7 +437,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   @Override void updateWebButtons(Preferences node)
   {
-    WebButton mapButton = ui.webButtonMap.get(PREF_KEY_INST_MAP_SRCH);
+    WebButton mapButton = ui.webButtonMap.get(WebButtonContextPrefKey.INST_MAP);
 
     hlMaps.setText(mapButton.getCaption());
 

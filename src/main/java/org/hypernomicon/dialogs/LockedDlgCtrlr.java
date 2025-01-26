@@ -42,6 +42,10 @@ import static org.hypernomicon.FolderTreeWatcher.*;
 
 public class LockedDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static MessageSenderThread thread = null;
   private final String otherCompName, otherHostName;
   private long sentTime;
@@ -262,8 +266,8 @@ public class LockedDlgCtrlr extends HyperDlg
     taOutput.appendText(output + System.lineSeparator());
 
     btnOverride.setDisable(false);
-    btnStop.setDisable(true);
-    btnCancel.setDisable(false);
+    btnStop    .setDisable(true );
+    btnCancel  .setDisable(false);
     db.getRequestMessageFilePath(true).deletePromptOnFail(true);
 
     thread.done = true;
@@ -274,7 +278,7 @@ public class LockedDlgCtrlr extends HyperDlg
     }
     else
     {
-      btnTryComm.setDisable(false);
+      btnTryComm     .setDisable(false);
       btnTryTerminate.setDisable(false);
     }
   }

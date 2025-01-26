@@ -61,8 +61,14 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 
+//---------------------------------------------------------------------------
+
 public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWithMainText> extends HyperTab<HDT_RT, HDT_CT>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Button btnWebSrch1, btnWebSrch2, btnWebSrch3, btnWebSrch4, btnTree;
   @FXML private Label lblGoTo1, lblGoTo2, lblGoTo3, lblMergeTerms;
   @FXML private SplitMenuButton smbWebSrch1;
@@ -131,11 +137,11 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
         labelLink = null;
     }
 
-    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '1'));
-    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '1'));
-    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '2'));
-    btnWebSrch3.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '3'));
-    btnWebSrch4.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + '4'));
+    btnWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.GEN + '1'));
+    smbWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.GEN + '1'));
+    btnWebSrch2.setOnAction(searchBtnEvent(WebButtonContextPrefKey.GEN + '2'));
+    btnWebSrch3.setOnAction(searchBtnEvent(WebButtonContextPrefKey.GEN + '3'));
+    btnWebSrch4.setOnAction(searchBtnEvent(WebButtonContextPrefKey.GEN + '4'));
     btnTree    .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
 
     setToolTip(btnWebSrch1, () -> TOOLTIP_PREFIX + btnWebSrch1.getText());
@@ -148,7 +154,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     MainCtrlr.setSearchKeyToolTip(tfSearchKey);
 
-    double fontSize = app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+    double fontSize = app.prefs.getDouble(PrefKey.FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
 
     lblGoTo1.setFont     (new Font(fontSize + 6.0));
@@ -157,7 +163,6 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     lblMergeTerms.setFont(new Font(fontSize + 6.0));
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   protected abstract HDT_CT getNodeRecord();
@@ -525,11 +530,11 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
   @Override void updateWebButtons(Preferences node)
   {
-    updateWebButtons(node, PREF_KEY_GEN_SRCH, 4, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
+    updateWebButtons(node, WebButtonContextPrefKey.GEN, 4, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '2').getCaption());
-    btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '3').getCaption());
-    btnWebSrch4.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + '4').getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(WebButtonContextPrefKey.GEN + '2').getCaption());
+    btnWebSrch3.setText(ui.webButtonMap.get(WebButtonContextPrefKey.GEN + '3').getCaption());
+    btnWebSrch4.setText(ui.webButtonMap.get(WebButtonContextPrefKey.GEN + '4').getCaption());
   }
 
 //---------------------------------------------------------------------------

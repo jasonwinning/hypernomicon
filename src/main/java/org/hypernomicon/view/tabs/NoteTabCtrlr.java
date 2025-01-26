@@ -39,6 +39,7 @@ import java.util.Set;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Note;
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.RecordType;
@@ -67,6 +68,10 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final String CREATE_FOLDER_CAPTION = "Create Folder",
                               CREATE_FOLDER_TOOLTIP = "Create a new folder and assign it to this note";
 
@@ -136,7 +141,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     gpToolBar.getColumnConstraints().get(1).setHgrow(javafx.scene.layout.Priority.ALWAYS);
     gpToolBar.getChildren().set(1, bp);
 
-    htParents = new HyperTable(tvParents, 2, true, PREF_KEY_HT_NOTE_PARENTS);
+    htParents = new HyperTable(tvParents, 2, true, TablePrefKey.NOTE_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 2);
     htParents.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
@@ -153,14 +158,14 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);
 
-    htSubnotes = new HyperTable(tvLeftChildren, 2, true, PREF_KEY_HT_NOTE_SUB);
+    htSubnotes = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.NOTE_SUB);
 
     htSubnotes.addActionCol(ctGoNewBtn, 2);
     htSubnotes.addLabelCol(hdtNote);
     htSubnotes.addLabelCol(hdtNote, smTextSimple);
     htSubnotes.addLabelCol(hdtNote, smTextSimple);
 
-    htMentioners = new HyperTable(tvRightChildren, 1, false, PREF_KEY_HT_NOTE_MENTIONERS);
+    htMentioners = new HyperTable(tvRightChildren, 1, false, TablePrefKey.NOTE_MENTIONERS);
 
     htMentioners.addIconCol();
     htMentioners.addLabelCol(hdtNone);
@@ -497,9 +502,9 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spMain, PREF_KEY_NOTE_TOP_VERT        , 0);
-    setDividerPosition(spMain, PREF_KEY_NOTE_BOTTOM_VERT     , 1);
-    setDividerPosition(spChildren, PREF_KEY_NOTE_BOTTOM_HORIZ, 0);
+    setDividerPosition(spMain    , DividerPositionPrefKey.NOTE_TOP_VERT    , 0);
+    setDividerPosition(spMain    , DividerPositionPrefKey.NOTE_BOTTOM_VERT , 1);
+    setDividerPosition(spChildren, DividerPositionPrefKey.NOTE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -507,9 +512,9 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spMain, PREF_KEY_NOTE_TOP_VERT        , 0);
-    getDividerPosition(spMain, PREF_KEY_NOTE_BOTTOM_VERT     , 1);
-    getDividerPosition(spChildren, PREF_KEY_NOTE_BOTTOM_HORIZ, 0);
+    getDividerPosition(spMain    , DividerPositionPrefKey.NOTE_TOP_VERT    , 0);
+    getDividerPosition(spMain    , DividerPositionPrefKey.NOTE_BOTTOM_VERT , 1);
+    getDividerPosition(spChildren, DividerPositionPrefKey.NOTE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

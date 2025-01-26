@@ -36,6 +36,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Debate;
@@ -48,6 +49,10 @@ import org.hypernomicon.model.records.HDT_Record;
 
 public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperTable htParents, htSubdebates, htPositions;
 
   private HDT_Debate curDebate;
@@ -58,7 +63,7 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
   {
     super(debateTabEnum, tab);
 
-    htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_DEBATE_PARENTS);
+    htParents = new HyperTable(tvParents, 3, true, TablePrefKey.DEBATE_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 3);
     htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
@@ -82,13 +87,13 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     htParents.setDefaultValue(2, rtp.getChoiceByType(hdtDebate));
 
-    htPositions = new HyperTable(tvLeftChildren, 2, true, PREF_KEY_HT_DEBATE_POS);
+    htPositions = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.DEBATE_POS);
 
     htPositions.addActionCol(ctGoNewBtn, 2);
     htPositions.addLabelCol(hdtPerson);
     htPositions.addLabelCol(hdtPosition);
 
-    htSubdebates = new HyperTable(tvRightChildren, 1, true, PREF_KEY_HT_DEBATE_SUB);
+    htSubdebates = new HyperTable(tvRightChildren, 1, true, TablePrefKey.DEBATE_SUB);
 
     htSubdebates.addActionCol(ctGoNewBtn, 1);
     htSubdebates.addLabelCol(hdtDebate);
@@ -209,9 +214,9 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spMain, PREF_KEY_DEBATE_TOP_VERT, 0);
-    setDividerPosition(spMain, PREF_KEY_DEBATE_BOTTOM_VERT, 1);
-    setDividerPosition(spChildren, PREF_KEY_DEBATE_BOTTOM_HORIZ, 0);
+    setDividerPosition(spMain    , DividerPositionPrefKey.DEBATE_TOP_VERT    , 0);
+    setDividerPosition(spMain    , DividerPositionPrefKey.DEBATE_BOTTOM_VERT , 1);
+    setDividerPosition(spChildren, DividerPositionPrefKey.DEBATE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -219,9 +224,9 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spMain, PREF_KEY_DEBATE_TOP_VERT, 0);
-    getDividerPosition(spMain, PREF_KEY_DEBATE_BOTTOM_VERT, 1);
-    getDividerPosition(spChildren, PREF_KEY_DEBATE_BOTTOM_HORIZ, 0);
+    getDividerPosition(spMain    , DividerPositionPrefKey.DEBATE_TOP_VERT    , 0);
+    getDividerPosition(spMain    , DividerPositionPrefKey.DEBATE_BOTTOM_VERT , 1);
+    getDividerPosition(spChildren, DividerPositionPrefKey.DEBATE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

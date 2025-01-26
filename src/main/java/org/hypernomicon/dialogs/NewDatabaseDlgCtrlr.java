@@ -165,13 +165,13 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
   {
     Map<String, String> folderMap = new HashMap<>();
 
-    folderMap.put(PREF_KEY_PICTURES_FOLDER_ID  , ultraTrim(tfPictures    .getText()));
-    folderMap.put(PREF_KEY_BOOKS_FOLDER_ID     , ultraTrim(tfBooks       .getText()));
-    folderMap.put(PREF_KEY_PAPERS_FOLDER_ID    , ultraTrim(tfPapers      .getText()));
-    folderMap.put(PREF_KEY_UNENTERED_FOLDER_ID , ultraTrim(tfUnentered   .getText()));
-    folderMap.put(PREF_KEY_MISC_FILES_FOLDER_ID, ultraTrim(tfMiscFiles   .getText()));
-    folderMap.put(PREF_KEY_RESULTS_FOLDER_ID   , ultraTrim(tfResults     .getText()));
-    folderMap.put(PREF_KEY_TOPICAL_FOLDER_ID   , ultraTrim(tfTopicFolders.getText()));
+    folderMap.put(FolderIDPrefKey.PICTURES  , ultraTrim(tfPictures    .getText()));
+    folderMap.put(FolderIDPrefKey.BOOKS     , ultraTrim(tfBooks       .getText()));
+    folderMap.put(FolderIDPrefKey.PAPERS    , ultraTrim(tfPapers      .getText()));
+    folderMap.put(FolderIDPrefKey.UNENTERED , ultraTrim(tfUnentered   .getText()));
+    folderMap.put(FolderIDPrefKey.MISC_FILES, ultraTrim(tfMiscFiles   .getText()));
+    folderMap.put(FolderIDPrefKey.RESULTS   , ultraTrim(tfResults     .getText()));
+    folderMap.put(FolderIDPrefKey.TOPICAL   , ultraTrim(tfTopicFolders.getText()));
 
     return folderMap;
   }

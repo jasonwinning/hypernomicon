@@ -205,14 +205,14 @@ public class PictureDlgCtrlr extends HyperDlg
       highlightFileInExplorer(filePath);
     });
 
-    btnWebSrch.setText(ui.webButtonMap.get(PREF_KEY_PERSON_IMG_SRCH).getCaption());
+    btnWebSrch.setText(ui.webButtonMap.get(WebButtonContextPrefKey.PERSON_IMG).getCaption());
 
     btnWebSrch.setOnAction(event ->
     {
       String first = personHyperTab.tfFirst.getText(),
              last  = personHyperTab.tfLast.getText();
 
-      ui.webButtonMap.get(PREF_KEY_PERSON_IMG_SRCH)
+      ui.webButtonMap.get(WebButtonContextPrefKey.PERSON_IMG)
 
         .first(WebButtonField.FirstName , first)
         .next (WebButtonField.LastName  , last)
@@ -569,13 +569,13 @@ public class PictureDlgCtrlr extends HyperDlg
     else
       return;
 
-    String execPath = app.prefs.get(PREF_KEY_IMAGE_EDITOR, "");
+    String execPath = app.prefs.get(PrefKey.IMAGE_EDITOR, "");
     FilePath picturePath = getDestFilePath(tfName.getText());
 
     if (execPath.isEmpty())
       editFile(picturePath);
     else
-      LaunchCommandsDlgCtrlr.launch(execPath, picturePath, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE, -1);
+      LaunchCommandsDlgCtrlr.launch(execPath, picturePath, PrefKey.IMAGE_EDITOR_COMMANDS, PrefKey.IMAGE_EDITOR_COMMAND_TYPE, -1);
   }
 
 //---------------------------------------------------------------------------

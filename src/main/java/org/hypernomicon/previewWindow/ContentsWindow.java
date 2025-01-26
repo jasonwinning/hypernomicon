@@ -18,7 +18,6 @@
 package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -30,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_Record;
@@ -72,7 +72,7 @@ public class ContentsWindow extends HyperDlg
   {
     super("previewWindow/ContentsWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
 
-    htContents = new HyperTable(tvContents, 2, false, PREF_KEY_HT_CONTENTS_DLG, this);
+    htContents = new HyperTable(tvContents, 2, false, TablePrefKey.CONTENTS_DLG, this);
 
     htContents.addLabelCol(hdtPerson);
     htContents.addLabelCol(hdtWorkType);

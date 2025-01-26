@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.tabs;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
@@ -174,7 +175,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private boolean inNormalMode = true, programmaticTypeChange = false;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public WorkTabCtrlr(Tab tab) throws IOException
   {
@@ -195,7 +195,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     setSearchKeyToolTip(tfSearchKey);
 
-    htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
+    htAuthors = new HyperTable(tvAuthors, 1, true, TablePrefKey.WORK_AUTHORS);
 
     htAuthors.addActionCol(ctGoBtn, 1);
     htAuthors.addAuthorEditCol(() -> curWork, null);
@@ -234,7 +234,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         }
       });
 
-    htLabels = new HyperTable(tvLabels, 2, true, PREF_KEY_HT_WORK_LABELS);
+    htLabels = new HyperTable(tvLabels, 2, true, TablePrefKey.WORK_LABELS);
 
     htLabels.addActionCol(ctGoBtn, 2);
     htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
@@ -242,7 +242,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htLabels.addRemoveMenuItem();
 
-    htSubworks = new HyperTable(tvSubworks, 1, false, PREF_KEY_HT_WORK_SUB);
+    htSubworks = new HyperTable(tvSubworks, 1, false, TablePrefKey.WORK_SUB);
 
     htSubworks.addLabelCol(hdtPerson);
     htSubworks.addLabelCol(hdtWork, smStandard);  // Title
@@ -258,7 +258,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htSubworks.addChangeOrderMenuItem(false, () -> curWork.subWorks.reorder(htSubworks.saveToList(1, hdtWork), true));
 
-    htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, PREF_KEY_HT_WORK_MENTIONERS);
+    htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, TablePrefKey.WORK_MENTIONERS);
 
     htKeyMentioners.addIconCol();
     htKeyMentioners.addLabelCol(hdtNone);
@@ -266,7 +266,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htKeyMentioners.addDefaultMenuItems();
 
-    htArguments = new HyperTable(tvArguments, 3, false, PREF_KEY_HT_WORK_ARG);
+    htArguments = new HyperTable(tvArguments, 3, false, TablePrefKey.WORK_ARG);
 
     htArguments.addIconCol();                       // Icon to indicate the type of record this argument targets
     htArguments.addLabelCol(hdtNone);               // Record name of the target of the argument
@@ -275,7 +275,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htArguments.addLabelCol(hdtWork)                // Pages
                .setValueType(cvtPageRange);
 
-    htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
+    htWorkFiles = new HyperTable(tvWorkFiles, 2, true, TablePrefKey.WORK_FILES);
 
     htWorkFiles.addRefreshHandler(tabPane::requestLayout);
 
@@ -398,7 +398,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       previewWindow.setPreview(pvsWorkTab, (HDT_Work) newValue.getRecord());
     });
 
-    htMiscFiles = new HyperTable(tvMiscFiles, 1, true, PREF_KEY_HT_WORK_MISC);
+    htMiscFiles = new HyperTable(tvMiscFiles, 1, true, TablePrefKey.WORK_MISC);
 
     htMiscFiles.addActionCol(ctGoNewBtn, 1);
     htMiscFiles.addLabelCol(hdtMiscFile);
@@ -409,13 +409,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htISBN.addTextEditCol(hdtWork, true, smTextSimple);
 
-    htISBN.addContextMenuItem(() -> ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).getCaption(),
+    htISBN.addContextMenuItem(() -> ui.webButtonMap.get(WebButtonContextPrefKey.ISBN).getCaption(),
       row ->
       {
         List<String> list = matchISBN(row.getText(0));
         return collEmpty(list) == false;
       },
-      row -> ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).first(WebButtonField.ISBN, row.getText(0)).go());
+      row -> ui.webButtonMap.get(WebButtonContextPrefKey.ISBN).first(WebButtonField.ISBN, row.getText(0)).go());
 
     htISBN.addContextMenuItem("Google Books query",
       row -> row.getText(0).length() > 0,
@@ -431,9 +431,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), true);
     hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), true);
 
-    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + '1'));
-    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + '1'));
-    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + '2'));
+    btnWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.WORK + '1'));
+    smbWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.WORK + '1'));
+    btnWebSrch2.setOnAction(searchBtnEvent(WebButtonContextPrefKey.WORK + '2'));
 
     btnDOI.setOnAction(event -> searchDOI(tfDOI.getText()));
     setToolTip(btnDOI, "Use this DOI to locate the document online");
@@ -449,7 +449,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       if (tfDOI.getText().isBlank()) return;
 
-      ui.webButtonMap.get(PREF_KEY_DOI_SRCH).first(WebButtonField.doi, tfDOI.getText()).go();
+      ui.webButtonMap.get(WebButtonContextPrefKey.DOI).first(WebButtonField.doi, tfDOI.getText()).go();
     });
 
     mnuCrossref.setOnAction(event ->
@@ -602,7 +602,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tabPane.addEventFilter(InputEvent.ANY, event -> tabPane.requestLayout()); // Fix for https://sourceforge.net/p/hypernomicon/tickets/18/
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override protected RecordType type()              { return hdtWork; }
@@ -1852,10 +1851,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spVert      , PREF_KEY_WORK_MID_VERT    , 0);
-    setDividerPosition(spVert      , PREF_KEY_WORK_BOTTOM_VERT , 1);
-    setDividerPosition(spHoriz1    , PREF_KEY_WORK_RIGHT_HORIZ , 0);
-    setDividerPosition(spMentioners, PREF_KEY_WORK_BOTTOM_HORIZ, 0);
+    setDividerPosition(spVert      , DividerPositionPrefKey.WORK_MID_VERT    , 0);
+    setDividerPosition(spVert      , DividerPositionPrefKey.WORK_BOTTOM_VERT , 1);
+    setDividerPosition(spHoriz1    , DividerPositionPrefKey.WORK_RIGHT_HORIZ , 0);
+    setDividerPosition(spMentioners, DividerPositionPrefKey.WORK_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -1863,10 +1862,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spVert      , PREF_KEY_WORK_MID_VERT    , 0);
-    getDividerPosition(spVert      , PREF_KEY_WORK_BOTTOM_VERT , 1);
-    getDividerPosition(spHoriz1    , PREF_KEY_WORK_RIGHT_HORIZ , 0);
-    getDividerPosition(spMentioners, PREF_KEY_WORK_BOTTOM_HORIZ, 0);
+    getDividerPosition(spVert      , DividerPositionPrefKey.WORK_MID_VERT    , 0);
+    getDividerPosition(spVert      , DividerPositionPrefKey.WORK_BOTTOM_VERT , 1);
+    getDividerPosition(spHoriz1    , DividerPositionPrefKey.WORK_RIGHT_HORIZ , 0);
+    getDividerPosition(spMentioners, DividerPositionPrefKey.WORK_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -1894,10 +1893,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override void updateWebButtons(Preferences node)
   {
-    updateWebButtons(node, PREF_KEY_WORK_SRCH, 2, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
+    updateWebButtons(node, WebButtonContextPrefKey.WORK, 2, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH + '2').getCaption());
-    mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(PREF_KEY_DOI_SRCH).getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(WebButtonContextPrefKey.WORK + '2').getCaption());
+    mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(WebButtonContextPrefKey.DOI).getCaption());
   }
 
 //---------------------------------------------------------------------------

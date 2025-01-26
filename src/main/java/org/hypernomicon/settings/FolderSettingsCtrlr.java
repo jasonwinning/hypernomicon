@@ -55,17 +55,17 @@ public class FolderSettingsCtrlr implements SettingsControl
   {
     if (noDB) return;
 
-    initRow(PREF_KEY_PICTURES_FOLDER_ID  , tfPictures , btnPictures );
-    initRow(PREF_KEY_BOOKS_FOLDER_ID     , tfBooks    , btnBooks    );
-    initRow(PREF_KEY_PAPERS_FOLDER_ID    , tfPapers   , btnPapers   );
-    initRow(PREF_KEY_RESULTS_FOLDER_ID   , tfResults  , btnResults  );
-    initRow(PREF_KEY_UNENTERED_FOLDER_ID , tfUnentered, btnUnentered);
-    initRow(PREF_KEY_MISC_FILES_FOLDER_ID, tfMiscFiles, btnMiscFiles);
-    initRow(PREF_KEY_TOPICAL_FOLDER_ID   , tfTopical  , btnTopical  );
+    initRow(FolderIDPrefKey.PICTURES  , tfPictures , btnPictures );
+    initRow(FolderIDPrefKey.BOOKS     , tfBooks    , btnBooks    );
+    initRow(FolderIDPrefKey.PAPERS    , tfPapers   , btnPapers   );
+    initRow(FolderIDPrefKey.RESULTS   , tfResults  , btnResults  );
+    initRow(FolderIDPrefKey.UNENTERED , tfUnentered, btnUnentered);
+    initRow(FolderIDPrefKey.MISC_FILES, tfMiscFiles, btnMiscFiles);
+    initRow(FolderIDPrefKey.TOPICAL   , tfTopical  , btnTopical  );
 
-    rbBooks.setSelected(db.prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false));
+    rbBooks.setSelected(db.prefs.getBoolean(PrefKey.THESIS_FOLDER_IS_BOOKS, false));
 
-    rbBooks.selectedProperty().addListener((obs, ov, nv) -> db.prefs.putBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, nv));
+    rbBooks.selectedProperty().addListener((obs, ov, nv) -> db.prefs.putBoolean(PrefKey.THESIS_FOLDER_IS_BOOKS, nv));
   }
 
 //---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ public class FolderSettingsCtrlr implements SettingsControl
       if (folder == curFolder)
         return;
 
-      if (prefKey.equals(PREF_KEY_UNENTERED_FOLDER_ID))
+      if (prefKey.equals(FolderIDPrefKey.UNENTERED))
       {
         if (folder.isSpecial(false))
         {
@@ -117,7 +117,7 @@ public class FolderSettingsCtrlr implements SettingsControl
           return;
         }
       }
-      else if (prefKey.equals(PREF_KEY_RESULTS_FOLDER_ID))
+      else if (prefKey.equals(FolderIDPrefKey.RESULTS))
       {
         if (folder.isSpecial(true))
         {

@@ -141,7 +141,7 @@ public class MainTextCtrlr
   void hilite()                       { highlighter.hilite(); }
   public void nextSearchResult()      { highlighter.nextSearchResult(); }
   public void previousSearchResult()  { highlighter.previousSearchResult(); }
-  public void updateZoom()            { updateZoomFromPref(webView, PREF_KEY_MAINTEXT_ZOOM); }
+  public void updateZoom()            { updateZoomFromPref(webView, ZoomPrefKey.MAINTEXT); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -154,7 +154,7 @@ public class MainTextCtrlr
 
     webView = (WebView) he.lookup("WebView");
     engine = webView.getEngine();
-    webViewAddZoom(webView, PREF_KEY_MAINTEXT_ZOOM);
+    webViewAddZoom(webView, ZoomPrefKey.MAINTEXT);
     highlighter = new Highlighter(engine);
 
     GridPane.setHgrow(webView, Priority.ALWAYS);
@@ -174,7 +174,7 @@ public class MainTextCtrlr
 
       if (oldType != newType)
       {
-        app.prefs.put(PREF_KEY_DISPLAY_RECORD_TYPE, Tag.getTypeTagStr(newType));
+        app.prefs.put(PrefKey.DISPLAY_RECORD_TYPE, Tag.getTypeTagStr(newType));
 
         ((RecordByTypePopulator)hcbName.getPopulator()).setRecordType(newType);
         if (oldType != hdtNone)
@@ -503,7 +503,7 @@ public class MainTextCtrlr
     family = family.replace("'", "").replace("\"", "");
 
     if (family.length() > 0)
-      db.prefs.put(PREF_KEY_DEF_DESC_FONT_FAMILY, family);
+      db.prefs.put(PrefKey.DEF_DESC_FONT_FAMILY, family);
     else
       familyNotSet = true;
 
@@ -524,7 +524,7 @@ public class MainTextCtrlr
         default  :                break;
       }
 
-      db.prefs.put(PREF_KEY_DEF_DESC_FONT_SIZE, size);
+      db.prefs.put(PrefKey.DEF_DESC_FONT_SIZE, size);
     }
     else
       sizeNotSet = true;
@@ -884,7 +884,7 @@ public class MainTextCtrlr
       if (borderPane.getTop() == null)
         borderPane.setTop(tpKeyWorks);
 
-      boolean dontOpenEmptyKeyWorks = db.prefs.getBoolean(PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false) || app.prefs.getBoolean(PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
+      boolean dontOpenEmptyKeyWorks = db.prefs.getBoolean(PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false) || app.prefs.getBoolean(PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
 
       tpKeyWorks.setExpanded((keyWorks.size() > 0) || ((record.getType() != hdtPerson) && (dontOpenEmptyKeyWorks == false)));
 
@@ -914,7 +914,7 @@ public class MainTextCtrlr
 
     if (hcbType.selectedType() == hdtNone)
     {
-      RecordType type = Tag.parseTypeTagStr(app.prefs.get(PREF_KEY_DISPLAY_RECORD_TYPE, ""));
+      RecordType type = Tag.parseTypeTagStr(app.prefs.get(PrefKey.DISPLAY_RECORD_TYPE, ""));
 
       hcbType.selectType(type == hdtNone ? hdtConcept : type);
     }

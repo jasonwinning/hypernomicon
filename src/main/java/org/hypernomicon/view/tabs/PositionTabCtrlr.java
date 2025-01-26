@@ -20,6 +20,7 @@ package org.hypernomicon.view.tabs;
 import java.io.IOException;
 import java.util.List;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.*;
@@ -52,6 +53,10 @@ import javafx.scene.layout.HBox;
 
 public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Position>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperTable htParents, htArguments, htRightChildren;
 
   private HDT_Position curPosition;
@@ -76,7 +81,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     cols.add(1, new TableColumn<>("Sub-Position/Debate Name"));
     cols.get(2).setText("Person");
 
-    htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_POS_PARENTS);
+    htParents = new HyperTable(tvParents, 3, true, TablePrefKey.POS_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 3);
     htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
@@ -98,7 +103,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);
 
-    htArguments = new HyperTable(tvLeftChildren, 3, true, PREF_KEY_HT_POS_ARG);
+    htArguments = new HyperTable(tvLeftChildren, 3, true, TablePrefKey.POS_ARG);
 
     htArguments.addActionCol(ctGoNewBtn, 3);
     htArguments.addLabelCol(hdtPerson);                        // Author(s) of work
@@ -113,7 +118,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     col.setPrefWidth(45.0);
     col.setMaxWidth(45.0);
 
-    htRightChildren = new HyperTable(tvRightChildren, 2, true, PREF_KEY_HT_POS_SUB);
+    htRightChildren = new HyperTable(tvRightChildren, 2, true, TablePrefKey.POS_SUB);
 
     htRightChildren.addActionCol(ctGoBtn, 2);
     htRightChildren.addIconCol();
@@ -316,9 +321,9 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spMain, PREF_KEY_POS_TOP_VERT, 0);
-    setDividerPosition(spMain, PREF_KEY_POS_BOTTOM_VERT, 1);
-    setDividerPosition(spChildren, PREF_KEY_POS_BOTTOM_HORIZ, 0);
+    setDividerPosition(spMain    , DividerPositionPrefKey.POS_TOP_VERT    , 0);
+    setDividerPosition(spMain    , DividerPositionPrefKey.POS_BOTTOM_VERT , 1);
+    setDividerPosition(spChildren, DividerPositionPrefKey.POS_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -326,9 +331,9 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spMain, PREF_KEY_POS_TOP_VERT, 0);
-    getDividerPosition(spMain, PREF_KEY_POS_BOTTOM_VERT, 1);
-    getDividerPosition(spChildren, PREF_KEY_POS_BOTTOM_HORIZ, 0);
+    getDividerPosition(spMain    , DividerPositionPrefKey.POS_TOP_VERT    , 0);
+    getDividerPosition(spMain    , DividerPositionPrefKey.POS_BOTTOM_VERT , 1);
+    getDividerPosition(spChildren, DividerPositionPrefKey.POS_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

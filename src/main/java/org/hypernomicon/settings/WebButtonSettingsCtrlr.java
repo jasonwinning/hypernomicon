@@ -64,15 +64,15 @@ public class WebButtonSettingsCtrlr implements SettingsControl
   {
     webBtnCtrlList.addAll(List.of(
 
-      new WebButtonTable(PREF_KEY_PERSON_SRCH, personSrchList, personSrchDefaults, tvPersonSrch),
-      new WebButtonTable(PREF_KEY_WORK_SRCH  , workSrchList,   workSrchDefaults,   tvWorkSrch),
-      new WebButtonTable(PREF_KEY_GEN_SRCH   , genSrchList,    genSrchDefaults,    tvGenSrch),
+      new WebButtonTable(WebButtonContextPrefKey.PERSON, personSrchList, personSrchDefaults, tvPersonSrch),
+      new WebButtonTable(WebButtonContextPrefKey.WORK  , workSrchList,   workSrchDefaults,   tvWorkSrch),
+      new WebButtonTable(WebButtonContextPrefKey.GEN   , genSrchList,    genSrchDefaults,    tvGenSrch),
 
-      new WebButtonBar(PREF_KEY_PERSON_IMG_SRCH, personImgSrchList, tfPersonImgSrch, cbPersonImgSrch, btnPersonImgSrchAdvanced),
-      new WebButtonBar(PREF_KEY_INST_SRCH      , instSrchList,      null           , cbInstSrch     , btnInstSrchAdvanced),
-      new WebButtonBar(PREF_KEY_INST_MAP_SRCH  , instMapSrchList,   tfInstMapSrch  , cbInstMapSrch  , btnInstMapSrchAdvanced),
-      new WebButtonBar(PREF_KEY_DOI_SRCH       , doiSrchList,       tfDOISrch      , cbDOISrch      , btnDOISrchAdvanced),
-      new WebButtonBar(PREF_KEY_ISBN_SRCH      , isbnSrchList,      tfISBNSrch     , cbISBNSrch     , btnISBNSrchAdvanced)));
+      new WebButtonBar(WebButtonContextPrefKey.PERSON_IMG, personImgSrchList, tfPersonImgSrch, cbPersonImgSrch, btnPersonImgSrchAdvanced),
+      new WebButtonBar(WebButtonContextPrefKey.INST      , instSrchList,      null           , cbInstSrch     , btnInstSrchAdvanced),
+      new WebButtonBar(WebButtonContextPrefKey.INST_MAP  , instMapSrchList,   tfInstMapSrch  , cbInstMapSrch  , btnInstMapSrchAdvanced),
+      new WebButtonBar(WebButtonContextPrefKey.DOI       , doiSrchList,       tfDOISrch      , cbDOISrch      , btnDOISrchAdvanced),
+      new WebButtonBar(WebButtonContextPrefKey.ISBN      , isbnSrchList,      tfISBNSrch     , cbISBNSrch     , btnISBNSrchAdvanced)));
   }
 
 //---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         SingleName);
 
     personImgSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_PERSON_IMG_SRCH, btn);
+    ui.webButtonMap.put(WebButtonContextPrefKey.PERSON_IMG, btn);
 
     btn = new WebButton("Bing Image Search", "Bing");
 
@@ -182,7 +182,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         Name);
 
     instSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_INST_SRCH, btn);
+    ui.webButtonMap.put(WebButtonContextPrefKey.INST, btn);
 
     btn = new WebButton("Bing", "");
 
@@ -214,7 +214,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         Name);
 
     instMapSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_INST_MAP_SRCH, btn);
+    ui.webButtonMap.put(WebButtonContextPrefKey.INST_MAP, btn);
 
     btn = new WebButton("OpenStreetMap", "OpenStreet");
 
@@ -239,7 +239,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         doi);
 
     doiSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_DOI_SRCH, btn);
+    ui.webButtonMap.put(WebButtonContextPrefKey.DOI, btn);
 
     btn = new WebButton("Bing", "Bing");
 
@@ -264,7 +264,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         ISBN);
 
     isbnSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_ISBN_SRCH, btn);
+    ui.webButtonMap.put(WebButtonContextPrefKey.ISBN, btn);
 
     btn = new WebButton("Amazon", "Amazon");
 
@@ -392,7 +392,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
   @Override public void save(boolean noDB)
   {
-    Preferences node = app.prefs.node(PREF_KEY_WEB_BUTTONS);
+    Preferences node = app.prefs.node(PrefKey.WEB_BUTTONS);
 
     webBtnCtrlList.forEach(btnCtrls -> btnCtrls.saveToPrefNode(node));
 
@@ -410,17 +410,17 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     try
     {
-      Preferences node = app.prefs.node(PREF_KEY_WEB_BUTTONS);
+      Preferences node = app.prefs.node(PrefKey.WEB_BUTTONS);
 
-      loadPref(node, personSrchList, PREF_KEY_PERSON_SRCH, personSrchDefaults);
-      loadPref(node, workSrchList  , PREF_KEY_WORK_SRCH  , workSrchDefaults  );
-      loadPref(node, genSrchList   , PREF_KEY_GEN_SRCH   , genSrchDefaults   );
+      loadPref(node, personSrchList, WebButtonContextPrefKey.PERSON, personSrchDefaults);
+      loadPref(node, workSrchList  , WebButtonContextPrefKey.WORK  , workSrchDefaults  );
+      loadPref(node, genSrchList   , WebButtonContextPrefKey.GEN   , genSrchDefaults   );
 
-      WebButtonBar.loadPref(node, personImgSrchList, PREF_KEY_PERSON_IMG_SRCH);
-      WebButtonBar.loadPref(node, instSrchList     , PREF_KEY_INST_SRCH      );
-      WebButtonBar.loadPref(node, instMapSrchList  , PREF_KEY_INST_MAP_SRCH  );
-      WebButtonBar.loadPref(node, doiSrchList      , PREF_KEY_DOI_SRCH       );
-      WebButtonBar.loadPref(node, isbnSrchList     , PREF_KEY_ISBN_SRCH      );
+      WebButtonBar.loadPref(node, personImgSrchList, WebButtonContextPrefKey.PERSON_IMG);
+      WebButtonBar.loadPref(node, instSrchList     , WebButtonContextPrefKey.INST      );
+      WebButtonBar.loadPref(node, instMapSrchList  , WebButtonContextPrefKey.INST_MAP  );
+      WebButtonBar.loadPref(node, doiSrchList      , WebButtonContextPrefKey.DOI       );
+      WebButtonBar.loadPref(node, isbnSrchList     , WebButtonContextPrefKey.ISBN      );
 
       HyperTab.updateAllWebButtons(node);
     }

@@ -210,52 +210,52 @@ public class SettingsDlgCtrlr extends HyperDlg
     lblStep4            .visibleProperty().bind(authUrl.isNotEmpty());
     lblStep4Instructions.visibleProperty().bind(authUrl.isNotEmpty());
 
-    initTextField(app.prefs, tfImageEditor, PREF_KEY_IMAGE_EDITOR, "");
-    initTextField(app.prefs, tfPDFReader  , PREF_KEY_PDF_READER  , "");
-    initTextField(app.prefs, tfExtFiles   , PREF_KEY_EXT_FILES_1 , "");
-    initTextField(app.prefs, tfOffice     , PREF_KEY_OFFICE_PATH , "");
+    initTextField(app.prefs, tfImageEditor, PrefKey.IMAGE_EDITOR, "");
+    initTextField(app.prefs, tfPDFReader  , PrefKey.PDF_READER  , "");
+    initTextField(app.prefs, tfExtFiles   , PrefKey.EXT_FILES_1 , "");
+    initTextField(app.prefs, tfOffice     , PrefKey.OFFICE_PATH , "");
 
     btnImgEditorAdvanced.setOnAction(event ->
     {
       LaunchCommandsDlgCtrlr lcdc = new LaunchCommandsDlgCtrlr
-        ("Modify Image Editor Command(s)", PREF_KEY_IMAGE_EDITOR, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE);
+        ("Modify Image Editor Command(s)", PrefKey.IMAGE_EDITOR, PrefKey.IMAGE_EDITOR_COMMANDS, PrefKey.IMAGE_EDITOR_COMMAND_TYPE);
 
       if (lcdc.showModal())
-        tfImageEditor.setText(app.prefs.get(PREF_KEY_IMAGE_EDITOR, ""));
+        tfImageEditor.setText(app.prefs.get(PrefKey.IMAGE_EDITOR, ""));
     });
 
     btnPdfViewerAdvanced.setOnAction(event ->
     {
       LaunchCommandsDlgCtrlr lcdc = new LaunchCommandsDlgCtrlr
-        ("Modify PDF Viewer Command(s)", PREF_KEY_PDF_READER, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE);
+        ("Modify PDF Viewer Command(s)", PrefKey.PDF_READER, PrefKey.PDF_READER_COMMANDS, PrefKey.PDF_READER_COMMAND_TYPE);
 
       if (lcdc.showModal())
-        tfPDFReader.setText(app.prefs.get(PREF_KEY_PDF_READER, ""));
+        tfPDFReader.setText(app.prefs.get(PrefKey.PDF_READER, ""));
     });
 
     setToolTip(btnImgEditorAdvanced, "Open dialog to customize how the image editor is launched");
     setToolTip(btnPdfViewerAdvanced, "Open dialog to customize how the PDF viewer is launched");
 
-    sliderFontSize.setValue(app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
+    sliderFontSize.setValue(app.prefs.getDouble(PrefKey.FONT_SIZE, DEFAULT_FONT_SIZE));
     sliderFontSize.valueProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((oldValue == null) || (newValue == null) || (oldValue.doubleValue() == newValue.doubleValue())) return;
-      if (app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE) == newValue.doubleValue()) return;
+      if (app.prefs.getDouble(PrefKey.FONT_SIZE, DEFAULT_FONT_SIZE) == newValue.doubleValue()) return;
 
-      app.prefs.putDouble(PREF_KEY_FONT_SIZE, newValue.doubleValue());
+      app.prefs.putDouble(PrefKey.FONT_SIZE, newValue.doubleValue());
     });
 
     setToolTip(sliderFontSize, "Base font size");
 
-    initCheckBox(app.prefs, chkInternet              , PREF_KEY_CHECK_INTERNET           , true );
-    initCheckBox(app.prefs, chkNewVersionCheck       , PREF_KEY_CHECK_FOR_NEW_VERSION    , true );
-    initCheckBox(app.prefs, chkAutoOpenPDF           , PREF_KEY_AUTO_OPEN_PDF            , true );
-    initCheckBox(app.prefs, chkAutoRetrieveBib       , PREF_KEY_AUTO_RETRIEVE_BIB        , true );
-    initCheckBox(app.prefs, chkCompDontExpandKeyWorks, PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
+    initCheckBox(app.prefs, chkInternet              , PrefKey.CHECK_INTERNET           , true );
+    initCheckBox(app.prefs, chkNewVersionCheck       , PrefKey.CHECK_FOR_NEW_VERSION    , true );
+    initCheckBox(app.prefs, chkAutoOpenPDF           , PrefKey.AUTO_OPEN_PDF            , true );
+    initCheckBox(app.prefs, chkAutoRetrieveBib       , PrefKey.AUTO_RETRIEVE_BIB        , true );
+    initCheckBox(app.prefs, chkCompDontExpandKeyWorks, PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
 
     chkLinuxWorkaround.setVisible(SystemUtils.IS_OS_LINUX);
 
-    initCheckBox(app.prefs, chkLinuxWorkaround, PREF_KEY_LINUX_WORKAROUND, false);
+    initCheckBox(app.prefs, chkLinuxWorkaround, PrefKey.LINUX_WORKAROUND, false);
 
     disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming, tabArgNaming);
 
@@ -265,8 +265,8 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     if (noDB == false)
     {
-      initCheckBox(db.prefs, chkUseSentenceCase     , PREF_KEY_SENTENCE_CASE            , false);
-      initCheckBox(db.prefs, chkDBDontExpandKeyWorks, PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS, false);
+      initCheckBox(db.prefs, chkUseSentenceCase     , PrefKey.SENTENCE_CASE            , false);
+      initCheckBox(db.prefs, chkDBDontExpandKeyWorks, PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
       initDefaultChapterWorkType();
     }
 
@@ -419,7 +419,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   private void initDefaultChapterWorkType()
   {
-    HDT_WorkType workType = db.workTypes.getByID(db.prefs.getInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, -1));
+    HDT_WorkType workType = db.workTypes.getByID(db.prefs.getInt(PrefKey.DEFAULT_CHAPTER_WORK_TYPE_ID, -1));
 
     chkDefaultChapterWorkType.setSelected(workType != null);
 
@@ -431,17 +431,17 @@ public class SettingsDlgCtrlr extends HyperDlg
 
       if (Boolean.FALSE.equals(nv))
       {
-        db.prefs.putInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, -1);
+        db.prefs.putInt(PrefKey.DEFAULT_CHAPTER_WORK_TYPE_ID, -1);
         return;
       }
 
-      db.prefs.putInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, hcbDefaultChapterWorkType.selectedID());
+      db.prefs.putInt(PrefKey.DEFAULT_CHAPTER_WORK_TYPE_ID, hcbDefaultChapterWorkType.selectedID());
     });
 
     hcbDefaultChapterWorkType.addListener((ov, nv) ->
     {
       int workTypeID = nullSwitch(HyperTableCell.getRecord(nv), -1, HDT_Record::getID);
-      db.prefs.putInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, workTypeID);
+      db.prefs.putInt(PrefKey.DEFAULT_CHAPTER_WORK_TYPE_ID, workTypeID);
     });
   }
 

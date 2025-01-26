@@ -364,7 +364,7 @@ public final class DesktopUtil
   {
     if (FilePath.isEmpty(filePath)) return;
 
-    String readerPath = app.prefs.get(PREF_KEY_PDF_READER, "");
+    String readerPath = app.prefs.get(PrefKey.PDF_READER, "");
 
     if (("pdf".equalsIgnoreCase(filePath.getExtensionOnly()) == false) || readerPath.isEmpty())
     {
@@ -374,7 +374,7 @@ public final class DesktopUtil
 
     if (pageNum < 1) pageNum = 1;
 
-    LaunchCommandsDlgCtrlr.launch(readerPath, filePath, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE, pageNum);
+    LaunchCommandsDlgCtrlr.launch(readerPath, filePath, PrefKey.PDF_READER_COMMANDS, PrefKey.PDF_READER_COMMAND_TYPE, pageNum);
   }
 
 //---------------------------------------------------------------------------

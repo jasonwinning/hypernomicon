@@ -151,7 +151,7 @@ public final class HyperDB extends AbstractHyperDB
   @Override public FilePath getRequestMessageFilePath(boolean useAppPrefs)
   {
     return useAppPrefs ?
-      new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(REQUEST_MSG_FILE_NAME)
+      new FilePath(app.prefs.get(PrefKey.SOURCE_PATH, "")).resolve(REQUEST_MSG_FILE_NAME)
     :
       getRootPath(REQUEST_MSG_FILE_NAME);
   }
@@ -159,7 +159,7 @@ public final class HyperDB extends AbstractHyperDB
   @Override public FilePath getResponseMessageFilePath(boolean useAppPrefs)
   {
     return useAppPrefs ?
-      new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(RESPONSE_MSG_FILE_NAME)
+      new FilePath(app.prefs.get(PrefKey.SOURCE_PATH, "")).resolve(RESPONSE_MSG_FILE_NAME)
     :
       getRootPath(RESPONSE_MSG_FILE_NAME);
   }
@@ -167,7 +167,7 @@ public final class HyperDB extends AbstractHyperDB
   @Override public FilePath getLockFilePath(boolean useAppPrefs)
   {
     return useAppPrefs ?
-      new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(LOCK_FILE_NAME)
+      new FilePath(app.prefs.get(PrefKey.SOURCE_PATH, "")).resolve(LOCK_FILE_NAME)
     :
       getRootPath(LOCK_FILE_NAME);
   }
@@ -365,7 +365,7 @@ public final class HyperDB extends AbstractHyperDB
 
   @Override protected void saveSourcePathToSystemSettings(String newPathStr)
   {
-    app.prefs.put(PREF_KEY_SOURCE_PATH, newPathStr);
+    app.prefs.put(PrefKey.SOURCE_PATH, newPathStr);
   }
 
 //---------------------------------------------------------------------------
@@ -373,7 +373,7 @@ public final class HyperDB extends AbstractHyperDB
 
   @Override public FilePath extPath()
   {
-    String path = app.prefs.get(PREF_KEY_EXT_FILES_1, "");
+    String path = app.prefs.get(PrefKey.EXT_FILES_1, "");
     return path.isBlank() ? null : new FilePath(path);
   }
 

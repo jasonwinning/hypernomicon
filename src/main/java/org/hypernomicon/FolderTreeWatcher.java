@@ -54,6 +54,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
+import org.hypernomicon.view.MainCtrlr.ShutDownMode;
 
 import javafx.application.Platform;
 import javafx.stage.Modality;
@@ -284,7 +285,7 @@ public class FolderTreeWatcher
             if (watcherEvent.isDirectory())
               registerTree(newPath);
             else if (((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
-                     app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+                     app.prefs.getBoolean(PrefKey.AUTO_IMPORT, true) &&
                      (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
                      "pdf".equalsIgnoreCase(newPath.getExtensionOnly()))
             {
@@ -347,7 +348,7 @@ public class FolderTreeWatcher
 
           case wekModify:
           {
-            if (app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) && downloading.contains(newPath))
+            if (app.prefs.getBoolean(PrefKey.AUTO_IMPORT, true) && downloading.contains(newPath))
             {
               doImport(newPath);
             }
@@ -363,7 +364,7 @@ public class FolderTreeWatcher
 
             if (untrackedFile)
             {
-              if (app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+              if (app.prefs.getBoolean(PrefKey.AUTO_IMPORT, true) &&
                   (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
                   ("pdf".equalsIgnoreCase(oldPathInfo.getFilePath().getExtensionOnly()) == false) &&
                   "pdf".equalsIgnoreCase(newPath.getExtensionOnly()))
@@ -532,7 +533,7 @@ public class FolderTreeWatcher
         {
           done = true;
 
-          Platform.runLater(() -> ui.shutDown(true, true, false));
+          Platform.runLater(() -> ui.shutDown(ShutDownMode.FromOtherComputer));
         }
 
         return true;

@@ -25,256 +25,26 @@ import com.google.common.collect.ImmutableMap;
 
 import javafx.scene.input.DataFormat;
 
+//---------------------------------------------------------------------------
+
 public final class Const
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private Const() { throw new UnsupportedOperationException(); }
 
-  public static final DataFormat HYPERNOMICON_DATA_FORMAT = new DataFormat("application/Hypernomicon");
-
-  public static final double
-
-    DEFAULT_FONT_SIZE = 11.0;
-
-  public static final int
-
-    INITIAL_NAV_LIST_SIZE = 150,
-    BUTTON_MENU_DELAY_MS = 300,
-    IGNORE_ARROW_KEYS_IN_TAB_PANE_MS = 300,
-    FILENAME_LENGTH_TO_SHOW_TOOLTIP = 30,
-    MAX_TOOLTIP_WIDTH = 1100,
-    HDB_MRU_SIZE = 4,
-
-    BLANK_FN_COMPONENT = 0,
-    AUTHOR_FN_COMPONENT = 1,
-    TITLE_FN_COMPONENT = 2,
-    YEAR_FN_COMPONENT = 3,
-    TRANS_FN_COMPONENT = 4,
-    EDITOR_FN_COMPONENT = 5,
-    CONTAINER_FN_COMPONENT = 6,
-    PUBLISHER_FN_COMPONENT = 7;
-
-  public static final String
-
-    HDB_DEFAULT_FILENAME = "database.hdb",
-    BLANK_DB_RESOURCE_NAME = "resources/blank_db.zip",
-
-    PREF_KEY_SETTINGS_VERSION = "settingsVersion",
-    PREF_KEY_NOTIFY_USER_NOT_LINKED = "notifyUnlinked",
-    PREF_KEY_DB_CREATION_DATE = "dbCreationDate",
-    PREF_KEY_SOURCE_PATH = "sourcePath",
-    PREF_KEY_SOURCE_FILENAME = "sourceFile",
-    PREF_KEY_TRANSIENT_TEST_PARENT_PATH = "transientTestParentPath",
-    PREF_KEY_TRANSIENT_TEST_FOLDER_NAME = "transientTestFolderName",
-    PREF_KEY_HDB_MRU = "hbdMru",
-    PREF_KEY_AUTO_IMPORT = "autoImport",
-    PREF_KEY_IMAGE_EDITOR = "imageEditor",
-    PREF_KEY_EXT_FILES_1 = "extFiles1",
-    PREF_KEY_OFFICE_PATH = "officePath",
-    PREF_KEY_IMAGE_EDITOR_COMMANDS = "imageEditorCommands",
-    PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE = "imageEditorCommandType",
-    PREF_KEY_PDF_READER = "pdfReader",
-    PREF_KEY_PDF_READER_COMMANDS = "pdfReaderCommands",
-    PREF_KEY_PDF_READER_COMMAND_TYPE = "pdfReaderCommandType",
-
-    PREF_KEY_XML_FOLDER_ID = "xmlFolderID",
-    PREF_KEY_PICTURES_FOLDER_ID = "picturesFolderID",
-    PREF_KEY_BOOKS_FOLDER_ID = "booksFolderID",
-    PREF_KEY_PAPERS_FOLDER_ID = "papersFolderID",
-    PREF_KEY_RESULTS_FOLDER_ID = "resultsFolderID",
-    PREF_KEY_UNENTERED_FOLDER_ID = "unenteredFolderID",
-    PREF_KEY_MISC_FILES_FOLDER_ID = "miscFilesFolderID",
-    PREF_KEY_TOPICAL_FOLDER_ID = "topicalFolderID",
-    PREF_KEY_THESIS_FOLDER_IS_BOOKS = "thesisFolderIsBooks",
-
-    PREF_KEY_RECORD_TYPE = "typeID",
-    PREF_KEY_DISPLAY_RECORD_TYPE = "displayTypeID",
-    PREF_KEY_PERSON_ID = "personID",
-    PREF_KEY_DEBATE_ID = "debateID",
-    PREF_KEY_INSTITUTION_ID = "institutionID",
-    PREF_KEY_POSITION_ID = "positionID",
-    PREF_KEY_ARGUMENT_ID = "argumentID",
-    PREF_KEY_TERM_ID = "termID",
-    PREF_KEY_WORK_ID = "workID",
-    PREF_KEY_FILE_ID = "fileID",
-    PREF_KEY_NOTE_ID = "noteID",
-    PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID = "defaultChapterWorkTypeID",
-    PREF_KEY_SENTENCE_CASE = "sentenceCase",
-    PREF_KEY_CHECK_INTERNET = "checkInternet",
-    PREF_KEY_CHECK_FOR_NEW_VERSION = "checkForNewVersion",
-    PREF_KEY_AUTO_OPEN_PDF = "autoOpenWorkFile",
-    PREF_KEY_AUTO_RETRIEVE_BIB = "autoRetrieveBib",
-    PREF_KEY_IMPORT_ACTION_DEFAULT = "importActionDefault",
-    PREF_KEY_LINUX_WORKAROUND = "linuxWindowResizabilityWorkaround",
-    PREF_KEY_PDFJS_SIDEBAR_VIEW = "pdfjsSidebarView",
-    PREF_KEY_FONT_SIZE = "fontSize",
-    PREF_KEY_DEF_DESC_FONT_SIZE = "defDescFontSize",
-    PREF_KEY_DEF_DESC_FONT_FAMILY = "defDescFontFamily",
-    PREF_KEY_DONT_OPEN_EMPTY_KEY_WORKS = "openEmptyKeyWorks",
-
-    PREF_KEY_LOWER_CASE_TARGET_NAMES = "lowerCaseTargetNames",
-    PREF_KEY_ARG_NAMING_MULTIPLE_AUTHORS = "multipleAuthorsInArgNames",
-    PREF_KEY_ARG_NAMING_OXFORD_COMMA = "oxfordCommaInArgNames",
-    PREF_KEY_ARG_TRUNCATE_NUM = "authorNumToTruncateInArgNames",
-    PREF_KEY_ARG_AUTHORS_TO_SHOW = "authorsToShowWhenTruncatingInArgNames",
-    PREF_KEY_ARG_TRUNCATION_INDICATOR = "truncationIndicatorInArgNames",
-    PREF_KEY_ARG_FINAL_CONJ_SYMBOL = "finalConjSymbolInArgNames",
-
-    PREF_KEY_IMPORT_ACTION_MOVE = "move",
-    PREF_KEY_IMPORT_ACTION_COPY = "copy",
-    PREF_KEY_IMPORT_ACTION_NONE = "none",
-
-    PREF_KEY_HT_ARG_PARENTS = "htArgParents",
-    PREF_KEY_HT_ARG_SRC = "htArgSrc",
-    PREF_KEY_HT_ARG_RESPONSES = "htArgCounters",
-    PREF_KEY_HT_CONTENTS_DLG = "htContentsDlg",
-    PREF_KEY_HT_DEBATE_PARENTS = "htDebateParents",
-    PREF_KEY_HT_DEBATE_POS = "htDebatePos",
-    PREF_KEY_HT_DEBATE_SUB = "htDebateSub",
-    PREF_KEY_HT_FM_RECORDS = "htFmRecords",
-    PREF_KEY_HT_FILE_AUTHORS = "htFileAuthors",
-    PREF_KEY_HT_FILE_LABELS = "htFileLabels",
-    PREF_KEY_HT_FILE_MENTIONERS = "htFileMentioners",
-    PREF_KEY_HT_INST_SUB = "htInstSub",
-    PREF_KEY_HT_INST_PEOPLE = "htInstPeople",
-    PREF_KEY_HT_FIND = "htFind",
-    PREF_KEY_HT_NOTE_PARENTS = "htNoteParents",
-    PREF_KEY_HT_NOTE_SUB = "htNoteSub",
-    PREF_KEY_HT_NOTE_MENTIONERS = "htNoteMentioners",
-    PREF_KEY_HT_PERSON_INST = "htPersonInst",
-    PREF_KEY_HT_PERSON_WORKS = "htPersonWorks",
-    PREF_KEY_HT_PERSON_ARG = "htPersonArg",
-    PREF_KEY_HT_POS_PARENTS = "htPosParents",
-    PREF_KEY_HT_POS_ARG = "htPosArg",
-    PREF_KEY_HT_POS_SUB = "htPosSub",
-    PREF_KEY_HT_QUERY_FIELDS = "htQueryFields",
-    PREF_KEY_HT_TERM_GLOSSARIES = "htTermGlossaries",
-    PREF_KEY_HT_CONCEPT_SUB = "htSubConcepts",
-    PREF_KEY_HT_TERM_DISPLAYERS = "htTermDisplayers",
-    PREF_KEY_HT_TREE = "htTree",
-    PREF_KEY_HT_WORK_AUTHORS = "htWorkAuthors",
-    PREF_KEY_HT_WORK_DLG = "htWorkDlg",
-    PREF_KEY_HT_WORK_LABELS = "htWorkLabels",
-    PREF_KEY_HT_WORK_SUB = "htWorkSub",
-    PREF_KEY_HT_WORK_MENTIONERS = "htWorkMentioners",
-    PREF_KEY_HT_WORK_ARG = "htWorkArg",
-    PREF_KEY_HT_WORK_FILES = "htWorkFiles",
-    PREF_KEY_HT_WORK_MISC = "htWorkMisc",
-    PREF_KEY_HT_MGR_FILES = "htMgrFiles",
-    PREF_KEY_HT_BIB_ENTRIES = "htBibEntries",
-
-    PREF_KEY_MAINTEXT_ZOOM = "mainTextZoom",
-    PREF_KEY_BIBMGR_ZOOM = "bibMgrZoom",
-    PREF_KEY_FILEMGR_ZOOM = "fileMgrZoom",
-    PREF_KEY_QUERYTAB_ZOOM = "queryTabZoom",
-    PREF_KEY_TREETAB_ZOOM = "treeTabZoom",
-
-    PREF_KEY_WINDOW_X = "windowPositionX",
-    PREF_KEY_WINDOW_Y = "windowPositionY",
-    PREF_KEY_WINDOW_WIDTH = "windowWidth",
-    PREF_KEY_WINDOW_HEIGHT = "windowHeight",
-    PREF_KEY_WINDOW_ICONIFIED = "windowIconified",
-    PREF_KEY_WINDOW_FULLSCREEN = "windowFullScreen",
-    PREF_KEY_WINDOW_MAXIMIZED = "windowMaximized",
-
-    PREF_KEY_PREV_WINDOW_X = "prevWindowPositionX",
-    PREF_KEY_PREV_WINDOW_Y = "prevWindowPositionY",
-    PREF_KEY_PREV_WINDOW_WIDTH = "prevWindowWidth",
-    PREF_KEY_PREV_WINDOW_HEIGHT = "prevWindowHeight",
-
-    PREF_KEY_CONTENTS_WINDOW_X = "contentsWindowPositionX",
-    PREF_KEY_CONTENTS_WINDOW_Y = "contentsWindowPositionY",
-    PREF_KEY_CONTENTS_WINDOW_WIDTH = "contentsWindowWidth",
-    PREF_KEY_CONTENTS_WINDOW_HEIGHT = "contentsWindowHeight",
-
-    PREF_KEY_BM_WINDOW_X = "bmWindowPositionX",
-    PREF_KEY_BM_WINDOW_Y = "bmWindowPositionY",
-    PREF_KEY_BM_WINDOW_WIDTH = "bmWindowWidth",
-    PREF_KEY_BM_WINDOW_HEIGHT = "bmWindowHeight",
-
-    PREF_KEY_FM_WINDOW_X = "fmWindowPositionX",
-    PREF_KEY_FM_WINDOW_Y = "fmWindowPositionY",
-    PREF_KEY_FM_WINDOW_WIDTH = "fmWindowWidth",
-    PREF_KEY_FM_WINDOW_HEIGHT = "fmWindowHeight",
-
-    PREF_KEY_PERSON_TOP_HORIZ    = "personTopHoriz", // divider positions
-    PREF_KEY_PERSON_MID_VERT     = "personMidVert",
-    PREF_KEY_PERSON_BOTTOM_VERT  = "personBottomVert",
-    PREF_KEY_INST_MID_HORIZ      = "instMidHoriz",
-    PREF_KEY_WORK_MID_VERT       = "workMidVert",
-    PREF_KEY_WORK_BOTTOM_VERT    = "workBottomVert",
-    PREF_KEY_WORK_RIGHT_HORIZ    = "workRightHoriz",
-    PREF_KEY_WORK_BOTTOM_HORIZ   = "workBottomHoriz",
-    PREF_KEY_FILE_BOTTOM_VERT    = "fileBottomVert",
-    PREF_KEY_FILE_RIGHT_HORIZ    = "fileRightHoriz",
-    PREF_KEY_FILE_RIGHT_VERT     = "fileRightVert",
-    PREF_KEY_DEBATE_TOP_VERT     = "debateTopVert",
-    PREF_KEY_DEBATE_BOTTOM_VERT  = "debateBottomVert",
-    PREF_KEY_DEBATE_BOTTOM_HORIZ = "debateBottomHoriz",
-    PREF_KEY_POS_TOP_VERT        = "posTopVert",
-    PREF_KEY_POS_BOTTOM_VERT     = "posBottomVert",
-    PREF_KEY_POS_BOTTOM_HORIZ    = "posBottomHoriz",
-    PREF_KEY_ARG_TOP_VERT        = "argTopVert",
-    PREF_KEY_ARG_BOTTOM_VERT     = "argBottomVert",
-    PREF_KEY_NOTE_TOP_VERT       = "noteTopVert",
-    PREF_KEY_NOTE_BOTTOM_VERT    = "noteBottomVert",
-    PREF_KEY_NOTE_BOTTOM_HORIZ   = "noteBottomHoriz",
-    PREF_KEY_TERM_TOP_VERT       = "termTopVert",
-    PREF_KEY_TERM_BOTTOM_VERT    = "termBottomVert",
-    PREF_KEY_TERM_BOTTOM_HORIZ   = "termBottomHoriz",
-    PREF_KEY_MGR_MAIN_HORIZ      = "mgrMainHoriz",
-    PREF_KEY_MGR_FILES_VERT      = "mgrFilesVert",
-    PREF_KEY_MGR_RECORDS_HORIZ   = "mgrRecordsHoriz",
-    PREF_KEY_BIB_LEFT_HORIZ      = "bibLeftHoriz",
-    PREF_KEY_BIB_RIGHT_HORIZ     = "bibRightHoriz",
-
-    PREF_KEY_FN_COMPONENT_COUNT = "fnComponentCount",
-    PREF_KEY_FN_COMPONENT = "fnComponent",
-    PREF_KEY_FN_EXCL_WORK_TYPES = "fnExclWorkTypes",
-    PREF_KEY_FN_WITHIN_SEP = "fnWithinSep",
-    PREF_KEY_FN_BEFORE_SEP = "fnBeforeSep",
-    PREF_KEY_FN_AFTER_SEP = "fnAfterSep",
-    PREF_KEY_FN_TEST = "fnTest",
-
-    PREF_KEY_FN_TREAT_ED_AS_AUTHOR = "fnTreatEdAsAuthor",
-    PREF_KEY_FN_ADD_INITIAL = "fnAddInitial",
-    PREF_KEY_FN_YEAR_LETTER = "fnYearLetter",
-    PREF_KEY_FN_POSIX = "fnPosix",
-    PREF_KEY_FN_LOWERCASE = "fnLowercase",
-    PREF_KEY_FN_MAX_CHAR = "fnMaxChar",
-
-    PREF_KEY_BIB_LIBRARY_VERSION = "bibLibraryVersion",
-    PREF_KEY_BIB_LAST_SYNC_TIME = "bibLastSyncTime",
-    PREF_KEY_BIB_API_KEY = "bibApiKey",
-    PREF_KEY_BIB_USER_ID = "bibUserID",
-    PREF_KEY_BIB_ACCESS_TOKEN = "bibAccessToken",
-    PREF_KEY_BIB_REFRESH_TOKEN = "bibRefreshToken",
-    PREF_KEY_BIB_LIBRARY_TYPE = "bibType",
-    PREF_KEY_BIB_SRCH_REQUIRE_BY_DEFAULT = "bibRequireByDefault",
-
-    PREF_KEY_KEY_WORK_SORT_BY_NAME = "keyWorkSortByName",
-    PREF_KEY_RIGHT_CLICK_TO_LAUNCH = "rtClkToLaunch",
-
-    PREF_KEY_WEB_BUTTONS = "webButtons",
-
-    PREF_KEY_PERSON_SRCH = "personSrch",
-    PREF_KEY_WORK_SRCH = "workSrch",
-    PREF_KEY_GEN_SRCH = "genSrch",
-    PREF_KEY_PERSON_IMG_SRCH = "personImgSrch",
-    PREF_KEY_INST_SRCH = "instSrch",
-    PREF_KEY_INST_MAP_SRCH = "instMapSrch",
-    PREF_KEY_DOI_SRCH = "doiSrch",
-    PREF_KEY_ISBN_SRCH = "isbnSrch",
-
-    EXT_1 = "ext1://";
+//---------------------------------------------------------------------------
 
   /**
    * Change this and the version in pom.xml to set the application version
    * <br>
    */
-  public static final VersionNumber appVersion = new VersionNumber(1, 29, 1); // 1.29.1
+  public static final VersionNumber appVersion = new VersionNumber(1, 30); // 1.30
 
   /**
-   * This is the minimum version that the application version is able to load
+   * This is the minimum version that the application version (or higher) is able to load
    * <br>
    */
   public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
@@ -283,7 +53,7 @@ public final class Const
     .build();
 
   /**
-   * This is the minimum version that the application version is able to load
+   * This is the minimum version that the application version (or higher) is able to load
    * <br>
    */
   public static final Map<VersionNumber, VersionNumber> appVersionToMinSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
@@ -292,7 +62,7 @@ public final class Const
     .build();
 
   /**
-   * This is the version that the application version will actually save to
+   * This is the version that the application version (or lower) will actually save to
    * <br>
    */
   public static final Map<VersionNumber, VersionNumber> appVersionToMaxRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
@@ -310,7 +80,7 @@ public final class Const
     .build();
 
   /**
-   *  This is the version that the application version will actually save to
+   *  This is the version that the application version (or lower) will actually save to
    *  <br>
    */
   public static final Map<VersionNumber, VersionNumber> appVersionToMaxSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
@@ -321,4 +91,300 @@ public final class Const
     .put(new VersionNumber(1, 23, 1), new VersionNumber(1, 3))
     .put(appVersion, new VersionNumber(1, 4))
     .build();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static final DataFormat HYPERNOMICON_DATA_FORMAT = new DataFormat("application/Hypernomicon");
+
+  public static final double
+
+    DEFAULT_FONT_SIZE = 11.0;
+
+  public static final int
+
+    INITIAL_NAV_LIST_SIZE = 150,
+    BUTTON_MENU_DELAY_MS = 300,
+    IGNORE_ARROW_KEYS_IN_TAB_PANE_MS = 300,
+    FILENAME_LENGTH_TO_SHOW_TOOLTIP = 30,
+    MAX_TOOLTIP_WIDTH = 1100,
+    HDB_MRU_SIZE = 4;
+
+  public static final String
+
+    HDB_DEFAULT_FILENAME = "database.hdb",
+    BLANK_DB_RESOURCE_NAME = "resources/blank_db.zip",
+    EXT_1 = "ext1://";
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class PrefKey
+  {
+    public static final String
+
+      SETTINGS_VERSION = "settingsVersion",
+      NOTIFY_USER_NOT_LINKED = "notifyUnlinked",
+      DB_CREATION_DATE = "dbCreationDate",
+      SOURCE_PATH = "sourcePath",
+      SOURCE_FILENAME = "sourceFile",
+      TRANSIENT_TEST_PARENT_PATH = "transientTestParentPath",
+      TRANSIENT_TEST_FOLDER_NAME = "transientTestFolderName",
+      HDB_MRU = "hbdMru",
+      AUTO_IMPORT = "autoImport",
+      IMAGE_EDITOR = "imageEditor",
+      EXT_FILES_1 = "extFiles1",
+      OFFICE_PATH = "officePath",
+      IMAGE_EDITOR_COMMANDS = "imageEditorCommands",
+      IMAGE_EDITOR_COMMAND_TYPE = "imageEditorCommandType",
+      PDF_READER = "pdfReader",
+      PDF_READER_COMMANDS = "pdfReaderCommands",
+      PDF_READER_COMMAND_TYPE = "pdfReaderCommandType",
+      THESIS_FOLDER_IS_BOOKS = "thesisFolderIsBooks",
+
+      RECORD_TYPE = "typeID",
+      DISPLAY_RECORD_TYPE = "displayTypeID",
+      DEFAULT_CHAPTER_WORK_TYPE_ID = "defaultChapterWorkTypeID",
+      SENTENCE_CASE = "sentenceCase",
+      CHECK_INTERNET = "checkInternet",
+      CHECK_FOR_NEW_VERSION = "checkForNewVersion",
+      AUTO_OPEN_PDF = "autoOpenWorkFile",
+      AUTO_RETRIEVE_BIB = "autoRetrieveBib",
+      IMPORT_ACTION_DEFAULT = "importActionDefault",
+      LINUX_WORKAROUND = "linuxWindowResizabilityWorkaround",
+      PDFJS_SIDEBAR_VIEW = "pdfjsSidebarView",
+      FONT_SIZE = "fontSize",
+      DEF_DESC_FONT_SIZE = "defDescFontSize",
+      DEF_DESC_FONT_FAMILY = "defDescFontFamily",
+      DONT_OPEN_EMPTY_KEY_WORKS = "openEmptyKeyWorks",
+
+      LOWER_CASE_TARGET_NAMES = "lowerCaseTargetNames",
+      ARG_NAMING_MULTIPLE_AUTHORS = "multipleAuthorsInArgNames",
+      ARG_NAMING_OXFORD_COMMA = "oxfordCommaInArgNames",
+      ARG_TRUNCATE_NUM = "authorNumToTruncateInArgNames",
+      ARG_AUTHORS_TO_SHOW = "authorsToShowWhenTruncatingInArgNames",
+      ARG_TRUNCATION_INDICATOR = "truncationIndicatorInArgNames",
+      ARG_FINAL_CONJ_SYMBOL = "finalConjSymbolInArgNames",
+
+      WINDOW_X = "windowPositionX",
+      WINDOW_Y = "windowPositionY",
+      WINDOW_WIDTH = "windowWidth",
+      WINDOW_HEIGHT = "windowHeight",
+      WINDOW_ICONIFIED = "windowIconified",
+      WINDOW_FULLSCREEN = "windowFullScreen",
+      WINDOW_MAXIMIZED = "windowMaximized",
+
+      PREV_WINDOW_X = "prevWindowPositionX",
+      PREV_WINDOW_Y = "prevWindowPositionY",
+      PREV_WINDOW_WIDTH = "prevWindowWidth",
+      PREV_WINDOW_HEIGHT = "prevWindowHeight",
+
+      CONTENTS_WINDOW_X = "contentsWindowPositionX",
+      CONTENTS_WINDOW_Y = "contentsWindowPositionY",
+      CONTENTS_WINDOW_WIDTH = "contentsWindowWidth",
+      CONTENTS_WINDOW_HEIGHT = "contentsWindowHeight",
+
+      BM_WINDOW_X = "bmWindowPositionX",
+      BM_WINDOW_Y = "bmWindowPositionY",
+      BM_WINDOW_WIDTH = "bmWindowWidth",
+      BM_WINDOW_HEIGHT = "bmWindowHeight",
+
+      FM_WINDOW_X = "fmWindowPositionX",
+      FM_WINDOW_Y = "fmWindowPositionY",
+      FM_WINDOW_WIDTH = "fmWindowWidth",
+      FM_WINDOW_HEIGHT = "fmWindowHeight",
+
+      BIB_LIBRARY_VERSION = "bibLibraryVersion",
+      BIB_LAST_SYNC_TIME = "bibLastSyncTime",
+      BIB_API_KEY = "bibApiKey",
+      BIB_USER_ID = "bibUserID",
+      BIB_ACCESS_TOKEN = "bibAccessToken",
+      BIB_REFRESH_TOKEN = "bibRefreshToken",
+      BIB_LIBRARY_TYPE = "bibType",
+      BIB_SRCH_REQUIRE_BY_DEFAULT = "bibRequireByDefault",
+
+      KEY_WORK_SORT_BY_NAME = "keyWorkSortByName",
+      RIGHT_CLICK_TO_LAUNCH = "rtClkToLaunch",
+
+      WEB_BUTTONS = "webButtons";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class ZoomPrefKey
+  {
+    public static final String
+
+      MAINTEXT = "mainTextZoom",
+      BIBMGR   = "bibMgrZoom",
+      FILEMGR  = "fileMgrZoom",
+      QUERYTAB = "queryTabZoom",
+      TREETAB  = "treeTabZoom";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class WebButtonContextPrefKey
+  {
+    public static final String
+
+      PERSON     = "personSrch",
+      WORK       = "workSrch",
+      GEN        = "genSrch",
+      PERSON_IMG = "personImgSrch",
+      INST       = "instSrch",
+      INST_MAP   = "instMapSrch",
+      DOI        = "doiSrch",
+      ISBN       = "isbnSrch";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class RecordIDPrefKey
+  {
+    public static final String
+
+      PERSON      = "personID",
+      DEBATE      = "debateID",
+      INSTITUTION = "institutionID",
+      POSITION    = "positionID",
+      ARGUMENT    = "argumentID",
+      TERM        = "termID",
+      WORK        = "workID",
+      FILE        = "fileID",
+      NOTE        = "noteID";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class FolderIDPrefKey
+  {
+    public static final String
+
+      XML        = "xmlFolderID",
+      PICTURES   = "picturesFolderID",
+      BOOKS      = "booksFolderID",
+      PAPERS     = "papersFolderID",
+      RESULTS    = "resultsFolderID",
+      UNENTERED  = "unenteredFolderID",
+      MISC_FILES = "miscFilesFolderID",
+      TOPICAL    = "topicalFolderID";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class FileNamePrefKey
+  {
+    public static final String
+
+      COMPONENT_COUNT = "fnComponentCount",
+      COMPONENT = "fnComponent",
+      EXCL_WORK_TYPES = "fnExclWorkTypes",
+      WITHIN_SEP = "fnWithinSep",
+      BEFORE_SEP = "fnBeforeSep",
+      AFTER_SEP = "fnAfterSep",
+      TEST = "fnTest",
+
+      TREAT_ED_AS_AUTHOR = "fnTreatEdAsAuthor",
+      ADD_INITIAL = "fnAddInitial",
+      YEAR_LETTER = "fnYearLetter",
+      POSIX = "fnPosix",
+      LOWERCASE = "fnLowercase",
+      MAX_CHAR = "fnMaxChar";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class DividerPositionPrefKey
+  {
+    public static final String
+
+      PERSON_TOP_HORIZ    = "personTopHoriz",
+      PERSON_MID_VERT     = "personMidVert",
+      PERSON_BOTTOM_VERT  = "personBottomVert",
+      INST_MID_HORIZ      = "instMidHoriz",
+      WORK_MID_VERT       = "workMidVert",
+      WORK_BOTTOM_VERT    = "workBottomVert",
+      WORK_RIGHT_HORIZ    = "workRightHoriz",
+      WORK_BOTTOM_HORIZ   = "workBottomHoriz",
+      FILE_BOTTOM_VERT    = "fileBottomVert",
+      FILE_RIGHT_HORIZ    = "fileRightHoriz",
+      FILE_RIGHT_VERT     = "fileRightVert",
+      DEBATE_TOP_VERT     = "debateTopVert",
+      DEBATE_BOTTOM_VERT  = "debateBottomVert",
+      DEBATE_BOTTOM_HORIZ = "debateBottomHoriz",
+      POS_TOP_VERT        = "posTopVert",
+      POS_BOTTOM_VERT     = "posBottomVert",
+      POS_BOTTOM_HORIZ    = "posBottomHoriz",
+      ARG_TOP_VERT        = "argTopVert",
+      ARG_BOTTOM_VERT     = "argBottomVert",
+      NOTE_TOP_VERT       = "noteTopVert",
+      NOTE_BOTTOM_VERT    = "noteBottomVert",
+      NOTE_BOTTOM_HORIZ   = "noteBottomHoriz",
+      TERM_TOP_VERT       = "termTopVert",
+      TERM_BOTTOM_VERT    = "termBottomVert",
+      TERM_BOTTOM_HORIZ   = "termBottomHoriz",
+      MGR_MAIN_HORIZ      = "mgrMainHoriz",
+      MGR_FILES_VERT      = "mgrFilesVert",
+      MGR_RECORDS_HORIZ   = "mgrRecordsHoriz",
+      BIB_LEFT_HORIZ      = "bibLeftHoriz",
+      BIB_RIGHT_HORIZ     = "bibRightHoriz";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class TablePrefKey
+  {
+    public static final String
+
+      ARG_PARENTS     = "htArgParents",
+      ARG_SRC         = "htArgSrc",
+      ARG_RESPONSES   = "htArgCounters",
+      CONTENTS_DLG    = "htContentsDlg",
+      DEBATE_PARENTS  = "htDebateParents",
+      DEBATE_POS      = "htDebatePos",
+      DEBATE_SUB      = "htDebateSub",
+      FM_RECORDS      = "htFmRecords",
+      FILE_AUTHORS    = "htFileAuthors",
+      FILE_LABELS     = "htFileLabels",
+      FILE_MENTIONERS = "htFileMentioners",
+      INST_SUB        = "htInstSub",
+      INST_PEOPLE     = "htInstPeople",
+      FIND            = "htFind",
+      NOTE_PARENTS    = "htNoteParents",
+      NOTE_SUB        = "htNoteSub",
+      NOTE_MENTIONERS = "htNoteMentioners",
+      PERSON_INST     = "htPersonInst",
+      PERSON_WORKS    = "htPersonWorks",
+      PERSON_ARG      = "htPersonArg",
+      POS_PARENTS     = "htPosParents",
+      POS_ARG         = "htPosArg",
+      POS_SUB         = "htPosSub",
+      QUERY_FIELDS    = "htQueryFields",
+      TERM_GLOSSARIES = "htTermGlossaries",
+      CONCEPT_SUB     = "htSubConcepts",
+      TERM_DISPLAYERS = "htTermDisplayers",
+      TREE            = "htTree",
+      WORK_AUTHORS    = "htWorkAuthors",
+      WORK_DLG        = "htWorkDlg",
+      WORK_LABELS     = "htWorkLabels",
+      WORK_SUB        = "htWorkSub",
+      WORK_MENTIONERS = "htWorkMentioners",
+      WORK_ARG        = "htWorkArg",
+      WORK_FILES      = "htWorkFiles",
+      WORK_MISC       = "htWorkMisc",
+      MGR_FILES       = "htMgrFiles",
+      BIB_ENTRIES     = "htBibEntries";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

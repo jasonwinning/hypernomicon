@@ -398,7 +398,7 @@ public final class UIUtil
 
   public static void setFontSize(Node node)
   {
-    double fontSize = app.prefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+    double fontSize = app.prefs.getDouble(PrefKey.FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize >= 1)
       node.setStyle("-fx-font-size: " + fontSize + "px;");
   }
@@ -440,14 +440,14 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setHeights(Region region, Double height)
+  public static void setHeights(Region region, double height)
   {
     region.setMinHeight (height);
     region.setMaxHeight (height);
     region.setPrefHeight(height);
   }
 
-  public static void setHeights(Stage stage, Double height)
+  public static void setHeights(Stage stage, double height)
   {
     stage.setMinHeight(height);
     stage.setMaxHeight(height);
@@ -457,14 +457,14 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setWidths(Region region, Double width)
+  public static void setWidths(Region region, double width)
   {
     region.setMinWidth (width);
     region.setMaxWidth (width);
     region.setPrefWidth(width);
   }
 
-  public static void setWidths(Stage stage, Double width)
+  public static void setWidths(Stage stage, double width)
   {
     stage.setMinWidth(width);
     stage.setMaxWidth(width);
@@ -678,9 +678,8 @@ public final class UIUtil
     {
       DialogPane dlgPane = dlg.getDialogPane();
 
-      dlgPane.setMinSize (800, 400);
-      dlgPane.setMaxSize (800, 400);
-      dlgPane.setPrefSize(800, 400);
+      setHeights(dlgPane, 400);
+      setWidths (dlgPane, 800);
     }
 
     if (windowStack != null)

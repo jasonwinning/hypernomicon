@@ -18,7 +18,6 @@
 package org.hypernomicon.query.ui;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
@@ -46,6 +45,7 @@ import java.util.Map.Entry;
 
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.HDT_Record;
@@ -141,7 +141,7 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 
   public List<ResultRow> results()        { return inReportMode() ? List.of() : Collections.unmodifiableList(resultsBackingList); }
-  void saveColumnWidths()                 { HyperTable.saveColWidthsForTable(tvFields, tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS); }
+  void saveColumnWidths()                 { HyperTable.saveColWidthsForTable(tvFields, tvFields.getColumns(), TablePrefKey.QUERY_FIELDS); }
   void focusOnFields()                    { safeFocus(tvFields); }
   public boolean inReportMode()           { return inRecordMode == false; }
   Tab getTab()                            { return tab; }
@@ -191,7 +191,7 @@ public final class QueryCtrlr
 
     htFields = new HyperTable(tvFields, QUERY_COL_NDX, true, "");
 
-    HyperTable.loadColWidthsForTable(tvFields, tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS);
+    HyperTable.loadColWidthsForTable(tvFields, tvFields.getColumns(), TablePrefKey.QUERY_FIELDS);
 
     htFields.autoCommitListSelections = true;
 

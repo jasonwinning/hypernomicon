@@ -36,6 +36,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -238,8 +239,8 @@ public final class MainCtrlr
   public boolean isShuttingDown()             { return shuttingDown; }
   public boolean dontInteract()               { return dontInteract; }
 
-  @FXML private void mnuExitClick()           { shutDown(true, true, true); }
-  @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
+  @FXML private void mnuExitClick()           { shutDown(ShutDownMode.Normal      ); }
+  @FXML private void mnuExitNoSaveClick()     { shutDown(ShutDownMode.NormalNoSave); }
   @FXML private void mnuOpenClick()           { openDB(null); }
   @FXML private void mnuAboutClick()          { new AboutDlgCtrlr().showModal(); }
   @FXML private void mnuChangeFavOrderClick() { new FavOrderDlgCtrlr().showModal(); }
@@ -408,7 +409,7 @@ public final class MainCtrlr
 
     hcbGoTo = new HyperCB(cbGoTo, ctDropDown, new RecordByTypePopulator());
 
-    htFind = new HyperTable(tvFind, 1, false, PREF_KEY_HT_FIND); htFind.disableRefreshAfterCellUpdate = true;
+    htFind = new HyperTable(tvFind, 1, false, TablePrefKey.FIND); htFind.disableRefreshAfterCellUpdate = true;
 
     htFind.addIconCol();
     htFind.addCol     (hdtNone, ctIncremental);
@@ -465,7 +466,7 @@ public final class MainCtrlr
     mnuChangePosVerdictOrder     .setOnAction(event -> mnuChangeSortOrder(hdtPositionVerdict));
     mnuChangeInstitutionTypeOrder.setOnAction(event -> mnuChangeSortOrder(hdtInstitutionType));
 
-    if (app.prefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
+    if (app.prefs.getBoolean(PrefKey.RIGHT_CLICK_TO_LAUNCH, true))
       btnPointerLaunch.setSelected(true);
     else
       btnPointerPreview.setSelected(true);
@@ -473,13 +474,13 @@ public final class MainCtrlr
     btnPointerLaunch.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (Boolean.TRUE.equals(newValue))
-        app.prefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
+        app.prefs.putBoolean(PrefKey.RIGHT_CLICK_TO_LAUNCH, true);
     });
 
     btnPointerPreview.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (Boolean.TRUE.equals(newValue))
-        app.prefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
+        app.prefs.putBoolean(PrefKey.RIGHT_CLICK_TO_LAUNCH, false);
     });
 
     forceToggleSelection(btnPointerLaunch.getToggleGroup());
@@ -775,8 +776,8 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    mnuAutoImport.setSelected(app.prefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
-    mnuAutoImport.setOnAction(event -> app.prefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
+    mnuAutoImport.setSelected(app.prefs.getBoolean(PrefKey.AUTO_IMPORT, true));
+    mnuAutoImport.setOnAction(event -> app.prefs.putBoolean(PrefKey.AUTO_IMPORT, mnuAutoImport.isSelected()));
 
     setAllVisible(app.debugging, mnuChangeID, mnuSaveReloadAll, mnuTestConsole);
 
@@ -784,7 +785,7 @@ public final class MainCtrlr
 
     stage.setOnCloseRequest(event ->
     {
-      shutDown(true, true, true);
+      shutDown(ShutDownMode.Normal);
       event.consume();
     });
 
@@ -814,12 +815,12 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    double  x             = app.prefs.getDouble (PREF_KEY_WINDOW_X,          stage.getX()),
-            y             = app.prefs.getDouble (PREF_KEY_WINDOW_Y,          stage.getY()),
-            width         = app.prefs.getDouble (PREF_KEY_WINDOW_WIDTH,      rootNode.getPrefWidth()),  // stage.getWidth and stage.getHeight are not the
-            height        = app.prefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     rootNode.getPrefHeight()); // correct values in some Linux environments
-    boolean fullScreen    = app.prefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, stage.isFullScreen()),
-            maximizedPref = app.prefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  stage.isMaximized());
+    double  x             = app.prefs.getDouble (PrefKey.WINDOW_X,          stage.getX()),
+            y             = app.prefs.getDouble (PrefKey.WINDOW_Y,          stage.getY()),
+            width         = app.prefs.getDouble (PrefKey.WINDOW_WIDTH,      rootNode.getPrefWidth()),  // stage.getWidth and stage.getHeight are not the
+            height        = app.prefs.getDouble (PrefKey.WINDOW_HEIGHT,     rootNode.getPrefHeight()); // correct values in some Linux environments
+    boolean fullScreen    = app.prefs.getBoolean(PrefKey.WINDOW_FULLSCREEN, stage.isFullScreen()),
+            maximizedPref = app.prefs.getBoolean(PrefKey.WINDOW_MAXIMIZED,  stage.isMaximized());
 
     stage.setX(x); // set X and Y first so that window gets full-screened or
     stage.setY(y); // maximized onto the correct monitor if there are more than one
@@ -1320,25 +1321,39 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void shutDown(boolean save, boolean savePrefs, boolean prompt)
+  public enum ShutDownMode
+  {
+    Normal,                    // User interactively selects Save to XML menu option
+    NormalNoSave,              // User interactively selects option to exit without saving
+    FromOtherComputer,         // Request to shut down received from a different computer
+    InitializationFailure,     // Shutting down because an error occurred during application initialization
+    UnrecoverableInternalError // Shutting down because of an unrecoverable internal error
+  }
+
+  public void shutDown(ShutDownMode shutDownMode)
   {
     if (db.isLoaded())
     {
-      if (save)
+      if (shutDownMode == ShutDownMode.NormalNoSave)
       {
-        if (prompt == false)
+        if (confirmDialog("Abandon changes and quit?") == false)
+          return;
+      }
+      else if ((shutDownMode == ShutDownMode.Normal) || (shutDownMode == ShutDownMode.FromOtherComputer))
+      {
+        if (shutDownMode == ShutDownMode.FromOtherComputer)
         {
-          shuttingDown = true; // This should only happen when there is an inter-computer request to shut down
-          dontInteract = true;
+          shuttingDown = true;
+          dontInteract = true; // Don't show popup messages while saving current record; just decline confirmations and fail
         }
 
-        if (cantSaveRecord() && prompt)
+        if (cantSaveRecord() && (shutDownMode == ShutDownMode.Normal))
           if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?"))
             return;
 
         dontInteract = false;
 
-        if ((shuttingDown == false) && app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
+        if ((shuttingDown == false) && app.prefs.getBoolean(PrefKey.CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
           return;
 
         if (saveAllToXML(false, false, false) == false)
@@ -1347,22 +1362,27 @@ public final class MainCtrlr
           return;
         }
       }
+      else if (shutDownMode == ShutDownMode.UnrecoverableInternalError)
+        dontInteract = true;
 
       shuttingDown = true;
       forEachHyperTab(hyperTab -> hyperTab.clear(true));
 
       folderTreeWatcher.stop();
 
-      try { db.close(null); }
-      catch (HDB_InternalError e)
+      if ((shutDownMode != ShutDownMode.UnrecoverableInternalError) && (shutDownMode != ShutDownMode.InitializationFailure))
       {
-        errorPopup(e);
+        try { db.close(null); }
+        catch (HDB_UnrecoverableInternalError e)
+        {
+          errorPopup(e);
+        }
       }
     }
 
     closeWindows(true);
 
-    if (savePrefs)
+    if (shutDownMode != ShutDownMode.InitializationFailure)
     {
       forEachHyperTab(HyperTab::getDividerPositions);
       fileManagerDlg.getDividerPositions();
@@ -1373,25 +1393,25 @@ public final class MainCtrlr
 
       if (fullScreen || maximizedPrefVal) iconified = false; // This has to be done due to bug JDK-8087997
 
-      app.prefs.putDouble(PREF_KEY_WINDOW_X, stage.getX());
-      app.prefs.putDouble(PREF_KEY_WINDOW_Y, stage.getY());
-      app.prefs.putDouble(PREF_KEY_WINDOW_WIDTH, stage.getWidth());
-      app.prefs.putDouble(PREF_KEY_WINDOW_HEIGHT, stage.getHeight());
-      app.prefs.putBoolean(PREF_KEY_WINDOW_ICONIFIED, iconified);
-      app.prefs.putBoolean(PREF_KEY_WINDOW_FULLSCREEN, fullScreen);
-      app.prefs.putBoolean(PREF_KEY_WINDOW_MAXIMIZED, maximizedPrefVal);
+      app.prefs.putDouble(PrefKey.WINDOW_X, stage.getX());
+      app.prefs.putDouble(PrefKey.WINDOW_Y, stage.getY());
+      app.prefs.putDouble(PrefKey.WINDOW_WIDTH, stage.getWidth());
+      app.prefs.putDouble(PrefKey.WINDOW_HEIGHT, stage.getHeight());
+      app.prefs.putBoolean(PrefKey.WINDOW_ICONIFIED, iconified);
+      app.prefs.putBoolean(PrefKey.WINDOW_FULLSCREEN, fullScreen);
+      app.prefs.putBoolean(PrefKey.WINDOW_MAXIMIZED, maximizedPrefVal);
 
       if (fileManagerDlg.shownAlready())
-        HyperDlg.saveBoundPrefs(fileManagerDlg.getStage(), PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_WIDTH, PREF_KEY_FM_WINDOW_HEIGHT);
+        HyperDlg.saveBoundPrefs(fileManagerDlg.getStage(), PrefKey.FM_WINDOW_X, PrefKey.FM_WINDOW_Y, PrefKey.FM_WINDOW_WIDTH, PrefKey.FM_WINDOW_HEIGHT);
 
       if (bibManagerDlg.shownAlready())
-        HyperDlg.saveBoundPrefs(bibManagerDlg.getStage(), PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_WIDTH, PREF_KEY_BM_WINDOW_HEIGHT);
+        HyperDlg.saveBoundPrefs(bibManagerDlg.getStage(), PrefKey.BM_WINDOW_X, PrefKey.BM_WINDOW_Y, PrefKey.BM_WINDOW_WIDTH, PrefKey.BM_WINDOW_HEIGHT);
 
       if (previewWindow.shownAlready())
-        HyperDlg.saveBoundPrefs(previewWindow.getStage(), PREF_KEY_PREV_WINDOW_X, PREF_KEY_PREV_WINDOW_Y, PREF_KEY_PREV_WINDOW_WIDTH, PREF_KEY_PREV_WINDOW_HEIGHT);
+        HyperDlg.saveBoundPrefs(previewWindow.getStage(), PrefKey.PREV_WINDOW_X, PrefKey.PREV_WINDOW_Y, PrefKey.PREV_WINDOW_WIDTH, PrefKey.PREV_WINDOW_HEIGHT);
 
       if (contentsWindow.shownAlready())
-        HyperDlg.saveBoundPrefs(contentsWindow.getStage(), PREF_KEY_CONTENTS_WINDOW_X, PREF_KEY_CONTENTS_WINDOW_Y, PREF_KEY_CONTENTS_WINDOW_WIDTH, PREF_KEY_CONTENTS_WINDOW_HEIGHT);
+        HyperDlg.saveBoundPrefs(contentsWindow.getStage(), PrefKey.CONTENTS_WINDOW_X, PrefKey.CONTENTS_WINDOW_Y, PrefKey.CONTENTS_WINDOW_WIDTH, PrefKey.CONTENTS_WINDOW_HEIGHT);
 
       HyperTable.saveColWidthsToPrefs();
     }
@@ -1543,22 +1563,22 @@ public final class MainCtrlr
 
       if (saveRecord && cantSaveRecord()) return false;
 
-      db.prefs.putInt(PREF_KEY_PERSON_ID     , personHyperTab  ().activeID());
-      db.prefs.putInt(PREF_KEY_INSTITUTION_ID, instHyperTab    ().activeID());
-      db.prefs.putInt(PREF_KEY_DEBATE_ID     , debateHyperTab  ().activeID());
-      db.prefs.putInt(PREF_KEY_POSITION_ID   , positionHyperTab().activeID());
-      db.prefs.putInt(PREF_KEY_ARGUMENT_ID   , argumentHyperTab().activeID());
-      db.prefs.putInt(PREF_KEY_WORK_ID       , workHyperTab    ().activeID());
-      db.prefs.putInt(PREF_KEY_TERM_ID       , termHyperTab    ().activeID());
-      db.prefs.putInt(PREF_KEY_FILE_ID       , fileHyperTab    ().activeID());
-      db.prefs.putInt(PREF_KEY_NOTE_ID       , noteHyperTab    ().activeID());
+      db.prefs.putInt(RecordIDPrefKey.PERSON     , personHyperTab  ().activeID());
+      db.prefs.putInt(RecordIDPrefKey.INSTITUTION, instHyperTab    ().activeID());
+      db.prefs.putInt(RecordIDPrefKey.DEBATE     , debateHyperTab  ().activeID());
+      db.prefs.putInt(RecordIDPrefKey.POSITION   , positionHyperTab().activeID());
+      db.prefs.putInt(RecordIDPrefKey.ARGUMENT   , argumentHyperTab().activeID());
+      db.prefs.putInt(RecordIDPrefKey.WORK       , workHyperTab    ().activeID());
+      db.prefs.putInt(RecordIDPrefKey.TERM       , termHyperTab    ().activeID());
+      db.prefs.putInt(RecordIDPrefKey.FILE       , fileHyperTab    ().activeID());
+      db.prefs.putInt(RecordIDPrefKey.NOTE       , noteHyperTab    ().activeID());
 
       RecordType startingTypeForNextTime = viewSequence.lastActiveRecordType();
 
       if (startingTypeForNextTime == hdtNone)
         startingTypeForNextTime = hdtPerson;
 
-      db.prefs.put(PREF_KEY_RECORD_TYPE, Tag.getTypeTagStr(startingTypeForNextTime));
+      db.prefs.put(PrefKey.RECORD_TYPE, Tag.getTypeTagStr(startingTypeForNextTime));
 
       boolean watcherWasRunning = folderTreeWatcher.stop();
 
@@ -1588,8 +1608,8 @@ public final class MainCtrlr
   {
     if (saveAllToXML(true, false, false) == false) return;
 
-    app.prefs.put(PREF_KEY_SOURCE_FILENAME, db.getHdbPath().getNameOnly().toString());
-    app.prefs.put(PREF_KEY_SOURCE_PATH, db.getRootPath().toString());
+    app.prefs.put(PrefKey.SOURCE_FILENAME, db.getHdbPath().getNameOnly().toString());
+    app.prefs.put(PrefKey.SOURCE_PATH, db.getRootPath().toString());
 
     if (loadAllFromXML(false))
     {
@@ -1617,7 +1637,7 @@ public final class MainCtrlr
 
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb"));
 
-      File dir = new File(app.prefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
+      File dir = new File(app.prefs.get(PrefKey.SOURCE_PATH, userWorkingDir()));
 
       if (dir.exists() == false)
         dir = new File(userWorkingDir());
@@ -1632,8 +1652,8 @@ public final class MainCtrlr
     if (ui.isShuttingDown())
       return;
 
-    app.prefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
-    app.prefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
+    app.prefs.put(PrefKey.SOURCE_FILENAME, filePath.getNameOnly().toString());
+    app.prefs.put(PrefKey.SOURCE_PATH    , filePath.getDirOnly ().toString());
 
     loadAllFromXmlAndResetUI(false);
   }
@@ -1648,7 +1668,7 @@ public final class MainCtrlr
 
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    File file = new File(app.prefs.get(PREF_KEY_SOURCE_PATH, ""));
+    File file = new File(app.prefs.get(PrefKey.SOURCE_PATH, ""));
 
     dirChooser.setTitle("Select an empty folder in which to create database");
 
@@ -1699,7 +1719,7 @@ public final class MainCtrlr
       viewSequence.clear();
       boolean success;
 
-      String hdbFileName = app.prefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME);
+      String hdbFileName = app.prefs.get(PrefKey.SOURCE_FILENAME, HDB_DEFAULT_FILENAME);
 
       try
       {
@@ -1709,7 +1729,7 @@ public final class MainCtrlr
       {
         errorPopup("Unable to create new database: " + getThrowableMessage(e));
 
-        shutDown(false, true, false);
+        shutDown(ShutDownMode.UnrecoverableInternalError);
         return false;
       }
       catch (HDB_InternalError e)
@@ -1775,8 +1795,8 @@ public final class MainCtrlr
         return false;
       }
 
-      app.prefs.put(PREF_KEY_SOURCE_FILENAME, srcFilePath.getNameOnly().toString());
-      app.prefs.put(PREF_KEY_SOURCE_PATH    , srcFilePath.getDirOnly ().toString());
+      app.prefs.put(PrefKey.SOURCE_FILENAME, srcFilePath.getNameOnly().toString());
+      app.prefs.put(PrefKey.SOURCE_PATH    , srcFilePath.getDirOnly ().toString());
     }
 
     return true;
@@ -1913,7 +1933,7 @@ public final class MainCtrlr
     catch (HDB_UnrecoverableInternalError e)
     {
       errorPopup(e);
-      shutDown(false, true, false);
+      shutDown(ShutDownMode.UnrecoverableInternalError);
       return false;
     }
 
@@ -2352,27 +2372,27 @@ public final class MainCtrlr
 
     db.initialNavHistory().forEach(record -> typeToMostRecentlyViewedRecord.put(record.getType(), record));
 
-    saveViewToViewsTab(new HyperView<>(personTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPerson     , PREF_KEY_PERSON_ID     )));
-    saveViewToViewsTab(new HyperView<>(instTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtInstitution, PREF_KEY_INSTITUTION_ID)));
-    saveViewToViewsTab(new HyperView<>(debateTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtDebate     , PREF_KEY_DEBATE_ID     )));
-    saveViewToViewsTab(new HyperView<>(positionTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPosition   , PREF_KEY_POSITION_ID   )));
-    saveViewToViewsTab(new HyperView<>(argumentTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtArgument   , PREF_KEY_ARGUMENT_ID   )));
-    saveViewToViewsTab(new HyperView<>(workTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtWork       , PREF_KEY_WORK_ID       )));
+    saveViewToViewsTab(new HyperView<>(personTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPerson     , RecordIDPrefKey.PERSON     )));
+    saveViewToViewsTab(new HyperView<>(instTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtInstitution, RecordIDPrefKey.INSTITUTION)));
+    saveViewToViewsTab(new HyperView<>(debateTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtDebate     , RecordIDPrefKey.DEBATE     )));
+    saveViewToViewsTab(new HyperView<>(positionTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPosition   , RecordIDPrefKey.POSITION   )));
+    saveViewToViewsTab(new HyperView<>(argumentTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtArgument   , RecordIDPrefKey.ARGUMENT   )));
+    saveViewToViewsTab(new HyperView<>(workTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtWork       , RecordIDPrefKey.WORK       )));
 
-    HDT_Concept concept = nullSwitch((HDT_Term)getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtTerm, PREF_KEY_TERM_ID), null, term -> term.concepts.get(0));
+    HDT_Concept concept = nullSwitch((HDT_Term)getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtTerm, RecordIDPrefKey.TERM), null, term -> term.concepts.get(0));
 
     saveViewToViewsTab(new HyperView<>(termTabEnum,     concept));
 
-    saveViewToViewsTab(new HyperView<>(fileTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtMiscFile   , PREF_KEY_FILE_ID       )));
-    saveViewToViewsTab(new HyperView<>(noteTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtNote       , PREF_KEY_NOTE_ID       )));
+    saveViewToViewsTab(new HyperView<>(fileTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtMiscFile   , RecordIDPrefKey.FILE       )));
+    saveViewToViewsTab(new HyperView<>(noteTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtNote       , RecordIDPrefKey.NOTE       )));
     saveViewToViewsTab(new HyperView<>(queryTabEnum   , null));
     saveViewToViewsTab(new HyperView<>(treeTabEnum    , null));
 
     enableControls(db.isLoaded());
 
-    viewSequence.init(getTabEnumByRecordType(Tag.parseTypeTagStr(db.prefs.get(PREF_KEY_RECORD_TYPE, ""))));
+    viewSequence.init(getTabEnumByRecordType(Tag.parseTypeTagStr(db.prefs.get(PrefKey.RECORD_TYPE, ""))));
 
-    if (dontAskAboutRefMgr || db.bibLibraryIsLinked() || (db.prefs.getBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true) == false))
+    if (dontAskAboutRefMgr || db.bibLibraryIsLinked() || (db.prefs.getBoolean(PrefKey.NOTIFY_USER_NOT_LINKED, true) == false))
       return;
 
     switch (new PopupDialog("This database is not currently integrated with a reference manager account (like Mendeley or Zotero). Add one now?")
@@ -2385,8 +2405,8 @@ public final class MainCtrlr
     {
       case mrYes    : new SettingsDlgCtrlr(SettingsPage.BibMgr).showModal();       break;
 
-      case mrNo     : db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true ); break;
-      case mrIgnore : db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, false); break;
+      case mrNo     : db.prefs.putBoolean(PrefKey.NOTIFY_USER_NOT_LINKED, true ); break;
+      case mrIgnore : db.prefs.putBoolean(PrefKey.NOTIFY_USER_NOT_LINKED, false); break;
 
       default       : break;
     }
@@ -2402,10 +2422,10 @@ public final class MainCtrlr
 
     FilePath hdbPath = null;
     boolean hdbExists = false;
-    String srcName = app.prefs.get(PREF_KEY_SOURCE_FILENAME, "");
+    String srcName = app.prefs.get(PrefKey.SOURCE_FILENAME, "");
     if (srcName.isBlank() == false)
     {
-      String srcPath = app.prefs.get(PREF_KEY_SOURCE_PATH, "");
+      String srcPath = app.prefs.get(PrefKey.SOURCE_PATH, "");
       if (srcPath.isBlank() == false)
       {
         hdbPath = new FilePath(srcPath).resolve(srcName);
@@ -2420,7 +2440,7 @@ public final class MainCtrlr
     if (InterProcClient.folderInUseByAnotherInstance(hdbPath))
       return falseWithErrorPopup("Unable to load database: Database folder(s) are already in use by another instance of " + appTitle);
 
-    if (internetNotCheckedYet && app.prefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
+    if (internetNotCheckedYet && app.prefs.getBoolean(PrefKey.CHECK_INTERNET, true))
     {
       if (InternetCheckDlgCtrlr.check() == false)
         return false;
@@ -2440,8 +2460,8 @@ public final class MainCtrlr
 
     boolean success;
 
-    FilePath newRootFilePath = new FilePath(app.prefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
-    String hdbFileName = app.prefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME);
+    FilePath newRootFilePath = new FilePath(app.prefs.get(PrefKey.SOURCE_PATH, userWorkingDir()));
+    String hdbFileName = app.prefs.get(PrefKey.SOURCE_FILENAME, HDB_DEFAULT_FILENAME);
 
     try
     {
@@ -2450,7 +2470,7 @@ public final class MainCtrlr
     catch (HDB_UnrecoverableInternalError e)
     {
       errorPopup("Unable to load database. Reason: " + getThrowableMessage(e));
-      shutDown(false, true, false);
+      shutDown(ShutDownMode.UnrecoverableInternalError);
       return false;
     }
 
@@ -2493,7 +2513,7 @@ public final class MainCtrlr
     removeDuplicatesInPlace(mruList);
 
     for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
-      app.prefs.put(PREF_KEY_HDB_MRU + (ndx + 1), mruList.size() > ndx ? mruList.get(ndx) : "");
+      app.prefs.put(PrefKey.HDB_MRU + (ndx + 1), mruList.size() > ndx ? mruList.get(ndx) : "");
   }
 
 //---------------------------------------------------------------------------
@@ -2504,7 +2524,7 @@ public final class MainCtrlr
     List<String> mruList = new ArrayList<>();
 
     for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
-      mruList.add(app.prefs.get(PREF_KEY_HDB_MRU + (ndx + 1), ""));
+      mruList.add(app.prefs.get(PrefKey.HDB_MRU + (ndx + 1), ""));
 
     mruList.removeIf(String::isBlank);
     return mruList;
@@ -3450,7 +3470,7 @@ public final class MainCtrlr
 
     if (libraryType == null)
     {
-      db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, false);
+      db.prefs.putBoolean(PrefKey.NOTIFY_USER_NOT_LINKED, false);
       return;
     }
 

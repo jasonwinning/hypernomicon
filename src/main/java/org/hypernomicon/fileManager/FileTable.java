@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.util.PopupDialog;
@@ -84,7 +85,7 @@ class FileTable extends DragNDropContainer<FileRow>
     this.fileTV = fileTV;
     rows = FXCollections.observableArrayList();
 
-    HyperTable.registerTable(fileTV, PREF_KEY_HT_MGR_FILES, dlg);
+    HyperTable.registerTable(fileTV, TablePrefKey.MGR_FILES, dlg);
 
     fileTV.setItems(rows);
     fileTV.setPlaceholder(new Text("This folder is empty."));

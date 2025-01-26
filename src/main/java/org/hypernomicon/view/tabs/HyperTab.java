@@ -50,14 +50,22 @@ import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 
+//---------------------------------------------------------------------------
+
 @SuppressWarnings("unused")
 public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Record>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public enum TabEnum
   {
     personTabEnum, instTabEnum, workTabEnum,  fileTabEnum, debateTabEnum, positionTabEnum, argumentTabEnum,
     noteTabEnum,   termTabEnum, queryTabEnum, treeTabEnum, omniTabEnum,   listTabEnum
   }
+
+//---------------------------------------------------------------------------
 
   private static final EnumMap<TabEnum, HyperTab<? extends HDT_Record, ? extends HDT_Record>> enumToHyperTab = new EnumMap<>(TabEnum.class);
   private static final Map<Tab, HyperTab<? extends HDT_Record, ? extends HDT_Record>> tabToHyperTab = new HashMap<>();
@@ -68,7 +76,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   private HyperView<HDT_CT> view = null;
   private boolean useTextViewInfo = false;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   protected HyperTab(TabEnum tabEnum, Tab tab, String ctrlrFilename) throws IOException

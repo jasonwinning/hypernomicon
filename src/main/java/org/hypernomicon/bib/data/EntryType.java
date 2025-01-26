@@ -176,7 +176,7 @@ public enum EntryType
 
       case etBookChapter, etBookPart, etBookSection, etElectronicBookSection ->
 
-        db.workTypes.getByID(db.prefs.getInt(PREF_KEY_DEFAULT_CHAPTER_WORK_TYPE_ID, -1));
+        db.workTypes.getByID(db.prefs.getInt(PrefKey.DEFAULT_CHAPTER_WORK_TYPE_ID, -1));
 
       default -> null;
     };

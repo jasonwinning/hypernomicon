@@ -64,14 +64,14 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
   public enum WorkFileNameComponentType
   {
-    fncAuthorLastNames("Author last names", AUTHOR_FN_COMPONENT),
-    fncYear("Year", YEAR_FN_COMPONENT),
-    fncTitleNoSub("Title (no subtitle)", TITLE_FN_COMPONENT),
-    fncTranslators("Translators", TRANS_FN_COMPONENT),
-    fncEditors("Editors", EDITOR_FN_COMPONENT),
-    fncContainerNoSub("Container title (no subtitle)", CONTAINER_FN_COMPONENT),
-    fncPublisher("Publisher", PUBLISHER_FN_COMPONENT),
-    fncBlank("", BLANK_FN_COMPONENT);
+    fncBlank          (""                             , 0),
+    fncAuthorLastNames("Author last names"            , 1),
+    fncTitleNoSub     ("Title (no subtitle)"          , 2),
+    fncYear           ("Year"                         , 3),
+    fncTranslators    ("Translators"                  , 4),
+    fncEditors        ("Editors"                      , 5),
+    fncContainerNoSub ("Container title (no subtitle)", 6),
+    fncPublisher      ("Publisher"                    , 7);
 
     private final String caption;
     final int prefValue;
@@ -109,15 +109,15 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
      */
     private WorkFileNameComponent(int prefNdx)
     {
-      type = WorkFileNameComponentType.forInteger(db.prefs.getInt(PREF_KEY_FN_COMPONENT + prefNdx, 0));
-      beforeSep = db.prefs.get(PREF_KEY_FN_BEFORE_SEP + prefNdx, "");
-      withinSep = db.prefs.get(PREF_KEY_FN_WITHIN_SEP + prefNdx, "");
-      afterSep  = db.prefs.get(PREF_KEY_FN_AFTER_SEP  + prefNdx, "");
-      testStr   = db.prefs.get(PREF_KEY_FN_TEST       + prefNdx, "");
+      type = WorkFileNameComponentType.forInteger(db.prefs.getInt(FileNamePrefKey.COMPONENT + prefNdx, 0));
+      beforeSep = db.prefs.get(FileNamePrefKey.BEFORE_SEP + prefNdx, "");
+      withinSep = db.prefs.get(FileNamePrefKey.WITHIN_SEP + prefNdx, "");
+      afterSep  = db.prefs.get(FileNamePrefKey.AFTER_SEP  + prefNdx, "");
+      testStr   = db.prefs.get(FileNamePrefKey.TEST       + prefNdx, "");
 
       excludedWorkTypes = new HashSet<>();
 
-      new SplitString(db.prefs.get(PREF_KEY_FN_EXCL_WORK_TYPES + prefNdx, ""), ';').forEach(workTypeStr ->
+      new SplitString(db.prefs.get(FileNamePrefKey.EXCL_WORK_TYPES + prefNdx, ""), ';').forEach(workTypeStr ->
       {
         String trimmedWorkTypeStr = ultraTrim(workTypeStr);
         HDT_WorkType workType = db.workTypes.getByID(parseInt(trimmedWorkTypeStr, -1));
@@ -154,21 +154,21 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     private void saveToPrefs(int prefNdx)
     {
-      db.prefs.putInt(PREF_KEY_FN_COMPONENT    + prefNdx, type.prefValue);
-      db.prefs.put(PREF_KEY_FN_BEFORE_SEP      + prefNdx, beforeSep     );
-      db.prefs.put(PREF_KEY_FN_WITHIN_SEP      + prefNdx, withinSep     );
-      db.prefs.put(PREF_KEY_FN_AFTER_SEP       + prefNdx, afterSep      );
-      db.prefs.put(PREF_KEY_FN_TEST            + prefNdx, testStr       );
+      db.prefs.putInt(FileNamePrefKey.COMPONENT    + prefNdx, type.prefValue);
+      db.prefs.put(FileNamePrefKey.BEFORE_SEP      + prefNdx, beforeSep     );
+      db.prefs.put(FileNamePrefKey.WITHIN_SEP      + prefNdx, withinSep     );
+      db.prefs.put(FileNamePrefKey.AFTER_SEP       + prefNdx, afterSep      );
+      db.prefs.put(FileNamePrefKey.TEST            + prefNdx, testStr       );
 
       String prefStr = excludedWorkTypes.stream().map(workType -> String.valueOf(workType.getID())).collect(Collectors.joining(";"));
-      db.prefs.put(PREF_KEY_FN_EXCL_WORK_TYPES + prefNdx, prefStr);
+      db.prefs.put(FileNamePrefKey.EXCL_WORK_TYPES + prefNdx, prefStr);
     }
 
 //---------------------------------------------------------------------------
 
     public static List<WorkFileNameComponent> loadFromPrefs()
     {
-      int componentCount = db.prefs.getInt(PREF_KEY_FN_COMPONENT_COUNT, 5);  // Before a TableView was used, there were always 5 components
+      int componentCount = db.prefs.getInt(FileNamePrefKey.COMPONENT_COUNT, 5);  // Before a TableView was used, there were always 5 components
 
       return IntStream.range(1, componentCount + 1).boxed().map(WorkFileNameComponent::new).toList();
     }
@@ -228,13 +228,13 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     lblExample.setOnMouseClicked(event -> refreshExample());
 
-    initCheckBox(db.prefs, chkTreatEdAsAuthor, PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true , nv -> refreshExample());
-    initCheckBox(db.prefs, chkAddInitial     , PREF_KEY_FN_ADD_INITIAL       , false, nv -> refreshExample());
-    initCheckBox(db.prefs, chkYearLetter     , PREF_KEY_FN_YEAR_LETTER       , false, nv -> refreshExample());
-    initCheckBox(db.prefs, chkPosix          , PREF_KEY_FN_POSIX             , false, nv -> refreshExample());
-    initCheckBox(db.prefs, chkLowercase      , PREF_KEY_FN_LOWERCASE         , false, nv -> refreshExample());
+    initCheckBox(db.prefs, chkTreatEdAsAuthor, FileNamePrefKey.TREAT_ED_AS_AUTHOR, true , nv -> refreshExample());
+    initCheckBox(db.prefs, chkAddInitial     , FileNamePrefKey.ADD_INITIAL       , false, nv -> refreshExample());
+    initCheckBox(db.prefs, chkYearLetter     , FileNamePrefKey.YEAR_LETTER       , false, nv -> refreshExample());
+    initCheckBox(db.prefs, chkPosix          , FileNamePrefKey.POSIX             , false, nv -> refreshExample());
+    initCheckBox(db.prefs, chkLowercase      , FileNamePrefKey.LOWERCASE         , false, nv -> refreshExample());
 
-    initMaxChar(tfMaxChar, PREF_KEY_FN_MAX_CHAR);
+    initMaxChar(tfMaxChar, FileNamePrefKey.MAX_CHAR);
 
     if (app.debugging == false)
       vbox.getChildren().remove(1, 3);
@@ -286,16 +286,16 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
   {
     if (noDB) return;
 
-    int componentCount = db.prefs.getInt(PREF_KEY_FN_COMPONENT_COUNT, 5);  // Before a TableView was used, there were always 5 components
+    int componentCount = db.prefs.getInt(FileNamePrefKey.COMPONENT_COUNT, 5);  // Before a TableView was used, there were always 5 components
 
     for (int prefNdx = 1; prefNdx <= componentCount; prefNdx++)
     {
-      db.prefs.remove(PREF_KEY_FN_COMPONENT );
-      db.prefs.remove(PREF_KEY_FN_EXCL_WORK_TYPES);
-      db.prefs.remove(PREF_KEY_FN_BEFORE_SEP);
-      db.prefs.remove(PREF_KEY_FN_WITHIN_SEP);
-      db.prefs.remove(PREF_KEY_FN_AFTER_SEP );
-      db.prefs.remove(PREF_KEY_FN_TEST      );
+      db.prefs.remove(FileNamePrefKey.COMPONENT      );
+      db.prefs.remove(FileNamePrefKey.EXCL_WORK_TYPES);
+      db.prefs.remove(FileNamePrefKey.BEFORE_SEP     );
+      db.prefs.remove(FileNamePrefKey.WITHIN_SEP     );
+      db.prefs.remove(FileNamePrefKey.AFTER_SEP      );
+      db.prefs.remove(FileNamePrefKey.TEST           );
     }
 
     List<WorkFileNameComponent> components = saveComponentsFromTableToList();
@@ -308,7 +308,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       component.saveToPrefs(prefNdx);
     }
 
-    db.prefs.putInt(PREF_KEY_FN_COMPONENT_COUNT, prefNdx);
+    db.prefs.putInt(FileNamePrefKey.COMPONENT_COUNT, prefNdx);
   }
 
 //---------------------------------------------------------------------------

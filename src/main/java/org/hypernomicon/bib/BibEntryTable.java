@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.util.BasicTextMatcher;
@@ -41,7 +42,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -74,7 +74,7 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     rows = FXCollections.observableArrayList();
     keyToRow = new HashMap<>();
 
-    HyperTable.registerTable(tv, PREF_KEY_HT_BIB_ENTRIES, dlg);
+    HyperTable.registerTable(tv, TablePrefKey.BIB_ENTRIES, dlg);
 
     filteredRows = new FilteredList<>(rows, row -> true);
 

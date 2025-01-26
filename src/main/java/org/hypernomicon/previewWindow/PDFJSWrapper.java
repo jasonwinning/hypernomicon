@@ -709,7 +709,7 @@ public class PDFJSWrapper
 
     public void sidebarChange(int view)
     {
-      app.prefs.putInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, view);
+      app.prefs.putInt(PrefKey.PDFJS_SIDEBAR_VIEW, view);
     }
 
 //---------------------------------------------------------------------------
@@ -888,7 +888,7 @@ public class PDFJSWrapper
 
       browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " +
                                                    initialPage + ", " +
-                                                   app.prefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
+                                                   app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
       ready = false;
     };
 

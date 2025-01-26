@@ -71,7 +71,7 @@ class NewDBTest
         {
           Preferences prefs = XmlSupport.importPreferences(new ByteArrayInputStream(zis.readAllBytes())).node("org").node("hypernomicon").node("model");
 
-          String versionStr = prefs.get(PREF_KEY_SETTINGS_VERSION, "");
+          String versionStr = prefs.get(PrefKey.SETTINGS_VERSION, "");
 
           assertFalse(versionStr.isBlank(), "Settings version number not found in Settings.xml in new database template");
 

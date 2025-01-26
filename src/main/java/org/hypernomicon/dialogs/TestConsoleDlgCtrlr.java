@@ -66,8 +66,8 @@ public class TestConsoleDlgCtrlr extends HyperDlg
   {
     super("TestConsoleDlg", appTitle + " Test Console", true);
 
-    initTextField(app.prefs, tfParent    , PREF_KEY_TRANSIENT_TEST_PARENT_PATH, "", null);
-    initTextField(app.prefs, tfFolderName, PREF_KEY_TRANSIENT_TEST_FOLDER_NAME, "", null);
+    initTextField(app.prefs, tfParent    , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
+    initTextField(app.prefs, tfFolderName, PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
 
     enableAllIff(db.isLoaded(), btnFromExisting, btnCloseDB);
 

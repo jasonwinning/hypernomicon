@@ -223,7 +223,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public static String fixCase(String title)
   {
-    return db.prefs.getBoolean(PREF_KEY_SENTENCE_CASE, false) ? sentenceCase(title) : titleCase(title);
+    return db.prefs.getBoolean(PrefKey.SENTENCE_CASE, false) ? sentenceCase(title) : titleCase(title);
   }
 
 //---------------------------------------------------------------------------

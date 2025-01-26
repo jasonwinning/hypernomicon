@@ -190,10 +190,10 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       }
     });
 
-    webView.setOnDragOver(Event::consume);
+    webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
-    MainTextUtil.webViewAddZoom(webView, PREF_KEY_QUERYTAB_ZOOM);
+    MainTextUtil.webViewAddZoom(webView, ZoomPrefKey.QUERYTAB);
 
     tfFavName.textProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -233,11 +233,11 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         </style>
       </head>
       <body>
-        <p>The File Actions menu allows you to copy files associated with the results of your queries to the<br/>
+        <p>The <strong>File Actions</strong> menu allows you to copy files associated with the results of your queries to the<br/>
            Search Results database folder. Then you can easily perform actions on the subset of files you are<br/>
            interested in, for example full-text search, combining PDFs into a single PDF or zip file, sending<br/>
            the files to colleagues, or making the files available to students as course readings.</p>
-        <p>Below is an overview of each menu option:</p>
+        <p>Description of each menu option:</p>
         <h4 class="topic">File Actions</h4>
         <ul>
           <li><strong>Clear Search Results Folder and Add All Results:</strong> This option clears the current contents<br/>

@@ -99,37 +99,37 @@ public class EditWebButtonCtrlr
 
     switch (prefKey)
     {
-      case PREF_KEY_PERSON_SRCH : case PREF_KEY_PERSON_IMG_SRCH :
+      case WebButtonContextPrefKey.PERSON : case WebButtonContextPrefKey.PERSON_IMG :
 
         fields.add(FirstName); fields.add(LastName); fields.add(SingleName); fields.add(QueryName); fields.add(Field);
         break;
 
-      case PREF_KEY_INST_SRCH :
+      case WebButtonContextPrefKey.INST :
 
         fields.add(Name); fields.add(DivisionName);
         break;
 
-      case PREF_KEY_INST_MAP_SRCH :
+      case WebButtonContextPrefKey.INST_MAP :
 
         fields.add(Name); fields.add(City); fields.add(Region); fields.add(Country);
         break;
 
-      case PREF_KEY_DOI_SRCH :
+      case WebButtonContextPrefKey.DOI :
 
         fields.add(doi);
         break;
 
-      case PREF_KEY_ISBN_SRCH :
+      case WebButtonContextPrefKey.ISBN :
 
         fields.add(ISBN);
         break;
 
-      case PREF_KEY_WORK_SRCH :
+      case WebButtonContextPrefKey.WORK :
 
         fields.add(Title); fields.add(QueryTitle); fields.add(NumericYear); fields.add(SingleName); fields.add(ISBN); fields.add(doi);
         break;
 
-      case PREF_KEY_GEN_SRCH :
+      case WebButtonContextPrefKey.GEN :
 
         fields.add(Name);
         break;

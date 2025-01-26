@@ -78,7 +78,7 @@ public class AboutDlgCtrlr extends HyperDlg
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    webView.setOnDragOver(Event::consume);
+    webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
     tabContributorsHtml = htmlStart + "Original design and development: " + anchorTag("Jason Winning", "http://jasonwinning.com") + "<br>" +

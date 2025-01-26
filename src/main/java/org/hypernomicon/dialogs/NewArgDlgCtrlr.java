@@ -142,7 +142,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     chkIncludeAuth.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions());
 
-    chkLowerCaseTargetName.setSelected(db.prefs.getBoolean(PREF_KEY_LOWER_CASE_TARGET_NAMES, false));
+    chkLowerCaseTargetName.setSelected(db.prefs.getBoolean(PrefKey.LOWER_CASE_TARGET_NAMES, false));
 
     chkLowerCaseTargetName.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions());
 
@@ -177,7 +177,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), webView.getEngine());
 
-    webView.setOnDragOver(Event::consume);
+    webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
     rbNew.setSelected(true);

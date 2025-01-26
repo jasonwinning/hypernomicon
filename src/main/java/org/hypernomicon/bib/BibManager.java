@@ -241,10 +241,10 @@ public class BibManager extends HyperDlg
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    webView.setOnDragOver(Event::consume);
+    webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
-    MainTextUtil.webViewAddZoom(webView, PREF_KEY_BIBMGR_ZOOM);
+    MainTextUtil.webViewAddZoom(webView, ZoomPrefKey.BIBMGR);
 
 //---------------------------------------------------------------------------
 
@@ -321,11 +321,11 @@ public class BibManager extends HyperDlg
 
     ctf.textProperty().addListener((obs, ov, nv) -> entryTable.filter(nv, chkRequireByDefault.isSelected()));
 
-    chkRequireByDefault.setSelected(app.prefs.getBoolean(PREF_KEY_BIB_SRCH_REQUIRE_BY_DEFAULT, false));
+    chkRequireByDefault.setSelected(app.prefs.getBoolean(PrefKey.BIB_SRCH_REQUIRE_BY_DEFAULT, false));
 
     chkRequireByDefault.setOnAction(event ->
     {
-      app.prefs.putBoolean(PREF_KEY_BIB_SRCH_REQUIRE_BY_DEFAULT, chkRequireByDefault.isSelected());
+      app.prefs.putBoolean(PrefKey.BIB_SRCH_REQUIRE_BY_DEFAULT, chkRequireByDefault.isSelected());
       entryTable.filter(ctf.getText(), chkRequireByDefault.isSelected());
     });
 
@@ -896,8 +896,8 @@ public class BibManager extends HyperDlg
 
   private void setDividerPositions()
   {
-    setDividerPosition(spMain, PREF_KEY_BIB_LEFT_HORIZ, 0);
-    setDividerPosition(spMain, PREF_KEY_BIB_RIGHT_HORIZ, 1);
+    setDividerPosition(spMain, DividerPositionPrefKey.BIB_LEFT_HORIZ , 0);
+    setDividerPosition(spMain, DividerPositionPrefKey.BIB_RIGHT_HORIZ, 1);
   }
 
 //---------------------------------------------------------------------------
@@ -907,8 +907,8 @@ public class BibManager extends HyperDlg
   {
     if (shownAlready() == false) return;
 
-    getDividerPosition(spMain, PREF_KEY_BIB_LEFT_HORIZ, 0);
-    getDividerPosition(spMain, PREF_KEY_BIB_RIGHT_HORIZ, 1);
+    getDividerPosition(spMain, DividerPositionPrefKey.BIB_LEFT_HORIZ , 0);
+    getDividerPosition(spMain, DividerPositionPrefKey.BIB_RIGHT_HORIZ, 1);
   }
 
 //---------------------------------------------------------------------------

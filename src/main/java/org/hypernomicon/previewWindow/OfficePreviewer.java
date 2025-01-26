@@ -66,7 +66,7 @@ final class OfficePreviewer
   {
     assert (previewWrapper == null) || (jsWrapper == previewWrapper.getJSWrapper());
 
-    String officePath = app.prefs.get(PREF_KEY_OFFICE_PATH, "");
+    String officePath = app.prefs.get(PrefKey.OFFICE_PATH, "");
 
     if (officePath.isBlank())
     {

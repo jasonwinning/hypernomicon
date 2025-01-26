@@ -34,6 +34,7 @@ import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr;
 import org.hypernomicon.dialogs.NewInstDlgCtrlr;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
@@ -105,6 +106,10 @@ import javafx.scene.layout.StackPane;
 
 public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private AnchorPane apOverview;
   @FXML private Button btnWebSrch1, btnWebSrch2, btnWebsitePaste, btnOrcidPaste, btnNewWork;
   @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield, cbField;
@@ -136,7 +141,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   private boolean alreadyChangingName = false, alreadyChangingTab = false;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public FilePath getCurPicture()                { return curPicture; }
   public HDT_Investigation getCurInvestigation() { return curInvestigation; }
@@ -144,7 +148,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   @Override public String recordName()           { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
   @Override protected RecordType type()          { return hdtPerson; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public PersonTabCtrlr(Tab tab) throws IOException
@@ -156,7 +159,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     btnNewWork.setOnAction(event -> ui.importWorkFile(curPerson, null, false));
     setToolTip(btnNewWork, "Create new work record with this person as author");
 
-    htPersonInst = new HyperTable(tvPersonDept, 3, true, PREF_KEY_HT_PERSON_INST);
+    htPersonInst = new HyperTable(tvPersonDept, 3, true, TablePrefKey.PERSON_INST);
 
     htPersonInst.addActionCol(ctGoNewBtn, 2);
     htPersonInst.addCheckboxCol();
@@ -172,7 +175,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htPersonInst.addRemoveMenuItem();
     htPersonInst.addChangeOrderMenuItem(true);
 
-    htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
+    htWorks = new HyperTable(tvWorks, 4, false, TablePrefKey.PERSON_WORKS);
 
     htWorks.addLabelCol(hdtWork    , smStandard  );  // Date
     htWorks.addLabelCol(hdtWorkType, smTextSimple);  // Work Type
@@ -196,7 +199,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
         previewWindow.setPreview(pvsPersonTab, record);
     });
 
-    htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);
+    htArguments = new HyperTable(tvArguments, 4, false, TablePrefKey.PERSON_ARG);
 
     htArguments.addIconCol();
     htArguments.addLabelCol(hdtNone);
@@ -313,9 +316,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
-    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
-    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '1'));
-    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + '2'));
+    btnWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.PERSON + '1'));
+    smbWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.PERSON + '1'));
+    btnWebSrch2.setOnAction(searchBtnEvent(WebButtonContextPrefKey.PERSON + '2'));
 
     ivPerson.setOnMouseClicked(event ->
     {
@@ -1000,9 +1003,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spTopHoriz, PREF_KEY_PERSON_TOP_HORIZ, 0);
-    setDividerPosition(spVert, PREF_KEY_PERSON_MID_VERT, 0);
-    setDividerPosition(spVert, PREF_KEY_PERSON_BOTTOM_VERT, 1);
+    setDividerPosition(spTopHoriz, DividerPositionPrefKey.PERSON_TOP_HORIZ  , 0);
+    setDividerPosition(spVert    , DividerPositionPrefKey.PERSON_MID_VERT   , 0);
+    setDividerPosition(spVert    , DividerPositionPrefKey.PERSON_BOTTOM_VERT, 1);
   }
 
 //---------------------------------------------------------------------------
@@ -1010,9 +1013,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spTopHoriz, PREF_KEY_PERSON_TOP_HORIZ, 0);
-    getDividerPosition(spVert, PREF_KEY_PERSON_MID_VERT, 0);
-    getDividerPosition(spVert, PREF_KEY_PERSON_BOTTOM_VERT, 1);
+    getDividerPosition(spTopHoriz, DividerPositionPrefKey.PERSON_TOP_HORIZ  , 0);
+    getDividerPosition(spVert    , DividerPositionPrefKey.PERSON_MID_VERT   , 0);
+    getDividerPosition(spVert    , DividerPositionPrefKey.PERSON_BOTTOM_VERT, 1);
   }
 
 //---------------------------------------------------------------------------
@@ -1020,9 +1023,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @Override void updateWebButtons(Preferences node)
   {
-    updateWebButtons(node, PREF_KEY_PERSON_SRCH, 2, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
+    updateWebButtons(node, WebButtonContextPrefKey.PERSON, 2, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH + '2').getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(WebButtonContextPrefKey.PERSON + '2').getCaption());
   }
 
 //---------------------------------------------------------------------------

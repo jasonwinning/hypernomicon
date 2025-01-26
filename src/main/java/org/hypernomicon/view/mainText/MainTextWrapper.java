@@ -107,7 +107,7 @@ public final class MainTextWrapper
   public static void init() throws IOException
   {
     view = new WebView();
-    webViewAddZoom(view, PREF_KEY_MAINTEXT_ZOOM);
+    webViewAddZoom(view, ZoomPrefKey.MAINTEXT);
 
     editCtrlr = new MainTextCtrlr();
     bpEditorRoot = editCtrlr.getRootNode();
@@ -231,7 +231,7 @@ public final class MainTextWrapper
 
     parentPane.getChildren().setAll(view);
 
-    updateZoomFromPref(view, PREF_KEY_MAINTEXT_ZOOM);
+    updateZoomFromPref(view, ZoomPrefKey.MAINTEXT);
 
     if (curRecord == null)
     {
@@ -327,7 +327,7 @@ public final class MainTextWrapper
 
     textViewInfo.scrollPos = webEngineScrollPos(we);
 
-    boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
+    boolean sortByName = db.prefs.getBoolean(PrefKey.KEY_WORK_SORT_BY_NAME, true);
 
     JSObject divits = (JSObject) we.executeScript("var i,prefix,openDivits = [],elements = document.getElementsByTagName('details');\n" +
                                                   "for(i=0; i<elements.length; i++)\n{\n" +
@@ -511,7 +511,7 @@ public final class MainTextWrapper
     HDT_WorkLabel curLabel = getLabelOfRecord(curRecord);
     int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
 
-    boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
+    boolean sortByName = db.prefs.getBoolean(PrefKey.KEY_WORK_SORT_BY_NAME, true);
 
     displayItems.forEach(item ->
     {

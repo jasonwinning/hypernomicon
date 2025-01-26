@@ -50,12 +50,15 @@ import javafx.scene.layout.AnchorPane;
 
 public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argument>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final ArgumentLowerPaneCtrlr lowerCtrlr;
   private final HyperTable htParents, htWhereMade, htResponses;
 
   private HDT_Argument curArgument;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public ArgumentTabCtrlr(Tab tab) throws IOException
@@ -78,7 +81,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     lowerCtrlr = loader.getController();
 
-    htParents = new HyperTable(tvParents, 3, true, PREF_KEY_HT_ARG_PARENTS);
+    htParents = new HyperTable(tvParents, 3, true, TablePrefKey.ARG_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 3);
     htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select a record from the Tree");
@@ -118,7 +121,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);
 
-    htWhereMade = new HyperTable(lowerCtrlr.tvWhereMade, 2, true, PREF_KEY_HT_ARG_SRC);
+    htWhereMade = new HyperTable(lowerCtrlr.tvWhereMade, 2, true, TablePrefKey.ARG_SRC);
 
     htWhereMade.addActionCol(ctGoNewBtn, 2);
     htWhereMade.addAuthorEditCol(null, (row, cellVal, nextColNdx, nextPopulator) ->
@@ -156,7 +159,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade.addRemoveMenuItem();
     htWhereMade.addChangeOrderMenuItem(true);
 
-    htResponses = new HyperTable(lowerCtrlr.tvResponses, 3, true, PREF_KEY_HT_ARG_RESPONSES);
+    htResponses = new HyperTable(lowerCtrlr.tvResponses, 3, true, TablePrefKey.ARG_RESPONSES);
 
     htResponses.addActionCol(ctGoNewBtn, 3);
     htResponses.addLabelCol(hdtPerson);
@@ -168,7 +171,6 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     initContextMenus();
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override protected RecordType type()                { return hdtArgument; }
@@ -386,8 +388,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spMain, PREF_KEY_ARG_TOP_VERT, 0);
-    setDividerPosition(spMain, PREF_KEY_ARG_BOTTOM_VERT, 1);
+    setDividerPosition(spMain, DividerPositionPrefKey.ARG_TOP_VERT   , 0);
+    setDividerPosition(spMain, DividerPositionPrefKey.ARG_BOTTOM_VERT, 1);
   }
 
 //---------------------------------------------------------------------------
@@ -395,8 +397,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spMain, PREF_KEY_ARG_TOP_VERT, 0);
-    getDividerPosition(spMain, PREF_KEY_ARG_BOTTOM_VERT, 1);
+    getDividerPosition(spMain, DividerPositionPrefKey.ARG_TOP_VERT   , 0);
+    getDividerPosition(spMain, DividerPositionPrefKey.ARG_BOTTOM_VERT, 1);
   }
 
 //---------------------------------------------------------------------------

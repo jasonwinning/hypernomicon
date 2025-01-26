@@ -251,13 +251,13 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   private static final List<Preset> presets = List.of(
 
-    new Preset(OperatingSystemEnum.windows, "Adobe Acrobat", opSysCmdAndArgs, PREF_KEY_PDF_READER_COMMANDS,
+    new Preset(OperatingSystemEnum.windows, "Adobe Acrobat", opSysCmdAndArgs, PrefKey.PDF_READER_COMMANDS,
                appPathVar + '\n' +
                "/A\n" +
                "page=" + pageNumVar + '\n' +
                filePathVar),
 
-    new Preset(OperatingSystemEnum.mac, "Preview (macOS)", appleScript, PREF_KEY_PDF_READER_COMMANDS,
+    new Preset(OperatingSystemEnum.mac, "Preview (macOS)", appleScript, PrefKey.PDF_READER_COMMANDS,
                "tell app \"" + appPathVar + "\"\n" +
                "  activate\n" +
                "  open \"" + filePathVar + "\"\n" +
@@ -268,7 +268,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
                "  keystroke return\n" +
                "end tell"),
 
-    new Preset(OperatingSystemEnum.mac, "Adobe Acrobat", appleScript, PREF_KEY_PDF_READER_COMMANDS,
+    new Preset(OperatingSystemEnum.mac, "Adobe Acrobat", appleScript, PrefKey.PDF_READER_COMMANDS,
                "tell app \"" + appPathVar + "\"\n" +
                "  activate\n" +
                "  open \"" + filePathVar + "\" options \"page=" + pageNumVar + "\"\n" +

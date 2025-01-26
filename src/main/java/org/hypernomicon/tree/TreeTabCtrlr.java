@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.controlsfx.control.BreadCrumbBar;
 import org.hypernomicon.App;
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -206,10 +207,10 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       textToHilite = "";
     });
 
-    webView.setOnDragOver(Event::consume);
+    webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
-    MainTextUtil.webViewAddZoom(webView, PREF_KEY_TREETAB_ZOOM);
+    MainTextUtil.webViewAddZoom(webView, ZoomPrefKey.TREETAB);
 
   //---------------------------------------------------------------------------
   //
@@ -323,7 +324,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         return;
       }
 
-      HyperTable.saveColWidthsForTable(ttv, ttv.getColumns(), PREF_KEY_HT_TREE);
+      HyperTable.saveColWidthsForTable(ttv, ttv.getColumns(), TablePrefKey.TREE);
       removeFromParent(ttv.getParent());
 
       loaded = false;
@@ -393,7 +394,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     scaleNodeForDPI(treePane);
 
-    HyperTable.loadColWidthsForTable(ttv, ttv.getColumns(), PREF_KEY_HT_TREE);
+    HyperTable.loadColWidthsForTable(ttv, ttv.getColumns(), TablePrefKey.TREE);
 
     tree.reset(ttv, false, true);
 

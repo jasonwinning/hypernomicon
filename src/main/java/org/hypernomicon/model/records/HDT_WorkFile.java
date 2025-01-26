@@ -23,6 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hypernomicon.Const.FileNamePrefKey;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -30,7 +31,6 @@ import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameCompone
 import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponentType;
 import org.hypernomicon.util.filePath.FilePath;
 
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.EnumSet;
@@ -109,7 +109,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
     fileName = fileName.trim();
 
-    if (db.prefs.getBoolean(PREF_KEY_FN_POSIX, false))
+    if (db.prefs.getBoolean(FileNamePrefKey.POSIX, false))
     {
       fileName = convertToEnglishChars(fileName);
       while (fileName.startsWith("-"))
@@ -129,12 +129,12 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
       fileName = newName;
     }
 
-    if (db.prefs.getBoolean(PREF_KEY_FN_LOWERCASE, false))
+    if (db.prefs.getBoolean(FileNamePrefKey.LOWERCASE, false))
       fileName = fileName.toLowerCase();
 
     fileName = FilePath.removeInvalidFileNameChars(fileName);
 
-    int maxLen = db.prefs.getInt(PREF_KEY_FN_MAX_CHAR, 255);
+    int maxLen = db.prefs.getInt(FileNamePrefKey.MAX_CHAR, 255);
 
     if (ext.length() > 0)
     {
@@ -194,7 +194,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
       case fncEditors :
 
-        if (db.prefs.getBoolean(PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true) && (authComponent != null) &&
+        if (db.prefs.getBoolean(FileNamePrefKey.TREAT_ED_AS_AUTHOR, true) && (authComponent != null) &&
             authors.stream().allMatch(author -> author.isEditor || author.isTrans))
           component = authComponent;
 

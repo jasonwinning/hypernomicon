@@ -349,15 +349,15 @@ public abstract class AbstractHyperDB
   {
     return switch (prefKey)
     {
-      case PREF_KEY_PICTURES_FOLDER_ID   -> picturesFolder;
-      case PREF_KEY_BOOKS_FOLDER_ID      -> booksFolder;
-      case PREF_KEY_PAPERS_FOLDER_ID     -> papersFolder;
-      case PREF_KEY_RESULTS_FOLDER_ID    -> resultsFolder;
-      case PREF_KEY_UNENTERED_FOLDER_ID  -> unenteredFolder;
-      case PREF_KEY_MISC_FILES_FOLDER_ID -> miscFilesFolder;
-      case PREF_KEY_TOPICAL_FOLDER_ID    -> topicalFolder;
-      case PREF_KEY_XML_FOLDER_ID        -> xmlFolder;
-      default                            -> null;
+      case FolderIDPrefKey.PICTURES   -> picturesFolder;
+      case FolderIDPrefKey.BOOKS      -> booksFolder;
+      case FolderIDPrefKey.PAPERS     -> papersFolder;
+      case FolderIDPrefKey.RESULTS    -> resultsFolder;
+      case FolderIDPrefKey.UNENTERED  -> unenteredFolder;
+      case FolderIDPrefKey.MISC_FILES -> miscFilesFolder;
+      case FolderIDPrefKey.TOPICAL    -> topicalFolder;
+      case FolderIDPrefKey.XML        -> xmlFolder;
+      default                         -> null;
     };
   }
 
@@ -458,121 +458,121 @@ public abstract class AbstractHyperDB
   /*****************************************************************************
   * ************************************************************************** *
   * *                                                                        * *
-  * *                        Type Definitions                                * *
+  * *                        Record Type Definitions                         * *
   * *                                                                        * *
   * ************************************************************************** *
   *****************************************************************************/
 
     // Nested items are defined in RelationSet.createSet()
 
-    addStringItem(hdtArgument, tagName);
-    addPointerMulti(hdtArgument, rtWorkOfArgument, tagWork);
+    addStringItem  (hdtArgument                      , tagName);
+    addPointerMulti(hdtArgument, rtWorkOfArgument    , tagWork);
     addPointerMulti(hdtArgument, rtPositionOfArgument, tagPosition);
-    addPointerMulti(hdtArgument, rtTargetArgOfArg, tagTargetArgument);
-    addMainTextItem(hdtArgument, tagDescription, tagDisplayRecord, tagKeyWork);
+    addPointerMulti(hdtArgument, rtTargetArgOfArg    , tagTargetArgument);
+    addMainTextItem(hdtArgument                      , tagDescription, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtDebate, tagName);
+    addStringItem  (hdtDebate                        , tagName);
     addPointerMulti(hdtDebate, rtParentDebateOfDebate, tagLargerDebate);
-    addPointerMulti(hdtDebate, rtParentPosOfDebate, tagLargerPosition);
-    addMainTextItem(hdtDebate, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+    addPointerMulti(hdtDebate, rtParentPosOfDebate   , tagLargerPosition);
+    addMainTextItem(hdtDebate                        , tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtMiscFile, tagName);
-    addPointerSingle(hdtMiscFile, rtTypeOfFile, tagFileType);
-    addPointerSingle(hdtMiscFile, rtWorkOfMiscFile, tagWork);
-    addPathItem(hdtMiscFile, rtFolderOfMiscFile, tagFolder, tagFileName);
-    addAuthorsItem(hdtMiscFile, rtAuthorOfFile);
-    addBooleanItem(hdtMiscFile, tagAnnotated);
-    addMainTextItem(hdtMiscFile, tagDescription, tagDisplayRecord, tagKeyWork);
+    addStringItem   (hdtMiscFile                    , tagName);
+    addPointerSingle(hdtMiscFile, rtTypeOfFile      , tagFileType);
+    addPointerSingle(hdtMiscFile, rtWorkOfMiscFile  , tagWork);
+    addPathItem     (hdtMiscFile, rtFolderOfMiscFile, tagFolder, tagFileName);
+    addAuthorsItem  (hdtMiscFile, rtAuthorOfFile);
+    addBooleanItem  (hdtMiscFile                    , tagAnnotated);
+    addMainTextItem (hdtMiscFile                    , tagDescription, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtWorkFile, tagName);
-    addPathItem(hdtWorkFile, rtFolderOfWorkFile, tagFolder, tagFileName);
-    addBooleanItem(hdtWorkFile, tagAnnotated);
+    addStringItem (hdtWorkFile                    , tagName);
+    addPathItem   (hdtWorkFile, rtFolderOfWorkFile, tagFolder, tagFileName);
+    addBooleanItem(hdtWorkFile                    , tagAnnotated);
 
-    addStringItem(hdtFolder, tagName);
-    addPathItem(hdtFolder, rtParentFolderOfFolder, tagParentFolder, tagFileName);
+    addStringItem(hdtFolder                        , tagName);
+    addPathItem  (hdtFolder, rtParentFolderOfFolder, tagParentFolder, tagFileName);
 
-    addStringItem(hdtInstitution, tagName);
-    addPointerSingle(hdtInstitution, rtTypeOfInst, tagInstitutionType);
+    addStringItem   (hdtInstitution                    , tagName);
+    addPointerSingle(hdtInstitution, rtTypeOfInst      , tagInstitutionType);
     addPointerSingle(hdtInstitution, rtParentInstOfInst, tagParentInst);
-    addPointerSingle(hdtInstitution, rtRegionOfInst, tagRegion);
-    addPointerSingle(hdtInstitution, rtCountryOfInst, tagCountry);
-    addStringItem(hdtInstitution, tagWebURL);
-    addStringItem(hdtInstitution, tagCity);
+    addPointerSingle(hdtInstitution, rtRegionOfInst    , tagRegion);
+    addPointerSingle(hdtInstitution, rtCountryOfInst   , tagCountry);
+    addStringItem   (hdtInstitution                    , tagWebURL);
+    addStringItem   (hdtInstitution                    , tagCity);
 
-    addStringItem(hdtInvestigation, tagName);
+    addStringItem   (hdtInvestigation               , tagName);
     addPointerSingle(hdtInvestigation, rtPersonOfInv, tagPerson);
-    addMainTextItem(hdtInvestigation, tagDescription, tagDisplayRecord, tagKeyWork);
+    addMainTextItem (hdtInvestigation               , tagDescription, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtNote, tagName);
-    addPointerMulti(hdtNote, rtParentNoteOfNote, tagParentNote);
+    addStringItem   (hdtNote, tagName);
+    addPointerMulti (hdtNote, rtParentNoteOfNote, tagParentNote);
     addPointerSingle(hdtNote, rtFolderOfNote, tagFolder);
-    addMainTextItem(hdtNote, tagHub, tagText, tagDisplayRecord, tagKeyWork);
+    addMainTextItem (hdtNote, tagHub, tagText, tagDisplayRecord, tagKeyWork);
 
     addPersonNameItem();
-    addPointerSingle(hdtPerson, rtStatusOfPerson, tagPersonStatus);
-    addPointerMulti(hdtPerson, rtInstOfPerson, tagInstitution);
-    addPointerSingle(hdtPerson, rtRankOfPerson, tagRank);
-    addPointerSingle(hdtPerson, rtFieldOfPerson, tagField);
-    addPointerSingle(hdtPerson, rtSubfieldOfPerson, tagSubfield);
-    addStringItem(hdtPerson, tagWebURL);
-    addStringItem(hdtPerson, tagORCID);
-    addPathItem(hdtPerson, rtPictureFolderOfPerson, tagPictureFolder, tagPicture);
-    addStringItem(hdtPerson, tagPictureCrop);
-    addMainTextItem(hdtPerson, tagWhyFamous, tagDisplayRecord, tagKeyWork);
+    addPointerSingle (hdtPerson, rtStatusOfPerson       , tagPersonStatus);
+    addPointerMulti  (hdtPerson, rtInstOfPerson         , tagInstitution);
+    addPointerSingle (hdtPerson, rtRankOfPerson         , tagRank);
+    addPointerSingle (hdtPerson, rtFieldOfPerson        , tagField);
+    addPointerSingle (hdtPerson, rtSubfieldOfPerson     , tagSubfield);
+    addStringItem    (hdtPerson                         , tagWebURL);
+    addStringItem    (hdtPerson                         , tagORCID);
+    addPathItem      (hdtPerson, rtPictureFolderOfPerson, tagPictureFolder, tagPicture);
+    addStringItem    (hdtPerson                         , tagPictureCrop);
+    addMainTextItem  (hdtPerson                         , tagWhyFamous, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtPersonGroup, tagName);
+    addStringItem  (hdtPersonGroup                      , tagName);
     addPointerMulti(hdtPersonGroup, rtParentGroupOfGroup, tagParentGroup);
 
-    addStringItem(hdtPosition, tagName);
+    addStringItem  (hdtPosition                     , tagName);
     addPointerMulti(hdtPosition, rtParentDebateOfPos, tagDebate);
-    addPointerMulti(hdtPosition, rtParentPosOfPos, tagLargerPosition);
-    addMainTextItem(hdtPosition, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+    addPointerMulti(hdtPosition, rtParentPosOfPos   , tagLargerPosition);
+    addMainTextItem(hdtPosition                     , tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtRegion, tagName);
-    addStringItem(hdtRegion, tagAbbreviation);
+    addStringItem   (hdtRegion                   , tagName);
+    addStringItem   (hdtRegion                   , tagAbbreviation);
     addPointerSingle(hdtRegion, rtCountryOfRegion, tagCountry);
 
-    addStringItem(hdtSubfield, tagName);
+    addStringItem   (hdtSubfield                   , tagName);
     addPointerSingle(hdtSubfield, rtFieldOfSubfield, tagField);
 
     addStringItem(hdtPositionVerdict, tagListName);
     addStringItem(hdtArgumentVerdict, tagListName);
 
-    addStringItem(hdtTerm, tagTerm);
+    addStringItem  (hdtTerm                 , tagTerm);
     addPointerMulti(hdtTerm, rtConceptOfTerm, tagConcept);
 
-    addStringItem(hdtConcept, tagName);
-    addPointerSingle(hdtConcept, rtGlossaryOfConcept, tagGlossary);
-    addPointerSingle(hdtConcept, rtSenseOfConcept, tagSense);
-    addPointerMulti(hdtConcept, rtParentConceptOfConcept, tagParentConcept);
-    addMainTextItem(hdtConcept, tagHub, tagDefinition, tagDisplayRecord, tagKeyWork);
+    addStringItem   (hdtConcept                          , tagName);
+    addPointerSingle(hdtConcept, rtGlossaryOfConcept     , tagGlossary);
+    addPointerSingle(hdtConcept, rtSenseOfConcept        , tagSense);
+    addPointerMulti (hdtConcept, rtParentConceptOfConcept, tagParentConcept);
+    addMainTextItem (hdtConcept                          , tagHub, tagDefinition, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtGlossary, tagName);
-    addBooleanItem(hdtGlossary, tagActive);
+    addStringItem  (hdtGlossary                            , tagName);
+    addBooleanItem (hdtGlossary                            , tagActive);
     addPointerMulti(hdtGlossary, rtParentGlossaryOfGlossary, tagParentGlossary);
 
-    addStringItem(hdtWork, tagTitle);
-    addPointerSingle(hdtWork, rtTypeOfWork, tagWorkType);
-    addPointerSingle(hdtWork, rtParentWorkOfWork, tagLargerWork);
-    addPointerMulti(hdtWork, rtWorkFileOfWork, tagWorkFile);
-    addAuthorsItem(hdtWork, rtAuthorOfWork);
-    addStringItem(hdtWork, tagWebURL);
-    addStringItem(hdtWork, tagStartPageNum);  // These are only used for works with an external file path. Otherwise, nested page
-    addStringItem(hdtWork, tagEndPageNum);    // number items in rtWorkFileOfWork relation are used.
-    addBibDateItem(hdtWork, tagBibDate);
+    addStringItem     (hdtWork                    , tagTitle);
+    addPointerSingle  (hdtWork, rtTypeOfWork      , tagWorkType);
+    addPointerSingle  (hdtWork, rtParentWorkOfWork, tagLargerWork);
+    addPointerMulti   (hdtWork, rtWorkFileOfWork  , tagWorkFile);
+    addAuthorsItem    (hdtWork, rtAuthorOfWork);
+    addStringItem     (hdtWork                    , tagWebURL);
+    addStringItem     (hdtWork                    , tagStartPageNum);  // These are only used for works with an external file path. Otherwise, nested page
+    addStringItem     (hdtWork                    , tagEndPageNum);    // number items in rtWorkFileOfWork relation are used.
+    addBibDateItem    (hdtWork                    , tagBibDate);
     addBibEntryKeyItem();
-    addStringItem(hdtWork, tagMiscBib);
-    addStringItem(hdtWork, tagDOI);
-    addStringItem(hdtWork, tagISBN);
-    addMainTextItem(hdtWork, tagComments, tagDisplayRecord, tagKeyWork);
+    addStringItem     (hdtWork                    , tagMiscBib);
+    addStringItem     (hdtWork                    , tagDOI);
+    addStringItem     (hdtWork                    , tagISBN);
+    addMainTextItem   (hdtWork                    , tagComments, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtWorkLabel, tagText);
+    addStringItem  (hdtWorkLabel                      , tagText);
     addPointerMulti(hdtWorkLabel, rtParentLabelOfLabel, tagParentLabel);
-    addMainTextItem(hdtWorkLabel, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+    addMainTextItem(hdtWorkLabel                      , tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
-    addStringItem(hdtHub, tagName);
+    addStringItem   (hdtHub, tagName);
     addHubSpokesItem();
-    addMainTextItem(hdtHub, tagDescription, tagDisplayRecord, tagKeyWork);
+    addMainTextItem (hdtHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
     initialized = true;
   }
@@ -880,9 +880,9 @@ public abstract class AbstractHyperDB
     {
       favorites.saveToPrefNode();
 
-      prefs.put(PREF_KEY_SETTINGS_VERSION, getVersionNumberSavingAs(appVersionToMaxSettingsXMLVersion).toString());
+      prefs.put(PrefKey.SETTINGS_VERSION, getVersionNumberSavingAs(appVersionToMaxSettingsXMLVersion).toString());
 
-      prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
+      prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
       prefs.exportSubtree(dos);
     }
@@ -1129,13 +1129,13 @@ public abstract class AbstractHyperDB
 
     xmlPath(BIB_FILE_NAME).deletePromptOnFail(true);
 
-    prefs.remove(PREF_KEY_BIB_API_KEY);
-    prefs.remove(PREF_KEY_BIB_USER_ID);
-    prefs.remove(PREF_KEY_BIB_ACCESS_TOKEN);
-    prefs.remove(PREF_KEY_BIB_REFRESH_TOKEN);
-    prefs.remove(PREF_KEY_BIB_LIBRARY_VERSION);
-    prefs.remove(PREF_KEY_BIB_LAST_SYNC_TIME);
-    prefs.remove(PREF_KEY_BIB_LIBRARY_TYPE);
+    prefs.remove(PrefKey.BIB_API_KEY);
+    prefs.remove(PrefKey.BIB_USER_ID);
+    prefs.remove(PrefKey.BIB_ACCESS_TOKEN);
+    prefs.remove(PrefKey.BIB_REFRESH_TOKEN);
+    prefs.remove(PrefKey.BIB_LIBRARY_VERSION);
+    prefs.remove(PrefKey.BIB_LAST_SYNC_TIME);
+    prefs.remove(PrefKey.BIB_LIBRARY_TYPE);
 
     works.forEach(work -> work.setBibEntryKey(""));
 
@@ -1203,12 +1203,12 @@ public abstract class AbstractHyperDB
 
     bibLibrary = bLibrary;
 
-    prefs.put(PREF_KEY_BIB_API_KEY, bibEncApiKey);
-    prefs.put(PREF_KEY_BIB_USER_ID, bibUserID);
-    prefs.put(PREF_KEY_BIB_ACCESS_TOKEN, bibEncAccessToken);
-    prefs.put(PREF_KEY_BIB_REFRESH_TOKEN, bibEncRefreshToken);
+    prefs.put(PrefKey.BIB_API_KEY, bibEncApiKey);
+    prefs.put(PrefKey.BIB_USER_ID, bibUserID);
+    prefs.put(PrefKey.BIB_ACCESS_TOKEN, bibEncAccessToken);
+    prefs.put(PrefKey.BIB_REFRESH_TOKEN, bibEncRefreshToken);
 
-    prefs.put(PREF_KEY_BIB_LIBRARY_TYPE, libType.descriptor);
+    prefs.put(PrefKey.BIB_LIBRARY_TYPE, libType.descriptor);
 
     bibChangedHandlers.forEach(Runnable::run);
   }
@@ -1440,7 +1440,7 @@ public abstract class AbstractHyperDB
       if (favorites != null)
         favorites.loadFromPrefNode();
 
-      String versionStr = prefs.get(PREF_KEY_SETTINGS_VERSION, "");
+      String versionStr = prefs.get(PrefKey.SETTINGS_VERSION, "");
       if (versionStr.isBlank())
         throw new HyperDataException("XML settings data version number not found.");
 
@@ -1464,14 +1464,14 @@ public abstract class AbstractHyperDB
       }
       else
       {
-        xmlFolder       = folders.getByID(prefs.getInt(PREF_KEY_XML_FOLDER_ID       , -1));
-        picturesFolder  = folders.getByID(prefs.getInt(PREF_KEY_PICTURES_FOLDER_ID  , -1));
-        booksFolder     = folders.getByID(prefs.getInt(PREF_KEY_BOOKS_FOLDER_ID     , -1));
-        papersFolder    = folders.getByID(prefs.getInt(PREF_KEY_PAPERS_FOLDER_ID    , -1));
-        resultsFolder   = folders.getByID(prefs.getInt(PREF_KEY_RESULTS_FOLDER_ID   , -1));
-        unenteredFolder = folders.getByID(prefs.getInt(PREF_KEY_UNENTERED_FOLDER_ID , -1));
-        miscFilesFolder = folders.getByID(prefs.getInt(PREF_KEY_MISC_FILES_FOLDER_ID, -1));
-        topicalFolder   = folders.getByID(prefs.getInt(PREF_KEY_TOPICAL_FOLDER_ID   , -1));
+        xmlFolder       = folders.getByID(prefs.getInt(FolderIDPrefKey.XML       , -1));
+        picturesFolder  = folders.getByID(prefs.getInt(FolderIDPrefKey.PICTURES  , -1));
+        booksFolder     = folders.getByID(prefs.getInt(FolderIDPrefKey.BOOKS     , -1));
+        papersFolder    = folders.getByID(prefs.getInt(FolderIDPrefKey.PAPERS    , -1));
+        resultsFolder   = folders.getByID(prefs.getInt(FolderIDPrefKey.RESULTS   , -1));
+        unenteredFolder = folders.getByID(prefs.getInt(FolderIDPrefKey.UNENTERED , -1));
+        miscFilesFolder = folders.getByID(prefs.getInt(FolderIDPrefKey.MISC_FILES, -1));
+        topicalFolder   = folders.getByID(prefs.getInt(FolderIDPrefKey.TOPICAL   , -1));
       }
 
       if (HDT_Record.isEmpty(picturesFolder , false) ||
@@ -1488,19 +1488,19 @@ public abstract class AbstractHyperDB
 
       if (writeFolderIDs)  // Backwards compatibility with settings version 1.0
       {
-        prefs.putInt(PREF_KEY_XML_FOLDER_ID       , xmlFolder      .getID());
-        prefs.putInt(PREF_KEY_PICTURES_FOLDER_ID  , picturesFolder .getID()); prefs.remove("picturesPath" );
-        prefs.putInt(PREF_KEY_BOOKS_FOLDER_ID     , booksFolder    .getID()); prefs.remove("booksPath"    );
-        prefs.putInt(PREF_KEY_PAPERS_FOLDER_ID    , papersFolder   .getID()); prefs.remove("papersPath"   );
-        prefs.putInt(PREF_KEY_RESULTS_FOLDER_ID   , resultsFolder  .getID()); prefs.remove("resultsPath"  );
-        prefs.putInt(PREF_KEY_UNENTERED_FOLDER_ID , unenteredFolder.getID()); prefs.remove("unenteredPath"); prefs.remove("unenteredPat");
-        prefs.putInt(PREF_KEY_MISC_FILES_FOLDER_ID, miscFilesFolder.getID()); prefs.remove("suppFilesPath");
-        prefs.putInt(PREF_KEY_TOPICAL_FOLDER_ID   , topicalFolder  .getID()); prefs.remove("topicsPath"   );
+        prefs.putInt(FolderIDPrefKey.XML       , xmlFolder      .getID());
+        prefs.putInt(FolderIDPrefKey.PICTURES  , picturesFolder .getID()); prefs.remove("picturesPath" );
+        prefs.putInt(FolderIDPrefKey.BOOKS     , booksFolder    .getID()); prefs.remove("booksPath"    );
+        prefs.putInt(FolderIDPrefKey.PAPERS    , papersFolder   .getID()); prefs.remove("papersPath"   );
+        prefs.putInt(FolderIDPrefKey.RESULTS   , resultsFolder  .getID()); prefs.remove("resultsPath"  );
+        prefs.putInt(FolderIDPrefKey.UNENTERED , unenteredFolder.getID()); prefs.remove("unenteredPath"); prefs.remove("unenteredPat");
+        prefs.putInt(FolderIDPrefKey.MISC_FILES, miscFilesFolder.getID()); prefs.remove("suppFilesPath");
+        prefs.putInt(FolderIDPrefKey.TOPICAL   , topicalFolder  .getID()); prefs.remove("topicsPath"   );
       }
 
       resolvePointers();
 
-      String dbCreationDateStr = prefs.get(PREF_KEY_DB_CREATION_DATE, "");
+      String dbCreationDateStr = prefs.get(PrefKey.DB_CREATION_DATE, "");
       if (safeStr(dbCreationDateStr).length() > 0)
       {
         dbCreationDate = parseIso8601offset(dbCreationDateStr);
@@ -1509,11 +1509,11 @@ public abstract class AbstractHyperDB
           dbCreationDate = Instant.now();          // to the current date when loaded for the first time
       }
 
-      String bibEncApiKey       = prefs.get(PREF_KEY_BIB_API_KEY      , ""),
-             bibUserID          = prefs.get(PREF_KEY_BIB_USER_ID      , ""),
-             bibTypeDescriptor  = prefs.get(PREF_KEY_BIB_LIBRARY_TYPE , ""),
-             bibEncAccessToken  = prefs.get(PREF_KEY_BIB_ACCESS_TOKEN , ""),
-             bibEncRefreshToken = prefs.get(PREF_KEY_BIB_REFRESH_TOKEN, "");
+      String bibEncApiKey       = prefs.get(PrefKey.BIB_API_KEY      , ""),
+             bibUserID          = prefs.get(PrefKey.BIB_USER_ID      , ""),
+             bibTypeDescriptor  = prefs.get(PrefKey.BIB_LIBRARY_TYPE , ""),
+             bibEncAccessToken  = prefs.get(PrefKey.BIB_ACCESS_TOKEN , ""),
+             bibEncRefreshToken = prefs.get(PrefKey.BIB_REFRESH_TOKEN, "");
 
       if ((((bibEncApiKey.length() > 0) && (bibUserID.length() > 0)) || ((bibEncAccessToken.length() > 0) && (bibEncRefreshToken.length() > 0))) &&
           (bibTypeDescriptor.length() > 0))
@@ -2086,11 +2086,11 @@ public abstract class AbstractHyperDB
     {
       bibLibrary = null;
       bibChangedHandlers.forEach(Runnable::run);
-      prefs.remove(PREF_KEY_BIB_API_KEY);
-      prefs.remove(PREF_KEY_BIB_USER_ID);
-      prefs.remove(PREF_KEY_BIB_LIBRARY_VERSION);
-      prefs.remove(PREF_KEY_BIB_LAST_SYNC_TIME);
-      prefs.remove(PREF_KEY_BIB_LIBRARY_TYPE);
+      prefs.remove(PrefKey.BIB_API_KEY);
+      prefs.remove(PrefKey.BIB_USER_ID);
+      prefs.remove(PrefKey.BIB_LIBRARY_VERSION);
+      prefs.remove(PrefKey.BIB_LAST_SYNC_TIME);
+      prefs.remove(PrefKey.BIB_LIBRARY_TYPE);
     }
 
     if (datasetsToKeep == null)
@@ -2162,7 +2162,7 @@ public abstract class AbstractHyperDB
     close(datasetsToKeep);
 
     dbCreationDate = Instant.now();
-    prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
+    prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
     rootFilePath = newPath;
     saveSourcePathToSystemSettings(newPath.toString());
@@ -2174,14 +2174,14 @@ public abstract class AbstractHyperDB
 
     try
     {
-      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID    , DEFAULT_XML_PATH, PREF_KEY_XML_FOLDER_ID       );
-      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 1, folderMap       , PREF_KEY_PAPERS_FOLDER_ID    );
-      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 2, folderMap       , PREF_KEY_BOOKS_FOLDER_ID     );
-      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 3, folderMap       , PREF_KEY_MISC_FILES_FOLDER_ID);
-      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 4, folderMap       , PREF_KEY_PICTURES_FOLDER_ID  );
-      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 5, folderMap       , PREF_KEY_TOPICAL_FOLDER_ID   );
-      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 6, folderMap       , PREF_KEY_UNENTERED_FOLDER_ID );
-      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 7, folderMap       , PREF_KEY_RESULTS_FOLDER_ID   );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID    , DEFAULT_XML_PATH, FolderIDPrefKey.XML       );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 1, folderMap       , FolderIDPrefKey.PAPERS    );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 2, folderMap       , FolderIDPrefKey.BOOKS     );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 3, folderMap       , FolderIDPrefKey.MISC_FILES);
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 4, folderMap       , FolderIDPrefKey.PICTURES  );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 5, folderMap       , FolderIDPrefKey.TOPICAL   );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 6, folderMap       , FolderIDPrefKey.UNENTERED );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 7, folderMap       , FolderIDPrefKey.RESULTS   );
     }
     catch(RelationCycleException | DuplicateRecordException | SearchKeyException | RestoreException e)
     {
@@ -2528,7 +2528,7 @@ public abstract class AbstractHyperDB
       case wtBook,
            wtChapter -> booksFolder;
       case wtPaper   -> papersFolder;
-      case wtThesis  -> prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
+      case wtThesis  -> prefs.getBoolean(PrefKey.THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
       default        -> miscFilesFolder;
     };
   }
@@ -2542,13 +2542,13 @@ public abstract class AbstractHyperDB
 
     switch (prefKey)
     {
-      case PREF_KEY_PICTURES_FOLDER_ID   : picturesFolder  = folder; break;
-      case PREF_KEY_BOOKS_FOLDER_ID      : booksFolder     = folder; break;
-      case PREF_KEY_PAPERS_FOLDER_ID     : papersFolder    = folder; break;
-      case PREF_KEY_RESULTS_FOLDER_ID    : resultsFolder   = folder; break;
-      case PREF_KEY_UNENTERED_FOLDER_ID  : unenteredFolder = folder; break;
-      case PREF_KEY_MISC_FILES_FOLDER_ID : miscFilesFolder = folder; break;
-      case PREF_KEY_TOPICAL_FOLDER_ID    : topicalFolder   = folder; break;
+      case FolderIDPrefKey.PICTURES   : picturesFolder  = folder; break;
+      case FolderIDPrefKey.BOOKS      : booksFolder     = folder; break;
+      case FolderIDPrefKey.PAPERS     : papersFolder    = folder; break;
+      case FolderIDPrefKey.RESULTS    : resultsFolder   = folder; break;
+      case FolderIDPrefKey.UNENTERED  : unenteredFolder = folder; break;
+      case FolderIDPrefKey.MISC_FILES : miscFilesFolder = folder; break;
+      case FolderIDPrefKey.TOPICAL    : topicalFolder   = folder; break;
 
       default                            : throw new AssertionError(new HDB_InternalError(59294));
     }

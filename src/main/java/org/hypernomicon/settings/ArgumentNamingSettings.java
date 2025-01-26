@@ -59,16 +59,16 @@ public class ArgumentNamingSettings
 
   public ArgumentNamingSettings()
   {
-    lowerCaseTargetNames = db.prefs.getBoolean(PREF_KEY_LOWER_CASE_TARGET_NAMES    , false);
-    multipleAuthors      = db.prefs.getBoolean(PREF_KEY_ARG_NAMING_MULTIPLE_AUTHORS, false);
-    oxfordSeparator      = db.prefs.getBoolean(PREF_KEY_ARG_NAMING_OXFORD_COMMA    , true );
+    lowerCaseTargetNames = db.prefs.getBoolean(PrefKey.LOWER_CASE_TARGET_NAMES    , false);
+    multipleAuthors      = db.prefs.getBoolean(PrefKey.ARG_NAMING_MULTIPLE_AUTHORS, false);
+    oxfordSeparator      = db.prefs.getBoolean(PrefKey.ARG_NAMING_OXFORD_COMMA    , true );
 
-    truncationIndicator  = db.prefs.get(PREF_KEY_ARG_TRUNCATION_INDICATOR, " et al.");
+    truncationIndicator  = db.prefs.get(PrefKey.ARG_TRUNCATION_INDICATOR, " et al.");
 
-    authorNumToTruncate         = db.prefs.getInt(PREF_KEY_ARG_TRUNCATE_NUM   , 4);
-    authorsToShowWhenTruncating = db.prefs.getInt(PREF_KEY_ARG_AUTHORS_TO_SHOW, 2);
+    authorNumToTruncate         = db.prefs.getInt(PrefKey.ARG_TRUNCATE_NUM   , 4);
+    authorsToShowWhenTruncating = db.prefs.getInt(PrefKey.ARG_AUTHORS_TO_SHOW, 2);
 
-    finalConjSymbol = FinalConjunctionSymbol.fromPrefVal(db.prefs.get(PREF_KEY_ARG_FINAL_CONJ_SYMBOL, FinalConjunctionSymbol.and.prefVal));
+    finalConjSymbol = FinalConjunctionSymbol.fromPrefVal(db.prefs.get(PrefKey.ARG_FINAL_CONJ_SYMBOL, FinalConjunctionSymbol.and.prefVal));
   }
 
 //---------------------------------------------------------------------------
@@ -76,16 +76,16 @@ public class ArgumentNamingSettings
 
   public void saveToPrefNode()
   {
-    db.prefs.putBoolean(PREF_KEY_LOWER_CASE_TARGET_NAMES, lowerCaseTargetNames);
-    db.prefs.putBoolean(PREF_KEY_ARG_NAMING_MULTIPLE_AUTHORS, multipleAuthors);
-    db.prefs.putBoolean(PREF_KEY_ARG_NAMING_OXFORD_COMMA, oxfordSeparator);
+    db.prefs.putBoolean(PrefKey.LOWER_CASE_TARGET_NAMES, lowerCaseTargetNames);
+    db.prefs.putBoolean(PrefKey.ARG_NAMING_MULTIPLE_AUTHORS, multipleAuthors);
+    db.prefs.putBoolean(PrefKey.ARG_NAMING_OXFORD_COMMA, oxfordSeparator);
 
-    db.prefs.put(PREF_KEY_ARG_TRUNCATION_INDICATOR, truncationIndicator);
+    db.prefs.put(PrefKey.ARG_TRUNCATION_INDICATOR, truncationIndicator);
 
-    db.prefs.putInt(PREF_KEY_ARG_TRUNCATE_NUM, authorNumToTruncate);
-    db.prefs.putInt(PREF_KEY_ARG_AUTHORS_TO_SHOW, authorsToShowWhenTruncating);
+    db.prefs.putInt(PrefKey.ARG_TRUNCATE_NUM, authorNumToTruncate);
+    db.prefs.putInt(PrefKey.ARG_AUTHORS_TO_SHOW, authorsToShowWhenTruncating);
 
-    db.prefs.put(PREF_KEY_ARG_FINAL_CONJ_SYMBOL, finalConjSymbol.prefVal);
+    db.prefs.put(PrefKey.ARG_FINAL_CONJ_SYMBOL, finalConjSymbol.prefVal);
   }
 
 //---------------------------------------------------------------------------

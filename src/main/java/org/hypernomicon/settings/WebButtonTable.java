@@ -103,7 +103,7 @@ class WebButtonTable extends WebButtonCtrl
 
     ht.addRemoveMenuItem(row -> row.getText(1).length() > 0);
 
-    int count = app.prefs.node(PREF_KEY_WEB_BUTTONS).getInt(prefKey + "Count", defaults.size());
+    int count = app.prefs.node(PrefKey.WEB_BUTTONS).getInt(prefKey + "Count", defaults.size());
 
     for (int ndx = 1; ndx <= count; ndx++)
     {

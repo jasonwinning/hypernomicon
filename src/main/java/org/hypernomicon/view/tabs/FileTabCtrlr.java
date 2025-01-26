@@ -48,6 +48,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
 
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 
 import javafx.event.ActionEvent;
@@ -68,6 +69,10 @@ import javafx.scene.layout.AnchorPane;
 
 public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private AnchorPane apDescription;
   @FXML private Button btnLaunch, btnManage, btnTree, btnWork;
   @FXML private CheckBox checkAnnotated;
@@ -84,7 +89,6 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   public FileDlgCtrlr fdc = null;
   private HDT_MiscFile curMiscFile;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public FileTabCtrlr(Tab tab) throws IOException
@@ -105,7 +109,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       ui.update();
     });
 
-    htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_FILE_AUTHORS);
+    htAuthors = new HyperTable(tvAuthors, 1, true, TablePrefKey.FILE_AUTHORS);
 
     htAuthors.addActionCol(ctGoBtn, 1);
     htAuthors.addAuthorEditCol(null, null);
@@ -113,7 +117,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htAuthors.addRemoveMenuItem();
     htAuthors.addChangeOrderMenuItem(true);
 
-    htLabels = new HyperTable(tvLabels, 2, true, PREF_KEY_HT_FILE_LABELS);
+    htLabels = new HyperTable(tvLabels, 2, true, TablePrefKey.FILE_LABELS);
 
     htLabels.addActionCol(ctGoBtn, 2);
     htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
@@ -122,7 +126,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htLabels.addRemoveMenuItem();
     htLabels.addChangeOrderMenuItem(true);
 
-    htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, PREF_KEY_HT_FILE_MENTIONERS);
+    htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, TablePrefKey.FILE_MENTIONERS);
 
     htKeyMentioners.addDefaultMenuItems();
 
@@ -146,7 +150,6 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     MainCtrlr.setSearchKeyToolTip(tfSearchKey);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override protected RecordType type()                   { return hdtMiscFile; }
@@ -179,8 +182,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     WorkTabCtrlr.populateDisplayersAndKeyMentioners(curMiscFile, htKeyMentioners);
 
- // populate authors
- // ----------------
+  // Populate authors
+  // ----------------
 
     hcbWork.selectIDofRecord(curMiscFile.work);
 
@@ -340,9 +343,9 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(spBottomVert, PREF_KEY_FILE_BOTTOM_VERT, 0);
-    setDividerPosition(spRightHoriz, PREF_KEY_FILE_RIGHT_HORIZ, 0);
-    setDividerPosition(spRightVert , PREF_KEY_FILE_RIGHT_VERT , 0);
+    setDividerPosition(spBottomVert, DividerPositionPrefKey.FILE_BOTTOM_VERT, 0);
+    setDividerPosition(spRightHoriz, DividerPositionPrefKey.FILE_RIGHT_HORIZ, 0);
+    setDividerPosition(spRightVert , DividerPositionPrefKey.FILE_RIGHT_VERT , 0);
   }
 
 //---------------------------------------------------------------------------
@@ -350,9 +353,9 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(spBottomVert, PREF_KEY_FILE_BOTTOM_VERT, 0);
-    getDividerPosition(spRightHoriz, PREF_KEY_FILE_RIGHT_HORIZ, 0);
-    getDividerPosition(spRightVert , PREF_KEY_FILE_RIGHT_VERT , 0);
+    getDividerPosition(spBottomVert, DividerPositionPrefKey.FILE_BOTTOM_VERT, 0);
+    getDividerPosition(spRightHoriz, DividerPositionPrefKey.FILE_RIGHT_HORIZ, 0);
+    getDividerPosition(spRightVert , DividerPositionPrefKey.FILE_RIGHT_VERT , 0);
   }
 
 //---------------------------------------------------------------------------
