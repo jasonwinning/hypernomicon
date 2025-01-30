@@ -198,11 +198,24 @@ public final class HyperDB extends AbstractHyperDB
       try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
       catch (IOException e) { return "[Unknown]"; }
 
-      if (s.get(0).equals(getComputerName()) == false)
+      if (collEmpty(s) == false)
         return s.get(0);
-
-      filePath.deletePromptOnFail(true);
     }
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public String getOtherLockOwner()
+  {
+    String owner = getLockOwner();
+
+    if ((owner != null) && (getComputerName().equals(owner) == false))
+      return owner;
+
+    getLockFilePath(true).deletePromptOnFail(true);
 
     getRequestMessageFilePath (true).deletePromptOnFail(true);
     getResponseMessageFilePath(true).deletePromptOnFail(true);

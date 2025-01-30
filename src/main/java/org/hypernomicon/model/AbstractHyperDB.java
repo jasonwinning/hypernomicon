@@ -130,7 +130,32 @@ public abstract class AbstractHyperDB
   public abstract FilePath getRequestMessageFilePath(boolean useAppPrefs);
   public abstract FilePath getResponseMessageFilePath(boolean useAppPrefs);
   public abstract FilePath getLockFilePath(boolean useAppPrefs);
+
+  /**
+   * Retrieves the owner of the lock from the lock file.
+   * <p>
+   * This method attempts to read the first line of the lock file, which is
+   * presumed to contain the owner's information. If the lock file does not
+   * exist or an IOException occurs during the reading process, it returns
+   * "[Unknown]". If the lock file is empty, it returns {@code null}.
+   * </p>
+   *
+   * @return The owner of the lock if available; "[Unknown]" if an IOException occurs;
+   *         {@code null} if the file does not exist or is empty.
+   */
   public abstract String getLockOwner();
+
+  /**
+   * Retrieves the owner of the lock from the lock file, provided it's not the current computer.
+   * <p>
+   * This method first calls {@link #getLockOwner()} to obtain the lock owner's name.
+   * If the owner is not {@code null} and it is not the current computer, it returns the owner's name.
+   * If the owner is {@code null} or the current computer, it deletes the lock file and message files.
+   * </p>
+   *
+   * @return The lock owner's name if it is not the current computer; {@code null} otherwise.
+   */
+  public abstract String getOtherLockOwner();
   public abstract FilePath extPath();
   public abstract void updateMainTextTemplate(RecordType recordType, String html) throws IOException;
   public abstract String getMainTextTemplate(RecordType recordType);
@@ -928,7 +953,7 @@ public abstract class AbstractHyperDB
     if (initialized == false)
       return false;
 
-    if (getLockOwner() != null)
+    if (getOtherLockOwner() != null)
       return false;
 
     if (FilePath.isEmpty(newRootFilePath) || safeStr(hdbFileName).isBlank())

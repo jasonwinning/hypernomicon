@@ -2448,14 +2448,20 @@ public final class MainCtrlr
       internetNotCheckedYet = false;
     }
 
-    String otherCompName = db.getLockOwner();
+    String otherCompName = db.getOtherLockOwner();
     if (otherCompName != null)
     {
       if (new LockedDlgCtrlr(otherCompName).showModal() == false)
         return false;
 
-      if (db.getLockOwner() != null)
+      if (db.getOtherLockOwner() != null)
         return false;
+
+      // Need to check for another instance on this computer because another instance might have
+      // already overridden the remote computer's lock while this instance's LockedDlg popup was open
+
+      if (InterProcClient.folderInUseByAnotherInstance(hdbPath))
+        return falseWithErrorPopup("Unable to load database: Database folder(s) are already in use by another instance of " + appTitle);
     }
 
     boolean success;

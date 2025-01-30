@@ -122,6 +122,7 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override public FilePath getResponseMessageFilePath(boolean useAppPrefs) { return new FilePath(""); }
   @Override public FilePath getLockFilePath(boolean useAppPrefs) { return new FilePath(""); }
   @Override public String getLockOwner() { return null; }
+  @Override public String getOtherLockOwner() { return null; }
   @Override protected void checkWhetherFoldersExist() { }
   @Override public void updateMainTextTemplate(RecordType recordType, String html) throws IOException { }
   @Override public String getMainTextTemplate(RecordType recordType) { return null; }

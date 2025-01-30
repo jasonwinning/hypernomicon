@@ -222,11 +222,25 @@ public class LockedDlgCtrlr extends HyperDlg
     if (btnStop.isDisabled() == false)
       stopTrying("Cancelled by user.", false);
 
-    db.getLockFilePath           (true).deletePromptOnFail(true);
     db.getRequestMessageFilePath (true).deletePromptOnFail(true);
     db.getResponseMessageFilePath(true).deletePromptOnFail(true);
 
-    okClicked = true;
+    // Check if the lock file still has the same computer
+    // info; if not, don't delete the lock file, and set
+    // okClicked only if computer name matches this one.
+
+    String newOtherCompName = db.getLockOwner();
+    if ((newOtherCompName != null) && otherCompName.equals(newOtherCompName) == false)
+    {
+      okClicked = DesktopUtil.getComputerName().equals(newOtherCompName);
+    }
+    else
+    {
+      db.getLockFilePath(true).deletePromptOnFail(true);
+
+      okClicked = true;
+    }
+
     dialogStage.close();
   }
 
