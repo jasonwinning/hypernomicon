@@ -782,6 +782,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @Override public boolean saveToRecord()
   {
+    if (nameCheck(tfLast, curPerson.getName().getFull(), tfFirst.getText() + tfLast.getText(), "name") == false)
+      return false;
+
     if (saveSearchKey(curPerson, tfSearchKey) == false) return false;
 
     PersonName personName = new PersonName(tfFirst.getText(), tfLast.getText());
@@ -1241,7 +1244,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       if ((view == null) || (view.record == null))
         return;
 
-      if ((saveInvestigations(view) == false) || confirmDialog("Are you sure you want to delete the investigation?") == false)
+      if ((saveInvestigations(view) == false) || confirmDialog("Are you sure you want to delete the investigation?", false) == false)
         return;
 
       invViews.remove(view);

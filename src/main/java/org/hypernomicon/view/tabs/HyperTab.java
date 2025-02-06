@@ -41,9 +41,11 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
@@ -325,6 +327,65 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
       btn.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Validates the name by comparing the saved name and new name inputs, and prompts the user if the new name is blank
+   * and the record is either new or previously had a non-blank name.
+   *
+   * @param tf             The TextField containing the new name input.
+   * @param whatToCallName A string to describe what the name represents.
+   * @return               True if the name check passes; false otherwise.
+   */
+  boolean nameCheck(TextField tf, String whatToCallName)
+  {
+    HDT_RT record = activeRecord();
+
+    return nameCheck(record, tf, record.name(), tf.getText(), whatToCallName);
+  }
+
+  /**
+   * Validates the name by comparing the saved name and new name inputs, and prompts the user if the new name is blank
+   * and the record is either new or previously had a non-blank name.
+   *
+   * @param nodeToFocus    The TextField to focus on if the check fails.
+   * @param savedName      The saved name to compare against.
+   * @param newName        The new name input to check.
+   * @param whatToCallName A string to describe what the name represents.
+   * @return               True if the name check passes; false otherwise.
+   */
+  boolean nameCheck(TextField nodeToFocus, String savedName, String newName, String whatToCallName)
+  {
+    HDT_RT record = activeRecord();
+
+    return nameCheck(record, nodeToFocus, savedName, newName, whatToCallName);
+  }
+
+  /**
+   * Validates the name by comparing the saved name and new name inputs, and prompts the user if the new name is blank
+   * and the record is either new or previously had a non-blank name.
+   *
+   * @param record         The HDT_RT record associated with the name check.
+   * @param nodeToFocus    The TextField to focus on if the check fails.
+   * @param savedName      The saved name to compare against.
+   * @param newName        The new name input to check.
+   * @param whatToCallName A string to describe what the name represents.
+   * @return               True if the name check passes; false otherwise.
+   */
+  private boolean nameCheck(HDT_RT record, TextField nodeToFocus, String savedName, String newName, String whatToCallName)
+  {
+    if ((savedName.isBlank() == false) || (Math.abs(record.getViewDate().toEpochMilli() - record.getCreationDate().toEpochMilli()) < 1000))
+      if (newName.isBlank())
+        if (confirmDialog("Are you sure you want to leave the " + whatToCallName + " blank?", false) == false)
+        {
+          Platform.runLater(() -> safeFocus(nodeToFocus));
+          return false;
+        }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

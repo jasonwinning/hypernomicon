@@ -312,7 +312,7 @@ public final class HyperDB extends AbstractHyperDB
   {
     if (isDeletionInProgress() == false)
     {
-      if (confirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be deleted?"))
+      if (confirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be permanently deleted?", false))
       {
         filePath.deletePromptOnFail(false);
         unmapFilePath(filePath);
@@ -323,7 +323,7 @@ public final class HyperDB extends AbstractHyperDB
 
     if (deleteFileAnswer == mrNone)
     {
-      switch (seriesConfirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be deleted?"))
+      switch (seriesConfirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be permanently deleted?"))
       {
         case mrYes      : break;
         case mrNoToAll  : deleteFileAnswer = mrNoToAll;  break;
@@ -407,7 +407,7 @@ public final class HyperDB extends AbstractHyperDB
 
       if (hex.equalsIgnoreCase(entry.getValue()) == false)
       {
-        if (confirmDialog("Changes have been made to the XML files from outside of this instance of " + appTitle + ". Overwrite these changes?"))
+        if (confirmDialog("Changes have been made to the XML files from outside of this instance of " + appTitle + ". Overwrite these changes?", false))
           break;
 
         return false;

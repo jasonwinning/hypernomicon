@@ -500,7 +500,7 @@ public class PictureDlgCtrlr extends HyperDlg
     if (FilePath.isEmpty(personHyperTab.getCurPicture()))
       return;
 
-    if (confirmDialog("Are you sure you want to permanently delete the file \"" + personHyperTab.getCurPicture().getNameOnly() + "\"?") == false)
+    if (confirmDialog("Are you sure you want to permanently delete the file \"" + personHyperTab.getCurPicture().getNameOnly() + "\"?", false) == false)
       return;
 
     if (personHyperTab.getCurPicture().deletePromptOnFail(false) == false)
@@ -532,7 +532,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
       if (src.equals(dest) == false)
       {
-        if (confirmDialog("File will be renamed first. Proceed?") == false)
+        if (confirmDialog("File will be renamed first. Proceed?", false) == false)
           return;
 
         if (isValid() == false)
@@ -559,7 +559,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
       if (sameFile == false)
       {
-        if (confirmDialog("File will be copied to database folder first. Proceed?") == false)
+        if (confirmDialog("File will be copied to database folder first. Proceed?", false) == false)
           return;
 
         if (isValid() == false)
@@ -932,7 +932,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
       if (newFileDest.exists())
       {
-        if (confirmDialog("A file with that name already exists. Okay to overwrite?") == false)
+        if (confirmDialog("A file with that name already exists. Okay to overwrite?", false) == false)
           return false;
 
         try
@@ -1048,8 +1048,8 @@ public class PictureDlgCtrlr extends HyperDlg
           {
             result = new PopupDialog("Should the file be moved or copied from its present location?")
 
-            .addButton("Move", mrMove)
-            .addButton("Copy", mrCopy)
+            .addDefaultButton("Move", mrMove)
+            .addButton       ("Copy", mrCopy)
 
             .showModal();
           }

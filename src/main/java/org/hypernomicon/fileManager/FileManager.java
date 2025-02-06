@@ -966,18 +966,18 @@ public class FileManager extends HyperDlg
           default          : internalErrorPopup(21292); return;
         }
 
-        if (confirmDialog(confirmMsg) == false) return;
+        if (confirmDialog(confirmMsg, false) == false) return;
       }
       else
       {
         if (item.isDirectory())
         {
-          if (confirmDialog("Are you sure you want to permanently delete the folder \"" + hyperPath.getNameStr() + "\" and all the files/subfolders it contains?") == false)
+          if (confirmDialog("Are you sure you want to permanently delete the folder \"" + hyperPath.getNameStr() + "\" and all the files/subfolders it contains?", false) == false)
             return;
         }
         else
         {
-          if (confirmDialog("Are you sure you want to permanently delete the file \"" + hyperPath.getNameStr() + "\"?") == false)
+          if (confirmDialog("Are you sure you want to permanently delete the file \"" + hyperPath.getNameStr() + "\"?", false) == false)
             return;
         }
       }
@@ -986,12 +986,12 @@ public class FileManager extends HyperDlg
     {
       if (rowInfoList.stream().anyMatch(AbstractEntityWithPath::isRelated))
       {
-        if (confirmDialog("One or more of the selected items is associated with a database record. Okay to permanently delete the " + rowInfoList.size() + " items and associated record(s)?") == false)
+        if (confirmDialog("One or more of the selected items is associated with a database record. Okay to permanently delete the " + rowInfoList.size() + " items and associated record(s)?", false) == false)
           return;
       }
       else
       {
-        if (confirmDialog("Are you sure you want to permanently delete these " + rowInfoList.size() + " items?") == false)
+        if (confirmDialog("Are you sure you want to permanently delete these " + rowInfoList.size() + " items?", false) == false)
           return;
       }
     }

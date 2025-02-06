@@ -386,7 +386,7 @@ public class FolderTreeWatcher
 
                   if (!confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
                                      "This may or may not cause a data integrity problem." + System.lineSeparator() +
-                                     "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?"))
+                                     "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?", true))
                     return;
 
                   if (newPath.exists() == false)

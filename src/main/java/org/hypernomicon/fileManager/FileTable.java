@@ -306,9 +306,9 @@ class FileTable extends DragNDropContainer<FileRow>
   {
     DialogResult result = new PopupDialog("Move or copy?")
 
-      .addButton("Move", mrMove)
-      .addButton("Copy", mrCopy)
-      .addButton("Cancel", mrCancel)
+      .addDefaultButton("Move"  , mrMove  )
+      .addButton       ("Copy"  , mrCopy  )
+      .addButton       ("Cancel", mrCancel)
 
       .showModal();
 

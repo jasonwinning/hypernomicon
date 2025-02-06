@@ -18,11 +18,14 @@
 package org.hypernomicon.util;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
 
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
@@ -44,9 +47,30 @@ public class PopupDialog
 //---------------------------------------------------------------------------
 
   private final Alert dlg = new Alert(AlertType.CONFIRMATION);
-  private final Map<ButtonType, DialogResult> bTypeToResult = new LinkedHashMap<>();
+  private final BiMap<ButtonType, DialogResult> bTypeToResult = HashBiMap.create(new LinkedHashMap<>());
 
-  public DialogResult showModal() { return bTypeToResult.get(showAndWait(dlg)); }
+  private DialogResult defaultButton;
+
+//---------------------------------------------------------------------------
+
+  public PopupDialog(String message)
+  {
+    dlg.setTitle(appTitle);
+    dlg.setHeaderText(message);
+    dlg.setContentText("Please select an option.");
+    dlg.setResizable(false);
+    dlg.getButtonTypes().clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public PopupDialog addDefaultButton(String caption, DialogResult result)
+  {
+    defaultButton = result;
+
+    return addButton(caption, result);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -63,13 +87,12 @@ public class PopupDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public PopupDialog(String message)
+  public DialogResult showModal()
   {
-    dlg.setTitle(appTitle);
-    dlg.setHeaderText(message);
-    dlg.setContentText("Please select an option.");
-    dlg.setResizable(false);
-    dlg.getButtonTypes().clear();
+    if (defaultButton != null)
+      Platform.runLater(() -> dlg.getDialogPane().lookupButton(bTypeToResult.inverse().get(defaultButton)).requestFocus());
+
+    return bTypeToResult.get(showAndWait(dlg));
   }
 
 //---------------------------------------------------------------------------

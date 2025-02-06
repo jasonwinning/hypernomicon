@@ -708,9 +708,9 @@ public final class UIUtil
 
     return new PopupDialog(msg)
 
-      .addButton("Abort" , mrAbort)
-      .addButton("Retry" , mrRetry)
-      .addButton("Ignore", mrIgnore)
+      .addButton       ("Abort" , mrAbort )
+      .addDefaultButton("Retry" , mrRetry )
+      .addButton       ("Ignore", mrIgnore)
 
       .showModal();
   }
@@ -724,9 +724,9 @@ public final class UIUtil
 
     return new PopupDialog(msg)
 
-      .addButton("Yes"   , mrYes)
-      .addButton("No"    , mrNo)
-      .addButton("Cancel", mrCancel)
+      .addButton       ("Yes"   , mrYes   )
+      .addButton       ("No"    , mrNo    )
+      .addDefaultButton("Cancel", mrCancel)
 
       .showModal();
   }
@@ -740,10 +740,10 @@ public final class UIUtil
 
     return new PopupDialog(msg)
 
-      .addButton("Yes"       , mrYes)
-      .addButton("No"        , mrNo)
-      .addButton("Yes to all", mrYesToAll)
-      .addButton("No to all" , mrNoToAll)
+      .addButton       ("Yes"       , mrYes     )
+      .addDefaultButton("No"        , mrNo      )
+      .addButton       ("Yes to all", mrYesToAll)
+      .addButton       ("No to all" , mrNoToAll )
 
       .showModal();
   }
@@ -751,16 +751,16 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean confirmDialog(String msg)
+  public static boolean confirmDialog(String msg, boolean yesIsDefault)
   {
     if (ui.dontInteract()) return false;
 
-    return new PopupDialog(msg)
+    PopupDialog popupDialog = new PopupDialog(msg);
 
-      .addButton("Yes", mrYes)
-      .addButton("No" , mrNo)
+    if (yesIsDefault) popupDialog.addDefaultButton("Yes", mrYes).addButton       ("No" , mrNo);
+    else              popupDialog.addButton       ("Yes", mrYes).addDefaultButton("No" , mrNo);
 
-      .showModal() == mrYes;
+    return popupDialog.showModal() == mrYes;
   }
 
 //---------------------------------------------------------------------------

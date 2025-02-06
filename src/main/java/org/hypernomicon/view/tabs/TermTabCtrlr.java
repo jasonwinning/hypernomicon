@@ -802,7 +802,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     if ((concept.glossary.get() != frmSelectConcept.getGlossary()) &&
         ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false)))
     {
-      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\". Proceed?") == false)
+      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\". Proceed?", false) == false)
       {
         ui.update(); // This scenario cannot happen if the user chose to create a new term record because then, the glossary doesn't change.
         return;
@@ -858,7 +858,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     HDT_Concept concept = curTerm.getConcept(oldGlossary, sense);
 
     if ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false))
-      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + oldGlossary.name() + "\". Proceed?") == false)
+      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + oldGlossary.name() + "\". Proceed?", false) == false)
         return false;
 
     concept.glossary.set(newGlossary);
@@ -885,13 +885,13 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     {
       if (sense == null)
       {
-        if (confirmDialog("Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() + "\"?") == false)
+        if (confirmDialog("Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() + "\"?", false) == false)
           return false;
       }
       else
       {
         if (confirmDialog("Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() +
-                          "\", sense \"" + sense.name() + "\"?") == false)
+                          "\", sense \"" + sense.name() + "\"?", false) == false)
           return false;
       }
     }

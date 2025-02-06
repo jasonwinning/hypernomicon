@@ -201,7 +201,7 @@ public class TestConsoleDlgCtrlr extends HyperDlg
             return;
           }
 
-          if (confirmDialog("The currently loaded database will be deleted. Continue?") == false)
+          if (confirmDialog("The currently loaded database will be deleted. Continue?", false) == false)
           {
             new TestConsoleDlgCtrlr().showModal();
             return;
@@ -271,7 +271,7 @@ public class TestConsoleDlgCtrlr extends HyperDlg
     :
       "Delete folder \"" + transientDBFilePath + "\" and everything in it?";
 
-    if (confirmDialog(prompt) == false)
+    if (confirmDialog(prompt, false) == false)
       return;
 
     try

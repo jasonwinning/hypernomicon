@@ -1336,7 +1336,7 @@ public final class MainCtrlr
     {
       if (shutDownMode == ShutDownMode.NormalNoSave)
       {
-        if (confirmDialog("Abandon changes and quit?") == false)
+        if (confirmDialog("Abandon changes and quit?", false) == false)
           return;
       }
       else if ((shutDownMode == ShutDownMode.Normal) || (shutDownMode == ShutDownMode.FromOtherComputer))
@@ -1348,7 +1348,7 @@ public final class MainCtrlr
         }
 
         if (cantSaveRecord() && (shutDownMode == ShutDownMode.Normal))
-          if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?"))
+          if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?", false))
             return;
 
         dontInteract = false;
@@ -1890,7 +1890,7 @@ public final class MainCtrlr
 
       if (confirmDialog("Type: " + getTypeName(type) + '\n' +
                         "Name: " + name + '\n' +
-                        "ID: " + record.getID() + "\n\n" + msg) == false) return;
+                        "ID: " + record.getID() + "\n\n" + msg, false) == false) return;
     }
 
     db.deleteRecord(record);
@@ -2223,8 +2223,8 @@ public final class MainCtrlr
 
     DialogResult result = new PopupDialog("Which record?")
 
-      .addButton(getTypeName(activeRecord.getType()), mrYes)
-      .addButton(getTypeName(viewRecord  .getType()), mrNo )
+      .addDefaultButton(getTypeName(activeRecord.getType()), mrYes)
+      .addButton       (getTypeName(viewRecord  .getType()), mrNo )
 
       .showModal();
 
@@ -2303,7 +2303,7 @@ public final class MainCtrlr
 
     if (confirmDialog("Type: " + getTypeName(type) + '\n' +
                       "Name: " + name + '\n' +
-                      "ID: " + record.getID() + "\n\n" + msg + additionalMsg) == false)
+                      "ID: " + record.getID() + "\n\n" + msg + additionalMsg, false) == false)
       return false;
 
     String recordStr = getTypeName(record.getType()) + " \"" + name + '"';
@@ -2397,9 +2397,9 @@ public final class MainCtrlr
 
     switch (new PopupDialog("This database is not currently integrated with a reference manager account (like Mendeley or Zotero). Add one now?")
 
-      .addButton("Yes", mrYes)
-      .addButton("Remind me later", mrNo)
-      .addButton("Do not ask again for this database", mrIgnore)
+      .addButton       ("Yes"                               , mrYes   )
+      .addDefaultButton("Remind me later"                   , mrNo    )
+      .addButton       ("Do not ask again for this database", mrIgnore)
 
       .showModal())
     {
@@ -3303,10 +3303,10 @@ public final class MainCtrlr
 
     switch (new PopupDialog("What should the file be imported as?")
 
-      .addButton("Work", mrYes)
-      .addButton("Misc. file", mrNo)
-      .addButton("Bibliographic details", mrOk)
-      .addButton("Cancel", mrCancel)
+      .addDefaultButton("Work"                 , mrYes   )
+      .addButton       ("Misc. file"           , mrNo    )
+      .addButton       ("Bibliographic details", mrOk    )
+      .addButton       ("Cancel"               , mrCancel)
 
       .showModal())
     {

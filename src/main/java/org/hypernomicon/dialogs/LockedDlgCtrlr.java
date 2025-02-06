@@ -112,7 +112,7 @@ public class LockedDlgCtrlr extends HyperDlg
             else if (sentMsg.getType() == hmtEchoRequest)
             {
               done = true;
-              Platform.runLater(() -> dlg.stopTrying("Ping roundtrip completed in " + (Instant.now().getEpochSecond() - sentMsg.getSentTime()) + " seconds.", false));
+              Platform.runLater(() -> dlg.stopTrying("Ping round trip completed in " + (Instant.now().getEpochSecond() - sentMsg.getSentTime()) + " seconds.", false));
             }
           }
         }

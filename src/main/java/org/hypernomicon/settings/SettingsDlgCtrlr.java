@@ -116,7 +116,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     CompGeneral("Settings applying to this computer"),
     WebSearch("Web Search Buttons"),
     DBSpecific("Settings applying to this database"),
-    Folders("Default Folders"),
+    Folders("Reassign Folders"),
     WorkNaming("Work File Naming"),
     WorkSearchKey("Work Search Key Generation"),
     ArgNaming("Argument Naming"),
@@ -685,7 +685,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     if (confirmDialog("Do you really want to unlink your " + typeName + " account?" + System.lineSeparator() +
                       "All associations between " + appTitle + " records and " + typeName + " entries will be erased." + System.lineSeparator() +
-                      "This process cannot be undone.") == false)
+                      "This process cannot be undone.", false) == false)
       return;
 
     db.unlinkBibLibrary();

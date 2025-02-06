@@ -151,7 +151,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
     btnInvoke.setOnAction(event ->
     {
       if (taCommands.getText().length() > 0)
-        if (confirmDialog("Replace current settings with selected preset?") == false)
+        if (confirmDialog("Replace current settings with selected preset?", false) == false)
           return;
 
       Preset preset = lvPresets.getSelectionModel().getSelectedItem();

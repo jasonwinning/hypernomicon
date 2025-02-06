@@ -185,7 +185,7 @@ public class WebButton
           :
             "Should the subtitle be omitted? Sometimes this yields better results.";
 
-          if (confirmDialog(msg))
+          if (confirmDialog(msg, true))
             value = array[0];
         }
       }
@@ -216,10 +216,10 @@ public class WebButton
 
           switch (new PopupDialog("How should the name be phrased?" + (isScholar ? " Initials often works well with Google Scholar." : ""))
 
-            .addButton(first1 + ' ' + last, mrYes)
-            .addButton(first2 + ' ' + last, mrNo)
-            .addButton(first3 + ' ' + last, mrOk)
-            .addButton("Cancel", mrCancel)
+            .addDefaultButton(first1 + ' ' + last, mrYes   )
+            .addButton       (first2 + ' ' + last, mrNo    )
+            .addButton       (first3 + ' ' + last, mrOk    )
+            .addButton       ("Cancel"           , mrCancel)
 
             .showModal())
           {

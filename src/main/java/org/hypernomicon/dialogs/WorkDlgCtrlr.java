@@ -1286,7 +1286,7 @@ public class WorkDlgCtrlr extends HyperDlg
                  "Otherwise, existing information for these fields will be lost: " +
                  extFields.stream().map(BibFieldEnum::getUserFriendlyName).collect(Collectors.joining(", "));
 
-    choice = confirmDialog(msg) ? Ternary.True : Ternary.False;
+    choice = confirmDialog(msg, false) ? Ternary.True : Ternary.False;
     chkCreateBibEntry.setSelected(choice.isTrue());
     return choice;
   }
@@ -1380,7 +1380,7 @@ public class WorkDlgCtrlr extends HyperDlg
     else
     {
       if ((newWorkFile == null) && (oldWorkFile != null) && (oldWorkFile.works.size() > 1))
-        if (confirmDialog("The same file that was associated with this work is associated with other works as well. Should these also be updated?"))
+        if (confirmDialog("The same file that was associated with this work is associated with other works as well. Should these also be updated?", true))
           newWorkFile = oldWorkFile;
     }
 

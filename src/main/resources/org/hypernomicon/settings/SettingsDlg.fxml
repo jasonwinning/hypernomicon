@@ -207,7 +207,7 @@
           </VBox>
         </AnchorPane>
       </Tab>
-      <Tab fx:id="tabFolders" text="Default Folders">
+      <Tab fx:id="tabFolders" text="Reassign Folders">
       </Tab>
       <Tab fx:id="tabNaming" text="Work File Naming">
       </Tab>

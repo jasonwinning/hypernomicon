@@ -495,6 +495,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       if (tfName.getText().isEmpty())
         return falseWithErrorPopup("Unable to modify record: term cannot be zero-length.", tfName);
     }
+    else if (nameCheck(tfName, "record name") == false) return false;
 
     if (saveSearchKey(nodeRecord, tfSearchKey) == false) return false;
 

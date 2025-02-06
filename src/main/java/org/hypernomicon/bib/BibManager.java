@@ -529,7 +529,7 @@ public class BibManager extends HyperDlg
 
   private void unassign(BibEntryRow row)
   {
-    if (confirmDialog("Are you sure you want to unassign the work record?") == false) return;
+    if (confirmDialog("Are you sure you want to unassign the work record?", false) == false) return;
     if (ui.cantSaveRecord()) return;
 
     HDT_Work work = row.getWork();

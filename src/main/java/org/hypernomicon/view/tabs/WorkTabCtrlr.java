@@ -369,7 +369,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         if (ui.cantSaveRecord()) return;
 
-        if (confirmDialog("Are you sure you want to remove this file from the work record?") == false) return;
+        if (confirmDialog("Are you sure you want to remove this file from the work record?", false) == false) return;
 
         db.getObjectList(rtWorkFileOfWork, curWork, true).remove(workFile);
         fileManagerDlg.setNeedRefresh();
@@ -1204,8 +1204,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       moveOrCopy = new PopupDialog("Should the files be moved or copied from their present location?")
 
-        .addButton("Move", mrMove)
-        .addButton("Copy", mrCopy)
+        .addDefaultButton("Move", mrMove)
+        .addButton       ("Copy", mrCopy)
 
         .showModal();
     }
@@ -1433,6 +1433,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public boolean saveToRecord()
   {
+    if (nameCheck(tfTitle, "title") == false)
+      return false;
+
     WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(hcbType.selectedID());
 
     if (tfSearchKey.getText().isEmpty())
@@ -1442,7 +1445,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (tfSearchKey.getText().contains(curWork.getYearStr()))
         if (workTypeEnumVal != wtUnenteredSet)
           if (tfYear.getText().equals(curWork.getYearStr()) == false)
-            if (confirmDialog("Year has been modified. Update search key?"))
+            if (confirmDialog("Year has been modified. Update search key?", true))
               if (tfSearchKey.getText().matches(".*" + Pattern.quote(curWork.getYearStr()) + "[a-z].*"))
                 lblSearchKeyClick();
               else

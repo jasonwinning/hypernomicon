@@ -118,7 +118,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htSubInst.addContextMenuItem("Delete this institution record", HDT_Institution.class, inst ->
     {
       if (ui.cantSaveRecord()) return;
-      if (confirmDialog("Are you sure you want to delete this record?") == false) return;
+      if (confirmDialog("Are you sure you want to delete this record?", false) == false) return;
       db.deleteRecord(inst);
       ui.update();
     });
@@ -353,6 +353,9 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     if (hcbType.selectedID() < 1)
       return falseWithErrorPopup("You must select a type.", cbType);
 
+    if (nameCheck(tfName, "institution name") == false)
+      return false;
+
     boolean locationChanged = false;
 
     if (tfCity.getText().trim().length() > 0)
@@ -398,7 +401,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     if (locationChanged == false) return true;
 
     if (hasSubInstWithDifferentLocation(curInst, curInst))
-      if (confirmDialog("One or more sub-institutions have a different location than the present one. Should they also be updated?"))
+      if (confirmDialog("One or more sub-institutions have a different location than the present one. Should they also be updated?", true))
         curInst.overwriteSubInstLocations();
 
     return true;

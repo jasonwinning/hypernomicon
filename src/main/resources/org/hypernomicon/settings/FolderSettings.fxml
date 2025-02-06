@@ -21,14 +21,16 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="FolderSettingsAnchor" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.FolderSettingsCtrlr">
-  <GridPane layoutX="90.0" layoutY="104.0" prefHeight="244.0" prefWidth="1139.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<AnchorPane id="FolderSettingsAnchor" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.FolderSettingsCtrlr">
+  <GridPane layoutX="90.0" layoutY="104.0" prefHeight="244.0" prefWidth="1139.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="12.0">
     <columnConstraints>
       <ColumnConstraints hgrow="NEVER" maxWidth="160.0" minWidth="160.0" prefWidth="160.0" />
       <ColumnConstraints hgrow="ALWAYS" />
@@ -148,5 +150,12 @@
     </AnchorPane>
     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="7" />
   </GridPane>
-  <Label layoutX="30.0" layoutY="260.0" style="-fx-font-weight: bold;" text="Note: Making changes here does not result in any files being moved." />
+  <Label layoutX="30.0" layoutY="260.0" style="-fx-font-weight: bold;" text="Making changes here does not result in any files being moved." AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="272.0">
+      <graphic>
+         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+               <Image url="@../resources/images/information-italic.png" />
+            </image>
+         </ImageView>
+      </graphic></Label>
 </AnchorPane>

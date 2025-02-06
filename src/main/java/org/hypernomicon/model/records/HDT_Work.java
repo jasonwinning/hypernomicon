@@ -325,7 +325,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     if ((workFiles.size() != largerWorkRec.workFiles.size()) || (largerWorkRec.workFiles.containsAll(workFiles) == false))
     {
       String msg = workFiles.size() == 1 ? " file is " : " files are ";
-      if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?"))
+      if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?", false))
       {
         getObjList(rtWorkFileOfWork).clear();
         largerWorkRec.workFiles.forEach(workFile -> addWorkFile(workFile.getID()));
@@ -363,7 +363,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     workFile.works.forEach(work ->
     {
       if ((work.getID() != getID()) && isUnenteredSet(work) &&
-        ((sourceUnenteredWork == work) || confirmDialog("Okay to remove the file from the the unentered set of work files: \"" + work.name() + "\"?")))
+        ((sourceUnenteredWork == work) || confirmDialog("Okay to remove the file from the the unentered set of work files: \"" + work.name() + "\"?", false)))
           db.getObjectList(rtWorkFileOfWork, work, true).remove(workFile);
     });
 

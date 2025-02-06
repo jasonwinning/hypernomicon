@@ -117,15 +117,36 @@ public final class MediaUtil
     {
       byte[] buffer = new byte[BUFFER_SIZE];
       int bytesRead,
+          totalNonAsciiCount = 0,
           totalBytesRead = 0;
 
       while ((bytesRead = bis.read(buffer)) != -1)
       {
+        int nonAsciiCount = 0;
+
         for (int i = 0; i < bytesRead; i++)
           if ((buffer[i] & 0xFF) > 127)
-            return false; // Found a non-ASCII character
+          {
+            nonAsciiCount++;
+            totalNonAsciiCount++;
+          }
+
+        // Allow 1 percent or less of non-ASCII characters
+
+        double ratio;
+
+        if (bytesRead >= BUFFER_SIZE)
+        {
+          ratio = ((double)nonAsciiCount)/((double)bytesRead);
+          if (ratio > .01)
+            return false;
+        }
 
         totalBytesRead += bytesRead;
+
+        ratio = ((double)totalNonAsciiCount)/((double)totalBytesRead);
+        if (ratio > .01)
+          return false;
 
         if (totalBytesRead >= MAX_BYTES_TO_CHECK)
           return true; // Stop after checking 1 MB; if first MB is ASCII, assume whole file is

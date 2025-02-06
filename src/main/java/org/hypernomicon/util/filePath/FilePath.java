@@ -190,7 +190,7 @@ public class FilePath implements Comparable<FilePath>
       :
         "Attempt to delete file failed: \"" + this + "\". Try again?";
 
-      if (confirmDialog(msgStr) == false)
+      if (confirmDialog(msgStr, true) == false)
         return false;
     }
 
@@ -211,7 +211,7 @@ public class FilePath implements Comparable<FilePath>
     {
       if (destFilePath.exists() && confirmOverwrite)
       {
-        if (confirmDialog("Destination file exists. Overwrite?") == false)
+        if (confirmDialog("Destination file exists. Overwrite?", false) == false)
           return false;
 
         if (destFilePath.toFile().delete() == false)
