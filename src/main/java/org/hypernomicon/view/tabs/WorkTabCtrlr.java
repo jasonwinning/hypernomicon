@@ -376,7 +376,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         ui.update();
       });
 
-    htWorkFiles.addChangeOrderMenuItem(true, () -> db.getObjectList(rtWorkFileOfWork, curWork, true).reorder(htWorkFiles.saveToList(2, hdtWorkFile)));
+    htWorkFiles.addChangeOrderMenuItem(true, () -> db.<HDT_WorkFile, HDT_Work>getObjectList(rtWorkFileOfWork, curWork, true).reorder(htWorkFiles.saveToList(2, hdtWorkFile)));
 
     htWorkFiles.setDblClickHandler(HDT_WorkFile.class, workFile -> launchWorkFile(workFile.filePath(), getCurPageNum(curWork, workFile, true)));
 

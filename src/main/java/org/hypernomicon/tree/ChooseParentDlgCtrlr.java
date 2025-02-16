@@ -123,7 +123,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
     RecordTreeEdge edge = new RecordTreeEdge(parent, child);
 
-    if (edge.canAttach(true) == false)
+    if (edge.canAttach() == false)
       return false;
 
     return edge.edgeToDetach() == null ?

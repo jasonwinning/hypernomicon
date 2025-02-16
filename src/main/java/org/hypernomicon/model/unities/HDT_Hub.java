@@ -215,6 +215,13 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Unites spoke1 and spoke2
+   * @param spoke1 First record to unite
+   * @param spoke2 Second record to unite
+   * @param newDesc What to use for the description for both records
+   * @throws HyperDataException if spoke1 and spoke2 cannot be united for some reason
+   */
   public static void uniteRecords(HDT_RecordWithMainText spoke1, HDT_RecordWithMainText spoke2, String newDesc) throws HyperDataException
   {
     StringBuilder sb = new StringBuilder();

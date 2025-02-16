@@ -24,17 +24,15 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_Debate;
-import org.hypernomicon.model.records.HDT_Note;
-import org.hypernomicon.model.records.HDT_Position;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Term;
-import org.hypernomicon.model.records.HDT_WorkLabel;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.MainCtrlr;
@@ -46,16 +44,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -83,9 +72,18 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
   private final RecordType nodeRecordType; // This is not always the same as what is returned by type(). If type() == hdtTerm, nodeRecordType will be hdtConcept
   private final MainTextWrapper mainText;
-  private final Label debateLink, noteLink, labelLink, conceptLink;
+  private final Label debateLink, noteLink, workLabelLink, conceptLink;
 
-  private static final String TOOLTIP_PREFIX = "Search record name using ";
+  private static final String TOOLTIP_PREFIX    = "Search record name using ",
+
+                              DEBATE_TEXT_COLOR = "white",
+                              DEBATE_BG_COLOR   = "blue",
+                              NOTE_TEXT_COLOR   = "maroon",
+                              NOTE_BG_COLOR     = "lime",
+                              TERM_TEXT_COLOR   = "red",
+                              TERM_BG_COLOR     = "aqua",
+                              LABEL_TEXT_COLOR  = "yellow",
+                              LABEL_BG_COLOR    = "fuchsia";
 
 //---------------------------------------------------------------------------
 
@@ -103,39 +101,12 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       tbLinks.getItems().remove(lblMergeTerms);
     }
 
-    switch (nodeRecordType)
-    {
-      case hdtDebate : case hdtPosition :
+    Iterator<Label> linkIt = List.of(lblGoTo1, lblGoTo2, lblGoTo3).iterator();
 
-        debateLink = null;
-        conceptLink = lblGoTo1;
-        noteLink = lblGoTo2;
-        labelLink = lblGoTo3;
-        break;
-
-      case hdtNote :
-
-        debateLink = lblGoTo1;
-        conceptLink = lblGoTo2;
-        noteLink = null;
-        labelLink = lblGoTo3;
-        break;
-
-      case hdtConcept :
-
-        debateLink = lblGoTo1;
-        conceptLink = null;
-        noteLink = lblGoTo2;
-        labelLink = lblGoTo3;
-        break;
-
-      default :
-
-        debateLink = null;
-        conceptLink = null;
-        noteLink = null;
-        labelLink = null;
-    }
+    debateLink    = EnumSet.of(                        hdtConcept, hdtNote).contains(nodeRecordType) ? linkIt.next() : null;
+    conceptLink   = EnumSet.of(hdtDebate, hdtPosition,             hdtNote).contains(nodeRecordType) ? linkIt.next() : null;
+    noteLink      = EnumSet.of(hdtDebate, hdtPosition, hdtConcept         ).contains(nodeRecordType) ? linkIt.next() : null;
+    workLabelLink = EnumSet.of(hdtDebate, hdtPosition, hdtConcept, hdtNote).contains(nodeRecordType) ? linkIt.next() : null;
 
     btnWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.GEN + '1'));
     smbWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.GEN + '1'));
@@ -157,9 +128,9 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     double fontSize = app.prefs.getDouble(PrefKey.FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
 
-    lblGoTo1.setFont     (new Font(fontSize + 6.0));
-    lblGoTo2.setFont     (new Font(fontSize + 6.0));
-    lblGoTo3.setFont     (new Font(fontSize + 6.0));
+    lblGoTo1     .setFont(new Font(fontSize + 6.0));
+    lblGoTo2     .setFont(new Font(fontSize + 6.0));
+    lblGoTo3     .setFont(new Font(fontSize + 6.0));
     lblMergeTerms.setFont(new Font(fontSize + 6.0));
   }
 
@@ -205,130 +176,25 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateLinkLabels(HDT_CT record)
+  private void updateUniteDisuniteLinks(HDT_CT record)
   {
-    HDT_Debate    debate   = null;
-    HDT_Position  position = null;
-    HDT_Concept   concept  = null;
-    HDT_WorkLabel label    = null;
-    HDT_Note      note     = null;
+    HDT_Hub hub = null;
 
     if (record != null)
     {
-      if (record.hasHub())
-      {
-        debate   = record.getHub().getDebate();
-        position = record.getHub().getPosition();
-        concept  = record.getHub().getConcept();
-        label    = record.getHub().getLabel();
-        note     = record.getHub().getNote();
-      }
-
       if (record.getType() != nodeRecordType)
       {
         internalErrorPopup(28788);
         return;
       }
+
+      hub = record.getHub();
     }
 
-    if ((nodeRecordType != hdtDebate) && (nodeRecordType != hdtPosition))
-    {
-      if ((debate != null) || (position != null))
-      {
-        debateLink.setStyle("-fx-background-color: blue; -fx-text-fill: white;");
-
-        if (debate != null)
-        {
-          debateLink.setText("Go to Debate...");
-          debateLink.setContextMenu(new ContextMenu(makeMenuItem(debate)));
-          setGoToEvent(debateLink, debate);
-        }
-        else
-        {
-          debateLink.setText("Go to Position...");
-          debateLink.setContextMenu(new ContextMenu(makeMenuItem(position)));
-          setGoToEvent(debateLink, position);
-        }
-
-        setDisuniteTooltip(debateLink);
-      }
-      else
-      {
-        debateLink.setStyle("");
-        debateLink.setText("Unite with Debate/Position...");
-        setUniteTooltip(debateLink);
-        debateLink.setContextMenu(null);
-        setLinkToEvent(debateLink, hdtDebate);
-      }
-    }
-
-    if (nodeRecordType != hdtConcept)
-    {
-      if (concept != null)
-      {
-        conceptLink.setStyle("-fx-background-color: aqua; -fx-text-fill: red;");
-        conceptLink.setText("Go to Term...");
-        setDisuniteTooltip(conceptLink);
-        conceptLink.setContextMenu(new ContextMenu(makeMenuItem(concept)));
-        setGoToEvent(conceptLink, concept);
-      }
-      else
-      {
-        conceptLink.setStyle("");
-        conceptLink.setText("Unite with Term...");
-        setUniteTooltip(conceptLink);
-        conceptLink.setContextMenu(null);
-        conceptLink.setOnMouseClicked(mouseEvent ->
-        {
-          if (mouseEvent.getButton() == MouseButton.PRIMARY)
-            linkToTermClick();
-        });
-      }
-    }
-
-    if (nodeRecordType != hdtNote)
-    {
-      if (note != null)
-      {
-        noteLink.setStyle("-fx-background-color: lime; -fx-text-fill: maroon;");
-        noteLink.setText("Go to Note...");
-        setDisuniteTooltip(noteLink);
-        noteLink.setContextMenu(new ContextMenu(makeMenuItem(note)));
-        setGoToEvent(noteLink, note);
-      }
-      else
-      {
-        noteLink.setStyle("");
-        noteLink.setText("Unite with Note...");
-        setUniteTooltip(noteLink);
-        noteLink.setContextMenu(null);
-        setLinkToEvent(noteLink, hdtNote);
-      }
-    }
-
-    if (nodeRecordType != hdtWorkLabel)
-    {
-      if (label != null)
-      {
-        labelLink.setStyle("-fx-background-color: fuchsia; -fx-text-fill: yellow;");
-        labelLink.setText("Go to Label...");
-        setDisuniteTooltip(labelLink);
-        labelLink.setContextMenu(new ContextMenu(makeMenuItem(label)));
-        labelLink.setOnMouseClicked(mouseEvent ->
-        {
-          if (mouseEvent.getButton() == MouseButton.PRIMARY)
-            ui.goToTreeRecord(record.getHub().getLabel());
-        });
-      }
-      else
-      {
-        labelLink.setStyle("");
-        labelLink.setText("Unite with Label...");
-        setUniteTooltip(labelLink);
-        labelLink.setContextMenu(null);
-        setLinkToEvent(labelLink, hdtWorkLabel);
-      }
-    }
+    updateDebateOrPositionLink(debateLink   , hub);
+    updateLink                (conceptLink  , hub == null ? null : hub.getConcept(), "Term" , TERM_TEXT_COLOR , TERM_BG_COLOR , hdtConcept  );
+    updateLink                (noteLink     , hub == null ? null : hub.getNote   (), "Note" , NOTE_TEXT_COLOR , NOTE_BG_COLOR , hdtNote     );
+    updateLink                (workLabelLink, hub == null ? null : hub.getLabel  (), "Label", LABEL_TEXT_COLOR, LABEL_BG_COLOR, hdtWorkLabel);
 
     if (nodeRecordType == hdtConcept)
     {
@@ -343,18 +209,82 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     if (record == null) return;
 
-    if (record.getType() == hdtDebate)
-      disableAllIff(record.getID() == 1, conceptLink, noteLink, labelLink);
-    else if (record.getType() == hdtNote)
-      disableAllIff(record.getID() == 1, debateLink, conceptLink, labelLink);
+    if      (record.getType() == hdtDebate) disableAllIff(record.getID() == 1, conceptLink, noteLink   , workLabelLink);
+    else if (record.getType() == hdtNote  ) disableAllIff(record.getID() == 1, debateLink , conceptLink, workLabelLink);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void setDisuniteTooltip(Label label)
+  private void updateDebateOrPositionLink(Label link, HDT_Hub hub)
   {
-    setToolTip(label, "Use right/secondary button to disunite");
+    if ((nodeRecordType == hdtDebate) || (nodeRecordType == hdtPosition)) return;
+
+    HDT_Debate   debate   = hub == null ? null : hub.getDebate  ();
+    HDT_Position position = hub == null ? null : hub.getPosition();
+
+    if      (debate   != null) updateDisuniteLink(link, debate  , "Debate"  , DEBATE_TEXT_COLOR, DEBATE_BG_COLOR);
+    else if (position != null) updateDisuniteLink(link, position, "Position", DEBATE_TEXT_COLOR, DEBATE_BG_COLOR);
+    else
+      updateUniteLink(link, "Debate/Position", hdtDebate);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateLink(Label link, HDT_RecordWithMainText record, String typeName, String textColor, String bgColor, RecordType type)
+  {
+    if (nodeRecordType == type) return;
+
+    if (record != null)
+      updateDisuniteLink(link, record, typeName, textColor, bgColor);
+    else
+      updateUniteLink(link, typeName, type);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateDisuniteLink(Label link, HDT_RecordWithMainText record, String typeName, String textColor, String bgColor)
+  {
+    link.setStyle("-fx-background-color: " + bgColor + "; -fx-text-fill: " + textColor + ";");
+    link.setText("Go to " + typeName + "...");
+    setToolTip(link, "Use right/secondary button to disunite");
+    link.setContextMenu(new ContextMenu(makeMenuItem(record)));
+
+    link.setOnMouseClicked(mouseEvent ->
+    {
+      if (mouseEvent.getButton() != MouseButton.PRIMARY) return;
+
+      if (record.getType() == hdtWorkLabel)
+        ui.goToTreeRecord(record);
+      else
+        ui.goToRecord(record, true);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateUniteLink(Label link, String typeName, RecordType type)
+  {
+    link.setStyle("");
+    link.setText("Unite with " + typeName + "...");
+    setUniteTooltip(link);
+    link.setContextMenu(null);
+
+    link.setOnMouseClicked(mouseEvent ->
+    {
+      if (mouseEvent.getButton() != MouseButton.PRIMARY) return;
+
+      if (type == hdtConcept)
+        linkToTermClick();
+      else
+      {
+        ui.treeSelector.linking(ui.viewRecord(), type);
+        ui.goToTreeRecord(db.records(type).getByID(1));
+      }
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -420,39 +350,25 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     HDT_Term term = frmSelectConcept.getTerm();
     HDT_Concept concept = term.getConcept(frmSelectConcept.getGlossary(), frmSelectConcept.getSense());
 
-    ui.uniteRecords(source, concept, false);
+    try
+    {
+      if (ui.uniteRecords(source, concept) == false)
+        return;
+    }
+    catch (HyperDataException e)
+    {
+      errorPopup(e.getMessage());
+      return;
+    }
 
-    if (frmSelectConcept.getCreateNew() == false) return;
+    if (frmSelectConcept.getCreateNew() == false)
+    {
+      ui.update();
+      return;
+    }
 
     term.setName(source.listName());
-    ui.goToRecord(concept, true);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void setLinkToEvent(Label label, RecordType type)
-  {
-    label.setOnMouseClicked(mouseEvent ->
-    {
-      if (mouseEvent.getButton() == MouseButton.PRIMARY)
-      {
-        ui.treeSelector.linking(ui.viewRecord(), type);
-        ui.goToTreeRecord(db.records(type).getByID(1));
-      }
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void setGoToEvent(Label label, HDT_RecordWithMainText record)
-  {
-    label.setOnMouseClicked(mouseEvent ->
-    {
-      if (mouseEvent.getButton() == MouseButton.PRIMARY)
-        ui.goToRecord(record, true);
-    });
+    ui.goToRecord(concept, false);
   }
 
 //---------------------------------------------------------------------------
@@ -477,7 +393,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     mainText.clear();
 
     if (nodeRecordType != hdtArgument)
-      updateLinkLabels(null);
+      updateUniteDisuniteLinks(null);
   }
 
 //---------------------------------------------------------------------------
@@ -519,7 +435,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     mainText.loadFromRecord(nodeRecord, true, getView().getTextInfo());
 
     if (nodeRecord.isUnitable())
-      updateLinkLabels(nodeRecord);
+      updateUniteDisuniteLinks(nodeRecord);
 
     nodeRecord.viewNow();
 
@@ -543,8 +459,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
   private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
   {
-    return event -> ui.webButtonMap.get(prefKey).first(WebButtonField.Name, tfName.getText())
-                                                .go();
+    return event -> ui.webButtonMap.get(prefKey).first(WebButtonField.Name, tfName.getText()).go();
   }
 
 //---------------------------------------------------------------------------

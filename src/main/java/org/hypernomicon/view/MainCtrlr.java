@@ -248,17 +248,17 @@ public final class MainCtrlr
   @FXML private void mnuTestConsoleClick()    { if (cantSaveRecord() == false) new TestConsoleDlgCtrlr().showModal(); }
   @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(activeRecord(), false); }
 
-  public PersonTabCtrlr   personHyperTab    () { return getHyperTab(personTabEnum  ); }
-  public InstTabCtrlr     instHyperTab      () { return getHyperTab(instTabEnum    ); }
-  public WorkTabCtrlr     workHyperTab      () { return getHyperTab(workTabEnum    ); }
-  public FileTabCtrlr     fileHyperTab      () { return getHyperTab(fileTabEnum    ); }
-  public DebateTabCtrlr   debateHyperTab    () { return getHyperTab(debateTabEnum  ); }
-  public PositionTabCtrlr positionHyperTab  () { return getHyperTab(positionTabEnum); }
-  public ArgumentTabCtrlr argumentHyperTab  () { return getHyperTab(argumentTabEnum); }
-  public NoteTabCtrlr     noteHyperTab      () { return getHyperTab(noteTabEnum    ); }
-  public TermTabCtrlr     termHyperTab      () { return getHyperTab(termTabEnum    ); }
-  public QueriesTabCtrlr  queryHyperTab     () { return getHyperTab(queryTabEnum   ); }
-  public TreeTabCtrlr     treeHyperTab      () { return getHyperTab(treeTabEnum    ); }
+  public PersonTabCtrlr   personHyperTab   () { return getHyperTab(personTabEnum  ); }
+  public InstTabCtrlr     instHyperTab     () { return getHyperTab(instTabEnum    ); }
+  public WorkTabCtrlr     workHyperTab     () { return getHyperTab(workTabEnum    ); }
+  public FileTabCtrlr     fileHyperTab     () { return getHyperTab(fileTabEnum    ); }
+  public DebateTabCtrlr   debateHyperTab   () { return getHyperTab(debateTabEnum  ); }
+  public PositionTabCtrlr positionHyperTab () { return getHyperTab(positionTabEnum); }
+  public ArgumentTabCtrlr argumentHyperTab () { return getHyperTab(argumentTabEnum); }
+  public NoteTabCtrlr     noteHyperTab     () { return getHyperTab(noteTabEnum    ); }
+  public TermTabCtrlr     termHyperTab     () { return getHyperTab(termTabEnum    ); }
+  public QueriesTabCtrlr  queryHyperTab    () { return getHyperTab(queryTabEnum   ); }
+  public TreeTabCtrlr     treeHyperTab     () { return getHyperTab(treeTabEnum    ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1545,7 +1545,7 @@ public final class MainCtrlr
                       "\nModified: " + dateTimeToUserReadableStr(record.getModifiedDate()) +
                       "\nAccessed: " + dateTimeToUserReadableStr(record.getViewDate()));
     }
-    catch(Exception e)
+    catch (Exception e)
     {
       ttDates.setText(NO_DATES_TOOLTIP);
     }
@@ -1808,7 +1808,7 @@ public final class MainCtrlr
   @FXML public void btnSaveClick()
   {
     if (btnSave.getText().equals(TREE_SELECT_BTN_CAPTION))
-      treeSelector.select(tree().selectedRecord(), true);
+      treeSelector.select(tree().selectedRecord());
     else if (cantSaveRecord() == false)
       update();
   }
@@ -3050,7 +3050,15 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void uniteRecords(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2, boolean goToRecord2)
+  /**
+   * Unites record1 and record2, ensuring that they have the same description. Will prompt user to
+   * decide how to merge descriptions if necessary.
+   * @param record1 First record to be united
+   * @param record2 Second record to be united
+   * @return False if user was prompted for how to merge descriptions and clicked Cancel; true otherwise
+   * @throws HyperDataException if record1 and record2 cannot be united for some reason
+   */
+  public boolean uniteRecords(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2) throws HyperDataException
   {
     String desc;
 
@@ -3063,21 +3071,13 @@ public final class MainCtrlr
       MergeSpokeDlgCtrlr frmMerge = new MergeSpokeDlgCtrlr(record1, record2);
 
       if (frmMerge.showModal() == false)
-        return;
+        return false;
 
       desc = frmMerge.getDesc();
     }
 
-    try
-    {
-      HDT_Hub.uniteRecords(record1, record2, desc);
-      goToRecord(goToRecord2 ? record2 : record1, false);
-    }
-    catch (HyperDataException e)
-    {
-      errorPopup(e.getMessage());
-      update();
-    }
+    HDT_Hub.uniteRecords(record1, record2, desc);
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -3660,9 +3660,8 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private FadeTransition findToastFadeIn;
+  private FadeTransition findToastFadeIn, findToastFadeOut;
   private PauseTransition findToastPause;
-  private FadeTransition findToastFadeOut;
 
   public void showToast(String message)
   {

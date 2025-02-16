@@ -209,7 +209,7 @@ public final class App extends Application
     {
       initMainWindows(stage, prefs);
     }
-    catch(IOException e)
+    catch (IOException e)
     {
       errorPopup("Initialization error: " + getThrowableMessage(e));
 

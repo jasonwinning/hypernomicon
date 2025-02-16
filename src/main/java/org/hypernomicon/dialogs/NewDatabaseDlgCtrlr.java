@@ -127,7 +127,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
       filePath.resolve(ultraTrim(tfResults     .getText())).createDirectory();
       filePath.resolve(ultraTrim(tfTopicFolders.getText())).createDirectory();
     }
-    catch(IOException e)
+    catch (IOException e)
     {
       return falseWithErrorPopup("Unable to create new database: " + getThrowableMessage(e));
     }

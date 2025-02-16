@@ -249,7 +249,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   {
     return viewRecord == null ? null : (ActiveType) switch (viewRecord.getType())
     {
-      case hdtConcept       -> ((HDT_Concept) viewRecord).term.get();
+      case hdtConcept       -> ((HDT_Concept      ) viewRecord).term  .get();
       case hdtInvestigation -> ((HDT_Investigation) viewRecord).person.get();
 
       default               -> viewRecord;
@@ -259,12 +259,12 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Update record pointers after saving/reloading database
-
+  /**
+   * Updates record pointers after saving/reloading database
+   */
   public void refreshRecordPtr()
   {
-    nullSwitch(getView(), HyperView::refreshRecordPtr);
-
+    nullSwitch(getView        (), HyperView      ::refreshRecordPtr);
     nullSwitch(mainTextWrapper(), MainTextWrapper::refreshRecordPtr);
   }
 
@@ -305,7 +305,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     if (count > numDef)
     {
       btn.setVisible(false);
-      smb.setVisible(true);
+      smb.setVisible(true );
 
       smb.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
 
@@ -323,7 +323,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     else
     {
       smb.setVisible(false);
-      btn.setVisible(true);
+      btn.setVisible(true );
 
       btn.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
     }
@@ -359,9 +359,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
    */
   boolean nameCheck(TextField nodeToFocus, String savedName, String newName, String whatToCallName)
   {
-    HDT_RT record = activeRecord();
-
-    return nameCheck(record, nodeToFocus, savedName, newName, whatToCallName);
+    return nameCheck(activeRecord(), nodeToFocus, savedName, newName, whatToCallName);
   }
 
   /**

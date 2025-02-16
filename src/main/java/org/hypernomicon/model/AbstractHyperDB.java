@@ -2208,7 +2208,7 @@ public abstract class AbstractHyperDB
       createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 6, folderMap       , FolderIDPrefKey.UNENTERED );
       createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 7, folderMap       , FolderIDPrefKey.RESULTS   );
     }
-    catch(RelationCycleException | DuplicateRecordException | SearchKeyException | RestoreException e)
+    catch (RelationCycleException | DuplicateRecordException | SearchKeyException | RestoreException e)
     {
       throw new HDB_InternalError(64642);
     }

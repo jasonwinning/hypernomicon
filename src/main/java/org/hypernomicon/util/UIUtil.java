@@ -263,8 +263,27 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Ensures that the specified {@code Stage} is visible on the screen with appropriate dimensions.
+   *
+   * <p>This method adjusts the position and size of the {@code Stage} to ensure it is fully visible
+   * within the screen bounds. It sets the {@code Stage} to not be maximized, full screen, or iconified.
+   * If the {@code Stage} is smaller than the specified minimum dimensions, it sets the {@code Stage} to
+   * the default width and height. Additionally, it ensures that the {@code Stage} is within the bounds
+   * of all available screens.
+   *
+   * <p>Note: On macOS, the method does not set the {@code Stage} to not be maximized as it may cause
+   * the window to disappear.
+   *
+   * @param stage    the {@code Stage} to be adjusted. Cannot be null.
+   * @param defaultW the default width of the {@code Stage} if its current width is less than 250.
+   * @param defaultH the default height of the {@code Stage} if its current height is less than 75.
+   * @throws NullPointerException if {@code stage} is null.
+   */
   public static void ensureVisible(Stage stage, double defaultW, double defaultH)
   {
+    Objects.requireNonNull(stage);
+
     if (Environment.isMac() == false) stage.setMaximized(false); // On Mac, this makes the window disappear
 
     stage.setFullScreen(false);
@@ -288,9 +307,9 @@ public final class UIUtil
       maxY = Math.max(maxY, bounds.getMaxY());
     }
 
-    stage.setX(Math.min(stage.getX(), maxX - 50.0));
-    stage.setY(Math.min(stage.getY(), maxY - 50.0));
-    stage.setWidth(Math.min(stage.getWidth(), maxX - 100.0));
+    stage.setX     (Math.min(stage.getX     (), maxX - 50.0 ));
+    stage.setY     (Math.min(stage.getY     (), maxY - 50.0 ));
+    stage.setWidth (Math.min(stage.getWidth (), maxX - 100.0));
     stage.setHeight(Math.min(stage.getHeight(), maxY - 100.0));
   }
 
@@ -406,24 +425,32 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // copies node1 to node2
-
-  public static void copyRegionLayout(Region node1, Region node2)
+  /**
+   * Copies the layout properties from one {@code Region} node (source) to another (target).
+   *
+   * <p>This method transfers the anchor pane constraints, grid pane indices and spans,
+   * layout positions, and size constraints from {@code source} to {@code target}.
+   *
+   * @param source the source {@code Region} node whose layout properties are to be copied. Cannot be null.
+   * @param target the target {@code Region} node to which the layout properties are copied. Cannot be null.
+   * @throws NullPointerException if either {@code source} or {@code target} is null.
+   */
+  public static void copyRegionLayout(Region source, Region target)
   {
-    setAnchors(node2, AnchorPane.getTopAnchor (node1), AnchorPane.getBottomAnchor(node1),
-                      AnchorPane.getLeftAnchor(node1), AnchorPane.getRightAnchor (node1));
+    setAnchors(target, AnchorPane.getTopAnchor (source), AnchorPane.getBottomAnchor(source),
+                       AnchorPane.getLeftAnchor(source), AnchorPane.getRightAnchor (source));
 
-    GridPane.setColumnIndex(node2, GridPane.getColumnIndex(node1));
-    GridPane.setColumnSpan (node2, GridPane.getColumnSpan (node1));
-    GridPane.setRowIndex   (node2, GridPane.getRowIndex   (node1));
-    GridPane.setRowSpan    (node2, GridPane.getRowSpan    (node1));
+    GridPane.setColumnIndex(target, GridPane.getColumnIndex(source));
+    GridPane.setColumnSpan (target, GridPane.getColumnSpan (source));
+    GridPane.setRowIndex   (target, GridPane.getRowIndex   (source));
+    GridPane.setRowSpan    (target, GridPane.getRowSpan    (source));
 
-    node2.setLayoutX(node1.getLayoutX());
-    node2.setLayoutY(node1.getLayoutY());
+    target.setLayoutX(source.getLayoutX());
+    target.setLayoutY(source.getLayoutY());
 
-    node2.setMinSize (node1.getMinWidth (), node1.getMinHeight ());
-    node2.setMaxSize (node1.getMaxWidth (), node1.getMaxHeight ());
-    node2.setPrefSize(node1.getPrefWidth(), node1.getPrefHeight());
+    target.setMinSize (source.getMinWidth (), source.getMinHeight ());
+    target.setMaxSize (source.getMaxWidth (), source.getMaxHeight ());
+    target.setPrefSize(source.getPrefWidth(), source.getPrefHeight());
   }
 
 //---------------------------------------------------------------------------
@@ -766,11 +793,34 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Evaluates a condition and displays an error popup with the specified message if the condition is true.
+   *
+   * <p>This method checks if {@code showErrMsg} is true. If it is, it calls {@link #falseWithErrorPopup(String)}
+   * with the provided error message {@code errMsg} and returns the result.
+   *
+   * @param showErrMsg a boolean indicating whether to show the error message.
+   * @param errMsg     the error message to be displayed in the popup if {@code showErrMsg} is true. Cannot be null.
+   * @return {@code false} if {@code showErrMsg} is true and an error popup is displayed; otherwise, the value of {@code showErrMsg}.
+   * @throws NullPointerException if {@code errMsg} is null and {@code showErrMsg} is true.
+   */
   public static boolean falseWithErrPopupCond(boolean showErrMsg, String errMsg)
   {
     return showErrMsg && falseWithErrorPopup(errMsg);
   }
 
+  /**
+   * Evaluates a condition and displays an error popup with a user-friendly message derived from the specified Throwable if the condition is true.
+   *
+   * <p>This method checks if {@code showErrMsg} is true. If it is, it calls {@link #falseWithErrorPopup(String)}
+   * with a user-friendly message obtained from {@link #getThrowableMessage(Throwable)} using the provided Throwable {@code e}
+   * and returns the result.
+   *
+   * @param showErrMsg a boolean indicating whether to show the error message.
+   * @param e          the Throwable for which to get the user-friendly error message. Cannot be null.
+   * @return {@code false} if {@code showErrMsg} is true and an error popup is displayed; otherwise, the value of {@code showErrMsg}.
+   * @throws NullPointerException if {@code e} is null and {@code showErrMsg} is true.
+   */
   public static boolean falseWithErrPopupCond(boolean showErrMsg, Throwable e)
   {
     return showErrMsg && falseWithErrorPopup(getThrowableMessage(e));
@@ -806,6 +856,21 @@ public final class UIUtil
   public static void errorPopup(Throwable e)     { errorPopup(getThrowableMessage(e)); }
   public static void internalErrorPopup(int num) { errorPopup(new HDB_InternalError(num)); }
 
+  /**
+   * <p>Displays a popup message with the specified content and alert type.
+   * This can be called from inside or outside of the JavaFX Application
+   * thread. Either way, it will cause the calling thread to wait until
+   * the user has clicked OK on the popup.
+   *
+   * <p>If the MainCtrlr object has been constructed, it will only show the
+   * popup if ui.dontInteract() returns false. If ui.dontInteract() returns
+   * true, the method will return immediately without displaying the popup.
+   *
+   * @param msg  the message to be displayed in the popup. Cannot be null.
+   * @param type the type of the alert (e.g., WARNING, INFORMATION, ERROR). Cannot be null.
+   * @throws NullPointerException if either {@code msg} or {@code type} is null.
+   * @throws HDB_InternalError    if the provided alert type is not WARNING, INFORMATION, or ERROR.
+   */
   private static void messagePopup(String msg, AlertType type)
   {
     Objects.requireNonNull(type, "Popup type");

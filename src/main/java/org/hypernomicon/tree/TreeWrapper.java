@@ -515,7 +515,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     if (dragSourceEdge.equals(otherEdgeToDetach))
       otherEdgeToDetach = null;
 
-    if (dragTargetEdge.canAttach(true) == false)
+    if (dragTargetEdge.canAttach() == false)
       return;
 
     if (dragSourceEdge.equals(dragTargetEdge))
@@ -544,7 +544,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       if (cpdc.showModal() == false)
         return;
 
-      dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null, true);
+      dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null);
     }
 
     Platform.runLater(() ->

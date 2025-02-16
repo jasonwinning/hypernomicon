@@ -105,7 +105,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tree.addContextMenuItem("Select", HDT_Record.class,
       record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isLoaded(),
-      record -> ui.treeSelector.select(record, true));
+      record -> ui.treeSelector.select(record));
 
     tree.addContextMenuItem("Go to this record", HDT_Record.class,
       record -> (record != null) && db.isLoaded(),
@@ -519,7 +519,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     if (dlg.showModal() == false) return;
 
-    new RecordTreeEdge(dlg.getParent(), child).attach(null, true);
+    new RecordTreeEdge(dlg.getParent(), child).attach(null);
 
     Platform.runLater(ui::update);
   }

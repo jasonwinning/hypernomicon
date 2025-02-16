@@ -53,7 +53,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.MergeTermDlgCtrlr;
@@ -76,6 +75,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     private HDT_Concept concept;
 
+  //---------------------------------------------------------------------------
+
     private ConceptTab(HDT_Concept concept)
     {
       super(tabName(concept));
@@ -84,11 +85,15 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       setClosable(false);
     }
 
+  //---------------------------------------------------------------------------
+
     private ConceptTab(String text, Node content)
     {
       super(text, content);
       setClosable(false);
     }
+
+  //---------------------------------------------------------------------------
 
     private void setConcept(HDT_Concept concept)
     {
@@ -96,10 +101,14 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       updateName();
     }
 
+  //---------------------------------------------------------------------------
+
     private void updateName()
     {
       setText(tabName(concept));
     }
+
+  //---------------------------------------------------------------------------
 
     private static String tabName(HDT_Concept concept)
     {
@@ -117,13 +126,16 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final class GlossaryRow
   {
     private final HDT_Glossary glossary;
     private final HDT_ConceptSense sense;
-    private final String senseText;
     private final HDT_Concept childConcept, parentConcept;
+    private final String senseText;
+
+  //---------------------------------------------------------------------------
 
     private GlossaryRow(HyperTableRow row, boolean validate)
     {
@@ -159,6 +171,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       parentConcept = tempParentConcept;
     }
 
+  //---------------------------------------------------------------------------
+
     private GlossaryRow(HDT_Glossary glossary, HDT_ConceptSense sense)
     {
       this.glossary = glossary;
@@ -168,6 +182,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       parentConcept = null;
     }
 
+  //---------------------------------------------------------------------------
+
     private GlossaryRow(HDT_Concept childConcept, HDT_Concept parentConcept)
     {
       this.parentConcept = parentConcept;
@@ -176,6 +192,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       sense = childConcept == null ? null : childConcept.sense.get();
       senseText = sense == null ? "" : sense.name();
     }
+
+  //---------------------------------------------------------------------------
 
     private void populateTableRow(HyperTableRow row)
     {
@@ -336,9 +354,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
         Runnable completeHndlr = () ->
         {
-          db.getObjectList(rtConceptOfTerm, curTerm, true).reorder(ht.dataRowStream().map(tableRow -> curTerm.getConcept(tableRow.getRecord(0), tableRow.getRecord(1)))
-                                                                                     .collect(Collectors.toList()));
-
+          db.<HDT_Concept, HDT_Term>getObjectList(rtConceptOfTerm, curTerm, true).reorder(ht.dataRowStream().map(tableRow -> curTerm.getConcept(tableRow.getRecord(0), tableRow.getRecord(1))).toList());
           ui.update();
         };
 

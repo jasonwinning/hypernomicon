@@ -29,13 +29,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+//---------------------------------------------------------------------------
+
 public class TreeSelector
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private HDT_Record base, target;
   private final List<TreeTargetType> targetTypes = new ArrayList<>();
   private HyperTableRow tableRow;
@@ -168,7 +175,7 @@ public class TreeSelector
 
     reset(subj, true);
     addTargetType(obj.getType());
-    if (select(obj, true) == false)
+    if (select(obj) == false)
       return;
 
     if ((folder != null) && ((HDT_Note) subj).folder.isNull())
@@ -178,24 +185,24 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean select(HDT_Record record, boolean showErrMsg)
+  public boolean select(HDT_Record record)
   {
     if (base == null)
-      return falseWithErrPopupCond(showErrMsg, new HDB_InternalError(91827));
+      return falseWithErrorPopup(new HDB_InternalError(91827));
 
     if (record == null) return false;
 
     RelationType relType = getRelTypeForTargetType(record.getType());
 
     if (relType == rtNone)
-      return falseWithErrPopupCond(showErrMsg, "You must select a record of type: " + getTypesStr() + '.');
+      return falseWithErrorPopup("You must select a record of type: " + getTypesStr() + '.');
 
     if (relType == rtUnited)
-      return selectToUnite((HDT_RecordWithMainText) record, showErrMsg);
+      return selectToUnite((HDT_RecordWithMainText) record);
 
     if (relType == rtGlossaryOfConcept)
     {
-      if (glossaryChecks((HDT_Glossary) record, showErrMsg) == false)
+      if (glossaryChecks((HDT_Glossary) record) == false)
         return false;
 
       ui.termHyperTab().selectFromTree(tableRow, (HDT_Glossary) record, ((HDT_Concept) base).sense.get(), null);
@@ -218,7 +225,7 @@ public class TreeSelector
                    :
                      baseIsSubj ? new RecordTreeEdge(target, base) : new RecordTreeEdge(base, target);
 
-    if (newEdge.attach(oldEdge, showErrMsg) == false)
+    if (newEdge.attach(oldEdge) == false)
       return false;
 
     target = record;
@@ -230,14 +237,14 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean glossaryChecks(HDT_Glossary glossary, boolean showErrMsg)
+  private boolean glossaryChecks(HDT_Glossary glossary)
   {
 
     HDT_Concept concept = (HDT_Concept) base,
                 otherConcept = concept.term.get().getConcept(glossary, concept.sense.get());
 
     if ((otherConcept != null) && (concept != otherConcept))
-      return falseWithErrPopupCond(showErrMsg, "The term is already in that glossary.");
+      return falseWithErrorPopup("The term is already in that glossary.");
 
     return true;
   }
@@ -245,16 +252,26 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean selectToUnite(HDT_RecordWithMainText record2, boolean showErrMsg)
+  private boolean selectToUnite(HDT_RecordWithMainText record2)
   {
     StringBuilder sb = new StringBuilder();
 
     HDT_RecordWithMainText record1 = (HDT_RecordWithMainText) base;
 
     if (HDT_Hub.canUnite(record1, record2, sb) == false)
-      return falseWithErrPopupCond(showErrMsg, sb.toString());
+      return falseWithErrorPopup(sb.toString());
 
-    ui.uniteRecords(record1, record2, showErrMsg == false);
+    try
+    {
+      if (ui.uniteRecords(record1, record2) == false)
+        return false;
+    }
+    catch (HyperDataException e)
+    {
+      return falseWithErrorPopup(e.getMessage());
+    }
+
+    ui.goToRecord(record1, false);
     return true;
   }
 

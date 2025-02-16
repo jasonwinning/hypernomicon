@@ -117,9 +117,9 @@ class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean attach(RecordTreeEdge detaching, boolean showErrMsg)
+  boolean attach(RecordTreeEdge detaching)
   {
-    if (canAttach(showErrMsg) == false)
+    if (canAttach() == false)
       return false;
 
     RecordTreeEdge otherDetaching = edgeToDetach();
@@ -169,7 +169,7 @@ class RecordTreeEdge
     }
     catch (RelationCycleException e)
     {
-      return falseWithErrPopupCond(showErrMsg, e);
+      return falseWithErrorPopup(e);
     }
 
     return true;
@@ -178,13 +178,13 @@ class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean canAttach(boolean showErrMsg)
+  boolean canAttach()
   {
     if ((relType == rtFolderOfNote) && HyperDB.isUnstoredRecord(subj.getID(), hdtNote))
-      return falseWithErrPopupCond(showErrMsg, "A folder cannot be assigned to that record.");
+      return falseWithErrorPopup("A folder cannot be assigned to that record.");
 
     if ((obj.getID() == subj.getID()) && (obj.getType() == subj.getType()))
-      return falseWithErrPopupCond(showErrMsg, "A record cannot be its own parent. Please select another record.");
+      return falseWithErrorPopup("A record cannot be its own parent. Please select another record.");
 
     if (relType == rtKeyWork)
     {
@@ -192,10 +192,10 @@ class RecordTreeEdge
       HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
 
       if (db.keyWorkMentionerStream(kwRecord, false).anyMatch(mentioner -> mentioner == obj))
-        return falseWithErrPopupCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
+        return falseWithErrorPopup("Unable to associate the records as requested: They are already associated in the requested way.");
     }
     else if (db.getObjectList(relType, subj, true).contains(obj))
-      return falseWithErrPopupCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
+      return falseWithErrorPopup("Unable to associate the records as requested: They are already associated in the requested way.");
 
     return true;
   }

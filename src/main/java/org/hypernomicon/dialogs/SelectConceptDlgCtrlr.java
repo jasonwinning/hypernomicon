@@ -46,8 +46,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 
+//---------------------------------------------------------------------------
+
 public class SelectConceptDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private ComboBox<HyperTableCell> cbTerm, cbGlossary, cbSense;
   @FXML private Button btnCreate;
   @FXML private TextField tfSearchKey;
@@ -60,16 +66,6 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   private boolean createNew, alreadyChanging = false;
   private HDT_Term term;
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HDT_Term         getTerm()      { return term; }
-  public boolean          getCreateNew() { return createNew; }
-  public HDT_Glossary     getGlossary()  { return glossaryToUse != null ? glossaryToUse : hcbGlossary.selectedRecord(); }
-  public HDT_ConceptSense getSense()     { return senseToUse != null ? senseToUse : hcbSense.selectedRecord(); }
-  public String           getSenseText() { return ultraTrim(hcbSense.getText()); }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public SelectConceptDlgCtrlr(HDT_Concept oldConcept, HDT_RecordWithMainText unitingWith)
@@ -166,6 +162,14 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     btnCreate.setOnAction(event -> btnCreateClick());
     createNew = false;
   }
+
+//---------------------------------------------------------------------------
+
+  public HDT_Term         getTerm()      { return term; }
+  public boolean          getCreateNew() { return createNew; }
+  public HDT_Glossary     getGlossary()  { return glossaryToUse != null ? glossaryToUse : hcbGlossary.selectedRecord(); }
+  public HDT_ConceptSense getSense()     { return senseToUse    != null ? senseToUse    : hcbSense   .selectedRecord(); }
+  public String           getSenseText() { return ultraTrim(hcbSense.getText()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
