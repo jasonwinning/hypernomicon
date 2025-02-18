@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.MergeTermDlgCtrlr;
 import org.hypernomicon.dialogs.RecordDropdownDlgCtrlr;
 import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;

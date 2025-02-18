@@ -34,7 +34,7 @@ public class BibDateHTC extends AbstractHTC
 
   private int id;
   private final RecordType recordType;
-  final BibliographicDate bibDate;
+  private final BibliographicDate bibDate;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

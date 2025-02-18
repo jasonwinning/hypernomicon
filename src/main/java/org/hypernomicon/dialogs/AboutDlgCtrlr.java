@@ -179,7 +179,7 @@ public class AboutDlgCtrlr extends HyperDlg
       "Version: " + appVersion + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
       "Build date: " + buildDate + "<br>" +
       "Copyright \u00a9 2015-2025 Jason Winning.<br><br>" +
-      "Operating system: " + SystemUtils.OS_NAME + (safeStr(distro).isBlank() ? "" : (" (" + distro + ")")) + "<br>" +
+      "Operating system: " + SystemUtils.OS_NAME + (safeStr(distro).isBlank() ? "" : (" (" + distro + ')')) + "<br>" +
       "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
       "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + ' ' + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
       maxHeap +

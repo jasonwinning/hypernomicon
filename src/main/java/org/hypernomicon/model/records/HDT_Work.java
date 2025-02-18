@@ -524,7 +524,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     if (curISBNs.containsAll(allIsbns) && allIsbns.containsAll(curISBNs))
       return;
 
-    String isbnStr = allIsbns.stream().collect(Collectors.joining("; "));
+    String isbnStr = String.join("; ", allIsbns);
 
     updateTagString(tagISBN, isbnStr);
 

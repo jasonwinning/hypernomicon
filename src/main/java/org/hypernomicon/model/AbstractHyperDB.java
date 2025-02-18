@@ -31,32 +31,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.security.DigestInputStream;
-import java.security.DigestOutputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.prefs.BackingStoreException;
@@ -69,10 +50,7 @@ import static java.util.stream.Collectors.*;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.*;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
@@ -163,7 +141,7 @@ public abstract class AbstractHyperDB
   protected abstract void lock() throws IOException;
   protected abstract void unlock();
 
-  protected abstract MentionsIndex createMentionsIndex(List<Runnable> completeHandlers);
+  abstract MentionsIndex createMentionsIndex(List<Runnable> completeHandlers);
 
   /**
    * Updates the temp file with information about running instances of Hypernomicon
@@ -252,7 +230,7 @@ public abstract class AbstractHyperDB
   public RecordType getSubjType(RelationType relType)               { return relationSets.get(relType).getSubjType(); }
   public RecordType getObjType(RelationType relType)                { return relationSets.get(relType).getObjType(); }
   public boolean relationIsMulti(RelationType relType)              { return relTypeToIsMulti.get(relType); }
-  public Stream<HDT_Record> initialNavHistory()                     { return initialNavList.stream(); }
+  public List<HDT_Record> initialNavHistory()                       { return Collections.unmodifiableList(initialNavList); }
   public String getSearchKey(HDT_Record record)                     { return searchKeys.getStringForRecord(record); }
   public SearchKeyword getKeyByKeyword(String keyword)              { return searchKeys.getKeywordObjByKeywordStr(keyword); }
   public String firstActiveKeyWord(HDT_Record record)               { return searchKeys.firstActiveKeyword(record); }
@@ -2487,7 +2465,7 @@ public abstract class AbstractHyperDB
   /**
    * Returns a stream of the {@link HDT_RecordWithMainText} records having the provided record as a key work.
    *
-   * @param Key work record
+   * @param record Key work record
    * @param mainSpokes a boolean flag indicating whether to return all key work mentioners or just main spokes
    * @return a stream of {@link HDT_RecordWithMainText} objects; an empty stream if the input record is not found in the keyWorkIndex
    */

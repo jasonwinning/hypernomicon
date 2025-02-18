@@ -37,7 +37,7 @@ public final class JsonObj implements Cloneable
 
 //---------------------------------------------------------------------------
 
-  public static class CondJsonObj
+  public static final class CondJsonObj
   {
     private final JsonObj jBaseObj;
 

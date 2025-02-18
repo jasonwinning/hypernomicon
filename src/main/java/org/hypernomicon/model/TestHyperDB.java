@@ -129,7 +129,7 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override protected void loadMainTextTemplates() { }
   @Override protected FolderTreeWatcher getFolderTreeWatcher() { return null; }
 
-  @Override protected MentionsIndex createMentionsIndex(List<Runnable> completeHandlers) { return new MentionsIndex(completeHandlers, false); }
+  @Override MentionsIndex createMentionsIndex(List<Runnable> completeHandlers) { return new MentionsIndex(completeHandlers, false); }
 
   @Override protected void warningMessage(String msg) { System.out.println("Warning: " + msg); }
   @Override protected void errorMessage  (String msg) { System.out.println("Error: "   + msg); }

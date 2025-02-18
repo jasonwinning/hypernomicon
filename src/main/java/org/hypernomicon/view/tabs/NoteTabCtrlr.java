@@ -39,7 +39,6 @@ import java.util.Set;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Note;
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.RecordType;

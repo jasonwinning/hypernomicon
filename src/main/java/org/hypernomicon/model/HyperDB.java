@@ -420,7 +420,7 @@ public final class HyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected MentionsIndex createMentionsIndex(List<Runnable> completeHandlers)
+  @Override MentionsIndex createMentionsIndex(List<Runnable> completeHandlers)
   {
     return new MentionsIndex(completeHandlers, true);
   }

@@ -245,9 +245,9 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateDisuniteLink(Label link, HDT_RecordWithMainText record, String typeName, String textColor, String bgColor)
+  private static void updateDisuniteLink(Label link, HDT_RecordWithMainText record, String typeName, String textColor, String bgColor)
   {
-    link.setStyle("-fx-background-color: " + bgColor + "; -fx-text-fill: " + textColor + ";");
+    link.setStyle("-fx-background-color: " + bgColor + "; -fx-text-fill: " + textColor + ';');
     link.setText("Go to " + typeName + "...");
     setToolTip(link, "Use right/secondary button to disunite");
     link.setContextMenu(new ContextMenu(makeMenuItem(record)));
@@ -266,7 +266,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateUniteLink(Label link, String typeName, RecordType type)
+  private static void updateUniteLink(Label link, String typeName, RecordType type)
   {
     link.setStyle("");
     link.setText("Unite with " + typeName + "...");

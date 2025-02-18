@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.controlsfx.control.BreadCrumbBar;
 import org.hypernomicon.App;
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;

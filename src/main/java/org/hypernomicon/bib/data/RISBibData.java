@@ -258,13 +258,11 @@ public final class RISBibData extends BibDataStandalone
 
     boolean matched = m.find();
 
-    String group1 = "", group2 = "", group3 = "";
-
     if (matched)
     {
-      group1 = safeStr(m.group(1));
-      group2 = safeStr(m.group(2));
-      group3 = safeStr(m.group(3));
+      String group1 = safeStr(m.group(1)),
+             group2 = safeStr(m.group(2)),
+             group3 = safeStr(m.group(3));
 
       return new BibliographicDate(parseInt(group3, 0), parseInt(group2, 0), group1, false);
     }

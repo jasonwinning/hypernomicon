@@ -36,7 +36,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
 
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Debate;

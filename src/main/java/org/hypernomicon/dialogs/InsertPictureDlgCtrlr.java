@@ -95,7 +95,7 @@ public class InsertPictureDlgCtrlr extends HyperDlg
       String text = miscFile.name(),
              ext = miscFile.pathNotEmpty() ? miscFile.filePath().getExtensionOnly() : "";
 
-      return ext.isBlank() ? text : (text + " (" + ext + ")");
+      return ext.isBlank() ? text : (text + " (" + ext + ')');
     };
 
     hcbExisting = new HyperCB(cbExisting, ctDropDownList, new StandardPopulator(hdtMiscFile, null, textFunction));
@@ -308,7 +308,7 @@ public class InsertPictureDlgCtrlr extends HyperDlg
   {
     String format = tgFormat.getSelectedToggle() == btnJpg ? "jpg" : "png";
 
-    File tempFile = java.io.File.createTempFile("temp", "." + format);
+    File tempFile = java.io.File.createTempFile("temp", '.' + format);
     tempFile.deleteOnExit();
 
     try (FileOutputStream fos = new FileOutputStream(tempFile))

@@ -148,11 +148,10 @@
                 </TableView>
               </AnchorPane>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="500.0">
-                <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                  <children>
-                    <WebView fx:id="webView" prefHeight="200.0" prefWidth="200.0" />
-                    <Label fx:id="lblDescPlaceholder" text="Record description will display here." />
-                  </children>
+                <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                           AnchorPane.topAnchor="0.0">
+                  <WebView fx:id="webView" prefHeight="200.0" prefWidth="200.0"/>
+                  <Label fx:id="lblDescPlaceholder" text="Record description will display here."/>
                 </StackPane>
               </AnchorPane>
             </SplitPane>

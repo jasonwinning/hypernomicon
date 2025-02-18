@@ -36,7 +36,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -95,11 +94,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -2357,7 +2352,7 @@ public final class MainCtrlr
     loadAllFromXmlAndResetUI(creatingNew, false);
   }
 
-  public void loadAllFromXmlAndResetUI(boolean creatingNew, boolean dontAskAboutRefMgr)
+  private void loadAllFromXmlAndResetUI(boolean creatingNew, boolean dontAskAboutRefMgr)
   {
     if (loadAllFromXML(creatingNew) == false)
     {
@@ -2368,9 +2363,14 @@ public final class MainCtrlr
       return;
     }
 
-    Map<RecordType, HDT_Record> typeToMostRecentlyViewedRecord = new HashMap<>();
+    Map<RecordType, HDT_Record> typeToMostRecentlyViewedRecord = new EnumMap<>(RecordType.class);
+    ListIterator<HDT_Record> iterator = db.initialNavHistory().listIterator(db.initialNavHistory().size());
 
-    db.initialNavHistory().forEach(record -> typeToMostRecentlyViewedRecord.put(record.getType(), record));
+    while (iterator.hasPrevious())
+    {
+      HDT_Record record = iterator.previous();
+      typeToMostRecentlyViewedRecord.putIfAbsent(record.getType(), record);
+    }
 
     saveViewToViewsTab(new HyperView<>(personTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPerson     , RecordIDPrefKey.PERSON     )));
     saveViewToViewsTab(new HyperView<>(instTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtInstitution, RecordIDPrefKey.INSTITUTION)));
@@ -3578,10 +3578,10 @@ public final class MainCtrlr
   /**
    * This is called when the user hits ctrl-F or ctrl-shift-F
    * Also when focus should go to the omni search box after loading tab
-   * @param recordSearch Whether
-   * @param userInitiated
+   * @param newOmniSearchMode The search mode to activate
+   * @param userInitiated Whether the mode is being changed as a result of a keyboard shortcut
    */
-  public void omniFocus(OmniSearchMode newOmniSearchMode, boolean userInitiated)
+  void omniFocus(OmniSearchMode newOmniSearchMode, boolean userInitiated)
   {
     if ((newOmniSearchMode == OmniSearchMode.currentDesc) && (activeTabEnum() == instTabEnum))
       return;

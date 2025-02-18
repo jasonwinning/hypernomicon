@@ -20,7 +20,6 @@ package org.hypernomicon.view.tabs;
 import java.io.IOException;
 import java.util.List;
 
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.*;

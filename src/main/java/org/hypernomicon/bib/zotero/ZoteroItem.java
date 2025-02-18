@@ -22,7 +22,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
@@ -369,7 +368,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     }
 
     if (bibFieldEnum.getType() == BibFieldType.bftMultiString)
-      return getMultiStr(bibFieldEnum).stream().collect(Collectors.joining("; "));
+      return String.join("; ", getMultiStr(bibFieldEnum));
 
     return "";
   }
@@ -709,7 +708,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         List<String> selfAuthorTypes   = List.of("editor", "author"),
                      parentAuthorTypes = List.of("editor", "bookAuthor");
 
-        if (oldCreatorsArr.objStream().filter(creator -> selfAuthorTypes.contains(creator.getStrSafe("creatorType"))).findAny().isPresent())
+        if (oldCreatorsArr.objStream().anyMatch(creator -> selfAuthorTypes.contains(creator.getStrSafe("creatorType"))))
           if (jData.getArray("creators").objStream().filter(creator -> parentAuthorTypes.contains(creator.getStrSafe("creatorType"))).findAny().isEmpty())
             return;
 

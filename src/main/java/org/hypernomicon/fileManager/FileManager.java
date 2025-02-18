@@ -42,7 +42,6 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.Exceptions.*;

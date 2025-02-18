@@ -183,7 +183,7 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
         // column's map.
 
         if (col == null)
-          col = resultsTable.addNonGeneralColumn(map, relationsToShow);
+          resultsTable.addNonGeneralColumn(map, relationsToShow);
       }
     }
 

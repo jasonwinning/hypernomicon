@@ -72,7 +72,7 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private class InnerTask extends Task<Void>
+  private final class InnerTask extends Task<Void>
   {
     private final String startingMessage;
 
@@ -94,7 +94,7 @@ public abstract class HyperTask
     @Override protected void updateProgress(double cur, double total) { super.updateProgress(cur, total); } // Make visible to outer class
     @Override protected void done()                                   { HyperTask.this.done(); }
 
-    @Override protected final void failed()
+    @Override protected void failed()
     {
       Throwable ex = getException();
 

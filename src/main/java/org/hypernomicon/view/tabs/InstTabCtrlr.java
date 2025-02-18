@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;

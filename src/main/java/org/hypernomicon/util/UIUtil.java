@@ -869,7 +869,6 @@ public final class UIUtil
    * @param msg  the message to be displayed in the popup. Cannot be null.
    * @param type the type of the alert (e.g., WARNING, INFORMATION, ERROR). Cannot be null.
    * @throws NullPointerException if either {@code msg} or {@code type} is null.
-   * @throws HDB_InternalError    if the provided alert type is not WARNING, INFORMATION, or ERROR.
    */
   private static void messagePopup(String msg, AlertType type)
   {

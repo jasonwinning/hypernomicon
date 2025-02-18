@@ -22,10 +22,7 @@ import org.hypernomicon.view.populators.Populator.CellValueType;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SingleSelectionModel;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -34,11 +31,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.App.ui;
 import static org.hypernomicon.model.records.RecordType.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -349,7 +342,7 @@ public class AutoCompleteCBHelper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HyperTableCell findMatch(List<? extends HyperTableCell> items, TextField editor, String typed, String typedLC)
+  private static HyperTableCell findMatch(List<? extends HyperTableCell> items, TextField editor, String typed, String typedLC)
   {
     if (typed.isEmpty())
       return null;
@@ -393,7 +386,7 @@ public class AutoCompleteCBHelper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateEditorText(TextField editor, String typed, String matchText)
+  private static void updateEditorText(TextField editor, String typed, String matchText)
   {
     editor.setText(typed + matchText.substring(typed.length()));
     editor.positionCaret(typed.length());
@@ -409,7 +402,7 @@ public class AutoCompleteCBHelper
       KeyCode.HOME      , KeyCode.END  , KeyCode.TAB    , KeyCode.ESCAPE,
       KeyCode.UP        , KeyCode.DOWN , KeyCode.PAGE_UP, KeyCode.PAGE_DOWN);
 
-  private boolean notNormalTypingEvent(KeyEvent event)
+  private static boolean notNormalTypingEvent(KeyEvent event)
   {
     return shortcutKeyIsDown(event) || IGNORED_KEYS.contains(event.getCode());
   }

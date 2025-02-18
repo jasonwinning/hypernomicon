@@ -34,7 +34,6 @@ import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr;
 import org.hypernomicon.dialogs.NewInstDlgCtrlr;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;

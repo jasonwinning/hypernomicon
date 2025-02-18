@@ -119,7 +119,7 @@ public final class Const
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class PrefKey
+  public static final class PrefKey
   {
     public static final String
 
@@ -207,12 +207,14 @@ public final class Const
       RIGHT_CLICK_TO_LAUNCH = "rtClkToLaunch",
 
       WEB_BUTTONS = "webButtons";
+
+    private PrefKey() { throw new UnsupportedOperationException(); }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class ZoomPrefKey
+  public static final class ZoomPrefKey
   {
     public static final String
 
@@ -221,12 +223,14 @@ public final class Const
       FILEMGR  = "fileMgrZoom",
       QUERYTAB = "queryTabZoom",
       TREETAB  = "treeTabZoom";
+
+    private ZoomPrefKey() { throw new UnsupportedOperationException(); }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class WebButtonContextPrefKey
+  public static final class WebButtonContextPrefKey
   {
     public static final String
 
@@ -238,12 +242,14 @@ public final class Const
       INST_MAP   = "instMapSrch",
       DOI        = "doiSrch",
       ISBN       = "isbnSrch";
+
+    private WebButtonContextPrefKey() { throw new UnsupportedOperationException(); }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class RecordIDPrefKey
+  public static final class RecordIDPrefKey
   {
     public static final String
 
@@ -256,12 +262,14 @@ public final class Const
       WORK        = "workID",
       FILE        = "fileID",
       NOTE        = "noteID";
+
+    private RecordIDPrefKey() { throw new UnsupportedOperationException(); }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class FolderIDPrefKey
+  public static final class FolderIDPrefKey
   {
     public static final String
 
@@ -273,12 +281,14 @@ public final class Const
       UNENTERED  = "unenteredFolderID",
       MISC_FILES = "miscFilesFolderID",
       TOPICAL    = "topicalFolderID";
+
+    private FolderIDPrefKey() { throw new UnsupportedOperationException(); }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class FileNamePrefKey
+  public static final class FileNamePrefKey
   {
     public static final String
 
@@ -296,12 +306,14 @@ public final class Const
       POSIX = "fnPosix",
       LOWERCASE = "fnLowercase",
       MAX_CHAR = "fnMaxChar";
+
+    private FileNamePrefKey() { throw new UnsupportedOperationException(); }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class DividerPositionPrefKey
+  public static final class DividerPositionPrefKey
   {
     public static final String
 
@@ -335,12 +347,14 @@ public final class Const
       MGR_RECORDS_HORIZ   = "mgrRecordsHoriz",
       BIB_LEFT_HORIZ      = "bibLeftHoriz",
       BIB_RIGHT_HORIZ     = "bibRightHoriz";
+
+    private DividerPositionPrefKey() { throw new UnsupportedOperationException(); }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class TablePrefKey
+  public static final class TablePrefKey
   {
     public static final String
 
@@ -382,6 +396,8 @@ public final class Const
       WORK_MISC       = "htWorkMisc",
       MGR_FILES       = "htMgrFiles",
       BIB_ENTRIES     = "htBibEntries";
+
+    private TablePrefKey() { throw new UnsupportedOperationException(); }
   }
 
 //---------------------------------------------------------------------------

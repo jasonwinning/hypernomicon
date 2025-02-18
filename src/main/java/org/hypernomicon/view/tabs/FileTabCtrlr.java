@@ -48,7 +48,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
 
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.dialogs.FileDlgCtrlr;
 
 import javafx.event.ActionEvent;

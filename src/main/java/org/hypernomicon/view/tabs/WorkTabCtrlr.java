@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
@@ -1605,7 +1604,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     btnUseISBN.setDisable(getIsbnsFromBibTab().isEmpty());
 
     setToolTip(btnUseDOI , "Set current work's DOI to "     + getDoiFromBibTab());
-    setToolTip(btnUseISBN, "Add ISBN(s) " + getIsbnsFromBibTab().stream().collect(Collectors.joining("; ")) + " to current work's ISBN(s)");
+    setToolTip(btnUseISBN, "Add ISBN(s) " + String.join("; ", getIsbnsFromBibTab()) + " to current work's ISBN(s)");
 
     tabPane.requestLayout();
   }
