@@ -55,7 +55,15 @@ public class InterComputerMsg
   public String getSource()        { return source; }
   public String getDest()          { return dest; }
   public HDB_MessageType getType() { return type; }
-  public long getSentTime()        { return sentTime; }
+
+  /**
+   * Gets the number of seconds when the message was sent from the Java epoch of 1970-01-01T00:00:00Z.
+   * <p>
+   * The epoch second count is a simple incrementing count of seconds where
+   * second 0 is 1970-01-01T00:00:00Z.
+   * @return The epoch seconds since the message was sent
+   */
+  public long getSentTimeInSec()   { return sentTime; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

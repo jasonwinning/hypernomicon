@@ -23,6 +23,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -374,7 +375,10 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
    */
   private boolean nameCheck(HDT_RT record, TextField nodeToFocus, String savedName, String newName, String whatToCallName)
   {
-    if ((savedName.isBlank() == false) || (Math.abs(record.getViewDate().toEpochMilli() - record.getCreationDate().toEpochMilli()) < 1000))
+    // Show the confirmation box if either the name wasn't blank before, or this is
+    // the first time editing this record (view instant is close to creation instant).
+
+    if ((savedName.isBlank() == false) || (milliDiff(record.getViewDate(), record.getCreationDate()) < 1000L))
       if (newName.isBlank())
         if (confirmDialog("Are you sure you want to leave the " + whatToCallName + " blank?", false) == false)
         {
@@ -382,6 +386,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
           return false;
         }
 
+    record.viewNow();  // Prevent confirming next time unless the name gets cleared out again
     return true;
   }
 

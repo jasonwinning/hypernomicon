@@ -129,8 +129,15 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Authors have to be checked separately
-
+  /**
+   * Checks whether the bibliographic field for this BibData is the same as the passed-in BibData
+   * <p>This does not check authors, editors, and translators; that has to be done separately by
+   * the caller.
+   * @param bibFieldEnum The enum for the bibliographic field to check
+   * @param otherBD The other BibData to compare against
+   * @param ignoreExtFileURL Whether external file URL should be ignored
+   * @return True if the fields are equal; false otherwise
+   */
   public boolean fieldsAreEqual(BibFieldEnum bibFieldEnum, BibData otherBD, boolean ignoreExtFileURL)
   {
     if ((fieldNotEmpty(bibFieldEnum) || otherBD.fieldNotEmpty(bibFieldEnum)) == false) return true;

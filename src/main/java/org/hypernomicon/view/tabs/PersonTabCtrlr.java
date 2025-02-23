@@ -136,7 +136,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   private Rectangle2D viewPort = null;
   private HDT_Investigation curInvestigation;
   private HDT_Person curPerson, lastPerson = null;
-  private long lastArrowKey = 0L;
+  private Instant lastArrowKey = Instant.EPOCH;
   private boolean alreadyChangingName = false, alreadyChangingTab = false;
 
 //---------------------------------------------------------------------------
@@ -280,14 +280,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     tpPerson.addEventFilter(KeyEvent.ANY, keyEvent ->
     {
       if (keyEvent.getCode().isArrowKey())
-        lastArrowKey = Instant.now().toEpochMilli();
+        lastArrowKey = Instant.now();
     });
 
     tpPerson.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if (alreadyChangingTab) return;
 
-      if ((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) // Ignore arrow keys
+      if (milliDiff(Instant.now(), lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) // Ignore arrow keys
       {
         alreadyChangingTab = true;
         tpPerson.getSelectionModel().select(oldTab);

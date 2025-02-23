@@ -583,12 +583,21 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+/**
+ * Returns a substring of the given string, handling out-of-bound indices or
+ * null input gracefully without throwing exceptions.
+ *
+ * @param str the original string
+ * @param start the start index (inclusive)
+ * @param end the end index (exclusive)
+ * @return the substring from the start index to the end index, or an empty string if
+ * the input is null
+ */
   public static String safeSubstring(String str, int start, int end)
   {
-    if (start < 0    ) start = 0;
-    if (end   < start) end   = start;
+    if (start < 0) start = 0;
 
-    if ((str == null) || (start >= str.length())) return "";
+    if ((end < start) || (str == null) || (start >= str.length())) return "";
 
     return end > str.length() ? str.substring(start) : str.substring(start, end);
   }
@@ -596,19 +605,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Removes all horizontal whitespace characters [ \t\xA0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000] at the beginning and end of the string
-
+  /**
+   * Removes all horizontal whitespace characters [ \t\xA0\u005Cu1680\u005Cu180e\u005Cu2000-\u005Cu200a\u005Cu202f\u005Cu205f\u005Cu3000] at the beginning and end of the string.
+   * @param text Input string
+   * @return Trimmed string
+   */
   public static String ultraTrim(String text)
   {
     return text.trim().replaceAll("(^\\h+)|(\\h+$)", "");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static double round(double n)
-  {
-    return Math.round(n);
   }
 
 //---------------------------------------------------------------------------
@@ -1024,6 +1028,37 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
+   * Puts the current thread to sleep for the specified number of milliseconds.
+   * If the thread is interrupted while sleeping, the interruption is ignored.
+   *
+   * @param millis the length of time to sleep in milliseconds
+   */
+  public static void sleepForMillis(long millis)
+  {
+    try { Thread.sleep(millis); }
+    catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Calculates the difference in milliseconds between two Instant objects.
+   * The result is always positive, representing the absolute magnitude of the difference.
+   *
+   * @param instant1 the first Instant object
+   * @param instant2 the second Instant object
+   * @return the positive difference in milliseconds between instant1 and instant2
+   */
+  public static long milliDiff(Instant instant1, Instant instant2)
+  {
+    return Math.abs(java.time.Duration.between(instant1, instant2).toMillis());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Halts the Java Virtual Machine (JVM) after a specified delay.
    * <p>
    * This method is a "nuclear option" that stops the JVM immediately and non-gracefully,
@@ -1068,12 +1103,28 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Ensures that the given Runnable is executed on the JavaFX Application Thread.
+   * If the current thread is the JavaFX Application Thread, it runs the Runnable directly.
+   * If not, it schedules the Runnable to be executed on the JavaFX Application Thread.
+   *
+   * @param runnable the Runnable to be executed
+   */
   public static void runInFXThread(Runnable runnable)
   {
     runInFXThread(runnable, false);
   }
 
-  public static void runInFXThread(Runnable runnable, boolean wait)
+  /**
+   * Ensures that the given Runnable is executed on the JavaFX Application Thread.
+   * If the current thread is the JavaFX Application Thread, it runs the Runnable directly.
+   * If not, it schedules the Runnable to be executed on the JavaFX Application Thread.
+   * If waitForCompletion is true, the method waits for the Runnable to complete before returning.
+   *
+   * @param runnable the Runnable to be executed
+   * @param waitForCompletion whether to wait for the Runnable to complete before returning
+   */
+  public static void runInFXThread(Runnable runnable, boolean waitForCompletion)
   {
     if (Platform.isFxApplicationThread())
     {
@@ -1081,7 +1132,7 @@ public final class Util
       return;
     }
 
-    if (wait == false)
+    if (waitForCompletion == false)
     {
       Platform.runLater(runnable);
       return;
@@ -1107,7 +1158,7 @@ public final class Util
     }
     catch (InterruptedException e)
     {
-      e.printStackTrace();
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -1265,15 +1316,6 @@ public final class Util
   public static <T> T findFirst(Iterable<T> iterable, Predicate<T> pred)
   {
     return StreamSupport.stream(iterable.spliterator(), false).filter(pred).findFirst().orElse(null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void sleepForMillis(long millis)
-  {
-    try { Thread.sleep(millis); }
-    catch (InterruptedException e) { noOp(); }
   }
 
 //---------------------------------------------------------------------------
@@ -1523,17 +1565,21 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String prepareForIDMatch(String str, boolean disregardLetters)
+  /**
+   * Prepares a string for ID matching by cleaning up common OCR artifacts/mistakes.
+   *
+   * @param str the input string to prepare for ID matching
+   * @param disregardLetters True if the ID should not contain letters (e.g., 'I' will be interpreted as '1')
+   * @return the normalized string prepared for ID matching
+   */
+  public static String prepareForIDMatch(String str, boolean disregardLetters)
   {
-    str = str.replaceAll("\\p{Pd}", "-")  // treat all dashes the same
-             .replaceAll("\\u00AD", "-")  // "soft hyphen" is not included in the \p{Pd} class
-             .replace('\u0002', '/');     // sometimes slash in DOI is encoded as STX control character
-
-    str = convertUnicodeNumeralsToAscii(str);
+    str = str.replaceAll("[|\\uFE31\\uFE32]", "1")  // Vertical dashes
+             .replaceAll("[\\p{Pd}\\u00AD]", "-")   // "soft hyphen" is not included in the \p{Pd} punctuation-dash class
+             .replace('\u0002', '/');               // sometimes slash in DOI is encoded as STX control character
 
     if (disregardLetters)
       str = str.replace('l', '1')
-               .replace('|', '1')
                .replace('I', '1')
                .replace('o', '0')
                .replace('O', '0')
@@ -1543,6 +1589,8 @@ public final class Util
                .replace('q', '9')
                .replace('D', '0')
                .replace('\u00B0', '0'); // degree sign
+
+    str = convertUnicodeNumeralsToAscii(str);
 
     while (str.contains("--"))
       str = str.replace("--", "-");
@@ -1594,7 +1642,7 @@ public final class Util
       case '\u2078', '\u2088', '\uFF18', '\u2467' -> '8';  // Superscript, subscript, fullwidth, circled eight
       case '\u2079', '\u2089', '\uFF19', '\u2468' -> '9';  // Superscript, subscript, fullwidth, circled nine
 
-      default -> unicodeChar;  // Default case for characters not explicitly matched
+      default -> unicodeChar;
     };
   }
 
@@ -1603,11 +1651,24 @@ public final class Util
 
   private static final Pattern issnPattern = Pattern.compile("(\\A|\\G|[^0-9\\-])(\\d{4}-\\d{3}[\\dxX])(\\z|[^0-9\\-])");
 
+  /**
+   * Matches and extracts ISSNs from the given string.
+   *
+   * @param str the string to search for ISSNs
+   * @return a list of matched ISSNs
+   */
   public static List<String> matchISSN(String str)
   {
     return matchISSN(str, null);
   }
 
+  /**
+   * Matches and extracts ISSNs from the given string, adding them to the provided list.
+   *
+   * @param str the string to search for ISSNs
+   * @param list the list to add matched ISSNs to (if null, a new list is created)
+   * @return the list of matched ISSNs
+   */
   public static List<String> matchISSN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();
@@ -1645,11 +1706,24 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Matches and extracts ISBNs from the given string.
+   *
+   * @param str the string to search for ISBNs
+   * @return a list of matched ISBNs
+   */
   public static List<String> matchISBN(String str)
   {
     return matchISBN(str, null);
   }
 
+  /**
+   * Matches and extracts ISBNs from the given string, adding them to the provided list.
+   *
+   * @param str the string to search for ISBNs
+   * @param list the list to add matched ISBNs to (if null, a new list is created)
+   * @return the list of matched ISBNs
+   */
   public static List<String> matchISBN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();

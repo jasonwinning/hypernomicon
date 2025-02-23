@@ -152,6 +152,24 @@ class DocIdentifiersTest
 //---------------------------------------------------------------------------
 
   @Test
+  void testDOIWithEnDash()
+  {
+    String input = "DOI with soft hyphen 10.1000/x\u2013yz";
+    assertEquals("10.1000/x-yz", matchDOI(input));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void testDOIWithVerticalEmDash()
+  {
+    String input = "DOI with soft hyphen 10.1000/x\uFE31yz";
+    assertEquals("10.1000/x1yz", matchDOI(input));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
   void testDOIWithControlCharacter()
   {
     String input = "DOI with control character 10.1000\u0002xyz";

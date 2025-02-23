@@ -1324,6 +1324,12 @@ public class WorkDlgCtrlr extends HyperDlg
     if (hcbType.selectedID() < 1)
       return falseWithWarningPopup("Select a work type.", cbType);
 
+    if (tfTitle.getText().isBlank() && (confirmDialog("Are you sure you want to leave the title blank?", false) == false))
+    {
+      Platform.runLater(() -> safeFocus(tfTitle));
+      return false;
+    }
+
     if (tfOrigFile.getText().isEmpty())
     {
       if (oldWorkFile != null)

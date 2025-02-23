@@ -205,7 +205,7 @@ public final class MainCtrlr
                   btnTextSearchToggleIsProgrammatic = false, internetNotCheckedYet = true , shuttingDown = false,
                   dontInteract = false;
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
-  private long lastImportTime = 0L;
+  private Instant lastImportTime = Instant.EPOCH;
   private FilePath lastImportFilePath = null;
 
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
@@ -1608,10 +1608,8 @@ public final class MainCtrlr
 
     if (loadAllFromXML(false))
     {
-      // Update record pointers
       viewSequence.refreshRecordPtrs();
 
-      // Update record pointers
       forEachHyperTab(HyperTab::refreshRecordPtr);
 
       if (activeTabEnum() == queryTabEnum)
@@ -3122,7 +3120,7 @@ public final class MainCtrlr
 
     goToRecord(miscFile, false);
 
-    if (fileHyperTab().showFileDialog(filePath) == false)
+    if (fileHyperTab().showFileDialog(filePath, false) == false)
     {
       if (fileRow != null)
         miscFile.getPath().clear(false);
@@ -3138,7 +3136,7 @@ public final class MainCtrlr
   {
     if (filePathToUse != null)
     {
-      if (filePathToUse.equals(lastImportFilePath) && ((Instant.now().toEpochMilli() - lastImportTime) < 10000L))
+      if (filePathToUse.equals(lastImportFilePath) && (milliDiff(Instant.now(), lastImportTime) < 10000L))
         return false;
 
       if (filePathToUse.exists() == false) return false;
@@ -3269,7 +3267,7 @@ public final class MainCtrlr
     if (bdToUse == GUIBibData.NoneFoundBD)
       bdToUse = work.getBibData();
 
-    if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse, newEntryChoice, newEntryType))
+    if (workHyperTab().showWorkDialog(null, false, filePathToUse, bdToUse, newEntryChoice, newEntryType))
       return true;
 
     if (deleteRecord)
@@ -3429,7 +3427,7 @@ public final class MainCtrlr
 
   public void notifyOfImport(FilePath filePath)
   {
-    lastImportTime = Instant.now().toEpochMilli();
+    lastImportTime = Instant.now();
     lastImportFilePath = filePath;
   }
 

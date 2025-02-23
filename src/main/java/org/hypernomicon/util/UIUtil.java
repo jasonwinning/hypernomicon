@@ -651,7 +651,7 @@ public final class UIUtil
 
   public static double scalePropertyValueForDPI(double val)
   {
-    return round(val * displayScale);
+    return Math.round(val * displayScale);
   }
 
 //---------------------------------------------------------------------------

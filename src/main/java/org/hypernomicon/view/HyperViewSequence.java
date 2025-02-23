@@ -26,6 +26,7 @@ import com.google.common.collect.Iterators;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.time.Instant;
@@ -41,6 +42,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 
+/**
+ * Manages the navigation history sequence of HyperView objects, and
+ * navigation and activation of them, for a HyperTab.
+ */
 public class HyperViewSequence
 {
 
@@ -48,7 +53,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 
   private int curNdx = -1;
-  private long lastArrowKey = 0L;
+  private Instant lastArrowKey = Instant.EPOCH;
   private final List<HyperView<? extends HDT_Record>> slots = new ArrayList<>();
   private final TabPane tabPane;
   private boolean alreadyChangingTab = false;
@@ -66,14 +71,14 @@ public class HyperViewSequence
     tabPane.addEventFilter(KeyEvent.ANY, event ->
     {
       if (event.getCode().isArrowKey())
-        lastArrowKey = Instant.now().toEpochMilli();
+        lastArrowKey = Instant.now();
     });
 
     tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if ((db.isLoaded() == false) || alreadyChangingTab) return;
 
-      if (((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || ui.cantSaveRecord()) // Ignore arrow keys
+      if ((milliDiff(Instant.now(), lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || ui.cantSaveRecord()) // Ignore arrow keys
       {
         alreadyChangingTab = true;
         tabPane.getSelectionModel().select(oldTab);
@@ -102,15 +107,24 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Updates record pointers after saving/reloading database
+   */
   void refreshRecordPtrs()
   {
-    // Update record pointers after saving/reloading database
     slots.forEach(HyperView::refreshRecordPtr);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Performs the following operations:
+   * <br>
+   * - Save the view to the currently active slot, and delete duplicate adjacent entries<br>
+   * - Set the tab's current view
+   * @param view The view to save
+   */
   public void saveViewToCurrentSlotAndTab(HyperView<? extends HDT_Record> view)
   {
     // Save the view to the currently active slot, and delete duplicate adjacent entries
@@ -123,8 +137,9 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Get updated View object from the Tab and store it in current slot
-
+  /**
+   * Gets the updated View object from the Tab and stores it in current slot
+   */
   private void saveViewFromUItoCurrentSlotAndTab()
   {
     if (slots.isEmpty()) return;
@@ -294,8 +309,10 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Save the passed-in view to the currently active slot, and then delete duplicate adjacent entries
-
+  /**
+   * Saves the passed-in view to the currently active slot, and then deletes duplicate adjacent entries
+   * @param view The view to save
+   */
   private void saveViewToCurrentSlot(HyperView<? extends HDT_Record> view)
   {
     if (curNdx == -1) curNdx = 0;

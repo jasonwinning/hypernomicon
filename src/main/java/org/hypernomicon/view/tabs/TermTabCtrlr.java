@@ -231,7 +231,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private HDT_Term curTerm;
   private HDT_Concept curConcept;
-  private long lastArrowKey = 0L;
+  private Instant lastArrowKey = Instant.EPOCH;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
 //---------------------------------------------------------------------------
@@ -378,14 +378,14 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     tpConcepts.addEventFilter(KeyEvent.ANY, event ->
     {
       if (event.getCode().isArrowKey())
-        lastArrowKey = Instant.now().toEpochMilli();
+        lastArrowKey = Instant.now();
     });
 
     tpConcepts.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if (alreadyChangingTab) return;
 
-      if (((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || !super.saveToRecord())
+      if ((milliDiff(Instant.now(), lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || !super.saveToRecord())
       {
         alreadyChangingTab = true;
         tpConcepts.getSelectionModel().select(oldTab);
@@ -798,7 +798,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     if (curTerm.concepts.size() < 2)
     {
-      infoPopup("There is only one definition for this term; click Merge command instead.");
+      if (confirmDialog("There is only one definition for this Term. Do you want to choose another Term to merge with this one?", false))
+        merge();
+
       return;
     }
 

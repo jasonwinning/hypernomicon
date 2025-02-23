@@ -278,7 +278,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htWorkFiles.addRefreshHandler(tabPane::requestLayout);
 
-    htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx)))
+    htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx), true))
       .setTooltip(ButtonAction.baEdit, "Update or rename this work file")
       .setTooltip(ButtonAction.baNew, "Add a new work file");
 
@@ -328,7 +328,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       workFile -> copyToClipboard(workFile.getPath().toString()));
 
     htWorkFiles.addContextMenuItem("Update or rename this work file", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
-      this::showWorkDialog);
+      workFile -> showWorkDialog(workFile, true));
 
     htWorkFiles.addContextMenuItem("Select parent work file",
       row ->
@@ -1538,11 +1538,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean showWorkDialog(HDT_WorkFile workFile) { return showWorkDialog(workFile, null, null, Ternary.Unset, EntryType.etUnentered); }
+  public boolean showWorkDialog(HDT_WorkFile workFile, boolean saveFirst) { return showWorkDialog(workFile, saveFirst, null, null, Ternary.Unset, EntryType.etUnentered); }
 
-  public boolean showWorkDialog(HDT_WorkFile workFile, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
+  public boolean showWorkDialog(HDT_WorkFile workFile, boolean saveFirst, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
-    if (ui.cantSaveRecord()) return false;
+    if (saveFirst && ui.cantSaveRecord()) return false;
 
     if (HDT_Work.isUnenteredSet(curWork))
     {

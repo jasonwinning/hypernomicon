@@ -2027,7 +2027,7 @@ public abstract class AbstractHyperDB
 
     HDT_Record otherRecord = initialNavList.get(otherNdx);
 
-    if (Math.abs(record.getViewDate().toEpochMilli() - otherRecord.getViewDate().toEpochMilli()) > 200)
+    if (milliDiff(record.getViewDate(), otherRecord.getViewDate()) > 200L)
       return false;
 
     if ((record.getType() == hdtInvestigation) && (otherRecord.getType() == hdtPerson))

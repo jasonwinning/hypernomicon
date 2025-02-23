@@ -157,7 +157,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @Override public String recordName()                    { return tfName.getText(); }
   @Override public MainTextWrapper mainTextWrapper()      { return mainText; }
 
-  @FXML public boolean btnManageClick()                   { return showFileDialog(null); }
+  @FXML public boolean btnManageClick()                   { return showFileDialog(null, true); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -267,8 +267,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     if ((fileTypeID < 1) && hcbType.getText().isEmpty())
       return falseWithErrorPopup("You must enter a file type.", cbType);
 
-    if (nameCheck(tfName, "record name") == false)
-      return false;
+    if (tfName.getText().isBlank())
+      return falseWithErrorPopup("The record name is blank.", tfName);
 
     if (saveSearchKey(curMiscFile, tfSearchKey) == false)
       return false;
@@ -313,8 +313,10 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean showFileDialog(FilePath srcFilePath)
+  public boolean showFileDialog(FilePath srcFilePath, boolean saveFirst)
   {
+    if (saveFirst && ui.cantSaveRecord()) return false;
+
     fdc = new FileDlgCtrlr("Miscellaneous file", curMiscFile, tfName.getText(), false);
 
     if (FilePath.isEmpty(srcFilePath) == false)

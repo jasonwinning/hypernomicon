@@ -377,7 +377,7 @@ public class FileDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (FilePath.isEmpty(srcFilePath))
-      return falseWithErrorPopup("You must enter a source file name.", tfCurrentPath);
+      return falseWithErrorPopup("Choose a file.", btnBrowseOld);
 
     if ((chkDontChangeFilename.isSelected() == false) && tfFileName.getText().isEmpty())
       return falseWithErrorPopup("You must enter a destination file name.", tfFileName);

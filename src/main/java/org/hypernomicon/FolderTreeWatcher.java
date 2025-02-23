@@ -145,7 +145,7 @@ public class FolderTreeWatcher
         if (handleInterComputerMessage() == false)
         {
           try { watchKey = watcher.poll(FOLDER_TREE_WATCHER_POLL_TIME_MS, TimeUnit.MILLISECONDS); }
-          catch (InterruptedException e1) { return; }
+          catch (InterruptedException e1) { noOp(); }
         }
 
         if (watchKey != null)
@@ -581,7 +581,7 @@ public class FolderTreeWatcher
   private WatcherThread watcherThread;
   private final FilePathSet downloading = new FilePathSet();
   private final Map<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
-  public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
+  public static final long FOLDER_TREE_WATCHER_POLL_TIME_MS = 250L;
   private static boolean alreadyImporting = false;
   private volatile boolean stopRequested = false,
                            stopped = true,

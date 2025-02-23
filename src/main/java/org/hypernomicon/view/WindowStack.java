@@ -323,13 +323,13 @@ public final class WindowStack
     do
     {
       while (outermostModality != Modality.NONE)
-        sleepForMillis(50);
+        sleepForMillis(50L);
 
-      long startTime = Instant.now().toEpochMilli();
+      Instant startTime = Instant.now();
 
       tmpOutermostModality = outermostModality; // set local variable for thread safety
 
-      while ((tmpOutermostModality == Modality.NONE) && ((Instant.now().toEpochMilli() - startTime) < intervalMS))
+      while ((tmpOutermostModality == Modality.NONE) && (milliDiff(Instant.now(), startTime) < intervalMS))
       {
         sleepForMillis(50);
         tmpOutermostModality = outermostModality;

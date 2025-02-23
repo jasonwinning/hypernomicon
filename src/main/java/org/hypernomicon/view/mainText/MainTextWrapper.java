@@ -216,7 +216,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private long lastRender = 0L;
+  private Instant lastRender = Instant.EPOCH;
 
   public void showReadOnly()
   {
@@ -224,7 +224,7 @@ public final class MainTextWrapper
 
     state = showingReadOnly;
 
-    lastRender = Instant.now().toEpochMilli();
+    lastRender = Instant.now();
 
     removeFromParent(bpEditorRoot);
     removeFromParent(view);
@@ -322,7 +322,7 @@ public final class MainTextWrapper
     assert(textViewInfo != null);
     assert(textViewInfo.record == viewRecord);
 
-    if ((Instant.now().toEpochMilli() - lastRender) < 200) // Assume user didn't interact with WebView in less than 200 ms
+    if (milliDiff(Instant.now(), lastRender) < 200L) // Assume user didn't interact with WebView in less than 200 ms
       return textViewInfo;
 
     textViewInfo.scrollPos = webEngineScrollPos(we);
