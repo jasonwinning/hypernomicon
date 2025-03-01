@@ -49,7 +49,7 @@ public class RenameDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getNewName() { return tfName.getText(); }
+  public String getNewName() { return ultraTrim(tfName.getText()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -117,8 +117,8 @@ public class RenameDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (tfName.getText().isEmpty())
-      return falseWithErrorPopup("Name cannot be zero-length.", tfName);
+    if (ultraTrim(tfName.getText()).isBlank())
+      return falseWithErrorPopup("Name cannot be blank.", tfName);
 
     if (nameType != ntRecord)
     {

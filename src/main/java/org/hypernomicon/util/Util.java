@@ -42,22 +42,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -72,10 +57,7 @@ import java.util.stream.StreamSupport;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DataFormat;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.*;
 import javafx.util.Duration;
 
 import org.apache.commons.codec.binary.Hex;
@@ -467,16 +449,23 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Parses a boolean value from the given string. Recognizes various true and false representations.
+   *
+   * @param s the string to parse
+   * @return true if the string represents a true value, false otherwise
+   */
   public static boolean parseBoolean(String s)
   {
-    if (Boolean.parseBoolean(s)) return true;
+    if (s == null) return false;
 
-    s = s.trim().toLowerCase();
+    String lowerCaseValue = ultraTrim(s).toLowerCase();
 
-    if (s.equalsIgnoreCase(Boolean.TRUE .toString().trim())) return true;
-    if (s.equalsIgnoreCase(Boolean.FALSE.toString().trim())) return false;
-
-    return (s.indexOf("yes") == 0) || (s.indexOf("tru") == 0);
+    return "true"   .equals(lowerCaseValue) ||
+           "yes"    .equals(lowerCaseValue) ||
+           "1"      .equals(lowerCaseValue) ||
+           "on"     .equals(lowerCaseValue) ||
+           "enabled".equals(lowerCaseValue);
   }
 
 //---------------------------------------------------------------------------
@@ -521,6 +510,33 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns a string representation of the given Locale in the format "language-country".
+   * If the country code is blank, only the language code is returned.
+   *
+   * <p>Examples:
+   * <pre>
+   * {@code
+   * // Example 1: Locale with both language and country
+   * Locale locale1 = new Locale("en", "US");
+   * String result1 = getLocaleStr(locale1); // Returns "en-US"
+   *
+   * // Example 2: Locale with only language
+   * Locale locale2 = new Locale("fr");
+   * String result2 = getLocaleStr(locale2); // Returns "fr"
+   *
+   * // Example 3: Locale with blank country
+   * Locale locale3 = new Locale("es", "");
+   * String result3 = getLocaleStr(locale3); // Returns "es"
+   *
+   * // Example 4: Null Locale
+   * String result4 = getLocaleStr(null); // Returns ""
+   * }
+   * </pre>
+   *
+   * @param locale the Locale object
+   * @return a string representation of the Locale in the format "language-country" or just "language" if the country is blank
+   */
   public static String getLocaleStr(Locale locale)
   {
     String language = locale.getLanguage();
@@ -535,6 +551,17 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Saves the content of the given StringBuilder to a file and returns the MD5 checksum of the content.
+   * <p>
+   * The content is written to the specified file using a buffer of size 65536 characters. The MD5 checksum
+   * is calculated while writing the content to the file.
+   *
+   * @param sb the StringBuilder containing the content to be saved
+   * @param filePath the path of the file where the content will be saved
+   * @return the MD5 checksum of the saved content as a hexadecimal string
+   * @throws IOException if an I/O error occurs while writing to the file
+   */
   public static String saveStringBuilderToFile(StringBuilder sb, FilePath filePath) throws IOException
   {
     int bufLen = 65536;
@@ -560,6 +587,12 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns the hexadecimal string representation of the digest.
+   *
+   * @param md the MessageDigest object containing the digest
+   * @return the hexadecimal string representation of the digest
+   */
   public static String digestHexStr(MessageDigest md)
   {
     return Hex.encodeHexString(md.digest());
@@ -568,6 +601,12 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Creates a new MessageDigest instance for MD5 hashing.
+   *
+   * @return a new MessageDigest instance
+   * @throws AssertionError if the MD5 algorithm is not available
+   */
   public static MessageDigest newMessageDigest()
   {
     try
@@ -1029,9 +1068,10 @@ public final class Util
 
   /**
    * Puts the current thread to sleep for the specified number of milliseconds.
-   * If the thread is interrupted while sleeping, the interruption is ignored.
    *
    * @param millis the length of time to sleep in milliseconds
+   * @throws IllegalArgumentException if the value of millis is negative
+   * @throws InterruptedException if any thread has interrupted the current thread.
    */
   public static void sleepForMillis(long millis)
   {
@@ -1109,6 +1149,8 @@ public final class Util
    * If not, it schedules the Runnable to be executed on the JavaFX Application Thread.
    *
    * @param runnable the Runnable to be executed
+   * @throws NullPointerException if the runnable is null
+   * @throws InterruptedException if the current thread is interrupted while waiting for the Runnable to complete
    */
   public static void runInFXThread(Runnable runnable)
   {
@@ -1116,16 +1158,21 @@ public final class Util
   }
 
   /**
-   * Ensures that the given Runnable is executed on the JavaFX Application Thread.
-   * If the current thread is the JavaFX Application Thread, it runs the Runnable directly.
-   * If not, it schedules the Runnable to be executed on the JavaFX Application Thread.
-   * If waitForCompletion is true, the method waits for the Runnable to complete before returning.
+   * Runs a Runnable in the JavaFX Application Thread.
+   * <p>
+   * If the current thread is the JavaFX Application Thread, the Runnable is executed immediately.<br>
+   * If waitForCompletion is false, the Runnable is scheduled to run on the JavaFX Application Thread and this method returns immediately.<br>
+   * If waitForCompletion is true, the Runnable is scheduled to run on the JavaFX Application Thread and this method waits for its completion.
    *
-   * @param runnable the Runnable to be executed
-   * @param waitForCompletion whether to wait for the Runnable to complete before returning
+   * @param runnable the Runnable to be executed in the JavaFX Application Thread
+   * @param waitForCompletion if true, waits for the Runnable to finish execution before returning; if false, returns immediately after scheduling the Runnable
+   * @throws NullPointerException if the runnable is null
+   * @throws InterruptedException if the current thread is interrupted while waiting for the Runnable to complete
    */
   public static void runInFXThread(Runnable runnable, boolean waitForCompletion)
   {
+    Objects.requireNonNull(runnable);
+
     if (Platform.isFxApplicationThread())
     {
       runnable.run();

@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -58,7 +57,6 @@ import org.hypernomicon.dialogs.MergeTermDlgCtrlr;
 import org.hypernomicon.dialogs.RecordDropdownDlgCtrlr;
 import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 
@@ -745,50 +743,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         return;
       }
 
-    MergeTermDlgCtrlr mtd = new MergeTermDlgCtrlr(curTerm, otherTerm);
-    if (mtd.showModal() == false) return;
-
-    String oldKey1 = curTerm.getSearchKey();
-    String oldKey2 = otherTerm.getSearchKey();
-
-    try
-    {
-      otherTerm.setSearchKey("");
-      curTerm.setSearchKey(mtd.getKey());
-    }
-    catch (SearchKeyException e)
-    {
-      errorPopup(e);
-
-      try
-      {
-        curTerm.setSearchKey(oldKey1);
-        otherTerm.setSearchKey(oldKey2);
-      }
-      catch (SearchKeyException e1)
-      {
-        throw new AssertionError(getThrowableMessage(e1), e1);
-      }
-      finally
-      {
-        ui.update();
-      }
-
-      return;
-    }
-
-    Iterator<HDT_Concept> it = otherTerm.concepts.iterator();
-    while (it.hasNext())
-    {
-      HDT_Concept concept = it.next();
-      it.remove();
-      curTerm.concepts.add(concept);
-    }
-
-    curTerm.setName(mtd.getName());
-
-    db.deleteRecord(otherTerm);
-    ui.update();
+    if (new MergeTermDlgCtrlr(curTerm, otherTerm).showModal())
+      ui.update();
   }
 
 //---------------------------------------------------------------------------
@@ -826,7 +782,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       }
 
       List.copyOf(concept.parentConcepts).forEach(concept::removeParent);
-      List.copyOf(concept.subConcepts).forEach(subConcept -> subConcept.removeParent(concept));
+      List.copyOf(concept.subConcepts   ).forEach(subConcept -> subConcept.removeParent(concept));
     }
 
     switchToDifferentTab();
@@ -898,19 +854,13 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
   private boolean removeConcept(HDT_Glossary glossary, HDT_ConceptSense sense)
   {
     HDT_Concept concept = curTerm.getConcept(glossary, sense);
+
     if ((concept.getMainText().isEmpty() == false) || concept.hasHub())
     {
-      if (sense == null)
-      {
-        if (confirmDialog("Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() + "\"?", false) == false)
-          return false;
-      }
-      else
-      {
-        if (confirmDialog("Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() +
-                          "\", sense \"" + sense.name() + "\"?", false) == false)
-          return false;
-      }
+      String prompt = "Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() + "\"";
+
+      if (confirmDialog(prompt + (sense == null ? "?" : (", sense \"" + sense.name() + "\"?")), false) == false)
+        return false;
     }
 
     if (curTab().concept == concept)

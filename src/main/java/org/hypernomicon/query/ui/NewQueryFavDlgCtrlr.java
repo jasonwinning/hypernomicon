@@ -51,7 +51,7 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  String getNewName()   { return tfName.getText(); }
+  String getNewName()   { return ultraTrim(tfName.getText()); }
   boolean getAutoExec() { return chkAutoExec.isSelected(); }
 
 //---------------------------------------------------------------------------
@@ -59,8 +59,8 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (tfName.getText().isBlank())
-      return falseWithErrorPopup("Name cannot be zero-length.", tfName);
+    if (ultraTrim(tfName.getText()).isBlank())
+      return falseWithErrorPopup("Name cannot be blank.", tfName);
 
     if (ui.favorites.queryFavNameExists(ultraTrim(tfName.getText())))
       return falseWithErrorPopup("A favorite with that name already exists.", tfName);

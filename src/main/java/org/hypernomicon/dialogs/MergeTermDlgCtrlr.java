@@ -18,36 +18,29 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.view.MainCtrlr.*;
-import static org.hypernomicon.util.UIUtil.*;
 
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
+
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Term;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 
+//---------------------------------------------------------------------------
+
 public class MergeTermDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private RadioButton rbName1, rbName2, rbName3, rbKey1, rbKey2, rbKey3;
   @FXML private TextField tfName1, tfName2, tfName3, tfKey1, tfKey2, tfKey3;
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean isValid()
-  {
-    if (getKey().replace("^", "").replace("$", "").trim().length() < 3)
-    {
-      errorPopup("Search key of a term record cannot be zero-length.");
-
-      if      (rbKey1.isSelected()) safeFocus(tfKey1);
-      else if (rbKey2.isSelected()) safeFocus(tfKey2);
-      else                          safeFocus(tfKey3);
-
-      return false;
-    }
-
-    return true;
-  }
+  private final HDT_Term term1, term2;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -55,6 +48,9 @@ public class MergeTermDlgCtrlr extends HyperDlg
   public MergeTermDlgCtrlr(HDT_Term term1, HDT_Term term2)
   {
     super("MergeTermDlg", "Specify How to Merge Fields", true);
+
+    this.term1 = term1;
+    this.term2 = term2;
 
     String name1 = term1.listName(),
            name2 = term2.listName(),
@@ -84,21 +80,50 @@ public class MergeTermDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getName()
+  private TextField selectedKeyField()
   {
-    if (rbName1.isSelected()) return tfName1.getText();
-    if (rbName2.isSelected()) return tfName2.getText();
-                              return tfName3.getText();
+    if      (rbKey1.isSelected()) return tfKey1;
+    else if (rbKey2.isSelected()) return tfKey2;
+    else                          return tfKey3;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getKey()
+  private TextField selectedNameField()
   {
-    if (rbKey1.isSelected()) return tfKey1.getText();
-    if (rbKey2.isSelected()) return tfKey2.getText();
-                             return tfKey3.getText();
+    if      (rbName1.isSelected()) return tfName1;
+    else if (rbName2.isSelected()) return tfName2;
+    else                           return tfName3;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isValid()
+  {
+    TextField nameField = selectedNameField(),
+              keyField  = selectedKeyField();
+
+    if (ultraTrim(nameField.getText()).isBlank())
+      return falseWithErrorPopup("Unable to merge terms: Term cannot be blank.", nameField);
+
+    if (ultraTrim(keyField.getText()).isBlank())
+      return falseWithErrorPopup("Unable to merge terms: Search key cannot be blank.", keyField);
+
+    try
+    {
+      HDT_Term.merge(term1, term2, nameField.getText(), keyField.getText());
+    }
+    catch (SearchKeyException e)
+    {
+      return falseWithErrorPopup(e instanceof SearchKeyTooShortException ?
+        "Unable to merge terms. Search key must have at least 3 characters: " + e.getKey()
+      :
+        "Unable to merge terms. Search key already exists: " + e.getKey(), keyField);
+    }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

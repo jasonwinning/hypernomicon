@@ -1615,7 +1615,7 @@ public final class MainCtrlr
       if (activeTabEnum() == queryTabEnum)
         activeTab().clear(true);
 
-      update();
+      viewSequence.loadViewFromCurrentSlotToUI();
     }
   }
 
@@ -1902,7 +1902,7 @@ public final class MainCtrlr
 
   public boolean close(boolean needToSave)
   {
-    if (db.isLoaded() && needToSave)
+    if (needToSave && db.isLoaded())
     {
       DialogResult result = yesNoCancelDialog("Save data to XML files before closing?");
 
@@ -2681,6 +2681,9 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Update the main window to refresh the display with the currently selected record in the UI.
+   */
   public void update()
   {
     update(null);

@@ -42,6 +42,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 
+//---------------------------------------------------------------------------
+
 /**
  * Manages the navigation history sequence of HyperView objects, and
  * navigation and activation of them, for a HyperTab.
@@ -138,7 +140,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 
   /**
-   * Gets the updated View object from the Tab and stores it in current slot
+   * Gets an updated View object from the UI and stores it in current slot and HyperTab
    */
   private void saveViewFromUItoCurrentSlotAndTab()
   {

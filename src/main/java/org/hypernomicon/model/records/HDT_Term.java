@@ -143,4 +143,60 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Merges two terms records into one.
+   * <p>
+   * This assumes the two terms don't have conflicting concepts, i.e., concepts with the same glossary and sense.
+   * @param term1 The term that the term terms will be merged into.
+   * @param term2 The second term being merged; it will be deleted as part of this operation.
+   * @param newName The name to use for the merged term.
+   * @param newKey The search key to use for the merged term.
+   * @throws SearchKeyException if the terms were not able to be merged because the new search key is already in use or it is too short.
+   */
+  public static void merge(HDT_Term term1, HDT_Term term2, String newName, String newKey) throws SearchKeyException
+  {
+    newKey = ultraTrim(newKey);
+
+    if (newKey.isBlank())
+      throw new SearchKeyTooShortException(term1, newKey);
+
+    String oldKey1 = term1.getSearchKey();
+    String oldKey2 = term2.getSearchKey();
+
+    try
+    {
+      term2.setSearchKey("");
+      term1.setSearchKey(newKey);
+    }
+    catch (SearchKeyException e)
+    {
+      try
+      {
+        term1.setSearchKey(oldKey1);
+        term2.setSearchKey(oldKey2);
+      }
+      catch (SearchKeyException e1)
+      {
+        throw new AssertionError(getThrowableMessage(e1), e1);
+      }
+
+      throw e;
+    }
+
+    Iterator<HDT_Concept> it = term2.concepts.iterator();
+    while (it.hasNext())
+    {
+      HDT_Concept concept = it.next();
+      it.remove();
+      term1.concepts.add(concept);
+    }
+
+    term1.setName(newName);
+
+    db.deleteRecord(term2);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }
