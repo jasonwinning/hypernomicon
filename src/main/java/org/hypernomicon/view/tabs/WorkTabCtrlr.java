@@ -1430,9 +1430,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord()
+  @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
-    if (nameCheck(tfTitle, "title") == false)
+    if (saveNameIfBlank && nameCheck(tfTitle, "title") == false)
       return false;
 
     WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(hcbType.selectedID());
@@ -1459,7 +1459,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (saveSearchKey(curWork, tfSearchKey) == false) return false;
 
-    curWork.setName(tfTitle.getText());
+    if (saveNameIfBlank || (ultraTrim(tfTitle.getText()).isBlank() == false))
+      curWork.setName(tfTitle.getText());
+
     curWork.workType.setID(hcbType.selectedID());
 
     htWorkFiles.dataRows().forEach(row -> nullSwitch((HDT_WorkFile)row.getRecord(), file ->
@@ -1761,7 +1763,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     stopRetrieving();
 
-    if ((db.isLoaded() == false) || (curWork == null) || ui.cantSaveRecord()) return;
+    if ((db.isLoaded() == false) || (curWork == null) || ui.cantSaveRecord(false)) return;
 
     List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
                                                             .map(HDT_WorkFile::filePath)
@@ -1819,7 +1821,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void btnMergeBibClick()
   {
-    if (ui.cantSaveRecord()) return;
+    if (ui.cantSaveRecord(false)) return;
 
     MergeWorksDlgCtrlr mwd;
     BibData workBibData = curWork.getBibData();

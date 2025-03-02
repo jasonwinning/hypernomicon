@@ -779,18 +779,21 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord()
+  @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
-    if (nameCheck(tfLast, curPerson.getName().getFull(), tfFirst.getText() + tfLast.getText(), "name") == false)
+    if (saveNameIfBlank && nameCheck(tfLast, curPerson.getName().getFull(), tfFirst.getText() + tfLast.getText(), "name") == false)
       return false;
 
     if (saveSearchKey(curPerson, tfSearchKey) == false) return false;
 
-    PersonName personName = new PersonName(tfFirst.getText(), tfLast.getText());
+    if (saveNameIfBlank || (ultraTrim(tfFirst.getText() + tfLast.getText()).isBlank() == false))
+    {
+      PersonName personName = new PersonName(tfFirst.getText(), tfLast.getText());
 
-    if ((personName.getFirst().equalsIgnoreCase(curPerson.getFirstName()) == false) ||
-        (personName.getLast().equalsIgnoreCase(curPerson.getLastName()) == false))
-      if (saveNameToRecord(personName) == false) return false;
+      if ((personName.getFirst().equalsIgnoreCase(curPerson.getFirstName()) == false) ||
+          (personName.getLast().equalsIgnoreCase(curPerson.getLastName()) == false))
+        if (saveNameToRecord(personName) == false) return false;
+    }
 
     // -----------------------------------------------------------------
     // Save investigations

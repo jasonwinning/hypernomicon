@@ -157,7 +157,10 @@ public abstract class BibFieldCtrlr
 
     @Override public RadioButton getToggle()             { return radioBtn; }
     @Override public void setLabelVisible(boolean value) { }  // There is a different label in the row fxml
-    @Override protected void mergeInto(BibData mergedBD) { mergedBD.setTitle(tf.getText()); }
+    @Override protected void mergeInto(BibData mergedBD) { mergedBD.setTitle(ultraTrim(tf.getText())); }
+
+    public boolean isBlank()                             { return ultraTrim(tf.getText()).isBlank(); }
+    public TextField getTextField()                      { return tf; }
 
     public void fixCase()
     {

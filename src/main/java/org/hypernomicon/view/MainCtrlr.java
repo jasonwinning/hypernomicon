@@ -1171,7 +1171,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (cantSaveRecord()) return;
+    if (cantSaveRecord(false)) return;
 
     fileManagerDlg.showNonmodal();
   }
@@ -1342,7 +1342,7 @@ public final class MainCtrlr
           dontInteract = true; // Don't show popup messages while saving current record; just decline confirmations and fail
         }
 
-        if (cantSaveRecord() && (shutDownMode == ShutDownMode.Normal))
+        if (cantSaveRecord(shutDownMode == ShutDownMode.Normal) && (shutDownMode == ShutDownMode.Normal))
           if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?", false))
             return;
 
@@ -1692,15 +1692,13 @@ public final class MainCtrlr
 
   private boolean createNewDB(FilePath rootPath)
   {
-    if (cantSaveRecord()) return false;
-
     if (db.isLoaded())
     {
       DialogResult result = yesNoCancelDialog("Save data to XML files?");
 
       if (result == mrCancel) return false;
 
-      if ((result == mrYes) && (saveAllToXML(false, false, false) == false))
+      if ((result == mrYes) && (saveAllToXML(true, false, false) == false))
         return false;
 
       NewDatabaseDlgCtrlr dlg = new NewDatabaseDlgCtrlr(rootPath.toString());
@@ -2544,13 +2542,24 @@ public final class MainCtrlr
    */
   public boolean cantSaveRecord()
   {
+    return cantSaveRecord(true);
+  }
+
+  public boolean cantSaveRecord(boolean saveNameIfBlank)
+  {
     if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null))
       return false;
 
     if (shuttingDown == false)
       CommitableWrapper.commitWrapper(stage.getScene().getFocusOwner());
 
-    return (activeTab().saveToRecord() == false) && (shuttingDown == false);
+    if ((activeTab().saveToRecord(saveNameIfBlank) == false) && (shuttingDown == false))
+    {
+      ui.windows.focusStage(ui.getStage());
+      return true;
+    }
+
+    return false;
   }
 
 //---------------------------------------------------------------------------
@@ -2682,11 +2691,28 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 
   /**
-   * Update the main window to refresh the display with the currently selected record in the UI.
+   * Update the main window to refresh the display with the currently selected record in the UI.<br>
+   * This also updates the last viewed instant for that record.
    */
   public void update()
   {
     update(null);
+  }
+
+  /**
+   * Update the main window to refresh the display with the currently selected record.<br>
+   * This also updates the last viewed instant for that record.
+   *
+   * @param record If a record is passed in, use that as the active record; it will likely
+   * be the record set in the active HyperView, rather than the one selected in the UI.
+   * <br>
+   * <p>If the parameter is null, the currently selected record in the UI is used.
+   * <br>
+   * <p>The parameter is ignored if the active tab is not Tree or Queries.
+   */
+  public void update(HDT_Record record)
+  {
+    update(record, true);
   }
 
   /**
@@ -2698,8 +2724,12 @@ public final class MainCtrlr
    * <p>If the parameter is null, the currently selected record in the UI is used.
    * <br>
    * <p>The parameter is ignored if the active tab is not Tree or Queries.
+   * @param updateLastViewedInstant Whether to update the last viewed instant for the record.<br>
+   * The usual reason for passing false to this parameter is that if the last view instant is
+   * updated after a record is first created and the name is blank, it is assumed that the popup
+   * to confirm whether the name should be blank has already been shown to the user.
    */
-  public void update(HDT_Record record)
+  public void update(HDT_Record record, boolean updateLastViewedInstant)
   {
     updateTopicalFolders();
 
@@ -2766,7 +2796,9 @@ public final class MainCtrlr
     tab.clear(false);
     tab.enable(true);
     tab.update(true);
-    record.viewNow();
+
+    if (updateLastViewedInstant)
+      record.viewNow();
   }
 
 //---------------------------------------------------------------------------

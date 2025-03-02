@@ -104,7 +104,7 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void linking(HDT_Record base, RecordType targetType)
+  public void uniting(HDT_Record base, RecordType targetType)
   {
     clear();
 

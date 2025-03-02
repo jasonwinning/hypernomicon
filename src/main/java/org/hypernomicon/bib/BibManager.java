@@ -468,7 +468,7 @@ public class BibManager extends HyperDlg
 
   private void autofill()
   {
-    if (ui.cantSaveRecord()) return;
+    if (ui.cantSaveRecord(false)) return;
 
     stop();
 
@@ -731,7 +731,7 @@ public class BibManager extends HyperDlg
 
   private void assign(BibEntryRow row)
   {
-    if (ui.cantSaveRecord()) return;
+    if (ui.cantSaveRecord(false)) return;
 
     SelectWorkDlgCtrlr dlg = new SelectWorkDlgCtrlr(workRecordToAssign.getValue(), row.getEntry());
 

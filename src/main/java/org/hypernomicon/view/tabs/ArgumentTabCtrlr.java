@@ -315,9 +315,9 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord()
+  @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
-    if (super.saveToRecord() == false)
+    if (super.saveToRecord(saveNameIfBlank) == false)
       return false;
 
     boolean okToSave = true;

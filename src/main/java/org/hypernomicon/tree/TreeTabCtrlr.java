@@ -272,14 +272,14 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override protected RecordType type()        { return hdtNone; }
 
   @Override public void clear(boolean rstRec)  { tree.clear(); }
-  @Override public boolean saveToRecord()      { return true; }
   @Override public HDT_Record activeRecord()   { return tree.selectedRecord(); }
   @Override public HDT_Record viewRecord()     { return activeRecord(); }
   @Override public String recordName()         { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public void setDividerPositions()  { return; }
   @Override public void getDividerPositions()  { return; }
 
-  @Override public TextViewInfo mainTextInfo(HDT_Record record) { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
+  @Override public boolean saveToRecord(boolean saveNameIfBlank) { return true; }
+  @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
 
   public TreeWrapper getTree()                 { return tree; }
 

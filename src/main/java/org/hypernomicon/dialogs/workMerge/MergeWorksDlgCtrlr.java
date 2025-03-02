@@ -38,6 +38,7 @@ import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.WorkDlgCtrlr;
+import org.hypernomicon.dialogs.workMerge.BibFieldCtrlr.*;
 import org.hypernomicon.dialogs.workMerge.BibFieldRow.*;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
@@ -49,6 +50,7 @@ import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWrapper;
 import org.hypernomicon.util.filePath.FilePath;
 
+import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -306,6 +308,14 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
+    TitleCtrlr titleCtrlr = ((TitleRow)rows.get(bfTitle)).selectedCtrlr();
+    if (titleCtrlr.isBlank())
+      if (confirmDialog("Are you sure you want to leave the title blank?", false) == false)
+      {
+        Platform.runLater(() -> safeFocus(titleCtrlr.getTextField()));
+        return false;
+      }
+
     if (creatingNewWork)
     {
       WorkTypeRow workTypeRow = (WorkTypeRow)rows.get(bfWorkType);

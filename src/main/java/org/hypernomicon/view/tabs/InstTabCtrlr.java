@@ -40,6 +40,7 @@ import static org.hypernomicon.model.records.HDT_Institution.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -347,12 +348,12 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord()
+  @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
     if (hcbType.selectedID() < 1)
       return falseWithErrorPopup("You must select a type.", cbType);
 
-    if (nameCheck(tfName, "institution name") == false)
+    if (saveNameIfBlank && (nameCheck(tfName, "institution name") == false))
       return false;
 
     boolean locationChanged = false;
@@ -370,7 +371,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         locationChanged = true;
 
     curInst.setCity(tfCity.getText());
+
+    if (saveNameIfBlank || (ultraTrim(tfName.getText()).isBlank() == false))
     curInst.setName(tfName.getText());
+
     curInst.setURL(tfURL.getText());
     curInst.region.setID(hcbRegion.selectedID());
     curInst.country.setID(hcbCountry.selectedID());

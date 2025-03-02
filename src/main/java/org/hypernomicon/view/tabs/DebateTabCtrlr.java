@@ -166,9 +166,9 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord()
+  @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
-    if (super.saveToRecord() == false)
+    if (super.saveToRecord(saveNameIfBlank) == false)
       return false;
 
     if ((curDebate.setLargerPositions(htParents.saveToList(3, hdtPosition)) == false) ||

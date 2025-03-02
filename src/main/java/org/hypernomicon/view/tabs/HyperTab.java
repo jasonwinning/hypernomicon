@@ -103,10 +103,11 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   public abstract String recordName();
   public abstract void clear(boolean resetRecord);
-  public abstract boolean saveToRecord();
+  public abstract boolean saveToRecord(boolean saveNameIfBlank);
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
 
+  public final boolean saveToRecord()      { return saveToRecord(false); }
   public MainTextWrapper mainTextWrapper() { return null; }
   public boolean getUseTextViewInfo()      { return useTextViewInfo; }
   public void rescale()                    { return; }
@@ -378,8 +379,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     // Show the confirmation box if either the name wasn't blank before, or this is
     // the first time editing this record (view instant is close to creation instant).
 
-    if ((savedName.isBlank() == false) || (milliDiff(record.getViewDate(), record.getCreationDate()) < 1000L))
-      if (newName.isBlank())
+    if ((ultraTrim(savedName).isBlank() == false) || (milliDiff(record.getViewDate(), record.getCreationDate()) < 1000L))
+      if (ultraTrim(newName).isBlank())
         if (confirmDialog("Are you sure you want to leave the " + whatToCallName + " blank?", false) == false)
         {
           Platform.runLater(() -> safeFocus(nodeToFocus));

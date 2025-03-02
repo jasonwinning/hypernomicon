@@ -149,9 +149,9 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
   private static MenuItem makeMenuItem(HDT_RecordWithMainText record)
   {
-    MenuItem miUnlink = new MenuItem();
-    miUnlink.setText("Disunite");
-    miUnlink.setOnAction(ae ->
+    MenuItem mnuDisunite = new MenuItem();
+    mnuDisunite.setText("Disunite");
+    mnuDisunite.setOnAction(event ->
     {
       if (ui.cantSaveRecord()) return;
       record.getHub().disuniteRecord(record.getType(), true);
@@ -159,7 +159,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       ui.update();
     });
 
-    return miUnlink;
+    return mnuDisunite;
   }
 
 //---------------------------------------------------------------------------
@@ -279,10 +279,10 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       if (mouseEvent.getButton() != MouseButton.PRIMARY) return;
 
       if (type == hdtConcept)
-        linkToTermClick();
+        uniteWithTermClick();
       else
       {
-        ui.treeSelector.linking(ui.viewRecord(), type);
+        ui.treeSelector.uniting(ui.viewRecord(), type);
         ui.goToTreeRecord(db.records(type).getByID(1));
       }
     });
@@ -338,7 +338,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void linkToTermClick()
+  private static void uniteWithTermClick()
   {
     if (ui.cantSaveRecord()) return;
 
@@ -400,7 +400,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord()
+  @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
     HDT_CT nodeRecord = getNodeRecord();
 
@@ -409,14 +409,15 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       if (ultraTrim(tfSearchKey.getText()).isBlank())
         return falseWithErrorPopup("Unable to modify record: search key of term cannot be blank.", tfSearchKey);
 
-      if (ultraTrim(tfName.getText()).isBlank())
+      if (saveNameIfBlank && ultraTrim(tfName.getText()).isBlank())
         return falseWithErrorPopup("Unable to modify record: term cannot be zero-length.", tfName);
     }
-    else if (nameCheck(tfName, "record name") == false) return false;
+    else if (saveNameIfBlank && nameCheck(tfName, "record name") == false) return false;
 
     if (saveSearchKey(nodeRecord, tfSearchKey) == false) return false;
 
-    nodeRecord.setName(tfName.getText());
+    if (saveNameIfBlank || (ultraTrim(tfName.getText()).isBlank() == false))
+      nodeRecord.setName(tfName.getText());
 
     mainText.save();
 

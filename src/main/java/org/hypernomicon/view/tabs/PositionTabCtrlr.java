@@ -257,9 +257,9 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord()
+  @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
-    if (super.saveToRecord() == false)
+    if (super.saveToRecord(saveNameIfBlank) == false)
       return false;
 
     if ((curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition)) == false) ||

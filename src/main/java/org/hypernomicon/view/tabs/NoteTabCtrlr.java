@@ -366,7 +366,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
   private void createFolder()
   {
-    if (ui.cantSaveRecord()) return;
+    if (ui.cantSaveRecord(false)) return;
 
     HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
 
@@ -399,7 +399,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
   private void browseClick()
   {
-    if (ui.cantSaveRecord()) return;
+    if (ui.cantSaveRecord(false)) return;
 
     DirectoryChooser dirChooser = new DirectoryChooser();
 
@@ -431,7 +431,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     curNote.folder.set(folder == db.getTopicalFolder() ? null : folder);
 
-    ui.update();
+    ui.update(null, false);
 
     if (noOtherNotes && (folder != db.getTopicalFolder()) && nameCtrl().getText().isBlank())
       nameCtrl().setText(folder.getPath().getNameStr());
@@ -462,9 +462,9 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord()
+  @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
-    if (super.saveToRecord() == false)
+    if (super.saveToRecord(saveNameIfBlank) == false)
       return false;
 
     if (curNote.setParentNotes(htParents.saveToList(2, hdtNote)) == false)

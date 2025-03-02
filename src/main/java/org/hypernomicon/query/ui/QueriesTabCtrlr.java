@@ -122,7 +122,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public int recordCount()                 { return results().size(); }
   @Override public void setDividerPositions()        { return; }
   @Override public void getDividerPositions()        { return; }
-  @Override public boolean saveToRecord()            { return false; }
   @Override public HDT_Record activeRecord()         { return curQueryCtrlr == null ? null : curQueryCtrlr.getRecord(); }
   @Override public HDT_Record viewRecord()           { return activeRecord(); }
   @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
@@ -133,7 +132,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @FXML private void mnuCopyToFolderClick()          { copyFilesToFolder(true); }
 
-  @Override public TextViewInfo mainTextInfo(HDT_Record record) { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
+  @Override public boolean saveToRecord(boolean saveNameIfBlank) { return false; }
+  @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
