@@ -892,13 +892,23 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns the enum constant of the specified enum type with the specified ordinal value.
+   *
+   * @param <E> the enum type whose constant is to be returned
+   * @param ord the ordinal value of the enum constant to be returned
+   * @param cls the Class object of the enum type from which to return a constant
+   * @return the enum constant with the specified ordinal value, or {@code null} if the ordinal value is out of range
+   * @throws NullPointerException if {@code cls} is null
+   * @throws IllegalArgumentException if {@code cls} is not an enum class
+   */
   public static <E extends Enum<E>> E getEnumVal(int ord, Class<E> cls)
   {
-    E[] vals = cls.getEnumConstants();
+    E[] vals = Objects.requireNonNull(cls, "Class must not be null").getEnumConstants();
 
-    if ((vals == null) || (ord < 0) || (ord > (vals.length - 1))) return null;
+    if (vals == null) throw new IllegalArgumentException("Invalid enum type");
 
-    return vals[ord];
+    return (ord < 0) || (ord >= vals.length) ? null : vals[ord];
   }
 
 //---------------------------------------------------------------------------

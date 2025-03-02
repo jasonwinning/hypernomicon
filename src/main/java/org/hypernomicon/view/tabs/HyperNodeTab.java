@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
+import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -344,12 +344,12 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     HDT_RecordWithMainText source = (HDT_RecordWithMainText) ui.activeRecord();
 
-    SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(null, source);
+    SelectTermDlgCtrlr frmSelectTerm = new SelectTermDlgCtrlr(null, source);
 
-    if ((frmSelectConcept.showModal() == false) || (frmSelectConcept.getGlossary() == null)) return;
+    if ((frmSelectTerm.showModal() == false) || (frmSelectTerm.getGlossary() == null)) return;
 
-    HDT_Term term = frmSelectConcept.getTerm();
-    HDT_Concept concept = term.getConcept(frmSelectConcept.getGlossary(), frmSelectConcept.getSense());
+    HDT_Term term = frmSelectTerm.getTerm();
+    HDT_Concept concept = term.getConcept(frmSelectTerm.getGlossary(), frmSelectTerm.getSense());
 
     try
     {
@@ -362,7 +362,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       return;
     }
 
-    if (frmSelectConcept.getCreateNew() == false)
+    if (frmSelectTerm.getCreatingNewTerm() == false)
     {
       ui.update();
       return;

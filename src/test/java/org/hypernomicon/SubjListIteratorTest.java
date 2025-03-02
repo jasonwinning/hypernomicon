@@ -76,6 +76,7 @@ class SubjListIteratorTest
 //---------------------------------------------------------------------------
 
   @BeforeEach
+  @SuppressWarnings("unchecked")
   void setUp()
   {
     // This code will run before each test
@@ -401,6 +402,7 @@ class SubjListIteratorTest
 
   @Test
   @Order(118)
+  @SuppressWarnings("unchecked")
   void testEmptySubList()
   {
     subjSubList = (HyperSubjSubList<HDT_Position, HDT_Debate>) debate.subPositions.subList(1, 1); // Empty sublist
@@ -412,6 +414,7 @@ class SubjListIteratorTest
 
   @Test
   @Order(119)
+  @SuppressWarnings("unchecked")
   void testBoundarySubList()
   {
     subjSubList = (HyperSubjSubList<HDT_Position, HDT_Debate>) debate.subPositions.subList(0, 5); // Full range

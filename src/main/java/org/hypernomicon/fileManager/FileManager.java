@@ -220,15 +220,15 @@ public class FileManager extends HyperDlg
     fileTable.addContextMenuItem("Copy path to clipboard", fileRow -> copyToClipboard(fileRow.getFilePath().toString()));
     fileTable.addContextMenuItem("Rename", this::rename);
 
-    fileTable.addContextMenuItem("New misc. file record", fileRow -> fileRow.getRecord() == null, fileRow ->
+    fileTable.addContextMenuItem("Assign to new Misc. File record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
       ui.importMiscFile(fileRow, null);
       refresh();
     });
 
-    fileTable.addContextMenuItem("New work record", fileRow -> fileRow.getRecord() == null, fileRow ->
+    fileTable.addContextMenuItem("Assign to new or existing Work record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
-      ui.importWorkFile(null, fileRow.getFilePath(), false);
+      ui.importWorkFile(null, fileRow.getFilePath(), true);
       refresh();
     });
 

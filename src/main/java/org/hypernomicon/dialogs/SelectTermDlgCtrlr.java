@@ -48,7 +48,7 @@ import javafx.scene.control.TextField;
 
 //---------------------------------------------------------------------------
 
-public class SelectConceptDlgCtrlr extends HyperDlg
+public class SelectTermDlgCtrlr extends HyperDlg
 {
 
 //---------------------------------------------------------------------------
@@ -59,33 +59,33 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   @FXML private TextField tfSearchKey;
 
   private final HyperCB hcbTerm, hcbGlossary, hcbSense;
-  private final HDT_Concept oldConcept;
+  private final HDT_Concept concept;
 
   private HDT_Glossary glossaryToUse;
   private HDT_ConceptSense senseToUse;
-  private boolean createNew, alreadyChanging = false;
+  private boolean creatingNewTerm, alreadyChanging = false;
   private HDT_Term term;
 
 //---------------------------------------------------------------------------
 
-  public SelectConceptDlgCtrlr(HDT_Concept oldConcept, HDT_RecordWithMainText unitingWith)
+  public SelectTermDlgCtrlr(HDT_Concept concept, HDT_RecordWithMainText unitingWith)
   {
-    super("SelectConceptDlg", "Term Select", true);
+    super("SelectTermDlg", "Term Select", true);
 
-    this.oldConcept = oldConcept;
+    this.concept = concept;
 
     StringBuilder sb = new StringBuilder();
 
     Predicate<Integer> termIDFilter = termID ->
     {
-      if ((oldConcept != null) && (oldConcept.term.getID() == termID))
+      if ((concept != null) && (concept.term.getID() == termID))
         return false;
 
       if (unitingWith == null)
         return true;
 
-      for (HDT_Concept concept : db.terms.getByID(termID).concepts)
-        if (HDT_Hub.canUnite(concept, unitingWith, sb))
+      for (HDT_Concept otherConcept : db.terms.getByID(termID).concepts)
+        if (HDT_Hub.canUnite(otherConcept, unitingWith, sb))
           return true;
 
       return false;
@@ -102,7 +102,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
                                        .map(curConcept -> curConcept.glossary.get()).distinct();
     });
 
-    hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, oldConcept == null ? glossaryPop : new StandardPopulator(hdtGlossary));
+    hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, concept == null ? glossaryPop : new StandardPopulator(hdtGlossary));
 
     CustomPopulator sensePop = new CustomPopulator(hdtConceptSense, (row, force) ->
     {
@@ -112,7 +112,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       HDT_Glossary tempGlossary = hcbGlossary.selectedRecord();
       if (tempGlossary == null) return Stream.empty();
 
-      if (oldConcept == null)
+      if (concept == null)
         return tempTerm.concepts.stream().filter(curConcept -> curConcept.glossary.get() == tempGlossary)
                                          .filter(curConcept -> (unitingWith == null) || HDT_Hub.canUnite(curConcept, unitingWith, sb))
                                          .map(curConcept -> curConcept.sense.get());
@@ -120,7 +120,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       return db.conceptSenses.stream().filter(curSense -> tempTerm.getConcept(tempGlossary, curSense) == null);
     });
 
-    hcbSense = new HyperCB(cbSense, oldConcept == null ? ctDropDownList : ctDropDown, sensePop);
+    hcbSense = new HyperCB(cbSense, concept == null ? ctDropDownList : ctDropDown, sensePop);
 
     hcbTerm.addListener((oldCell, newCell) ->
     {
@@ -134,7 +134,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       {
         boolean selectedGlossary = false;
 
-        if (oldConcept == null)
+        if (concept == null)
         {
           if (glossaryCells.stream().anyMatch(cell -> cell.getID() == 1))
           {
@@ -142,9 +142,9 @@ public class SelectConceptDlgCtrlr extends HyperDlg
             selectedGlossary = true;
           }
         }
-        else if (glossaryCells.stream().anyMatch(cell -> cell.getID() == oldConcept.glossary.getID()))
+        else if (glossaryCells.stream().anyMatch(cell -> cell.getID() == concept.glossary.getID()))
         {
-          hcbGlossary.selectID(oldConcept.glossary.getID());
+          hcbGlossary.selectID(concept.glossary.getID());
           selectedGlossary = true;
         }
 
@@ -160,16 +160,18 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     MainCtrlr.setSearchKeyToolTip(tfSearchKey);
 
     btnCreate.setOnAction(event -> btnCreateClick());
-    createNew = false;
+    creatingNewTerm = false;
   }
 
 //---------------------------------------------------------------------------
 
-  public HDT_Term         getTerm()      { return term; }
-  public boolean          getCreateNew() { return createNew; }
-  public HDT_Glossary     getGlossary()  { return glossaryToUse != null ? glossaryToUse : hcbGlossary.selectedRecord(); }
-  public HDT_ConceptSense getSense()     { return senseToUse    != null ? senseToUse    : hcbSense   .selectedRecord(); }
-  public String           getSenseText() { return ultraTrim(hcbSense.getText()); }
+  public HDT_Term         getTerm           () { return term; }
+  public boolean          getCreatingNewTerm() { return creatingNewTerm; }
+  public HDT_Glossary     getGlossary       () { return glossaryToUse != null ? glossaryToUse : hcbGlossary.selectedRecord(); }
+  public HDT_ConceptSense getSense          () { return senseToUse    != null ? senseToUse    : hcbSense   .selectedRecord(); }
+  public String           getSenseText      () { return ultraTrim(hcbSense.getText()); }
+
+  public void             moveConcept       () { concept.moveToDifferentTerm(term, creatingNewTerm, getGlossary(), getSense(), getSenseText()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -184,7 +186,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     HDT_Glossary generalGlossary = db.glossaries.getByID(1);
 
-    term = oldConcept == null ?
+    term = concept == null ?
       HDT_Term.create(generalGlossary)
     :
       db.createNewBlankRecord(hdtTerm); // Old concept gets attached to term record by caller
@@ -208,16 +210,16 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       return;
     }
 
-    if (oldConcept != null)
+    if (concept != null)
     {
-      glossaryToUse = oldConcept.glossary.get();
-      senseToUse = oldConcept.sense.get();
+      glossaryToUse = concept.glossary.get();
+      senseToUse = concept.sense.get();
     }
     else
       glossaryToUse = generalGlossary;
 
     okClicked = true;
-    createNew = true;
+    creatingNewTerm = true;
     dialogStage.close();
   }
 
@@ -236,23 +238,31 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     term = hcbTerm.selectedRecord();
 
-    if ((oldConcept != null) && (getSense() == null))
+    if (concept != null)
     {
-      String senseText = getSenseText();
+      if (getSense() == null)
+      {
+        String senseText = getSenseText();
 
-      if (senseText.isBlank())
-      {
-        if (term.getConcept(glossaryToUse, null) != null)
-          return falseWithErrorPopup("The term already has a definition for that glossary and sense.", cbSense);
-      }
-      else
-      {
-        for (HDT_ConceptSense sense : db.conceptSenses)
+        if (senseText.isBlank())
         {
-          if (sense.name().equalsIgnoreCase(senseText))
+          if (term.getConcept(glossaryToUse, null) != null)
             return falseWithErrorPopup("The term already has a definition for that glossary and sense.", cbSense);
         }
+        else
+        {
+          for (HDT_ConceptSense sense : db.conceptSenses)
+          {
+            if (ultraTrim(sense.name()).equalsIgnoreCase(ultraTrim(senseText)))
+              return falseWithErrorPopup("The term already has a definition for that glossary and sense.", cbSense);
+          }
+        }
       }
+
+      if ((concept.glossary.get() != getGlossary()) &&
+          ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false)) &&
+          (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\" since the conept is being moved to a different glossary. Proceed?", false) == false))
+        return false;
     }
 
     return true;

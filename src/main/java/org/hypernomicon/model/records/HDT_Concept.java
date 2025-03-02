@@ -19,6 +19,7 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -28,12 +29,8 @@ import java.util.List;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.DatasetAccessor;
-import org.hypernomicon.model.Exceptions.DuplicateSearchKeyException;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
-import org.hypernomicon.model.relations.HyperObjList;
-import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.model.relations.HyperSubjPointer;
+import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public class HDT_Concept extends HDT_RecordWithMainText
@@ -148,6 +145,50 @@ public class HDT_Concept extends HDT_RecordWithMainText
     try { childConcept.addParentConcept(this); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
 
     return childConcept;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Unlinks this concept from its current Term record and links it to a different Term record instead.<br>
+   * If moving to a different glossary, this also unlinks the concept from its current parent
+   * and child concepts.
+   * <p>
+   * If a new Term record is being created for this concept, the glossary and sense are not changed
+   * @param newTerm The term the concept should become linked to
+   * @param creatingNewTerm Whether the Term record has been newly created
+   * @param newGlossary Glossary to move the concept to; ignored if creatingNewTerm is true
+   * @param newSense New ConceptSense for the concept; ignored if creatingNewTerm is true
+   * @param newSenseText New name for the new ConceptSense; ignored if creatingNewTerm is true or
+   * newSense is non-null
+   */
+  public void moveToDifferentTerm(HDT_Term newTerm, boolean creatingNewTerm, HDT_Glossary newGlossary, HDT_ConceptSense newSense, String newSenseText)
+  {
+    if ((creatingNewTerm == false) && (glossary.get() != newGlossary))
+    {
+      List.copyOf(parentConcepts).forEach(this::removeParent);
+      List.copyOf(subConcepts   ).forEach(subConcept -> subConcept.removeParent(this));
+    }
+
+    term.get().concepts.remove(this);
+    newTerm.concepts.add(this);
+
+    if (creatingNewTerm == false)
+    {
+      glossary.set(newGlossary);
+
+      if (newSense == null)
+      {
+        if (ultraTrim(safeStr(newSenseText)).isBlank() == false)
+        {
+          newSense = db.createNewBlankRecord(hdtConceptSense);
+          newSense.setName(newSenseText);
+        }
+      }
+
+      sense.set(newSense);
+    }
   }
 
 //---------------------------------------------------------------------------

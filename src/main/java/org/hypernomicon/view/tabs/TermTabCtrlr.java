@@ -55,7 +55,7 @@ import java.util.Map.Entry;
 
 import org.hypernomicon.dialogs.MergeTermDlgCtrlr;
 import org.hypernomicon.dialogs.RecordDropdownDlgCtrlr;
-import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
+import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
@@ -764,25 +764,12 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     HDT_Concept concept = curConcept;
 
-    SelectConceptDlgCtrlr frmSelectConcept = new SelectConceptDlgCtrlr(concept, null);
+    SelectTermDlgCtrlr frmSelectTerm = new SelectTermDlgCtrlr(concept, null);
 
-    if (frmSelectConcept.showModal() == false)
+    if (frmSelectTerm.showModal() == false)
     {
       ui.update();
       return;
-    }
-
-    if ((concept.glossary.get() != frmSelectConcept.getGlossary()) &&
-        ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false)))
-    {
-      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\". Proceed?", false) == false)
-      {
-        ui.update(); // This scenario cannot happen if the user chose to create a new term record because then, the glossary doesn't change.
-        return;
-      }
-
-      List.copyOf(concept.parentConcepts).forEach(concept::removeParent);
-      List.copyOf(concept.subConcepts   ).forEach(subConcept -> subConcept.removeParent(concept));
     }
 
     switchToDifferentTab();
@@ -791,26 +778,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     conceptToTextViewInfo.remove(concept);
 
-    curTerm.concepts.remove(concept);
-    frmSelectConcept.getTerm().concepts.add(concept);
-
-    if (frmSelectConcept.getCreateNew() == false)
-    {
-      concept.glossary.set(frmSelectConcept.getGlossary());
-
-      HDT_ConceptSense sense = frmSelectConcept.getSense();
-      if (sense == null)
-      {
-        String senseText = frmSelectConcept.getSenseText();
-        if (senseText.isBlank() == false)
-        {
-          sense = db.createNewBlankRecord(hdtConceptSense);
-          sense.setName(senseText);
-        }
-      }
-
-      concept.sense.set(sense);
-    }
+    frmSelectTerm.moveConcept();
 
     ui.goToRecord(concept, false);
   }
