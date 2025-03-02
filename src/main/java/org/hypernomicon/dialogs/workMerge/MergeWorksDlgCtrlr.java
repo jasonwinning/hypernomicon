@@ -308,14 +308,6 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    TitleCtrlr titleCtrlr = ((TitleRow)rows.get(bfTitle)).selectedCtrlr();
-    if (titleCtrlr.isBlank())
-      if (confirmDialog("Are you sure you want to leave the title blank?", false) == false)
-      {
-        Platform.runLater(() -> safeFocus(titleCtrlr.getTextField()));
-        return false;
-      }
-
     if (creatingNewWork)
     {
       WorkTypeRow workTypeRow = (WorkTypeRow)rows.get(bfWorkType);
@@ -354,6 +346,13 @@ public class MergeWorksDlgCtrlr extends HyperDlg
         if (entryType == null)
           return falseWithWarningPopup("Select an entry type.", entryTypeRow.selectedCtrlr().getCB());
       }
+    }
+
+    TitleCtrlr titleCtrlr = ((TitleRow)rows.get(bfTitle)).selectedCtrlr();
+    if (titleCtrlr.isBlank() && (confirmDialog("Are you sure you want to leave the title blank?", false) == false))
+    {
+      Platform.runLater(() -> safeFocus(titleCtrlr.getTextField()));
+      return false;
     }
 
     return true;

@@ -199,11 +199,15 @@ public class NewArgDlgCtrlr extends HyperDlg
     {
       if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
 
-      ((HybridSubjectPopulator) hcbWork.getPopulator()).setObj(HyperTableCell.getRecord(newCell));
-      hcbWork.selectID(-1);
-      rbNew.setSelected(true);
+      Platform.runLater(() ->
+      {
+        ((HybridSubjectPopulator) hcbWork.getPopulator()).setObj(HyperTableCell.getRecord(newCell));
+        hcbWork.populate(true);
+        hcbWork.selectID(-1);
+        rbNew.setSelected(true);
 
-      reviseSuggestions();
+        reviseSuggestions();
+      });
     });
 
     chkIncludeAuth.setSelected(true);
