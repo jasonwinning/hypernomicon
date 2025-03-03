@@ -35,20 +35,45 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 
+//---------------------------------------------------------------------------
+
 public class ClickHoldButton
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FunctionalInterface
+  public interface MenuFactory { void rebuildMenu(List<MenuItem> menu); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private boolean mouseDown = false;
-  private EventHandler<ActionEvent> hndlr = null;
+  private EventHandler<ActionEvent> actionHndlr = null;
+  private MenuFactory menuFactory = null;
   private final MenuButton btnMenu;
   private final Button btn;
   private int mouseDownCtr = 0;
 
 //---------------------------------------------------------------------------
 
-  public void setDisable(boolean disable)                  { btn.setDisable(disable);   }
-  public void setOnAction(EventHandler<ActionEvent> hndlr) { this.hndlr = hndlr;        }
-  public List<MenuItem> getMenu()                          { return btnMenu.getItems(); }
-  public void showMenu()                                   { btnMenu.show();            }
+  public void setDisable(boolean disable)                  { btn.setDisable(disable);    }
+  public void setOnAction(EventHandler<ActionEvent> hndlr) { this.actionHndlr = hndlr;   }
+  public void setMenuFactory(MenuFactory factory)          { this.menuFactory = factory; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void showMenu()
+  {
+    btnMenu.getItems().clear();
+
+    if (menuFactory != null)
+      menuFactory.rebuildMenu(btnMenu.getItems());
+
+    btnMenu.show();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -72,7 +97,7 @@ public class ClickHoldButton
 
     btnMenu.visibleProperty().bind(btn.disabledProperty().not());
 
-    getMenu().clear();
+    btnMenu.getItems().clear();
 
     repositionPopupListWorkaround(btnMenu);
 
@@ -80,15 +105,15 @@ public class ClickHoldButton
     {
       if (btnMenu.isShowing()) return;
 
-      if (hndlr != null)
-        hndlr.handle(event);
+      if (actionHndlr != null)
+        actionHndlr.handle(event);
     });
 
     btn.setOnMouseClicked(mouseEvent ->
     {
       if (mouseEvent.getButton() == MouseButton.SECONDARY)
       {
-        btnMenu.show();
+        showMenu();
         mouseDown = false;
       }
     });
@@ -108,7 +133,7 @@ public class ClickHoldButton
       {
         if (mouseDown)
           if (mouseDownCtr == curMouseDownCtr) // Prevent popup from getting shown when user clicks in rapid succession
-            btnMenu.show();
+            showMenu();
       });
     });
 

@@ -94,7 +94,6 @@ public class PreviewWindow extends HyperDlg
 
   private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new EnumMap<>(PreviewSource.class);
   private final Map<PreviewSource, PreviewSetting> srcToSetting = new EnumMap<>(PreviewSource.class);
-  private final ClickHoldButton chbBack, chbForward;
 
   public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); clearControls(); }
   public FilePath getFilePath(PreviewSource src) { return srcToWrapper.get(src).getFilePath(); }
@@ -245,8 +244,25 @@ public class PreviewWindow extends HyperDlg
         curWrapper().setPreview(curWrapper().getNextHilite((int) sldPreview.getValue()), true);
     });
 
-    chbBack    = new ClickHoldButton(btnPreviewBack   , Side.BOTTOM);
-    chbForward = new ClickHoldButton(btnPreviewForward, Side.BOTTOM);
+    ClickHoldButton chbBack    = new ClickHoldButton(btnPreviewBack   , Side.BOTTOM);
+    ClickHoldButton chbForward = new ClickHoldButton(btnPreviewForward, Side.BOTTOM);
+
+    chbBack   .setMenuFactory(menu -> curWrapper().refreshNavMenu(menu, false));
+    chbForward.setMenuFactory(menu -> curWrapper().refreshNavMenu(menu, true ));
+
+    chbBack.setOnAction(event ->
+    {
+      if (tfPreviewPage.isDisabled()) return;
+
+      curWrapper().navClick(false);
+    });
+
+    chbForward.setOnAction(event ->
+    {
+      if (tfPreviewPage.isDisabled()) return;
+
+      curWrapper().navClick(true);
+    });
 
     setToolTip(btnPerson        , "Preview content selected on Persons tab");
     setToolTip(btnWorks         , "Preview content selected on Works tab");
@@ -273,20 +289,6 @@ public class PreviewWindow extends HyperDlg
     setToolTip(btnSetStart      , "Set start page to page currently showing");
     setToolTip(btnSetEnd        , "Set end page to page currently showing");
     setToolTip(sldPreview       , "Navigate to different page");
-
-    chbBack.setOnAction(event ->
-    {
-      if (tfPreviewPage.isDisabled()) return;
-
-      curWrapper().navClick(false);
-    });
-
-    chbForward.setOnAction(event ->
-    {
-      if (tfPreviewPage.isDisabled()) return;
-
-      curWrapper().navClick(true);
-    });
 
     btnFileBack   .setOnAction(event -> curWrapper().fileNavClick(false));
     btnFileForward.setOnAction(event -> curWrapper().fileNavClick(true ));
@@ -693,9 +695,6 @@ public class PreviewWindow extends HyperDlg
     btnPreviewForward.setDisable(previewWrapper.enableNavButton(true ) == false);
 
     updateFileNavButtons();
-
-    previewWrapper.refreshNavMenu(chbBack.getMenu(), false);
-    previewWrapper.refreshNavMenu(chbForward.getMenu(), true);
 
     int lowest = previewWrapper.lowestHilitePage();
 

@@ -825,7 +825,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     if ((concept.getMainText().isEmpty() == false) || concept.hasHub())
     {
-      String prompt = "Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() + "\"";
+      String prompt = "Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() + '"';
 
       if (confirmDialog(prompt + (sense == null ? "?" : (", sense \"" + sense.name() + "\"?")), false) == false)
         return false;

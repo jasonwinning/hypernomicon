@@ -82,9 +82,9 @@ public class MergeTermDlgCtrlr extends HyperDlg
 
   private TextField selectedKeyField()
   {
-    if      (rbKey1.isSelected()) return tfKey1;
-    else if (rbKey2.isSelected()) return tfKey2;
-    else                          return tfKey3;
+    if (rbKey1.isSelected()) return tfKey1;
+    if (rbKey2.isSelected()) return tfKey2;
+                             return tfKey3;
   }
 
 //---------------------------------------------------------------------------
@@ -92,9 +92,9 @@ public class MergeTermDlgCtrlr extends HyperDlg
 
   private TextField selectedNameField()
   {
-    if      (rbName1.isSelected()) return tfName1;
-    else if (rbName2.isSelected()) return tfName2;
-    else                           return tfName3;
+    if (rbName1.isSelected()) return tfName1;
+    if (rbName2.isSelected()) return tfName2;
+                              return tfName3;
   }
 
 //---------------------------------------------------------------------------

@@ -70,6 +70,9 @@ public class HyperViewSequence
     this.chbForward = chbForward;
     this.chbBack = chbBack;
 
+    chbForward.setMenuFactory(menu -> rebuildNavMenu(menu, true ));
+    chbBack   .setMenuFactory(menu -> rebuildNavMenu(menu, false));
+
     tabPane.addEventFilter(KeyEvent.ANY, event ->
     {
       if (event.getCode().isArrowKey())
@@ -246,9 +249,6 @@ public class HyperViewSequence
 
     chbBack   .setDisable(curNdx < 1);
     chbForward.setDisable(curNdx >= (slots.size() - 1));
-
-    rebuildNavMenu(chbBack   .getMenu(), false);
-    rebuildNavMenu(chbForward.getMenu(), true );
 
     HDT_Record activeRecord = (curHyperTab.getTabEnum() == treeTabEnum) || (curHyperTab.getTabEnum() == queryTabEnum) ?
       curView.getViewRecord()
@@ -437,7 +437,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RecordType lastActiveRecordType()
+  RecordType lastActiveRecordType()
   {
     if (slots.isEmpty())
       return hdtNone;

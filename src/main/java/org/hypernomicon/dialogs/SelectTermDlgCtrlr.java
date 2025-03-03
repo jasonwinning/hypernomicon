@@ -84,11 +84,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
       if (unitingWith == null)
         return true;
 
-      for (HDT_Concept otherConcept : db.terms.getByID(termID).concepts)
-        if (HDT_Hub.canUnite(otherConcept, unitingWith, sb))
-          return true;
-
-      return false;
+      return db.terms.getByID(termID).concepts.stream().anyMatch(otherConcept -> HDT_Hub.canUnite(otherConcept, unitingWith, sb));
     };
 
     hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm, termIDFilter));
@@ -259,10 +255,9 @@ public class SelectTermDlgCtrlr extends HyperDlg
         }
       }
 
-      if ((concept.glossary.get() != getGlossary()) &&
-          ((concept.parentConcepts.isEmpty() == false) || (concept.subConcepts.isEmpty() == false)) &&
-          (confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\" since the conept is being moved to a different glossary. Proceed?", false) == false))
-        return false;
+      return (concept.glossary.get() == getGlossary()) ||
+             (concept.parentConcepts.isEmpty() && concept.subConcepts.isEmpty()) ||
+             confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\" since the conept is being moved to a different glossary. Proceed?", false);
     }
 
     return true;
