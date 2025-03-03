@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -338,6 +339,11 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This opens the Term Select popup and allows you to pick an existing Concept
+   * or create a new Term. It does not allow you to create a new Concept to unite with
+   * on an existing Term.
+   */
   private static void uniteWithTermClick()
   {
     if (ui.cantSaveRecord()) return;
@@ -353,6 +359,9 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     try
     {
+      if (concept == null)
+        throw new HDB_InternalError(89681);
+
       if (ui.uniteRecords(source, concept) == false)
         return;
     }

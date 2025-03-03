@@ -227,14 +227,29 @@ public class SelectTermDlgCtrlr extends HyperDlg
     if (hcbTerm.selectedRecord() == null)
       return falseWithErrorPopup("You must select a term.", cbTerm);
 
-    glossaryToUse = hcbGlossary.selectedRecord();
+    HDT_Glossary glossary = hcbGlossary.selectedRecord();
 
-    if (glossaryToUse == null)
+    if (glossary == null)
       return falseWithErrorPopup("You must select a glossary.", cbGlossary);
 
     term = hcbTerm.selectedRecord();
 
-    if (concept != null)
+    if (concept == null)  // The user is choosing a Term to unite another record with
+    {
+      HDT_ConceptSense sense = hcbSense.selectedRecord();
+      HDT_Concept conceptToUnite = term.getConcept(glossary, sense);
+
+      if (conceptToUnite == null)
+      {
+        if (sense == null)
+          return falseWithErrorPopup("You must select a sense.", cbSense);
+
+        return falseWithInternalErrorPopup(89680);
+      }
+
+      senseToUse = sense;
+    }
+    else  // The user is choosing a Term to move an existing Concept to
     {
       if (getSense() == null)
       {
@@ -242,7 +257,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
 
         if (senseText.isBlank())
         {
-          if (term.getConcept(glossaryToUse, null) != null)
+          if (term.getConcept(glossary, null) != null)
             return falseWithErrorPopup("The term already has a definition for that glossary and sense.", cbSense);
         }
         else
@@ -252,6 +267,9 @@ public class SelectTermDlgCtrlr extends HyperDlg
             if (ultraTrim(sense.name()).equalsIgnoreCase(ultraTrim(senseText)))
               return falseWithErrorPopup("The term already has a definition for that glossary and sense.", cbSense);
           }
+
+          // In this case, we don't create a new HDT_ConceptSense record and set senseToUse here;
+          // creating the HDT_ConceptSense record gets done in SelectTermDlgCtrlr.moveConcept
         }
       }
 
@@ -260,6 +278,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
              confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\" since the conept is being moved to a different glossary. Proceed?", false);
     }
 
+    glossaryToUse = glossary;
     return true;
   }
 
