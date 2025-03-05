@@ -342,7 +342,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   /**
    * This opens the Term Select popup and allows you to pick an existing Concept
    * or create a new Term. It does not allow you to create a new Concept to unite with
-   * on an existing Term.
+   * for an existing Term.
    */
   private static void uniteWithTermClick()
   {
@@ -350,7 +350,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     HDT_RecordWithMainText source = (HDT_RecordWithMainText) ui.activeRecord();
 
-    SelectTermDlgCtrlr frmSelectTerm = new SelectTermDlgCtrlr(null, source);
+    SelectTermDlgCtrlr frmSelectTerm = SelectTermDlgCtrlr.showPopupToChooseTermToUniteWith(source);
 
     if ((frmSelectTerm.showModal() == false) || (frmSelectTerm.getGlossary() == null)) return;
 

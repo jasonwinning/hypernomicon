@@ -24,6 +24,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -48,6 +49,19 @@ import javafx.scene.control.TextField;
 
 //---------------------------------------------------------------------------
 
+/**
+ * This popup window is used in two scenarios:<br>
+ * 1) The user wants to move an existing concept to another term<br>
+ * 2) The user wants to unite a non-Term record to a Term record<br>
+ * <br>
+ * In scenario 1, the user either picks a glossary/sense for an existing
+ * term that <u><b>doesn't</b></u> have a concept for that glossary/sense yet, or chooses
+ * to move the concept to the General glossary of a new Term.<br>
+ * <br>
+ * In scenario 2, the user either picks a glossary/sense for which there
+ * <u><b>is</b></u> an existing Concept for an existing Term, or chooses to unite
+ * the record to a new Term.
+ */
 public class SelectTermDlgCtrlr extends HyperDlg
 {
 
@@ -68,9 +82,60 @@ public class SelectTermDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public SelectTermDlgCtrlr(HDT_Concept concept, HDT_RecordWithMainText unitingWith)
+  /**
+   * Show popup to allow user to select either to<br>
+   * 1) Select an unused Glossary/Sense combination of an existing Term to move the Concept to<br>
+   * 2) Create a new Term record to move the Concept to<br>
+   * <br>
+   * In the second scenario, the Glossary/Sense of the Concept doesn't change.
+   * @param conceptToMove HDT_Concept record to be moved
+   * @return Popup window
+   * @throws NullPointerException if <code>conceptToMove</code> is null
+   */
+  public static SelectTermDlgCtrlr showPopupToMoveConceptToADifferentTerm(HDT_Concept conceptToMove)
+  {
+    Objects.requireNonNull(conceptToMove);
+
+    return new SelectTermDlgCtrlr(conceptToMove, null);
+  }
+
+  /**
+   * Show popup to allow user to select/create a Term record to unite another record to.<br>
+   * <br>
+   * The user can either:<br>
+   * 1) Select a Glossary/Sense for an existing Term for which there is an existing Concept record
+   * they want to unite the record with.<br>
+   * 2) Create a new Term record. An associated Concept will be created in the General glossary
+   * to unite the record with.<br>
+   * Creating a new Concept record to unite with under an existing Term record is not currently supported.
+   * @param nonTermRecord Record to unite the Concept with.
+   * @return Popup window
+   * @throws NullPointerException if <code>nonTermRecord</code> is null
+   */
+  public static SelectTermDlgCtrlr showPopupToChooseTermToUniteWith(HDT_RecordWithMainText nonTermRecord)
+  {
+    Objects.requireNonNull(nonTermRecord);
+
+    return new SelectTermDlgCtrlr(null, nonTermRecord);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * <p>If <code>concept</code> is null, then we are in the scenario of choosing a Concept to unite with.</p>
+   * <p>If <code>unitingWith</code> is null, then we are in the scenario of choosing a Term to move the Concept to.</p>
+   * <p>Exactly one of <code>concept</code> or <code>unitingWith</code> must be null, and the other must be non-null.</p>
+   * @param concept The Concept to be moved (nullable).
+   * @param unitingWith The non-Term record with which a Concept is to be united (nullable).
+   * @throws IllegalArgumentException if both <code>concept</code> and <code>unitingWith</code> are null or both are non-null.
+   */
+  private SelectTermDlgCtrlr(HDT_Concept concept, HDT_RecordWithMainText unitingWith)
   {
     super("SelectTermDlg", "Term Select", true);
+
+    if ((concept == null) == (unitingWith == null))
+      throw new IllegalArgumentException("Exactly one of 'concept' or 'unitingWith' must be non-null, but not both.");
 
     this.concept = concept;
 
@@ -183,10 +248,10 @@ public class SelectTermDlgCtrlr extends HyperDlg
     HDT_Glossary generalGlossary = db.glossaries.getByID(1);
 
     term = concept == null ?
-      HDT_Term.create(generalGlossary)
+      HDT_Term.create(generalGlossary)  // We are in the scenario of uniting a non-Term record with a new Term; always default to General glossary
     :
-      db.createNewBlankRecord(hdtTerm); // Old concept gets attached to term record by caller
-
+      db.createNewBlankRecord(hdtTerm); // We are in the scenario of moving a concept to a new Term;
+                                        // old concept gets attached to Term record in HDT_Concept.moveToDifferentTerm
     try
     {
       term.setSearchKey(tfSearchKey.getText(), true, true);
@@ -208,12 +273,11 @@ public class SelectTermDlgCtrlr extends HyperDlg
 
     if (concept != null)
     {
-      glossaryToUse = concept.glossary.get();
-      senseToUse = concept.sense.get();
+      glossaryToUse = concept.glossary.get();  // We are in the scenario of moving a concept to a new Term;
+      senseToUse = concept.sense.get();        // Glossary and Sense stay the same
     }
     else
-      glossaryToUse = generalGlossary;
-
+      glossaryToUse = generalGlossary;  // We are in the scenario of uniting a non-Term record with a new Term; always default to General glossary
     okClicked = true;
     creatingNewTerm = true;
     dialogStage.close();
@@ -269,7 +333,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
           }
 
           // In this case, we don't create a new HDT_ConceptSense record and set senseToUse here;
-          // creating the HDT_ConceptSense record gets done in SelectTermDlgCtrlr.moveConcept
+          // creating the HDT_ConceptSense record gets done in HDT_Concept.moveToDifferentTerm
         }
       }
 

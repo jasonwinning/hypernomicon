@@ -174,21 +174,20 @@ public class HDT_Concept extends HDT_RecordWithMainText
     term.get().concepts.remove(this);
     newTerm.concepts.add(this);
 
-    if (creatingNewTerm == false)
+    if (creatingNewTerm) return;  // If newTerm was newly created, just leave the glossary and sense as-is; there can't be a conflict
+
+    glossary.set(newGlossary);
+
+    if (newSense == null)
     {
-      glossary.set(newGlossary);
-
-      if (newSense == null)
+      if (ultraTrim(safeStr(newSenseText)).isBlank() == false)
       {
-        if (ultraTrim(safeStr(newSenseText)).isBlank() == false)
-        {
-          newSense = db.createNewBlankRecord(hdtConceptSense);
-          newSense.setName(newSenseText);
-        }
+        newSense = db.createNewBlankRecord(hdtConceptSense);
+        newSense.setName(newSenseText);
       }
-
-      sense.set(newSense);
     }
+
+    sense.set(newSense);
   }
 
 //---------------------------------------------------------------------------

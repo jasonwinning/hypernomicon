@@ -144,10 +144,10 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 
   /**
-   * Merges two terms records into one.
+   * Merges two Term records into one.
    * <p>
    * This assumes the two terms don't have conflicting concepts, i.e., concepts with the same glossary and sense.
-   * @param term1 The term that the term terms will be merged into.
+   * @param term1 The term that the two terms will be merged into.
    * @param term2 The second term being merged; it will be deleted as part of this operation.
    * @param newName The name to use for the merged term.
    * @param newKey The search key to use for the merged term.
