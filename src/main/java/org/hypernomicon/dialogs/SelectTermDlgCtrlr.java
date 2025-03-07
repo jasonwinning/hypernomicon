@@ -17,6 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.App.ui;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -28,24 +29,20 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_Glossary;
-import org.hypernomicon.model.records.HDT_Term;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.populators.CustomPopulator;
-import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperCB;
 
+import javafx.beans.property.Property;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 
 //---------------------------------------------------------------------------
 
@@ -226,13 +223,10 @@ public class SelectTermDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public HDT_Term         getTerm           () { return term; }
-  public boolean          getCreatingNewTerm() { return creatingNewTerm; }
-  public HDT_Glossary     getGlossary       () { return glossaryToUse != null ? glossaryToUse : hcbGlossary.selectedRecord(); }
-  public HDT_ConceptSense getSense          () { return senseToUse    != null ? senseToUse    : hcbSense   .selectedRecord(); }
-  public String           getSenseText      () { return ultraTrim(hcbSense.getText()); }
+  private HDT_Glossary     getGlossary() { return glossaryToUse != null ? glossaryToUse : hcbGlossary.selectedRecord(); }
+  private HDT_ConceptSense getSense   () { return senseToUse    != null ? senseToUse    : hcbSense   .selectedRecord(); }
 
-  public void             moveConcept       () { concept.moveToDifferentTerm(term, creatingNewTerm, getGlossary(), getSense(), getSenseText()); }
+  public void              moveConcept() { concept.moveToDifferentTerm(term, creatingNewTerm, getGlossary(), getSense(), ultraTrim(hcbSense.getText())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -278,6 +272,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
     }
     else
       glossaryToUse = generalGlossary;  // We are in the scenario of uniting a non-Term record with a new Term; always default to General glossary
+
     okClicked = true;
     creatingNewTerm = true;
     dialogStage.close();
@@ -317,7 +312,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
     {
       if (getSense() == null)
       {
-        String senseText = getSenseText();
+        String senseText = ultraTrim(hcbSense.getText());
 
         if (senseText.isBlank())
         {
@@ -343,6 +338,28 @@ public class SelectTermDlgCtrlr extends HyperDlg
     }
 
     glossaryToUse = glossary;
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean uniteWith(HDT_RecordWithMainText otherSpoke, MutableBoolean createdNewTerm, Property<HDT_Concept> conceptProp) throws HyperDataException
+  {
+    HDT_Concept concept = term.getConcept(getGlossary(), getSense());
+
+    if (concept == null)
+      throw new HDB_InternalError(89681);
+
+    if (ui.uniteRecords(otherSpoke, concept) == false)
+      return false;
+
+    createdNewTerm.setValue(creatingNewTerm);
+    conceptProp   .setValue(concept);
+
+    if (creatingNewTerm)
+      concept.term.get().setName(otherSpoke.listName());
+
     return true;
   }
 

@@ -30,8 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -42,6 +42,8 @@ import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -350,19 +352,16 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     HDT_RecordWithMainText source = (HDT_RecordWithMainText) ui.activeRecord();
 
-    SelectTermDlgCtrlr frmSelectTerm = SelectTermDlgCtrlr.showPopupToChooseTermToUniteWith(source);
+    SelectTermDlgCtrlr selectTermDlgCtrlr = SelectTermDlgCtrlr.showPopupToChooseTermToUniteWith(source);
 
-    if ((frmSelectTerm.showModal() == false) || (frmSelectTerm.getGlossary() == null)) return;
+    if (selectTermDlgCtrlr.showModal() == false) return;
 
-    HDT_Term term = frmSelectTerm.getTerm();
-    HDT_Concept concept = term.getConcept(frmSelectTerm.getGlossary(), frmSelectTerm.getSense());
+    MutableBoolean createdNewTerm = new MutableBoolean();
+    Property<HDT_Concept> conceptProp = new SimpleObjectProperty<>();
 
     try
     {
-      if (concept == null)
-        throw new HDB_InternalError(89681);
-
-      if (ui.uniteRecords(source, concept) == false)
+      if (selectTermDlgCtrlr.uniteWith(source, createdNewTerm, conceptProp) == false)
         return;
     }
     catch (HyperDataException e)
@@ -371,14 +370,13 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       return;
     }
 
-    if (frmSelectTerm.getCreatingNewTerm() == false)
+    if (createdNewTerm.isFalse())
     {
       ui.update();
       return;
     }
 
-    term.setName(source.listName());
-    ui.goToRecord(concept, false);
+    ui.goToRecord(conceptProp.getValue(), false);
   }
 
 //---------------------------------------------------------------------------

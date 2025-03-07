@@ -764,9 +764,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     HDT_Concept concept = curConcept;
 
-    SelectTermDlgCtrlr frmSelectTerm = SelectTermDlgCtrlr.showPopupToMoveConceptToADifferentTerm(concept);
+    SelectTermDlgCtrlr selectTermDlgCtrlr = SelectTermDlgCtrlr.showPopupToMoveConceptToADifferentTerm(concept);
 
-    if (frmSelectTerm.showModal() == false)
+    if (selectTermDlgCtrlr.showModal() == false)
     {
       ui.update();
       return;
@@ -778,7 +778,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     conceptToTextViewInfo.remove(concept);
 
-    frmSelectTerm.moveConcept();
+    selectTermDlgCtrlr.moveConcept();
 
     ui.goToRecord(concept, false);
   }

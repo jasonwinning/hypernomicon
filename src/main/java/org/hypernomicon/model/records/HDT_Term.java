@@ -113,6 +113,12 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Creates a new HDT_Term record and a new HDT_Concept record, adds the concept to the term,
+   * and sets the glossary for the concept to be the <code>glossary</code> parameter.
+   * @param glossary The glossary to set for the concept
+   * @return The new HDT_Term record.
+   */
   public static HDT_Term create(HDT_Glossary glossary)
   {
     HDT_Term term = db.createNewBlankRecord(hdtTerm);

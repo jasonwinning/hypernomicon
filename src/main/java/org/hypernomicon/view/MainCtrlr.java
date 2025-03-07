@@ -3101,12 +3101,12 @@ public final class MainCtrlr
     else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))    desc = record1.getMainText().getHtml();
     else
     {
-      MergeSpokeDlgCtrlr frmMerge = new MergeSpokeDlgCtrlr(record1, record2);
+      MergeSpokeDlgCtrlr msdc = new MergeSpokeDlgCtrlr(record1, record2);
 
-      if (frmMerge.showModal() == false)
+      if (msdc.showModal() == false)
         return false;
 
-      desc = frmMerge.getDesc();
+      desc = msdc.getDesc();
     }
 
     HDT_Hub.uniteRecords(record1, record2, desc);
