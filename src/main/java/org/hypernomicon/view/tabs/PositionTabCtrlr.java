@@ -87,7 +87,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
 
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
@@ -97,7 +97,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
       row.setCellValue(nextColNdx, "", parentType);
     });
 
-    htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());
+    htParents.addColAltPopulator(hdtNone, ctEditableLimitedDropDown, new RecordByTypePopulator());
 
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);

@@ -120,7 +120,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     htLabels.addActionCol(ctGoBtn, 2);
     htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
-    htLabels.addCol(hdtWorkLabel, ctDropDownList);
+    htLabels.addCol(hdtWorkLabel, ctEditableLimitedDropDown);
 
     htLabels.addRemoveMenuItem();
     htLabels.addChangeOrderMenuItem(true);
@@ -133,8 +133,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htKeyMentioners.addLabelCol(hdtNone);
     htKeyMentioners.addLabelCol(hdtNone);
 
-    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), true);
-    hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), true);
+    hcbType = new HyperCB(cbType, ctEditableUnlimitedDropDown, new StandardPopulator(hdtFileType), true);
+    hcbWork = new HyperCB(cbWork, ctEditableLimitedDropDown  , new StandardPopulator(hdtWork    ), true);
 
     hcbWork.addListener((ov, nv) -> cbWorkChange());
 

@@ -23,6 +23,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.settings.SettingsDlgCtrlr.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,7 +40,6 @@ import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.application.Platform;
@@ -196,7 +196,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     Populator pop = Populator.create(CellValueType.cvtFileNameComponent,
         EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new GenericNonRecordHTC(type.prefValue, type.caption, hdtNone)).toList());
 
-    hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDown, pop, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
+    hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableUnlimitedDropDown, pop, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
 
     hyperTable.addLabelEditCol((row, colNdx) ->
     {

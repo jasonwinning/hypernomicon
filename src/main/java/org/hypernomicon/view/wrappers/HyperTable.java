@@ -167,7 +167,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit);
+  private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctNoneditableDropDown, ctEditableUnlimitedDropDown, ctEditableLimitedDropDown, ctEdit);
 
   public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID)
   {
@@ -409,7 +409,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addCol(RecordType objType, HyperCtrlType ctrlType)
   {
-    return addColAltPopulator(objType, ctrlType, (ctrlType == ctDropDown) || (ctrlType == ctDropDownList) ?
+    return addColAltPopulator(objType, ctrlType, (ctrlType == ctEditableUnlimitedDropDown) || (ctrlType == ctNoneditableDropDown) || (ctrlType == ctEditableLimitedDropDown) ?
       new StandardPopulator(objType)
     :
       Populator.create(cvtRecord));
@@ -482,7 +482,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addAuthorEditCol(Supplier<HDT_Work> workSupplier, CellUpdateHandler updateHandler)
   {
-    return addCol(new HyperTableColumn(this, hdtPerson, ctDropDownList, new StandardPopulator(hdtPerson), -1, updateHandler))
+    return addCol(new HyperTableColumn(this, hdtPerson, ctEditableLimitedDropDown, new StandardPopulator(hdtPerson), -1, updateHandler))
       .setWorkSupplier(workSupplier);
   }
 

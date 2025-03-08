@@ -32,26 +32,30 @@ import java.util.function.Predicate;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 
+//---------------------------------------------------------------------------
+
 public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private ComboBox<HyperTableCell> cbRecord;
 
   private final HyperCB hcbRecord;
   private final String typeName;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public HDT_T getRecord() { return hcbRecord.selectedRecord(); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public RecordDropdownDlgCtrlr(RecordType recordType, Predicate<Integer> idFilter)
   {
     super("RecordDropdownDlg", "Select a Term Record to Merge With", true);
 
-    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, idFilter));
+    hcbRecord = new HyperCB(cbRecord, ctEditableLimitedDropDown, new StandardPopulator(recordType, idFilter));
     typeName = getTypeName(recordType);
   }
 

@@ -43,8 +43,14 @@ import javafx.stage.FileChooser;
 
 import static java.nio.charset.StandardCharsets.*;
 
+//---------------------------------------------------------------------------
+
 public class ImportBibEntryDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Button btnBrowse, btnCreateNew, btnExisting;
   @FXML private CheckBox chkDeleteFile, chkNewEntry;
   @FXML private ComboBox<HyperTableCell> cbWork;
@@ -64,7 +70,6 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
   public List<String> getLines()        { return convertMultiLineStrToStrList(taContents.getText(), false); }
   public FilePath getFilePath()         { return tfFile.getText().length() > 0 ? new FilePath(tfFile.getText()) : null; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public ImportBibEntryDlgCtrlr(List<String> lines, FilePath filePath)
@@ -87,7 +92,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     btnCreateNew.setOnAction(event -> doImport(true));
     btnExisting.setOnAction(event -> doImport(false));
 
-    hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork));
+    hcbWork = new HyperCB(cbWork, ctEditableLimitedDropDown, new StandardPopulator(hdtWork));
     hcbWork.populate(false);
 
     if (cbWork.getItems().size() > 0)

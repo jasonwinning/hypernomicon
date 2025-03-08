@@ -55,8 +55,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.CheckBox;
 import javafx.scene.web.WebView;
 
+//---------------------------------------------------------------------------
+
 public class NewArgDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private CheckBox chkIncludeAuth, chkLowerCaseTargetName;
   @FXML private ComboBox<HyperTableCell> cbPerson, cbVerdict, cbWork;
   @FXML private Label lblTargetName, lblTargetDesc;
@@ -74,7 +80,6 @@ public class NewArgDlgCtrlr extends HyperDlg
 
   public HDT_Argument getArgument() { return argument; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public NewArgDlgCtrlr(HDT_Position position)
@@ -94,9 +99,9 @@ public class NewArgDlgCtrlr extends HyperDlg
     this.target = target;
     RecordType verdictType = target.getType() == hdtPosition ? hdtPositionVerdict : hdtArgumentVerdict;
 
-    hcbPerson = new HyperCB(cbPerson, ctDropDownList, new StandardPopulator(hdtPerson));
-    hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(verdictType));
-    hcbWork = new HyperCB(cbWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork));
+    hcbPerson  = new HyperCB(cbPerson , ctEditableLimitedDropDown, new StandardPopulator(hdtPerson));
+    hcbVerdict = new HyperCB(cbVerdict, ctEditableLimitedDropDown, new StandardPopulator(verdictType));
+    hcbWork    = new HyperCB(cbWork   , ctEditableLimitedDropDown, new HybridSubjectPopulator(rtAuthorOfWork));
 
     rbArgName1.setSelected(true);
 

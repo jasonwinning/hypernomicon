@@ -95,7 +95,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htSubInst = new HyperTable(tvSubInstitutions, 0, true, TablePrefKey.INST_SUB);
 
     htSubInst.addTextEditCol(hdtInstitution, true);
-    htSubInst.addCol(hdtInstitutionType, ctDropDownList);
+    htSubInst.addCol(hdtInstitutionType, ctEditableLimitedDropDown);
 
     htSubInst.addActionColWithButtonHandler(ctUrlBtn, 3, (row, colNdx) ->
     {
@@ -133,11 +133,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htPersons.addLabelCol(hdtInstitution        );
     htPersons.addLabelCol(hdtPerson             );
 
-    hcbCountry = new HyperCB(cbCountry, ctDropDownList, new StandardPopulator(hdtCountry), true);
-    hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), true);
+    hcbCountry = new HyperCB(cbCountry, ctEditableLimitedDropDown, new StandardPopulator(hdtCountry), true);
+    hcbRegion  = new HyperCB(cbRegion , ctEditableLimitedDropDown, new SubjectPopulator(rtCountryOfRegion, false), true);
 
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), true);
-    hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution, parentPopFilter, DisplayKind.name), true);
+    hcbType       = new HyperCB(cbType      , ctEditableLimitedDropDown, new StandardPopulator(hdtInstitutionType), true);
+    hcbParentInst = new HyperCB(cbParentInst, ctEditableLimitedDropDown, new StandardPopulator(hdtInstitution, parentPopFilter, DisplayKind.name), true);
 
     hcbCountry.addListener((oldValue, newValue) ->
     {

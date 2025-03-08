@@ -308,7 +308,7 @@ public class WorkDlgCtrlr extends HyperDlg
   private HyperCB initWorkTypeHCB()
   {
     StandardPopulator pop = new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet);
-    HyperCB hyperCB = new HyperCB(cbType, ctDropDownList, pop);
+    HyperCB hyperCB = new HyperCB(cbType, ctEditableLimitedDropDown, pop);
 
     hyperCB.addListener((oldValue, newValue) ->
     {

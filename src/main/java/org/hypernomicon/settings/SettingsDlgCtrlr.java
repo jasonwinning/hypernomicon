@@ -259,7 +259,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming, tabArgNaming);
 
-    hcbDefaultChapterWorkType = new HyperCB(cbDefaultChapterWorkType, ctDropDownList, new StandardPopulator(hdtWorkType));
+    hcbDefaultChapterWorkType = new HyperCB(cbDefaultChapterWorkType, ctEditableLimitedDropDown, new StandardPopulator(hdtWorkType));
 
     cbDefaultChapterWorkType.disableProperty().bind(chkDefaultChapterWorkType.selectedProperty().not());
 

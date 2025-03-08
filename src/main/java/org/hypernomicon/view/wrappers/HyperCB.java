@@ -19,12 +19,14 @@ package org.hypernomicon.view.wrappers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.RecordSelectDlgCtrlr;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
@@ -77,7 +79,7 @@ public class HyperCB implements CommitableWrapper
   public ComboBox<HyperTableCell> getComboBox()      { return cb; }
   public void addListener(HTCListener listener)      { listeners.add(listener); }
   public void addAndSelectEntry(int id, String text) { select(populator.addEntry(row, id, text)); }
-  public HyperTableCell getTypedMatch()              { return autoCompleteHelper.getTypedMatch(); }
+  public HyperTableCell getTypedMatch()              { return autoCompleteHelper == null ? null : autoCompleteHelper.getTypedMatch(); }
   public boolean creatingPersonNotAllowed()          { return (populator.getRecordType(row) != hdtPerson) || dontCreateNewRecord; }
   public HyperTableRow getRow()                      { return row; }
 
@@ -95,7 +97,7 @@ public class HyperCB implements CommitableWrapper
   /**
    * Constructor for dropdown entry field wrapper
    * @param cb The combobox control to use
-   * @param ctrlType Should be ctDropDownList (user can edit) or ctDropDown
+   * @param ctrlType Should be ctEditableLimitedDropDown, ctEditableUnlimitedDropDown, or ctNoneditableDropDown
    * @param newPopulator The Populator to use
    */
   public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator)
@@ -106,7 +108,7 @@ public class HyperCB implements CommitableWrapper
   /**
    * Constructor for dropdown entry field wrapper
    * @param cb The combobox control to use
-   * @param ctrlType Should be ctDropDownList (user can edit) or ctDropDown
+   * @param ctrlType Should be ctEditableLimitedDropDown, ctEditableUnlimitedDropDown, or ctNoneditableDropDown
    * @param newPopulator The Populator to use
    * @param autoCommitBeforeRecordSave Whether the field should be auto-committed (basically, this is like the user hitting enter; could cause popup window to show) when record save is triggered.
    */
@@ -127,7 +129,7 @@ public class HyperCB implements CommitableWrapper
     this.table = table;
     this.row = nullSwitch(row, Populator.dummyRow);
 
-    if ((ctrlType != ctDropDown) && (ctrlType != ctDropDownList))
+    if ((ctrlType != ctNoneditableDropDown) && (ctrlType != ctEditableUnlimitedDropDown) && (ctrlType != ctEditableLimitedDropDown))
     {
       internalErrorPopup(42852);
       autoCompleteHelper = null;
@@ -154,7 +156,13 @@ public class HyperCB implements CommitableWrapper
 
   //---------------------------------------------------------------------------
 
-    autoCompleteHelper = new AutoCompleteCBHelper(this, ctrlType == ctDropDownList);
+    if (ctrlType == ctNoneditableDropDown)
+    {
+      autoCompleteHelper = null;
+      cb.setEditable(false);
+    }
+    else
+      autoCompleteHelper = new AutoCompleteCBHelper(this, ctrlType == ctEditableLimitedDropDown);
 
   //---------------------------------------------------------------------------
 
@@ -200,15 +208,13 @@ public class HyperCB implements CommitableWrapper
     return selectedHTC(cb, str -> new GenericNonRecordHTC(str, selectedType()));
   }
 
-  public static HyperTableCell selectedHTC(ComboBox<? extends HyperTableCell> cb, Function<String, HyperTableCell> cellFactory)
+  public static <T extends HyperTableCell> T selectedHTC(ComboBox<T> cb, Function<String, T> cellFactory)
   {
-    HyperTableCell htc = cb.getValue();
-    String str = cb.getEditor().getText();
+    String str = cb.isEditable() ? cb.getEditor().getText() : "";
 
-    return (htc == null) || (HyperTableCell.getCellText(htc).equals(str) == false) ?
-      cellFactory.apply(str)
-    :
-      htc;
+    return Optional.ofNullable(cb.getValue())
+                   .filter(htc -> (cb.isEditable() == false) || HyperTableCell.getCellText(htc).equals(str))
+                   .orElseGet(() -> cellFactory.apply(str));
   }
 
 //---------------------------------------------------------------------------
@@ -244,7 +250,7 @@ public class HyperCB implements CommitableWrapper
   public void clear()
   {
     cb.getSelectionModel().clearSelection();
-    cb.getEditor().clear();
+    if (cb.isEditable()) cb.getEditor().clear();
     cb.setValue(null);
     populator.clear();
   }
@@ -349,6 +355,8 @@ public class HyperCB implements CommitableWrapper
 
   @Override public void commit()
   {
+    if (cb.isEditable() == false) return;
+
     HyperTableCell typedMatch = autoCompleteHelper.getTypedMatch();
 
     if (typedMatch != null)
@@ -376,6 +384,9 @@ public class HyperCB implements CommitableWrapper
 
   public HyperTableCell handleLackOfStrongMatch()
   {
+    if (cb.isEditable() == false)
+      throw new AssertionError(new HDB_InternalError(16432));
+
     if (dontCreateNewRecord || ui.isShuttingDown())
       return null;
 
@@ -448,6 +459,9 @@ public class HyperCB implements CommitableWrapper
 
   public HyperTableCell showPopupToSelectFromMatches(List<HyperTableCell> cells)
   {
+    if (cb.isEditable() == false)
+      throw new AssertionError(new HDB_InternalError(16433));
+
     RecordSelectDlgCtrlr ctrlr = new RecordSelectDlgCtrlr(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
     return ctrlr.showModal() ? populator.getChoiceByID(row, ctrlr.getRecord().getID()) : null;
   }

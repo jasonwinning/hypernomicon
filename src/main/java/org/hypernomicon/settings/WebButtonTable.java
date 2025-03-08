@@ -70,7 +70,7 @@ class WebButtonTable extends WebButtonCtrl
     CustomPopulator pop = new CustomPopulator(cvtSrchBtnPreset, (row, force) -> webBtnList.stream().map(WebButtonCell::new));
 
     ht.addTextEditCol(hdtNone, true);
-    ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDownList, pop,
+    ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctEditableLimitedDropDown, pop,
                                            (row, cellVal, nextColNdx, nextPopulator) ->
                                              row.setCellValue(0, nullSwitch(htcToWebButton(cellVal), "", WebButton::getCaption), hdtNone));
 

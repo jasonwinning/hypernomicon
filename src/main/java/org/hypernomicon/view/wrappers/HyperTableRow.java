@@ -127,7 +127,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     Populator populator = col.getPopulator();
 
     if ((populator != null) &&
-        ((col.getCtrlType() == ctDropDownList) ||
+        ((col.getCtrlType() == ctEditableLimitedDropDown) ||
          (((populator.getValueType() == cvtVaries) && ((VariablePopulator)populator).getRestricted(this)))))
     {
       HyperTableCell matchedCell = populator.match(this, newCell);

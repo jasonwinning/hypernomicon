@@ -322,7 +322,7 @@ public abstract class BibFieldCtrlr
     {
       super("WorkTypeCtrl", bfWorkType, bibData);
 
-      hcb = new HyperCB(cb, ctDropDownList, new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet));
+      hcb = new HyperCB(cb, ctEditableLimitedDropDown, new StandardPopulator(hdtWorkType, id -> HDT_WorkType.workTypeIDToEnumVal(id) != wtUnenteredSet));
 
       hcb.selectIDofRecord(getSourceWorkType());
 

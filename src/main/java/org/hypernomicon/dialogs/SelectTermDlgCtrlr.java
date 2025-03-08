@@ -149,7 +149,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
       return db.terms.getByID(termID).concepts.stream().anyMatch(otherConcept -> HDT_Hub.canUnite(otherConcept, unitingWith, sb));
     };
 
-    hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm, termIDFilter));
+    hcbTerm = new HyperCB(cbTerm, ctEditableLimitedDropDown, new StandardPopulator(hdtTerm, termIDFilter));
 
     CustomPopulator glossaryPop = new CustomPopulator(hdtGlossary, (row, force) ->
     {
@@ -160,7 +160,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
                                        .map(curConcept -> curConcept.glossary.get()).distinct();
     });
 
-    hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, concept == null ? glossaryPop : new StandardPopulator(hdtGlossary));
+    hcbGlossary = new HyperCB(cbGlossary, ctEditableLimitedDropDown, concept == null ? glossaryPop : new StandardPopulator(hdtGlossary));
 
     CustomPopulator sensePop = new CustomPopulator(hdtConceptSense, (row, force) ->
     {
@@ -178,7 +178,7 @@ public class SelectTermDlgCtrlr extends HyperDlg
       return db.conceptSenses.stream().filter(curSense -> tempTerm.getConcept(tempGlossary, curSense) == null);
     });
 
-    hcbSense = new HyperCB(cbSense, concept == null ? ctDropDownList : ctDropDown, sensePop);
+    hcbSense = new HyperCB(cbSense, concept == null ? ctEditableLimitedDropDown : ctEditableUnlimitedDropDown, sensePop);
 
     hcbTerm.addListener((oldCell, newCell) ->
     {

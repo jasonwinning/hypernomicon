@@ -32,14 +32,19 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 
+//---------------------------------------------------------------------------
+
 public class VerdictDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Label lblParentType, lblParentName;
   @FXML private ComboBox<HyperTableCell> cbVerdict;
 
   public HyperCB hcbVerdict;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public VerdictDlgCtrlr(String title, HDT_Record parent)
@@ -51,12 +56,12 @@ public class VerdictDlgCtrlr extends HyperDlg
     if (parent.getType() == hdtPosition)
     {
       lblParentType.setText("Target Position:");
-      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict));
+      hcbVerdict = new HyperCB(cbVerdict, ctEditableLimitedDropDown, new StandardPopulator(hdtPositionVerdict));
     }
     else if (parent.getType() == hdtArgument)
     {
       lblParentType.setText("Target Argument:");
-      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtArgumentVerdict));
+      hcbVerdict = new HyperCB(cbVerdict, ctEditableLimitedDropDown, new StandardPopulator(hdtArgumentVerdict));
     }
     else
     {

@@ -95,7 +95,13 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
     runDelayedInFXThread(6, 50, () ->
     {
-      cb.requestFocus();
+      cb.requestFocus();  // If this is not called explicitly, the ComboBox will not "officially" ever receive focus even though it is
+                          // outlined in blue and the user can type in it. And it will not receive an event when it loses focus (see createComboBox),
+                          // which means the value doesn't get committed to the table when the user clicks off of it.
+
+      if (cb.isEditable() == false)
+        return;
+
       AutoCompleteCBHelper.scrollToValue(cb);
 
       cb.getEditor().selectAll();
@@ -164,7 +170,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     HyperTableRow row = getTableRow().getItem();
 
     if (populator.getValueType() == cvtVaries)
-      ctrlType = ((VariablePopulator)populator).getRestricted(row) ? ctDropDownList : ctDropDown;
+      ctrlType = ((VariablePopulator)populator).getRestricted(row) ? ctEditableLimitedDropDown : ctEditableUnlimitedDropDown;
 
     hcb = new HyperCB(cb, ctrlType, populator, row, false, table, colNdx);
 
@@ -175,8 +181,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
     cb.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (cb.isFocused() == false)
-        commit();
+      if (cb.isFocused() == false)  // See ComboBoxCell.startEdit; cb.requestFocus() has to be called
+        commit();                   // explicitly for this to work.
     });
 
     cb.addEventHandler(KeyEvent.KEY_PRESSED, event ->

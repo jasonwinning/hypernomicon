@@ -82,7 +82,6 @@ public class InsertPictureDlgCtrlr extends HyperDlg
   private String bufferFileName = "";
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public InsertPictureDlgCtrlr(Consumer<HDT_MiscFile> miscFileConsumer)
   {
@@ -98,7 +97,7 @@ public class InsertPictureDlgCtrlr extends HyperDlg
       return ext.isBlank() ? text : (text + " (" + ext + ')');
     };
 
-    hcbExisting = new HyperCB(cbExisting, ctDropDownList, new StandardPopulator(hdtMiscFile, null, textFunction));
+    hcbExisting = new HyperCB(cbExisting, ctEditableLimitedDropDown, new StandardPopulator(hdtMiscFile, null, textFunction));
 
     hcbExisting.addListener((ov, nv) ->
     {

@@ -237,7 +237,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htLabels.addActionCol(ctGoBtn, 2);
     htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
-    htLabels.addCol(hdtWorkLabel, ctDropDownList);
+    htLabels.addCol(hdtWorkLabel, ctEditableLimitedDropDown);
 
     htLabels.addRemoveMenuItem();
 
@@ -427,8 +427,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htISBN.addRefreshHandler(tabPane::requestLayout);
 
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), true);
-    hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), true);
+    hcbType       = new HyperCB(cbType      , ctEditableLimitedDropDown, new StandardPopulator(hdtWorkType), true);
+    hcbLargerWork = new HyperCB(cbLargerWork, ctEditableLimitedDropDown, new StandardPopulator(hdtWork    ), true);
 
     btnWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.WORK + '1'));
     smbWebSrch1.setOnAction(searchBtnEvent(WebButtonContextPrefKey.WORK + '1'));
@@ -441,7 +441,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnStop.setOnAction(event -> stopRetrieving());
 
-    mnuFindDOIonCrossref.setOnAction(event -> retrieveBibData(true, "", null));
+    mnuFindDOIonCrossref    .setOnAction(event -> retrieveBibData(true , "", null));
     mnuFindISBNonGoogleBooks.setOnAction(event -> retrieveBibData(false, "", null));
 
     mnuGoogle.setOnAction(event ->
@@ -461,9 +461,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     mnuStoreMetadata.setVisible(false); // Not implemented yet
 
-    btnUseDOI.setOnAction(event -> useDOIClick());
-    btnUseISBN.setOnAction(event -> useISBNClick());
-    btnAutofill.setOnAction(event -> btnAutofillClick());
+    btnUseDOI     .setOnAction(event -> useDOIClick     ());
+    btnUseISBN    .setOnAction(event -> useISBNClick    ());
+    btnAutofill   .setOnAction(event -> btnAutofillClick());
     btnTopAutofill.setOnAction(event -> btnAutofillClick());
 
     btnLaunch.setOnAction(event ->

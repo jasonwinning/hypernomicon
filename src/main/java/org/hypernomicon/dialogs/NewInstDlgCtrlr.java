@@ -37,8 +37,14 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 
+//---------------------------------------------------------------------------
+
 public class NewInstDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final HyperCB hcbParent, hcbExisting, hcbType;
 
   @FXML public TextField tfName, tfNewParentName;
@@ -47,15 +53,14 @@ public class NewInstDlgCtrlr extends HyperDlg
   @FXML private RadioButton rbExistingInst, rbExistingDiv;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public NewInstDlgCtrlr(HDT_Institution parent, String newName, boolean isParent)
   {
     super("NewInstDlg", "New Institution or Institutional Division", true);
 
-    hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name));
-    hcbExisting = new HyperCB(cbExisting, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, false), true);
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType));
+    hcbParent   = new HyperCB(cbParent  , ctEditableLimitedDropDown, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name));
+    hcbExisting = new HyperCB(cbExisting, ctEditableLimitedDropDown, new SubjectPopulator(rtParentInstOfInst, false), true);
+    hcbType     = new HyperCB(cbType    , ctEditableLimitedDropDown, new StandardPopulator(hdtInstitutionType));
 
     hcbParent.dontCreateNewRecord = true;
 

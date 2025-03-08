@@ -76,7 +76,7 @@ public class AutoCompleteCBHelper
 
 //---------------------------------------------------------------------------
 
-  public AutoCompleteCBHelper(ComboBox<? extends HyperTableCell> cb, boolean limitToChoices, Function<String, HyperTableCell> cellFactory)
+  public <T extends HyperTableCell> AutoCompleteCBHelper(ComboBox<T> cb, boolean limitToChoices, Function<String, T> cellFactory)
   {
     this(cb, null, limitToChoices, cellFactory);
   }
@@ -86,7 +86,7 @@ public class AutoCompleteCBHelper
     this(hcb.getComboBox(), hcb, limitToChoices, null);
   }
 
-  private AutoCompleteCBHelper(ComboBox<? extends HyperTableCell> cb, HyperCB hcb, boolean limitToChoices, Function<String, HyperTableCell> cellFactory)
+  private <T extends HyperTableCell> AutoCompleteCBHelper(ComboBox<T> cb, HyperCB hcb, boolean limitToChoices, Function<String, T> cellFactory)
   {
     this.cb = cb;
     this.limitToChoices = limitToChoices;

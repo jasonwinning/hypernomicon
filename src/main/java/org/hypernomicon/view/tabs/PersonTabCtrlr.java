@@ -163,13 +163,13 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htPersonInst.addActionCol(ctGoNewBtn, 2);
     htPersonInst.addCheckboxCol();
 
-    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, cellVal, nextColNdx, nextPopulator) ->
+    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctEditableLimitedDropDown, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
       row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row));
     });
 
-    htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, DisplayKind.name));
+    htPersonInst.addColAltPopulator(hdtInstitution, ctEditableLimitedDropDown, new SubjectPopulator(rtParentInstOfInst, true, DisplayKind.name));
 
     htPersonInst.addRemoveMenuItem();
     htPersonInst.addChangeOrderMenuItem(true);
@@ -206,10 +206,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htArguments.addLabelCol(hdtArgumentVerdict, smTextSimple);
     htArguments.addLabelCol(hdtArgument);
 
-    hcbRank     = new HyperCB(cbRank    , ctDropDownList, new StandardPopulator(hdtRank                 ), true);
-    hcbStatus   = new HyperCB(cbStatus  , ctDropDownList, new StandardPopulator(hdtPersonStatus         ), true);
-    hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField                ), true);
-    hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), true);
+    hcbRank     = new HyperCB(cbRank    , ctEditableLimitedDropDown  , new StandardPopulator(hdtRank                 ), true);
+    hcbStatus   = new HyperCB(cbStatus  , ctEditableLimitedDropDown  , new StandardPopulator(hdtPersonStatus         ), true);
+    hcbField    = new HyperCB(cbField   , ctEditableLimitedDropDown  , new StandardPopulator(hdtField                ), true);
+    hcbSubfield = new HyperCB(cbSubfield, ctEditableUnlimitedDropDown, new SubjectPopulator (rtFieldOfSubfield, false), true);
 
     setToolTip(btnWebSrch1, () -> TOOLTIP_PREFIX + btnWebSrch1.getText());
     setToolTip(smbWebSrch1, () -> TOOLTIP_PREFIX + smbWebSrch1.getText());

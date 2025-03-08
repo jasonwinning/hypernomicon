@@ -37,8 +37,14 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
+//---------------------------------------------------------------------------
+
 public class ChangeIDDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperCB hcbType;
   public final HyperCB hcbRecord;
 
@@ -48,14 +54,13 @@ public class ChangeIDDlgCtrlr extends HyperDlg
   @FXML private Label lblNotAvailable;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public ChangeIDDlgCtrlr()
   {
     super("ChangeIDDlg", "Change Record ID", true);
 
-    hcbType = new HyperCB(cbType, ctDropDownList, new RecordTypePopulator(false));
-    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new RecordByTypePopulator());
+    hcbType   = new HyperCB(cbType  , ctEditableLimitedDropDown, new RecordTypePopulator(false));
+    hcbRecord = new HyperCB(cbRecord, ctEditableLimitedDropDown, new RecordByTypePopulator());
 
     hcbType.addListener((oldValue, newValue) ->
     {

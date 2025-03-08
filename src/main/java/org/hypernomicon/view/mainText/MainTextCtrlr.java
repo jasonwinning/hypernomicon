@@ -162,8 +162,8 @@ public class MainTextCtrlr
 
     RecordTypePopulator rtp = new RecordTypePopulator(displayedTypesStream());
 
-    hcbType = new HyperCB(cbType, ctDropDownList, rtp);
-    hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator());
+    hcbType = new HyperCB(cbType, ctEditableLimitedDropDown, rtp);
+    hcbName = new HyperCB(cbName, ctEditableLimitedDropDown, new RecordByTypePopulator());
 
     hcbType.addListener((oldValue, newValue) ->
     {
@@ -184,8 +184,8 @@ public class MainTextCtrlr
 
     rtp = new RecordTypePopulator(hdtWork, hdtMiscFile);
 
-    hcbKeyType = new HyperCB(cbKeyType, ctDropDownList, rtp);
-    hcbKeyName = new HyperCB(cbKeyName, ctDropDownList, new RecordByTypePopulator());
+    hcbKeyType = new HyperCB(cbKeyType, ctEditableLimitedDropDown, rtp);
+    hcbKeyName = new HyperCB(cbKeyName, ctEditableLimitedDropDown, new RecordByTypePopulator());
 
     Background bg = new Background(new BackgroundFill(Color.SLATEBLUE, null, null));
 

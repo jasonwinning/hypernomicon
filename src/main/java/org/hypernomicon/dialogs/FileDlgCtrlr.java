@@ -48,8 +48,14 @@ import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
+//---------------------------------------------------------------------------
+
 public class FileDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Button btnUseRecord, btnBrowseOld;
   @FXML private CheckBox chkDontChangeFilename;
   @FXML private Label lblName;
@@ -73,7 +79,6 @@ public class FileDlgCtrlr extends HyperDlg
   @SuppressWarnings("unchecked")
   public <HDT_T extends HDT_RecordWithPath> HDT_T getFileRecord() { return (HDT_T) curFileRecord; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public FileDlgCtrlr(String title, HDT_MiscFile curFileRecord, String recordName, boolean canBrowseToExistingMiscFileRecord)
@@ -99,7 +104,7 @@ public class FileDlgCtrlr extends HyperDlg
     srcFilePath = null;
     copyOnly = false;
 
-    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType));
+    hcbType = new HyperCB(cbType, ctEditableUnlimitedDropDown, new StandardPopulator(hdtFileType));
 
     tfFileName.disableProperty().bind(chkDontChangeFilename.selectedProperty());
 

@@ -55,9 +55,9 @@ public class SearchKeySelectDlgCtrlr extends HyperDlg
 
     VariablePopulator recordPop = new VariablePopulator();
 
-    HyperCB hcbType   = new HyperCB(cbType  , ctDropDownList, new RecordTypePopulator(hdtPerson, hdtInvestigation, hdtWork, hdtMiscFile, hdtDebate, hdtPosition, hdtArgument, hdtNote, hdtTerm)),
-            hcbAuthor = new HyperCB(cbAuthor, ctDropDownList, new StandardPopulator  (hdtPerson)),
-            hcbRecord = new HyperCB(cbRecord, ctDropDownList, recordPop);
+    HyperCB hcbType   = new HyperCB(cbType  , ctEditableLimitedDropDown, new RecordTypePopulator(hdtPerson, hdtInvestigation, hdtWork, hdtMiscFile, hdtDebate, hdtPosition, hdtArgument, hdtNote, hdtTerm)),
+            hcbAuthor = new HyperCB(cbAuthor, ctEditableLimitedDropDown, new StandardPopulator  (hdtPerson)),
+            hcbRecord = new HyperCB(cbRecord, ctEditableLimitedDropDown, recordPop);
 
 //---------------------------------------------------------------------------
 

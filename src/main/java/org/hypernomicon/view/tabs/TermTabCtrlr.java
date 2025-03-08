@@ -286,12 +286,12 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       }).setTooltip(ButtonAction.baBrowse, "Select a Glossary or parent Concept from the Tree");
 
-    htGlossaries.addColWithUpdateHandler(hdtGlossary, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) -> updateGlossaryRow(row))
+    htGlossaries.addColWithUpdateHandler(hdtGlossary, ctEditableLimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> updateGlossaryRow(row))
                 .setDontCreateNewRecord(true);
 
-    htGlossaries.addColWithUpdateHandler(hdtConceptSense, ctDropDown, (row, cellVal, nextColNdx, nextPopulator) -> updateSense(row, cellVal));
+    htGlossaries.addColWithUpdateHandler(hdtConceptSense, ctEditableUnlimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> updateSense(row, cellVal));
 
-    htGlossaries.addColAltPopulatorWithUpdateHandler(hdtConcept, ctDropDownList, new SubjectPopulator(rtGlossaryOfConcept, true,
+    htGlossaries.addColAltPopulatorWithUpdateHandler(hdtConcept, ctEditableLimitedDropDown, new SubjectPopulator(rtGlossaryOfConcept, true,
       id -> // Populator ID filter
       {
         if ((id < 1) || HDT_Record.isEmpty(curTerm, false)) return false;

@@ -59,7 +59,7 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
 
     ht.getColumns().forEach(htCol -> { switch (htCol.getCtrlType())
     {
-      case ctDropDown: case ctDropDownList: case ctEdit: case ctNone:
+      case ctEditableUnlimitedDropDown: case ctNoneditableDropDown: case ctEditableLimitedDropDown: case ctEdit: case ctNone:
 
         TableColumn<HyperTableRow, String> col = new TableColumn<>();
 

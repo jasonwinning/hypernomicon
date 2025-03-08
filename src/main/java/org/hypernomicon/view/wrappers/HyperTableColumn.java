@@ -63,8 +63,60 @@ public class HyperTableColumn
 {
   public enum HyperCtrlType
   {
-    ctNone,     ctIncremental, ctDropDownList, ctDropDown,  ctEdit,     ctUrlBtn, ctBrowseBtn, ctGoBtn,
-    ctGoNewBtn, ctEditNewBtn,  ctLabelEdit,    ctCustomBtn, ctCheckbox, ctIcon,   ctInvSelect
+    /**
+     * Read-only; just displays text without being editable
+     */
+    ctNone,
+
+    /**
+     * Same as ctNone, except bottom row has a "Show More" button to load more rows
+     */
+    ctIncremental,
+
+    /**
+     * ComboBox with editable TextField, entry limited to choices
+     */
+    ctEditableLimitedDropDown,
+
+    /**
+     * ComboBox with editable TextField, entry not limited to choices
+     */
+    ctEditableUnlimitedDropDown,
+
+    /**
+     * ComboBox without editable TextField
+     */
+    ctNoneditableDropDown,
+
+    /**
+     * TextField with free text entry
+     */
+    ctEdit,
+
+    ctUrlBtn,
+    ctBrowseBtn,
+    ctGoBtn,
+    ctGoNewBtn,
+    ctEditNewBtn,
+
+    /**
+     * Noneditable Label with pencil button to open popup to edit
+     */
+    ctLabelEdit,
+
+    /**
+     * Button with customized caption and action handler
+     */
+    ctCustomBtn,
+
+    ctCheckbox,
+
+    /**
+     * Displays only an icon, determined by calling HyperTableCell.getImgRelPath
+     */
+    ctIcon,
+
+    ctInvSelect
   }
 
   public enum CellSortMethod
@@ -198,11 +250,11 @@ public class HyperTableColumn
 
     htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
 
-    switch (ctrlType)
+    switch (this.ctrlType)
     {
       case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn : case ctLabelEdit :
 
-        htcCol.setCellFactory(tableCol -> new ButtonCell(ctrlType, table, this, targetCol, btnHandler, btnCaption));
+        htcCol.setCellFactory(tableCol -> new ButtonCell(this.ctrlType, table, this, targetCol, btnHandler, btnCaption));
         break;
 
       case ctEdit :
@@ -273,9 +325,9 @@ public class HyperTableColumn
 
         break;
 
-      case ctDropDownList : case ctDropDown :
+      case ctNoneditableDropDown : case ctEditableLimitedDropDown : case ctEditableUnlimitedDropDown :
 
-        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, ctrlType, populator, onAction, dontCreateNewRecord, textHndlr, workSupplier));
+        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, this.ctrlType, populator, onAction, dontCreateNewRecord, textHndlr, workSupplier));
         htcCol.setOnEditStart(event -> populator.populate(event.getRowValue(), false));
 
         break;

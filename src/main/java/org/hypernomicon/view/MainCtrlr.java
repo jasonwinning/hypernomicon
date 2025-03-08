@@ -402,7 +402,7 @@ public final class MainCtrlr
     copyRegionLayout(tfOmniGoTo, ctfOmniGoTo);
     addToParent(ctfOmniGoTo, removeFromParent(tfOmniGoTo));
 
-    hcbGoTo = new HyperCB(cbGoTo, ctDropDown, new RecordByTypePopulator());
+    hcbGoTo = new HyperCB(cbGoTo, ctEditableUnlimitedDropDown, new RecordByTypePopulator());
 
     htFind = new HyperTable(tvFind, 1, false, TablePrefKey.FIND); htFind.disableRefreshAfterCellUpdate = true;
 

@@ -90,7 +90,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtPosition, hdtArgument);
 
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
@@ -110,13 +110,13 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       row.setCellValue(nextColNdx + 1, "", verdictPopulator.getRecordType(row));
     });
 
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new RecordByTypePopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, new RecordByTypePopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       if (HyperTableCell.getCellID(cellVal) < 1)
         row.setCellValue(nextColNdx, "", verdictPopulator.getRecordType(row));
     });
 
-    htParents.addColAltPopulator(hdtNone, ctDropDownList, verdictPopulator);
+    htParents.addColAltPopulator(hdtNone, ctEditableLimitedDropDown, verdictPopulator);
 
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);
@@ -136,7 +136,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     }).setTextHndlr(row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), work -> work.getLongAuthorsStr(true)));
 
-    htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
+    htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctEditableLimitedDropDown, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       if (HyperTableCell.getCellID(cellVal) > 0)
       {

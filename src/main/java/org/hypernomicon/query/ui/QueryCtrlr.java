@@ -203,7 +203,7 @@ public final class QueryCtrlr
 
     // Query type column with change handler
 
-    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, queryTypePopulator, (row, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, queryTypePopulator, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       int rowNdx = tvFields.getItems().indexOf(row);
 
@@ -259,7 +259,7 @@ public final class QueryCtrlr
 
     // Query select column with change handler
 
-    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new QueryPopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, new QueryPopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       boolean tempDASD = disableAutoShowDropdownList;
       disableAutoShowDropdownList = true;
@@ -281,7 +281,7 @@ public final class QueryCtrlr
 
     // Operand 1 column with change handler
 
-    htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctEditableUnlimitedDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       Query<?> query = getQuery(row);
 
@@ -321,7 +321,7 @@ public final class QueryCtrlr
 
     // Operand 2 column with change handler
 
-    htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctEditableUnlimitedDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       boolean tempDASD = disableAutoShowDropdownList;
       disableAutoShowDropdownList = true;
@@ -341,7 +341,7 @@ public final class QueryCtrlr
 
 //---------------------------------------------------------------------------
 
-    htFields.addColAltPopulatorWithActionHandler(hdtNone, ctDropDown, new VariablePopulator(), onAction);
+    htFields.addColAltPopulatorWithActionHandler(hdtNone, ctEditableUnlimitedDropDown, new VariablePopulator(), onAction);
 
     htFields.getColumns().forEach(col -> col.setDontCreateNewRecord(true));
 

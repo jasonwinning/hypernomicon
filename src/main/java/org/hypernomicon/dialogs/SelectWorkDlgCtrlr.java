@@ -66,8 +66,14 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+//---------------------------------------------------------------------------
+
 public class SelectWorkDlgCtrlr extends HyperDlg
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private ComboBox<HyperTableCell> cbAuthor, cbWork, cbBibEntry;
   @FXML private Button btnCreateNew, btnStop, btnLaunch;
   @FXML private Label lblBibEntry;
@@ -98,7 +104,6 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   public HDT_Person getAuthor()       { return author; }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public SelectWorkDlgCtrlr(HDT_Person authorToUse, FilePath filePathToUse)
   {
@@ -110,7 +115,6 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     this(workToUse, null, null, false, bibEntryToUse, true);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private SelectWorkDlgCtrlr(HDT_Work workToUse, HDT_Person authorToUse, FilePath       filePathToUse, boolean filePathIsConstant,
@@ -185,7 +189,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
     onShown = this::addPreview; // set anchors after dialog has been rescaled
 
-    hcbAuthor = new HyperCB(cbAuthor, ctDropDownList, new StandardPopulator(hdtPerson));
+    hcbAuthor = new HyperCB(cbAuthor, ctEditableLimitedDropDown, new StandardPopulator(hdtPerson));
     hcbAuthor.dontCreateNewRecord = true;
 
     HybridSubjectPopulator workPop = new HybridSubjectPopulator(rtAuthorOfWork, id ->
@@ -197,8 +201,8 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       return (HDT_Work.isUnenteredSet(curWork) == false) && curWork.getBibEntryKey().isBlank();
     });
 
-    hcbWork = new HyperCB(cbWork, ctDropDownList, workPop);
-    hcbBibEntry = new HyperCB(cbBibEntry, ctDropDownList, new BibEntryPopulator((row, force) ->
+    hcbWork     = new HyperCB(cbWork    , ctEditableLimitedDropDown, workPop);
+    hcbBibEntry = new HyperCB(cbBibEntry, ctEditableLimitedDropDown, new BibEntryPopulator((row, force) ->
     {
       if (db.bibLibraryIsLinked() == false)
         return new ArrayList<>();
