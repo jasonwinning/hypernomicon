@@ -51,10 +51,8 @@ import org.hypernomicon.view.MainCtrlr;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.geometry.Orientation;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
-import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeSortMode;
@@ -129,7 +127,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   @Override public TreeItem<TreeRow> getRoot()                           { return ttv.getRoot(); }
   @Override public Control getControl()                                  { return ttv; }
   @Override public SelectionModel<TreeItem<TreeRow>> getSelectionModel() { return ttv.getSelectionModel(); }
-  @Override public void scrollToNdx(int ndx)                             { scrollToNdx(ttv, ndx); }
+  @Override public void scrollToNdx(int ndx)                             { scrollToNdxInTable(ttv, ndx); }
 
   @Override public TreeRow newRow(HDT_Record record, TreeModel<TreeRow> treeModel) { return new TreeRow(record, treeModel); }
 
@@ -595,40 +593,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     draggingRow = null;
     dragReset();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  // TreeTableView.scrollTo could not be used because it is too buggy.
-  // In java.scene.control.skin.VirtualFlow.adjustPositionToIndex, variable "estimatedSize" is often incorrectly set to 1,
-  // which causes it to just scroll to the top regardless of the index passed in.
-
-  // This algorithm is similar to HyperTable.scrollToNdx
-
-  private static <RowType> void scrollToNdx(TreeTableView<RowType> ttv, int ndx)
-  {
-    ScrollBar sb = getScrollBar(ttv, Orientation.VERTICAL);
-    if (sb == null) return;
-
-    double rHeight = getRowHeight(ttv),
-
-           allRowsHeight = rHeight * ttv.getExpandedItemCount(),
-           vpHeight = allRowsHeight * sb.getVisibleAmount(),
-           vpTop = (allRowsHeight - vpHeight) * sb.getValue(),
-
-           y1 = ndx * rHeight,
-           y2 = (ndx + 1) * rHeight;
-
-    if (y2 > (vpTop + (vpHeight / 4.0)))
-    {
-      double scrollValue = y2 - (vpHeight * 0.25);
-      if (scrollValue > allRowsHeight - vpHeight)
-        scrollValue = allRowsHeight - vpHeight;
-
-      sb.setValue(scrollValue / (allRowsHeight - vpHeight));
-    }
-    else if (y1 < vpTop) sb.setValue(y1 / (allRowsHeight - vpHeight));
   }
 
 //---------------------------------------------------------------------------

@@ -952,6 +952,55 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Scrolls a row in a TableView or TreeTableView to make it visible within the viewport.
+   *
+   * @param tableCtrl The control to scroll, either a {@link TableView} or {@link TreeTableView}.
+   *                  Must be an instance of one of these types.
+   * @param ndx       The index of the row to scroll to.
+   *                  If the row is already within the viewport, no scrolling is performed.
+   * @throws IllegalArgumentException If {@code tableCtrl} is neither a {@link TableView}
+   *                                  nor a {@link TreeTableView}.
+   */
+  public static void scrollToNdxInTable(Control tableCtrl, int ndx)
+  {
+    // The way this works is better than TableView.scrollTo
+    // scrollTo changes the scroll position even if the row in question was already in view
+
+    // TreeTableView.scrollTo could not be used because it is too buggy.
+    // In java.scene.control.skin.VirtualFlow.adjustPositionToIndex, variable "estimatedSize" is often incorrectly set to 1,
+    // which causes it to just scroll to the top regardless of the index passed in.
+
+    ScrollBar verticalScrollBar = getScrollBar(tableCtrl, Orientation.VERTICAL);
+    if (verticalScrollBar == null) return;
+
+    double allRowsHeight, rowHeight = getRowHeight(tableCtrl);
+
+    if      (tableCtrl instanceof TableView     tableView)     allRowsHeight = rowHeight * tableView.getItems().size();
+    else if (tableCtrl instanceof TreeTableView treeTableView) allRowsHeight = rowHeight * treeTableView.getExpandedItemCount();
+    else
+      throw new IllegalArgumentException("tableCtrl must be a TableView or TreeTableView");
+
+    double viewportHeight   = allRowsHeight * verticalScrollBar.getVisibleAmount(),
+           scrollableHeight = allRowsHeight - viewportHeight,
+           viewportStartY   = scrollableHeight * verticalScrollBar.getValue(),
+           viewportEndY     = viewportStartY + viewportHeight,
+
+           rowStartY = ndx * rowHeight,
+           rowEndY   = rowStartY + rowHeight,
+
+           newScrollPosition;
+
+    if      (rowStartY < viewportStartY) newScrollPosition = ((rowStartY - (viewportHeight / 2)) + (rowHeight / 2)) / scrollableHeight;
+    else if (rowEndY   > viewportEndY  ) newScrollPosition = ((rowEndY   - (viewportHeight / 2)) - (rowHeight / 2)) / scrollableHeight;
+    else                                 return;  // The row is already within the viewport
+
+    verticalScrollBar.setValue(Math.max(0, Math.min(newScrollPosition, 1)));  // Ensure within bounds
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void forceToggleSelection(ToggleGroup tg)
   {
     tg.selectedToggleProperty().addListener((ob, oldValue, newValue) ->

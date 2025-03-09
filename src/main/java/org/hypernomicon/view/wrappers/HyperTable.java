@@ -47,19 +47,8 @@ import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.*;
+import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -72,16 +61,9 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Control;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.SortType;
-import javafx.scene.control.TableColumnBase;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
@@ -378,9 +360,11 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public static <RowType> void preventMovingColumns(TableView<RowType> tv, List<TableColumn<RowType, ?>> colList)
   {
     // This handsome block of code is the only way within JavaFX to prevent the user from moving columns around
+
     tv.getColumns().addListener((Change<? extends TableColumn<RowType, ?>> change) ->
     {
       change.next();
+
       if (change.wasReplaced())
       {
         tv.getColumns().clear();
@@ -544,7 +528,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public void sortAscending(int colNdx)
   {
     tv.getSortOrder().setAll(List.of(tv.getColumns().get(colNdx)));
-    tv.getColumns().get(colNdx).setSortType(SortType.ASCENDING);
+    tv.getColumns().get(colNdx).setSortType(TableColumn.SortType.ASCENDING);
   }
 
 //---------------------------------------------------------------------------
@@ -939,33 +923,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public static <RowType> void scrollToSelection(TableView<RowType> tv, boolean delay)
   {
     if (delay)
-      Platform.runLater(() -> scrollToNdx(tv, tv.getSelectionModel().getSelectedIndex()));
+      Platform.runLater(() -> scrollToNdxInTable(tv, tv.getSelectionModel().getSelectedIndex()));
     else
-      scrollToNdx(tv, tv.getSelectionModel().getSelectedIndex());
-  }
-
-  // The way this works is better than TableView.scrollTo
-  // scrollTo changes the scroll position even if the row in question was already in view
-  // This algorithm is similar to TreeWrapper.scrollToNdx
-
-  private static <RowType> void scrollToNdx(TableView<RowType> tv, int ndx)
-  {
-    ScrollBar sb = getScrollBar(tv, Orientation.VERTICAL);
-    if (sb == null) return;
-
-    double rHeight = getRowHeight(tv),
-
-           allRowsHeight = rHeight * (tv.getItems().size() + 1),
-           dataRowsHeight = rHeight * tv.getItems().size(),
-           vpHeight = allRowsHeight * sb.getVisibleAmount(),
-           vpTop = (dataRowsHeight - vpHeight) * sb.getValue(),
-           vpBottom = vpTop + vpHeight,
-
-           y1 = ndx * rHeight,
-           y2 = (ndx + 1) * rHeight;
-
-    if      (y1 < vpTop)    sb.setValue(y1 / (dataRowsHeight - vpHeight));
-    else if (y2 > vpBottom) sb.setValue((y2 - vpHeight) / (dataRowsHeight - vpHeight));
+      scrollToNdxInTable(tv, tv.getSelectionModel().getSelectedIndex());
   }
 
 //---------------------------------------------------------------------------
