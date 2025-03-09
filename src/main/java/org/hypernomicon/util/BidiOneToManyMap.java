@@ -137,7 +137,7 @@ public class BidiOneToManyMap<T>
 
   private static <T> Set<T> getSet(Map<T, Set<T>> map, T key)
   {
-    return map.computeIfAbsent(key, key_ -> ConcurrentHashMap.newKeySet());
+    return map.computeIfAbsent(key, _key -> ConcurrentHashMap.newKeySet());
   }
 
 //---------------------------------------------------------------------------

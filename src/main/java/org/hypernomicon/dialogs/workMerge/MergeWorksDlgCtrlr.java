@@ -349,7 +349,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     }
 
     TitleCtrlr titleCtrlr = ((TitleRow)rows.get(bfTitle)).selectedCtrlr();
-    if (titleCtrlr.isBlank() && (confirmDialog("Are you sure you want to leave the title blank?", "Yes", "Go back", false) == false))
+    if (titleCtrlr.isBlank() && (confirmDialog("Are you sure you want to leave the title blank?", "Yes", GO_BACK_BUTTON_CAPTION, false) == false))
     {
       Platform.runLater(() -> safeFocus(titleCtrlr.getTextField()));
       return false;

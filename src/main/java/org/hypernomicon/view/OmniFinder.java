@@ -268,13 +268,11 @@ public class OmniFinder
 
     private boolean authorMatch(PersonForDupCheck otherPerson, String year, TierEnum tier)
     {
-      String listName = otherPerson.getAuthor().getNameLastFirst(true).toLowerCase().trim();
-
       switch (tier)
       {
         case tierAuthorContains:
 
-          return listName.contains(queryLC);
+          return otherPerson.getAuthor().getNameLastFirst(true).toLowerCase().trim().contains(queryLC);
 
         case tierAuthorMatch: case tierPersonMatch:
 
@@ -284,7 +282,7 @@ public class OmniFinder
 
           if (year.isBlank()) return false;
 
-          String singleName = otherPerson.getAuthor().singleName(true).toLowerCase().trim() + ' ' + year;
+          String singleName = (otherPerson.getAuthor().singleName(true).toLowerCase().trim() + ' ' + year).trim();
 
           if (removeFirstParenthetical(singleName).equals(queryLC)) return true;
 
@@ -348,7 +346,12 @@ public class OmniFinder
 
           switch (record.getType())
           {
-            case hdtWork     -> getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, ((HDT_Work)record).getYearStr(), curTier));
+            case hdtWork     ->
+            {
+              HDT_Work work = (HDT_Work)record;
+              if ((curTier == tierAuthorYear) && work.getAuthors().isEmpty()) yield queryLC.equalsIgnoreCase(work.getYearStr());
+              yield getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, work.getYearStr(), curTier));
+            }
             case hdtMiscFile -> getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, ""                             , curTier));
             default          -> false;
           };
@@ -575,11 +578,7 @@ public class OmniFinder
           switch (curTier)
           {
             case tierPersonMatch: case tierPersonMatchStart: case tierNameContains:
-              List<PersonForDupCheck> personList = recordToPersonList.get(record);
-              if (personList == null)
-                recordToPersonList.put(record, personList = List.of(new PersonForDupCheck((HDT_Person)record)));
-
-              return personList;
+              return recordToPersonList.computeIfAbsent(record, _record -> List.of(new PersonForDupCheck((HDT_Person)_record)));
 
             default : return null;
           }
@@ -589,11 +588,7 @@ public class OmniFinder
           switch (curTier)
           {
             case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
-              List<PersonForDupCheck> personList = recordToPersonList.get(record);
-              if (personList == null)
-                recordToPersonList.put(record, personList = ((HDT_RecordWithAuthors<?>)record).getAuthors().stream().map(PersonForDupCheck::new).toList());
-
-              return personList;
+              return recordToPersonList.computeIfAbsent(record, _record -> ((HDT_RecordWithAuthors<?>)_record).getAuthors().stream().map(PersonForDupCheck::new).toList());
 
             default : return null;
           }

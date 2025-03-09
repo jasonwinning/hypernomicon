@@ -772,6 +772,8 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static String GO_BACK_BUTTON_CAPTION = "Go back";
+
   public static boolean confirmDialog(String msg, boolean yesIsDefault)
   {
     return confirmDialog(msg, "Yes", "No", yesIsDefault);
