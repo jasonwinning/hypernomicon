@@ -47,6 +47,8 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
   private final ButtonCellHandler handler;
   private final String caption;
 
+  public static final String URL_BUTTON_TOOLTIP = "Search for website (if not entered) or navigate to website (if entered) in browser";
+
 //---------------------------------------------------------------------------
 
   public enum ButtonAction { baEdit, baLabelEdit, baNew, baGo, baWeb, baBrowse, baCustom, baNone }
@@ -158,7 +160,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
       {
         btn.setText("URL:");
         btn.setGraphic(null);
-        setToolTip(btn, "Search for website (if not entered) or navigate to website (if entered) in browser");
+        setToolTip(btn, URL_BUTTON_TOOLTIP);
         setOnAction((row, colNdx) -> DesktopUtil.openWebLink(row.getText(colNdx)));
 
         break;
@@ -184,7 +186,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
       default: break;
     }
 
-    nullSwitch(col.tooltips.get(newAction), tooltip -> setToolTip(btn, tooltip));
+    nullSwitch(col.tooltips.get(newAction), tooltip -> setToolTip(btn, () -> tooltip.apply(getTableRow().getItem())));
   }
 
 //---------------------------------------------------------------------------

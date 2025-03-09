@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
@@ -49,13 +50,9 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
+import javafx.scene.control.*;
 import javafx.scene.control.skin.TableColumnHeader;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.SortType;
-import javafx.scene.control.Tooltip;
 
 //---------------------------------------------------------------------------
 
@@ -128,9 +125,9 @@ public class HyperTableColumn
   private final RecordType objType;
   private final HyperCtrlType ctrlType;
   private final TableColumn<HyperTableRow, ?> tc;
-  final EnumMap<ButtonAction, String> tooltips = new EnumMap<>(ButtonAction.class);
+  final EnumMap<ButtonAction, Function<HyperTableRow, String>> tooltips = new EnumMap<>(ButtonAction.class);
   final CellUpdateHandler updateHandler;
-  private final int colNdx;
+  private final int colNdx, targetCol;
   private final MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
                                dontCreateNewRecord = new MutableBoolean(false);
 
@@ -164,7 +161,6 @@ public class HyperTableColumn
 
   public HyperTableColumn setComparator(Comparator<HyperTableCell> newComparator) { comparator = newComparator;           return this; }
   public HyperTableColumn setValueType(CellValueType newCellValueType)            { cellValueType = newCellValueType;     return this; }
-  public HyperTableColumn setTooltip(ButtonAction ba, String text)                { tooltips.put(ba, text);               return this; }
   public HyperTableColumn setTextHndlr(Function<HyperTableRow, String> newTH)     { textHndlr = newTH;                    return this; }
   public HyperTableColumn setDontCreateNewRecord(boolean newVal)                  { dontCreateNewRecord.setValue(newVal); return this; }
 
@@ -200,9 +196,10 @@ public class HyperTableColumn
                            ButtonCellHandler btnHandler, EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption,
                            Function<HyperTableRow, Node> graphicProvider)
   {
+    this.objType = objType;
     this.ctrlType = ctrlType;
     this.populator = populator;
-    this.objType = objType;
+    this.targetCol = targetCol;
     this.updateHandler = updateHandler;
 
     colNdx = table.getColumns().size();
@@ -254,7 +251,7 @@ public class HyperTableColumn
     {
       case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn : case ctLabelEdit :
 
-        htcCol.setCellFactory(tableCol -> new ButtonCell(this.ctrlType, table, this, targetCol, btnHandler, btnCaption));
+        htcCol.setCellFactory(tableCol -> new ButtonCell(this.ctrlType, table, this, this.targetCol, btnHandler, btnCaption));
         break;
 
       case ctEdit :
@@ -394,6 +391,32 @@ public class HyperTableColumn
     tableCell.emptyProperty().addListener((ob, oldValue, newValue) -> cellButton.setVisible(Boolean.FALSE.equals(newValue)));
 
     return cellButton;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableColumn setTooltip(ButtonAction ba, String text)
+  {
+    tooltips.put(ba, row -> text);
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableColumn setTooltip(ButtonAction ba, Function<HyperTableRow, String> supplier)
+  {
+    tooltips.put(ba, supplier);
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableColumn setGoTooltipBasedOnTarget(Function<HDT_Record, String> supplier)
+  {
+    return setTooltip(ButtonAction.baGo, row -> nullSwitch(row.getRecord(targetCol), null, supplier));
   }
 
 //---------------------------------------------------------------------------

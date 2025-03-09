@@ -27,6 +27,7 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
+import org.hypernomicon.view.wrappers.ButtonCell;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -194,7 +195,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         ui.webButtonMap.get(WebButtonContextPrefKey.INST).first(WebButtonField.Name, tfName.getText()).go();
     });
 
-    setToolTip(btnURL, "Search for website (if not entered) or navigate to website (if entered) in browser");
+    setToolTip(btnURL, ButtonCell.URL_BUTTON_TOOLTIP);
   }
 
 //---------------------------------------------------------------------------

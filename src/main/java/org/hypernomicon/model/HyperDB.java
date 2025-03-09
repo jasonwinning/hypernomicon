@@ -95,6 +95,8 @@ public final class HyperDB extends AbstractHyperDB
 
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { InterProcClient.updateRunningInstancesFile(newRootFilePath); }
 
+  public static String getTypeName(RecordType type) { return nullSwitch(getTag(type), type == hdtNone ? "All" : "Unknown", tag -> tag.header); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

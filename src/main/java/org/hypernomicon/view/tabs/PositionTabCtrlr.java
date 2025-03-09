@@ -82,7 +82,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
     htParents = new HyperTable(tvParents, 3, true, TablePrefKey.POS_PARENTS);
 
-    htParents.addActionCol(ctGoBtn, 3);
+    htParents.addActionCol(ctGoBtn    , 3).setGoTooltipBasedOnTarget(record -> "Go to this parent " + getTypeName(record.getType()));
     htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
@@ -102,9 +102,12 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);
 
-    htArguments = new HyperTable(tvLeftChildren, 3, true, TablePrefKey.POS_ARG);
+    htArguments = new HyperTable(tvLeftChildren, 5, true, TablePrefKey.POS_ARG);
 
-    htArguments.addActionCol(ctGoNewBtn, 3);
+    htArguments.addGoNewCol(hdtArgument, 5)
+      .setGoTooltipBasedOnTarget(record -> "Go to Argument: " + record.listName())
+      .setTooltip(ButtonAction.baNew, "Add new Argument responding to this Position");
+
     htArguments.addLabelCol(hdtPerson);                        // Author(s) of work
     htArguments.addLabelCol(hdtPositionVerdict, smTextSimple); // True, False, etc.
     htArguments.addLabelCol(hdtArgument);                      // Date
@@ -123,10 +126,10 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htRightChildren.addIconCol();
     htRightChildren.addReadOnlyColWithCustomGraphic(hdtNone, row ->
     {
-      Hyperlink hLink1 = new Hyperlink("Add new position");
+      Hyperlink hLink1 = new Hyperlink("Add new Position");
       hLink1.setVisited(true);
       hLink1.setOnAction(event -> newClick(hdtPosition, row));
-      Hyperlink hLink2 = new Hyperlink("Add new debate");
+      Hyperlink hLink2 = new Hyperlink("Add new Problem/Debate");
       hLink2.setVisited(true);
       hLink2.setOnAction(event -> newClick(hdtDebate, row));
 

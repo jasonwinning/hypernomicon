@@ -97,11 +97,11 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     mainText = new MainTextWrapper(apDescription);
     tfFileName.setEditable(false);
 
-    addShowMenuItem("Show in system explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
-    addShowMenuItem("Show in file manager"   , event -> { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.filePath()); });
-    addShowMenuItem("Copy path to clipboard" , event -> { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
+    addShowMenuItem("Show in System Explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
+    addShowMenuItem("Show in File Manager"   , event -> { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.filePath()); });
+    addShowMenuItem("Copy Path to Clipboard" , event -> { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
 
-    addShowMenuItem("Unassign file", event ->
+    addShowMenuItem("Unassign File", event ->
     {
       if (ui.cantSaveRecord()) return;
       curMiscFile.getPath().clear();
@@ -118,7 +118,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     htLabels = new HyperTable(tvLabels, 2, true, TablePrefKey.FILE_LABELS);
 
-    htLabels.addActionCol(ctGoBtn, 2);
+    htLabels.addActionCol(ctGoBtn    , 2).setTooltip(ButtonAction.baGo    , "Go to this record");
     htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
     htLabels.addCol(hdtWorkLabel, ctEditableLimitedDropDown);
 
@@ -143,8 +143,10 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.filePath()); });
     btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
 
+    setToolTip(btnShow  , "Show file in system explorer");
     setToolTip(btnManage, "Update or rename file");
     setToolTip(btnTree  , "Go to this record in Tree tab");
+    setToolTip(btnWork  , "Go to this Work record");
 
     MainCtrlr.setSearchKeyToolTip(tfSearchKey);
   }

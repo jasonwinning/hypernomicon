@@ -265,6 +265,14 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       {
         HDT_Concept parentConcept = row.getRecord(4);
         ui.goToRecord(parentConcept != null ? parentConcept : row.getRecord(2), true);
+      })
+      .setTooltip(ButtonAction.baGo, row ->
+      {
+        HDT_Concept parentConcept = row.getRecord(4);
+        if (parentConcept != null) return "Go to Concept record: " + parentConcept.extendedName();
+
+        HDT_Glossary glossary = row.getRecord(2);
+        return glossary == null ? null : "Go to this Glossary record in Tree";
       });
 
     htGlossaries.addActionColWithButtonHandler(ctBrowseBtn, 2,
@@ -360,7 +368,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     htSubConcepts = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.CONCEPT_SUB);
 
-    htSubConcepts.addActionCol(ctGoNewBtn, 2);
+    htSubConcepts.addGoNewCol(hdtConcept, 2);
     htSubConcepts.addLabelCol(hdtConcept);
     htSubConcepts.addLabelCol(hdtConcept, smTextSimple);
 

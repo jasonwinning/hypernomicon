@@ -235,7 +235,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htLabels = new HyperTable(tvLabels, 2, true, TablePrefKey.WORK_LABELS);
 
-    htLabels.addActionCol(ctGoBtn, 2);
+    htLabels.addActionCol(ctGoBtn    , 2).setTooltip(ButtonAction.baGo    , "Go to this record");
     htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
     htLabels.addCol(hdtWorkLabel, ctEditableLimitedDropDown);
 
@@ -280,7 +280,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx), true))
       .setTooltip(ButtonAction.baEdit, "Update or rename this work file")
-      .setTooltip(ButtonAction.baNew, "Add a new work file");
+      .setTooltip(ButtonAction.baNew, "Add a new Work file");
 
     htWorkFiles.addCheckboxCol();
     htWorkFiles.addLabelCol(hdtWorkFile);
@@ -397,9 +397,19 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       previewWindow.setPreview(pvsWorkTab, (HDT_Work) newValue.getRecord());
     });
 
-    htMiscFiles = new HyperTable(tvMiscFiles, 1, true, TablePrefKey.WORK_MISC);
+    htMiscFiles = new HyperTable(tvMiscFiles, 2, true, TablePrefKey.WORK_MISC);
 
-    htMiscFiles.addActionCol(ctGoNewBtn, 1);
+    htMiscFiles.addGoNewCol(hdtMiscFile, 2);
+
+    htMiscFiles.addCustomActionCol(2, "Preview", (row, colNdx) ->
+    {
+      HDT_MiscFile miscFile = row.getRecord();
+      if (miscFile.pathNotEmpty() == false) return;
+      previewWindow.setPreview(pvsWorkTab, miscFile);
+      ui.openPreviewWindow(pvsWorkTab);
+
+    }).setTooltip(ButtonAction.baCustom, "Show in Preview Window");
+
     htMiscFiles.addLabelCol(hdtMiscFile);
 
     htMiscFiles.addDefaultMenuItems();
@@ -815,7 +825,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Populate miscellaneous files
   // ----------------------------
 
-    htMiscFiles.buildRows(curWork.miscFiles, (row, miscFile) -> row.setCellValue(1, miscFile, miscFile.name()));
+    htMiscFiles.buildRows(curWork.miscFiles, (row, miscFile) -> row.setCellValue(2, miscFile, miscFile.name()));
 
   // Populate displayers, key mentioners, and investigations
   // -------------------------------------------------------

@@ -43,6 +43,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.*;
+import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
@@ -402,24 +403,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn addLabelCol(RecordType objType)
-  {
-    return addLabelColWithAlignment(objType, null);
-  }
-
-  public HyperTableColumn addLabelCol(RecordType objType, CellSortMethod sortMethod)
-  {
-    return addLabelCol(objType).setSortMethod(sortMethod);
-  }
-
-  public HyperTableColumn addLabelColWithAlignment(RecordType objType, Pos alignment)
-  {
-    return addColAltPopulator(objType, ctNone, Populator.create(cvtRecord)).setAlignment(alignment);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public HyperTableColumn addColWithUpdateHandler(RecordType objType, HyperCtrlType ctrlType, CellUpdateHandler updateHandler) {
     return addColAltPopulatorWithUpdateHandler(objType, ctrlType, new StandardPopulator(objType), updateHandler); }
 
@@ -436,18 +419,23 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
                                                              EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
     return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction, updateHandler)); }
 
-  public HyperTableColumn addActionCol(HyperCtrlType ctrlType, int targetCol) {
-    return addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol)); }
-
   public HyperTableColumn addActionColWithButtonHandler(HyperCtrlType ctrlType, int targetCol, ButtonCellHandler handler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol, handler, null)); }
 
   public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, ButtonCellHandler handler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, handler, btnCaption)); }
 
-  public HyperTableColumn addLabelEditCol(ButtonCellHandler handler ) {
-    return addCol(new HyperTableColumn(this, hdtNone, ctLabelEdit, null, -1, handler, null));
-  }
+  public HyperTableColumn addLabelCol(RecordType objType) {
+    return addLabelColWithAlignment(objType, null); }
+
+  public HyperTableColumn addLabelCol(RecordType objType, CellSortMethod sortMethod) {
+    return addLabelCol(objType).setSortMethod(sortMethod); }
+
+  public HyperTableColumn addLabelColWithAlignment(RecordType objType, Pos alignment) {
+    return addColAltPopulator(objType, ctNone, Populator.create(cvtRecord)).setAlignment(alignment); }
+
+  public HyperTableColumn addLabelEditCol(ButtonCellHandler handler) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctLabelEdit, null, -1, handler, null)); }
 
   public HyperTableColumn addIconCol() {
     return addCol(new HyperTableColumn(this, hdtNone, ctIcon, null, -1)); }
@@ -460,6 +448,22 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addReadOnlyColWithCustomGraphic(RecordType objType, Function<HyperTableRow, Node> graphicProvider) {
     return addCol(new HyperTableColumn(this, objType, ctNone, null, -1, graphicProvider)); }
+
+  public HyperTableColumn addGoNewCol(RecordType recordType, int targetCol) {
+    return addActionCol(ctGoNewBtn, targetCol).setTooltip(ButtonAction.baNew, "Add new " + getTypeName(recordType) + " record"); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableColumn addActionCol(HyperCtrlType ctrlType, int targetCol)
+  {
+    HyperTableColumn col = addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol));
+
+    if ((ctrlType == ctGoNewBtn) || (ctrlType == ctGoBtn))
+      col.setTooltip(ButtonAction.baGo, row -> nullSwitch(row.getRecord(targetCol), null, (HDT_Record record) -> "Go to this " + getTypeName(record.getType()) + " record"));
+
+    return col;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

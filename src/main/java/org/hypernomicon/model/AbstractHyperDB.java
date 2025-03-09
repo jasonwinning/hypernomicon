@@ -387,8 +387,6 @@ public abstract class AbstractHyperDB
   public FilePath unenteredPath(String fileNameStr) { return unenteredFolder.filePath().resolve(fileNameStr); }
   public FilePath topicalPath  (String fileNameStr) { return topicalFolder  .filePath().resolve(fileNameStr); }
 
-  public static String getTypeName(RecordType type) { return nullSwitch(getTag(type), type == hdtNone ? "All" : "Unknown", tag -> tag.header); }
-
 //---------------------------------------------------------------------------
 
   public final DatasetAccessor<HDT_Person         > persons;
@@ -1896,7 +1894,7 @@ public abstract class AbstractHyperDB
           if (previousDataVersion == null)
             recordTypeToDataVersion.put(xmlRecord.type, dataVersion);
           else if (previousDataVersion.equals(dataVersion) == false)
-            throw new HyperDataException("Multiple " + getTypeName(xmlRecord.type) + " records found with incompatible XML record data version numbers. ID: " + xmlRecord.id + " File: " + fileDescription);
+            throw new HyperDataException("Multiple " + HyperDB.getTypeName(xmlRecord.type) + " records found with incompatible XML record data version numbers. ID: " + xmlRecord.id + " File: " + fileDescription);
         }
 
         if ((task != null) && (event != null))

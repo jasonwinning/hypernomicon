@@ -20,14 +20,7 @@ package org.hypernomicon.view.tabs;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.Control;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
@@ -36,15 +29,11 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.HDT_Note;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithDescription;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -142,8 +131,8 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htParents = new HyperTable(tvParents, 2, true, TablePrefKey.NOTE_PARENTS);
 
-    htParents.addActionCol(ctGoBtn, 2);
-    htParents.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
+    htParents.addActionCol(ctGoBtn    , 2).setGoTooltipBasedOnTarget(record -> "Go to this parent " + getTypeName(record.getType()));
+    htParents.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select parent Note record from the Tree");
     htParents.addColWithUpdateHandler(hdtNote, ctEditableLimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) ->
     {
       HDT_Note parentNote = cellVal.getRecord();
@@ -159,7 +148,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htSubnotes = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.NOTE_SUB);
 
-    htSubnotes.addActionCol(ctGoNewBtn, 2);
+    htSubnotes.addGoNewCol(hdtNote, 2);
     htSubnotes.addLabelCol(hdtNote);
     htSubnotes.addLabelCol(hdtNote, smTextSimple);
     htSubnotes.addLabelCol(hdtNote, smTextSimple);

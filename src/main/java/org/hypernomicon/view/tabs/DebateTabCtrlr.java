@@ -64,7 +64,7 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     htParents = new HyperTable(tvParents, 3, true, TablePrefKey.DEBATE_PARENTS);
 
-    htParents.addActionCol(ctGoBtn, 3);
+    htParents.addActionCol(ctGoBtn    , 3).setGoTooltipBasedOnTarget(record -> "Go to this parent " + getTypeName(record.getType()));
     htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select parent record from the Tree");
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
@@ -88,13 +88,13 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     htPositions = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.DEBATE_POS);
 
-    htPositions.addActionCol(ctGoNewBtn, 2);
+    htPositions.addGoNewCol(hdtPosition, 2);
     htPositions.addLabelCol(hdtPerson);
     htPositions.addLabelCol(hdtPosition);
 
     htSubdebates = new HyperTable(tvRightChildren, 1, true, TablePrefKey.DEBATE_SUB);
 
-    htSubdebates.addActionCol(ctGoNewBtn, 1);
+    htSubdebates.addGoNewCol(hdtDebate, 1);
     htSubdebates.addLabelCol(hdtDebate);
 
     ui.initPositionContextMenu(htPositions);

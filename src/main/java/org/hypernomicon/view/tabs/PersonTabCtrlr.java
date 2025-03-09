@@ -58,6 +58,7 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
+import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -160,7 +161,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htPersonInst = new HyperTable(tvPersonDept, 3, true, TablePrefKey.PERSON_INST);
 
-    htPersonInst.addActionCol(ctGoNewBtn, 2);
+    htPersonInst.addActionCol(ctGoNewBtn, 2)
+      .setTooltip(ButtonAction.baNew, "Add new Institution or Institutional Division here");
+
     htPersonInst.addCheckboxCol();
 
     htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctEditableLimitedDropDown, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, cellVal, nextColNdx, nextPopulator) ->

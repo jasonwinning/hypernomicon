@@ -158,7 +158,8 @@
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                 <TableView fx:id="tvMiscFiles" editable="true" layoutX="248.0" layoutY="-31.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                   <columns>
-                    <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" sortable="false" />
+                    <TableColumn editable="false" maxWidth="48.0" minWidth="48.0" prefWidth="48.0" resizable="false" sortable="false" />
+                    <TableColumn editable="false" maxWidth="70.0" minWidth="70.0" prefWidth="70.0" resizable="false" sortable="false" />
                     <TableColumn prefWidth="75.0" text="Name" />
                   </columns>
                   <columnResizePolicy>

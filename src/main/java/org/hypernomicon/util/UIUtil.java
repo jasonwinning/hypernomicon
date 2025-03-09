@@ -45,18 +45,12 @@ import javafx.beans.property.DoubleProperty;
 import javafx.event.EventTarget;
 import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.layout.*;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.stage.Window;
+import javafx.stage.*;
 
 //---------------------------------------------------------------------------
 
@@ -780,12 +774,17 @@ public final class UIUtil
 
   public static boolean confirmDialog(String msg, boolean yesIsDefault)
   {
+    return confirmDialog(msg, "Yes", "No", yesIsDefault);
+  }
+
+  public static boolean confirmDialog(String msg, String yesCaption, String noCaption, boolean yesIsDefault)
+  {
     if (ui.dontInteract()) return false;
 
     PopupDialog popupDialog = new PopupDialog(msg);
 
-    if (yesIsDefault) popupDialog.addDefaultButton("Yes", mrYes).addButton       ("No" , mrNo);
-    else              popupDialog.addButton       ("Yes", mrYes).addDefaultButton("No" , mrNo);
+    if (yesIsDefault) popupDialog.addDefaultButton(yesCaption, mrYes).addButton       (noCaption , mrNo);
+    else              popupDialog.addButton       (yesCaption, mrYes).addDefaultButton(noCaption , mrNo);
 
     return popupDialog.showModal() == mrYes;
   }
