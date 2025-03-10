@@ -73,14 +73,6 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordWithMainText getSpoke(RecordType spokeType)
-  {
-    return spokes.get(spokeType);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public HDT_RecordWithMainText mainSpoke()
   {
     return mainSpoke(false);
@@ -175,13 +167,13 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
     if (record2.hasHub())
     {
-      if (record2.getHub().getSpoke(record1.getType()) != null)
+      if (record2.getHub().spokes.get(record1.getType()) != null)
         return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(record1.getType()) + " record.");
 
-      if ((record1.getType() == hdtDebate) && (record2.getHub().getSpoke(hdtPosition) != null))
+      if ((record1.getType() == hdtDebate) && (record2.getHub().spokes.get(hdtPosition) != null))
         return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(hdtPosition) + " record.");
 
-      if ((record1.getType() == hdtPosition) && (record2.getHub().getSpoke(hdtDebate) != null))
+      if ((record1.getType() == hdtPosition) && (record2.getHub().spokes.get(hdtDebate) != null))
         return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record2.getType()) + " record is already united with a " + getTypeName(hdtDebate) + " record.");
 
       if (record1.hasHub())
@@ -190,13 +182,13 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
     if (record1.hasHub())
     {
-      if (record1.getHub().getSpoke(record2.getType()) != null)
+      if (record1.getHub().spokes.get(record2.getType()) != null)
         return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(record2.getType()) + " record.");
 
-      if ((record2.getType() == hdtDebate) && (record1.getHub().getSpoke(hdtPosition) != null))
+      if ((record2.getType() == hdtDebate) && (record1.getHub().spokes.get(hdtPosition) != null))
         return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(hdtPosition) + " record.");
 
-      if ((record2.getType() == hdtPosition) && (record1.getHub().getSpoke(hdtDebate) != null))
+      if ((record2.getType() == hdtPosition) && (record1.getHub().spokes.get(hdtDebate) != null))
         return assignSBandReturnFalse(errorMsg, "The selected " + getTypeName(record1.getType()) + " record is already united with a " + getTypeName(hdtDebate) + " record.");
     }
 

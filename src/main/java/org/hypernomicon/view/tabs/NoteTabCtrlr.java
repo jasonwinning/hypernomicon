@@ -32,7 +32,6 @@ import java.util.Set;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;

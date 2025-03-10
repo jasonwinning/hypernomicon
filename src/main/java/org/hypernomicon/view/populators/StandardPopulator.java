@@ -40,7 +40,7 @@ public class StandardPopulator extends Populator
 
   public StandardPopulator(RecordType objType)
   {
-    this(objType, (Predicate<Integer>)null);
+    this(objType, null);
   }
 
   public StandardPopulator(RecordType objType, Predicate<Integer> filter, Function<HDT_Record, String> textFunction)

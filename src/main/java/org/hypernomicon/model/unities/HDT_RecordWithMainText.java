@@ -26,19 +26,11 @@ import java.util.List;
 
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.DatasetAccessor;
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.Exceptions.HubChangedException;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.Exceptions.RestoreException;
-import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.records.HDT_Argument;
-import org.hypernomicon.model.records.HDT_Debate;
-import org.hypernomicon.model.records.HDT_Position;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordBase;
-import org.hypernomicon.model.records.RecordState;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
+
+//---------------------------------------------------------------------------
 
 /**
  * Every record that has a main HTML description field is an instance of
@@ -64,11 +56,14 @@ import org.hypernomicon.model.unities.MainText.DisplayItem;
  */
 public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements HDT_RecordWithDescription
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   HDT_Hub hub;
   MainText mainText;
   private boolean alreadyModifying;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_RecordWithMainText(RecordState xmlState, DatasetAccessor<? extends HDT_RecordWithMainText> dataset, Tag nameTag)

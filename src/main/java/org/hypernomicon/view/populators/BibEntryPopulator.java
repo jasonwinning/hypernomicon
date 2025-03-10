@@ -58,7 +58,7 @@ public class BibEntryPopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     List<HyperTableCell> choices = handler.handle(row, force).stream()
-      .map(bibEntry -> new BibEntryHTC(bibEntry))
+      .map(BibEntryHTC::new)
       .collect(Collectors.toCollection(ArrayList::new));
 
     choices.add(GenericNonRecordHTC.blankCell);

@@ -772,7 +772,7 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String GO_BACK_BUTTON_CAPTION = "Go back";
+  public static final String GO_BACK_BUTTON_CAPTION = "Go back";
 
   public static boolean confirmDialog(String msg, boolean yesIsDefault)
   {
@@ -907,10 +907,10 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Map<Control, Double> rowHeight = new HashMap<>();
+  private static final Map<Control, Double> rowHeightMap = new HashMap<>();
   private static final HashBasedTable<Control, Orientation, ScrollBar> sbMap = HashBasedTable.create();
 
-  public static ScrollBar getScrollBar(Control ctrl, Orientation orientation)
+  private static ScrollBar getScrollBar(Control ctrl, Orientation orientation)
   {
     {
       ScrollBar sb = sbMap.get(ctrl, orientation);
@@ -932,9 +932,9 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static double getRowHeight(Control ctrl)
+  private static double getRowHeight(Control ctrl)
   {
-    Double heightObj = rowHeight.get(ctrl);
+    Double heightObj = rowHeightMap.get(ctrl);
     if (heightObj != null) return heightObj;
 
     for (Node rowNode : ctrl.lookupAll(".indexed-cell"))
@@ -942,7 +942,7 @@ public final class UIUtil
       if ((rowNode instanceof TableRow) || (rowNode instanceof TreeTableRow))
       {
         double height = ((Region) rowNode).getHeight();
-        rowHeight.put(ctrl, height);
+        rowHeightMap.put(ctrl, height);
         return height;
       }
     }
@@ -977,8 +977,8 @@ public final class UIUtil
 
     double allRowsHeight, rowHeight = getRowHeight(tableCtrl);
 
-    if      (tableCtrl instanceof TableView     tableView)     allRowsHeight = rowHeight * tableView.getItems().size();
-    else if (tableCtrl instanceof TreeTableView treeTableView) allRowsHeight = rowHeight * treeTableView.getExpandedItemCount();
+    if      (tableCtrl instanceof TableView<?>     tableView)     allRowsHeight = rowHeight * tableView.getItems().size();
+    else if (tableCtrl instanceof TreeTableView<?> treeTableView) allRowsHeight = rowHeight * treeTableView.getExpandedItemCount();
     else
       throw new IllegalArgumentException("tableCtrl must be a TableView or TreeTableView");
 

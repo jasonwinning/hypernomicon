@@ -96,7 +96,7 @@ public interface HDT_Record
 
   static String getDescHtml(HDT_Record record)
   {
-    return (HDT_Record.isEmpty(record, false) == false) && record.hasDesc() ? ((HDT_RecordWithDescription) record).getDesc().getHtml() : "";
+    return (isEmpty(record, false) == false) && record.hasDesc() ? ((HDT_RecordWithDescription) record).getDesc().getHtml() : "";
   }
 
 //---------------------------------------------------------------------------

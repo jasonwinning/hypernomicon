@@ -59,7 +59,7 @@ import javafx.scene.control.*;
  * <u><b>is</b></u> an existing Concept for an existing Term, or chooses to unite
  * the record to a new Term.
  */
-public class SelectTermDlgCtrlr extends HyperDlg
+public final class SelectTermDlgCtrlr extends HyperDlg
 {
 
 //---------------------------------------------------------------------------

@@ -104,7 +104,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
     rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem ->
     {
-      if (menuItem instanceof HasRightClickableRows.RowMenuItem rowItem)
+      if (menuItem instanceof HasRightClickableRows<?>.RowMenuItem rowItem)
         rowItem.setDisable(rowItem.schema.disabled);
     }));
 

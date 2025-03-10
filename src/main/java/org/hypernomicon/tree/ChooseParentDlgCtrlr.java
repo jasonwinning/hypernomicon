@@ -64,8 +64,8 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     this.child = child;
     parent = null;
 
-    tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
-    tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
+    tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell  ()));
+    tcDesc.setCellValueFactory(row -> new SimpleStringProperty  (row.getValue().getValue().getDescString()));
 
     tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
     tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
@@ -123,14 +123,9 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
     RecordTreeEdge edge = new RecordTreeEdge(parent, child);
 
-    if (edge.canAttach() == false)
-      return false;
-
-    return edge.edgeToDetach() == null ?
-      true
-    :
-      falseWithErrorPopup("A " + getTypeName(child .getType()).toLowerCase() + " cannot have more than one parent " +
-                                 getTypeName(parent.getType()).toLowerCase() + " record.");
+    return edge.canAttach() &&
+           ((edge.edgeToDetach() == null) || falseWithErrorPopup("A " + getTypeName(child.getType()).toLowerCase() + " cannot have more than one parent " +
+                                                                 getTypeName(parent.getType()).toLowerCase() + " record."));
   }
 
 //---------------------------------------------------------------------------

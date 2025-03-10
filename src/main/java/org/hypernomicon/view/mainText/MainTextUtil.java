@@ -522,7 +522,7 @@ public final class MainTextUtil
 
     Map<String, String> linkMap = keyWorkLinkMap(keyWorks, searchKeys, sortByName);
 
-    innerHtml.append(searchKeys.stream().map(searchKey -> linkMap.get(searchKey))
+    innerHtml.append(searchKeys.stream().map(linkMap::get)
                                         .collect(Collectors.joining(", ")));
   }
 

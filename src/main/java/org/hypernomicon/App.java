@@ -29,13 +29,8 @@ import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.previewWindow.ContentsWindow;
-import org.hypernomicon.previewWindow.PDFJSWrapper;
-import org.hypernomicon.previewWindow.PreviewWindow;
-import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.JsonHttpClient;
-import org.hypernomicon.util.Util;
-import org.hypernomicon.util.VersionNumber;
+import org.hypernomicon.previewWindow.*;
+import org.hypernomicon.util.*;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
@@ -285,11 +280,9 @@ public final class App extends Application
 
   public static void checkForNewVersion(AsyncHttpClient httpClient, Consumer<VersionNumber> successHndlr, Runnable failHndlr)
   {
-    JsonHttpClient.getArrayAsync(hypernomiconReleasesURL, httpClient, jsonArray ->
-    {
-      processNewVersionJsonArray(jsonArray, successHndlr, failHndlr);
-
-    }, e -> failHndlr.run());
+    JsonHttpClient.getArrayAsync(hypernomiconReleasesURL, httpClient,
+      jsonArray -> processNewVersionJsonArray(jsonArray, successHndlr, failHndlr),
+      e -> failHndlr.run());
   }
 
 //---------------------------------------------------------------------------

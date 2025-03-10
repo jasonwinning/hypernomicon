@@ -169,7 +169,7 @@ public abstract class HyperTask
   public boolean isCancelled()   { return innerTask.isCancelled(); }
   public boolean isDone()        { return innerTask.isDone(); }
 
-  public void incrementAndUpdateProgress() throws CancelledTaskException { completedCount++; updateProgress(); }
+  protected void incrementAndUpdateProgress() throws CancelledTaskException { completedCount++; updateProgress(); }
 
   private void updateProgress() throws CancelledTaskException { updateProgress(completedCount, totalCount); }
 

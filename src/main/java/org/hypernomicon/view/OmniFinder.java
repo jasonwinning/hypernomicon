@@ -348,11 +348,13 @@ public class OmniFinder
           {
             case hdtWork     ->
             {
-              HDT_Work work = (HDT_Work)record;
-              if ((curTier == tierAuthorYear) && work.getAuthors().isEmpty()) yield queryLC.equalsIgnoreCase(work.getYearStr());
-              yield getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, work.getYearStr(), curTier));
+              HDT_Work work = (HDT_Work) record;
+              yield (curTier == tierAuthorYear) && work.getAuthors().isEmpty() ?
+                queryLC.equalsIgnoreCase(work.getYearStr())
+              :
+                getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, work.getYearStr(), curTier));
             }
-            case hdtMiscFile -> getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, ""                             , curTier));
+            case hdtMiscFile -> getPersonList(record).stream().anyMatch(otherPerson -> authorMatch(otherPerson, "", curTier));
             default          -> false;
           };
       };
@@ -571,30 +573,24 @@ public class OmniFinder
 
     private List<PersonForDupCheck> getPersonList(HDT_Record record)
     {
-      switch (record.getType())
+      return switch (record.getType())
       {
-        case hdtPerson :
+        case hdtPerson -> switch (curTier)
+        {
+          case tierPersonMatch, tierPersonMatchStart, tierNameContains ->
+            recordToPersonList.computeIfAbsent(record, _record -> List.of(new PersonForDupCheck((HDT_Person) _record)));
+          default -> null;
+        };
 
-          switch (curTier)
-          {
-            case tierPersonMatch: case tierPersonMatchStart: case tierNameContains:
-              return recordToPersonList.computeIfAbsent(record, _record -> List.of(new PersonForDupCheck((HDT_Person)_record)));
+        case hdtWork, hdtMiscFile -> switch (curTier)
+        {
+          case tierAuthorContains, tierAuthorMatch, tierAuthorYear, tierAuthorKeyword, tierAuthorMatchStart ->
+            recordToPersonList.computeIfAbsent(record, _record -> ((HDT_RecordWithAuthors<?>) _record).getAuthors().stream().map(PersonForDupCheck::new).toList());
+          default -> null;
+        };
 
-            default : return null;
-          }
-
-        case hdtWork : case hdtMiscFile :
-
-          switch (curTier)
-          {
-            case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
-              return recordToPersonList.computeIfAbsent(record, _record -> ((HDT_RecordWithAuthors<?>)_record).getAuthors().stream().map(PersonForDupCheck::new).toList());
-
-            default : return null;
-          }
-
-        default : return null;
-      }
+        default -> null;
+      };
     }
   }
 

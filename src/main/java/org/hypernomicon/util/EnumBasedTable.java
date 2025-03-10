@@ -96,8 +96,8 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
   {
     V oldValue = get(rowKey, columnKey);
 
-    rowToColumnToValue.computeIfAbsent(rowKey   , _rowKey    -> new EnumMap<C, V>(columnType)).put(columnKey, newValue);
-    columnToRowToValue.computeIfAbsent(columnKey, _columnKey -> new EnumMap<R, V>(rowType   )).put(rowKey   , newValue);
+    rowToColumnToValue.computeIfAbsent(rowKey   , _rowKey    -> new EnumMap<>(columnType)).put(columnKey, newValue);
+    columnToRowToValue.computeIfAbsent(columnKey, _columnKey -> new EnumMap<>(rowType   )).put(rowKey   , newValue);
 
     return oldValue;
   }
