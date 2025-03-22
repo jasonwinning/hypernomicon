@@ -43,7 +43,7 @@ public final class SimpleRecordTypes
   {
     HDT_SimpleRecord(RecordState xmlState, DatasetAccessor<? extends HDT_SimpleRecord> dataset)
     {
-      super(xmlState, dataset, tagNone);
+      super(xmlState, dataset);
     }
 
     @Override public String listName() { return name(); }

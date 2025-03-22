@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
@@ -38,7 +37,7 @@ public class HDT_PersonGroup extends HDT_RecordBase
 
   public HDT_PersonGroup(RecordState xmlState, DatasetAccessor<HDT_PersonGroup> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     parentGroups = getObjList(rtParentGroupOfGroup);
     subGroups = getSubjList(rtParentGroupOfGroup);

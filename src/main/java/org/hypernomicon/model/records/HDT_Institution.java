@@ -52,7 +52,7 @@ public class HDT_Institution extends HDT_RecordBase
 
   public HDT_Institution(RecordState xmlState, DatasetAccessor<HDT_Institution> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     subInstitutions = getSubjList(rtParentInstOfInst);
     persons         = getSubjList(rtInstOfPerson    );

@@ -47,7 +47,7 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
   public HDT_Argument(RecordState xmlState, DatasetAccessor<HDT_Argument> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     positions  = Collections.unmodifiableList(getObjList(rtPositionOfArgument));
     targetArgs = Collections.unmodifiableList(getObjList(rtTargetArgOfArg    ));

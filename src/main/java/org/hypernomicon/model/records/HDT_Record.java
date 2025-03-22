@@ -72,7 +72,6 @@ public interface HDT_Record
 
   void getAllStrings(List<String> list, boolean searchLinkedRecords);
   String name();
-  Tag getNameTag();
   void setName(String str);
   String listName();
   String getNameEngChar();

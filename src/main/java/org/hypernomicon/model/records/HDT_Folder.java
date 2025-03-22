@@ -22,7 +22,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.Tag.*;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -47,7 +46,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public HDT_Folder(RecordState xmlState, DatasetAccessor<HDT_Folder> dataset)
   {
-    super(xmlState, dataset, tagName); // tagName is not actually used; name should always be blank
+    super(xmlState, dataset);
 
     checkedForExistence = false;
 

@@ -48,7 +48,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 
   public HDT_Term(RecordState xmlState, DatasetAccessor<HDT_Term> dataset)
   {
-    super(xmlState, dataset, tagTerm);
+    super(xmlState, dataset);
 
     concepts = getObjList(rtConceptOfTerm);
   }

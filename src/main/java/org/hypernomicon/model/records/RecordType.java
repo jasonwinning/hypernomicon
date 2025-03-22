@@ -21,6 +21,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hypernomicon.model.Tag.*;
+
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -101,6 +104,22 @@ public enum RecordType
   public boolean getDisregardDates()                  { return disregardDates; }
 
   public static RecordType typeByRecordClass(Class<? extends HDT_Record> klass) { return classToType.getOrDefault(klass, hdtNone); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Tag getNameTag()
+  {
+    return simple ? tagNone : switch (this)
+    {
+      case hdtPerson    -> tagNone;
+      case hdtWork      -> tagTitle;
+      case hdtTerm      -> tagTerm;
+      case hdtWorkLabel -> tagText;
+
+      default           -> tagName;
+    };
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

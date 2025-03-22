@@ -40,7 +40,7 @@ public class HDT_Glossary extends HDT_RecordBase
 
   public HDT_Glossary(RecordState xmlState, DatasetAccessor<HDT_Glossary> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     parentGlossaries = getObjList(rtParentGlossaryOfGlossary);
     concepts = getSubjList(rtGlossaryOfConcept);

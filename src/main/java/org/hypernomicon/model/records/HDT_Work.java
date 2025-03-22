@@ -76,7 +76,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public HDT_Work(RecordState xmlState, DatasetAccessor<HDT_Work> dataset)
   {
-    super(xmlState, dataset, tagTitle);
+    super(xmlState, dataset);
 
     authors = new WorkAuthors(getObjList(rtAuthorOfWork), this);
 

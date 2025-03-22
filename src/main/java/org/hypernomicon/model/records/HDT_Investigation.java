@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.model.DatasetAccessor;
@@ -38,7 +37,7 @@ public class HDT_Investigation extends HDT_RecordWithMainText
 
   public HDT_Investigation(RecordState xmlState, DatasetAccessor<HDT_Investigation> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     person = getObjPointer(rtPersonOfInv);
   }

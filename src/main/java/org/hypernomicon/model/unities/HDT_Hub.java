@@ -18,7 +18,6 @@
 package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -51,7 +50,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
   public HDT_Hub(RecordState xmlState, DatasetAccessor<HDT_Hub> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     hub = this;
   }

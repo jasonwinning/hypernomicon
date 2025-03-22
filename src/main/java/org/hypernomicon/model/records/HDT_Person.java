@@ -65,7 +65,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
   public HDT_Person(RecordState xmlState, DatasetAccessor<HDT_Person> dataset)
   {
-    super(xmlState, dataset, tagNone);
+    super(xmlState, dataset);
 
     setNameInternal("|", false);
 

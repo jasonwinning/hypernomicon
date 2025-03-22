@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.LinkedHashSet;
@@ -39,7 +38,7 @@ public class HDT_Position extends HDT_RecordWithMainText
 
   public HDT_Position(RecordState xmlState, DatasetAccessor<HDT_Position> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     largerDebates   = getObjList(rtParentDebateOfPos);
     largerPositions = getObjList(rtParentPosOfPos   );

@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
@@ -42,7 +41,7 @@ public class HDT_Subfield extends HDT_RecordBase
 
   public HDT_Subfield(RecordState xmlState, DatasetAccessor<HDT_Subfield> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     persons = getSubjList(rtSubfieldOfPerson);
     field = getObjPointer(rtFieldOfSubfield);

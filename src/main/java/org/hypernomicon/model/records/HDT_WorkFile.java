@@ -43,7 +43,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
   public HDT_WorkFile(RecordState xmlState, DatasetAccessor<HDT_WorkFile> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     works = getSubjList(rtWorkFileOfWork);
     path = new HyperPath(getObjPointer(rtFolderOfWorkFile), this);

@@ -18,7 +18,6 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -39,7 +38,7 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public HDT_Note(RecordState xmlState, DatasetAccessor<HDT_Note> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     parentNotes = getObjList(rtParentNoteOfNote);
     subNotes = getSubjList(rtParentNoteOfNote);

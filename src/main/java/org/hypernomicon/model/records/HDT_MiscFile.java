@@ -47,7 +47,7 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
 
   public HDT_MiscFile(RecordState xmlState, DatasetAccessor<HDT_MiscFile> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     work = getObjPointer(rtWorkOfMiscFile);
     fileType = getObjPointer(rtTypeOfFile);

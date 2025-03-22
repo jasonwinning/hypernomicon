@@ -61,7 +61,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 
   private final DatasetAccessor<? extends HDT_Record> dataset;
-  private final Tag nameTag;
   private final NameItem name;
   private final Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
   private final boolean dummyFlag;
@@ -76,7 +75,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   @Override public final Instant getViewDate()             { return type.getDisregardDates() ? null : viewDate; }
   @Override public final Instant getCreationDate()         { return type.getDisregardDates() ? null : creationDate; }
-  @Override public final Tag getNameTag()                  { return nameTag; }
   @Override public final boolean isDummy()                 { return dummyFlag; }
   @Override public final int getID()                       { return id; }
   @Override public final int keyNdx()                      { return dataset.getKeyNdxByID(id); }
@@ -134,7 +132,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   private static boolean addedChangeIDHandler = false;
 
-  protected HDT_RecordBase(RecordState xmlState, DatasetAccessor<? extends HDT_Record> dataset, Tag nameTag)
+  protected HDT_RecordBase(RecordState xmlState, DatasetAccessor<? extends HDT_Record> dataset)
   {
     if (addedChangeIDHandler == false)
     {
@@ -149,7 +147,6 @@ public abstract class HDT_RecordBase implements HDT_Record
     id = xmlState.id;
     dummyFlag = xmlState.dummyFlag;
     this.dataset = dataset;
-    this.nameTag = nameTag;
     sortKeyAttr = safeStr(xmlState.sortKeyAttr);
 
     items = new LinkedHashMap<>();
@@ -302,7 +299,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     {
       Tag tag = backupEntry.getKey();
 
-      if (revertingConcept && ((tag == tagGlossary) || (tag == tagParentConcept) || (tag == nameTag)))
+      if (revertingConcept && ((tag == tagGlossary) || (tag == tagParentConcept) || (tag == type.getNameTag())))
         continue;
 
       HDI_OnlineBase liveValue = items.get(tag);
@@ -312,7 +309,7 @@ public abstract class HDT_RecordBase implements HDT_Record
         ((HDT_Person)this).setFirstNameInternal(((HDI_OfflinePersonName)backupValue).getFirstName(), false);
       else if (tag == tagLastName)
         ((HDT_Person)this).setLastNameInternal(((HDI_OfflinePersonName)backupValue).getLastName(), false);
-      else if (tag == nameTag)
+      else if (tag == type.getNameTag())
         setNameInternal(((HDI_OfflineString)backupValue).get(), false);
       else
         liveValue.setFromOfflineValue(backupValue, tag);
@@ -414,7 +411,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final void updateTagString(Tag tag, String val)
   {
-    if (tag == nameTag)
+    if (tag == type.getNameTag())
       setNameInternal(val, true);
     else
       ((HDI_OnlineString)items.get(tag)).set(updateString(getTagString(tag), val));
@@ -433,7 +430,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final String getTagString(Tag tag)
   {
-    return tag == nameTag ? name.get() : ((HDI_OnlineString)items.get(tag)).get();
+    return tag == type.getNameTag() ? name.get() : ((HDI_OnlineString)items.get(tag)).get();
   }
 
 //---------------------------------------------------------------------------
@@ -585,7 +582,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     items.forEach((tag, item) ->
     {
-      if (tag == nameTag)
+      if (tag == type.getNameTag())
         list.add(name());
       else
         item.getStrings(list, tag, searchLinkedRecords);
@@ -597,7 +594,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   @Override public String resultTextForTag(Tag tag)
   {
-    return (tag == nameTag) || (tag == tagName) ?
+    return (tag == type.getNameTag()) || (tag == tagName) ?
       listName()
     :
       nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag));
@@ -608,7 +605,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   @Override public int resultCount(Tag tag)
   {
-    return (tag == nameTag) || (tag == tagName) ?
+    return (tag == type.getNameTag()) || (tag == tagName) ?
       (listName().isBlank() ? 0 : 1)
     :
       nullSwitch(items.get(tag), -1, item -> item.getResultCount(tag));

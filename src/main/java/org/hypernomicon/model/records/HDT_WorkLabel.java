@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
@@ -34,7 +33,7 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
 
   public HDT_WorkLabel(RecordState xmlState, DatasetAccessor<HDT_WorkLabel> dataset)
   {
-    super(xmlState, dataset, tagText);
+    super(xmlState, dataset);
 
     parentLabels = getObjList (rtParentLabelOfLabel);
     subLabels    = getSubjList(rtParentLabelOfLabel);

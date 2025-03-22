@@ -34,7 +34,7 @@ public class HDT_Region extends HDT_RecordBase
 
   public HDT_Region(RecordState xmlState, DatasetAccessor<HDT_Region> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     institutions = getSubjList(rtRegionOfInst);
     country = getObjPointer(rtCountryOfRegion);

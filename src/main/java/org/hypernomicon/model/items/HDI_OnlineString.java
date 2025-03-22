@@ -58,7 +58,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   public String get()
   {
-    return (record.getType() == hdtConcept) && (tag == record.getNameTag()) ?
+    return (record.getType() == hdtConcept) && (tag == hdtConcept.getNameTag()) ?
       ((HDT_Concept)record).term.get().name()
     :
       strValue;
@@ -80,9 +80,9 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public void getToOfflineValue(HDI_OfflineString val, Tag tag)
   {
-    if (tag == record.getNameTag()) val.set(record.name());
-    else if (tag == tagListName)    val.recordState.listName = strValue;
-    else                            val.set(strValue);
+    if (tag == record.getType().getNameTag()) val.set(record.name());
+    else if (tag == tagListName)              val.recordState.listName = strValue;
+    else                                      val.set(strValue);
   }
 
 //---------------------------------------------------------------------------

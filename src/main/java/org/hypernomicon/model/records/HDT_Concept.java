@@ -18,7 +18,6 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
@@ -45,7 +44,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
 
   public HDT_Concept(RecordState xmlState, DatasetAccessor<HDT_Concept> dataset)
   {
-    super(xmlState, dataset, tagName);
+    super(xmlState, dataset);
 
     term = getSubjPointer(rtConceptOfTerm);
     glossary = getObjPointer(rtGlossaryOfConcept);

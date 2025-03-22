@@ -107,7 +107,9 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
 
       items = new ArrayList<>();
 
-      tags.forEach(tag -> add(new NonGeneralColumnGroupItem(db.mainTextTagForRecordType(recordType) == tag ? tagMainText : tag)));
+      tags.stream().filter (tag -> tag != recordType.getNameTag())
+                   .map    (tag -> db.mainTextTagForRecordType(recordType) == tag ? tagMainText : tag)
+                   .forEach(tag -> add(new NonGeneralColumnGroupItem(tag)));
 
       RelationSet.getRelationsForObjType(recordType, false).forEach(relType -> add(new NonGeneralColumnGroupItem(relType)));
     }
