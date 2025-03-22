@@ -80,7 +80,7 @@ public final class GeneralQueries
                            QUERY_MATCHING_STRING         = 12;  // "with any text that would link to a record having this search key"
   private static final int QUERY_MENTIONED_BY            = 13,  // "that are mentioned by record"
                            QUERY_WHERE_DISPLAYED_RECORDS = 14,  // "where displayed records"
-                           QUERY_WITH_ORPHANED_IMG_REFS  = 15;
+                           QUERY_WITH_ORPHANED_IMG_REFS  = 15;  // "with img tag pointing to non-existing Misc. File record"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -165,19 +165,6 @@ public final class GeneralQueries
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    allQueries.add(new QueryWhereField(QUERY_WHERE_FIELD, "where field"));
-
-    allQueries.add(new QueryWhereBibField(QUERY_WHERE_BIB_FIELD, "where bibliographic field"));
-
-    allQueries.add(new QueryWhereRelative(QUERY_WHERE_RELATIVE, "where set of records related by being"));
-
-    allQueries.add(new QueryWhereKeyWorks(QUERY_WHERE_KEY_WORKS, "where key works"));
-
-    allQueries.add(new QueryWhereDisplayedRecords(QUERY_WHERE_DISPLAYED_RECORDS, "where displayed records"));
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
     allQueries.add(new RecordQuery(QUERY_RECORD_TYPE, "record type equals")
     {
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -193,6 +180,15 @@ public final class GeneralQueries
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }
     });
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    allQueries.add(new QueryWhereField(QUERY_WHERE_FIELD, "where field"));
+
+    allQueries.add(new QueryWhereBibField(QUERY_WHERE_BIB_FIELD, "where bibliographic field"));
+
+    allQueries.add(new QueryWhereRelative(QUERY_WHERE_RELATIVE, "where set of records related by being"));
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -223,6 +219,13 @@ public final class GeneralQueries
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum < 3; }
     });
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    allQueries.add(new QueryWhereKeyWorks(QUERY_WHERE_KEY_WORKS, "where key works"));
+
+    allQueries.add(new QueryWhereDisplayedRecords(QUERY_WHERE_DISPLAYED_RECORDS, "where displayed records"));
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -470,7 +473,7 @@ public final class GeneralQueries
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
 
-      @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
+      @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtAllRecords; }
     });
   }
 

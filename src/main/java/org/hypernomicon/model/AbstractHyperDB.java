@@ -504,10 +504,10 @@ public abstract class AbstractHyperDB
     addPointerSingle(hdtInvestigation, rtPersonOfInv, tagPerson);
     addMainTextItem (hdtInvestigation               , tagDescription, tagDisplayRecord, tagKeyWork);
 
-    addStringItem   (hdtNote, tagName);
+    addStringItem   (hdtNote                    , tagName);
     addPointerMulti (hdtNote, rtParentNoteOfNote, tagParentNote);
-    addPointerSingle(hdtNote, rtFolderOfNote, tagFolder);
-    addMainTextItem (hdtNote, tagHub, tagText, tagDisplayRecord, tagKeyWork);
+    addPointerSingle(hdtNote, rtFolderOfNote    , tagFolder);
+    addMainTextItem (hdtNote                    , tagHub, tagText, tagDisplayRecord, tagKeyWork);
 
     addPersonNameItem();
     addPointerSingle (hdtPerson, rtStatusOfPerson       , tagPersonStatus);

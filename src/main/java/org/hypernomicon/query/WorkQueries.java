@@ -20,15 +20,12 @@ package org.hypernomicon.query;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.concurrent.Worker.State;
 
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,10 +52,8 @@ public final class WorkQueries
   private WorkQueries() { throw new UnsupportedOperationException(); }
 
   private static final int QUERY_LIKELY_EDITED_VOLS        = 2001,  // "likely edited volumes"
-                           QUERY_4_OR_MORE_AUTHORS         = 2002,  // "with 4 or more authors"
                            QUERY_ANALYZE_METADATA          = 2003,  // "analyze pdf metadata"
-                           QUERY_WORK_NEEDING_PAGE_NUMBERS = 2004,  // "in a PDF with one or more other works, missing page number(s)"
-                           QUERY_ARGUMENTS_AT_LEAST        = 2006;  // "that sources at least ___ argument(s)"
+                           QUERY_WORK_NEEDING_PAGE_NUMBERS = 2004;  // "in a PDF with one or more other works, missing page number(s)"
   public static final int  QUERY_WHERE_BIB_FIELD           = 2005;  // "where bibliographic field"
 
 //---------------------------------------------------------------------------
@@ -95,19 +90,6 @@ public final class WorkQueries
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    allQueries.add(new WorkQuery(QUERY_4_OR_MORE_AUTHORS, "with 4 or more authors")
-    {
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-      {
-        return work.authorRecords.size() >= 4;
-      }
-
-      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
-    });
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
     allQueries.add(new WorkQuery(QUERY_WORK_NEEDING_PAGE_NUMBERS, "in a PDF with one or more other works, missing page number(s)")
     {
       @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
@@ -123,27 +105,6 @@ public final class WorkQueries
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
-    });
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-    if (app.debugging) allQueries.add(new WorkQuery(QUERY_ARGUMENTS_AT_LEAST, "that sources at least ___ argument(s)")
-    {
-      @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-      {
-        clearOperands(row, vp1.getRestricted(row) ? 1 : 2);
-        vp1.setRestricted(row, false);
-
-        return false;
-      }
-
-      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-      {
-        return work.arguments.size() >= parseInt(getCellText(op1), Integer.MAX_VALUE);
-      }
-
-      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }
     });
 
   //---------------------------------------------------------------------------

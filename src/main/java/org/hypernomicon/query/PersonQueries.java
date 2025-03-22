@@ -39,8 +39,7 @@ public final class PersonQueries
 
   private PersonQueries() { throw new UnsupportedOperationException(); }
 
-  private static final int QUERY_SET_DECEASED_AS_PAST = 1001,  // "Set deceased people as past members of institutions"
-                           QUERY_MULTIPLE_INST        = 1002;  // "with multiple affiliations"
+  private static final int QUERY_SET_DECEASED_AS_PAST = 1001;  // "Set deceased people as past members of institutions"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -67,19 +66,6 @@ public final class PersonQueries
         }
 
         return false;
-      }
-
-      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
-    });
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-    allQueries.add(new PersonQuery(QUERY_MULTIPLE_INST, "with multiple affiliations")
-    {
-      @Override public boolean evaluate(HDT_Person person, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-      {
-        return person.institutions.size() > 1;
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }

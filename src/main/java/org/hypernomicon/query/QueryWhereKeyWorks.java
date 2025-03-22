@@ -18,7 +18,6 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
@@ -142,7 +141,12 @@ public class QueryWhereKeyWorks extends RecordQuery
 
   @Override public boolean show(QueryType queryType, RecordType recordType)
   {
-    return (queryType == qtAllRecords) || HDT_RecordWithMainText.class.isAssignableFrom(recordType.getRecordClass());
+    return switch (queryType)
+    {
+      case qtWorks, qtFiles, qtArguments -> false;
+      case qtAllRecords                  -> true;
+      default                            -> HDT_RecordWithMainText.class.isAssignableFrom(recordType.getRecordClass());
+    };
   }
 
 //---------------------------------------------------------------------------

@@ -84,7 +84,14 @@ public abstract class Query<HDT_T extends HDT_Record>
   @SuppressWarnings("unused")
   protected QuerySource getSource(QuerySource origSource, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { return origSource; }
 
-  @SuppressWarnings("unused")  //returns true if subsequent cells need to be updated
+  /**
+   * This runs when the user first selects the query
+   * @param row The query row
+   * @param vp1 Populator for parameter 1
+   * @param vp2 Populator for parameter 2
+   * @param vp3 Populator for parameter 3
+   * @return true if subsequent cells need to be updated depending on what the user enters for parameter 1; false otherwise
+   */
   public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3) { return true; }   // queryChange
 
   /**

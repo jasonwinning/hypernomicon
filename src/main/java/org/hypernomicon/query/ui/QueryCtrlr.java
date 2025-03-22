@@ -48,26 +48,20 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.query.reports.ReportTable;
-import org.hypernomicon.query.sources.CombinedFilteredQuerySource;
-import org.hypernomicon.query.sources.CombinedUnfilteredQuerySource;
-import org.hypernomicon.query.sources.QuerySource;
+import org.hypernomicon.query.sources.*;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.populators.Populator;
-import org.hypernomicon.view.populators.QueryPopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.populators.QueryPopulator.QueryCell;
-import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper;
@@ -346,6 +340,8 @@ public final class QueryCtrlr
     htFields.getColumns().forEach(col -> col.setDontCreateNewRecord(true));
 
     htFields.addRefreshHandler(tabPane::requestLayout);
+
+    htFields.addRemoveMenuItem(row -> row != htFields.getRows().get(htFields.getRows().size() - 1));
 
     resultsTable = new ResultsTable(tvResults, this);
     tvResults.setItems(FXCollections.observableList(resultsBackingList));
@@ -812,14 +808,16 @@ public final class QueryCtrlr
 
     if (customLogic)
     {
+      if (tfCustomLogic.getText().isBlank())
+        return falseWithErrorPopup("No custom evaluation logic expression has been entered.", tfCustomLogic);
+
       try
       {
         BoolExpression.create(tfCustomLogic.getText());
       }
       catch (ParseException e)
       {
-        errorPopup("Error while parsing custom logic expression: " + getThrowableMessage(e));
-        return false;
+        return falseWithErrorPopup("Error while parsing custom logic expression: " + getThrowableMessage(e), tfCustomLogic);
       }
     }
 
@@ -1017,24 +1015,49 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Determines the record to highlight based on the query rows in the table.
+   *
+   * This method iterates through all data rows in the table and examines their query type.
+   * It prioritizes finding a record associated with the <code>qtAllRecords</code> query type, and if no such
+   * record is found, it returns the first matching record for a non-report query type.
+   *
+   * @return The record to highlight. Returns the first matching record for an all-records query
+   *         if available. Otherwise, returns the first matching record.
+   */
   HDT_Record getRecordToHilite()
   {
+    HDT_Record altRecord = null;
+
     for (HyperTableRow row : htFields.dataRows())
     {
-      if (row.getID(QUERY_TYPE_COL_NDX) == qtAllRecords.getCode())
-      {
-        switch (row.getID(QUERY_COL_NDX))
-        {
-          case QUERY_LINKING_TO_RECORD : case QUERY_MATCHING_RECORD :
+      int queryTypeID = row.getID(QUERY_TYPE_COL_NDX);
+      HDT_Record record = getRecordToHiliteForQueryRow(row);
 
-            HDT_Record record = HyperTableCell.getRecord(row.getCell(OPERAND_2_COL_NDX));
-            if (record != null) return record;
-            break;
+      if ((queryTypeID == qtAllRecords.getCode()) && (record != null))
+        return record;
+      else if ((altRecord == null) && (queryTypeID != qtReport.getCode()))
+        altRecord = record;
+    }
 
-          default :
-            break;
-        }
-      }
+    return altRecord;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private HDT_Record getRecordToHiliteForQueryRow(HyperTableRow row)
+  {
+    switch (row.getID(QUERY_COL_NDX))
+    {
+      case QUERY_LINKING_TO_RECORD : case QUERY_MATCHING_RECORD :
+
+        HDT_Record record = HyperTableCell.getRecord(row.getCell(OPERAND_2_COL_NDX));
+        if (record instanceof HDT_Concept concept) return concept.term.get();
+        return record;
+
+      default :
+        break;
     }
 
     return null;

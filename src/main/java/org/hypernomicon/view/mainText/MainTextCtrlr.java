@@ -280,21 +280,19 @@ public class MainTextCtrlr
     {
       HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
 
-      MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
-      menuItem1.setOnAction(actionEvent -> pastePlainText(false));
-
-      MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey + ')');
-      menuItem2.setOnAction(actionEvent -> pastePlainText(true));
+      MenuItem mnuPaste                  = createPasteMenuItem                 (shortcutKey),
+               mnuPastePlain             = createPastePlainMenuItem            (shortcutKey),
+               mnuPastePlainNoLineBreaks = createPastePlainNoLineBreaksMenuItem(pasteNoLineBreaksKey);
 
       if (anchor == null)
       {
-        setHTMLContextMenu(menuItem1, menuItem2);
+        setHTMLContextMenu(mnuPaste, mnuPastePlain, mnuPastePlainNoLineBreaks);
         return;
       }
 
       MenuItem editLinkItem = new MenuItem("Edit link");
       editLinkItem.setOnAction(actionEvent -> editLink(anchor));
-      setHTMLContextMenu(editLinkItem, menuItem1, menuItem2);
+      setHTMLContextMenu(editLinkItem, mnuPaste, mnuPastePlain, mnuPastePlainNoLineBreaks);
     });
 
     he.focusWithinProperty().addListener((obs, ov, nv) ->
@@ -362,16 +360,11 @@ public class MainTextCtrlr
       }
     });
 
-    MenuItem menuItem0 = new MenuItem("Paste (" + shortcutKey + "-V)");
-    menuItem0.setOnAction(event -> Accessor.getPageFor(engine).executeCommand(Command.PASTE.getCommand(), null));
+    MenuItem mnuPaste                  = createPasteMenuItem                 (shortcutKey),
+             mnuPastePlain             = createPastePlainMenuItem            (shortcutKey),
+             mnuPastePlainNoLineBreaks = createPastePlainNoLineBreaksMenuItem(pasteNoLineBreaksKey);
 
-    MenuItem menuItem1 = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
-    menuItem1.setOnAction(event -> pastePlainText(false));
-
-    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey + ')');
-    menuItem2.setOnAction(event -> pastePlainText(true));
-
-    MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
+    MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), mnuPaste, mnuPastePlain, mnuPastePlainNoLineBreaks);
     setToolTip(btnPaste, "Paste");
 
     Button btnWebLink = new Button("", imgViewFromRelPath("resources/images/world_link.png"));
@@ -440,13 +433,13 @@ public class MainTextCtrlr
       });
     });
 
-    menuItem0 = new MenuItem("Make this font the default for this database");
-    menuItem0.setOnAction(event -> makeThisFontDefault());
+    MenuItem mnuMakeFontDefault = new MenuItem("Make this font the default for this database");
+    mnuMakeFontDefault.setOnAction(event -> makeThisFontDefault());
 
-    menuItem1 = new MenuItem("Set/update template for this record type");
-    menuItem1.setOnAction(event -> updateTemplate());
+    MenuItem mnuUpdateTemplate = new MenuItem("Set/update template for this record type");
+    mnuUpdateTemplate.setOnAction(event -> updateTemplate());
 
-    MenuButton btnSettings = new MenuButton("", imgViewFromRelPath("resources/images/gear-wrench.png"), menuItem0, menuItem1);
+    MenuButton btnSettings = new MenuButton("", imgViewFromRelPath("resources/images/gear-wrench.png"), mnuMakeFontDefault, mnuUpdateTemplate);
     setToolTip(btnSettings, "Settings");
 
     ObservableList<Node> bottomBarItems = ((ToolBar) he.lookup(".bottom-toolbar")).getItems();
@@ -760,6 +753,36 @@ public class MainTextCtrlr
   private static void editLink(HTMLAnchorElement anchor)
   {
     new NewLinkDlgCtrlr(anchor).showModal();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private MenuItem createPasteMenuItem(String shortcutKey)
+  {
+    MenuItem menuItem = new MenuItem("Paste (" + shortcutKey + "-V)");
+    menuItem.setOnAction(event -> Accessor.getPageFor(engine).executeCommand(Command.PASTE.getCommand(), null));
+    return menuItem;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private MenuItem createPastePlainMenuItem(String shortcutKey)
+  {
+    MenuItem menuItem = new MenuItem("Paste plain text (" + shortcutKey + "-Shift-V)");
+    menuItem.setOnAction(actionEvent -> pastePlainText(false));
+    return menuItem;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private MenuItem createPastePlainNoLineBreaksMenuItem(String pasteNoLineBreaksKey)
+  {
+    MenuItem menuItem = new MenuItem("Paste plain text without line breaks (" + pasteNoLineBreaksKey + ')');
+    menuItem.setOnAction(actionEvent -> pastePlainText(true));
+    return menuItem;
   }
 
 //---------------------------------------------------------------------------

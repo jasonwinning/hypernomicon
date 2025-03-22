@@ -266,6 +266,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       """));
 
     WebTooltip.setupClickHandler(btnFileActionsHelp, btnFileActions);
+
+    setToolTip(btnFileActionsHelp, "File Actions Help");
   }
 
 //---------------------------------------------------------------------------
