@@ -837,7 +837,7 @@ public class FileManager extends HyperDlg
 
             incrementAndUpdateProgress();
 
-            if (srcFilePath.isDirectory() == false) return;
+            if (srcFilePath.isDirectory() == false) continue;
 
             HDT_Folder folder = HyperPath.getFolderFromFilePath(srcFilePath, false);
 
