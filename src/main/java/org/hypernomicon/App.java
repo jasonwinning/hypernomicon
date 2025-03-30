@@ -41,6 +41,7 @@ import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -59,6 +60,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -104,6 +106,9 @@ public final class App extends Application
   public static boolean jxBrowserInitialized = false,
                         jxBrowserDisabled    = false;
 
+  private static PrintStream logFileOut, teeOut, teeErr, origOut, origErr;
+  private static FilePath logFilePath;
+
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
   public static final String appTitle = "Hypernomicon";
 
@@ -147,10 +152,17 @@ public final class App extends Application
     }
 
     prefs = appPrefs;
+    origOut = System.out;
+    origErr = System.err;
 
     try
     {
       if (prefs == null) throw new HDB_UnrecoverableInternalError(37546);
+
+      FilePath newLogFilePath = new FilePath(prefs.get(PrefKey.LOG_PATH, null));
+
+      if (FilePath.isEmpty(newLogFilePath) ==  false)
+        setLogPath(newLogFilePath);
 
       HyperDB.create(folderTreeWatcher);
     }
@@ -164,6 +176,54 @@ public final class App extends Application
 
     //db.viewTestingInProgress = true;
     //testMainTextEditing = true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void setLogPath(FilePath newLogFilePath)
+  {
+    if (FilePath.isEmpty(newLogFilePath))
+    {
+      if (logFileOut != null)
+      {
+        logFileOut.close();
+        logFileOut = null;
+      }
+
+      if (teeOut != null) teeOut = null;
+      if (teeErr != null) teeErr = null;
+
+      logFilePath = null;
+
+      System.setOut(origOut);
+      System.setErr(origErr);
+
+      return;
+    }
+
+    if (newLogFilePath.equals(logFilePath))
+      return;
+
+    try
+    {
+      logFileOut = new PrintStream(newLogFilePath.toFile());
+    }
+    catch (IOException e)
+    {
+      errorPopup("Unable to log to file: " + getThrowableMessage(e));
+      setLogPath(null);
+      return;
+    }
+
+    // Create TeeOutputStream to write both to console and file
+    teeOut = new PrintStream(new TeeOutputStream(origOut, logFileOut));
+    teeErr = new PrintStream(new TeeOutputStream(origErr, logFileOut));
+
+    logFilePath = newLogFilePath;
+
+    System.setOut(teeOut);
+    System.setErr(teeErr);
   }
 
 //---------------------------------------------------------------------------

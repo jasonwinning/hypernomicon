@@ -19,7 +19,9 @@ package org.hypernomicon.settings;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -35,6 +37,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
 import org.hypernomicon.bib.BibCollection;
@@ -59,17 +62,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -89,7 +82,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 public class SettingsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
-  @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnExtFilesHelp;
   @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkDefaultChapterWorkType, chkLinuxWorkaround,
                          chkCompDontExpandKeyWorks, chkDBDontExpandKeyWorks;
@@ -98,9 +90,11 @@ public class SettingsDlgCtrlr extends HyperDlg
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
   @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
-  @FXML TreeView<SettingsPage> treeView;
   @FXML private TabPane tpMain;
-  @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfOffice, tfVerificationCode;
+  @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfLogPath, tfOffice, tfVerificationCode;
+  @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
+
+  @FXML TreeView<SettingsPage> treeView;
 
   private final HyperCB hcbDefaultChapterWorkType;
   private final StringProperty authUrl;
@@ -136,6 +130,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private void btnImageEditorBrowseClick() { browseClick(tfImageEditor); }
   @FXML private void btnPDFReaderClick()         { browseClick(tfPDFReader); }
   @FXML private void btnClearExtPathClick()      { tfExtFiles.clear(); }
+  @FXML private void mnuClearLogPathClick()      { tfLogPath.clear(); }
   @FXML private void btnClearOfficeClick()       { tfOffice.clear(); }
 
 //---------------------------------------------------------------------------
@@ -212,6 +207,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     initTextField(app.prefs, tfImageEditor, PrefKey.IMAGE_EDITOR, "");
     initTextField(app.prefs, tfPDFReader  , PrefKey.PDF_READER  , "");
+    initTextField(app.prefs, tfLogPath    , PrefKey.LOG_PATH    , "");
     initTextField(app.prefs, tfExtFiles   , PrefKey.EXT_FILES_1 , "");
     initTextField(app.prefs, tfOffice     , PrefKey.OFFICE_PATH , "");
 
@@ -270,7 +266,12 @@ public class SettingsDlgCtrlr extends HyperDlg
       initDefaultChapterWorkType();
     }
 
-    dialogStage.setOnHiding(event -> settingsCtrlrs.forEach(ctrlr -> ctrlr.save(noDB)));
+    dialogStage.setOnHiding(event ->
+    {
+      setLogPath(new FilePath(tfLogPath.getText()));
+
+      settingsCtrlrs.forEach(ctrlr -> ctrlr.save(noDB));
+    });
 
     onShown = () -> treeView.getSelectionModel().select(pageToTreeItem.get(page));
   }
@@ -471,6 +472,28 @@ public class SettingsDlgCtrlr extends HyperDlg
     dirChooser.setTitle("Select Folder");
 
     nullSwitch(showDirDialog(dirChooser), filePath -> tfExtFiles.setText(filePath.toString()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnLogPathBrowseClick()
+  {
+    FilePath startPath = new FilePath(tfLogPath.getText()).getDirOnly();
+
+    if (FilePath.isEmpty(startPath))
+      startPath = new FilePath(userWorkingDir());
+
+    FileChooser fileChooser = new FileChooser();
+
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Log files (*.log)", "*.log"));
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
+
+    fileChooser.setInitialDirectory(startPath.toFile());
+
+    fileChooser.setTitle("Select Log File");
+
+    nullSwitch(showSaveDialog(fileChooser), filePath -> tfLogPath.setText(filePath.toString()));
   }
 
 //---------------------------------------------------------------------------
@@ -727,6 +750,48 @@ public class SettingsDlgCtrlr extends HyperDlg
       is open, the path will not be automatically updated in the corresponding work in this database.""".formatted(EXT_1)));
 
     WebTooltip.setupClickHandler(btnExtFilesHelp, tfExtFiles);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void mnuLogLaunchClick()
+  {
+    FilePath logFilePath = new FilePath(tfLogPath.getText());
+    if (FilePath.isEmpty(logFilePath)) return;
+
+    launchFile(logFilePath);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void mnuLogShowInSysExplorerClick()
+  {
+    FilePath logFilePath = new FilePath(tfLogPath.getText());
+    if (FilePath.isEmpty(logFilePath)) return;
+
+    highlightFileInExplorer(logFilePath);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void mnuLogCopyToClipboardClick()
+  {
+    FilePath logFilePath = new FilePath(tfLogPath.getText());
+    if (FilePath.isEmpty(logFilePath)) return;
+
+    List<String> s;
+
+    try { s = FileUtils.readLines(logFilePath.toFile(), Charset.defaultCharset()); }
+    catch (IOException e)
+    {
+      errorPopup("An error occurred while trying to read the log file: " + getThrowableMessage(e));
+      return;
+    }
+
+    copyToClipboard(strListToStr(s, true));
   }
 
 //---------------------------------------------------------------------------

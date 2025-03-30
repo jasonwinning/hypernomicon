@@ -683,6 +683,7 @@ public final class UIUtil
 
   public static FilePath   showDirDialog         (DirectoryChooser chooser) { return ui.windows.showDirDialog         (chooser); }
   public static FilePath   showOpenDialog        (FileChooser      chooser) { return ui.windows.showOpenDialog        (chooser); }
+  public static FilePath   showSaveDialog        (FileChooser      chooser) { return ui.windows.showSaveDialog        (chooser); }
   public static List<File> showOpenMultipleDialog(FileChooser      chooser) { return ui.windows.showOpenMultipleDialog(chooser); }
 
 //---------------------------------------------------------------------------

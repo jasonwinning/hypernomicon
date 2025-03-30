@@ -41,7 +41,7 @@ public final class Const
    * Change this and the version in pom.xml to set the application version
    * <br>
    */
-  public static final VersionNumber appVersion = new VersionNumber(1, 30, 1);  // 1.30.1
+  public static final VersionNumber appVersion = new VersionNumber(1, 30, 2);  // 1.30.2
 
   /**
    * This is the minimum version that the application version (or higher) is able to load
@@ -130,6 +130,7 @@ public final class Const
       SOURCE_FILENAME = "sourceFile",
       TRANSIENT_TEST_PARENT_PATH = "transientTestParentPath",
       TRANSIENT_TEST_FOLDER_NAME = "transientTestFolderName",
+      LOG_PATH = "logPath",
       HDB_MRU = "hbdMru",
       AUTO_IMPORT = "autoImport",
       IMAGE_EDITOR = "imageEditor",

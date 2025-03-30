@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.util.filePath.FilePath;
@@ -251,50 +252,29 @@ public final class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath showDirDialog(DirectoryChooser chooser)
+  private <T> T showDialog(Object chooser, Function<Window, T> showDialogFunction)
   {
     Window owner = getOutermostStage();
 
     push(new ChooserWrapper(chooser));
 
-    FilePath rv = nullSwitch(chooser.showDialog(owner), null, FilePath::new);
-
-    pop();
-
-    return rv;
+    try
+    {
+      return showDialogFunction.apply(owner);
+    }
+    finally
+    {
+      pop();
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath showOpenDialog(FileChooser chooser)
-  {
-    Window owner = getOutermostStage();
-
-    push(new ChooserWrapper(chooser));
-
-    FilePath rv = nullSwitch(chooser.showOpenDialog(owner), null, FilePath::new);
-
-    pop();
-
-    return rv;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public List<File> showOpenMultipleDialog(FileChooser chooser)
-  {
-    Window owner = getOutermostStage();
-
-    push(new ChooserWrapper(chooser));
-
-    List<File> rv = chooser.showOpenMultipleDialog(owner);
-
-    pop();
-
-    return rv;
-  }
+  public FilePath   showDirDialog         (DirectoryChooser chooser) { return nullSwitch(showDialog(chooser, chooser::showDialog            ), null, FilePath::new); }
+  public FilePath   showOpenDialog        (FileChooser      chooser) { return nullSwitch(showDialog(chooser, chooser::showOpenDialog        ), null, FilePath::new); }
+  public FilePath   showSaveDialog        (FileChooser      chooser) { return nullSwitch(showDialog(chooser, chooser::showSaveDialog        ), null, FilePath::new); }
+  public List<File> showOpenMultipleDialog(FileChooser      chooser) { return            showDialog(chooser, chooser::showOpenMultipleDialog);                       }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
