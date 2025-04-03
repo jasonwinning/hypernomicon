@@ -161,21 +161,20 @@ public final class App extends Application
 
       FilePath newLogFilePath = new FilePath(prefs.get(PrefKey.LOG_PATH, null));
 
-      if (FilePath.isEmpty(newLogFilePath) ==  false)
+      if (FilePath.isEmpty(newLogFilePath) == false)
         setLogPath(newLogFilePath);
 
       HyperDB.create(folderTreeWatcher);
+
+      //db.viewTestingInProgress = true;
+      //testMainTextEditing = true;
     }
     catch (HDB_UnrecoverableInternalError e)
     {
       errorPopup("Initialization error: " + getThrowableMessage(e));
 
       Platform.exit();
-      return;
     }
-
-    //db.viewTestingInProgress = true;
-    //testMainTextEditing = true;
   }
 
 //---------------------------------------------------------------------------
@@ -191,19 +190,27 @@ public final class App extends Application
         logFileOut = null;
       }
 
-      if (teeOut != null) teeOut = null;
-      if (teeErr != null) teeErr = null;
+      if (teeOut != null)
+      {
+        teeOut = null;
+        teeErr = null;
+        logFilePath = null;
 
-      logFilePath = null;
-
-      System.setOut(origOut);
-      System.setErr(origErr);
+        System.setOut(origOut);
+        System.setErr(origErr);
+      }
 
       return;
     }
 
     if (newLogFilePath.equals(logFilePath))
       return;
+
+    if (logFileOut != null)
+    {
+      logFileOut.close();
+      logFileOut = null;
+    }
 
     try
     {

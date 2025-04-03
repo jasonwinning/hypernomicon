@@ -25,9 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.CheckForNull;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -83,7 +81,7 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override @Nullable @CheckForNull
+  @Override @Nullable
   public V get(@Nullable Object rowKey, @Nullable Object columnKey)
   {
     return nullSwitch(rowToColumnToValue.get(rowKey), null, columnToValue -> columnToValue.get(columnKey));
@@ -146,7 +144,6 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
 
   @Override
   @Nullable
-  @CheckForNull
   @CanIgnoreReturnValue
   public V remove(@Nullable Object rowKey, @Nullable Object columnKey)
   {
@@ -213,7 +210,6 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
   @CanIgnoreReturnValue
   @Deprecated
   @DoNotCall("Always throws UnsupportedOperationException")
-  @CheckForNull
   @Override public Map<R, Map<C, V>> rowMap()
   {
     throw new UnsupportedOperationException("Internal error: EnumMap does not support rowMap().");
@@ -231,7 +227,6 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V> implements 
   @CanIgnoreReturnValue
   @Deprecated
   @DoNotCall("Always throws UnsupportedOperationException")
-  @CheckForNull
   @Override public Map<C, Map<R, V>> columnMap()
   {
     throw new UnsupportedOperationException("Internal error: EnumMap does not support columnMap().");

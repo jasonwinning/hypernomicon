@@ -81,13 +81,13 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String toString()                   { return exportStandaloneJsonObj(false).toString(); }
-  @Override public String getKey()                     { return jObj.getStrSafe("key"); }
-  @Override public long getVersion()                   { return jObj.getLong("version", 0); }
-  @Override protected boolean isNewEntry()             { return jObj.containsKey("version") == false; }
-  @Override protected JsonArray getCollJsonArray()     { return jObj.getObj("data").getArray("collections"); }
-  @Override public BibAuthors getAuthors()             { return linkedToWork() ? new WorkBibAuthors(getWork()) : new ZoteroAuthors(jData.getArray("creators"), getEntryType()); }
-  @Override public EntryType getEntryType()            { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jData)); }
+  @Override public String toString()               { return exportStandaloneJsonObj(false).toString(); }
+  @Override public String getKey()                 { return jObj.getStrSafe("key"); }
+  @Override public long getVersion()               { return jObj.getLong("version", 0); }
+  @Override protected boolean isNewEntry()         { return jObj.containsKey("version") == false; }
+  @Override protected JsonArray getCollJsonArray() { return jObj.getObj("data").getArray("collections"); }
+  @Override public BibAuthors getAuthors()         { return linkedToWork() ? new WorkBibAuthors(getWork()) : new ZoteroAuthors(jData.getOrAddArray("creators"), getEntryType()); }
+  @Override public EntryType getEntryType()        { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jData)); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
 
@@ -515,40 +515,36 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     if (((ZoteroAuthors) backupItem.getAuthors()).ignoreEditors())
     {
-      JsonArray creatorsArr1 = jData.getArray("creators"),
-                creatorsArr2 = ((ZoteroItem) backupItem).jData.getArray("creators");
+      JsonArray creatorsArr1 = jData.getOrAddArray("creators"),
+                creatorsArr2 = ((ZoteroItem) backupItem).jData.getOrAddArray("creators");
 
-      if ((creatorsArr1 == null) != (creatorsArr2 == null)) return true;
-      if (creatorsArr1 != null)
+      JsonArray jArr1 = new JsonArray(), jArr2 = new JsonArray();
+
+      creatorsArr1.getObjs().forEach(creator ->
       {
-        JsonArray jArr1 = new JsonArray(), jArr2 = new JsonArray();
+        String type = creator.getStrSafe("creatorType");
+        if ("editor".equals(type) || "bookAuthor".equals(type))
+          jArr1.add(creator);
+      });
 
-        creatorsArr1.getObjs().forEach(creator ->
-        {
-          String type = creator.getStrSafe("creatorType");
-          if ("editor".equals(type) || "bookAuthor".equals(type))
-            jArr1.add(creator);
-        });
+      creatorsArr2.getObjs().forEach(creator ->
+      {
+        String type = creator.getStrSafe("creatorType");
+        if ("editor".equals(type) || "bookAuthor".equals(type))
+          jArr2.add(creator);
+      });
 
-        creatorsArr2.getObjs().forEach(creator ->
-        {
-          String type = creator.getStrSafe("creatorType");
-          if ("editor".equals(type) || "bookAuthor".equals(type))
-            jArr2.add(creator);
-        });
+      if (jArr1.size() != jArr2.size()) return true;
 
-        if (jArr1.size() != jArr2.size()) return true;
+      for (int ndx = 0; ndx < jArr1.size(); ndx++)
+      {
+        JsonObj ed1 = jArr1.getObj(ndx),
+                ed2 = jArr2.getObj(ndx);
 
-        for (int ndx = 0; ndx < jArr1.size(); ndx++)
-        {
-          JsonObj ed1 = jArr1.getObj(ndx),
-                  ed2 = jArr2.getObj(ndx);
+        if (ed1.getStrSafe("creatorType").equals(ed2.getStrSafe("creatorType")) == false) return true;
 
-          if (ed1.getStrSafe("creatorType").equals(ed2.getStrSafe("creatorType")) == false) return true;
-
-          if (ed1.getStrSafe("firstName").equals(ed2.getStrSafe("firstName")) == false) return true;
-          if (ed1.getStrSafe("lastName" ).equals(ed2.getStrSafe("lastName" )) == false) return true;
-        }
+        if (ed1.getStrSafe("firstName").equals(ed2.getStrSafe("firstName")) == false) return true;
+        if (ed1.getStrSafe("lastName" ).equals(ed2.getStrSafe("lastName" )) == false) return true;
       }
     }
 
@@ -645,7 +641,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     authors.getLists(authorList, editorList, translatorList);
 
-    JsonArray creatorsArr = jData.getArray("creators");
+    JsonArray creatorsArr = jData.getOrAddArray("creators");
 
     JsonObjIterator it = creatorsArr.getObjs();
     while (it.hasNext())
@@ -699,7 +695,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         JsonObj jDestObj  = dest.exportStandaloneJsonObj(false),
                 jDestData = nullSwitch(jDestObj.getObj("data"), jDestObj);
 
-        JsonArray oldCreatorsArr = jDestData.getArray("creators"), newCreatorsArr = new JsonArray();
+        JsonArray oldCreatorsArr = jDestData.getOrAddArray("creators"), newCreatorsArr = new JsonArray();
 
         // If parent has authors but the child doesn't have any parent-authors, don't do anything.
         // The parent authors might be correct, and the parent-authors might not have been set on
@@ -709,7 +705,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
                      parentAuthorTypes = List.of("editor", "bookAuthor");
 
         if (oldCreatorsArr.objStream().anyMatch(creator -> selfAuthorTypes.contains(creator.getStrSafe("creatorType"))))
-          if (jData.getArray("creators").objStream().filter(creator -> parentAuthorTypes.contains(creator.getStrSafe("creatorType"))).findAny().isEmpty())
+          if (jData.getOrAddArray("creators").objStream().filter(creator -> parentAuthorTypes.contains(creator.getStrSafe("creatorType"))).findAny().isEmpty())
             return;
 
         // Clear parent's authors
@@ -724,7 +720,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
         // Add child's parent-authors to parent
 
-        jData.getArray("creators").getObjs().forEach(oldCreator ->
+        jData.getOrAddArray("creators").getObjs().forEach(oldCreator ->
         {
           if (parentAuthorTypes.contains(oldCreator.getStrSafe("creatorType")))
           {
@@ -745,7 +741,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
       case Sibling:
       {
-        JsonArray destCreatorsArr = dest.jData.getArray("creators");
+        JsonArray destCreatorsArr = dest.jData.getOrAddArray("creators");
 
         JsonObjIterator it = destCreatorsArr.getObjs();
         while (it.hasNext())
@@ -756,7 +752,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
             it.remove();
         }
 
-        JsonArray srcCreatorsArr = jData.getArray("creators");
+        JsonArray srcCreatorsArr = jData.getOrAddArray("creators");
 
         srcCreatorsArr.getObjs().forEach(creator ->
         {

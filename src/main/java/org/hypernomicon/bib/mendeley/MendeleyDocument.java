@@ -281,9 +281,9 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
       case bfURL :
 
-        JsonArray jArr = jObj.getArray("websites");
+        JsonArray jArr = jObj.getArraySafe("websites");
 
-        return (jArr != null) && (jArr.size() > 0) ? jArr.getStr(0) : "";
+        return jArr.isEmpty() ? "" : jArr.getStr(0);
 
       case bfVolume : case bfIssue   : case bfPages    : case bfPublisher :
       case bfPubLoc : case bfEdition : case bfLanguage :
@@ -457,22 +457,18 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
     if (((MendeleyAuthors) backupItem.getAuthors()).ignoreEditors())
     {
-      JsonArray jArr1 = jObj.getArray("editors"),
-                jArr2 = ((MendeleyDocument) backupItem).jObj.getArray("editors");
+      JsonArray jArr1 = jObj.getArraySafe("editors"),
+                jArr2 = ((MendeleyDocument) backupItem).jObj.getArraySafe("editors");
 
-      if ((jArr1 == null) != (jArr2 == null)) return true;
-      if (jArr1 != null)
+      if (jArr1.size() != jArr2.size()) return true;
+
+      for (int ndx = 0; ndx < jArr1.size(); ndx++)
       {
-        if (jArr1.size() != jArr2.size()) return true;
+        JsonObj ed1 = jArr1.getObj(ndx),
+                ed2 = jArr2.getObj(ndx);
 
-        for (int ndx = 0; ndx < jArr1.size(); ndx++)
-        {
-          JsonObj ed1 = jArr1.getObj(ndx),
-                  ed2 = jArr2.getObj(ndx);
-
-          if (ed1.getStrSafe("first_name").equals(ed2.getStrSafe("first_name")) == false) return true;
-          if (ed1.getStrSafe("last_name" ).equals(ed2.getStrSafe("last_name" )) == false) return true;
-        }
+        if (ed1.getStrSafe("first_name").equals(ed2.getStrSafe("first_name")) == false) return true;
+        if (ed1.getStrSafe("last_name" ).equals(ed2.getStrSafe("last_name" )) == false) return true;
       }
     }
 
@@ -604,7 +600,8 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
         // Add child's parent-authors to parent
 
-        newVersion.put("editors", jObj.getArray("editors").clone());
+        JsonArray jsonArr = jObj.getArray("editors");
+        newVersion.put("editors", jsonArr == null ? new JsonArray() : jsonArr.clone());
 
         dest.getWork().getAuthors().setAll(new MendeleyAuthors(newVersion, dest.getEntryType()));
 

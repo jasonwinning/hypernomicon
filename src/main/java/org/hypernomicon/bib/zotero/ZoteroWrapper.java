@@ -471,7 +471,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
           if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return;
 
-          jArr.getObj(0).getArray("items").strStream().forEach(key ->
+          jArr.getObj(0).getArraySafe("items").strStream().forEach(key ->
           {
             if (keyToAllEntry.containsKey(key))
             {
@@ -496,7 +496,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
             }
           });
 
-          jArr.getObj(0).getArray("collections").strStream().forEach(key ->
+          jArr.getObj(0).getArraySafe("collections").strStream().forEach(key ->
           {
             if (keyToColl.containsKey(key))
             {

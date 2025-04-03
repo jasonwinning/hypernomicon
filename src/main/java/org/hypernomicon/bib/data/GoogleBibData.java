@@ -76,14 +76,14 @@ public final class GoogleBibData extends BibDataStandalone
       setDate(ZoteroDate.parsedDateStrToBibDate(publishedDate, false), dtPublishedDate, true);  // Date is in local ISO date format like Zotero's "parsed date"
                                                                                                 // Assumption here is that Google Books years are never BC
 
-    nullSwitch(jsonObj.getArray("authors"), authArray -> authArray.strStream().forEach(authStr ->
-      authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr)))));
+    jsonObj.getArraySafe("authors").strStream().forEach(authStr ->
+      authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr))));
 
-    nullSwitch(jsonObj.getArray("industryIdentifiers"), iiArr -> iiArr.getObjs().forEach(iiObj ->
+    jsonObj.getArraySafe("industryIdentifiers").getObjs().forEach(iiObj ->
     {
       if (iiObj.getStrSafe("type").toLowerCase().contains("isbn"))
         addISBN(iiObj.getStrSafe("identifier"));
-    }));
+    });
 
     if (fieldNotEmpty(bfISBNs) == false)
       addISBN(queryIsbn);
@@ -96,7 +96,7 @@ public final class GoogleBibData extends BibDataStandalone
   {
     try
     {
-      JsonArray jsonArray = jsonObj.getArray("items");
+      JsonArray jsonArray = jsonObj.getArraySafe("items");
 
       if (jsonArray.isEmpty()) return null;
 
@@ -112,15 +112,8 @@ public final class GoogleBibData extends BibDataStandalone
       {
         JsonObj curObj = curArrObj.getObj("volumeInfo");
 
-        boolean authMatch = false;
-
-        if (authKeywords.size() > 0)
-        {
-          JsonArray authArr = curObj.getArray("authors");
-
-          if (authArr != null)
-            authMatch = authArr.strStream().anyMatch(jsonAuthStr -> authKeywords.stream().anyMatch(jsonAuthStr::contains));
-        }
+        boolean authMatch = (authKeywords.size() > 0) &&
+                            curObj.getArraySafe("authors").strStream().anyMatch(jsonAuthStr -> authKeywords.stream().anyMatch(jsonAuthStr::contains));
 
         GoogleBibData curBD = new GoogleBibData(curObj, queryIsbn);
         String curTitle = HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork);

@@ -39,13 +39,14 @@ public interface ZoteroEntity extends BibEntity
 
     if (subObj.containsKey("itemType"))
     {
-      if ("attachment".equals(subObj.getStrSafe("itemType")) == false)
-        return new ZoteroItem(zWrapper, jObj, false);
+      return switch (subObj.getStrSafe("itemType").toLowerCase())
+      {
+        case "attachment", "note", "annotation" -> null;
+        default -> new ZoteroItem(zWrapper, jObj, false);
+      };
     }
-    else if (subObj.containsKey("parentCollection"))
-      return new ZoteroCollection(jObj);
 
-    return null;
+    return subObj.containsKey("parentCollection") ? new ZoteroCollection(jObj) : null;
   }
 
 //---------------------------------------------------------------------------

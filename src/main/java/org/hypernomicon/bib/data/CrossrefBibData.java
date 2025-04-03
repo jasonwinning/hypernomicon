@@ -200,7 +200,7 @@ public final class CrossrefBibData extends BibDataStandalone
   {
     if (jsonObj.containsKey(dt.desc))
     {
-      JsonArray partsArr = jsonObj.getObj(dt.desc).getArray("date-parts").getArray(0);
+      JsonArray partsArr = jsonObj.getObj(dt.desc).getArraySafe("date-parts").getArray(0);
 
       int year =  (partsArr.size() > 0 ? parseInt(partsArr.getLongAsStrSafe(0), 0) : 0),
           month = (partsArr.size() > 1 ? parseInt(partsArr.getLongAsStrSafe(1), 0) : 0),

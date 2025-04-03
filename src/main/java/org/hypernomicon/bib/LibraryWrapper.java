@@ -251,7 +251,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   protected void loadFromJSON(JsonObj jObj)
   {
-    jObj.getArray(entryFileNode()).getObjs().forEach(itemJsonObj ->
+    jObj.getOrAddArray(entryFileNode()).getObjs().forEach(itemJsonObj ->
     {
       BibEntry_T entry = BibEntry.create(this, itemJsonObj, false);
 
@@ -262,7 +262,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
         userName = entry.getUserName();
     });
 
-    nullSwitch(jObj.getArray("trash"), jArr -> jArr.getObjs().forEach(itemJsonObj ->
+    jObj.getArraySafe("trash").getObjs().forEach(itemJsonObj ->
     {
       BibEntry_T entry = BibEntry.create(this, itemJsonObj, false);
 
@@ -270,15 +270,15 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
       keyToAllEntry.put(entry.getKey(), entry);
       keyToTrashEntry.put(entry.getKey(), entry);
-    }));
+    });
 
-    nullSwitch(jObj.getArray(collectionFileNode()), jArr -> jArr.getObjs().forEach(collJsonObj ->
+    jObj.getArraySafe(collectionFileNode()).getObjs().forEach(collJsonObj ->
     {
       BibCollection_T coll = BibCollection.create(type(), collJsonObj);
 
       if (coll != null)
         keyToColl.put(coll.getKey(), coll);
-    }));
+    });
   }
 
 //---------------------------------------------------------------------------

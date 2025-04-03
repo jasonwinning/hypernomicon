@@ -22,15 +22,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.OmniFinder.TierEnum.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
@@ -40,10 +32,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.view.cellValues.BibDateHTC;
-import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
-import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -54,8 +43,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.text.Text;
 
+//---------------------------------------------------------------------------
+
 public class OmniFinder
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperTable htFind;
   private final List<ObservableList<HyperTableCell>> cellLists = new ArrayList<>();
   private final List<HyperTableRow> rows = new ArrayList<>();
@@ -74,6 +69,9 @@ public class OmniFinder
   public boolean noResults()  { return collEmpty(records); }
   private boolean isRunning() { return HyperThread.isRunning(finderThread); }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   protected enum TierEnum
   {
     tierExactName,
@@ -91,9 +89,16 @@ public class OmniFinder
     tierKeywordContains
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final int ROWS_TO_SHOW = 25;
 
+//---------------------------------------------------------------------------
+
   OmniFinder(HyperTable htFind) { this(htFind, hdtNone, true); }
+
+//---------------------------------------------------------------------------
 
   public OmniFinder(HyperTable htFind, RecordType typeFilter, boolean incremental)
   {

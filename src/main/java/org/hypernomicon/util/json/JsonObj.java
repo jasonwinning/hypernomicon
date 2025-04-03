@@ -141,6 +141,7 @@ public final class JsonObj implements Cloneable
   public String getStrSafe(String key)      { return jObj.get(key) instanceof String str ? str : ""; }
   public String getAsStr(String key)        { return nullSwitch(jObj.get(key), "", Object::toString); }
   public JsonArray getArray(String key)     { return nullSwitch((JSONArray)jObj.get(key), null, JsonArray::new); }
+  public JsonArray getArraySafe(String key) { return nullSwitch((JSONArray)jObj.get(key), new JsonArray(), JsonArray::new); }
 
   @SuppressWarnings("unchecked") public void putNull(String key)               { jObj.put(key, null); }
   @SuppressWarnings("unchecked") public void put(String key, JsonObj childObj) { jObj.put(key, childObj.jObj); }
@@ -150,6 +151,20 @@ public final class JsonObj implements Cloneable
   @SuppressWarnings("unchecked") public Set<String> keySet()                   { return jObj.keySet(); }
 
   @Override public String toString() { return jObj.toJSONString(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  public JsonArray getOrAddArray(String key)
+  {
+    JSONArray value = (JSONArray) jObj.get(key);
+
+    if (value == null)
+      jObj.put(key, value = new JSONArray());
+
+    return new JsonArray(value);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
