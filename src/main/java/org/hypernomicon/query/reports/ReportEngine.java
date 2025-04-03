@@ -28,7 +28,6 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
-import static org.hypernomicon.App.app;
 import static org.hypernomicon.util.UIUtil.*;
 
 public abstract class ReportEngine
@@ -54,8 +53,7 @@ public abstract class ReportEngine
   {
     pop.addEntry(row, QUERY_DUPLICATE_AUTHORS, "Duplicate authors");
     pop.addEntry(row, QUERY_LICENSE_AND_NOTICE, "Application license and notices");
-
-    if (app.debugging) pop.addEntry(row, QUERY_DANGLING_LABELS, "Dangling labels united to records with parent/child relationship");
+    pop.addEntry(row, QUERY_DANGLING_LABELS, "Dangling labels united to records with parent/child relationship");
   }
 
 //---------------------------------------------------------------------------
