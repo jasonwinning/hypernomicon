@@ -59,8 +59,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final String CREATE_FOLDER_CAPTION = "Create Folder",
-                              CREATE_FOLDER_TOOLTIP = "Create a new folder and assign it to this note";
+  private static final String CREATE_FOLDER_CAPTION = "Create Folder";
 
   private final SplitMenuButton btnFolder = new SplitMenuButton();
   private final Button btnBrowse = new Button("..."), btnCreateFolder = new Button(CREATE_FOLDER_CAPTION);
@@ -105,7 +104,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     spMain.setDividerPosition(1, 0.8);
 
     refreshFolderButton(true);
-    setToolTip(btnCreateFolder, CREATE_FOLDER_TOOLTIP);
+    setToolTip(btnCreateFolder, this::createFolderToolTip);
 
     BorderPane.setMargin(btnBrowse, new Insets(0, 2, 0, 0));
     BorderPane.setMargin(tfFolder , new Insets(0, 4, 0, 4));
@@ -214,7 +213,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     btnFolder.setOnAction(event -> btnCreateFolder.fire());
 
-    setToolTip(btnFolder, CREATE_FOLDER_TOOLTIP);
+    setToolTip(btnFolder, this::createFolderToolTip);
   }
 
 //---------------------------------------------------------------------------
@@ -358,7 +357,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
 
-    String folderName = FilePath.removeInvalidFileNameChars(curNote.name());
+    String folderName = nameOfFolderToCreate();
 
     if (folderName.isBlank())
     {
@@ -370,6 +369,28 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     }
 
     nullSwitch(parentFolder.createSubfolder(folderName), this::assignFolder);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String nameOfFolderToCreate()
+  {
+    return FilePath.removeInvalidFileNameChars(recordName());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String createFolderToolTip()
+  {
+    String folderName = nameOfFolderToCreate();
+
+    HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
+
+    if (folderName.isBlank()) return "Assign new folder in parent folder: " + parentFolder.filePath().toString();
+
+    return "Assign new folder: " + parentFolder.filePath().resolve(folderName);
   }
 
 //---------------------------------------------------------------------------
