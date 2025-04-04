@@ -36,6 +36,8 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 
+//---------------------------------------------------------------------------
+
 public abstract class HasRightClickableRows<RowType extends AbstractRow<? extends HDT_Record, RowType>>
 {
 

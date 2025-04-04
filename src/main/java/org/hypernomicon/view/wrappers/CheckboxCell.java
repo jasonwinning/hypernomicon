@@ -27,12 +27,17 @@ import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 
+//---------------------------------------------------------------------------
+
 class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperTable table;
   private final CheckBox chk;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   CheckboxCell(HyperTable table)
@@ -42,12 +47,12 @@ class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 
     emptyProperty().addListener((ob, oldValue, newValue) -> chk.setVisible(newValue == false));
 
-    chk.selectedProperty().addListener((ob, oldValue, newValue) ->
+    chk.setOnAction(event ->
     {
       HyperTableRow row = getTableRow().getItem();
       if (row == null) return;
 
-      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), GenericNonRecordHTC.fromBoolean(Boolean.TRUE.equals(newValue)));
+      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), GenericNonRecordHTC.fromBoolean(chk.isSelected()));
     });
   }
 

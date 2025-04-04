@@ -58,6 +58,10 @@ import javafx.scene.control.TableColumn.SortType;
 
 public class HyperTableColumn
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public enum HyperCtrlType
   {
     /**
@@ -116,10 +120,16 @@ public class HyperTableColumn
     ctInvSelect
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public enum CellSortMethod
   {
     smStandard, smTextSimple, smNumeric, smWork, smIcon
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final Populator populator;
   private final RecordType objType;

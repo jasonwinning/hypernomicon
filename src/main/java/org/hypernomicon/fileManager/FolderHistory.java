@@ -118,7 +118,7 @@ final class FolderHistory
 
   private void updateButtons()
   {
-    btnBack   .setDisable(ndx == 0);
+    btnBack   .setDisable(ndx < 1);
     btnForward.setDisable(ndx == (history.size() - 1));
   }
 

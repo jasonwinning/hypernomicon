@@ -118,14 +118,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   @FXML private SplitMenuButton smbWebSrch1;
   @FXML private SplitPane spTopHoriz, spVert;
   @FXML private Tab tabNew, tabOverview;
-  @FXML private TabPane tpPerson;
   @FXML private TableView<HyperTableRow> tvArguments, tvPersonDept, tvWorks;
+  @FXML private TabPane tpPerson;
   @FXML private TextField tfORCID, tfWebsite, tfSearchKey;
 
   @FXML public TextField tfFirst, tfLast;
 
   private final List<InvestigationView> invViews = new ArrayList<>();
-  private final HyperTable htPersonInst, htWorks, htArguments;
+  public final HyperTable htPersonInst, htWorks, htArguments;
   private final HyperCB hcbRank, hcbStatus, hcbSubfield;
   private final MainTextWrapper mainText;
 
@@ -408,24 +408,24 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     alreadyChangingName = true;
 
     tfFirst.setText(curPerson.getFirstName());
-    tfLast.setText(curPerson.getLastName());
+    tfLast .setText(curPerson.getLastName ());
 
     alreadyChangingName = false;
 
-    tfORCID.setText(curPerson.getOrcID());
-    tfWebsite.setText(curPerson.getWebURL());
+    tfORCID    .setText(curPerson.getOrcID    ());
+    tfWebsite  .setText(curPerson.getWebURL   ());
     tfSearchKey.setText(curPerson.getSearchKey());
 
-    curPicture = curPerson.filePath();
-    viewPort = curPerson.getViewPort();
+    curPicture = curPerson.filePath   ();
+    viewPort   = curPerson.getViewPort();
     refreshPicture();
 
-    hcbRank.selectIDofRecord(curPerson.rank);
+    hcbRank  .selectIDofRecord(curPerson.rank  );
     hcbStatus.selectIDofRecord(curPerson.status);
 
     if (curPerson.field.isNotNull())
     {
-      hcbField.selectIDofRecord(curPerson.field);
+      hcbField   .selectIDofRecord(curPerson.field   );
       hcbSubfield.selectIDofRecord(curPerson.subfield);
     }
 

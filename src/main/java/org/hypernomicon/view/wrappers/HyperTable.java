@@ -74,6 +74,10 @@ import javafx.stage.Modality;
 
 public class HyperTable extends HasRightClickableRows<HyperTableRow>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final int mainCol;
   private final TableView<HyperTableRow> tv;
   private final List<HyperTableColumn> cols = new ArrayList<>();
@@ -95,26 +99,26 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
 //---------------------------------------------------------------------------
 
-  public TableView<HyperTableRow> getTV()                          { return tv; }
-  public List<HyperTableColumn> getColumns()                       { return Collections.unmodifiableList(cols); }
-  public List<HyperTableRow> getRows()                             { return unmodRows; }
-  public HyperTableColumn getColumn(int colNdx)                    { return cols.get(colNdx); }
-  public <Pop extends Populator> Pop getPopulator(int colNdx)      { return cols.get(colNdx).getPopulator(); }
-  public void clearFilter()                                        { filteredRows.setPredicate(row -> true); }
-  public void setFilter(Predicate<HyperTableRow> filter)           { filteredRows.setPredicate(filter); }
-  public RecordType getTypeByCol(int colNdx)                       { return cols.get(colNdx).getObjType(); }
-  boolean getCanAddRows()                                          { return canAddRows; }
-  public void setCanAddRows(boolean value)                         { canAddRows = value; tv.setEditable(value); }
-  public void setOnShowMore(Runnable onShowMore)                   { this.onShowMore = onShowMore; }
-  int getMainColNdx()                                              { return mainCol; }
-  public void removeRow(HyperTableRow row)                         { rows.remove(row); }
-  public Iterable<HyperTableRow> dataRows()                        { return new DataRowIterator(); }
-  public Stream<HyperTableRow> dataRowStream()                     { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
-  public int dataRowCount()                                        { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
-  public void addRefreshHandler(Runnable handler)                  { refreshHandler = handler; }
-  public HyperTableRow selectRowByRecord(HDT_Record record)        { return nullSwitch(getRowByRecord(record), null, this::selectRow); }
-  public boolean removeRowsIf(Predicate<HyperTableRow> filter)     { return rows.removeIf(filter); }
-  public void setDefaultValue(int colNdx, HyperTableCell value)    { colNdxToDefaultValue.put(colNdx, value); }
+  public TableView<HyperTableRow> getTV()                       { return tv; }
+  public List<HyperTableColumn> getColumns()                    { return Collections.unmodifiableList(cols); }
+  public List<HyperTableRow> getRows()                          { return unmodRows; }
+  public HyperTableColumn getColumn(int colNdx)                 { return cols.get(colNdx); }
+  public <Pop extends Populator> Pop getPopulator(int colNdx)   { return cols.get(colNdx).getPopulator(); }
+  public void clearFilter()                                     { filteredRows.setPredicate(row -> true); }
+  public void setFilter(Predicate<HyperTableRow> filter)        { filteredRows.setPredicate(filter); }
+  public RecordType getTypeByCol(int colNdx)                    { return cols.get(colNdx).getObjType(); }
+  boolean getCanAddRows()                                       { return canAddRows; }
+  public void setCanAddRows(boolean value)                      { canAddRows = value; tv.setEditable(value); }
+  public void setOnShowMore(Runnable onShowMore)                { this.onShowMore = onShowMore; }
+  int getMainColNdx()                                           { return mainCol; }
+  public void removeRow(HyperTableRow row)                      { rows.remove(row); }
+  public Iterable<HyperTableRow> dataRows()                     { return new DataRowIterator(); }
+  public Stream<HyperTableRow> dataRowStream()                  { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
+  public int dataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
+  public void addRefreshHandler(Runnable handler)               { refreshHandler = handler; }
+  public HyperTableRow selectRowByRecord(HDT_Record record)     { return nullSwitch(getRowByRecord(record), null, this::selectRow); }
+  public boolean removeRowsIf(Predicate<HyperTableRow> filter)  { return rows.removeIf(filter); }
+  public void setDefaultValue(int colNdx, HyperTableCell value) { colNdxToDefaultValue.put(colNdx, value); }
 
   @SuppressWarnings("unused")
   public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> handler) { dblClickHandler = handler; }
@@ -151,6 +155,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 
   private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctNoneditableDropDown, ctEditableUnlimitedDropDown, ctEditableLimitedDropDown, ctEdit);
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID)
   {

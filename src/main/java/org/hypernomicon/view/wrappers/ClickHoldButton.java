@@ -65,19 +65,6 @@ public class ClickHoldButton
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void showMenu()
-  {
-    btnMenu.getItems().clear();
-
-    if (menuFactory != null)
-      menuFactory.rebuildMenu(btnMenu.getItems());
-
-    btnMenu.show();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public ClickHoldButton(Button btn, Side side)
   {
     btnMenu = new MenuButton("");
@@ -142,6 +129,19 @@ public class ClickHoldButton
       mouseDown = false;
       mouseDownCtr++;
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void showMenu()
+  {
+    btnMenu.getItems().clear();
+
+    if (menuFactory != null)
+      menuFactory.rebuildMenu(btnMenu.getItems());
+
+    btnMenu.show();
   }
 
 //---------------------------------------------------------------------------

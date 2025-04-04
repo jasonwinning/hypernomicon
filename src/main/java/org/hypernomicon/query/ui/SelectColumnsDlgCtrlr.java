@@ -216,7 +216,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
     chkField.setOnAction(event ->
     {
-      if (Boolean.TRUE.equals(chkField.isSelected()))
+      if (chkField.isSelected())
         col.getTableView().scrollToColumn(col);
     });
 

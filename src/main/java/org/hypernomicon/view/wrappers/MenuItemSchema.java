@@ -26,6 +26,8 @@ import java.util.function.Supplier;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends AbstractRow<? extends HDT_Record, RowType>>
 {
 

@@ -52,6 +52,10 @@ import javafx.util.StringConverter;
 
 public class HyperCB implements CommitableWrapper
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final ComboBox<HyperTableCell> cb;
   private final Populator populator;
   private final HyperTable table;
@@ -74,6 +78,9 @@ public class HyperCB implements CommitableWrapper
 
   @FunctionalInterface
   public interface HTCListener { void changed(HyperTableCell oldValue, HyperTableCell newValue); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void setChoicesChanged()                    { populator.setChanged(row); }
   public ComboBox<HyperTableCell> getComboBox()      { return cb; }

@@ -1611,6 +1611,7 @@ public final class MainCtrlr
       previewWindow.clearAll();
       viewSequence.refreshRecordPtrs();
       fileManagerDlg.clearHistory();
+      fileManagerDlg.pruneAndRefresh();
 
       forEachHyperTab(HyperTab::refreshRecordPtr);
 

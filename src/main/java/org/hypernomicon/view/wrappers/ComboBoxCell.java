@@ -45,6 +45,10 @@ import javafx.scene.input.KeyEvent;
 
 public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private ComboBox<HyperTableCell> cb;
   private HyperCB hcb;
   private HyperCtrlType ctrlType;
@@ -55,7 +59,6 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private final Supplier<HDT_Work> workSupplier;
   private final Function<HyperTableRow, String> textHndlr;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,

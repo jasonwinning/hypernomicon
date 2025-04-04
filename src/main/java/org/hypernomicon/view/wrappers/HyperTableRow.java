@@ -39,6 +39,10 @@ import org.hypernomicon.view.populators.*;
 
 public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final ObservableList<HyperTableCell> cells;
   private final HyperTable table;
 

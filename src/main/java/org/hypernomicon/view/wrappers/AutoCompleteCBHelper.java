@@ -46,7 +46,6 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 /**
  * Helper class for ComboBox autocompletion
@@ -60,6 +59,10 @@ import org.hypernomicon.model.records.HDT_Person;
  */
 public class AutoCompleteCBHelper
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final ComboBox<? extends HyperTableCell> cb;
   private final boolean limitToChoices;
 
@@ -453,7 +456,7 @@ public class AutoCompleteCBHelper
   @SuppressWarnings("unchecked")
   private void selectClosestResultBasedOnTextFieldValue(boolean affect, boolean inFocus)
   {
-    SingleSelectionModel<HyperTableCell> selectionModel = (SingleSelectionModel<HyperTableCell>)cb.getSelectionModel();
+    SingleSelectionModel<HyperTableCell> selectionModel = (SingleSelectionModel<HyperTableCell>) cb.getSelectionModel();
     TextField editor = cb.getEditor();
     String editorText = editor.getText();
     boolean found = scrollToValue(cb);

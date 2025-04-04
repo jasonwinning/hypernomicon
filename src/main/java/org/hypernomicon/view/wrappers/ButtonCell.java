@@ -39,6 +39,10 @@ import static org.hypernomicon.util.UIUtil.*;
 
 public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Button btn;
   private final HyperTable ht;
   private final int colNdxOfTarget;

@@ -35,6 +35,8 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 
+//---------------------------------------------------------------------------
+
 public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>> extends HasRightClickableRows<RowType>
 {
 
@@ -46,14 +48,12 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   private ScrollBar scrollBar = null;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   protected DragNDropContainer()
   {
     dragReset();
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   protected abstract void startDrag(RowType row);
