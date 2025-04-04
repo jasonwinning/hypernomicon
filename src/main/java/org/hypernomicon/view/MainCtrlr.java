@@ -1608,7 +1608,9 @@ public final class MainCtrlr
 
     if (loadAllFromXML(false))
     {
+      previewWindow.clearAll();
       viewSequence.refreshRecordPtrs();
+      fileManagerDlg.clearHistory();
 
       forEachHyperTab(HyperTab::refreshRecordPtr);
 

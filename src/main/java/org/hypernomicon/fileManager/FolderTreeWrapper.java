@@ -56,6 +56,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   private final TreeView<FileRow> tv;
   private final TreeModel<FileRow> treeModel;
   private final FileTable fileTable;
+  private final FolderHistory folderHistory;
 
 //---------------------------------------------------------------------------
 
@@ -71,10 +72,11 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  FolderTreeWrapper(TreeView<FileRow> tv, FileTable fileTable)
+  FolderTreeWrapper(TreeView<FileRow> tv, FileTable fileTable, FolderHistory folderHistory)
   {
     this.tv = tv;
     this.fileTable = fileTable;
+    this.folderHistory = folderHistory;
 
     treeModel = new TreeModel<>(this);
 
@@ -194,7 +196,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void pruneNode(TreeItem<FileRow> nodeItem)
+  private void pruneNode(TreeItem<FileRow> nodeItem)
   {
     nodeItem.getChildren().removeIf(childItem ->
     {
@@ -211,6 +213,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
           if (FilePath.isEmpty(filePath) || (filePath.exists() == false))
           {
+            folderHistory.removeRecord(folder);
             HDT_Folder.deleteFolderRecordTree(folder);
             return true;
           }

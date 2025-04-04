@@ -28,22 +28,13 @@ import static org.hypernomicon.util.UIUtil.*;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.dialogs.HyperDlg;
-import org.hypernomicon.dialogs.RenameDlgCtrlr;
+import org.hypernomicon.dialogs.*;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
@@ -59,114 +50,24 @@ import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.MenuItemSchema;
-import org.hypernomicon.view.wrappers.ReadOnlyCell;
+import org.hypernomicon.view.wrappers.*;
 
 import javafx.application.Platform;
 import javafx.concurrent.Worker.State;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 
+//---------------------------------------------------------------------------
+
 public class FileManager extends HyperDlg
 {
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static final class HistoryItem
-  {
-    private final HDT_Folder folder;
-    private final FilePath fileName;
-    private final HDT_Record record;
-
-    private HistoryItem(FileRow folderRow, FileRow fileRow, HDT_Record record)
-    {
-      folder = folderRow.getRecord();
-      fileName = fileRow == null ? null : fileRow.getFilePath().getNameOnly();
-      this.record = record;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static final class FolderHistory
-  {
-    private final List<HistoryItem> history = new ArrayList<>();
-    private final Button btnForward, btnBack;
-    private int ndx = -1;
-    private boolean doAdd = true;
-
-    private FolderHistory(Button btnForward, Button btnBack)
-    {
-      this.btnForward = btnForward;
-      this.btnBack = btnBack;
-
-      clear();
-    }
-
-    private void clear()
-    {
-      history.clear();
-      ndx = -1;
-      updateButtons();
-    }
-
-    private void add(HistoryItem newItem)
-    {
-      if (doAdd == false) return;
-
-      while (history.size() > (ndx + 1))
-        history.remove(ndx + 1);
-
-      history.add(newItem);
-      ndx++;
-      updateButtons();
-    }
-
-    private void updateButtons()
-    {
-      btnBack.setDisable(ndx == 0);
-      btnForward.setDisable(ndx == (history.size() - 1));
-    }
-
-    private HistoryItem back()
-    {
-      ndx--;
-      updateButtons();
-      return history.get(ndx);
-    }
-
-    private HistoryItem forward()
-    {
-      ndx++;
-      updateButtons();
-      return history.get(ndx);
-    }
-
-    private void updateCurrent(HistoryItem newItem)
-    {
-      history.set(ndx, newItem);
-    }
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -187,13 +88,15 @@ public class FileManager extends HyperDlg
   private List<AbstractEntityWithPath> dragPaths = null;
   private List<? extends AbstractEntityWithPath> markedRows = null;
   private FilePath srcPathToHilite = null;
-  private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false;
+  private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false;
   private HDT_Folder curFolder;
 
   public final FolderTreeWrapper folderTree;
   private final FileTable fileTable;
   private final HyperTable recordTable;
   private final FolderHistory history;
+
+//---------------------------------------------------------------------------
 
   FileRow getFolderRow()                { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
   public void clearHistory()            { history.clear(); }
@@ -203,14 +106,14 @@ public class FileManager extends HyperDlg
   private List<? extends AbstractEntityWithPath> getSrcPaths(boolean dragging) { return dragging ? dragPaths : markedRows; }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public FileManager()
   {
     super("fileManager/FileManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
 
+    history = new FolderHistory(btnForward, btnBack);
     fileTable = new FileTable(fileTV, this);
-    folderTree = new FolderTreeWrapper(treeView, fileTable);
+    folderTree = new FolderTreeWrapper(treeView, fileTable, history);
     recordTable = new HyperTable(recordTV, 1, false, TablePrefKey.FM_RECORDS, this);
 
     initContainers();
@@ -246,20 +149,18 @@ public class FileManager extends HyperDlg
     pasteMenuItem = fileTable.addContextMenuItem("Paste into this folder", FileRow::isDirectory, dirRow -> paste(dirRow, clipboardCopying, false));
     fileTable.addContextMenuItem("Delete", this::delete);
 
-    btnCut.setOnAction(event -> cutCopy(null, false));
-    btnCopy.setOnAction(event -> cutCopy(null, true));
-    btnPaste.setOnAction(event -> paste(null, clipboardCopying, false));
-    btnDelete.setOnAction(event -> delete(null));
+    btnCut      .setOnAction(event -> cutCopy(null, false));
+    btnCopy     .setOnAction(event -> cutCopy(null, true));
+    btnPaste    .setOnAction(event -> paste(null, clipboardCopying, false));
+    btnDelete   .setOnAction(event -> delete(null));
     btnNewFolder.setOnAction(event -> newFolder(curFolder));
 
-    history = new FolderHistory(btnForward, btnBack);
-
-    btnBack.setOnAction(event -> btnBackClick());
-    btnForward.setOnAction(event -> btnForwardClick());
+    btnBack   .setOnAction(event -> userRequestsToGoBackward());
+    btnForward.setOnAction(event -> userRequestsToGoForward ());
     btnRefresh.setOnAction(event -> pruneAndRefresh());
-    btnRename.setOnAction(event -> rename(null));
+    btnRename .setOnAction(event -> rename(null));
 
-    btnMainWindow.setOnAction(event -> ui.windows.focusStage(ui.getStage()));
+    btnMainWindow   .setOnAction(event -> ui.windows.focusStage(ui.getStage()));
     btnPreviewWindow.setOnAction(event -> ui.openPreviewWindow(pvsManager));
     btnPaste.setDisable(true);
     pasteMenuItem.disabled = true;
@@ -289,8 +190,8 @@ public class FileManager extends HyperDlg
 
     dialogStage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
     {
-      if      (event.getButton() == MouseButton.BACK   ) Platform.runLater(this::btnBackClick   );
-      else if (event.getButton() == MouseButton.FORWARD) Platform.runLater(this::btnForwardClick);
+      if      (event.getButton() == MouseButton.BACK   ) Platform.runLater(this::userRequestsToGoBackward);
+      else if (event.getButton() == MouseButton.FORWARD) Platform.runLater(this::userRequestsToGoForward );
       else                                               return;
 
       event.consume();
@@ -303,13 +204,13 @@ public class FileManager extends HyperDlg
 
     scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
     (
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::btnBackClick),
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::btnForwardClick)
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::userRequestsToGoBackward),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::userRequestsToGoForward )
     )
     : Map.of
     (
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::btnBackClick),
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::btnForwardClick)
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::userRequestsToGoBackward),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::userRequestsToGoForward )
     ));
 
     recordTable.addDefaultMenuItems();
@@ -344,7 +245,9 @@ public class FileManager extends HyperDlg
       HDT_Folder folder = HyperPath.getFolderFromFilePath(newValue.getValue().getFilePath(), true);
 
       curFolder = folder;
-      history.add(new HistoryItem(newValue.getValue(), null, null));
+
+      if (programmaticSelectionChange == false)
+        history.add(new FolderHistoryItem(newValue.getValue(), null, null));
 
       fileTable.update(folder, newValue);
       setCurrentFileRow(null, false);
@@ -365,7 +268,7 @@ public class FileManager extends HyperDlg
       setCurrentFileRow(newValue, false);
       previewWindow.disablePreviewUpdating = false;
 
-      history.updateCurrent(new HistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
+      history.updateCurrent(new FolderHistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
 
       if (selectNonBlankRecordRow() == false)
         previewWindow.setPreview(pvsManager, newValue.getFilePath());
@@ -406,7 +309,7 @@ public class FileManager extends HyperDlg
       if (newValue != null)
       {
         HDT_Record record = HyperTableCell.getRecord(newValue.getCell(1));
-        history.updateCurrent(new HistoryItem(folderTree.selectedItem().getValue(), fileTV.getSelectionModel().getSelectedItem(), record));
+        history.updateCurrent(new FolderHistoryItem(folderTree.selectedItem().getValue(), fileTV.getSelectionModel().getSelectedItem(), record));
 
         if (record != null)
         {
@@ -1269,26 +1172,36 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void btnBackClick()
+  private void userRequestsToGoBackward()
   {
     if (btnBack.isDisabled()) return;
 
-    history.doAdd = false;
     invokeHistoryItem(history.back());
-    history.doAdd = true;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void invokeHistoryItem(HistoryItem item)
+  private void userRequestsToGoForward()
   {
+    if (btnForward.isDisabled()) return;
+
+    invokeHistoryItem(history.forward());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void invokeHistoryItem(FolderHistoryItem item)
+  {
+    programmaticSelectionChange = true;
     folderTree.selectRecord(item.folder, -1, false);
+    programmaticSelectionChange = false;
 
     if (item.fileName != null)
       fileTable.selectByFileName(item.fileName);
 
-    if (item.record != null)
+    if (HDT_Record.isEmpty(item.record, false) == false)
     {
       HyperTableRow row = recordTable.selectRowByRecord(item.record);
       if (row != null)
@@ -1300,18 +1213,6 @@ public class FileManager extends HyperDlg
 
     if (item.fileName != null)
       fileTV.requestFocus();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void btnForwardClick()
-  {
-    if (btnForward.isDisabled()) return;
-
-    history.doAdd = false;
-    invokeHistoryItem(history.forward());
-    history.doAdd = true;
   }
 
 //---------------------------------------------------------------------------
