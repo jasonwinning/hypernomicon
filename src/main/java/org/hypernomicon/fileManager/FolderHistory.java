@@ -34,7 +34,8 @@ final class FolderHistory
 
   private final List<FolderHistoryItem> history = new ArrayList<>();
   private final Button btnForward, btnBack;
-  private int ndx = -1;
+
+  private int cursorNdx = -1;
 
 //---------------------------------------------------------------------------
 
@@ -52,7 +53,7 @@ final class FolderHistory
   void clear()
   {
     history.clear();
-    ndx = -1;
+    cursorNdx = -1;
     updateButtons();
   }
 
@@ -63,33 +64,33 @@ final class FolderHistory
   {
     if (folder == null) return;
 
-    for (int i = 0; i < history.size(); i++)
+    for (int ndx = 0; ndx < history.size(); ndx++)
     {
-      FolderHistoryItem item = history.get(i);
+      FolderHistoryItem item = history.get(ndx);
 
       if (item.folder == folder)
       {
-        // Update ndx if it points to or follows the deleted entry
-        if (i <= ndx)
-          ndx--;
+        // Update cursorNdx if it points to or follows the deleted entry
+        if (ndx <= cursorNdx)
+          cursorNdx--;
 
         // Remove the matching item
-        history.remove(i);
-        i--; // Adjust index to recheck after removal
+        history.remove(ndx);
+        ndx--; // Adjust index to recheck after removal
       }
-      else if ((i > 0) && (history.get(i - 1).folder == item.folder))
+      else if ((ndx > 0) && (history.get(ndx - 1).folder == item.folder))
       {
         // Remove adjacent duplicates
-        history.remove(i);
-        i--; // Adjust index for recheck
+        history.remove(ndx);
+        ndx--; // Adjust index for recheck
       }
     }
 
-    // Ensure ndx is valid after all deletions
-    if (ndx < 0)
-      ndx = 0; // Default to the first folder if no valid preceding folder exists
-    else if (ndx >= history.size())
-      ndx = history.size() - 1; // Default to the last folder if out of bounds
+    // Ensure cursorNdx is valid after all deletions
+    if (cursorNdx < 0)
+      cursorNdx = 0; // Default to the first folder if no valid preceding folder exists
+    else if (cursorNdx >= history.size())
+      cursorNdx = history.size() - 1; // Default to the last folder if out of bounds
 
     // Update navigation buttons
     updateButtons();
@@ -105,11 +106,11 @@ final class FolderHistory
    */
   void add(FolderHistoryItem newItem)
   {
-    while (history.size() > (ndx + 1))
-      history.remove(ndx + 1);
+    while (history.size() > (cursorNdx + 1))
+      history.remove(cursorNdx + 1);
 
     history.add(newItem);
-    ndx++;
+    cursorNdx++;
     updateButtons();
   }
 
@@ -118,8 +119,8 @@ final class FolderHistory
 
   private void updateButtons()
   {
-    btnBack   .setDisable(ndx < 1);
-    btnForward.setDisable(ndx == (history.size() - 1));
+    btnBack   .setDisable(cursorNdx < 1);
+    btnForward.setDisable(cursorNdx == (history.size() - 1));
   }
 
 //---------------------------------------------------------------------------
@@ -131,9 +132,9 @@ final class FolderHistory
    */
   FolderHistoryItem back()
   {
-    ndx--;
+    cursorNdx--;
     updateButtons();
-    return history.get(ndx);
+    return history.get(cursorNdx);
   }
 
 //---------------------------------------------------------------------------
@@ -145,9 +146,9 @@ final class FolderHistory
    */
   FolderHistoryItem forward()
   {
-    ndx++;
+    cursorNdx++;
     updateButtons();
-    return history.get(ndx);
+    return history.get(cursorNdx);
   }
 
 //---------------------------------------------------------------------------
@@ -159,7 +160,7 @@ final class FolderHistory
    */
   void updateCurrent(FolderHistoryItem newItem)
   {
-    history.set(ndx, newItem);
+    history.set(cursorNdx, newItem);
   }
 
 //---------------------------------------------------------------------------

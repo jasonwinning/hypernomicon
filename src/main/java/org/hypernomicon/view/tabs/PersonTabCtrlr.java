@@ -125,7 +125,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   @FXML public TextField tfFirst, tfLast;
 
   private final List<InvestigationView> invViews = new ArrayList<>();
-  public final HyperTable htPersonInst, htWorks, htArguments;
+  private final HyperTable htPersonInst, htWorks, htArguments;
   private final HyperCB hcbRank, hcbStatus, hcbSubfield;
   private final MainTextWrapper mainText;
 
