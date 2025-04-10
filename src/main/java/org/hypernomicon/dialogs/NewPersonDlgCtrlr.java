@@ -18,13 +18,10 @@
 package org.hypernomicon.dialogs;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.dialogs.base.ModalDialog;
+import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Person.PotentialKeySet;
 import org.hypernomicon.model.records.HDT_Work;
@@ -37,27 +34,22 @@ import static org.hypernomicon.util.Util.*;
 
 import static java.util.Collections.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
 import org.hypernomicon.view.MainCtrlr;
 
-public class NewPersonDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class NewPersonDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private AnchorPane apDup;
   @FXML private Label lblDupSearchKey, lblDupTitle, lblDupType, lblDupYear, lblSearchKey, lblStatus;
   @FXML private ProgressIndicator progressIndicator;

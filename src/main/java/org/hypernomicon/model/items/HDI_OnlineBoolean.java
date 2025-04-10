@@ -23,9 +23,17 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlineBoolean extends HDI_OnlineBase<HDI_OfflineBoolean>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private boolean boolValue;
+
+//---------------------------------------------------------------------------
 
   public HDI_OnlineBoolean(HDI_Schema schema, HDT_Record record)
   {
@@ -33,20 +41,19 @@ public class HDI_OnlineBoolean extends HDI_OnlineBase<HDI_OfflineBoolean>
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public boolean get()               { return boolValue; }
   public void set(boolean boolValue) { this.boolValue = boolValue; }
+
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void setFromOfflineValue(HDI_OfflineBoolean val, Tag tag)
   {
     boolValue = val.get();
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -27,8 +27,8 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
-import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.ObjectOrderDlgCtrlr;
+import org.hypernomicon.dialogs.base.DialogBase;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Author;
@@ -95,7 +95,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
                  autoCommitListSelections = false;
 
   private static final Map<String, TableView<?>> registry = new HashMap<>();
-  private static final Map<String, HyperDlg> dialogs = new HashMap<>();
+  private static final Map<String, DialogBase> dialogs = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
@@ -164,7 +164,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     this(tv, mainCol, canAddRows, prefID, null);
   }
 
-  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDlg dialog)
+  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, DialogBase dialog)
   {
     this.tv = tv;
     this.mainCol = mainCol;
@@ -231,7 +231,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   {
     registry.forEach((prefID, tv) ->
     {
-      HyperDlg dialog = dialogs.get(prefID);
+      DialogBase dialog = dialogs.get(prefID);
 
       if ((dialog == null) || dialog.shownAlready())
         saveColWidthsForTable(tv, tv.getColumns(), prefID);
@@ -305,7 +305,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType> void registerTable(TableView<RowType> tv, String prefID, HyperDlg dialog)
+  public static <RowType> void registerTable(TableView<RowType> tv, String prefID, DialogBase dialog)
   {
     if (prefID.isEmpty()) return;
 

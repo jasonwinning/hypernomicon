@@ -35,8 +35,14 @@ import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.util.filePath.FilePath;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private HyperPath hyperPath;
   private final RelationType relType;
   private final HDT_RecordWithPath recordWithPath;
@@ -53,12 +59,8 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  private void initPath()
-  {
-    hyperPath = recordWithPath.getPath();
-  }
+  private void initPath() { hyperPath = recordWithPath.getPath(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

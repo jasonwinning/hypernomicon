@@ -18,7 +18,9 @@
 package org.hypernomicon.dialogs;
 
 import org.apache.http.client.HttpResponseException;
+
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 
 import static org.hypernomicon.App.*;
@@ -27,44 +29,18 @@ import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.UnknownHostException;
+import java.net.*;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-public final class InternetCheckDlgCtrlr extends HyperDlg
+public final class InternetCheckDlgCtrlr extends ModalDialog
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private Exception lastException = null;
 
-  @Override protected boolean isValid() { return true; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean check()
-  {
-    DialogResult result = mrRetry;
-
-    while (result == mrRetry)
-    {
-      InternetCheckDlgCtrlr ctrlr = new InternetCheckDlgCtrlr();
-
-      if (ctrlr.showModal())
-        return true;
-
-      String msg = "Warning: Internet connection check failed" + (ctrlr.lastException == null ? '.' : ": " + getThrowableMessage(ctrlr.lastException));
-      result = abortRetryIgnoreDialog(msg);
-    }
-
-    return result == mrIgnore;
-  }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private InternetCheckDlgCtrlr()
@@ -91,6 +67,32 @@ public final class InternetCheckDlgCtrlr extends HyperDlg
 
     onShown = task::startWithNewThread;
   }
+
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isValid() { return true; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean check()
+  {
+    DialogResult result = mrRetry;
+
+    while (result == mrRetry)
+    {
+      InternetCheckDlgCtrlr ctrlr = new InternetCheckDlgCtrlr();
+
+      if (ctrlr.showModal())
+        return true;
+
+      String msg = "Warning: Internet connection check failed" + (ctrlr.lastException == null ? '.' : ": " + getThrowableMessage(ctrlr.lastException));
+      result = abortRetryIgnoreDialog(msg);
+    }
+
+    return result == mrIgnore;
+  }
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

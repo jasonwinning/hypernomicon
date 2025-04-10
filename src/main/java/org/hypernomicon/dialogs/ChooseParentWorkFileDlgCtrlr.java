@@ -25,6 +25,7 @@ import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.function.Predicate;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
@@ -33,16 +34,18 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableView;
 
-public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class ChooseParentWorkFileDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private TableView<HyperTableRow> tvFiles;
 
   private final HyperTable htFiles;
 
-  public HDT_WorkFile getWorkFile()     { return htFiles.selectedRecord(); }
-  @Override protected boolean isValid() { return (htFiles.selectedRecord() != null) || falseWithWarningPopup("Select a file."); }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public ChooseParentWorkFileDlgCtrlr(HDT_Work work)
@@ -68,6 +71,12 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
       row.setCellValue(1, workFile, workFile.name());
     });
   }
+
+//---------------------------------------------------------------------------
+
+  public HDT_WorkFile getWorkFile()     { return htFiles.selectedRecord(); }
+
+  @Override protected boolean isValid() { return (htFiles.selectedRecord() != null) || falseWithWarningPopup("Select a file."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

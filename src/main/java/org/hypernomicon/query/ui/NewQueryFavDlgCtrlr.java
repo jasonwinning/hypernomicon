@@ -21,7 +21,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -29,7 +29,7 @@ import javafx.scene.control.TextField;
 
 //---------------------------------------------------------------------------
 
-public class NewQueryFavDlgCtrlr extends HyperDlg
+public class NewQueryFavDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

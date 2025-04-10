@@ -25,9 +25,17 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Person;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HDT_Person person;
+
+//---------------------------------------------------------------------------
 
   public HDI_OnlinePersonName(HDI_Schema schema, HDT_Person person)
   {
@@ -36,7 +44,6 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
     this.person = person;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setFromOfflineValue(HDI_OfflinePersonName val, Tag tag) { }

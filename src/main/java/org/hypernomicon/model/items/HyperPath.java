@@ -41,15 +41,20 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.filePath.FilePath;
 
+//---------------------------------------------------------------------------
+
 public class HyperPath
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final HyperPath EmptyPath = new HyperPath(null);
   private final HyperObjPointer<? extends HDT_RecordWithPath, HDT_Folder> folderPtr;
   private final HDT_RecordWithPath record;
   private HDT_Folder folder = null;
   private FilePath fileName = null;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HyperPath(HyperObjPointer<? extends HDT_RecordWithPath, HDT_Folder> folderPtr, HDT_RecordWithPath record)
@@ -58,17 +63,6 @@ public class HyperPath
     this.record = record;
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HDT_RecordWithPath getRecord()     { return record; }
-  public RecordType         getRecordType() { return record == null ? hdtNone : record.getType(); }
-  public FilePath           getFileName()   { return fileName; }
-  public HDT_Folder         parentFolder()  { return folderPtr == null ? folder : folderPtr.get(); }
-
-  @Override public String toString() { return filePath().toString(); }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HyperPath(FilePath filePath)
@@ -96,9 +90,18 @@ public class HyperPath
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  public boolean isNotEmpty() { return isEmpty() == false; }
+  public HDT_RecordWithPath getRecord()     { return record; }
+  public RecordType         getRecordType() { return record == null ? hdtNone : record.getType(); }
+  public FilePath           getFileName()   { return fileName; }
+  public HDT_Folder         parentFolder()  { return folderPtr == null ? folder : folderPtr.get(); }
+
+  public boolean isNotEmpty()               { return isEmpty() == false; }
+
+  @Override public String toString()        { return filePath().toString(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean isEmpty()
   {

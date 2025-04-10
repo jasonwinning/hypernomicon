@@ -19,6 +19,7 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.model.records.RecordType.*;
@@ -34,7 +35,7 @@ import javafx.scene.control.Label;
 
 //---------------------------------------------------------------------------
 
-public class VerdictDlgCtrlr extends HyperDlg
+public class VerdictDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

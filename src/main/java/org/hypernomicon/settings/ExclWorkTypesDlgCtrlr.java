@@ -23,7 +23,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -34,7 +34,7 @@ import javafx.scene.control.TableView;
 
 //---------------------------------------------------------------------------
 
-public class ExclWorkTypesDlgCtrlr extends HyperDlg
+public class ExclWorkTypesDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

@@ -34,6 +34,8 @@ import java.text.DecimalFormat;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.text.StringEscapeUtils;
+
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -42,8 +44,14 @@ import org.hypernomicon.view.mainText.MainTextUtil;
 
 import com.sun.javafx.runtime.VersionInfo;
 
-public class AboutDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class AboutDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private WebView webView;
   @FXML private TabPane tabPane;
   @FXML private Tab tabGeneral, tabContributors, tabAcknowledgements;
@@ -54,9 +62,6 @@ public class AboutDlgCtrlr extends HyperDlg
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
-  @Override protected boolean isValid() { return true; }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public AboutDlgCtrlr()
@@ -140,6 +145,10 @@ public class AboutDlgCtrlr extends HyperDlg
       updateHtml(tabPane.getSelectionModel().getSelectedItem());
     });
   }
+
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

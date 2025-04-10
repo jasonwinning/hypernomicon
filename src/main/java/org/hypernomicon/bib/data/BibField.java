@@ -17,9 +17,7 @@
 
 package org.hypernomicon.bib.data;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 

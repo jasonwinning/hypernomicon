@@ -24,21 +24,17 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
 
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.Const.PrefKey;
+import org.hypernomicon.dialogs.base.NonmodalWindow;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
@@ -47,28 +43,19 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.Side;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.control.Slider;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
+import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
-import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 //---------------------------------------------------------------------------
 
-public class PreviewWindow extends HyperDlg
+public final class PreviewWindow extends NonmodalWindow
 {
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -83,88 +70,54 @@ public class PreviewWindow extends HyperDlg
   @FXML private TextField tfPath, tfPreviewPage;
   @FXML private ToggleButton btnLock, btnManager, btnOther, btnPerson, btnQueries, btnTree, btnWorks;
 
-  public enum PreviewSource { pvsPersonTab, pvsWorkTab, pvsQueriesTab, pvsManager, pvsTreeTab, pvsOther }
+  private static PreviewWindow instance;
 
   private static final String dialogTitle = "Preview Work/File",
                               TEXT_TO_SHOW_IF_NONE = "(none)";
-
-  public boolean disablePreviewUpdating = false;
 
   private static final Map<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
 
   private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new EnumMap<>(PreviewSource.class);
   private final Map<PreviewSource, PreviewSetting> srcToSetting = new EnumMap<>(PreviewSource.class);
 
-  public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); clearControls(); }
+  public static boolean disablePreviewUpdating = false;
+
+//---------------------------------------------------------------------------
+
+  public static void clearAll()                  { tabToWrapper.values().forEach(PreviewWrapper::reset); instance().clearControls(); }
   public FilePath getFilePath(PreviewSource src) { return srcToWrapper.get(src).getFilePath(); }
   private PreviewWrapper curWrapper()            { return tabToWrapper.get(tpPreview.getSelectionModel().getSelectedItem()); }
   PreviewSource curSource()                      { return curWrapper().getSource(); }
   int curPage()                                  { return (int) sldPreview.getValue(); }
   int getMax()                                   { return (int) sldPreview.getMax(); }
 
-  @Override protected boolean isValid()          { return true; }
+  public static void close(boolean exitingApp)   { NonmodalWindow.close(instance, exitingApp); }
+
+  @Override protected void getDividerPositions() { }
+  @Override protected void setDividerPositions() { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  public enum PreviewSource { pvsPersonTab, pvsWorkTab, pvsQueriesTab, pvsManager, pvsTreeTab, pvsOther }
 
   private record PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void goToPage(int pageNum)
+  public static PreviewWindow instance()
   {
-    if (pageNum < 0) pageNum = 1;
+    if (instance == null) instance = new PreviewWindow();
 
-    curWrapper().setPreview(pageNum, true);
+    return instance;
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  private void addWrapper(PreviewSource src, AnchorPane ap, Tab tab, ToggleButton btn)
+  private PreviewWindow()
   {
-    PreviewWrapper wrapper = new PreviewWrapper(src, ap, tab, btn, this);
-
-    srcToWrapper.put(src, wrapper);
-    tabToWrapper.put(tab, wrapper);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void updateStartBtn(int newVal)
-  {
-    btnStartPage.setText("Start p. " + (newVal < 0 ? TEXT_TO_SHOW_IF_NONE : String.valueOf(newVal)));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void updateEndBtn(int newVal)
-  {
-    btnEndPage.setText("End p. " + (newVal < 0 ? TEXT_TO_SHOW_IF_NONE : String.valueOf(newVal)));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void resetNavBtns()
-  {
-    updateStartBtn(-1);
-    updateEndBtn(-1);
-
-    disableAll(btnSetStart, btnStartPage, btnSetEnd, btnEndPage, btnContents);
-
-    btnContents.setText("No other records...");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public PreviewWindow()
-  {
-    super("previewWindow/PreviewWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    super("previewWindow/PreviewWindow", dialogTitle, PrefKey.PREV_WINDOW_X, PrefKey.PREV_WINDOW_Y, PrefKey.PREV_WINDOW_WIDTH, PrefKey.PREV_WINDOW_HEIGHT);
 
     addWrapper(pvsPersonTab , apPerson , tabPerson , btnPerson );
     addWrapper(pvsWorkTab   , apWork   , tabWork   , btnWorks  );
@@ -178,18 +131,10 @@ public class PreviewWindow extends HyperDlg
     tabToWrapper.values().forEach(PreviewWrapper::clearPreview);
 
     lblRecord.setOnMouseClicked(event -> curWrapper().go());
+    paneType.setOnMouseClicked (event -> curWrapper().go());
 
-    paneType.setOnMouseClicked(event -> curWrapper().go());
-
-    btnGoToMain.setOnAction(event -> ui.windows.focusStage(ui.getStage()));
-
-    btnGoToManager.setOnAction(event ->
-    {
-      if (fileManagerDlg.getStage().isShowing())
-        ui.windows.focusStage(fileManagerDlg.getStage());
-      else
-        fileManagerDlg.showNonmodal();
-    });
+    btnGoToMain   .setOnAction(event -> ui.windows.focusStage(ui.getStage()));
+    btnGoToManager.setOnAction(event -> FileManager.show());
 
     btnRefresh.setOnAction(event -> curWrapper().refreshPreview(true, false));
 
@@ -208,7 +153,7 @@ public class PreviewWindow extends HyperDlg
       else
       {
         btnLock.setGraphic(imgViewFromRelPath("resources/images/lock_open.png"));
-        srcToSetting.forEach(this::setPreview);
+        srcToSetting.forEach(PreviewWindow::setPreview);
         srcToSetting.clear();
       }
     });
@@ -384,29 +329,14 @@ public class PreviewWindow extends HyperDlg
       if (stage.getHeight() >= bounds.getMaxY() - 100)
         stage.setHeight(bounds.getMaxY() - 100);
 
-      ui.windows.push(dialogStage);
-
       runDelayedInFXThread(1, 300, () -> curWrapper().activate());
     };
 
-    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (ui.windows.getCyclingFocus()) return;
+    dialogStage.setOnHiding(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToHide));
 
-      if (Boolean.TRUE.equals(newValue) == false) return;
+    onHidden = () -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow);
 
-      ui.windows.push(dialogStage);
-    });
-
-    dialogStage.setOnHiding(event ->
-    {
-      srcToWrapper.values().forEach(PreviewWrapper::prepareToHide);
-      ui.windows.focusStage(ui.getStage());
-    });
-
-    dialogStage.setOnHidden(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow));
-
-    btnContents.setOnAction(event -> openContentsWindow());
+    btnContents.setOnAction(event -> ContentsWindow.show());
 
     dialogStage.addEventFilter(ScrollEvent.SCROLL, event ->
     {
@@ -437,38 +367,96 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clearPreview(PreviewSource src)
+  void goToPage(int pageNum)
   {
-    setPreview(src, null, -1, -1, null);
+    if (pageNum < 0) pageNum = 1;
+
+    curWrapper().setPreview(pageNum, true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addWrapper(PreviewSource src, AnchorPane ap, Tab tab, ToggleButton btn)
+  {
+    PreviewWrapper wrapper = new PreviewWrapper(src, ap, tab, btn, this);
+
+    srcToWrapper.put(src, wrapper);
+    tabToWrapper.put(tab, wrapper);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateStartBtn(int newVal)
+  {
+    btnStartPage.setText("Start p. " + (newVal < 0 ? TEXT_TO_SHOW_IF_NONE : String.valueOf(newVal)));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateEndBtn(int newVal)
+  {
+    btnEndPage.setText("End p. " + (newVal < 0 ? TEXT_TO_SHOW_IF_NONE : String.valueOf(newVal)));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void resetNavBtns()
+  {
+    updateStartBtn(-1);
+    updateEndBtn(-1);
+
+    disableAll(btnSetStart, btnStartPage, btnSetEnd, btnEndPage, btnContents);
+
+    btnContents.setText("No other records...");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void clearPreview(PreviewSource src)
+  {
+    instance.doSetPreview(src, null, -1, -1, null);
   }
 
 //---------------------------------------------------------------------------
 
-  public void setPreview(PreviewSource src, HDT_WorkFile workFile, HDT_Work work)
+  public static void setPreview(PreviewSource src, HDT_WorkFile workFile, HDT_Work work)
   {
-    setPreview(src, workFile.filePath(), work.getStartPageNum(workFile), work.getEndPageNum(workFile), work);
+    instance.doSetPreview(src, workFile.filePath(), work.getStartPageNum(workFile), work.getEndPageNum(workFile), work);
   }
 
 //---------------------------------------------------------------------------
 
-  public void setPreview(PreviewSource src, FilePath filePath)
+  public static void setPreview(PreviewSource src, FilePath filePath)
   {
     setPreview(src, filePath, null);
   }
 
 //---------------------------------------------------------------------------
 
-  public void setPreview(PreviewSource src, FilePath filePath, HDT_Record record)
+  public static void setPreview(PreviewSource src, FilePath filePath, HDT_Record record)
   {
     if (record instanceof HDT_Work work)
-      setPreview(src, filePath, work.getStartPageNum(), work.getEndPageNum(), work);
+      instance.doSetPreview(src, filePath, work.getStartPageNum(), work.getEndPageNum(), work);
     else
-      setPreview(src, filePath, -1, -1, record);
+      instance.doSetPreview(src, filePath, -1, -1, record);
   }
 
 //---------------------------------------------------------------------------
 
-  public void setPreview(PreviewSource src, HDT_RecordWithPath record)
+  public static void show(PreviewSource src, HDT_RecordWithPath record)
+  {
+    setPreview(src, record);
+    show(src);
+  }
+
+//---------------------------------------------------------------------------
+
+  public static void setPreview(PreviewSource src, HDT_RecordWithPath record)
   {
     if (record instanceof HDT_Work work)
       setPreview(src, work.filePathIncludeExt(), work);
@@ -478,14 +466,19 @@ public class PreviewWindow extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  private void setPreview(PreviewSource src, PreviewSetting setting)
+  private static void setPreview(PreviewSource src, PreviewSetting setting)
   {
     setPreview(src, setting.filePath, setting.startPageNum, setting.endPageNum, setting.record);
   }
 
 //---------------------------------------------------------------------------
 
-  public void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
+  public static void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
+  {
+    instance.doSetPreview(src, filePath, startPageNum, endPageNum, record);
+  }
+
+  private void doSetPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
   {
     if (jxBrowserDisabled || disablePreviewUpdating) return;
 
@@ -555,7 +548,7 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void switchTo(PreviewSource src)
+  private void switchTo(PreviewSource src)
   {
     if (curSource() == src) return;
 
@@ -583,8 +576,7 @@ public class PreviewWindow extends HyperDlg
     sldPreview.setValue(1);
     lblPreviewPages.setText("/ 0");
 
-    if (contentsWindow != null)
-      contentsWindow.clear();
+    ContentsWindow.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -724,22 +716,11 @@ public class PreviewWindow extends HyperDlg
     }
 
     if (workFile == null)
-      contentsWindow.update(filePath, pageNum);
+      ContentsWindow.instance().update(filePath, pageNum);
     else
-      contentsWindow.update(workFile, pageNum);
+      ContentsWindow.instance().update(workFile, pageNum);
 
     disablePreviewUpdating = false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void openContentsWindow()
-  {
-    if (contentsWindow.getStage().isShowing())
-      ui.windows.focusStage(contentsWindow.getStage());
-    else
-      contentsWindow.showNonmodal();
   }
 
 //---------------------------------------------------------------------------
@@ -775,6 +756,22 @@ public class PreviewWindow extends HyperDlg
           Platform.exit();
       });
     };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void show(PreviewSource src)
+  {
+    if ((instance == null) || jxBrowserDisabled) return;
+
+    if (src != null)
+      instance.switchTo(src);
+
+    if (instance.getStage().isShowing())
+      ui.windows.focusStage(instance.getStage());
+    else
+      instance.showNonmodal();
   }
 
 //---------------------------------------------------------------------------

@@ -52,7 +52,7 @@
   <Label layoutX="951.0" layoutY="533.0" text="HTML:" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="306.0" />
   <TextField fx:id="tfHTML" layoutX="989.0" layoutY="529.0" prefHeight="25.0" prefWidth="118.0" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="184.0" />
   <Button fx:id="btnInsert" layoutX="1115.0" layoutY="529.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="82.0" text="Insert" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="94.0" />
-  <Button fx:id="btnCancel" layoutX="1203.0" layoutY="529.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="82.0" text="Done" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="6.0" />
+  <Button fx:id="btnCancel" layoutX="1203.0" layoutY="529.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="82.0" text="Done" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="6.0" />
   <Label layoutX="14.0" layoutY="493.0" prefHeight="20.0" style="-fx-font-weight: bold;" text="The bottom row is for user-defined symbols. To edit cells in the bottom row, click on a cell and edit its fields." AnchorPane.bottomAnchor="49.0" AnchorPane.leftAnchor="6.0">
     <graphic>
       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">

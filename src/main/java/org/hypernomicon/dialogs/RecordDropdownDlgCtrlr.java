@@ -17,6 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -34,7 +35,7 @@ import javafx.scene.control.ComboBox;
 
 //---------------------------------------------------------------------------
 
-public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
+public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

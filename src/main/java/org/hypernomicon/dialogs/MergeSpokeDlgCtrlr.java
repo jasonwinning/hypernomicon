@@ -20,6 +20,7 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 import javafx.event.Event;
@@ -28,8 +29,14 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebView;
 
-public class MergeSpokeDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class MergeSpokeDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private RadioButton rbDesc1, rbDesc2;
   @FXML private WebView view1, view2;
   @FXML private HTMLEditor he3;
@@ -37,11 +44,9 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
   private final String mainText1, mainText2;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   @Override protected boolean isValid() { return true; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public MergeSpokeDlgCtrlr(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2)

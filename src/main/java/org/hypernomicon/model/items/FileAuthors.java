@@ -51,7 +51,6 @@ public class FileAuthors extends Authors
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   @Override public int size()                                { return objList.size(); }
   @Override public boolean containsPerson(HDT_Person person) { return objListNoMod.contains(person); }

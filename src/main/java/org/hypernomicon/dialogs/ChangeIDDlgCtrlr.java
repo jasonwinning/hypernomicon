@@ -23,6 +23,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -39,7 +40,7 @@ import javafx.scene.control.TextField;
 
 //---------------------------------------------------------------------------
 
-public class ChangeIDDlgCtrlr extends HyperDlg
+public class ChangeIDDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

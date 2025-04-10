@@ -41,11 +41,15 @@ public abstract class HDI_OfflineBase extends HDI_Base
 
   protected final RecordState recordState;
 
+//---------------------------------------------------------------------------
+
   public HDI_OfflineBase(HDI_Schema schema, RecordState recordState)
   {
     super(schema);
     this.recordState = recordState;
   }
+
+//---------------------------------------------------------------------------
 
   public abstract void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems);
 

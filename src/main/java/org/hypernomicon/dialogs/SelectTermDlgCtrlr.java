@@ -30,6 +30,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
@@ -59,7 +61,7 @@ import javafx.scene.control.*;
  * <u><b>is</b></u> an existing Concept for an existing Term, or chooses to unite
  * the record to a new Term.
  */
-public final class SelectTermDlgCtrlr extends HyperDlg
+public final class SelectTermDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

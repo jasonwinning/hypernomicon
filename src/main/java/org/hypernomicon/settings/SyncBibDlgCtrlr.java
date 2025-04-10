@@ -17,19 +17,19 @@
 
 package org.hypernomicon.settings;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.UIUtil.*;
 
+import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.ProgressBar;
 
-public final class SyncBibDlgCtrlr extends HyperDlg
+public final class SyncBibDlgCtrlr extends ModalDialog
 {
   @FXML private ProgressBar progressBar;
 
@@ -52,7 +52,7 @@ public final class SyncBibDlgCtrlr extends HyperDlg
 
     onShown = () ->
     {
-      bibManagerDlg.clearCollectionTree();
+      BibManager.instance().clearCollectionTree();
 
       SyncTask syncTask = db.getBibLibrary().createNewSyncTask();
 
@@ -68,7 +68,7 @@ public final class SyncBibDlgCtrlr extends HyperDlg
               errorPopup(e);
           }
 
-          bibManagerDlg.rebuildCollectionTree();
+          BibManager.instance().rebuildCollectionTree();
 
           getStage().close();
         }

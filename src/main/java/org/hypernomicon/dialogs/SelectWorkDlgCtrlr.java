@@ -23,14 +23,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.bib.data.BibDataRetriever;
+import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-import org.hypernomicon.bib.data.GUIBibData;
-import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
+import org.hypernomicon.dialogs.base.ModalDialog;
+import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWrapper;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -47,28 +44,19 @@ import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.populators.BibEntryPopulator;
-import org.hypernomicon.view.populators.HybridSubjectPopulator;
-import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperCB;
 
 import com.google.common.collect.Lists;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
+import javafx.stage.*;
 
 //---------------------------------------------------------------------------
 
-public class SelectWorkDlgCtrlr extends HyperDlg
+public class SelectWorkDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

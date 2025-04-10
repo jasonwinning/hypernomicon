@@ -27,6 +27,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 
 import org.apache.commons.lang3.compare.ComparableUtils;
+
 import org.hypernomicon.model.Exceptions.InvalidAttributeException;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
 import org.hypernomicon.model.records.RecordState;

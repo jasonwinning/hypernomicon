@@ -31,8 +31,14 @@ import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordState;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflineAuthors extends HDI_OfflineBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static class OfflineAuthor
   {
     public int personID = -1;
@@ -40,7 +46,12 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
     public Map<Tag, HDI_OfflineBase> nestedItems = null;
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   final List<OfflineAuthor> authors = new ArrayList<>();
+
+//---------------------------------------------------------------------------
 
   public HDI_OfflineAuthors(HDI_Schema schema, RecordState recordState)
   {

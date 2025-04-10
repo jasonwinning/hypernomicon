@@ -57,6 +57,7 @@ import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.KeyWork;
 import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -197,9 +198,7 @@ public final class MainTextUtil
 
       case JS_EVENT_OPEN_PREVIEW :
 
-        previewWindow.setPreview(pvsOther, (HDT_RecordWithPath) db.records(recordType).getByID(recordID));
-
-        ui.openPreviewWindow(pvsOther);
+        PreviewWindow.show(pvsOther, (HDT_RecordWithPath) db.records(recordType).getByID(recordID));
         break;
 
       case JS_EVENT_OPEN_URL :

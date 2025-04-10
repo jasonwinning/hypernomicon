@@ -36,14 +36,19 @@ import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordWithAuthors;
 import org.hypernomicon.model.relations.NestedValue;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public HDI_OnlineAuthors(HDI_Schema schema, HDT_RecordWithAuthors<? extends Authors> record)
   {
     super(schema, record);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private Authors getAuthors() { return ((HDT_RecordWithAuthors<?>) record).getAuthors(); }

@@ -30,11 +30,19 @@ import java.util.Map;
 
 import static org.hypernomicon.model.HyperDB.*;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflinePointerSingle extends HDI_OfflineBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   int objID = -1, ord = -1;
   private final RecordType objType;
   Map<Tag, HDI_OfflineBase> tagToNestedItem;
+
+//---------------------------------------------------------------------------
 
   public HDI_OfflinePointerSingle(HDI_Schema schema, RecordState recordState)
   {
@@ -42,7 +50,6 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
     objType = db.getObjType(schema.relType());
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public int getObjID()           { return objID; }

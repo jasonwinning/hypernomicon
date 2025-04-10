@@ -20,7 +20,6 @@ package org.hypernomicon.fileManager;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 
 import java.io.IOException;
@@ -34,6 +33,7 @@ import java.util.Set;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
@@ -93,7 +93,7 @@ class FileTable extends DragNDropContainer<FileRow>
     {
       if (refreshing) return;
       refreshing = true;
-      dlg.refresh();
+      FileManager.refresh();
       refreshing = false;
     });
 
@@ -187,9 +187,9 @@ class FileTable extends DragNDropContainer<FileRow>
 
   void update(HDT_Folder folder, TreeItem<FileRow> parentTreeItem)
   {
-    previewWindow.disablePreviewUpdating = true;
+    PreviewWindow.disablePreviewUpdating = true;
     clear();
-    previewWindow.disablePreviewUpdating = false;
+    PreviewWindow.disablePreviewUpdating = false;
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder.filePath().toPath(), "**"))
     {

@@ -23,13 +23,12 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
+
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;

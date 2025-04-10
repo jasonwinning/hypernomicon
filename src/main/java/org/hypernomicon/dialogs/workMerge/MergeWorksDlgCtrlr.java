@@ -25,10 +25,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 import java.io.IOException;
 
@@ -36,8 +33,8 @@ import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.WorkDlgCtrlr;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.dialogs.workMerge.BibFieldCtrlr.*;
 import org.hypernomicon.dialogs.workMerge.BibFieldRow.*;
 import org.hypernomicon.bib.data.EntryType;
@@ -53,20 +50,17 @@ import org.hypernomicon.util.filePath.FilePath;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-public class MergeWorksDlgCtrlr extends HyperDlg
+public class MergeWorksDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private AnchorPane apMain;
   @FXML private GridPane gpMain;
   @FXML private HBox hBox;
@@ -86,10 +80,11 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   private boolean previewInitialized = false;
   private Ternary newEntryChoice;
 
+//---------------------------------------------------------------------------
+
   public EntryType getEntryType()   { return nullSwitch(rows.get(bfEntryType), null, row -> ((EntryTypeRow)row).selectedCtrlr().getEntryType()); }
   public Ternary creatingNewEntry() { return chkNewEntry.isVisible() == false ? Ternary.Unset : (chkNewEntry.isSelected() ? Ternary.True : newEntryChoice); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**

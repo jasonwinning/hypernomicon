@@ -24,16 +24,23 @@ import javafx.scene.control.TextField;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
+
 import org.w3c.dom.html.HTMLAnchorElement;
 
-public class NewLinkDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class NewLinkDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML public TextField tfDisplayText, tfURL;
   @FXML private Button btnPaste;
 
   private final HTMLAnchorElement anchor;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public NewLinkDlgCtrlr(String selText)
@@ -60,7 +67,6 @@ public class NewLinkDlgCtrlr extends HyperDlg
     initPasteButton();
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public NewLinkDlgCtrlr(HTMLAnchorElement anchor)

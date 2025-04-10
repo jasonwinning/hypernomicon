@@ -26,10 +26,18 @@ import org.hypernomicon.model.records.HDT_Work;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private String keyStr = "";
   private final HDT_Work work;
+
+//---------------------------------------------------------------------------
 
   public HDI_OnlineBibEntryKey(HDI_Schema schema, HDT_Work work)
   {
@@ -37,6 +45,8 @@ public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 
     this.work = work;
   }
+
+//---------------------------------------------------------------------------
 
   public String get() { return keyStr; }
 

@@ -28,10 +28,18 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private String strValue = "";
   private final Tag tag;
+
+//---------------------------------------------------------------------------
 
   public HDI_OnlineString(HDI_Schema schema, HDT_Record record)
   {
@@ -39,11 +47,16 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
     tag = schema.tags().get(0);
   }
 
+//---------------------------------------------------------------------------
+
   public void set(String strValue) { this.strValue = strValue; }
 
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { list.add(get()); }
 
   @Override public String getResultTextForTag(Tag tag) { return convertToSingleLine(get()); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public int getResultCount(Tag tag)
   {

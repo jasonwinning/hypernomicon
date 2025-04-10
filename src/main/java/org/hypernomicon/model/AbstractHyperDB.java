@@ -58,6 +58,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.compare.ComparableUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.LinkedHashMultimap;
@@ -70,9 +71,7 @@ import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.bib.BibCollection;
-import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.bib.LibraryWrapper;
+import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
@@ -85,14 +84,9 @@ import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.*;
-import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.model.unities.MainText;
-import org.hypernomicon.util.BidiOneToManyMap;
-import org.hypernomicon.util.CryptoUtil;
-import org.hypernomicon.util.FilenameMap;
+import org.hypernomicon.model.unities.*;
+import org.hypernomicon.util.*;
 import org.hypernomicon.util.PopupDialog.DialogResult;
-import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.prefs.XmlSupport;
 import org.hypernomicon.view.HyperFavorites;
@@ -1584,6 +1578,18 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // Find the beginning of the next record element
+
+  /**
+   * Parses XML starting from the current cursor, skipping anything that is not the beginning of a record tag.<br>
+   * Then parses the open tag, using its attributes to create a new RecordState (with no item values populated yet)
+   * which is then returned. The cursor is left immediately after the end of the open tag for the record element.
+   * @param eventReader Iterator for XML events
+   * @param fileDescription How to describe the current file for purposes of error messages
+   * @return The new RecordState object
+   * @throws XMLStreamException if there is an error with the underlying XML.
+   * @throws HyperDataException if there is no record type or an invalid record type in the record tag.
+   */
   private static RecordState getNextRecordFromXML(XMLEventReader eventReader, String fileDescription) throws XMLStreamException, HyperDataException
   {
     while (eventReader.hasNext())

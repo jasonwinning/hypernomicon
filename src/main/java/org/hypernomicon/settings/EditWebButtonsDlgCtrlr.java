@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.WebButton.UrlPattern;
 import org.hypernomicon.util.WebButton.WebButtonField;
@@ -33,7 +33,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 
-public class EditWebButtonsDlgCtrlr extends HyperDlg
+public class EditWebButtonsDlgCtrlr extends ModalDialog
 {
   @FXML private GridPane gpMain;
   @FXML private Button btnAdd;

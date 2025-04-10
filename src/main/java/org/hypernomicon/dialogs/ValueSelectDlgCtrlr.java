@@ -17,6 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -33,11 +34,16 @@ import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseButton;
 import javafx.util.StringConverter;
 
-public class ValueSelectDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class ValueSelectDlgCtrlr extends ModalDialog
 {
-  @FXML public ListView<HyperTableCell> listView;
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML public ListView<HyperTableCell> listView;
+
 //---------------------------------------------------------------------------
 
   public ValueSelectDlgCtrlr(List<HyperTableCell> list)

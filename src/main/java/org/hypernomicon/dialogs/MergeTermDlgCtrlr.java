@@ -19,6 +19,8 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.view.MainCtrlr.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
+
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -31,7 +33,7 @@ import javafx.scene.control.TextField;
 
 //---------------------------------------------------------------------------
 
-public class MergeTermDlgCtrlr extends HyperDlg
+public class MergeTermDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------
@@ -42,7 +44,6 @@ public class MergeTermDlgCtrlr extends HyperDlg
 
   private final HDT_Term term1, term2;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public MergeTermDlgCtrlr(HDT_Term term1, HDT_Term term2)

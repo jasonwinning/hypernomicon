@@ -49,6 +49,7 @@ import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.query.Query;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
@@ -442,7 +443,7 @@ public final class QueryCtrlr
   {
     if (inReportMode() || (curResult == null))
     {
-      previewWindow.clearPreview(pvsQueriesTab);
+      PreviewWindow.clearPreview(pvsQueriesTab);
       return;
     }
 
@@ -450,12 +451,12 @@ public final class QueryCtrlr
     {
       case hdtWork : case hdtMiscFile : case hdtWorkFile : case hdtPerson :
 
-        previewWindow.setPreview(pvsQueriesTab, (HDT_RecordWithPath) curResult);
+        PreviewWindow.setPreview(pvsQueriesTab, (HDT_RecordWithPath) curResult);
         break;
 
       default :
 
-        previewWindow.clearPreview(pvsQueriesTab);
+        PreviewWindow.clearPreview(pvsQueriesTab);
         break;
     }
   }

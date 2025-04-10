@@ -21,8 +21,14 @@ import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
+//---------------------------------------------------------------------------
+
 public class MendeleyOAuthApi extends DefaultApi20
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static OAuth20Service service = null;
 
   @Override public String getAccessTokenEndpoint()        { return "https://api.mendeley.com/oauth/token"; }

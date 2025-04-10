@@ -24,26 +24,18 @@ import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.query.WorkQueries.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.RecordState;
-import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.unities.HDT_RecordWithDescription;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.unities.*;
 import org.hypernomicon.query.Query.FilteredRecordQuery;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -57,9 +49,12 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
+//---------------------------------------------------------------------------
+
 public final class GeneralQueries
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private GeneralQueries() { throw new UnsupportedOperationException(); }
@@ -108,8 +103,8 @@ public final class GeneralQueries
       @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new RecordQuery(QUERY_ANY_FIELD_CONTAINS, "where any field contains")
     {
@@ -141,8 +136,8 @@ public final class GeneralQueries
       @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new RecordQuery(QUERY_LIST_ALL, "list all records")
     {
@@ -162,8 +157,8 @@ public final class GeneralQueries
       @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new RecordQuery(QUERY_RECORD_TYPE, "record type equals")
     {
@@ -181,8 +176,8 @@ public final class GeneralQueries
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new QueryWhereField(QUERY_WHERE_FIELD, "where field"));
 
@@ -190,8 +185,8 @@ public final class GeneralQueries
 
     allQueries.add(new QueryWhereRelative(QUERY_WHERE_RELATIVE, "where set of records related by being"));
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new FilteredRecordQuery(QUERY_RECORD_EQUALS, "show specified record")
     {
@@ -220,15 +215,15 @@ public final class GeneralQueries
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum < 3; }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new QueryWhereKeyWorks(QUERY_WHERE_KEY_WORKS, "where key works"));
 
     allQueries.add(new QueryWhereDisplayedRecords(QUERY_WHERE_DISPLAYED_RECORDS, "where displayed records"));
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new FilteredRecordQuery(QUERY_ASSOCIATED_WITH_PHRASE, "show the record this phrase would link to")
     {
@@ -253,8 +248,8 @@ public final class GeneralQueries
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new RecordQuery(QUERY_LINKING_TO_RECORD, "with description linking to record")
     {
@@ -295,8 +290,8 @@ public final class GeneralQueries
       }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new FilteredRecordQuery(QUERY_MATCHING_RECORD, "with any text that would link to this record")
     {
@@ -341,8 +336,8 @@ public final class GeneralQueries
       @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new RecordQuery(QUERY_MATCHING_STRING, "with any text that would link to a record having this search key")
     {
@@ -396,8 +391,8 @@ public final class GeneralQueries
       @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new RecordQuery(QUERY_MENTIONED_BY, "that are mentioned by record")
     {
@@ -436,8 +431,8 @@ public final class GeneralQueries
       }
     });
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     allQueries.add(new RecordQuery(QUERY_WITH_ORPHANED_IMG_REFS, "with img tag pointing to non-existing Misc. File record")
     {

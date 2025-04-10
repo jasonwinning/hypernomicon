@@ -25,43 +25,36 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.*;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
+//---------------------------------------------------------------------------
+
 public class FilePath implements Comparable<FilePath>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final InnerFilePath innerVal;
+
+//---------------------------------------------------------------------------
 
   public FilePath(File file)      { innerVal = new InnerFilePath(file); }
   public FilePath(Path path)      { innerVal = new InnerFilePath(path); }
   public FilePath(String pathStr) { innerVal = new InnerFilePath(pathStr); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public File toFile()                  { return innerVal.getFile(); }
@@ -153,7 +146,7 @@ public class FilePath implements Comparable<FilePath>
 
     Files.delete(toPath());
 
-    fileManagerDlg.setNeedRefresh();
+    FileManager.setNeedRefresh();
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
@@ -233,7 +226,7 @@ public class FilePath implements Comparable<FilePath>
       if (startWatcher)
         folderTreeWatcher.createNewWatcherAndStart();
 
-      nullSwitch(fileManagerDlg, FileManager::setNeedRefresh);
+      FileManager.setNeedRefresh();
     }
 
     return true;
@@ -313,7 +306,7 @@ public class FilePath implements Comparable<FilePath>
   {
     FilePath filePath = getDirOnly();
 
-    fileManagerDlg.setNeedRefresh();
+    FileManager.setNeedRefresh();
 
     if (singleCall && SystemUtils.IS_OS_WINDOWS)
     {
@@ -355,7 +348,7 @@ public class FilePath implements Comparable<FilePath>
   {
     FilePath srcFilePath = getDirOnly();
 
-    fileManagerDlg.setNeedRefresh();
+    FileManager.setNeedRefresh();
 
     if (SystemUtils.IS_OS_WINDOWS)
     {

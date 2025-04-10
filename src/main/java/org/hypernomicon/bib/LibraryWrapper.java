@@ -18,19 +18,13 @@
 package org.hypernomicon.bib;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.apache.http.client.methods.HttpUriRequest;
+
 import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.EnumHashBiMap;
@@ -51,6 +45,8 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 /**
  * Classes that extend this class form a "wrapper" around, and act as Hypernomicon's primary interface with, the
  * actual third-party reference manager's web services, local copy of JSON data, and overall library data model.
@@ -61,7 +57,9 @@ import static org.hypernomicon.util.Util.*;
  */
 public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, BibCollection_T>, BibCollection_T extends BibCollection>
 {
-  //---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public enum LibraryType
   {
@@ -78,7 +76,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     }
   }
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static abstract class SyncTask extends HyperTask
   {
@@ -87,6 +86,9 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     protected boolean changed = false;
     public boolean getChanged() { return changed; }
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final List<String> keyList = new ArrayList<>();
 
@@ -100,6 +102,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   private String userName = "";
 
   protected boolean didMergeDuringSync = false;
+
+//---------------------------------------------------------------------------
 
   public abstract SyncTask createNewSyncTask();
   public abstract void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HDB_InternalError;
@@ -123,8 +127,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { keyChangeHndlr = hndlr; }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   protected final void clear()
   {
@@ -136,8 +140,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     userName = "";
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public final void stop()
   {
@@ -148,8 +152,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       request.abort();
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   protected void updateKey(String oldKey, String newKey)
   {
@@ -167,8 +171,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     keyChangeHndlr.accept(oldKey, newKey);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private volatile boolean fxThreadReturnValue;
 

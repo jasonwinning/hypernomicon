@@ -22,6 +22,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -35,7 +36,7 @@ import javafx.scene.control.TextField;
 
 //---------------------------------------------------------------------------
 
-public class NewCategoryDlgCtrlr extends HyperDlg
+public class NewCategoryDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

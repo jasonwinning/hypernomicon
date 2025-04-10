@@ -18,7 +18,8 @@
 package org.hypernomicon.settings;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.hypernomicon.dialogs.HyperDlg;
+
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 
@@ -34,21 +35,22 @@ import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.util.StringConverter;
 
-public class LaunchCommandsDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class LaunchCommandsDlgCtrlr extends ModalDialog
 {
-  @FXML private TextArea taCommands;
-  @FXML private ListView<Preset> lvPresets;
-  @FXML private ComboBox<LaunchCommandTypeEnum> cbCommandType;
-  @FXML private TextField tfPath;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Button btnBrowse, btnInvoke, btnAppPathVar, btnFilePathVar, btnPageNumVar;
+  @FXML private ComboBox<LaunchCommandTypeEnum> cbCommandType;
+  @FXML private ListView<Preset> lvPresets;
+  @FXML private TextArea taCommands;
+  @FXML private TextField tfPath;
 
 //---------------------------------------------------------------------------
 

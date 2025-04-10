@@ -22,6 +22,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Region;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 
@@ -31,8 +32,12 @@ import javafx.scene.control.TextField;
 
 //---------------------------------------------------------------------------
 
-public class NewRegionDlgCtrlr extends HyperDlg
+public class NewRegionDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private TextField tfName, tfAbbrev;
   @FXML private Label lblCountry;
 
@@ -41,7 +46,6 @@ public class NewRegionDlgCtrlr extends HyperDlg
 
   public HDT_Region getRegion() { return region; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public NewRegionDlgCtrlr(HDT_Country country)

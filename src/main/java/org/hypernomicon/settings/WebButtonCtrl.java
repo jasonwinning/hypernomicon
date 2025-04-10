@@ -26,9 +26,12 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.WebButton.UrlPattern;
 import org.hypernomicon.util.WebButton.WebButtonField;
+
+//---------------------------------------------------------------------------
 
 abstract class WebButtonCtrl
 {
@@ -42,7 +45,6 @@ abstract class WebButtonCtrl
   final List<WebButton> webBtnList;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   WebButtonCtrl(String prefKey, List<WebButton> webBtnList)
   {
@@ -50,7 +52,6 @@ abstract class WebButtonCtrl
     this.webBtnList = webBtnList;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   abstract void saveToPrefNode(Preferences node);

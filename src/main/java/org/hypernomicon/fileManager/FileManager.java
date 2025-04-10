@@ -21,9 +21,13 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
+import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -33,18 +37,16 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.SystemUtils;
+
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.dialogs.*;
+import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_RecordWithDescription;
-
-import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -61,12 +63,10 @@ import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 
 //---------------------------------------------------------------------------
 
-public class FileManager extends HyperDlg
+public final class FileManager extends NonmodalWindow
 {
 
 //---------------------------------------------------------------------------
@@ -82,6 +82,8 @@ public class FileManager extends HyperDlg
   @FXML private WebView webView;
 
   private static final String dialogTitle = "File Manager";
+
+  private static FileManager instance;
 
   private final MenuItemSchema<HDT_RecordWithPath, FileRow> pasteMenuItem;
 
@@ -99,17 +101,28 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 
   FileRow getFolderRow()                { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
-  public void clearHistory()            { history.clear(); }
-  public void setNeedRefresh()          { if (suppressNeedRefresh == false) needRefresh = true; }
-  @Override protected boolean isValid() { return true; }
+  public static void clearHistory()     { instance.history.clear(); }
+
+  public static void setNeedRefresh()   { if ((instance != null) && (instance.suppressNeedRefresh == false)) instance.needRefresh = true; }
+
+  public static void close(boolean exitingApp) { close(instance, exitingApp); }
 
   private List<? extends AbstractEntityWithPath> getSrcPaths(boolean dragging) { return dragging ? dragPaths : markedRows; }
 
 //---------------------------------------------------------------------------
 
-  public FileManager()
+  public static FileManager instance()
   {
-    super("fileManager/FileManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    if (instance == null) instance = new FileManager();
+
+    return instance;
+  }
+
+//---------------------------------------------------------------------------
+
+  private FileManager()
+  {
+    super("fileManager/FileManager", dialogTitle, PrefKey.FM_WINDOW_X, PrefKey.FM_WINDOW_Y, PrefKey.FM_WINDOW_WIDTH, PrefKey.FM_WINDOW_HEIGHT);
 
     history = new FolderHistory(btnForward, btnBack);
     fileTable = new FileTable(fileTV, this);
@@ -161,32 +174,19 @@ public class FileManager extends HyperDlg
     btnRename .setOnAction(event -> rename(null));
 
     btnMainWindow   .setOnAction(event -> ui.windows.focusStage(ui.getStage()));
-    btnPreviewWindow.setOnAction(event -> ui.openPreviewWindow(pvsManager));
+    btnPreviewWindow.setOnAction(event -> PreviewWindow.show(pvsManager));
     btnPaste.setDisable(true);
     pasteMenuItem.disabled = true;
 
-    onShown = () ->
-    {
-      if (shownAlready() == false)
-        setDividerPositions();
-
-      refresh();
-
-      ui.windows.push(dialogStage);
-    };
+    onShown = FileManager::refresh;
 
     dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (ui.windows.getCyclingFocus()) return;
-
-      if (Boolean.TRUE.equals(newValue) == false) return;
-
-      ui.windows.push(dialogStage);
+      if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
+        return;
 
       if (needRefresh) refresh();
     });
-
-    dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
 
     dialogStage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
     {
@@ -258,20 +258,20 @@ public class FileManager extends HyperDlg
     {
       if (newValue == null)
       {
-        previewWindow.clearPreview(pvsManager);
+        PreviewWindow.clearPreview(pvsManager);
         return;
       }
 
       if (newValue == oldValue) return;
 
-      previewWindow.disablePreviewUpdating = true;
+      PreviewWindow.disablePreviewUpdating = true;
       setCurrentFileRow(newValue, false);
-      previewWindow.disablePreviewUpdating = false;
+      PreviewWindow.disablePreviewUpdating = false;
 
       history.updateCurrent(new FolderHistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
 
       if (selectNonBlankRecordRow() == false)
-        previewWindow.setPreview(pvsManager, newValue.getFilePath());
+        PreviewWindow.setPreview(pvsManager, newValue.getFilePath());
     });
 
     recordTable.setOnShowMore(() -> setCurrentFileRow(fileTV.getSelectionModel().getSelectedItem(), true));
@@ -1114,7 +1114,12 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void pruneAndRefresh()
+  public static void pruneAndRefresh()
+  {
+    if (instance != null) instance.doPruneAndRefresh();
+  }
+
+  private void doPruneAndRefresh()
   {
     boolean restartWatcher = folderTreeWatcher.stop();
 
@@ -1128,7 +1133,12 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refresh()
+  public static void refresh()
+  {
+    if (instance != null) instance.doRefresh();
+  }
+
+  private void doRefresh()
   {
     if (alreadyRefreshing || (dialogStage.isShowing() == false)) return;
     needRefresh = false;
@@ -1297,7 +1307,7 @@ public class FileManager extends HyperDlg
           HDT_WorkFile workFile = (HDT_WorkFile)record;
           if (workFile.works.size() > 0)
           {
-            previewWindow.setPreview(pvsManager, workFile, workFile.works.get(0));
+            PreviewWindow.setPreview(pvsManager, workFile, workFile.works.get(0));
             return;
           }
 
@@ -1321,7 +1331,7 @@ public class FileManager extends HyperDlg
 
           if (workFile != null)
           {
-            previewWindow.setPreview(pvsManager, workFile, (HDT_Work) record);
+            PreviewWindow.setPreview(pvsManager, workFile, (HDT_Work) record);
             return;
           }
 
@@ -1330,14 +1340,14 @@ public class FileManager extends HyperDlg
 
         case hdtMiscFile :
 
-          previewWindow.setPreview(pvsManager, (HDT_MiscFile) record);
+          PreviewWindow.setPreview(pvsManager, (HDT_MiscFile) record);
           return;
 
         default : break;
       }
     }
 
-    previewWindow.setPreview(pvsManager, FilePath.isEmpty(fileTablePath) ? filePath : fileTablePath, record);
+    PreviewWindow.setPreview(pvsManager, FilePath.isEmpty(fileTablePath) ? filePath : fileTablePath, record);
   }
 
 //---------------------------------------------------------------------------
@@ -1405,14 +1415,14 @@ public class FileManager extends HyperDlg
     if (folderRecord != null)
     {
       if (selectNonBlankRecordRow() == false)
-        previewWindow.setPreview(pvsManager, folderRecord.filePath());
+        PreviewWindow.setPreview(pvsManager, folderRecord.filePath());
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void goToFilePath(FilePath filePath, boolean hiliteIfFolder)
+  private void goToFilePath(FilePath filePath, boolean hiliteIfFolder)
   {
     if (FilePath.isEmpty(filePath)) return;
 
@@ -1439,7 +1449,7 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setDividerPositions()
+  @Override protected void setDividerPositions()
   {
     setDividerPosition(spMain   , DividerPositionPrefKey.MGR_MAIN_HORIZ   , 0);
     setDividerPosition(spFiles  , DividerPositionPrefKey.MGR_FILES_VERT   , 0);
@@ -1449,13 +1459,48 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void getDividerPositions()
+  @Override protected void getDividerPositions()
   {
-    if (shownAlready() == false) return;
-
     getDividerPosition(spMain   , DividerPositionPrefKey.MGR_MAIN_HORIZ   , 0);
     getDividerPosition(spFiles  , DividerPositionPrefKey.MGR_FILES_VERT   , 0);
     getDividerPosition(spRecords, DividerPositionPrefKey.MGR_RECORDS_HORIZ, 0);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean isFocused()
+  {
+    return (instance != null) && instance.getStage().isShowing() && instance.getStage().isFocused();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void show(FilePath filePath)
+  {
+    if ((instance == null) || FilePath.isEmpty(filePath)) return;
+
+    show();
+    instance.goToFilePath(filePath, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void show()
+  {
+    if (instance == null) return;
+
+    if (instance.getStage().isShowing())
+    {
+      ui.windows.focusStage(instance.getStage());
+      return;
+    }
+
+    if (ui.cantSaveRecord(false)) return;
+
+    instance.showNonmodal();
   }
 
 //---------------------------------------------------------------------------

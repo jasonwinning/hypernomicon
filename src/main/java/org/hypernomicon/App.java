@@ -96,11 +96,7 @@ public final class App extends Application
   private static final double baseDisplayScale = 81.89306640625;
 
   public static App app;
-  public static BibManager bibManagerDlg = null;
-  public static ContentsWindow contentsWindow = null;
-  public static FileManager fileManagerDlg = null;
   public static MainCtrlr ui;
-  public static PreviewWindow previewWindow = null;
 
   public static double displayScale;
   public static boolean jxBrowserInitialized = false,
@@ -458,30 +454,10 @@ public final class App extends Application
 
     MainCtrlr.create(stage);
 
-    bibManagerDlg = new BibManager();
-    bibManagerDlg.initBounds(PrefKey.BM_WINDOW_X, PrefKey.BM_WINDOW_Y, PrefKey.BM_WINDOW_WIDTH, PrefKey.BM_WINDOW_HEIGHT);
-
-    db.addBibChangedHandler(() ->
-    {
-      bibManagerDlg.setLibrary(db.getBibLibrary());
-
-      if ((db.bibLibraryIsLinked() == false) && bibManagerDlg.getStage().isShowing())
-        bibManagerDlg.getStage().close();
-
-      ui.updateBibImportMenus();
-
-      if (db.isLoaded())
-        ui.update();
-    });
-
-    fileManagerDlg = new FileManager();
-    fileManagerDlg.initBounds(PrefKey.FM_WINDOW_X, PrefKey.FM_WINDOW_Y, PrefKey.FM_WINDOW_WIDTH, PrefKey.FM_WINDOW_HEIGHT);
-
-    previewWindow = new PreviewWindow();
-    previewWindow.initBounds(PrefKey.PREV_WINDOW_X, PrefKey.PREV_WINDOW_Y, PrefKey.PREV_WINDOW_WIDTH, PrefKey.PREV_WINDOW_HEIGHT);
-
-    contentsWindow = new ContentsWindow();
-    contentsWindow.initBounds(PrefKey.CONTENTS_WINDOW_X, PrefKey.CONTENTS_WINDOW_Y, PrefKey.CONTENTS_WINDOW_WIDTH, PrefKey.CONTENTS_WINDOW_HEIGHT);
+    BibManager    .instance();
+    FileManager   .instance();
+    PreviewWindow .instance();
+    ContentsWindow.instance();
   }
 
 //---------------------------------------------------------------------------

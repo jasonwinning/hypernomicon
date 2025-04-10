@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.hypernomicon.util.SplitString;
 
+//---------------------------------------------------------------------------
+
 public final class PersonName implements Comparable<PersonName>, Cloneable
 {
 
@@ -34,7 +36,6 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
   private final String first, last;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public PersonName(String first, String last)
@@ -121,7 +122,6 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
     }
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public String getFirst()        { return safeStr(first); }

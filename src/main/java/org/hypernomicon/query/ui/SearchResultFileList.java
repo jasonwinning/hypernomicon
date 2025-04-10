@@ -31,11 +31,10 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 

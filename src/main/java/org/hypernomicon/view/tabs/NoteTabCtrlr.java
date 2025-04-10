@@ -33,6 +33,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.filePath.FilePath;
@@ -190,7 +191,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     {
       btnFolder.setText("Folder:");
       addFolderMenuItem("Show in system explorer", event -> launchFile(folderPath));
-      addFolderMenuItem("Show in File Manager"   , event -> ui.goToFileInManager(folderPath));
+      addFolderMenuItem("Show in File Manager"   , event -> FileManager.show(folderPath));
       addFolderMenuItem("Copy path to clipboard" , event -> copyToClipboard(folderPath.toString()));
       addFolderMenuItem("Unassign folder"        , event ->
       {
@@ -211,7 +212,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     HDT_Note ancestor = curNote.getAncestorWithFolder();
 
     addFolderMenuItem("Show folder for note \"" + ancestor.name() + "\" in system explorer", event -> launchFile(ancestor.folder.get().filePath()));
-    addFolderMenuItem("Show folder for note \"" + ancestor.name() + "\" in File Manager"   , event -> ui.goToFileInManager(ancestor.folder.get().filePath()));
+    addFolderMenuItem("Show folder for note \"" + ancestor.name() + "\" in File Manager"   , event -> FileManager.show(ancestor.folder.get().filePath()));
 
     btnFolder.setOnAction(event -> btnCreateFolder.fire());
 

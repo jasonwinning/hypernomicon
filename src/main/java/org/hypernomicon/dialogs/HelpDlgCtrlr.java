@@ -23,6 +23,8 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
+
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -30,7 +32,7 @@ import javafx.scene.web.WebView;
 
 //---------------------------------------------------------------------------
 
-public class HelpDlgCtrlr extends HyperDlg
+public class HelpDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

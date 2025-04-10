@@ -27,11 +27,12 @@ import javafx.scene.control.cell.CheckBoxListCell;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Work;
 
 //---------------------------------------------------------------------------
 
-public class UpdateISBNsDlgCtrlr extends HyperDlg
+public class UpdateISBNsDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

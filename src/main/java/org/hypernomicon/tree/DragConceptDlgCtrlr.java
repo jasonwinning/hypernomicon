@@ -23,7 +23,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
@@ -33,7 +33,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
-public class DragConceptDlgCtrlr extends HyperDlg
+public class DragConceptDlgCtrlr extends ModalDialog
 {
   @FXML private Label lblMove, lblMoveInfo, lblAdd, lblAddInfo;
 

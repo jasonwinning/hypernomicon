@@ -20,10 +20,11 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -38,7 +39,7 @@ import javafx.scene.control.ComboBox;
 
 //---------------------------------------------------------------------------
 
-public class SearchKeySelectDlgCtrlr extends HyperDlg
+public class SearchKeySelectDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

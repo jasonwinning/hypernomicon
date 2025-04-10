@@ -38,6 +38,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.InterProcClient;

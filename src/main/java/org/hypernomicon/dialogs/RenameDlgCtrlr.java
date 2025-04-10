@@ -23,21 +23,30 @@ import static org.hypernomicon.util.UIUtil.*;
 
 import org.apache.commons.io.FilenameUtils;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.filePath.FilePath;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 
-public class RenameDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class RenameDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public enum NameType
   {
     ntRecord,
     ntFile,
     ntFolder
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private Button btnOk;
   @FXML private Label lblInvalid;
@@ -47,11 +56,9 @@ public class RenameDlgCtrlr extends HyperDlg
   private final String oldName;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public String getNewName() { return ultraTrim(tfName.getText()); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public RenameDlgCtrlr(String title, NameType nameType, String oldName)

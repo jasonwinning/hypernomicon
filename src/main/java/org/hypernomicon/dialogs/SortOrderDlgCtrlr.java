@@ -33,11 +33,12 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.HyperDB;
 
 //---------------------------------------------------------------------------
 
-public class SortOrderDlgCtrlr extends HyperDlg
+public class SortOrderDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------
@@ -106,7 +107,7 @@ public class SortOrderDlgCtrlr extends HyperDlg
     case hdtArgumentVerdict -> "Argument Verdict";
     case hdtPositionVerdict -> "Position Verdict";
     default                 -> HyperDB.getTypeName(recordType);
-  };}
+  }; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

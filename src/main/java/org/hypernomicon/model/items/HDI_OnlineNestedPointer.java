@@ -27,9 +27,17 @@ import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPointer>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private HDT_Record target;
+
+//---------------------------------------------------------------------------
 
   public HDI_OnlineNestedPointer(HDI_Schema schema, HDT_Record record)
   {
@@ -37,7 +45,6 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
     target = null;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Record get()            { return target; }

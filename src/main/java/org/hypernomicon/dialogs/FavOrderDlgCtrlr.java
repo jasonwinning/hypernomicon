@@ -31,14 +31,19 @@ import static org.hypernomicon.view.HyperFavorites.*;
 
 import java.util.List;
 
-public class FavOrderDlgCtrlr extends HyperDlg
+import org.hypernomicon.dialogs.base.ModalDialog;
+
+//---------------------------------------------------------------------------
+
+public class FavOrderDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private ListView<MenuItem> lvRecord, lvQuery;
   @FXML private Button btnRecordUp, btnRecordDown, btnQueryUp, btnQueryDown;
 
-  @Override protected boolean isValid() { return true; }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public FavOrderDlgCtrlr()
@@ -68,6 +73,10 @@ public class FavOrderDlgCtrlr extends HyperDlg
     btnQueryUp.setOnAction(event -> moveQuery(-1));
     btnQueryDown.setOnAction(event -> moveQuery(1));
   }
+
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

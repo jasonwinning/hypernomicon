@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.PathInfo.FileKind;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
@@ -309,7 +310,7 @@ public class FolderTreeWatcher
               }});
             }
 
-            Platform.runLater(fileManagerDlg::refresh);
+            Platform.runLater(FileManager::refresh);
 
             break;
           }
@@ -341,7 +342,7 @@ public class FolderTreeWatcher
                 HDT_Folder.deleteFolderRecordTree((HDT_Folder) hyperPath.getRecord());
             }
 
-            Platform.runLater(fileManagerDlg::pruneAndRefresh);
+            Platform.runLater(FileManager::pruneAndRefresh);
 
             break;
           }
@@ -431,7 +432,7 @@ public class FolderTreeWatcher
               registerTree(newPath);
             }
 
-            Platform.runLater(fileManagerDlg::refresh);
+            Platform.runLater(FileManager::refresh);
 
             break;
           }

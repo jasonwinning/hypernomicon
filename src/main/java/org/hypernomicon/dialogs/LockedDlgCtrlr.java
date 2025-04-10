@@ -25,6 +25,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.InterComputerMsg;
 import org.hypernomicon.util.DesktopUtil;
 
@@ -40,7 +41,7 @@ import static org.hypernomicon.FolderTreeWatcher.*;
 
 //---------------------------------------------------------------------------
 
-public class LockedDlgCtrlr extends HyperDlg
+public class LockedDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

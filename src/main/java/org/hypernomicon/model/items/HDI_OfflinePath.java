@@ -28,15 +28,25 @@ import java.util.Map;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.HyperDB.*;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflinePath extends HDI_OfflineBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   int folderID = -1;
   String fileName = "";
+
+//---------------------------------------------------------------------------
 
   public HDI_OfflinePath(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
   }
+
+//---------------------------------------------------------------------------
 
   public void setFileName(String fileName) { this.fileName = fileName; }
   public void setFolderID(int folderID)    { this.folderID = folderID; }

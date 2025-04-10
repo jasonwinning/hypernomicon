@@ -26,16 +26,12 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
-import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.FileDownloadUtility;
-import org.hypernomicon.util.MediaUtil;
-import org.hypernomicon.util.PopupDialog;
+import org.hypernomicon.util.*;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
@@ -59,24 +55,21 @@ import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
+import javafx.scene.control.*;
+import javafx.scene.image.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 
-public class PictureDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class PictureDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
   private static Image picture;
@@ -102,7 +95,6 @@ public class PictureDlgCtrlr extends HyperDlg
   @FXML private TextField tfCurrent, tfFile, tfWeb, tfName;
   @FXML private ToggleButton btnJpg, btnPng;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public PictureDlgCtrlr(Rectangle2D viewPort)

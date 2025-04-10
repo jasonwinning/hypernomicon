@@ -31,7 +31,9 @@ import java.util.function.Function;
 import java.util.prefs.Preferences;
 
 import org.hypernomicon.App;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
@@ -279,8 +281,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public static void clearAllTabsAndViews()
   {
     enumToHyperTab.values().forEach(HyperTab::clearTabAndView);
-    previewWindow.clearAll();
-    fileManagerDlg.clearHistory();
+    PreviewWindow.clearAll();
+    FileManager  .clearHistory();
   }
 
 //---------------------------------------------------------------------------

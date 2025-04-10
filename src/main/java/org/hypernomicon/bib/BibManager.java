@@ -41,20 +41,19 @@ import com.google.common.collect.Ordering;
 
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
-
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.SelectWorkDlgCtrlr;
+import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
-import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
@@ -64,10 +63,7 @@ import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import javafx.animation.Animation;
-import javafx.animation.Interpolator;
-import javafx.animation.RotateTransition;
-import javafx.animation.SequentialTransition;
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -77,38 +73,41 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-public class BibManager extends HyperDlg
+//---------------------------------------------------------------------------
+
+public final class BibManager extends NonmodalWindow
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private AnchorPane apRelated, apSelecting;
+  @FXML private BorderPane borderPane;
   @FXML private Button btnCreateNew, btnAutofill, btnViewInRefMgr, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
   @FXML private CheckBox chkRequireByDefault;
   @FXML private ComboBox<EntryType> cbNewType;
   @FXML private Label lblSelect, lblSelecting;
+  @FXML private ProgressBar progressBar;
   @FXML private SplitPane spMain;
-  @FXML private BorderPane borderPane;
   @FXML private TableView<BibEntryRow> tableView;
   @FXML private TableView<HyperTableRow> tvRelatives;
   @FXML private TextField tfSearch;
   @FXML private TitledPane tpRelated;
-  @FXML private AnchorPane apRelated, apSelecting;
   @FXML private ToolBar toolBar, toolBar2;
   @FXML private TreeView<BibCollectionRow> treeView;
   @FXML private WebView webView;
-  @FXML private ProgressBar progressBar;
 
   private static final String dialogTitle = "Bibliographic Entry Manager";
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
+
+  private static BibManager instance;
 
   private final HyperTable htRelatives;
   private final BibEntryTable entryTable;
@@ -117,29 +116,36 @@ public class BibManager extends HyperDlg
   private final ImageView assignImg, unassignImg;
   private final CustomTextField searchField;
 
-  public final Property<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
+  public static final Property<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
 
   private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper = null;
   private BibDataRetriever bibDataRetriever = null;
   private SyncTask syncTask = null;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean isValid()                  { return true; }
 
   private void hideBottomControls()                      { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); borderPane.setTop(null); }
   private void viewInRefMgr()                            { viewInRefMgr(tableView.getSelectionModel().getSelectedItem().getEntry()); }
+  public  void rebuildCollectionTree()                   { collTree.rebuild(libraryWrapper.getKeyToColl()); }
+  public  void clearCollectionTree()                     { collTree.clear(); }
+
   private static void viewInRefMgr(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getURLtoViewEntryInRefMgr()); }
-  public void rebuildCollectionTree()                    { collTree.rebuild(libraryWrapper.getKeyToColl()); }
-  public void clearCollectionTree()                      { collTree.clear(); }
+  public  static void close(boolean exitingApp)          { NonmodalWindow.close(instance, exitingApp); }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  public BibManager()
+  public static BibManager instance()
   {
-    super("bib/BibManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    if (instance == null) instance = new BibManager();
+
+    return instance;
+  }
+
+//---------------------------------------------------------------------------
+
+  private BibManager()
+  {
+    super("bib/BibManager", dialogTitle, PrefKey.BM_WINDOW_X, PrefKey.BM_WINDOW_Y, PrefKey.BM_WINDOW_WIDTH, PrefKey.BM_WINDOW_HEIGHT);
 
     entryTable = new BibEntryTable(tableView, this);
     collTree = new CollectionTree(treeView);
@@ -208,23 +214,18 @@ public class BibManager extends HyperDlg
 
     // In the next line, the refresh is done in a runLater because we might already be in a refresh when this is happening
 
-    tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> Platform.runLater(this::refresh));
+    tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> Platform.runLater(this::doRefresh));
 
     entryTable.addContextMenuItem(viewEntryInRefMgrCaptionSupplier, row -> row.getURLtoViewEntryInRefMgr().length() > 0, row -> viewInRefMgr(row.getEntry()));
 
     entryTable.addContextMenuItem("Go to work record", HDT_Work.class, work -> ui.goToRecord(work, true));
 
-    entryTable.addContextMenuItem("Unassign work record" , row -> nonNull(row.getWork()), this::unassign);
-    entryTable.addContextMenuItem("Assign to work record", row -> isNull (row.getWork()), this::assign  );
+    entryTable.addContextMenuItem("Unassign work record" , row -> nonNull(row.getWork()), BibManager::unassign);
+    entryTable.addContextMenuItem("Assign to work record", row -> isNull (row.getWork()), BibManager::assign);
 
     entryTable.addContextMenuItem("Launch work", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
-    entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canPreview, work ->
-    {
-      PreviewSource src = ui.determinePreviewContext();
-      previewWindow.setPreview(src, work);
-      ui.openPreviewWindow(src);
-    });
+    entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canPreview, work -> PreviewWindow.show(ui.determinePreviewContext(), work));
 
     tpRelated.setExpanded(false);
     tpRelated.heightProperty().addListener((ob, ov, nv) -> AnchorPane.setTopAnchor(webView, nv.doubleValue()));
@@ -257,13 +258,9 @@ public class BibManager extends HyperDlg
         entryTable.clear();
 
         collTree.selectAllEntries();
-
-        setDividerPositions();
       }
 
       refresh();
-
-      ui.windows.push(dialogStage);
 
       safeFocus(searchField);
     };
@@ -292,14 +289,23 @@ public class BibManager extends HyperDlg
       if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
         return;
 
-      ui.windows.push(dialogStage);
-
       refresh();
     });
 
 //---------------------------------------------------------------------------
 
-    dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
+    db.addBibChangedHandler(() ->
+    {
+      setLibrary(db.getBibLibrary());
+
+      if ((db.bibLibraryIsLinked() == false) && getStage().isShowing())
+        getStage().close();
+
+      ui.updateBibImportMenus();
+
+      if (db.isLoaded())
+        ui.update();
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -527,7 +533,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void unassign(BibEntryRow row)
+  private static void unassign(BibEntryRow row)
   {
     if (confirmDialog("Are you sure you want to unassign the work record?", false) == false) return;
     if (ui.cantSaveRecord()) return;
@@ -729,7 +735,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assign(BibEntryRow row)
+  private static void assign(BibEntryRow row)
   {
     if (ui.cantSaveRecord(false)) return;
 
@@ -757,7 +763,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assignToExisting(HDT_Work work, BibEntry<?, ?> entry)
+  private static void assignToExisting(HDT_Work work, BibEntry<?, ?> entry)
   {
     if ((work == null) || (entry == null)) return;
 
@@ -806,7 +812,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void goToWork(HDT_Work work)
+  private void goToWork(HDT_Work work)
   {
     if (HDT_Work.isUnenteredSet(work))
     {
@@ -837,7 +843,12 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refresh()
+  public static void refresh()
+  {
+    instance.doRefresh();
+  }
+
+  private void doRefresh()
   {
     entryTable.refresh(getViewForTreeItem(treeView.getSelectionModel().getSelectedItem()));
 
@@ -894,7 +905,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setDividerPositions()
+  @Override protected void setDividerPositions()
   {
     setDividerPosition(spMain, DividerPositionPrefKey.BIB_LEFT_HORIZ , 0);
     setDividerPosition(spMain, DividerPositionPrefKey.BIB_RIGHT_HORIZ, 1);
@@ -903,10 +914,8 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void getDividerPositions()
+  @Override protected void getDividerPositions()
   {
-    if (shownAlready() == false) return;
-
     getDividerPosition(spMain, DividerPositionPrefKey.BIB_LEFT_HORIZ , 0);
     getDividerPosition(spMain, DividerPositionPrefKey.BIB_RIGHT_HORIZ, 1);
   }
@@ -914,9 +923,32 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void focusOnSearchField()
+  public static void show(HDT_Work work)
   {
-    safeFocus(searchField);
+    if (instance == null) return;
+
+    show(false);
+    instance.goToWork(work);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void show(boolean focusOnSearchField)
+  {
+    if (instance == null) return;
+
+    if (instance.getStage().isShowing())
+    {
+      instance.doRefresh();
+      ui.windows.focusStage(instance.getStage());
+    }
+    else
+    {
+      instance.showNonmodal();
+    }
+
+    if (focusOnSearchField) Platform.runLater(() -> safeFocus(instance.searchField));
   }
 
 //---------------------------------------------------------------------------

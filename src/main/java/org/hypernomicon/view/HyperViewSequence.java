@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view;
 
+import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.MainCtrlr.OmniSearchMode;
 import org.hypernomicon.view.tabs.HyperTab;
@@ -95,7 +96,7 @@ public class HyperViewSequence
       HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = getHyperTabByTab(newTab);
 
       if (hyperTab.getTabEnum() != workTabEnum)
-        bibManagerDlg.workRecordToAssign.setValue(null);
+        BibManager.workRecordToAssign.setValue(null);
 
       saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(hyperTab.getView());
     });
@@ -258,7 +259,7 @@ public class HyperViewSequence
     ui.update(activeRecord);
 
     if (curHyperTab.getTabEnum() != workTabEnum)
-      bibManagerDlg.workRecordToAssign.setValue(null);
+      BibManager.workRecordToAssign.setValue(null);
 
     if ((activeRecord == null) || (curHyperTab.getTabEnum() == queryTabEnum))
       return;

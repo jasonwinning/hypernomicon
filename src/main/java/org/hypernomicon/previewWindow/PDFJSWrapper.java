@@ -17,36 +17,14 @@
 
 package org.hypernomicon.previewWindow;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.BrowserContext;
-import com.teamdev.jxbrowser.chromium.BrowserContextParams;
-import com.teamdev.jxbrowser.chromium.BrowserCore;
-import com.teamdev.jxbrowser.chromium.BrowserException;
-import com.teamdev.jxbrowser.chromium.BrowserPreferences;
-import com.teamdev.jxbrowser.chromium.DefaultLoadHandler;
-import com.teamdev.jxbrowser.chromium.DialogParams;
-import com.teamdev.jxbrowser.chromium.JSArray;
-import com.teamdev.jxbrowser.chromium.JSObject;
-import com.teamdev.jxbrowser.chromium.JSValue;
-import com.teamdev.jxbrowser.chromium.LoadParams;
+import com.teamdev.jxbrowser.chromium.*;
 import com.teamdev.jxbrowser.chromium.LoadParams.LoadType;
-import com.teamdev.jxbrowser.chromium.LoggerProvider;
-import com.teamdev.jxbrowser.chromium.ProtocolService;
-import com.teamdev.jxbrowser.chromium.URLResponse;
 import com.teamdev.jxbrowser.chromium.events.ConsoleEvent.Level;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
@@ -67,6 +45,7 @@ import static org.hypernomicon.util.Util.*;
 import static java.util.logging.Level.*;
 
 import org.apache.commons.io.FileUtils;
+
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.util.DesktopUtil;
@@ -82,25 +61,32 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public class PDFJSWrapper
 {
-  private boolean ready = false, pdfjsMode = true, hiding = false, showingAlt = false;
-  private final PDFJSDoneHandler doneHndlr;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private final AnchorPane apBrowser;
   private final Consumer<Integer> pageChangeHndlr;
-  private final PDFJSRetrievedDataHandler retrievedDataHndlr;
-  private int numPages = -1;
+  private final GridPane gpAltDisplay;
   private final JavascriptToJava javascriptToJava;
-  private Browser browser = null, oldBrowser = null;
+  private final PDFJSDoneHandler doneHndlr;
+  private final PDFJSRetrievedDataHandler retrievedDataHndlr;
+
+  private static final String basePlaceholder = "<!-- base placeholder -->";
+
   private static BrowserContext browserContext = null;
+  private static String viewerHTMLStr = null;
+
+  private Browser browser = null, oldBrowser = null;
   private BrowserView browserView = null;
   private PreviewAltDisplayCtrlr altDisplay = null;
-  private static String viewerHTMLStr = null;
-  private static final String basePlaceholder = "<!-- base placeholder -->";
-  private final AnchorPane apBrowser;
-  private final GridPane gpAltDisplay;
   private Runnable postBrowserLoadCode = null;
+
+  private int numPages = -1;
+  private boolean ready = false, pdfjsMode = true, hiding = false, showingAlt = false;
 
   private volatile boolean opened = false;
 
@@ -389,11 +375,8 @@ public class PDFJSWrapper
   {
     Platform.runLater(() ->
     {
-      if ((previewWindow != null) && previewWindow.getStage().isShowing())
-        previewWindow.getStage().close();
-
-      if ((contentsWindow != null) && contentsWindow.getStage().isShowing())
-        contentsWindow.getStage().close();
+      PreviewWindow .close(false);
+      ContentsWindow.close(false);
     });
 
     jxBrowserDisabled = true;

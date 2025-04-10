@@ -27,8 +27,14 @@ import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.RecordState;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflineTernary extends HDI_OfflineBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public enum Ternary
   {
     Unset, False, True;
@@ -49,6 +55,8 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 
   Ternary value = Unset;
+
+//---------------------------------------------------------------------------
 
   public HDI_OfflineTernary(HDI_Schema schema, RecordState recordState)
   {

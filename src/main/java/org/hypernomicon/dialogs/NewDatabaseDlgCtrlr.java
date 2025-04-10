@@ -22,6 +22,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
@@ -36,14 +37,19 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
-public class NewDatabaseDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class NewDatabaseDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private CheckBox chkInst, chkFields, chkRanks, chkStatus, chkRegions, chkCountries;
   @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopicFolders, tfMiscFiles, tfResults;
 
   private final String newPath;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public NewDatabaseDlgCtrlr(String newPath)

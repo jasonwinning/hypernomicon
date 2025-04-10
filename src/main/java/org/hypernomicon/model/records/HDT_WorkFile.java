@@ -23,6 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.hypernomicon.Const.FileNamePrefKey;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
@@ -36,10 +37,18 @@ import static org.hypernomicon.util.Util.*;
 import java.util.EnumSet;
 import java.util.List;
 
+//---------------------------------------------------------------------------
+
 public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperPath path;
   public final List<HDT_Work> works;
+
+//---------------------------------------------------------------------------
 
   public HDT_WorkFile(RecordState xmlState, DatasetAccessor<HDT_WorkFile> dataset)
   {
@@ -48,6 +57,8 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
     works = getSubjList(rtWorkFileOfWork);
     path = new HyperPath(getObjPointer(rtFolderOfWorkFile), this);
   }
+
+//---------------------------------------------------------------------------
 
   @Override public HyperPath getPath()                 { return path; }
   @Override public String listName()                   { return path.getNameStr(); }

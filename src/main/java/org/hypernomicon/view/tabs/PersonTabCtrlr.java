@@ -47,6 +47,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -198,7 +199,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       if (record == null)
         setDefaultWorkPreview();
       else
-        previewWindow.setPreview(pvsPersonTab, record);
+        PreviewWindow.setPreview(pvsPersonTab, record);
     });
 
     htArguments = new HyperTable(tvArguments, 4, false, TablePrefKey.PERSON_ARG);
@@ -589,22 +590,22 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       for (HDT_MiscFile miscFile : curPerson.miscFiles)
         if (miscFile.pathNotEmpty())
         {
-          previewWindow.setPreview(pvsPersonTab, miscFile);
+          PreviewWindow.setPreview(pvsPersonTab, miscFile);
           return;
         }
 
-      previewWindow.setPreview(pvsPersonTab, curPerson);
+      PreviewWindow.setPreview(pvsPersonTab, curPerson);
       return;
     }
 
     for (HDT_Work work : curPerson.works)
       if (work.canPreview())
       {
-        previewWindow.setPreview(pvsPersonTab, work);
+        PreviewWindow.setPreview(pvsPersonTab, work);
         return;
       }
 
-    previewWindow.setPreview(pvsPersonTab, curPerson.works.get(0));
+    PreviewWindow.setPreview(pvsPersonTab, curPerson.works.get(0));
   }
 
 //---------------------------------------------------------------------------

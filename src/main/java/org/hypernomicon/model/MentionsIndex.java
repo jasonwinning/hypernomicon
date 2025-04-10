@@ -39,13 +39,7 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Authors;
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithAuthors;
-import org.hypernomicon.model.records.HDT_Term;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
@@ -58,8 +52,14 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 class MentionsIndex
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final BidiOneToManyRecordMap mentionedInDescToMentioners   = new BidiOneToManyRecordMap(),
                                        mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
   private final Set<HDT_Record> removedRecords = ConcurrentHashMap.newKeySet();
@@ -70,7 +70,6 @@ class MentionsIndex
 
   private HyperTask task = null;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   MentionsIndex(List<Runnable> ndxCompleteHandlers, boolean asynchronous)

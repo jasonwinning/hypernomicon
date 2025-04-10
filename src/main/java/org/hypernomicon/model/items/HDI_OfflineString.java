@@ -24,6 +24,8 @@ import org.hypernomicon.model.records.RecordState;
 
 import java.util.Map;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflineString extends HDI_OfflineBase
 {
 
@@ -39,7 +41,6 @@ public class HDI_OfflineString extends HDI_OfflineBase
     super(schema, recordState);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public String get()                { return strValue; }

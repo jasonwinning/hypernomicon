@@ -887,8 +887,7 @@ public class MainTextCtrlr
     lvRecords.setItems(FXCollections.observableArrayList());
 
     hcbKeyName.selectID(-1);
-    ListView<HyperTableCell> lv = getCBListView(cbKeyName);
-    if (lv != null) lv.scrollTo(0);
+    nullSwitch(getCBListView(cbKeyName), lv -> lv.scrollTo(0));
   }
 
 //---------------------------------------------------------------------------

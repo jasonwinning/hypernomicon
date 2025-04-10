@@ -36,42 +36,28 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.authors.BibAuthors;
-import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.bib.data.BibDataRetriever;
-import org.hypernomicon.bib.data.BibDataStandalone;
+import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
-import org.hypernomicon.bib.data.CrossrefBibData;
-import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.data.GUIBibData;
-import org.hypernomicon.bib.data.GoogleBibData;
-import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWrapper;
-
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.wrappers.DateControlsWrapper;
-import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
-import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
@@ -94,14 +80,11 @@ import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
+import javafx.stage.*;
 
 //---------------------------------------------------------------------------
 
-public class WorkDlgCtrlr extends HyperDlg
+public class WorkDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------
@@ -152,6 +135,8 @@ public class WorkDlgCtrlr extends HyperDlg
   private static final String MovePrefVal = "move",
                               CopyPrefVal = "copy",
                               NonePrefVal = "none";
+
+//---------------------------------------------------------------------------
 
   public List<ObjectGroup> getAuthorGroups() { return htAuthors.getAuthorGroups(curWork, 0, 2, 3, 4); }
   public boolean getCreateEntry()            { return chkCreateBibEntry.isVisible() && chkCreateBibEntry.isSelected(); }
@@ -464,7 +449,7 @@ public class WorkDlgCtrlr extends HyperDlg
     destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
 
     if (db.bibLibraryIsLinked())
-      bibManagerDlg.initEntryTypeCB(cbEntryType);
+      BibManager.instance().initEntryTypeCB(cbEntryType);
 
     tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
 

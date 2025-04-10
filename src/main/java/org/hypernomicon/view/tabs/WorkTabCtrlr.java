@@ -18,6 +18,7 @@
 package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.BibDataStandalone;
@@ -31,6 +32,7 @@ import org.hypernomicon.dialogs.FileDlgCtrlr;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
@@ -44,6 +46,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
@@ -295,7 +298,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       int endPageNum = parseInt(row.getText(nextColNdx), -1);
 
-      previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
+      PreviewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
 
     }).setHeaderTooltip("Start page in PDF (actual PDF page, not page label)");
 
@@ -309,7 +312,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       int startPageNum = parseInt(row.getText(nextColNdx - 2), -1);
 
-      previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
+      PreviewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
 
     }).setHeaderTooltip("End page in PDF (actual PDF page, not page label)");
 
@@ -322,7 +325,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       workFile -> highlightFileInExplorer(workFile.filePath()));
 
     htWorkFiles.addContextMenuItem("Show in File Manager", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
-      workFile -> ui.goToFileInManager(workFile.filePath()));
+      workFile -> FileManager.show(workFile.filePath()));
 
     htWorkFiles.addContextMenuItem("Copy path to clipboard", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
       workFile -> copyToClipboard(workFile.getPath().toString()));
@@ -371,7 +374,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (confirmDialog("Are you sure you want to remove this file from the work record?", false) == false) return;
 
         db.getObjectList(rtWorkFileOfWork, curWork, true).remove(workFile);
-        fileManagerDlg.setNeedRefresh();
+        FileManager.setNeedRefresh();
         ui.update();
       });
 
@@ -385,16 +388,16 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       HDT_WorkFile workFile = newValue.getRecord();
       if (workFile == null)
-        previewWindow.setPreview(pvsWorkTab, curWork.filePathIncludeExt(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
+        PreviewWindow.setPreview(pvsWorkTab, curWork.filePathIncludeExt(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
       else
-        previewWindow.setPreview(pvsWorkTab, workFile.filePath(), getCurPageNum(curWork, workFile, true), getCurPageNum(curWork, workFile, false), curWork);
+        PreviewWindow.setPreview(pvsWorkTab, workFile.filePath(), getCurPageNum(curWork, workFile, true), getCurPageNum(curWork, workFile, false), curWork);
     });
 
     tvSubworks.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((newValue == null) || (oldValue == newValue)) return;
 
-      previewWindow.setPreview(pvsWorkTab, (HDT_Work) newValue.getRecord());
+      PreviewWindow.setPreview(pvsWorkTab, (HDT_Work) newValue.getRecord());
     });
 
     htMiscFiles = new HyperTable(tvMiscFiles, 2, true, TablePrefKey.WORK_MISC);
@@ -405,8 +408,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       HDT_MiscFile miscFile = row.getRecord();
       if (miscFile.pathNotEmpty() == false) return;
-      previewWindow.setPreview(pvsWorkTab, miscFile);
-      ui.openPreviewWindow(pvsWorkTab);
+      PreviewWindow.show(pvsWorkTab, miscFile);
 
     }).setTooltip(ButtonAction.baCustom, "Show in Preview Window");
 
@@ -447,7 +449,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     btnDOI.setOnAction(event -> searchDOI(tfDOI.getText()));
     setToolTip(btnDOI, "Use this DOI to locate the document online");
 
-    btnBibManager.setOnAction(event -> ui.goToWorkInBibManager(curWork));
+    btnBibManager.setOnAction(event -> BibManager.show(curWork));
 
     btnStop.setOnAction(event -> stopRetrieving());
 
@@ -567,7 +569,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     addFolderMenuItem("Show in file manager", event ->
     {
       if ((tfURL.getText().length() > 0) && (tfURL.getText().charAt(0) != '('))
-        ui.goToFileInManager(new FilePath(tfURL.getText()));
+        FileManager.show(new FilePath(tfURL.getText()));
     });
 
     setToolTip(lblSearchKey, "Regenerate search key");
@@ -857,11 +859,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       htWorkFiles.getTV().getSortOrder().setAll(List.copyOf(htWorkFiles.getTV().getSortOrder()));
 
-      updatePreview = FilePath.isEmpty(filePath) || (filePath.equals(previewWindow.getFilePath(pvsWorkTab)) == false);
+      updatePreview = FilePath.isEmpty(filePath) || (filePath.equals(PreviewWindow.instance().getFilePath(pvsWorkTab)) == false);
     }
     else
     {
-      bibManagerDlg.workRecordToAssign.setValue(null);
+      BibManager.workRecordToAssign.setValue(null);
 
       SingleSelectionModel<Tab> tpsm = tabPane.getSelectionModel();
 
@@ -871,7 +873,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       else if (tpsm.getSelectedItem() != tabBibDetails) tpsm.select(tabWorkFiles);
 
       if (FilePath.isEmpty(filePath) == false)
-        if (filePath.equals(previewWindow.getFilePath(pvsWorkTab)))
+        if (filePath.equals(PreviewWindow.instance().getFilePath(pvsWorkTab)))
           if (curWork.getStartPageNum() < 2)
             updatePreview = false;
     }
@@ -886,9 +888,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
 
     if (updatePreview)
-      previewWindow.setPreview(pvsWorkTab, filePath, curWork);
+      PreviewWindow.setPreview(pvsWorkTab, filePath, curWork);
     else
-      previewWindow.refreshControls(pvsWorkTab);
+      PreviewWindow.instance().refreshControls(pvsWorkTab);
 
     lastWork = curWork;
 
@@ -1132,7 +1134,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       folderTreeWatcher.createNewWatcherAndStart();
 
     ui.update();
-    fileManagerDlg.setNeedRefresh();
+    FileManager.setNeedRefresh();
   }
 
 //---------------------------------------------------------------------------
@@ -1266,7 +1268,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         {
           errorPopup("Unable to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + "\". Reason: " + getThrowableMessage(e));
           ui.update();
-          fileManagerDlg.setNeedRefresh();
+          FileManager.setNeedRefresh();
 
           if (startWatcher)
             folderTreeWatcher.createNewWatcherAndStart();
@@ -1280,7 +1282,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         internalErrorPopup(67830);
         ui.update();
-        fileManagerDlg.setNeedRefresh();
+        FileManager.setNeedRefresh();
 
         if (startWatcher)
           folderTreeWatcher.createNewWatcherAndStart();
@@ -1292,7 +1294,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
 
     ui.update();
-    fileManagerDlg.setNeedRefresh();
+    FileManager.setNeedRefresh();
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
@@ -1431,8 +1433,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       if (curWork == null)
       {
-        previewWindow.clearPreview(pvsWorkTab);
-        bibManagerDlg.workRecordToAssign.setValue(null);
+        PreviewWindow.clearPreview(pvsWorkTab);
+        BibManager.workRecordToAssign.setValue(null);
       }
     }
   }
@@ -1821,7 +1823,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
 
       mwd.mergeInto(destBD);
-      bibManagerDlg.refresh();
+      BibManager.refresh();
       ui.update();
     });
   }
@@ -1856,7 +1858,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
 
     mwd.mergeInto(workBibData);
-    bibManagerDlg.refresh();
+    BibManager.refresh();
     ui.update();
   }
 

@@ -33,21 +33,19 @@ import java.util.prefs.Preferences;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 
 //---------------------------------------------------------------------------
 
-public class TestConsoleDlgCtrlr extends HyperDlg
+public class TestConsoleDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

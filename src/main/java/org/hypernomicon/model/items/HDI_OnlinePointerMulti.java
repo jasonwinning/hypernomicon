@@ -42,9 +42,17 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMulti>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final RelationType relType;
+
+//---------------------------------------------------------------------------
 
   public HDI_OnlinePointerMulti(HDI_Schema schema, HDT_Record record)
   {

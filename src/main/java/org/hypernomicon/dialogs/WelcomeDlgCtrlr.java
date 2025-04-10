@@ -17,6 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.App.*;
@@ -32,8 +33,14 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.AnchorPane;
 import org.hypernomicon.view.MainCtrlr;
 
-public class WelcomeDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class WelcomeDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Button btnNew, btnOpen, btnClose;
   @FXML private Hyperlink linkIntroVideo, linkFileMgmtVideo, linkRefMgmtVideo, linkForums, linkWiki, linkNews, linkMore;
   @FXML private AnchorPane apRecent;
@@ -48,7 +55,6 @@ public class WelcomeDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid() { return true; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public WelcomeDlgCtrlr()

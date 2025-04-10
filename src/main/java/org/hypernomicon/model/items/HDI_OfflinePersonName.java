@@ -27,17 +27,27 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflinePersonName extends HDI_OfflineBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   String firstName = "", lastName = "";
+
+//---------------------------------------------------------------------------
 
   public HDI_OfflinePersonName(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
   }
 
+//---------------------------------------------------------------------------
+
   public String getFirstName() { return firstName; }
-  public String getLastName()  { return lastName; }
+  public String getLastName () { return lastName;  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

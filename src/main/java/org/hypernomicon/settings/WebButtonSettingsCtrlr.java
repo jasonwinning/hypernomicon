@@ -27,19 +27,23 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsControl;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+
+//---------------------------------------------------------------------------
 
 public class WebButtonSettingsCtrlr implements SettingsControl
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Button btnPersonImgSrchAdvanced, btnInstSrchAdvanced, btnInstMapSrchAdvanced,
                        btnDOISrchAdvanced, btnISBNSrchAdvanced;
   @FXML private ComboBox<WebButton> cbPersonImgSrch, cbInstSrch, cbInstMapSrch, cbDOISrch, cbISBNSrch;

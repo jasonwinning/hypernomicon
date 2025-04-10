@@ -17,7 +17,6 @@
 
 package org.hypernomicon.dialogs.workMerge;
 
-import static org.hypernomicon.App.bibManagerDlg;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.dialogs.WorkDlgCtrlr.*;
 import static org.hypernomicon.model.HyperDB.db;
@@ -33,12 +32,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import org.hypernomicon.App;
 import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.BibManager;
+import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.data.WorkBibData;
 import org.hypernomicon.bib.zotero.ZoteroItem;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_Person;
@@ -48,21 +47,11 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.wrappers.DateControlsWrapper;
-import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.*;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Toggle;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
@@ -366,7 +355,7 @@ public abstract class BibFieldCtrlr
     {
       super("EntryTypeCtrl", bfEntryType, bibData);
 
-      bibManagerDlg.initEntryTypeCB(cb);
+      BibManager.instance().initEntryTypeCB(cb);
 
       if (bibData.entryTypeNotEmpty())
       {

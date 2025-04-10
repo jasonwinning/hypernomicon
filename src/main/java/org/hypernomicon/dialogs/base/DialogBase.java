@@ -15,78 +15,48 @@
  *
  */
 
-package org.hypernomicon.dialogs;
+package org.hypernomicon.dialogs.base;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.robot.Robot;
-import javafx.scene.Node;
-import javafx.stage.Modality;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
+import javafx.stage.*;
 
 //---------------------------------------------------------------------------
 
-public abstract class HyperDlg
+public abstract class DialogBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   protected final Stage dialogStage;
   protected final AnchorPane stagePane;
 
-  protected boolean okClicked = false;
-  protected Runnable onShown = null;
+  protected Runnable onShown, onHidden;
 
-  private double initHeight = -1, initWidth = -1;
-  private boolean shownAlready = false, doShow = true;
+  private boolean shownAlready = false;
 
 //---------------------------------------------------------------------------
 
-  public final Stage getStage()       { return dialogStage; }
+  protected final Stage getStage   () { return dialogStage; }
   public final boolean shownAlready() { return shownAlready; }
+  public final boolean isShowing   () { return (dialogStage != null) && dialogStage.isShowing(); }
 
-  protected final void abort()        { doShow = false; }
-
-  protected abstract boolean isValid();
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected HyperDlg(String loc, String title, boolean resizable)
-  {
-    this(loc, title, resizable, false);
-  }
-
-  protected HyperDlg(String loc, String title, boolean resizable, boolean fullPath)
-  {
-    this(loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL, fullPath);
-  }
-
-  protected HyperDlg(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
-  {
-    this(loc, title, resizable, stageStyle, modality, true);
-  }
+  double getInitHeight() { return -1; }
+  double getInitWidth () { return -1; }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  private HyperDlg(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality, boolean fullPath)
+  DialogBase(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality, boolean fullPath)
   {
     if (fullPath == false)
       loc = "dialogs/" + loc;
@@ -122,7 +92,8 @@ public abstract class HyperDlg
       if (tmpStagePane.getStyleClass().contains("SpecialUI") == false)
         scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
-      tmpDialogStage.setOnShown(event -> doOnShown());
+      tmpDialogStage.setOnShown (event -> doOnShown ());
+      tmpDialogStage.setOnHidden(event -> doOnHidden());
     }
     catch (IOException e)
     {
@@ -138,96 +109,21 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Map<String, Bounds> boundsMap = new HashMap<>();
-
-  public final void initBounds(String prefKeyX, String prefKeyY, String prefKeyWidth, String prefKeyHeight)
-  {
-    double x = app.prefs.getDouble(prefKeyX, -1.0);
-    if (x > 0)
-      dialogStage.setX(x);
-
-    double y = app.prefs.getDouble(prefKeyY, -1.0);
-    if (y > 0)
-      dialogStage.setY(y);
-    else if (SystemUtils.IS_OS_WINDOWS && (dialogStage.getY() < 30.0)) // Make sure Windows taskbar isn't at the top and covering the window controls
-    {
-      y = 30.0;
-      dialogStage.setY(30.0);
-    }
-
-    double h = setInitHeight(prefKeyHeight),
-           w = setInitWidth(prefKeyWidth);
-
-    boundsMap.put(prefKeyX, new BoundingBox(x, y, w, h));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void saveBoundPrefs(Stage stage, String prefKeyX, String prefKeyY, String prefKeyWidth, String prefKeyHeight)
-  {
-    Bounds b = new BoundingBox(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
-
-    if (b.equals(boundsMap.get(prefKeyX)) == false)
-    {
-      app.prefs.putDouble(prefKeyX, b.getMinX());
-      app.prefs.putDouble(prefKeyY, b.getMinY());
-      app.prefs.putDouble(prefKeyWidth, b.getWidth());
-      app.prefs.putDouble(prefKeyHeight, b.getHeight());
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private double setInitHeight(String prefKey)
-  {
-    double defHeight = stagePane.getPrefHeight();
-    Point2D point = new Robot().getMousePosition();
-    Screen screen = Screen.getScreensForRectangle(new Rectangle2D(point.getX(), point.getY(), 1, 1)).stream().findFirst().orElse(null);
-
-    if (screen != null)
-    {
-      double screenHeight = screen.getBounds().getHeight();
-      if (defHeight > (screenHeight - 60.0))
-        defHeight = screenHeight - 60.0;
-    }
-
-    initHeight = app.prefs.getDouble(prefKey, defHeight);
-
-    if (initHeight < 350)
-      initHeight = stagePane.getPrefHeight();
-
-    return initHeight;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private double setInitWidth(String prefKey)
-  {
-    initWidth = app.prefs.getDouble(prefKey, stagePane.getPrefWidth());
-
-    if (initWidth < 350)
-      initWidth = stagePane.getPrefWidth();
-
-    return initWidth;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void doOnShown()
   {
     rescale();
 
-    if (initHeight <= 0)
+    if (getInitHeight() <= 0)
       dialogStage.centerOnScreen();
 
-    if (onShown != null) onShown.run();
+    doAdditionalOnShown();
 
     shownAlready = true;
   }
+
+  protected abstract void doAdditionalOnShown();
+
+  protected void doOnHidden() { if (onHidden != null) onHidden.run(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -257,84 +153,23 @@ public abstract class HyperDlg
 
     if (shownAlready) return;
 
-    if (initWidth <= 0)
+    if (getInitWidth() <= 0)
     {
       val = stagePane.getPrefWidth();
       if (val > 0)
         dialogStage.setWidth(val + diff);
     }
     else
-      dialogStage.setWidth(initWidth);
+      dialogStage.setWidth(getInitWidth());
 
-    if (initHeight <= 0)
+    if (getInitHeight() <= 0)
     {
       val = stagePane.getPrefHeight();
       if (val > 0)
         dialogStage.setHeight(val + diff);
     }
     else
-      dialogStage.setHeight(initHeight);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public final void showNonmodal()
-  {
-    dialogStage.show();
-
-    ensureVisible(dialogStage, stagePane.getPrefWidth(), stagePane.getPrefHeight());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean showModal()
-  {
-    if (doShow)
-    {
-      ui.windows.push(dialogStage);
-
-      dialogStage.showAndWait();
-
-      ui.windows.pop();
-    }
-    else
-    {
-      okClicked = false;
-    }
-
-    return okClicked;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML protected void btnOkClick()
-  {
-    Node node = dialogStage.getScene().getFocusOwner();
-
-    // The next check is necessary due to https://bugs.openjdk.org/browse/JDK-8229924
-    // If you hit enter in the combobox, the key event gets consumed by the Scene before it ever gets to the text edit control. The HyperCB onaction gets
-    // triggered in that case because the Scene did not mark the event as consumed after processing it (which is also a related JavaFX bug).
-
-    if ((node instanceof ComboBox) && (getNodeUserObj(node, NodeUserDataType.HypercCB) != null))
-      return;
-
-    if (isValid() == false)
-      return;
-
-    okClicked = true;
-    dialogStage.close();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML protected void btnCancelClick()
-  {
-    okClicked = false;
-    dialogStage.close();
+      dialogStage.setHeight(getInitHeight());
   }
 
 //---------------------------------------------------------------------------

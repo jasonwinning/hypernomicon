@@ -20,18 +20,13 @@ package org.hypernomicon.settings;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 
 import com.github.scribejava.core.exceptions.OAuthException;
-import com.github.scribejava.core.model.OAuth1AccessToken;
-import com.github.scribejava.core.model.OAuth1RequestToken;
-import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuth10aService;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.common.collect.BiMap;
@@ -39,6 +34,7 @@ import com.google.common.collect.HashBiMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
+
 import org.hypernomicon.App;
 import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.bib.BibEntry;
@@ -47,7 +43,7 @@ import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.mendeley.MendeleyOAuthApi;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.CryptoUtil;
@@ -79,8 +75,12 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 //---------------------------------------------------------------------------
 
-public class SettingsDlgCtrlr extends HyperDlg
+public class SettingsDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnExtFilesHelp;
   @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkDefaultChapterWorkType, chkLinuxWorkaround,
@@ -104,6 +104,9 @@ public class SettingsDlgCtrlr extends HyperDlg
   private final Map<SettingsPage, TreeItem<SettingsPage>> pageToTreeItem = new EnumMap<>(SettingsPage.class);
 
   private OAuth1RequestToken requestToken;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public enum SettingsPage
   {

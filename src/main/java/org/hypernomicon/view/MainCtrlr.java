@@ -37,16 +37,13 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthors;
-import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.bib.data.BibDataStandalone;
-import org.hypernomicon.bib.data.BibTexBibData;
-import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.data.GUIBibData;
-import org.hypernomicon.bib.data.RISBibData;
+import org.hypernomicon.bib.data.*;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.fileManager.FileRow;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
@@ -56,6 +53,7 @@ import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.previewWindow.ContentsWindow;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryType;
@@ -65,19 +63,14 @@ import org.hypernomicon.query.ui.ResultRow;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
-import org.hypernomicon.tree.TreeRow;
-import org.hypernomicon.tree.TreeSelector;
-import org.hypernomicon.tree.TreeTabCtrlr;
-import org.hypernomicon.tree.TreeWrapper;
+import org.hypernomicon.tree.*;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.RecordFavorite;
-import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
-import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.mainText.SymbolPickerDlgCtrlr;
@@ -88,10 +81,7 @@ import org.hypernomicon.view.wrappers.*;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -106,15 +96,7 @@ import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 import com.google.common.collect.EnumHashBiMap;
 
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
@@ -135,10 +117,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.stage.*;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
@@ -417,8 +396,8 @@ public final class MainCtrlr
 
     omniFinder = new OmniFinder(htFind);
 
-    btnFileMgr.setOnAction(event -> runFileMgr());
-    btnBibMgr .setOnAction(event -> runBibMgr(true));
+    btnFileMgr.setOnAction(event -> FileManager.show(    ));
+    btnBibMgr .setOnAction(event -> BibManager .show(true));
 
     btnGoTo.setOnAction        (event -> btnGoToClick(false));
     mnuRecordSelect.setOnAction(event -> btnGoToClick(true));
@@ -741,12 +720,12 @@ public final class MainCtrlr
         HDT_MiscFile miscFile = (HDT_MiscFile) activeRecord();
 
         if (miscFile == null)
-          previewWindow.clearPreview(src);
+          PreviewWindow.clearPreview(src);
         else
-          previewWindow.setPreview(src, miscFile);
+          PreviewWindow.setPreview(src, miscFile);
       }
 
-      openPreviewWindow(src);
+      PreviewWindow.show(src);
     });
 
 //---------------------------------------------------------------------------
@@ -1121,7 +1100,7 @@ public final class MainCtrlr
       };
     }
 
-    return (fileManagerDlg != null) && fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused() ? pvsManager : pvsOther;
+    return FileManager.isFocused() ? pvsManager : pvsOther;
   }
 
 //---------------------------------------------------------------------------
@@ -1142,56 +1121,6 @@ public final class MainCtrlr
     if (btnBack.isDisabled() || cantSaveRecord()) return;
 
     viewSequence.stepBack();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void openPreviewWindow(PreviewSource src)
-  {
-    if (jxBrowserDisabled) return;
-
-    if (src != null)
-      previewWindow.switchTo(src);
-
-    if (previewWindow.getStage().isShowing())
-      windows.focusStage(previewWindow.getStage());
-    else
-      previewWindow.showNonmodal();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void runFileMgr()
-  {
-    if (fileManagerDlg.getStage().isShowing())
-    {
-      windows.focusStage(fileManagerDlg.getStage());
-      return;
-    }
-
-    if (cantSaveRecord(false)) return;
-
-    fileManagerDlg.showNonmodal();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void runBibMgr(boolean focusOnSearchField)
-  {
-    if (bibManagerDlg.getStage().isShowing())
-    {
-      bibManagerDlg.refresh();
-      windows.focusStage(bibManagerDlg.getStage());
-    }
-    else
-    {
-      bibManagerDlg.showNonmodal();
-    }
-
-    if (focusOnSearchField) Platform.runLater(bibManagerDlg::focusOnSearchField);
   }
 
 //---------------------------------------------------------------------------
@@ -1380,33 +1309,19 @@ public final class MainCtrlr
     if (shutDownMode != ShutDownMode.InitializationFailure)
     {
       forEachHyperTab(HyperTab::getDividerPositions);
-      fileManagerDlg.getDividerPositions();
-      bibManagerDlg.getDividerPositions();
 
       boolean iconified = stage.isIconified(), fullScreen = stage.isFullScreen(),
               maximizedPrefVal = Environment.isMac() ? this.maximized : stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS. JDK-8087618
 
       if (fullScreen || maximizedPrefVal) iconified = false; // This has to be done due to bug JDK-8087997
 
-      app.prefs.putDouble(PrefKey.WINDOW_X, stage.getX());
-      app.prefs.putDouble(PrefKey.WINDOW_Y, stage.getY());
-      app.prefs.putDouble(PrefKey.WINDOW_WIDTH, stage.getWidth());
-      app.prefs.putDouble(PrefKey.WINDOW_HEIGHT, stage.getHeight());
-      app.prefs.putBoolean(PrefKey.WINDOW_ICONIFIED, iconified);
+      app.prefs.putDouble (PrefKey.WINDOW_X         , stage.getX());
+      app.prefs.putDouble (PrefKey.WINDOW_Y         , stage.getY());
+      app.prefs.putDouble (PrefKey.WINDOW_WIDTH     , stage.getWidth());
+      app.prefs.putDouble (PrefKey.WINDOW_HEIGHT    , stage.getHeight());
+      app.prefs.putBoolean(PrefKey.WINDOW_ICONIFIED , iconified);
       app.prefs.putBoolean(PrefKey.WINDOW_FULLSCREEN, fullScreen);
-      app.prefs.putBoolean(PrefKey.WINDOW_MAXIMIZED, maximizedPrefVal);
-
-      if (fileManagerDlg.shownAlready())
-        HyperDlg.saveBoundPrefs(fileManagerDlg.getStage(), PrefKey.FM_WINDOW_X, PrefKey.FM_WINDOW_Y, PrefKey.FM_WINDOW_WIDTH, PrefKey.FM_WINDOW_HEIGHT);
-
-      if (bibManagerDlg.shownAlready())
-        HyperDlg.saveBoundPrefs(bibManagerDlg.getStage(), PrefKey.BM_WINDOW_X, PrefKey.BM_WINDOW_Y, PrefKey.BM_WINDOW_WIDTH, PrefKey.BM_WINDOW_HEIGHT);
-
-      if (previewWindow.shownAlready())
-        HyperDlg.saveBoundPrefs(previewWindow.getStage(), PrefKey.PREV_WINDOW_X, PrefKey.PREV_WINDOW_Y, PrefKey.PREV_WINDOW_WIDTH, PrefKey.PREV_WINDOW_HEIGHT);
-
-      if (contentsWindow.shownAlready())
-        HyperDlg.saveBoundPrefs(contentsWindow.getStage(), PrefKey.CONTENTS_WINDOW_X, PrefKey.CONTENTS_WINDOW_Y, PrefKey.CONTENTS_WINDOW_WIDTH, PrefKey.CONTENTS_WINDOW_HEIGHT);
+      app.prefs.putBoolean(PrefKey.WINDOW_MAXIMIZED , maximizedPrefVal);
 
       HyperTable.saveColWidthsToPrefs();
     }
@@ -1436,20 +1351,13 @@ public final class MainCtrlr
 
     clearOmniFinder();
 
-    if ((fileManagerDlg != null) && fileManagerDlg.getStage().isShowing())
-      fileManagerDlg.getStage().close();
-
-    if ((bibManagerDlg != null) && bibManagerDlg.getStage().isShowing())
-      bibManagerDlg.getStage().close();
+    FileManager         .close(exitingApp);
+    BibManager          .close(exitingApp);
+    ContentsWindow      .close(exitingApp);
+    SymbolPickerDlgCtrlr.close(exitingApp);
 
     if ((exitingApp == false) || (Environment.isMac() == false))
-      if ((previewWindow != null) && previewWindow.getStage().isShowing())
-        previewWindow.getStage().close();
-
-    if ((contentsWindow != null) && contentsWindow.getStage().isShowing())
-      contentsWindow.getStage().close();
-
-    SymbolPickerDlgCtrlr.close();
+      PreviewWindow.close(exitingApp);
   }
 
 //---------------------------------------------------------------------------
@@ -1608,10 +1516,10 @@ public final class MainCtrlr
 
     if (loadAllFromXML(false))
     {
-      previewWindow.clearAll();
+      PreviewWindow.clearAll();
       viewSequence.refreshRecordPtrs();
-      fileManagerDlg.clearHistory();
-      fileManagerDlg.pruneAndRefresh();
+      FileManager.clearHistory();
+      FileManager.pruneAndRefresh();
 
       forEachHyperTab(HyperTab::refreshRecordPtr);
 
@@ -1890,7 +1798,7 @@ public final class MainCtrlr
     db.deleteRecord(record);
 
     viewSequence.loadViewFromCurrentSlotToUI();
-    fileManagerDlg.refresh();
+    FileManager.refresh();
   }
 
 //---------------------------------------------------------------------------
@@ -1970,7 +1878,7 @@ public final class MainCtrlr
     menu.getItems().add(item);
 
     item = new MenuItem("Show in File Manager");
-    item.setOnAction(event -> goToFileInManager(filePath));
+    item.setOnAction(event -> FileManager.show(filePath));
     menu.getItems().add(item);
 
     item = new MenuItem("Copy path to clipboard");
@@ -2499,7 +2407,7 @@ public final class MainCtrlr
       treeHyperTab().enable(true);
 
       tree().expandMainBranches();
-      fileManagerDlg.folderTree.expandMainBranches();
+      FileManager.instance().folderTree.expandMainBranches();
 
       stage.setTitle(appTitle + " - " + db.getHdbPath());
     }
@@ -2597,26 +2505,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void goToFileInManager(FilePath filePath)
-  {
-    if (FilePath.isEmpty(filePath)) return;
-
-    runFileMgr();
-    fileManagerDlg.goToFilePath(filePath, false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void goToWorkInBibManager(HDT_Work work)
-  {
-    runBibMgr(false);
-    bibManagerDlg.goToWork(work);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void goToRecord(HDT_Record record, boolean save)
   {
     if ((record == null) || (db.isLoaded() == false) || shuttingDown) return;
@@ -2652,7 +2540,7 @@ public final class MainCtrlr
 
       case hdtFolder :
 
-        goToFileInManager(((HDT_Folder)record).filePath());
+        FileManager.show(((HDT_Folder)record).filePath());
         return;
 
       case hdtWorkFile :
@@ -2662,7 +2550,7 @@ public final class MainCtrlr
           record = workFile.works.get(0);
         else
         {
-          goToFileInManager(workFile.filePath());
+          FileManager.show(workFile.filePath());
           return;
         }
 
@@ -3434,7 +3322,7 @@ public final class MainCtrlr
     }
 
     mwd.mergeInto(workBibData);
-    bibManagerDlg.refresh();
+    BibManager.refresh();
 
     goToRecord(work, false);
     update();

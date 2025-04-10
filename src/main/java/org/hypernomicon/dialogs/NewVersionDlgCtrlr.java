@@ -20,6 +20,7 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.DesktopUtil;
 
 import javafx.fxml.FXML;
@@ -28,7 +29,7 @@ import javafx.scene.control.CheckBox;
 
 //---------------------------------------------------------------------------
 
-public class NewVersionDlgCtrlr extends HyperDlg
+public class NewVersionDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

@@ -26,15 +26,12 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.records.HDT_Argument;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_Position;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -48,16 +45,12 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.*;
 import javafx.scene.web.WebView;
 
 //---------------------------------------------------------------------------
 
-public class NewArgDlgCtrlr extends HyperDlg
+public class NewArgDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

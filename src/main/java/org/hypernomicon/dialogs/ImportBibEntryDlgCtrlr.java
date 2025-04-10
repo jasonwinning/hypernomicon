@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -34,18 +36,14 @@ import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 
 import static java.nio.charset.StandardCharsets.*;
 
 //---------------------------------------------------------------------------
 
-public class ImportBibEntryDlgCtrlr extends HyperDlg
+public class ImportBibEntryDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

@@ -20,7 +20,7 @@ package org.hypernomicon.query.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.RecordType;
 
 import com.google.common.collect.Multimap;
@@ -32,7 +32,7 @@ import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
 
-public class SelectColumnsDlgCtrlr extends HyperDlg
+public class SelectColumnsDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

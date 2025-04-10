@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.controlsfx.control.BreadCrumbBar;
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.*;
 
 import javafx.beans.property.SimpleObjectProperty;
@@ -37,7 +37,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 
-public class ChooseParentDlgCtrlr extends HyperDlg
+public class ChooseParentDlgCtrlr extends ModalDialog
 {
   @FXML private BreadCrumbBar<TreeRow> bcbPath;
   @FXML private TreeTableView<TreeRow> ttv;

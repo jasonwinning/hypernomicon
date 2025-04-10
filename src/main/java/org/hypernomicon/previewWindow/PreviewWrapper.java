@@ -464,11 +464,11 @@ public class PreviewWrapper
 
     if (FilePath.isEmpty(filePath))
       clearPreview();
-    else if ((window.curSource() == src) && window.getStage().isShowing())
+    else if ((window.curSource() == src) && window.isShowing())
       refreshPreview(false, incrementNav);
     else
     {
-      if ((window.curSource() == src) && contentsWindow.getStage().isShowing())
+      if ((window.curSource() == src) && ContentsWindow.instance().isShowing())
         refreshControls();
 
       needsRefresh = !filePath.equals(filePathShowing);
@@ -648,7 +648,7 @@ public class PreviewWrapper
     if (initialized == false)
       initJS();
 
-    if (window.disablePreviewUpdating) return;
+    if (PreviewWindow.disablePreviewUpdating) return;
 
     boolean neededRefresh = needsRefresh;
     needsRefresh = false;
@@ -740,9 +740,9 @@ public class PreviewWrapper
       ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
 
     if (workFile == null)
-      contentsWindow.update(curPrevFile.filePath, pageNum);
+      ContentsWindow.instance().update(curPrevFile.filePath, pageNum);
     else
-      contentsWindow.update(workFile, pageNum);
+      ContentsWindow.instance().update(workFile, pageNum);
 
     return true;
   }

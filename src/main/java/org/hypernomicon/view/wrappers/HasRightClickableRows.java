@@ -22,19 +22,14 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.*;
+import java.util.function.*;
 
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
+import org.hypernomicon.previewWindow.PreviewWindow;
 
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.*;
 
 //---------------------------------------------------------------------------
 
@@ -184,22 +179,12 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
     addContextMenuItem("Launch work", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
     addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canPreview,
-                       work ->
-                       {
-                         PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, work);
-                         ui.openPreviewWindow(src);
-                       });
+                       work -> PreviewWindow.show(ui.determinePreviewContext(), work));
 
     addContextMenuItem("Launch", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty, workFile -> launchFile(workFile.filePath()));
 
     addContextMenuItem("Show in Preview Window", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
-                       workFile ->
-                       {
-                         PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, workFile);
-                         ui.openPreviewWindow(src);
-                       });
+                       workFile -> PreviewWindow.show(ui.determinePreviewContext(), workFile));
 
     addContextMenuItem("Launch file", HDT_MiscFile.class, HDT_MiscFile::pathNotEmpty,
                        miscFile ->
@@ -209,21 +194,16 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
                        });
 
     addContextMenuItem("Show in Preview Window", HDT_MiscFile.class, HDT_MiscFile::pathNotEmpty,
-                       miscFile ->
-                       {
-                         PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, miscFile);
-                         ui.openPreviewWindow(src);
-                       });
+                       miscFile -> PreviewWindow.show(ui.determinePreviewContext(), miscFile));
 
     addContextMenuItem("Show in File Manager", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
-                       workFile -> ui.goToFileInManager(workFile.filePath()));
+                       workFile -> FileManager.show(workFile.filePath()));
 
     addContextMenuItem("Show in File Manager", HDT_MiscFile.class, HDT_MiscFile::pathNotEmpty,
-                       miscFile -> ui.goToFileInManager(miscFile.filePath()));
+                       miscFile -> FileManager.show(miscFile.filePath()));
 
     addContextMenuItem("Show in File Manager", HDT_Folder.class, HDT_Folder::pathNotEmpty,
-                       folder -> ui.goToFileInManager(folder.filePath()));
+                       folder -> FileManager.show(folder.filePath()));
 
     addContextMenuItem("Show in system explorer", HDT_MiscFile.class, HDT_MiscFile::pathNotEmpty,
                        miscFile -> highlightFileInExplorer(miscFile.filePath()));
@@ -235,13 +215,13 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
                        folder -> highlightFileInExplorer(folder.filePath()));
 
     addContextMenuItem("Show folder in File Manager", HDT_Note.class, HDT_Note::pathNotEmpty,
-                       note -> ui.goToFileInManager(note.filePath()));
+                       note -> FileManager.show(note.filePath()));
 
     addContextMenuItem("Show folder in system explorer", HDT_Note.class, HDT_Note::pathNotEmpty,
                        note -> highlightFileInExplorer(note.filePath()));
 
     addContextMenuItem("Show nearest note ancestor's folder in File Manager", HDT_Note.class, note -> (note.pathNotEmpty() == false) && (note.getAncestorWithFolder() != null),
-                       note -> ui.goToFileInManager(note.getAncestorWithFolder().filePath()));
+                       note -> FileManager.show(note.getAncestorWithFolder().filePath()));
 
     addContextMenuItem("Show nearest note ancestor's folder in system explorer", HDT_Note.class, note -> (note.pathNotEmpty() == false) && (note.getAncestorWithFolder() != null),
                        note -> highlightFileInExplorer(note.getAncestorWithFolder().filePath()));

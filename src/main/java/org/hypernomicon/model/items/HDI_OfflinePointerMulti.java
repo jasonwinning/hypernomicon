@@ -33,17 +33,27 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   final List<Integer> objIDs = new ArrayList<>();
   private final RecordType objType;
   final Map<Integer, Map<Tag, HDI_OfflineBase>> objIDtoMaps = new LinkedHashMap<>();
+
+//---------------------------------------------------------------------------
 
   public HDI_OfflinePointerMulti(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
     objType = db.getObjType(schema.relType());
   }
+
+//---------------------------------------------------------------------------
 
   public List<Integer> getObjIDs() { return Collections.unmodifiableList(objIDs); }
 

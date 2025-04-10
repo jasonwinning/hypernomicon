@@ -28,6 +28,7 @@ import org.hypernomicon.App;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.Highlighter;
 import org.hypernomicon.view.mainText.MainTextUtil;
@@ -372,7 +373,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
             case hdtWork : case hdtMiscFile :
 
-              previewWindow.setPreview(pvsTreeTab, (HDT_RecordWithPath)record);
+              PreviewWindow.setPreview(pvsTreeTab, (HDT_RecordWithPath)record);
               clearPreview = false;
               break;
 
@@ -388,7 +389,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         webView.getEngine().loadContent("");
 
       if (clearPreview)
-        previewWindow.clearPreview(pvsTreeTab);
+        PreviewWindow.clearPreview(pvsTreeTab);
     });
 
     scaleNodeForDPI(treePane);

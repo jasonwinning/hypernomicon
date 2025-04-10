@@ -26,23 +26,21 @@ import javafx.scene.control.ProgressBar;
 import static org.hypernomicon.App.*;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.dialogs.base.ModalDialog;
 
-public final class ProgressDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public final class ProgressDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private boolean ownThread = true;
   private long lastPercent = -200;
 
   @FXML private ProgressBar progressBar;
   @FXML private Label lblTask, lblPercent;
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static State performTask(HyperTask task)
-  {
-    new ProgressDlgCtrlr(task).showModal();
-    return task.getState();
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -91,9 +89,17 @@ public final class ProgressDlgCtrlr extends HyperDlg
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   @Override protected boolean isValid() { return true; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static State performTask(HyperTask task)
+  {
+    new ProgressDlgCtrlr(task).showModal();
+    return task.getState();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

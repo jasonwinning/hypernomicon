@@ -25,12 +25,7 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.FilenameUtils;
@@ -39,16 +34,14 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.text.PDFTextStripper;
+
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.filePath.FilePath;
 
-import com.adobe.internal.xmp.XMPException;
-import com.adobe.internal.xmp.XMPIterator;
-import com.adobe.internal.xmp.XMPMeta;
-import com.adobe.internal.xmp.XMPMetaFactory;
+import com.adobe.internal.xmp.*;
 import com.adobe.internal.xmp.properties.XMPPropertyInfo;
 
 //---------------------------------------------------------------------------

@@ -49,6 +49,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import java.io.IOException;
 
 import org.hypernomicon.dialogs.FileDlgCtrlr;
+import org.hypernomicon.fileManager.FileManager;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -98,7 +99,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     tfFileName.setEditable(false);
 
     addShowMenuItem("Show in System Explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
-    addShowMenuItem("Show in File Manager"   , event -> { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.filePath()); });
+    addShowMenuItem("Show in File Manager"   , event -> { if (tfFileName.getText().length() > 0) FileManager.show(curMiscFile.filePath()); });
     addShowMenuItem("Copy Path to Clipboard" , event -> { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
 
     addShowMenuItem("Unassign File", event ->

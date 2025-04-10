@@ -22,6 +22,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -33,7 +34,7 @@ import javafx.scene.control.TableView;
 
 //---------------------------------------------------------------------------
 
-public class ObjectOrderDlgCtrlr extends HyperDlg
+public class ObjectOrderDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

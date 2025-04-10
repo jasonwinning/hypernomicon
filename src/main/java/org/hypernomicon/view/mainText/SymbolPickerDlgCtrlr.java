@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.mainText;
 
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.view.mainText.CharacterGrid.Symbol;
 import org.jsoup.parser.Parser;
 
@@ -34,18 +34,14 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.scene.web.WebEngine;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 
-public final class SymbolPickerDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public final class SymbolPickerDlgCtrlr extends NonmodalWindow
 {
 
 //---------------------------------------------------------------------------
@@ -60,44 +56,23 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
   private final CharacterGrid charGrid;
   private static SymbolPickerDlgCtrlr instance = null;
   private final ImmutableList<Symbol> chars8851, symbols8851, math, greek, misc;
-  private boolean programmaticFontChange = false;
+  private boolean programmaticFontChange = false, programmaticChange = false;
 
   private static final int ROW_COUNT = 8, COL_COUNT = 32;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  public static void show()
-  {
-    if (instance == null)
-      instance = new SymbolPickerDlgCtrlr();
+  public static void close(boolean exitingApp) { NonmodalWindow.close(instance, exitingApp); }
 
-    if (instance.getStage().isShowing())
-    {
-      ui.windows.focusStage(instance.getStage());
-      return;
-    }
-
-    instance.showNonmodal();
-  }
+  @Override protected void getDividerPositions() { }
+  @Override protected void setDividerPositions() { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
-  public static void close()
-  {
-    if ((instance != null) && instance.getStage().isShowing())
-      instance.getStage().close();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean programmaticChange = false;
 
   private SymbolPickerDlgCtrlr()
   {
-    super("view/mainText/SymbolPickerDlg", "Symbol", false, StageStyle.DECORATED, Modality.NONE);
+    super("view/mainText/SymbolPickerDlg", "Symbol");
 
     bottomRowSelected(false);
 
@@ -295,6 +270,26 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
     cbFont.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> charGrid.setFont(newValue, programmaticFontChange));
 
     btnInsert.setOnAction(event -> insertClick());
+
+    btnCancel.setOnAction(event -> close(false));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void show()
+  {
+    if (instance == null)
+    {
+      instance = new SymbolPickerDlgCtrlr();
+    }
+    else if (instance.getStage().isShowing())
+    {
+      ui.windows.focusStage(instance.getStage());
+      return;
+    }
+
+    instance.showNonmodal();
   }
 
 //---------------------------------------------------------------------------
@@ -349,14 +344,6 @@ public final class SymbolPickerDlgCtrlr extends HyperDlg
       text = tfHTML.getText();
 
     engine.executeScript("insertHtmlAtCursor('" + text + "')");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean isValid()
-  {
-    return true;
   }
 
 //---------------------------------------------------------------------------

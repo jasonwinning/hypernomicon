@@ -35,9 +35,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.bib.data.PDFBibData;
-import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.query.Query.WorkQuery;
 

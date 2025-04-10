@@ -30,13 +30,16 @@ import org.hypernomicon.model.relations.ObjectGroup;
 
 public final class Author implements Cloneable, Comparable<Author>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HDT_Person person;
   private final HDT_Work work;
   private final PersonName name, nameEngChar;
   private final boolean isEditor, isTrans;
   private final Ternary inFileName;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public Author(HDT_Work work, HDT_Person person)
@@ -48,7 +51,6 @@ public final class Author implements Cloneable, Comparable<Author>
   public Author(HDT_Person person)
   { this(person.works.isEmpty() ? null : person.works.get(0), person, null, false, false, Ternary.Unset); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private Author(HDT_Work work, HDT_Person person, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
@@ -62,7 +64,6 @@ public final class Author implements Cloneable, Comparable<Author>
     this.inFileName = inFileName;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public PersonName getName()                     { return getName(false); }

@@ -33,19 +33,13 @@ import javafx.concurrent.Worker.State;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.*;
@@ -278,7 +272,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     if (db.isLoaded() == false) return;
 
     if (inFileMgr)
-      ui.goToFileInManager(db.resultsPath());
+      FileManager.show(db.resultsPath());
     else
       launchFile(db.resultsPath());
   }
@@ -493,7 +487,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       FileUtils.cleanDirectory(db.resultsPath().toFile());
 
-      fileManagerDlg.pruneAndRefresh();
+      FileManager.pruneAndRefresh();
     }
     catch (IOException e) { errorPopup("One or more files were not deleted. Reason: " + getThrowableMessage(e)); }
 

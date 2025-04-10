@@ -26,6 +26,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import java.util.List;
 import java.util.function.Function;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.OmniFinder;
@@ -40,8 +41,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableView;
 import javafx.scene.text.Text;
 
-public class RecordSelectDlgCtrlr extends HyperDlg
+//---------------------------------------------------------------------------
+
+public class RecordSelectDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private TableView<HyperTableRow> tvFind;
 
   private final OmniFinder omniFinder;
@@ -49,7 +56,6 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 
   public <HDT_T extends HDT_Record> HDT_T getRecord() { return htFind.selectedRecord(); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public RecordSelectDlgCtrlr(Populator populator, List<HyperTableCell> list, String queryStr)

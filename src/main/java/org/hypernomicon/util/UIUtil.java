@@ -281,15 +281,15 @@ public final class UIUtil
     if (Environment.isMac() == false) stage.setMaximized(false); // On Mac, this makes the window disappear
 
     stage.setFullScreen(false);
-    stage.setIconified(false);
-
-    stage.setX(Math.max(stage.getX(), 0.0));
-    stage.setY(Math.max(stage.getY(), 0.0));
+    stage.setIconified (false);
 
     if (stage.getWidth() < 250) stage.setWidth(defaultW);
     if (stage.getHeight() < 75) stage.setHeight(defaultH);
 
-    double minX = Double.MAX_VALUE, minY = minX, maxX = Double.NEGATIVE_INFINITY, maxY = maxX;
+    double minX = Double.POSITIVE_INFINITY,
+           minY = Double.POSITIVE_INFINITY,
+           maxX = Double.NEGATIVE_INFINITY,
+           maxY = Double.NEGATIVE_INFINITY;
 
     for (Screen screen : Screen.getScreens())
     {
@@ -301,10 +301,10 @@ public final class UIUtil
       maxY = Math.max(maxY, bounds.getMaxY());
     }
 
-    stage.setX     (Math.min(stage.getX     (), maxX - 50.0 ));
-    stage.setY     (Math.min(stage.getY     (), maxY - 50.0 ));
-    stage.setWidth (Math.min(stage.getWidth (), maxX - 100.0));
-    stage.setHeight(Math.min(stage.getHeight(), maxY - 100.0));
+    stage.setX     (Math.max(minX             , Math.min(stage.getX(), maxX - 50.0)));
+    stage.setY     (Math.max(minY             , Math.min(stage.getY(), maxY - 50.0)));
+    stage.setWidth (Math.min(stage.getWidth (), (maxX - minX) - 100.0));
+    stage.setHeight(Math.min(stage.getHeight(), (maxY - minY) - 100.0));
   }
 
 //---------------------------------------------------------------------------
@@ -322,10 +322,9 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public
-  static <T> ListView<T> getCBListView(ComboBox<T> cb)
+  public static <T> ListView<T> getCBListView(ComboBox<T> cb)
   {
-    return nullSwitch((ComboBoxListViewSkin<T>)cb.getSkin(), null, skin -> (ListView<T>) skin.getPopupContent());
+    return nullSwitch((ComboBoxListViewSkin<T>) cb.getSkin(), null, skin -> (ListView<T>) skin.getPopupContent());
   }
 
 //---------------------------------------------------------------------------

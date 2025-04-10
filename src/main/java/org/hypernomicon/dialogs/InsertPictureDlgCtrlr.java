@@ -33,6 +33,7 @@ import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_MiscFile;
@@ -56,7 +57,7 @@ import javafx.stage.FileChooser;
 
 //---------------------------------------------------------------------------
 
-public class InsertPictureDlgCtrlr extends HyperDlg
+public class InsertPictureDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------

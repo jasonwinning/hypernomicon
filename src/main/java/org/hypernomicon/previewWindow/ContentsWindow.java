@@ -29,12 +29,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.Const.TablePrefKey;
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.model.items.BibliographicDate;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.BibDateHTC;
@@ -48,14 +47,20 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableView;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 
-public class ContentsWindow extends HyperDlg
+//---------------------------------------------------------------------------
+
+public final class ContentsWindow extends NonmodalWindow
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private TableView<HyperTableRow> tvContents;
 
   private static final String dialogTitle = "Contents";
+
+  private static ContentsWindow instance;
 
   private final HyperTable htContents;
 
@@ -63,14 +68,27 @@ public class ContentsWindow extends HyperDlg
   private FilePath curFilePath;
   private boolean mouseAlreadyHere = false;
 
-  @Override protected boolean isValid() { return true; }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ContentsWindow()
+  @Override protected void getDividerPositions() { }
+  @Override protected void setDividerPositions() { }
+
+//---------------------------------------------------------------------------
+
+  public static ContentsWindow instance()
   {
-    super("previewWindow/ContentsWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    if (instance == null) instance = new ContentsWindow();
+
+    return instance;
+  }
+
+  public static void close(boolean exitingApp) { NonmodalWindow.close(instance, exitingApp); }
+
+//---------------------------------------------------------------------------
+
+  private ContentsWindow()
+  {
+    super("previewWindow/ContentsWindow", dialogTitle, PrefKey.CONTENTS_WINDOW_X, PrefKey.CONTENTS_WINDOW_Y, PrefKey.CONTENTS_WINDOW_WIDTH, PrefKey.CONTENTS_WINDOW_HEIGHT);
 
     htContents = new HyperTable(tvContents, 2, false, TablePrefKey.CONTENTS_DLG, this);
 
@@ -81,7 +99,7 @@ public class ContentsWindow extends HyperDlg
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
-      if (previewWindow.disablePreviewUpdating) return;
+      if (PreviewWindow.disablePreviewUpdating) return;
 
       int pageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
 
@@ -90,15 +108,15 @@ public class ContentsWindow extends HyperDlg
 
     htContents.addCustomActionCol(4, "Go", (row, colNdx) ->
     {
-      previewWindow.goToPage(parseInt(row.getText(4), -1));
-      ui.openPreviewWindow(null);
+      PreviewWindow.instance().goToPage(parseInt(row.getText(4), -1));
+      PreviewWindow.show(null);
 
     }).setTooltip(ButtonAction.baCustom, "Jump to start page in preview window");
 
     htContents.addCustomActionCol(4, "Set", (row, colNdx) ->
     {
       HDT_Work work = row.getRecord();
-      int num = previewWindow.curPage();
+      int num = PreviewWindow.instance().curPage();
 
       if (num < 0) num = 1;
 
@@ -109,7 +127,7 @@ public class ContentsWindow extends HyperDlg
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
-      if (previewWindow.disablePreviewUpdating) return;
+      if (PreviewWindow.disablePreviewUpdating) return;
 
       int pageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
 
@@ -118,41 +136,34 @@ public class ContentsWindow extends HyperDlg
 
     htContents.addCustomActionCol(7, "Go", (row, colNdx) ->
     {
-      previewWindow.goToPage(parseInt(row.getText(7), -1));
-      ui.openPreviewWindow(null);
+      PreviewWindow.instance().goToPage(parseInt(row.getText(7), -1));
+      PreviewWindow.show(null);
 
     }).setTooltip(ButtonAction.baCustom, "Jump to end page in preview window");
 
     htContents.addCustomActionCol(7, "Set", (row, colNdx) ->
     {
       HDT_Work work = row.getRecord();
-      int num = previewWindow.curPage();
+      int num = PreviewWindow.instance().curPage();
 
-      if (num < 0) num = previewWindow.getMax();
+      if (num < 0) num = PreviewWindow.instance().getMax();
 
       row.setCellValue(7, work, String.valueOf(num));
       setPageNum(work, num, false);
 
     }).setTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as end page");
 
-    onShown = () -> ui.windows.push(dialogStage);
-
     dialogStage.getScene().setOnMouseEntered(event -> mouseAlreadyHere = true);  // Don't refresh when user clicks a button while dialog is out of focus
     dialogStage.getScene().setOnMouseExited (event -> mouseAlreadyHere = false);
 
     dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (ui.windows.getCyclingFocus()) return;
-
-      if (Boolean.TRUE.equals(newValue) == false) return;
+      if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
+        return;
 
       if (mouseAlreadyHere == false)
-        update(previewWindow.curPage(), false);
-
-      ui.windows.push(dialogStage);
+        update(PreviewWindow.instance().curPage(), false);
     });
-
-    dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
   }
 
 //---------------------------------------------------------------------------
@@ -170,7 +181,7 @@ public class ContentsWindow extends HyperDlg
         work.setEndPageNum(curWorkFile, num);
     }
 
-    previewWindow.updatePageNumber(work, curWorkFile != null ? curWorkFile.filePath() : curFilePath, num, isStart);
+    PreviewWindow.instance().updatePageNumber(work, curWorkFile != null ? curWorkFile.filePath() : curFilePath, num, isStart);
   }
 
 //---------------------------------------------------------------------------
@@ -306,11 +317,31 @@ public class ContentsWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void clear()
+  static void clear()
+  {
+    if (instance == null) return;
+
+    instance.doClear();
+  }
+
+  private void doClear()
   {
     curWorkFile = null;
     curFilePath = null;
     clearDisplay();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void show()
+  {
+    if (instance == null) return;
+
+    if (instance.getStage().isShowing())
+      ui.windows.focusStage(instance.getStage());
+    else
+      instance.showNonmodal();
   }
 
 //---------------------------------------------------------------------------

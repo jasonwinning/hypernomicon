@@ -19,6 +19,7 @@ package org.hypernomicon.dialogs;
 
 import java.util.Set;
 
+import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Investigation;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -38,9 +39,10 @@ import javafx.scene.control.cell.CheckBoxListCell;
 
 //---------------------------------------------------------------------------
 
-public class InvestigationsDlgCtrlr extends HyperDlg
+public class InvestigationsDlgCtrlr extends ModalDialog
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static final class InvestigationSetting
@@ -63,16 +65,17 @@ public class InvestigationsDlgCtrlr extends HyperDlg
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private TextField tfNew;
   @FXML private CheckBox chkNew;
   @FXML public ListView<InvestigationSetting> listView;
 
   @Override protected boolean isValid() { return true; }
-  public String newName()               { return tfNew.getText(); }
-  public boolean hasNew()               { return (tfNew.getText().isBlank() == false) && chkNew.isSelected(); }
 
-//---------------------------------------------------------------------------
+  public String newName() { return tfNew.getText(); }
+  public boolean hasNew() { return (tfNew.getText().isBlank() == false) && chkNew.isSelected(); }
+
 //---------------------------------------------------------------------------
 
   public InvestigationsDlgCtrlr(HDT_Work work, Iterable<InvestigationView> invViews, HDT_Person curPerson)

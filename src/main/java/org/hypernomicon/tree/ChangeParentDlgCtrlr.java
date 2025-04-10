@@ -20,14 +20,14 @@ package org.hypernomicon.tree;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 
-import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.base.ModalDialog;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
-public class ChangeParentDlgCtrlr extends HyperDlg
+public class ChangeParentDlgCtrlr extends ModalDialog
 {
   @FXML private CheckBox chkDetach1, chkDetach2;
   @FXML private Label label1, label2, label3;
