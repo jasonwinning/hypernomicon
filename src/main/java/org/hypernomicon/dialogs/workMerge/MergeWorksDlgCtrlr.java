@@ -136,7 +136,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
 
     if (cantCancel)
     {
-      dialogStage.setOnCloseRequest(Event::consume);
+      stage.setOnCloseRequest(Event::consume);
       hBox.getChildren().remove(btnCancel);
     }
 
@@ -144,7 +144,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
     this.creatingNewWork = creatingNewWork;
 
     apPreview = new AnchorPane();
-    mdp = WorkDlgCtrlr.addPreview(stagePane, apMain, apPreview, btnPreview);
+    mdp = WorkDlgCtrlr.addPreview(rootPane, apMain, apPreview, btnPreview);
 
     bibDataList = newBibDataStream.filter(Objects::nonNull).toList();
 
@@ -162,7 +162,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
     {
       if ((Boolean.TRUE.equals(nv) == false) || previewInitialized || jxBrowserDisabled) return;
 
-      WorkDlgCtrlr.accommodatePreview(dialogStage, apMain, mdp);
+      WorkDlgCtrlr.accommodatePreview(stage, apMain, mdp);
 
       jsWrapper = new PDFJSWrapper(apPreview);
 

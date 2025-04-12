@@ -78,7 +78,7 @@ public class SelectColumnsDlgCtrlr extends ModalDialog
            typeMargin = chkSecondType.getLayoutY() - chkFirstField.getLayoutY(),
            posY = chkFirstType.getLayoutY() - typeMargin;
 
-    btnOk.setOnAction(event -> getStage().close());
+    btnOk.setOnAction(event -> stage.close());
 
     innerPane.getChildren().removeAll(chkFirstType, chkFirstField, chkSecondType);
 

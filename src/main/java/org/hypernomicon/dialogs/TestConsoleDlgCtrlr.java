@@ -86,7 +86,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private void btnCloseDB()
   {
-    dialogStage.hide();
+    stage.hide();
 
     Platform.runLater(() ->
     {
@@ -102,7 +102,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private void btnWelcomeWindowClick()
   {
-    dialogStage.hide();
+    stage.hide();
 
     Platform.runLater(ui::showWelcomeWindow);
   }
@@ -184,7 +184,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     if (FilePath.isEmpty(transientDBFilePath)) return;
 
-    dialogStage.hide();
+    stage.hide();
 
     Platform.runLater(() ->
     {

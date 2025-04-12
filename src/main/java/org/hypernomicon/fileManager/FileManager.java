@@ -180,7 +180,7 @@ public final class FileManager extends NonmodalWindow
 
     onShown = FileManager::refresh;
 
-    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
+    stage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
         return;
@@ -188,7 +188,7 @@ public final class FileManager extends NonmodalWindow
       if (needRefresh) refresh();
     });
 
-    dialogStage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
+    stage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
     {
       if      (event.getButton() == MouseButton.BACK   ) Platform.runLater(this::userRequestsToGoBackward);
       else if (event.getButton() == MouseButton.FORWARD) Platform.runLater(this::userRequestsToGoForward );
@@ -200,7 +200,7 @@ public final class FileManager extends NonmodalWindow
     webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
-    Scene scene = dialogStage.getScene();
+    Scene scene = stage.getScene();
 
     scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
     (
@@ -251,7 +251,7 @@ public final class FileManager extends NonmodalWindow
 
       fileTable.update(folder, newValue);
       setCurrentFileRow(null, false);
-      getStage().setTitle(dialogTitle + " - " + folder.filePath());
+      stage.setTitle(dialogTitle + " - " + folder.filePath());
     });
 
     fileTV.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
@@ -1140,7 +1140,7 @@ public final class FileManager extends NonmodalWindow
 
   private void doRefresh()
   {
-    if (alreadyRefreshing || (dialogStage.isShowing() == false)) return;
+    if (alreadyRefreshing || (stage.isShowing() == false)) return;
     needRefresh = false;
     alreadyRefreshing = true;
 
@@ -1156,7 +1156,7 @@ public final class FileManager extends NonmodalWindow
     {
       fileTable.clear();
       recordTable.clear();
-      getStage().setTitle(dialogTitle);
+      stage.setTitle(dialogTitle);
       alreadyRefreshing = false;
       return;
     }
@@ -1169,7 +1169,7 @@ public final class FileManager extends NonmodalWindow
     if (FilePath.isEmpty(filePath))
       setCurrentFileRow(null, false);
 
-    getStage().setTitle(dialogTitle + " - " + curFolder.filePath());
+    stage.setTitle(dialogTitle + " - " + curFolder.filePath());
 
     fileTV.sort();
 
@@ -1471,7 +1471,7 @@ public final class FileManager extends NonmodalWindow
 
   public static boolean isFocused()
   {
-    return (instance != null) && instance.getStage().isShowing() && instance.getStage().isFocused();
+    return (instance != null) && instance.stage.isShowing() && instance.stage.isFocused();
   }
 
 //---------------------------------------------------------------------------
@@ -1490,17 +1490,8 @@ public final class FileManager extends NonmodalWindow
 
   public static void show()
   {
-    if (instance == null) return;
-
-    if (instance.getStage().isShowing())
-    {
-      ui.windows.focusStage(instance.getStage());
-      return;
-    }
-
-    if (ui.cantSaveRecord(false)) return;
-
-    instance.showNonmodal();
+    if (ui.cantSaveRecord(false) == false)
+     show(instance);
   }
 
 //---------------------------------------------------------------------------

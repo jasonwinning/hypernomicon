@@ -168,7 +168,7 @@ public class AboutDlgCtrlr extends ModalDialog
     else if (tab == tabAcknowledgements) webView.getEngine().loadContent(tabAcknowledgementsHtml);
     else
     {
-      dialogStage.close();
+      stage.close();
 
       Platform.runLater(() -> ui.showSearch(true, QueryType.qtReport, ReportEngine.QUERY_LICENSE_AND_NOTICE, null, null, null, ""));
     }

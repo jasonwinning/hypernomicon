@@ -48,6 +48,8 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implements ZoteroEntity
 {
 

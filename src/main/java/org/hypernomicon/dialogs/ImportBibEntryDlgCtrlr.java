@@ -156,7 +156,7 @@ public class ImportBibEntryDlgCtrlr extends ModalDialog
     if (isValid() == false) return;
 
     okClicked = true;
-    dialogStage.close();
+    stage.close();
   }
 
 //---------------------------------------------------------------------------

@@ -165,14 +165,14 @@ public class WorkDlgCtrlr extends ModalDialog
     dateCtrls = new DateControlsWrapper(tfYear, cbMonth, tfDay);
 
     apPreview = new AnchorPane();
-    mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
+    mdp = addPreview(rootPane, apMain, apPreview, btnPreview);
 
     mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
     {
       if (Boolean.TRUE.equals(nv) == false) return;
 
       if ((previewInitialized == false) && (jxBrowserDisabled == false))
-        accommodatePreview(dialogStage, apMain, mdp);
+        accommodatePreview(stage, apMain, mdp);
 
       updatePreview();
     });
@@ -643,17 +643,17 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void accommodatePreview(Stage dialogStage, AnchorPane apMain, MasterDetailPane mdp)
+  public static void accommodatePreview(Stage stage, AnchorPane apMain, MasterDetailPane mdp)
   {
-    List<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
+    List<Screen> screens = Screen.getScreensForRectangle(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
     double minWidth = screens.size() == 1 ? screens.get(0).getVisualBounds().getWidth() - 60.0 : 1600.0;
 
-    if (dialogStage.getWidth() < minWidth)
+    if (stage.getWidth() < minWidth)
     {
-      double diff = minWidth - dialogStage.getWidth();
-      dialogStage.setX(dialogStage.getX() - (diff / 2.0));
-      dialogStage.setWidth(minWidth);
-      ensureVisible(dialogStage, apMain.getPrefWidth(), apMain.getPrefHeight());
+      double diff = minWidth - stage.getWidth();
+      stage.setX(stage.getX() - (diff / 2.0));
+      stage.setWidth(minWidth);
+      ensureVisible(stage, apMain.getPrefWidth(), apMain.getPrefHeight());
     }
 
     mdp.setDividerPosition(0.55);

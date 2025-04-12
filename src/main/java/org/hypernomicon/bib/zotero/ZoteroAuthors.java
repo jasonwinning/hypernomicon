@@ -35,12 +35,20 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.authors.BibAuthor.AuthorType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 
+//---------------------------------------------------------------------------
+
 public class ZoteroAuthors extends BibAuthors
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final ImmutableTable<EntryType, String, AuthorType> creatorTypes = buildCreatorTypes();
 
   private final JsonArray creatorsArr;
   private final EntryType entryType;
+
+//---------------------------------------------------------------------------
 
   ZoteroAuthors(JsonArray creatorsArr, EntryType entryType)
   {
@@ -48,7 +56,6 @@ public class ZoteroAuthors extends BibAuthors
     this.entryType = entryType;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void clear()

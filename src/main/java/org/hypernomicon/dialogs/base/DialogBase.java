@@ -37,8 +37,8 @@ public abstract class DialogBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final Stage dialogStage;
-  protected final AnchorPane stagePane;
+  protected final Stage stage;
+  protected final AnchorPane rootPane;
 
   protected Runnable onShown, onHidden;
 
@@ -46,9 +46,8 @@ public abstract class DialogBase
 
 //---------------------------------------------------------------------------
 
-  protected final Stage getStage   () { return dialogStage; }
   public final boolean shownAlready() { return shownAlready; }
-  public final boolean isShowing   () { return (dialogStage != null) && dialogStage.isShowing(); }
+  public final boolean isShowing   () { return (stage != null) && stage.isShowing(); }
 
   double getInitHeight() { return -1; }
   double getInitWidth () { return -1; }
@@ -61,19 +60,19 @@ public abstract class DialogBase
     if (fullPath == false)
       loc = "dialogs/" + loc;
 
-    Stage tmpDialogStage = null;
-    AnchorPane tmpStagePane = null;
+    Stage tmpStage = null;
+    AnchorPane tmpRootPane = null;
 
     try
     {
       FXMLLoader loader = new FXMLLoader(App.class.getResource(loc + ".fxml"), null, null, klass -> this);
-      tmpStagePane = loader.load();
+      tmpRootPane = loader.load();
 
-      tmpDialogStage = new Stage();
-      tmpDialogStage.setTitle(title);
-      tmpDialogStage.initModality(modality);
-      tmpDialogStage.setResizable(resizable);
-      tmpDialogStage.initStyle(stageStyle);
+      tmpStage = new Stage();
+      tmpStage.setTitle(title);
+      tmpStage.initModality(modality);
+      tmpStage.setResizable(resizable);
+      tmpStage.initStyle(stageStyle);
 
       Window owner = null;
       if (modality != Modality.NONE)
@@ -84,16 +83,16 @@ public abstract class DialogBase
           owner = null;
       }
 
-      tmpDialogStage.initOwner(owner);
-      tmpDialogStage.getIcons().addAll(ui.getStage().getIcons());
-      Scene scene = new Scene(tmpStagePane);
-      tmpDialogStage.setScene(scene);
+      tmpStage.initOwner(owner);
+      tmpStage.getIcons().addAll(ui.getStage().getIcons());
+      Scene scene = new Scene(tmpRootPane);
+      tmpStage.setScene(scene);
 
-      if (tmpStagePane.getStyleClass().contains("SpecialUI") == false)
+      if (tmpRootPane.getStyleClass().contains("SpecialUI") == false)
         scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
-      tmpDialogStage.setOnShown (event -> doOnShown ());
-      tmpDialogStage.setOnHidden(event -> doOnHidden());
+      tmpStage.setOnShown (event -> doOnShown ());
+      tmpStage.setOnHidden(event -> doOnHidden());
     }
     catch (IOException e)
     {
@@ -101,8 +100,8 @@ public abstract class DialogBase
     }
     finally
     {
-      dialogStage = tmpDialogStage;
-      stagePane = tmpStagePane;
+      stage = tmpStage;
+      rootPane = tmpRootPane;
     }
   }
 
@@ -114,7 +113,7 @@ public abstract class DialogBase
     rescale();
 
     if (getInitHeight() <= 0)
-      dialogStage.centerOnScreen();
+      stage.centerOnScreen();
 
     doAdditionalOnShown();
 
@@ -130,46 +129,46 @@ public abstract class DialogBase
 
   private void rescale()
   {
-    if ((shownAlready == false) && (stagePane.getStyleClass().contains("SpecialUI") == false))
+    if ((shownAlready == false) && (rootPane.getStyleClass().contains("SpecialUI") == false))
     {
-      scaleNodeForDPI(stagePane);
-      setFontSize(stagePane);
+      scaleNodeForDPI(rootPane);
+      setFontSize(rootPane);
     }
 
-    double diff = dialogStage.getHeight() - stagePane.getHeight();
+    double diff = stage.getHeight() - rootPane.getHeight();
     if (diff == 0.0) diff = 30.0;
 
-    double val = stagePane.getMaxHeight();
+    double val = rootPane.getMaxHeight();
     if (val > 0)
-      dialogStage.setMaxHeight(val + diff);
+      stage.setMaxHeight(val + diff);
 
-    val = stagePane.getMinHeight();
+    val = rootPane.getMinHeight();
     if (val > 0)
-      dialogStage.setMinHeight(val + diff);
+      stage.setMinHeight(val + diff);
 
-    val = stagePane.getMinWidth();
+    val = rootPane.getMinWidth();
     if (val > 0)
-      dialogStage.setMinWidth(val + diff);
+      stage.setMinWidth(val + diff);
 
     if (shownAlready) return;
 
     if (getInitWidth() <= 0)
     {
-      val = stagePane.getPrefWidth();
+      val = rootPane.getPrefWidth();
       if (val > 0)
-        dialogStage.setWidth(val + diff);
+        stage.setWidth(val + diff);
     }
     else
-      dialogStage.setWidth(getInitWidth());
+      stage.setWidth(getInitWidth());
 
     if (getInitHeight() <= 0)
     {
-      val = stagePane.getPrefHeight();
+      val = rootPane.getPrefHeight();
       if (val > 0)
-        dialogStage.setHeight(val + diff);
+        stage.setHeight(val + diff);
     }
     else
-      dialogStage.setHeight(getInitHeight());
+      stage.setHeight(getInitHeight());
   }
 
 //---------------------------------------------------------------------------

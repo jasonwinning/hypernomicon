@@ -63,7 +63,7 @@ public class HelpDlgCtrlr extends ModalDialog
       onShown = () ->
       {
         errorPopup("Unable to show help content: " + getThrowableMessage(e));
-        Platform.runLater(dialogStage::close);
+        Platform.runLater(stage::close);
       };
     }
   }

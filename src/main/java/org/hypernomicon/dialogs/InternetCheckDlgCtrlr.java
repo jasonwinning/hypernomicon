@@ -62,7 +62,7 @@ public final class InternetCheckDlgCtrlr extends ModalDialog
       catch (UnknownHostException e) { noOp();            }
       catch (IOException          e) { lastException = e; }
 
-      runInFXThread(() -> getStage().close());
+      runInFXThread(() -> stage.close());
     }};
 
     onShown = task::startWithNewThread;

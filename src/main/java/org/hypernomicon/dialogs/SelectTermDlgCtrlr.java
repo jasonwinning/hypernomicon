@@ -280,7 +280,7 @@ public final class SelectTermDlgCtrlr extends ModalDialog
 
     okClicked = true;
     creatingNewTerm = true;
-    dialogStage.close();
+    stage.close();
   }
 
 //---------------------------------------------------------------------------

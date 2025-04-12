@@ -284,7 +284,7 @@ public final class BibManager extends NonmodalWindow
 
 //---------------------------------------------------------------------------
 
-    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
+    stage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
         return;
@@ -298,8 +298,8 @@ public final class BibManager extends NonmodalWindow
     {
       setLibrary(db.getBibLibrary());
 
-      if ((db.bibLibraryIsLinked() == false) && getStage().isShowing())
-        getStage().close();
+      if ((db.bibLibraryIsLinked() == false) && stage.isShowing())
+        stage.close();
 
       ui.updateBibImportMenus();
 
@@ -336,7 +336,7 @@ public final class BibManager extends NonmodalWindow
     });
 
     KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
-    dialogStage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
+    stage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
     {
       if (keyComb.match(event))
         safeFocus(ctf);
@@ -938,15 +938,10 @@ public final class BibManager extends NonmodalWindow
   {
     if (instance == null) return;
 
-    if (instance.getStage().isShowing())
-    {
+    if (instance.stage.isShowing())
       instance.doRefresh();
-      ui.windows.focusStage(instance.getStage());
-    }
-    else
-    {
-      instance.showNonmodal();
-    }
+
+    show(instance);
 
     if (focusOnSearchField) Platform.runLater(() -> safeFocus(instance.searchField));
   }

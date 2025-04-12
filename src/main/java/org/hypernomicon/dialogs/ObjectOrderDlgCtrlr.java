@@ -82,7 +82,7 @@ public class ObjectOrderDlgCtrlr extends ModalDialog
 
     HyperTable.preventMovingColumns(tv, tableCols);
 
-    getStage().setOnHidden(event -> tv.itemsProperty().unbindBidirectional(ht.getTV().itemsProperty()));
+    stage.setOnHidden(event -> tv.itemsProperty().unbindBidirectional(ht.getTV().itemsProperty()));
 
     btnMoveUp  .setOnAction(event -> moveUp  ());
     btnMoveDown.setOnAction(event -> moveDown());

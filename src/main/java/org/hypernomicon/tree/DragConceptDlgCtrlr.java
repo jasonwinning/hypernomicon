@@ -101,7 +101,7 @@ public class DragConceptDlgCtrlr extends ModalDialog
     finally
     {
       okClicked = true;
-      dialogStage.close();
+      stage.close();
     }
   }
 
@@ -133,7 +133,7 @@ public class DragConceptDlgCtrlr extends ModalDialog
     finally
     {
       okClicked = true;
-      dialogStage.close();
+      stage.close();
     }
   }
 

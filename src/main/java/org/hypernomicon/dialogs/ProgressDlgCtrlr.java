@@ -68,7 +68,7 @@ public final class ProgressDlgCtrlr extends ModalDialog
       lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + Math.round(newValue.doubleValue() * 100.0) + " %");
     });
 
-    task.runWhenFinalStateSet(state -> getStage().close());
+    task.runWhenFinalStateSet(state -> stage.close());
 
     onShown = () -> Platform.runLater(() ->       // This needs to be done in a runLater because the task may have been started so recently that
     {                                             // the task's running property has not yet been set to true. It gets set to true by a runnable
@@ -78,7 +78,7 @@ public final class ProgressDlgCtrlr extends ModalDialog
         task.startWithNewThread();
     });
 
-    dialogStage.setOnHiding(event ->
+    stage.setOnHiding(event ->
     {
       if (task.isRunning() && ownThread)
         task.cancelAndWait();

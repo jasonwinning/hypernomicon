@@ -70,14 +70,14 @@ public final class SyncBibDlgCtrlr extends ModalDialog
 
           BibManager.instance().rebuildCollectionTree();
 
-          getStage().close();
+          stage.close();
         }
       });
 
       syncTask.startWithNewThreadAsDaemon();
     };
 
-    dialogStage.setOnHiding(event -> db.getBibLibrary().stop());
+    stage.setOnHiding(event -> db.getBibLibrary().stop());
   }
 
 //---------------------------------------------------------------------------

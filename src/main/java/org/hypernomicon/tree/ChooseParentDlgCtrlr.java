@@ -106,7 +106,7 @@ public class ChooseParentDlgCtrlr extends ModalDialog
     }
 
     title = title + " record";
-    getStage().setTitle(title);
+    stage.setTitle(title);
   }
 
 //---------------------------------------------------------------------------

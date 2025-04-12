@@ -980,7 +980,7 @@ public class PictureDlgCtrlr extends ModalDialog
             rbCurrent.setSelected(true);
 
             okClicked = true;
-            dialogStage.close();
+            stage.close();
 
           }, this::exceptionHappened);
 

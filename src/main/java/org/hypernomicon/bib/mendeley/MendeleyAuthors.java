@@ -29,10 +29,18 @@ import org.hypernomicon.util.json.JsonObj;
 
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 class MendeleyAuthors extends BibAuthors
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final JsonObj jsonObj;
   private final EntryType entryType;
+
+//---------------------------------------------------------------------------
 
   MendeleyAuthors(JsonObj jsonObj, EntryType entryType)
   {
@@ -40,7 +48,6 @@ class MendeleyAuthors extends BibAuthors
     this.entryType = entryType;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void clear()

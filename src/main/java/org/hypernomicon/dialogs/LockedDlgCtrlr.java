@@ -242,7 +242,7 @@ public class LockedDlgCtrlr extends ModalDialog
       okClicked = true;
     }
 
-    dialogStage.close();
+    stage.close();
   }
 
 //---------------------------------------------------------------------------

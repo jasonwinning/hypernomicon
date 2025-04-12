@@ -41,15 +41,12 @@ import org.hypernomicon.view.wrappers.ClickHoldButton;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Rectangle2D;
 import javafx.geometry.Side;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
 
 //---------------------------------------------------------------------------
 
@@ -314,31 +311,15 @@ public final class PreviewWindow extends NonmodalWindow
 
     tfPreviewPage.setOnAction(event -> curWrapper().updatePage(curWrapper().getPageByLabel(tfPreviewPage.getText())));
 
-    onShown = () ->
-    {
-      Stage stage = getStage();
+    onShown = () -> runDelayedInFXThread(1, 300, () -> curWrapper().activate());
 
-      if (stage.getX() < 5) stage.setX(5);
-      if (stage.getY() < 5) stage.setY(5);
-
-      Rectangle2D bounds = Screen.getPrimary().getBounds();
-
-      if (stage.getWidth() >= bounds.getMaxX() - 100)
-        stage.setWidth(bounds.getMaxX() - 100);
-
-      if (stage.getHeight() >= bounds.getMaxY() - 100)
-        stage.setHeight(bounds.getMaxY() - 100);
-
-      runDelayedInFXThread(1, 300, () -> curWrapper().activate());
-    };
-
-    dialogStage.setOnHiding(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToHide));
+    stage.setOnHiding(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToHide));
 
     onHidden = () -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow);
 
     btnContents.setOnAction(event -> ContentsWindow.show());
 
-    dialogStage.addEventFilter(ScrollEvent.SCROLL, event ->
+    stage.addEventFilter(ScrollEvent.SCROLL, event ->
     {
       double deltaY = event.getDeltaY();
       if ((event.isControlDown() == false) || (deltaY == 0)) return;
@@ -347,7 +328,7 @@ public final class PreviewWindow extends NonmodalWindow
         event.consume();
     });
 
-    dialogStage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    stage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
       if (shortcutKeyIsDown(event))
       {
@@ -560,7 +541,7 @@ public final class PreviewWindow extends NonmodalWindow
 
   void clearControls()
   {
-    dialogStage.setTitle(dialogTitle);
+    stage.setTitle(dialogTitle);
     tfPath.setText("");
     setToolTip(tfPath, "");
     paneType.getChildren().clear();
@@ -678,7 +659,7 @@ public final class PreviewWindow extends NonmodalWindow
 
     tfPath.setText(filePath.toString());
     setToolTip(tfPath, filePath.toString());
-    dialogStage.setTitle(dialogTitle + " - " + filePath.getNameOnly());
+    stage.setTitle(dialogTitle + " - " + filePath.getNameOnly());
 
     btnPreviewPrev.setDisable(pageNum == 1);
     btnPreviewNext.setDisable(pageNum == numPages);
@@ -761,6 +742,11 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  static void show()
+  {
+    show((PreviewSource) null);
+  }
+
   public static void show(PreviewSource src)
   {
     if ((instance == null) || jxBrowserDisabled) return;
@@ -768,10 +754,7 @@ public final class PreviewWindow extends NonmodalWindow
     if (src != null)
       instance.switchTo(src);
 
-    if (instance.getStage().isShowing())
-      ui.windows.focusStage(instance.getStage());
-    else
-      instance.showNonmodal();
+    show(instance);
   }
 
 //---------------------------------------------------------------------------

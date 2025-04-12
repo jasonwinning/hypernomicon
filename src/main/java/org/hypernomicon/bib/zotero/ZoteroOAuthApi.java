@@ -24,8 +24,14 @@ import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.model.ParameterList;
 import com.github.scribejava.core.oauth.OAuth10aService;
 
+//---------------------------------------------------------------------------
+
 public class ZoteroOAuthApi extends DefaultApi10a
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static OAuth10aService service = null;
 
   @Override public String getAccessTokenEndpoint()        { return "https://www.zotero.org/oauth/access"; }

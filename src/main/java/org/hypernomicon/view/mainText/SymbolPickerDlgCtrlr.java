@@ -280,16 +280,9 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
   public static void show()
   {
     if (instance == null)
-    {
       instance = new SymbolPickerDlgCtrlr();
-    }
-    else if (instance.getStage().isShowing())
-    {
-      ui.windows.focusStage(instance.getStage());
-      return;
-    }
 
-    instance.showNonmodal();
+    show(instance);
   }
 
 //---------------------------------------------------------------------------

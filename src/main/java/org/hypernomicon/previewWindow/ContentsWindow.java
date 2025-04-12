@@ -109,7 +109,7 @@ public final class ContentsWindow extends NonmodalWindow
     htContents.addCustomActionCol(4, "Go", (row, colNdx) ->
     {
       PreviewWindow.instance().goToPage(parseInt(row.getText(4), -1));
-      PreviewWindow.show(null);
+      PreviewWindow.show();
 
     }).setTooltip(ButtonAction.baCustom, "Jump to start page in preview window");
 
@@ -137,7 +137,7 @@ public final class ContentsWindow extends NonmodalWindow
     htContents.addCustomActionCol(7, "Go", (row, colNdx) ->
     {
       PreviewWindow.instance().goToPage(parseInt(row.getText(7), -1));
-      PreviewWindow.show(null);
+      PreviewWindow.show();
 
     }).setTooltip(ButtonAction.baCustom, "Jump to end page in preview window");
 
@@ -153,10 +153,10 @@ public final class ContentsWindow extends NonmodalWindow
 
     }).setTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as end page");
 
-    dialogStage.getScene().setOnMouseEntered(event -> mouseAlreadyHere = true);  // Don't refresh when user clicks a button while dialog is out of focus
-    dialogStage.getScene().setOnMouseExited (event -> mouseAlreadyHere = false);
+    stage.getScene().setOnMouseEntered(event -> mouseAlreadyHere = true);  // Don't refresh when user clicks a button while dialog is out of focus
+    stage.getScene().setOnMouseExited (event -> mouseAlreadyHere = false);
 
-    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
+    stage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
         return;
@@ -229,14 +229,14 @@ public final class ContentsWindow extends NonmodalWindow
 
     if (curWorkFile == null)
     {
-      dialogStage.setTitle(dialogTitle + " - " + curFilePath.getNameOnly());
+      stage.setTitle(dialogTitle + " - " + curFilePath.getNameOnly());
 
       works = db.works.stream().filter(work -> curFilePath.equals(db.resolveExtFilePath(work.getURL())))
                                .collect(Collectors.toCollection(ArrayList::new));
     }
     else
     {
-      dialogStage.setTitle(dialogTitle + " - " + curWorkFile.getPath().getNameStr());
+      stage.setTitle(dialogTitle + " - " + curWorkFile.getPath().getNameStr());
       works = new ArrayList<>(curWorkFile.works);
     }
 
@@ -310,7 +310,7 @@ public final class ContentsWindow extends NonmodalWindow
 
   private void clearDisplay()
   {
-    dialogStage.setTitle(dialogTitle);
+    stage.setTitle(dialogTitle);
     htContents.clear();
   }
 
@@ -334,15 +334,7 @@ public final class ContentsWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void show()
-  {
-    if (instance == null) return;
-
-    if (instance.getStage().isShowing())
-      ui.windows.focusStage(instance.getStage());
-    else
-      instance.showNonmodal();
-  }
+  public static void show() { show(instance); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

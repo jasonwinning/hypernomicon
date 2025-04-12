@@ -269,7 +269,7 @@ public class SettingsDlgCtrlr extends ModalDialog
       initDefaultChapterWorkType();
     }
 
-    dialogStage.setOnHiding(event ->
+    stage.setOnHiding(event ->
     {
       setLogPath(new FilePath(tfLogPath.getText()));
 

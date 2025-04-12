@@ -55,12 +55,10 @@ public abstract class NonmodalWindow extends DialogBase
 
     initBounds();
 
-    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
+    stage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
-        return;
-
-      ui.windows.push(dialogStage);
+      if ((ui.windows.getCyclingFocus() == false) && Boolean.TRUE.equals(newValue))
+        ui.windows.push(stage);
     });
   }
 
@@ -89,7 +87,7 @@ public abstract class NonmodalWindow extends DialogBase
 
     if (onShown != null) onShown.run();
 
-    ui.windows.push(dialogStage);
+    ui.windows.push(stage);
   }
 
 //---------------------------------------------------------------------------
@@ -105,11 +103,24 @@ public abstract class NonmodalWindow extends DialogBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final void showNonmodal()
+  private void showNonmodal()
   {
-    dialogStage.show();
+    stage.show();
 
-    ensureVisible(dialogStage, stagePane.getPrefWidth(), stagePane.getPrefHeight());
+    ensureVisible(stage, rootPane.getPrefWidth(), rootPane.getPrefHeight());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static final void show(NonmodalWindow instance)
+  {
+    if (instance == null) return;
+
+    if (instance.stage.isShowing())
+      ui.windows.focusStage(instance.stage);
+    else
+      instance.showNonmodal();
   }
 
 //---------------------------------------------------------------------------
@@ -121,15 +132,15 @@ public abstract class NonmodalWindow extends DialogBase
   {
     double x = app.prefs.getDouble(prefKeyX, -1.0);
     if (x > 0)
-      dialogStage.setX(x);
+      stage.setX(x);
 
     double y = app.prefs.getDouble(prefKeyY, -1.0);
     if (y > 0)
-      dialogStage.setY(y);
-    else if (SystemUtils.IS_OS_WINDOWS && (dialogStage.getY() < 30.0)) // Make sure Windows taskbar isn't at the top and covering the window controls
+      stage.setY(y);
+    else if (SystemUtils.IS_OS_WINDOWS && (stage.getY() < 30.0)) // Make sure Windows taskbar isn't at the top and covering the window controls
     {
       y = 30.0;
-      dialogStage.setY(30.0);
+      stage.setY(30.0);
     }
 
     double h = setInitHeight(prefKeyHeight),
@@ -143,7 +154,7 @@ public abstract class NonmodalWindow extends DialogBase
 
   private double setInitHeight(String prefKey)
   {
-    double defHeight = stagePane.getPrefHeight();
+    double defHeight = rootPane.getPrefHeight();
     Point2D point = new Robot().getMousePosition();
     Screen screen = Screen.getScreensForRectangle(new Rectangle2D(point.getX(), point.getY(), 1, 1)).stream().findFirst().orElse(null);
 
@@ -157,7 +168,7 @@ public abstract class NonmodalWindow extends DialogBase
     initHeight = app.prefs.getDouble(prefKey, defHeight);
 
     if (initHeight < 350)
-      initHeight = stagePane.getPrefHeight();
+      initHeight = rootPane.getPrefHeight();
 
     return initHeight;
   }
@@ -167,10 +178,10 @@ public abstract class NonmodalWindow extends DialogBase
 
   private double setInitWidth(String prefKey)
   {
-    initWidth = app.prefs.getDouble(prefKey, stagePane.getPrefWidth());
+    initWidth = app.prefs.getDouble(prefKey, rootPane.getPrefWidth());
 
     if (initWidth < 350)
-      initWidth = stagePane.getPrefWidth();
+      initWidth = rootPane.getPrefWidth();
 
     return initWidth;
   }
@@ -187,8 +198,6 @@ public abstract class NonmodalWindow extends DialogBase
 
   private void close(boolean exitingApp)
   {
-    Stage stage = getStage();
-
     if (stage.isShowing())
       stage.close();
 

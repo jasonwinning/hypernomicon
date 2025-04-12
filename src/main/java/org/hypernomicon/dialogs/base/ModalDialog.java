@@ -72,9 +72,9 @@ public abstract class ModalDialog extends DialogBase
   {
     if (doShow)
     {
-      ui.windows.push(dialogStage);
+      ui.windows.push(stage);
 
-      dialogStage.showAndWait();
+      stage.showAndWait();
 
       ui.windows.pop();
     }
@@ -91,7 +91,7 @@ public abstract class ModalDialog extends DialogBase
 
   @FXML protected void btnOkClick()
   {
-    Node node = dialogStage.getScene().getFocusOwner();
+    Node node = stage.getScene().getFocusOwner();
 
     // The next check is necessary due to https://bugs.openjdk.org/browse/JDK-8229924
     // If you hit enter in the combobox, the key event gets consumed by the Scene before it ever gets to the text edit control. The HyperCB onaction gets
@@ -104,7 +104,7 @@ public abstract class ModalDialog extends DialogBase
       return;
 
     okClicked = true;
-    dialogStage.close();
+    stage.close();
   }
 
 //---------------------------------------------------------------------------
@@ -113,7 +113,7 @@ public abstract class ModalDialog extends DialogBase
   @FXML protected void btnCancelClick()
   {
     okClicked = false;
-    dialogStage.close();
+    stage.close();
   }
 
 //---------------------------------------------------------------------------

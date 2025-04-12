@@ -188,7 +188,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
       return change;
     }));
 
-    dialogStage.setOnHidden(event -> stopDupThread());
+    stage.setOnHidden(event -> stopDupThread());
 
     alreadyChangingName = true;
 
@@ -484,10 +484,10 @@ public class NewPersonDlgCtrlr extends ModalDialog
       if (tabPane.isVisible() == false) // Expand dialog vertically to reveal duplicate author tabs
       {
         double height = scalePropertyValueForDPI(419),
-               diff = dialogStage.getHeight() - stagePane.getHeight();
+               diff = stage.getHeight() - rootPane.getHeight();
 
-        setHeights(stagePane  , height);
-        setHeights(dialogStage, height + diff);
+        setHeights(rootPane, height);
+        setHeights(stage   , height + diff);
 
         tabPane.setVisible(true);
 
@@ -495,7 +495,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
           rbCreateNoMerge.setText("Create Record Without Merging");
 
         rbCreateNoMerge.setSelected(false);
-        rbAddNoCreate.setSelected(false);
+        rbAddNoCreate  .setSelected(false);
       }
     }
     else

@@ -470,17 +470,17 @@ public class SelectWorkDlgCtrlr extends ModalDialog
     {
       if (ov.equals(Boolean.FALSE) && nv.equals(Boolean.TRUE))
       {
-        height = dialogStage.getHeight();
-        dialogStage.setMaxHeight(Double.MAX_VALUE);
-        addToParent(apPreview, stagePane);
-        accommodatePreview(dialogStage, apMain);
+        height = stage.getHeight();
+        stage.setMaxHeight(Double.MAX_VALUE);
+        addToParent(apPreview, rootPane);
+        accommodatePreview(stage, apMain);
         updatePreview();
       }
       else if (ov.equals(Boolean.TRUE) && nv.equals(Boolean.FALSE))
       {
         removeFromParent(apPreview);
-        dialogStage.setHeight(height);
-        dialogStage.setMaxHeight(height);
+        stage.setHeight(height);
+        stage.setMaxHeight(height);
       }
     });
   }
@@ -490,17 +490,17 @@ public class SelectWorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void accommodatePreview(Stage dialogStage, AnchorPane apMain)
+  private static void accommodatePreview(Stage stage, AnchorPane apMain)
   {
-    List<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
+    List<Screen> screens = Screen.getScreensForRectangle(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
     double minHeight = screens.size() == 1 ? screens.get(0).getVisualBounds().getHeight() - 60.0 : 900.0;
 
-    if (dialogStage.getHeight() < minHeight)
+    if (stage.getHeight() < minHeight)
     {
-      double diff = minHeight - dialogStage.getHeight();
-      dialogStage.setY(dialogStage.getY() - (diff / 2.0));
-      dialogStage.setHeight(minHeight);
-      ensureVisible(dialogStage, apMain.getPrefWidth(), apMain.getPrefHeight());
+      double diff = minHeight - stage.getHeight();
+      stage.setY(stage.getY() - (diff / 2.0));
+      stage.setHeight(minHeight);
+      ensureVisible(stage, apMain.getPrefWidth(), apMain.getPrefHeight());
     }
   }
 
