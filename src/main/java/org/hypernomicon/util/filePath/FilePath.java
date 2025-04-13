@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.*;
 import org.apache.commons.lang3.SystemUtils;
@@ -235,10 +236,26 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Pattern invalidCharsPattern = Pattern.compile("[\\\\/:*?\\\"<>|']");
+
+  public static String removeInvalidFileNameChars(String fileTitle)
+  {
+    return convertToEnglishChars(fileTitle).replaceAll(invalidCharsPattern.pattern(), "");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static boolean isFilenameValid(String fileName)
   {
     fileName = safeStr(fileName);
     if (ultraTrim(fileName).isEmpty()) return false;
+
+    if (fileName.length() > 255)
+      return false;
+
+    if (invalidCharsPattern.matcher(fileName).find())
+      return false;
 
     try
     {
@@ -259,15 +276,6 @@ public class FilePath implements Comparable<FilePath>
     }
 
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String removeInvalidFileNameChars(String fileTitle)
-  {
-    return convertToEnglishChars(fileTitle).replace("?", "").replace(":", "").replace("*" , "").replace("<" , "").replace(">", "")
-                                           .replace("|", "").replace("/", "").replace("\\", "").replace("\"", "").replace("'", "");
   }
 
 //---------------------------------------------------------------------------
