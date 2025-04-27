@@ -1869,7 +1869,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Menu makeTopicalMenu(String text, FilePath filePath)
+  private static Menu makeTopicalMenu(String text, FilePath filePath)
   {
     Menu menu = new Menu(text);
 
@@ -2982,7 +2982,7 @@ public final class MainCtrlr
    * @return False if user was prompted for how to merge descriptions and clicked Cancel; true otherwise
    * @throws HyperDataException if record1 and record2 cannot be united for some reason
    */
-  public boolean uniteRecords(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2) throws HyperDataException
+  public static boolean uniteRecords(HDT_RecordWithMainText record1, HDT_RecordWithMainText record2) throws HyperDataException
   {
     String desc;
 

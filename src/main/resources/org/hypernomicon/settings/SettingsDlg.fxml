@@ -135,16 +135,12 @@
               <Button layoutX="-9.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnLogPathBrowseClick" prefHeight="25.0" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="7">
-              <MenuButton alignment="CENTER" layoutX="-12.0" layoutY="2.0" minHeight="25.0" mnemonicParsing="false"
-                          prefHeight="25.0" prefWidth="90.0" text="Actions" AnchorPane.rightAnchor="0.0"
-                          AnchorPane.topAnchor="0.0">
+              <MenuButton alignment="CENTER" layoutX="-12.0" layoutY="2.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="90.0" text="Actions" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                 <items>
-                  <MenuItem mnemonicParsing="false" onAction="#mnuLogLaunchClick" text="Launch"/>
-                  <MenuItem mnemonicParsing="false" onAction="#mnuLogShowInSysExplorerClick"
-                            text="Show in System Explorer"/>
-                  <MenuItem mnemonicParsing="false" onAction="#mnuLogCopyToClipboardClick"
-                            text="Copy contents to clipboard"/>
-                  <MenuItem mnemonicParsing="false" onAction="#mnuClearLogPathClick" text="Clear path"/>
+                  <MenuItem mnemonicParsing="false" onAction="#mnuLogLaunchClick" text="Launch" />
+                  <MenuItem mnemonicParsing="false" onAction="#mnuLogShowInSysExplorerClick" text="Show in System Explorer" />
+                  <MenuItem mnemonicParsing="false" onAction="#mnuLogCopyToClipboardClick" text="Copy contents to clipboard" />
+                  <MenuItem mnemonicParsing="false" onAction="#mnuClearLogPathClick" text="Clear path" />
                 </items>
               </MenuButton>
             </AnchorPane>
@@ -236,80 +232,110 @@
       <Tab fx:id="tabArgNaming" text="Argument Naming">
       </Tab>
       <Tab fx:id="tabLinkToExtBibMgr" text="Bibliography Manager">
-        <AnchorPane fx:id="apLinkToExtBibMgr" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-          <GridPane layoutX="14.0" layoutY="14.0" prefHeight="248.0" prefWidth="472.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
-            <columnConstraints>
-              <ColumnConstraints hgrow="NEVER" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" />
-              <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-            </columnConstraints>
-            <rowConstraints>
-              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            </rowConstraints>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0">
-              <Label layoutX="15.0" layoutY="-5.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-              <HBox alignment="CENTER_LEFT" layoutY="5.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                <ToggleButton fx:id="btnZoteroAuthorize" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="Link to Zotero account" />
-                <ToggleButton fx:id="btnMendeleyAuthorize" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="Link to Mendeley account" />
-              </HBox>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
-              <Label layoutY="-2.0" text="Click button to initiate process of linking to reference manager account." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-              <Label fx:id="lblStep2" layoutX="8.0" layoutY="-2.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 2." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-              <Label fx:id="lblRedirect" layoutY="8.0" text="Go to verification web page" underline="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="8.0">
-                <cursor>
-                  <Cursor fx:constant="HAND" />
-                </cursor>
-              </Label>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
-              <Label fx:id="lblStep2Instructions" layoutX="-272.0" layoutY="10.0" text="Click link to open web site where you will authorize Hypernomicon to access your Zotero account and get verification code." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-              <Label fx:id="lblStep3" layoutX="-11.0" layoutY="1.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 3." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-              <Button fx:id="btnCodePaste" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="38.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0">
-                <graphic>
-                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                    <Image url="@../resources/images/page_paste.png" />
-                  </ImageView>
-                </graphic>
-              </Button>
-              <TextField fx:id="tfVerificationCode" layoutX="-65.0" layoutY="4.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="248.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="4.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
-              <Label fx:id="lblStep3Instructions" layoutX="-21.0" layoutY="4.0" text="Enter verification code." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
-              <Label fx:id="lblStep4" layoutX="-1.0" layoutY="-1.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 4." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
-              <Button fx:id="btnVerify" layoutY="5.0" maxHeight="25.0" maxWidth="60.0" minHeight="25.0" minWidth="60.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="60.0" text="Verify" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
-              <Label fx:id="lblStep4Instructions" layoutX="-260.0" layoutY="7.0" text="When you click this button, Hypernomicon uses the verification code you entered to finalize the linking process." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-            </AnchorPane>
-          </GridPane>
-        </AnchorPane>
-      </Tab>
-      <Tab fx:id="tabUnlinkFromExtBibMgr" text="Bibliography Manager">
-        <AnchorPane fx:id="apUnlinkFromExtBibMgr" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-          <Label fx:id="lblCurrentlyLinked" layoutX="14.0" layoutY="14.0" text="This database is currently linked to a Zotero library." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0" />
-          <Button fx:id="btnUnlink" layoutX="14.0" layoutY="40.0" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" prefWidth="60.0" text="Unlink" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="40.0" />
-        </AnchorPane>
+        <VBox fx:id="vbRefMgr">
+          <AnchorPane fx:id="apUnlinkFromExtBibMgr" minHeight="0.0" minWidth="0.0" prefHeight="106.0"
+                      prefWidth="1036.0">
+            <Label fx:id="lblCurrentlyLinked" layoutX="14.0" layoutY="14.0"
+                   text="This database is currently linked to a Zotero library." AnchorPane.leftAnchor="14.0"
+                   AnchorPane.topAnchor="14.0"/>
+            <Button fx:id="btnUnlink" layoutX="14.0" layoutY="40.0" maxWidth="60.0" minWidth="60.0"
+                    mnemonicParsing="false" prefWidth="60.0" text="Unlink" AnchorPane.leftAnchor="14.0"
+                    AnchorPane.topAnchor="40.0"/>
+            <Button fx:id="btnReEstablishAccess" layoutX="14.0" layoutY="73.0" mnemonicParsing="false"
+                    text="Re-Establish Access"/>
+          </AnchorPane>
+          <AnchorPane fx:id="apLinkToExtBibMgr" minHeight="0.0" minWidth="0.0">
+            <GridPane layoutX="14.0" layoutY="14.0" prefHeight="248.0" prefWidth="472.0" AnchorPane.leftAnchor="14.0"
+                      AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="NEVER" maxWidth="75.0" minWidth="75.0" prefWidth="75.0"/>
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308"/>
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              </rowConstraints>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                <Label layoutX="15.0" layoutY="-5.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;"
+                       text="Step 1." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+                <HBox alignment="CENTER_LEFT" layoutY="5.0" spacing="5.0" AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <ToggleButton fx:id="btnZoteroAuthorize" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                                prefHeight="25.0" text="Link to Zotero account"/>
+                  <ToggleButton fx:id="btnMendeleyAuthorize" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                                prefHeight="25.0" text="Link to Mendeley account"/>
+                </HBox>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+                <Label layoutY="-2.0" text="Click button to initiate process of linking to reference manager account."
+                       AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+                <Label fx:id="lblStep2" layoutX="8.0" layoutY="-2.0"
+                       style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 2."
+                       AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <Label fx:id="lblRedirect" layoutY="8.0" text="Go to verification web page" underline="true"
+                       AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="8.0">
+                  <cursor>
+                    <Cursor fx:constant="HAND"/>
+                  </cursor>
+                </Label>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+                <Label fx:id="lblStep2Instructions" layoutX="-272.0" layoutY="10.0"
+                       text="Click link to open web site where you will authorize Hypernomicon to access your Zotero account and get verification code."
+                       AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+                <Label fx:id="lblStep3" layoutX="-11.0" layoutY="1.0"
+                       style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 3."
+                       AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <Button fx:id="btnCodePaste" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0"
+                        prefWidth="38.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0">
+                  <graphic>
+                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                      <Image url="@../resources/images/page_paste.png"/>
+                    </ImageView>
+                  </graphic>
+                </Button>
+                <TextField fx:id="tfVerificationCode" layoutX="-65.0" layoutY="4.0" maxHeight="25.0" minHeight="25.0"
+                           prefHeight="25.0" prefWidth="248.0" AnchorPane.bottomAnchor="2.0"
+                           AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="4.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
+                <Label fx:id="lblStep3Instructions" layoutX="-21.0" layoutY="4.0" text="Enter verification code."
+                       AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
+                <Label fx:id="lblStep4" layoutX="-1.0" layoutY="-1.0"
+                       style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 4."
+                       AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                <Button fx:id="btnVerify" layoutY="5.0" maxHeight="25.0" maxWidth="60.0" minHeight="25.0"
+                        minWidth="60.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="60.0" text="Verify"
+                        AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0"/>
+              </AnchorPane>
+              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
+                <Label fx:id="lblStep4Instructions" layoutX="-260.0" layoutY="7.0"
+                       text="When you click this button, Hypernomicon uses the verification code you entered to finalize the linking process."
+                       AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0"/>
+              </AnchorPane>
+            </GridPane>
+          </AnchorPane>
+        </VBox>
       </Tab>
     </TabPane>
   </SplitPane>

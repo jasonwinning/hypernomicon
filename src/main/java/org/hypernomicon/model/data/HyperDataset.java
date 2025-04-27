@@ -72,7 +72,17 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   public HDI_Schema getSchema(Tag tag)                    { return tagToSchema.get(tag); }
   public Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
   public Tag getMainTextTag()                             { return mainTextTag; }
+
+  /**
+   * For each record, calls its resolvePointers method (which may cause the
+   * record to become expired), and removes the record from the core ("deletes" it) if it
+   * became expired.<br>
+   * HDT_Record.expire is where delete handlers get called.
+   * @throws HDB_InternalError If the record somehow entered the inconsistent
+   * state of its ID being -1 but the expired flag was not set.
+   */
   public void resolvePointers() throws HDB_InternalError  { core.resolvePointers(); }
+
   public DatasetAccessor<HDT_DT> getAccessor()            { return core; }
 
   public boolean idAvailable(int id)                      { return (isUnstoredRecord(id, type) == false) && (core.containsID(id) == false); }

@@ -194,6 +194,11 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Show a warning to the user if this folder or any of its subfolders no longer exists on the file system.<br>
+   * Shows a message for each folder.<br>
+   * This is intended to be called during database load.
+   */
   public void checkExists()
   {
     if (checkedForExistence) return;

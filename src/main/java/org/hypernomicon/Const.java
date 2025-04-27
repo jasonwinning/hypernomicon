@@ -199,6 +199,7 @@ public final class Const
       BIB_LAST_SYNC_TIME = "bibLastSyncTime",
       BIB_API_KEY = "bibApiKey",
       BIB_USER_ID = "bibUserID",
+      BIB_USER_NAME = "bibUserName",
       BIB_ACCESS_TOKEN = "bibAccessToken",
       BIB_REFRESH_TOKEN = "bibRefreshToken",
       BIB_LIBRARY_TYPE = "bibType",

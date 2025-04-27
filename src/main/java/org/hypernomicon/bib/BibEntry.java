@@ -65,7 +65,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   public abstract String getURLtoViewEntryInRefMgr();
   public abstract List<String> getReportFieldOrder();
   public abstract BibliographicDate getDateFromJson();
-  protected abstract String getUserName();
+  protected abstract String getUserID();
 
   @SuppressWarnings("unchecked")
   public BibEntry(LibraryWrapper<BibEntry_T, BibCollection_T> libWrapper, boolean thisIsBackup)

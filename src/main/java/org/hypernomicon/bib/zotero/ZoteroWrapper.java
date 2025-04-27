@@ -19,7 +19,6 @@ package org.hypernomicon.bib.zotero;
 
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -29,10 +28,10 @@ import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
 
 import java.io.*;
 import java.net.SocketException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
+import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -46,30 +45,36 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
 
 import org.json.simple.parser.ParseException;
+import org.jspecify.annotations.NonNull;
 
 import com.google.common.collect.EnumHashBiMap;
 import com.google.common.collect.Lists;
+
+import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
+import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.HttpHeader;
 
 //---------------------------------------------------------------------------
 
-public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
+public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final String apiKey, userID;
+  private final String userID;
+  private String apiKey, userName = "";
   private long offlineLibVersion = -1, onlineLibVersion = -1;
   private Instant backoffTime = null, retryTime = null;
 
@@ -79,27 +84,47 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private enum ZoteroCmd
   {
-    readItems , readTrash    , readTrashVersions, readChangedItemVersions,
+    readItems , readTrash    , readTrashVersions, readChangedItemVersions, readProfile,
     writeItems, readDeletions, readCollections  , readChangedCollVersions
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ZoteroWrapper(String apiKey, String userID)
+  private ZoteroWrapper(String apiKey, String userID, String userName)
   {
-    this.apiKey = apiKey;
     this.userID = userID;
+
+    try { enableSyncOnThisComputer(apiKey, "", "", userID, userName, false); }
+    catch (HyperDataException e) { throw new AssertionError(e); }
   }
+
+//---------------------------------------------------------------------------
 
   static JsonObj getTemplate(EntryType type)   { return templates.get(type); }
 
+  public static ZoteroWrapper createForTesting() { return new ZoteroWrapper("", "", ""); }
+
   @Override public LibraryType type()          { return LibraryType.ltZotero; }
-  @Override public void safePrefs()            { db.prefs.putLong(PrefKey.BIB_LIBRARY_VERSION, offlineLibVersion); }
   @Override public String entryFileNode()      { return "items"; }
   @Override public String collectionFileNode() { return "collections"; }
+  @Override public String getUserName()        { return userName; }
+  @Override public String getUserID()          { return userID; }
 
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @NonNull
+  public static ZoteroWrapper create(String apiKey, String userID, String userName, FilePath filePath) throws HDB_InternalError, IOException, ParseException
+  {
+    ZoteroWrapper wrapper = new ZoteroWrapper(apiKey, userID, userName);
+
+    wrapper.loadAllFromJsonFile(filePath);
+
+    return wrapper;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -155,6 +180,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     switch (command)
     {
+      case readProfile:
+        url += "keys/current";
+        break;
+
       case readCollections:
         if (collectionKey.length() > 0)
           url += "collections?collectionKey=" + collectionKey;
@@ -205,6 +234,11 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
            HttpStatus.SC_PRECONDITION_FAILED
 
         -> jsonArray;
+
+      case HttpStatus.SC_UNAUTHORIZED,
+           HttpStatus.SC_FORBIDDEN
+
+        -> throw newAccessDeniedException();
 
       default
 
@@ -537,14 +571,13 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     private boolean syncChangedEntriesToServer() throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
     {
-      List<ZoteroItem> uploadQueue; // implemented as array because indices are returned by server
-      JsonArray jArr = new JsonArray();
-
-      uploadQueue = getAllEntries().stream().filter(Predicate.not(ZoteroItem::isSynced)).collect(Collectors.toCollection(ArrayList::new));
+      // uploadQueue is implemented as an array because indices are returned by server
+      List<ZoteroItem> uploadQueue = getAllEntries().stream().filter(Predicate.not(ZoteroItem::isSynced)).collect(Collectors.toCollection(ArrayList::new));
 
       if (uploadQueue.isEmpty()) return false;
 
       int statusCode = HttpStatus.SC_OK;
+      JsonArray jArr = new JsonArray();
 
       while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && ((syncTask == null) || (syncTask.isCancelled() == false)))
       {
@@ -599,7 +632,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
+    private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity)
+        throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
     {
       JsonArray jArr = doReadCommand(versionsCmd, "", "");
 
@@ -633,11 +667,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       while ((downloadQueue.size() > 0) && (jsonClient.getStatusCode() == HttpStatus.SC_OK))
       {
-        String keys = "";
-
-        int downloadCount = Math.min(downloadQueue.size(), 50);
-        for (int ndx = 0; ndx < downloadCount; ndx++)
-          keys = keys + (keys.isEmpty() ? downloadQueue.get(ndx) : ',' + downloadQueue.get(ndx));
+        String keys = String.join(",", downloadQueue.subList(0, Math.min(downloadQueue.size(), 50)));
 
         jArr = readCmd == ZoteroCmd.readCollections ?
           doReadCommand(ZoteroCmd.readCollections, "", keys)
@@ -653,7 +683,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
             if (entity == null)
             {
-              entity = (ZEntity) ZoteroEntity.create(ZoteroWrapper.this, jObj);
+              entity = (ZEntity)(readCmd == ZoteroCmd.readCollections ?
+                new ZoteroCollection(jObj)
+              :
+                ZoteroItem.create(ZoteroWrapper.this, jObj));
 
               if (entity != null)
                 keyToEntity.put(key, entity);
@@ -662,7 +695,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
             {
               boolean okToMerge = true;
 
-              if (readCmd == ZoteroCmd.readItems)
+              if (readCmd != ZoteroCmd.readCollections)
               {
                 ZoteroItem zItem = (ZoteroItem)entity;
                 String entryTypeStr = ZoteroItem.getEntryTypeStrFromSpecifiedJson(jObj.getObj("data"));
@@ -688,7 +721,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
               }
               else
               {
-                if (okToMerge && (readCmd == ZoteroCmd.readItems))
+                if (okToMerge && (readCmd != ZoteroCmd.readCollections))
                   doMerge((ZoteroItem)entity, jObj);
                 else
                   entity.update(jObj, true, false);     // Conflict resolution is only implemented for items, not collections
@@ -730,10 +763,96 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HDB_InternalError
+  @Override public void getProfileInfoFromServer(Consumer<String> successHndlr, Consumer<Throwable> failHndlr)
+  {
+
+//---------------------------------------------------------------------------
+
+    HyperTask hyperTask = new HyperTask("GetZoteroProfileInfo")
+    {
+      @Override protected void call() throws HyperDataException, CancelledTaskException
+      {
+        try
+        {
+          JsonObj profile = doReadCommand(ZoteroCmd.readProfile, "", "").getObj(0);
+
+          userName = profile.getStrSafe("username");
+        }
+        catch (UnsupportedOperationException | IOException | ParseException e)
+        {
+          throw new HyperDataException("An error occurred while retrieving profile information from server: " + getThrowableMessage(e), e);
+        }
+      }
+    };
+
+//---------------------------------------------------------------------------
+
+    hyperTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
+    {
+      if (wasRunning && Boolean.FALSE.equals(isRunning))
+      {
+        if ((hyperTask.getState() == State.FAILED) || (hyperTask.getState() == State.CANCELLED))
+        {
+          failHndlr.accept(hyperTask.catchException());
+          return;
+        }
+
+        successHndlr.accept(userName);
+      }
+    });
+
+    hyperTask.startWithNewThreadAsDaemon();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void enableSyncOnThisComputer(String apiKey, String accessToken, String refreshToken, String userID, String userName, boolean save) throws HyperDataException
+  {
+    if (this.userID.equals(userID) == false)
+      throw new HyperDataException("User ID for local entries is " + this.userID + ", but user ID from server is " + userID);
+
+    this.apiKey = apiKey;
+    this.userName = userName;
+
+    if (save)
+      saveRefMgrSecretsToDBSettings();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void savePrefs()
+  {
+    db.prefs.putLong(PrefKey.BIB_LIBRARY_VERSION, offlineLibVersion);
+    db.prefs.put(PrefKey.BIB_USER_ID, userID);
+    db.prefs.put(PrefKey.BIB_USER_NAME, userName);
+    db.prefs.put(PrefKey.BIB_LIBRARY_TYPE, type().descriptor);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void saveRefMgrSecretsToDBSettings()
+  {
+    assert(app.debugging);
+
+    try
+    {
+      db.prefs.put(PrefKey.BIB_API_KEY, CryptoUtil.encrypt("", apiKey));
+    }
+    catch (Exception e)
+    {
+      errorPopup("An error occurred while saving access token: " + getThrowableMessage(e));
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HDB_InternalError
   {
     JsonObj jMainObj = null;
-    clear();
 
     try (InputStream in = Files.newInputStream(filePath.toPath()))
     {

@@ -1141,10 +1141,10 @@ public final class Util
 
   /**
    * Consume an object by doing nothing to it, to avoid compiler warnings and such.
-   * @param obj The object to which nothing will be done.
+   * @param ignoredObj The object to which nothing will be done.
    * @return Always returns null
    */
-  public static Object noOp(Object obj)
+  public static Object noOp(Object ignoredObj)
   {
     assert Boolean.TRUE;
     return null;

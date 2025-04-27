@@ -27,12 +27,9 @@ import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -47,9 +44,6 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.xml.stream.*;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
@@ -146,6 +140,12 @@ public abstract class AbstractHyperDB
 
   protected abstract void saveSourcePathToSystemSettings(String newPathStr);
   protected abstract FolderTreeWatcher getFolderTreeWatcher();
+
+  /**
+   * Traverse through all folder records and show a popup warning for any
+   * folder that no longer exists on the file system.<br>
+   * This is intended to be called during database load.
+   */
   protected abstract void checkWhetherFoldersExist();
   protected abstract void loadMainTextTemplates();
   protected abstract void warningMessage(String msg);
@@ -805,7 +805,7 @@ public abstract class AbstractHyperDB
     if (checkChecksums() == false) return false;
 
     if (bibLibraryIsLinked())
-      bibLibrary.saveAllToJsonFile();
+      bibLibrary.saveAllToPersistentStorage();
 
     HyperTask task = new HyperTask("SaveAllToXML", "Saving to XML files...") { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
@@ -979,6 +979,10 @@ public abstract class AbstractHyperDB
     try
     {
       loadSettings(creatingNew, favorites);
+
+      resolvePointers();
+
+      initBibLibraryLinkFromDBSettings();
     }
     catch (HyperDataException e)
     {
@@ -988,37 +992,20 @@ public abstract class AbstractHyperDB
       return false;
     }
 
+    // Backwards compatibility with records XML version 1.4
     if (workIDtoInvIDs.isEmpty() == false)
       doInvestigationConversion(workIDtoInvIDs);
 
     // Backwards compatibility with records XML version 1.3
     if (ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWorkType, new VersionNumber(1))).lessThanOrEqualTo(new VersionNumber(1, 3)))
-    {
-      int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
-
-      HDT_WorkType thesisWorkType = workTypes.getByID(thesisID);
-
-      try
-      {
-        if (thesisWorkType != null)
-          changeRecordID(thesisWorkType, datasets.get(hdtWorkType).getNextID());
-
-        createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", "", ""), true);
-      }
-      catch (HyperDataException e)
-      {
-        errorMessage(new HyperDataException("Internal error while creating thesis work type record: " + getThrowableMessage(e), e));
-
-        close(null);
-        return false;
-      }
-    }
+      doConversionForThesisWorkType();
 
     loadMainTextTemplates();
 
     List<HDT_Work> worksToUnlink = new ArrayList<>();
     bibEntryKeyToWork.forEach((bibEntryKey, work) ->
     {
+      // Unlink works from reference manager entries that aren't present to avoid data integrity errors
       if ((bibLibrary == null) || (bibLibrary.getEntryByKey(bibEntryKey) == null))
         worksToUnlink.add(work);
     });
@@ -1048,24 +1035,6 @@ public abstract class AbstractHyperDB
     }
 
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void changeRecordID(HDT_Record record, int newID) throws HyperDataException
-  {
-    int oldID = record.getID();
-
-    if (isProtectedRecord(oldID, record.getType(), false))
-      throw new HyperDataException("That record's ID cannot be changed.");
-
-    if (idAvailable(record.getType(), newID) == false)
-      throw new HDB_InternalError(42973);
-
-    changeRecordIDHandlers.forEach(handler -> handler.changeRecordID(record, newID));
-
-    datasets.get(record.getType()).changeRecordID(oldID, newID);
   }
 
 //---------------------------------------------------------------------------
@@ -1114,6 +1083,48 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // Backwards compatibility with records XML version 1.3
+
+  private void doConversionForThesisWorkType()
+  {
+    int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
+
+    HDT_WorkType thesisWorkType = workTypes.getByID(thesisID);
+
+    try
+    {
+      if (thesisWorkType != null)
+        changeRecordID(thesisWorkType, datasets.get(hdtWorkType).getNextID());
+
+      createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", "", ""), true);
+    }
+    catch (HyperDataException e)
+    {
+      throw new AssertionError("Internal error while creating thesis work type record: " + getThrowableMessage(e), e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void changeRecordID(HDT_Record record, int newID) throws HyperDataException
+  {
+    int oldID = record.getID();
+
+    if (isProtectedRecord(oldID, record.getType(), false))
+      throw new HyperDataException("That record's ID cannot be changed.");
+
+    if (idAvailable(record.getType(), newID) == false)
+      throw new HDB_InternalError(42973);
+
+    changeRecordIDHandlers.forEach(handler -> handler.changeRecordID(record, newID));
+
+    datasets.get(record.getType()).changeRecordID(oldID, newID);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void unlinkBibLibrary()
   {
     if (bibLibrary == null) return;
@@ -1126,6 +1137,7 @@ public abstract class AbstractHyperDB
 
     prefs.remove(PrefKey.BIB_API_KEY);
     prefs.remove(PrefKey.BIB_USER_ID);
+    prefs.remove(PrefKey.BIB_USER_NAME);
     prefs.remove(PrefKey.BIB_ACCESS_TOKEN);
     prefs.remove(PrefKey.BIB_REFRESH_TOKEN);
     prefs.remove(PrefKey.BIB_LIBRARY_VERSION);
@@ -1143,20 +1155,20 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void linkZoteroLibrary(String bibEncApiKey, String bibUserID) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  public void linkZoteroLibrary(String apiKey, String userID, String userName) throws IOException, ParseException, HDB_InternalError
   {
-    linkBibLibrary(LibraryType.ltZotero, bibEncApiKey, bibUserID, "", "");
+    linkBibLibrary(LibraryType.ltZotero, apiKey, "", "", userID, userName);
   }
 
-  public void linkMendeleyLibrary(String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  public void linkMendeleyLibrary(String accessToken, String refreshToken, String userID, String userName) throws IOException, ParseException, HDB_InternalError
   {
-    linkBibLibrary(LibraryType.ltMendeley, "", "", bibEncAccessToken, bibEncRefreshToken);
+    linkBibLibrary(LibraryType.ltMendeley, "", accessToken, refreshToken, userID, userName);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void linkBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  protected void linkBibLibrary(LibraryType libType, String apiKey, String accessToken, String refreshToken, String userID, String userName) throws IOException, ParseException, HDB_InternalError
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21174);
@@ -1173,37 +1185,22 @@ public abstract class AbstractHyperDB
         getFolderTreeWatcher().createNewWatcherAndStart();
     }
 
-    loadBibLibrary(libType, bibEncApiKey, bibUserID, bibEncAccessToken, bibEncRefreshToken);
+    loadBibLibrary(libType, apiKey, accessToken, refreshToken, userID, userName);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  private void loadBibLibrary(LibraryType libType, String apiKey, String accessToken, String refreshToken, String userID, String userName) throws HDB_InternalError, IOException, ParseException
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21173);
 
-    String bibApiKey       = bibEncApiKey      .isBlank() ? "" : CryptoUtil.decrypt("", bibEncApiKey      ),
-           bibAccessToken  = bibEncAccessToken .isBlank() ? "" : CryptoUtil.decrypt("", bibEncAccessToken ),
-           bibRefreshToken = bibEncRefreshToken.isBlank() ? "" : CryptoUtil.decrypt("", bibEncRefreshToken);
-
-    LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bLibrary = switch (libType)
+    bibLibrary = switch (libType)
     {
-      case ltZotero   -> new ZoteroWrapper(bibApiKey, bibUserID);
-      case ltMendeley -> new MendeleyWrapper(bibAccessToken, bibRefreshToken);
+      case ltZotero   -> ZoteroWrapper  .create(apiKey                   , userID, userName, xmlPath(BIB_FILE_NAME));
+      case ltMendeley -> MendeleyWrapper.create(accessToken, refreshToken, userID, userName, xmlPath(BIB_FILE_NAME));
     };
-
-    bLibrary.loadAllFromJsonFile(xmlPath(BIB_FILE_NAME));
-
-    bibLibrary = bLibrary;
-
-    prefs.put(PrefKey.BIB_API_KEY, bibEncApiKey);
-    prefs.put(PrefKey.BIB_USER_ID, bibUserID);
-    prefs.put(PrefKey.BIB_ACCESS_TOKEN, bibEncAccessToken);
-    prefs.put(PrefKey.BIB_REFRESH_TOKEN, bibEncRefreshToken);
-
-    prefs.put(PrefKey.BIB_LIBRARY_TYPE, libType.descriptor);
 
     bibChangedHandlers.forEach(Runnable::run);
   }
@@ -1317,7 +1314,7 @@ public abstract class AbstractHyperDB
 
     try
     {
-      resolvePointers();
+      resolvePointers();  // This is where the record actually gets deleted (removed from its HyperCore)
       cleanupRelations();
     }
     catch (HDB_InternalError e)
@@ -1346,6 +1343,14 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * For each record in the database, calls its resolvePointers method (which may cause the
+   * record to become expired), and removes the record from its HyperCore ("deletes" it) if it
+   * became expired.<br>
+   * HDT_Record.expire is where delete handlers get called.
+   * @throws HDB_InternalError If the record somehow entered the inconsistent
+   * state of its ID being -1 but the expired flag was not set.
+   */
   public void resolvePointers() throws HDB_InternalError
   {
     if (pointerResolutionInProgress)
@@ -1493,8 +1498,6 @@ public abstract class AbstractHyperDB
         prefs.putInt(FolderIDPrefKey.TOPICAL   , topicalFolder  .getID()); prefs.remove("topicsPath"   );
       }
 
-      resolvePointers();
-
       String dbCreationDateStr = prefs.get(PrefKey.DB_CREATION_DATE, "");
       if (safeStr(dbCreationDateStr).length() > 0)
       {
@@ -1503,31 +1506,40 @@ public abstract class AbstractHyperDB
         if (dbCreationDate.isAfter(Instant.now())) // Creation date in template is year 9999 so it will be set
           dbCreationDate = Instant.now();          // to the current date when loaded for the first time
       }
-
-      String bibEncApiKey       = prefs.get(PrefKey.BIB_API_KEY      , ""),
-             bibUserID          = prefs.get(PrefKey.BIB_USER_ID      , ""),
-             bibTypeDescriptor  = prefs.get(PrefKey.BIB_LIBRARY_TYPE , ""),
-             bibEncAccessToken  = prefs.get(PrefKey.BIB_ACCESS_TOKEN , ""),
-             bibEncRefreshToken = prefs.get(PrefKey.BIB_REFRESH_TOKEN, "");
-
-      if ((((bibEncApiKey.length() > 0) && (bibUserID.length() > 0)) || ((bibEncAccessToken.length() > 0) && (bibEncRefreshToken.length() > 0))) &&
-          (bibTypeDescriptor.length() > 0))
-      {
-        LibraryType libType = LibraryType.getByDescriptor(bibTypeDescriptor);
-
-        try
-        {
-          loadBibLibrary(libType, bibEncApiKey, bibUserID, bibEncAccessToken, bibEncRefreshToken);
-        }
-        catch (Exception e)
-        {
-          throw new HyperDataException("Unable to initialize link to " + libType.userFriendlyName + ": " + getThrowableMessage(e), e);
-        }
-      }
     }
     catch (IOException | InvalidPreferencesFormatException e)
     {
       throw new HyperDataException("An error occurred while attempting to read database settings: " + getThrowableMessage(e), e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initBibLibraryLinkFromDBSettings() throws HyperDataException
+  {
+    String bibEncApiKey       = prefs.get(PrefKey.BIB_API_KEY      , ""),
+           bibUserID          = prefs.get(PrefKey.BIB_USER_ID      , ""),
+           bibUserName        = prefs.get(PrefKey.BIB_USER_NAME    , ""),
+           bibTypeDescriptor  = prefs.get(PrefKey.BIB_LIBRARY_TYPE , ""),
+           bibEncAccessToken  = prefs.get(PrefKey.BIB_ACCESS_TOKEN , ""),
+           bibEncRefreshToken = prefs.get(PrefKey.BIB_REFRESH_TOKEN, "");
+
+    LibraryType libType = LibraryType.getByDescriptor(bibTypeDescriptor);
+
+    if ((libType != LibraryType.ltMendeley) && ((libType != LibraryType.ltZotero) || bibUserID.isBlank())) return;
+
+    try
+    {
+      String apiKey       = bibEncApiKey      .isBlank() ? "" : CryptoUtil.decrypt("", bibEncApiKey      ),
+             accessToken  = bibEncAccessToken .isBlank() ? "" : CryptoUtil.decrypt("", bibEncAccessToken ),
+             refreshToken = bibEncRefreshToken.isBlank() ? "" : CryptoUtil.decrypt("", bibEncRefreshToken);
+
+      loadBibLibrary(libType, apiKey, accessToken, refreshToken, bibUserID, bibUserName);
+    }
+    catch (Exception e)
+    {
+      throw new HyperDataException("Unable to initialize link to " + libType.userFriendlyName + ": " + getThrowableMessage(e), e);
     }
   }
 
@@ -1997,6 +2009,13 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Adds a record to the initial navigation list if it meets specific criteria.
+   * Ensures that the list maintains a history of recently viewed records in past
+   * sessions, of length no larger than INITIAL_NAV_LIST_SIZE.
+   *
+   * @param record the record to be added to the initial navigation list.
+   */
   private void addToInitialNavList(HDT_Record record)
   {
     if (isUnstoredRecord(record)) return;
@@ -2024,6 +2043,16 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Potentially removes a person record from the initial navigation list if it is
+   * adjacent to an investigation record for that person viewed at close to the same
+   * time, since they represent the same tab.
+   *
+   * @param record the record being checked.
+   * @param ndx the index of the current record in the navigation list.
+   * @param otherNdx the index of the adjacent record being checked for removal.
+   * @return true if a person record was successfully removed; false otherwise.
+   */
   private boolean removePersonIfAdjacentToInvestigation(HDT_Record record, int ndx, int otherNdx)
   {
     if ((otherNdx < 0) || (otherNdx == initialNavList.size()))
@@ -2095,6 +2124,7 @@ public abstract class AbstractHyperDB
       bibChangedHandlers.forEach(Runnable::run);
       prefs.remove(PrefKey.BIB_API_KEY);
       prefs.remove(PrefKey.BIB_USER_ID);
+      prefs.remove(PrefKey.BIB_USER_NAME);
       prefs.remove(PrefKey.BIB_LIBRARY_VERSION);
       prefs.remove(PrefKey.BIB_LAST_SYNC_TIME);
       prefs.remove(PrefKey.BIB_LIBRARY_TYPE);

@@ -18,14 +18,11 @@
 package org.hypernomicon.settings;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.util.UIUtil.*;
 
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.dialogs.base.ModalDialog;
-import org.hypernomicon.model.Exceptions.HyperDataException;
 
-import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.ProgressBar;
 
@@ -60,14 +57,6 @@ public final class SyncBibDlgCtrlr extends ModalDialog
       {
         if (wasRunning && Boolean.FALSE.equals(isRunning))
         {
-          if ((syncTask.getState() == State.FAILED) || (syncTask.getState() == State.CANCELLED))
-          {
-            Throwable e = syncTask.getException();
-
-            if (e instanceof HyperDataException)
-              errorPopup(e);
-          }
-
           BibManager.instance().rebuildCollectionTree();
 
           stage.close();

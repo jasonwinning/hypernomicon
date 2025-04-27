@@ -196,6 +196,14 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * For each record, calls its resolvePointers method (which may cause the
+   * record to become expired), and removes ("deletes") the record if it
+   * became expired.<br>
+   * HDT_Record.expire is where delete handlers get called.
+   * @throws HDB_InternalError If the record somehow entered the inconsistent
+   * state of its ID being -1 but the expired flag was not set.
+   */
   void resolvePointers() throws HDB_InternalError
   {
     Iterator<Entry<Integer, HDT_DT>> it = idToRecord.entrySet().iterator();

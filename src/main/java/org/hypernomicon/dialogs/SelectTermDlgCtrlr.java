@@ -17,7 +17,6 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.App.ui;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -356,7 +355,7 @@ public final class SelectTermDlgCtrlr extends ModalDialog
     if (concept == null)
       throw new HDB_InternalError(89681);
 
-    if (ui.uniteRecords(otherSpoke, concept) == false)
+    if (MainCtrlr.uniteRecords(otherSpoke, concept) == false)
       return false;
 
     createdNewTerm.setValue(creatingNewTerm);

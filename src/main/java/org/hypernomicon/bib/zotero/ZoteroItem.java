@@ -19,7 +19,6 @@ package org.hypernomicon.bib.zotero;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,12 +35,9 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.util.SplitString;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonArray.JsonObjIterator;
 import org.hypernomicon.util.json.JsonObj;
-
-import com.google.common.collect.ImmutableList;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
@@ -92,6 +88,20 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   @Override public EntryType getEntryType()        { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jData)); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static ZoteroItem create(ZoteroWrapper zWrapper, JsonObj jObj)
+  {
+    JsonObj subObj = jObj.getObj("data");
+
+    return switch (subObj.getStrSafe("itemType").toLowerCase())
+    {
+      case "", "attachment", "note", "annotation" -> null;
+      default -> new ZoteroItem(zWrapper, jObj, false);
+    };
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -941,28 +951,15 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   @Override public String getURLtoViewEntryInRefMgr()
   {
-    return isNewEntry() ? "" : jObj.condObj("links").condObj("alternate").condStrOrBlank("href");
+    return jObj.condObj("links").condObj("alternate").condStrOrBlank("href");
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected String getUserName()
+  @Override protected String getUserID()
   {
-    String url = isNewEntry() ? "" : jObj.condObj("library").condObj("links").condObj("alternate").condStrOrBlank("href");
-
-    if (url.isBlank()) return "";
-
-    List<String> list = ImmutableList.copyOf((Iterator<String>)new SplitString(url, '/'));
-
-    for (int ndx = list.size() - 1; ndx > 0; ndx--)
-    {
-      String str = list.get(ndx);
-      if (str.length() > 0)
-        return str;
-    }
-
-    return "";
+    return jObj.condObj("library").condStrOrBlank("id");
   }
 
 //---------------------------------------------------------------------------

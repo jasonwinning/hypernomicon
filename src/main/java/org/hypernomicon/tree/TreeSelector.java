@@ -33,6 +33,7 @@ import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
@@ -263,7 +264,7 @@ public class TreeSelector
 
     try
     {
-      if (ui.uniteRecords(record1, record2) == false)
+      if (MainCtrlr.uniteRecords(record1, record2) == false)
         return false;
     }
     catch (HyperDataException e)

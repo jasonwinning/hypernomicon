@@ -18,29 +18,28 @@
 package org.hypernomicon.bib;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.apache.http.client.methods.HttpUriRequest;
-
-import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.JsonHttpClient;
-import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-import static org.hypernomicon.bib.data.EntryType.etOther;
+import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -81,7 +80,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public static abstract class SyncTask extends HyperTask
   {
-    public SyncTask() { super("SyncReferenceLibrary"); }
+    protected SyncTask() { super("SyncReferenceLibrary"); }
 
     protected boolean changed = false;
     public boolean getChanged() { return changed; }
@@ -99,25 +98,28 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   protected SyncTask syncTask = null;
   protected HttpUriRequest request = null;
   private BiConsumer<String, String> keyChangeHndlr;
-  private String userName = "";
 
   protected boolean didMergeDuringSync = false;
 
 //---------------------------------------------------------------------------
 
-  public abstract SyncTask createNewSyncTask();
-  public abstract void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HDB_InternalError;
-  public abstract LibraryType type();
-  public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
-  protected abstract void safePrefs();
+  protected abstract void savePrefs();
   protected abstract String entryFileNode();
   protected abstract String collectionFileNode();
+
+  public abstract void enableSyncOnThisComputer(String apiKey, String accessToken, String refreshToken, String userID, String userName, boolean save) throws HyperDataException;
+  public abstract void saveRefMgrSecretsToDBSettings();
+  public abstract void getProfileInfoFromServer(Consumer<String> successHndlr, Consumer<Throwable> failHndlr);
+  public abstract SyncTask createNewSyncTask();
+  public abstract LibraryType type();
+  public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
+  public abstract String getUserID();
+  public abstract String getUserName();
 
   public final Set<BibEntry_T> getTrash()                { return new LinkedHashSet<>(keyToTrashEntry.values()); }
   public final Set<BibEntry_T> getAllEntries()           { return new LinkedHashSet<>(keyToAllEntry.values()); }
   public final Map<String, BibCollection> getKeyToColl() { return Collections.unmodifiableMap(keyToColl); }
 
-  public String getUserName()                            { return userName; }
   public String getUserFriendlyName()                    { return type().userFriendlyName; }
 
   public EntryType parseEntryType(String typeStr)        { return getEntryTypeMap().inverse().getOrDefault(typeStr, etOther); }
@@ -125,19 +127,14 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   public BibEntry_T getEntryByKey(String key)            { return keyToAllEntry.get(key); }
   public BibEntry_T getEntryByID(int id)                 { return keyToAllEntry.get(keyList.get(id - 1)); }
 
-  public final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { keyChangeHndlr = hndlr; }
+  final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { keyChangeHndlr = hndlr; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final void clear()
+  protected AccessDeniedException newAccessDeniedException()
   {
-    keyToAllEntry  .clear();
-    keyToTrashEntry.clear();
-    keyToColl      .clear();
-    keyList        .clear();
-
-    userName = "";
+    return new AccessDeniedException("Valid " + getUserFriendlyName() + " access token not found. Go to Tools \u279c Settings \u279c Bibliography Manager \u279c Re-Establish Access to acquire a new access token.");
   }
 
 //---------------------------------------------------------------------------
@@ -262,8 +259,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       if (entry == null) return;
 
       keyToAllEntry.put(entry.getKey(), entry);
-      if (userName.isBlank())
-        userName = entry.getUserName();
     });
 
     jObj.getArraySafe("trash").getObjs().forEach(itemJsonObj ->
@@ -288,7 +283,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveAllToJsonFile()
+  public void saveAllToPersistentStorage()
   {
     StringBuilder json = null;
 
@@ -339,7 +334,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     try
     {
       saveStringBuilderToFile(json, db.xmlPath(BIB_FILE_NAME));
-      safePrefs();
+      savePrefs();
+      saveRefMgrSecretsToDBSettings();
     }
     catch (IOException e)
     {

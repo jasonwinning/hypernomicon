@@ -20,8 +20,6 @@ package org.hypernomicon.dialogs.base;
 import static org.hypernomicon.App.ui;
 import static org.hypernomicon.util.UIUtil.*;
 
-import org.hypernomicon.util.UIUtil.NodeUserDataType;
-
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;

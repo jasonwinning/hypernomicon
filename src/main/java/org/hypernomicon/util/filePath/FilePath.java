@@ -156,8 +156,6 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean deleteReturnsBoolean(boolean noExistOK) { return deleteReturnsBoolean(noExistOK, null); }
-
   private boolean deleteReturnsBoolean(boolean noExistOK, StringBuilder errorSB)
   {
     try { delete(noExistOK); }

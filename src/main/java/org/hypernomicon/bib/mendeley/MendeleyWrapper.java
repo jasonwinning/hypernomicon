@@ -18,7 +18,6 @@
 package org.hypernomicon.bib.mendeley;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.mendeley.MendeleyEntity.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -28,8 +27,7 @@ import static org.hypernomicon.util.json.JsonObj.*;
 
 import java.io.*;
 import java.net.SocketException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
+import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -45,6 +43,7 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
 
 import org.json.simple.parser.ParseException;
+import org.jspecify.annotations.NonNull;
 
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
@@ -56,6 +55,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
@@ -67,13 +67,13 @@ import org.hypernomicon.util.HttpHeader;
 
 //---------------------------------------------------------------------------
 
-public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFolder>
+public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFolder>
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String accessToken, refreshToken;
+  private String accessToken, refreshToken, userID = "", userName = "";
   private Instant lastSyncTime = Instant.EPOCH;
 
   private static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
@@ -90,18 +90,47 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MendeleyWrapper(String apiKey, String refreshToken)
+  private MendeleyWrapper(String accessToken, String refreshToken, String userID, String userName)
   {
-    this.accessToken = apiKey;
-    this.refreshToken = refreshToken;
+    try { enableSyncOnThisComputer("", accessToken, refreshToken, userID, userName, false); }
+    catch (HyperDataException e) { throw new AssertionError(e); }
   }
 
+//---------------------------------------------------------------------------
+
   @Override public LibraryType type()          { return LibraryType.ltMendeley; }
-  @Override public void safePrefs()            { db.prefs.put(PrefKey.BIB_LAST_SYNC_TIME, dateTimeToIso8601(lastSyncTime)); }
   @Override public String entryFileNode()      { return "documents"; }
   @Override public String collectionFileNode() { return "folders"; }
+  @Override public String getUserName()        { return userName; }
+  @Override public String getUserID()          { return userID; }
 
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @NonNull
+  public static MendeleyWrapper create(String accessToken, String refreshToken, String userID, String userName, FilePath filePath) throws IOException, ParseException
+  {
+    MendeleyWrapper wrapper = new MendeleyWrapper(accessToken, refreshToken, userID, userName);
+
+    wrapper.loadAllFromJsonFile(filePath);
+
+    if (safeStr(userID).isBlank() == false)
+      return wrapper;
+
+    String docUserID = findFirst(wrapper.getAllEntries(), doc -> safeStr(doc.getUserID()).isBlank() == false, MendeleyDocument::getUserID);
+
+    if (docUserID != null)
+    {
+      wrapper.userID = docUserID;
+      return wrapper;
+    }
+
+    wrapper.getProfileInfoFromServer(_userName -> noOp(), ex -> noOp());
+
+    return wrapper;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -140,7 +169,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     return doHttpRequest(url, requestType, jsonData, mediaType, nextUrl, null);
   }
 
-  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl, Instant ifUnmodifiedSince) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
+  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl, Instant ifUnmodifiedSince) throws UnsupportedOperationException, ParseException, CancelledTaskException, IOException
   {
     HyperTask.throwExceptionIfCancelled(syncTask);
 
@@ -206,7 +235,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     HyperTask.throwExceptionIfCancelled(syncTask);
 
-    if (jsonClient.getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+    if ((jsonClient.getStatusCode() == HttpStatus.SC_BAD_REQUEST)  ||
+        (jsonClient.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) ||
+        (jsonClient.getStatusCode() == HttpStatus.SC_FORBIDDEN))
     {
       if ((jsonArray != null) && (jsonArray.size() > 0))
       {
@@ -217,13 +248,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
           {
             OAuth2AccessToken token = service.refreshAccessToken(refreshToken);
 
-            accessToken = token.getAccessToken();
-            refreshToken = token.getRefreshToken();
-
             try
             {
-              db.prefs.put(PrefKey.BIB_ACCESS_TOKEN , CryptoUtil.encrypt("", accessToken ));
-              db.prefs.put(PrefKey.BIB_REFRESH_TOKEN, CryptoUtil.encrypt("", refreshToken));
+              enableSyncOnThisComputer("", token.getAccessToken(), token.getRefreshToken(), "", "", true);
             }
             catch (Exception e)
             {
@@ -237,6 +264,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
           return doHttpRequest(url, requestType, jsonData, mediaType, nextUrl, ifUnmodifiedSince);
         }
+
+        if (jsonObj.getStrSafe("errorId").startsWith("oauth"))
+          throw newAccessDeniedException();
       }
     }
 
@@ -258,6 +288,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
       try
       {
+        if (safeStr(userID).isBlank())
+          getProfileInfoFromServer();
+
         do
         {
           didMergeDuringSync = false;
@@ -644,10 +677,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException
+  private void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException
   {
     JsonObj jMainObj = null;
-    clear();
 
     try (InputStream in = Files.newInputStream(filePath.toPath()))
     {
@@ -666,6 +698,138 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     if (app.debugging)
       checkDocumentTypesFromServer();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void savePrefs()
+  {
+    db.prefs.put(PrefKey.BIB_LAST_SYNC_TIME, dateTimeToIso8601(lastSyncTime));
+    db.prefs.put(PrefKey.BIB_USER_ID, userID);
+    db.prefs.put(PrefKey.BIB_USER_NAME, userName);
+    db.prefs.put(PrefKey.BIB_LIBRARY_TYPE, type().descriptor);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static MendeleyWrapper getProfileInfoFromServer(String accessToken, String refreshToken) throws HyperDataException
+  {
+    MendeleyWrapper wrapper = new MendeleyWrapper(accessToken, refreshToken, "", "");
+
+    wrapper.getProfileInfoFromServer();
+
+    return wrapper;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void getProfileInfoFromServer() throws HyperDataException
+  {
+    try
+    {
+      JsonObj profile = doReadCommand(MendeleyCmd.readProfile).getObj(0);
+
+      userName = profile.getStrSafe("email");
+
+      if (safeStr(userID).isBlank())
+        userID = profile.getStrSafe("id");
+
+      if (userName.isBlank() || userID.isBlank())
+        throw new HyperDataException("Unable to retrieve profile information from server");
+    }
+    catch (UnsupportedOperationException | IOException | ParseException e)
+    {
+      throw new HyperDataException("An error occurred while retrieving profile information from server: " + getThrowableMessage(e), e);
+    }
+    catch (CancelledTaskException e)
+    {
+      throw new AssertionError(e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void getProfileInfoFromServer(Consumer<String> successHndlr, Consumer<Throwable> failHndlr)
+  {
+
+//---------------------------------------------------------------------------
+
+    HyperTask hyperTask = new HyperTask("GetMendeleyProfileInfo")
+    {
+      @Override protected void call() throws HyperDataException
+      {
+        getProfileInfoFromServer();
+      }
+    };
+
+//---------------------------------------------------------------------------
+
+    hyperTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
+    {
+      if (wasRunning && Boolean.FALSE.equals(isRunning))
+      {
+        if ((hyperTask.getState() == State.FAILED) || (hyperTask.getState() == State.CANCELLED))
+        {
+          failHndlr.accept(hyperTask.catchException());
+          return;
+        }
+
+        successHndlr.accept(userName);
+      }
+    });
+
+    hyperTask.startWithNewThreadAsDaemon();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void enableSyncOnThisComputer(String apiKey, String accessToken, String refreshToken, String userID, String userName, boolean save) throws HyperDataException
+  {
+    if (safeStr(userID).isBlank() == false)
+    {
+      if ((this.userID.isBlank() == false) && (this.userID.equals(userID) == false))
+        throw new HyperDataException("User ID for local entries is " + this.userID + ", but user ID from server is " + userID);
+
+      for (MendeleyDocument document : getAllEntries())
+      {
+        String docUserID = document.getUserID();
+
+        if ((safeStr(docUserID).isBlank() == false) && (docUserID.equals(userID) == false))
+          throw new HyperDataException("User ID for local entries is " + docUserID + ", but user ID from server is " + userID);
+      }
+
+      this.userID = userID;
+      this.userName = userName;
+    }
+
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+
+    if (save)
+      saveRefMgrSecretsToDBSettings();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void saveRefMgrSecretsToDBSettings()
+  {
+    assert(app.debugging);
+
+    try
+    {
+      db.prefs.put(PrefKey.BIB_ACCESS_TOKEN , CryptoUtil.encrypt("", accessToken ));
+      db.prefs.put(PrefKey.BIB_REFRESH_TOKEN, CryptoUtil.encrypt("", refreshToken));
+    }
+    catch (Exception e)
+    {
+      errorPopup("An error occurred while saving access token: " + getThrowableMessage(e));
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -747,51 +911,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     map.put(etBill, "bill");
 
     return map;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void getUserNameFromServer(Consumer<String> successHndlr, Consumer<Throwable> failHndlr)
-  {
-    StringBuffer emailAddress = new StringBuffer();
-
-//---------------------------------------------------------------------------
-
-    HyperTask hyperTask = new HyperTask("GetMendeleyUserName")
-    {
-      @Override protected void call() throws HyperDataException, CancelledTaskException
-      {
-        try
-        {
-          JsonObj profile = doReadCommand(MendeleyCmd.readProfile).getObj(0);
-
-          assignSB(emailAddress, profile.getStrSafe("email"));
-        }
-        catch (UnsupportedOperationException | IOException | ParseException e)
-        {
-          throw new HyperDataException("An error occurred while retrieving username from server: " + getThrowableMessage(e), e);
-        }
-      }
-    };
-
-//---------------------------------------------------------------------------
-
-    hyperTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
-    {
-      if (wasRunning && Boolean.FALSE.equals(isRunning))
-      {
-        if ((hyperTask.getState() == State.FAILED) || (hyperTask.getState() == State.CANCELLED))
-        {
-          failHndlr.accept(hyperTask.getException());
-          return;
-        }
-
-        successHndlr.accept(emailAddress.toString());
-      }
-    });
-
-    hyperTask.startWithNewThreadAsDaemon();
   }
 
 //---------------------------------------------------------------------------

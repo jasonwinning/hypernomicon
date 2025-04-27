@@ -41,7 +41,6 @@ import com.google.common.collect.Ordering;
 
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
-import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.bib.data.BibDataRetriever;
@@ -130,7 +129,7 @@ public final class BibManager extends NonmodalWindow
   public  void clearCollectionTree()                     { collTree.clear(); }
 
   private static void viewInRefMgr(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getURLtoViewEntryInRefMgr()); }
-  public  static void close(boolean exitingApp)          { NonmodalWindow.close(instance, exitingApp); }
+  public  static void close(boolean exitingApp)          { close(instance, exitingApp); }
 
 //---------------------------------------------------------------------------
 

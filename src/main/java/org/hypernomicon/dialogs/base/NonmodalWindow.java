@@ -113,7 +113,7 @@ public abstract class NonmodalWindow extends DialogBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static final void show(NonmodalWindow instance)
+  protected static void show(NonmodalWindow instance)
   {
     if (instance == null) return;
 
@@ -191,9 +191,8 @@ public abstract class NonmodalWindow extends DialogBase
 
   protected static void close(NonmodalWindow instance, boolean exitingApp)
   {
-    if (instance == null) return;
-
-    instance.close(exitingApp);
+    if (instance != null)
+      instance.close(exitingApp);
   }
 
   private void close(boolean exitingApp)

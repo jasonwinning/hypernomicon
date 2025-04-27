@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.Query.WorkQuery;
@@ -111,7 +110,7 @@ public class QueryWhereBibField extends WorkQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Work record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
+  @Override public boolean evaluate(HDT_Work record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
     BibFieldEnum field = getEnumVal(getCellID(op1), BibFieldEnum.class);
     if (field == null)

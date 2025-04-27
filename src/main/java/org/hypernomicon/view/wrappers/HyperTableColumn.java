@@ -26,7 +26,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -141,13 +140,6 @@ public class HyperTableColumn
   private final MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
                                dontCreateNewRecord = new MutableBoolean(false);
 
-  /**
-   * Determines how cells will sort in the column.<br>
-   * The compare method can assume the cells are non-null.<br>
-   * If this is set, the sortMethod is ignored.<br>
-   */
-  private Comparator<HyperTableCell> comparator;
-
   private final Property<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
 
   private Supplier<HDT_Work> workSupplier;
@@ -169,7 +161,6 @@ public class HyperTableColumn
   HyperTableColumn setWorkSupplier(Supplier<HDT_Work> newWS) { workSupplier = newWS;            return this; }
   HyperTableColumn setAlignment(Pos newAlignment)            { alignment = newAlignment;        return this; }
 
-  public HyperTableColumn setComparator(Comparator<HyperTableCell> newComparator) { comparator = newComparator;           return this; }
   public HyperTableColumn setValueType(CellValueType newCellValueType)            { cellValueType = newCellValueType;     return this; }
   public HyperTableColumn setTextHndlr(Function<HyperTableRow, String> newTH)     { textHndlr = newTH;                    return this; }
   public HyperTableColumn setDontCreateNewRecord(boolean newVal)                  { dontCreateNewRecord.setValue(newVal); return this; }
@@ -240,9 +231,6 @@ public class HyperTableColumn
         if (lastRow.getCell(colNdx) == cell2)
           return tc.getSortType() == SortType.ASCENDING ? -1 : 1;
       }
-
-      if (comparator != null)
-        return comparator.compare(cell1, cell2);
 
       if (sortMethod.getValue() != null)
         return HyperTableCell.compareCells(cell1, cell2, sortMethod.getValue());

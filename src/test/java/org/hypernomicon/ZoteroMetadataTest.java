@@ -47,7 +47,7 @@ class ZoteroMetadataTest
   void templatesTest()
   {
     JsonArray jServerTemplatesArr;
-    ZoteroWrapper zoteroWrapper = new ZoteroWrapper("", "");
+    ZoteroWrapper zoteroWrapper = ZoteroWrapper.createForTesting();
 
     try
     {
@@ -96,7 +96,7 @@ class ZoteroMetadataTest
   void creatorTypesTest()
   {
     JsonObj jServerCreatorTypesObj = null;
-    ZoteroWrapper zoteroWrapper = new ZoteroWrapper("", "");
+    ZoteroWrapper zoteroWrapper = ZoteroWrapper.createForTesting();
 
     try
     {

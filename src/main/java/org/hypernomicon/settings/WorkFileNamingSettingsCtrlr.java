@@ -26,9 +26,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -44,12 +42,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.control.*;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
@@ -98,8 +91,10 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
   public static final class WorkFileNameComponent
   {
     public final WorkFileNameComponentType type;
-    public final String beforeSep, withinSep, afterSep, testStr;
+    public final String beforeSep, withinSep, afterSep;
     public final Set<HDT_WorkType> excludedWorkTypes;
+
+    private final String testStr;
 
 //---------------------------------------------------------------------------
 
@@ -136,7 +131,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       this.afterSep  = afterSep;
       this.testStr   = testStr;
 
-      excludedWorkTypes  = new HashSet<>();
+      excludedWorkTypes = new HashSet<>();
 
       new SplitString(exclTypesStr, ';').forEach(workTypeStr ->
       {

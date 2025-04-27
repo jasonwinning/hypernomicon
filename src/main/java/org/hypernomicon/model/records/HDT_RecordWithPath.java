@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.util.Util.nullSwitch;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.util.filePath.FilePath;

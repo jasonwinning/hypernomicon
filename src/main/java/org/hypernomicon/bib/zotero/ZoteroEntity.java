@@ -18,7 +18,6 @@
 package org.hypernomicon.bib.zotero;
 
 import org.hypernomicon.bib.BibEntity;
-import org.hypernomicon.util.json.JsonObj;
 
 //---------------------------------------------------------------------------
 
@@ -29,25 +28,6 @@ public interface ZoteroEntity extends BibEntity
 //---------------------------------------------------------------------------
 
   long getVersion();
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static ZoteroEntity create(ZoteroWrapper zWrapper, JsonObj jObj)
-  {
-    JsonObj subObj = jObj.getObj("data");
-
-    if (subObj.containsKey("itemType"))
-    {
-      return switch (subObj.getStrSafe("itemType").toLowerCase())
-      {
-        case "attachment", "note", "annotation" -> null;
-        default -> new ZoteroItem(zWrapper, jObj, false);
-      };
-    }
-
-    return subObj.containsKey("parentCollection") ? new ZoteroCollection(jObj) : null;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

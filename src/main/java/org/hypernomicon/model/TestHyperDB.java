@@ -22,18 +22,10 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import org.hypernomicon.App;
 import org.hypernomicon.FolderTreeWatcher;
@@ -45,7 +37,6 @@ import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.HyperFavorites;
-import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.SetMultimap;
 
@@ -114,7 +105,7 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override protected boolean checkChecksums() { return true; }
   @Override public void fileNoLongerInUse(FilePath filePath) { }
   @Override public FilePath extPath() { return null; }
-  @Override protected void lock() throws IOException { }
+  @Override protected void lock() { }
   @Override protected void unlock() { }
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { }
   @Override protected void saveSourcePathToSystemSettings(String newPathStr) { }
@@ -124,7 +115,7 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override public String getLockOwner() { return null; }
   @Override public String getOtherLockOwner() { return null; }
   @Override protected void checkWhetherFoldersExist() { }
-  @Override public void updateMainTextTemplate(RecordType recordType, String html) throws IOException { }
+  @Override public void updateMainTextTemplate(RecordType recordType, String html) { }
   @Override public String getMainTextTemplate(RecordType recordType) { return null; }
   @Override protected void loadMainTextTemplates() { }
   @Override protected FolderTreeWatcher getFolderTreeWatcher() { return null; }
@@ -142,7 +133,7 @@ public final class TestHyperDB extends AbstractHyperDB
     throw new UnsupportedOperationException();
   }
 
-  @Override protected void linkBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  @Override protected void linkBibLibrary(LibraryType libType, String apiKey, String accessToken, String refreshToken, String userID, String userName)
   {
     throw new UnsupportedOperationException();
   }

@@ -55,8 +55,6 @@ public class RecordState
 
   String simpleName;
 
-  public String getSearchKey() { return searchKey; }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

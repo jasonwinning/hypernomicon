@@ -23,17 +23,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import org.hypernomicon.dialogs.ProgressDlgCtrlr;
-import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
+import org.hypernomicon.model.Exceptions.*;
 
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.*;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.concurrent.Worker.State;
 import javafx.event.EventHandler;
+
+//---------------------------------------------------------------------------
 
 public abstract class HyperTask
 {
@@ -103,6 +102,18 @@ public abstract class HyperTask
       else if (ex != null)
         ex.printStackTrace();
     }
+
+    /**
+     * Prevent exception from being presented to the user in the InnerTask.failed method.<br>
+     * This can be called from a "running" property listener.
+     * @return The exception
+     */
+    private Throwable catchException()
+    {
+      Throwable ex = getException();
+      ((ObjectProperty<Throwable>) exceptionProperty()).set(null);
+      return ex;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -158,7 +169,14 @@ public abstract class HyperTask
   public boolean cancel() { return innerTask.cancel(); }
 
   public Throwable getException() { return innerTask.getException(); }
-  public State getState()         { return innerTask.getState(); }
+
+  /**
+   * Prevent exception from being presented to the user in the InnerTask.failed method.<br>
+   * This can be called from a "running" property listener.
+   * @return The exception
+   */
+  public Throwable catchException() { return innerTask.catchException(); }
+  public State getState()           { return innerTask.getState(); }
 
   public ReadOnlyStringProperty  messageProperty () { return innerTask.messageProperty (); }
   public ReadOnlyBooleanProperty runningProperty () { return innerTask.runningProperty (); }

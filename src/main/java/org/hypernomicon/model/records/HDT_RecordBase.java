@@ -614,6 +614,10 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Set unstored ID=1 record creation instants to be the same as the DB
+   * creation instant
+   */
   public static void setRootRecordDates()
   {
     Instant dbCreationDate = db.getCreationDate();

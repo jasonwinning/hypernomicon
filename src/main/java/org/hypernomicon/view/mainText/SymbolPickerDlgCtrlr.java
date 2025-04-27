@@ -48,21 +48,23 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   @FXML private Button btnInsert, btnCancel;
-  @FXML private ComboBox<String> cbFont;
-  @FXML private TextField tfChar, tfCodePoint, tfHex, tfHTML, tfDesc;
   @FXML private CheckBox chkUseFont;
+  @FXML private ComboBox<String> cbFont;
   @FXML private GridPane gp;
+  @FXML private TextField tfChar, tfCodePoint, tfHex, tfHTML, tfDesc;
 
-  private final CharacterGrid charGrid;
   private static SymbolPickerDlgCtrlr instance = null;
-  private final ImmutableList<Symbol> chars8851, symbols8851, math, greek, misc;
-  private boolean programmaticFontChange = false, programmaticChange = false;
 
   private static final int ROW_COUNT = 8, COL_COUNT = 32;
 
+  private final CharacterGrid charGrid;
+  private final ImmutableList<Symbol> chars8851, symbols8851, math, greek, misc;
+
+  private boolean programmaticFontChange = false, programmaticChange = false;
+
 //---------------------------------------------------------------------------
 
-  public static void close(boolean exitingApp) { NonmodalWindow.close(instance, exitingApp); }
+  public static void close(boolean exitingApp) { close(instance, exitingApp); }
 
   @Override protected void getDividerPositions() { }
   @Override protected void setDividerPositions() { }

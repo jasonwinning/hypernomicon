@@ -1047,7 +1047,7 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_Record getRecordToHiliteForQueryRow(HyperTableRow row)
+  private static HDT_Record getRecordToHiliteForQueryRow(HyperTableRow row)
   {
     switch (row.getID(QUERY_COL_NDX))
     {

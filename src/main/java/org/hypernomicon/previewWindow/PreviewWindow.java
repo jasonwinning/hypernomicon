@@ -88,7 +88,7 @@ public final class PreviewWindow extends NonmodalWindow
   int curPage()                                  { return (int) sldPreview.getValue(); }
   int getMax()                                   { return (int) sldPreview.getMax(); }
 
-  public static void close(boolean exitingApp)   { NonmodalWindow.close(instance, exitingApp); }
+  public static void close(boolean exitingApp)   { close(instance, exitingApp); }
 
   @Override protected void getDividerPositions() { }
   @Override protected void setDividerPositions() { }

@@ -410,8 +410,8 @@ public class NewPersonDlgCtrlr extends ModalDialog
         matchedAuthorsList.add(matchedAuthors);
         PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), queryAuthors.get(ndx));
 
-        completedCount = ndx * list.size();
-        totalCount = nameList.size() * list.size();
+        completedCount = ((long) ndx) * ((long) (list.size()));
+        totalCount = ((long) nameList.size()) * ((long) list.size());
 
         doDupCheck(person, list, matchedAuthors, this);
       }

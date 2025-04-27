@@ -82,7 +82,7 @@ public final class ContentsWindow extends NonmodalWindow
     return instance;
   }
 
-  public static void close(boolean exitingApp) { NonmodalWindow.close(instance, exitingApp); }
+  public static void close(boolean exitingApp) { close(instance, exitingApp); }
 
 //---------------------------------------------------------------------------
 

@@ -90,6 +90,8 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
   @Override public String getURLtoViewEntryInRefMgr()  { return ""; }
   @Override public BibAuthors getAuthors()             { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
   @Override public EntryType getEntryType()            { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jObj)); }
+  @Override public Instant lastModifiedOnServer()      { return MendeleyWrapper.getSyncInstantFromJsonStr(jObj.getStrSafe(Document_Last_Modified_JSON_Key)); }
+  @Override protected String getUserID()               { return jObj.getStrSafe("profile_id"); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
 
@@ -792,22 +794,6 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     "City",
     "Publisher"
   ); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Instant lastModifiedOnServer()
-  {
-    return MendeleyWrapper.getSyncInstantFromJsonStr(jObj.getStrSafe(Document_Last_Modified_JSON_Key));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected String getUserName()
-  {
-    return "";
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

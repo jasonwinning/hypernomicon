@@ -53,7 +53,6 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 
   public int getObjID()           { return objID; }
-  public void setObjID(int objID) { this.objID = objID; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

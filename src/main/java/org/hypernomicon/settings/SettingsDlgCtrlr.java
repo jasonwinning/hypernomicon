@@ -46,7 +46,6 @@ import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.controls.WebTooltip;
@@ -60,6 +59,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
@@ -82,17 +82,18 @@ public class SettingsDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
-  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnExtFilesHelp;
+  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnExtFilesHelp, btnReEstablishAccess;
   @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkDefaultChapterWorkType, chkLinuxWorkaround,
                          chkCompDontExpandKeyWorks, chkDBDontExpandKeyWorks;
   @FXML private ComboBox<HyperTableCell> cbDefaultChapterWorkType;
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
+  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabWebButtons;
   @FXML private TabPane tpMain;
   @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfLogPath, tfOffice, tfVerificationCode;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
+  @FXML private VBox vbRefMgr;
 
   @FXML TreeView<SettingsPage> treeView;
 
@@ -181,6 +182,13 @@ public class SettingsDlgCtrlr extends ModalDialog
     });
 
     btnUnlink.setOnAction(event -> btnUnlinkClick());
+
+    btnReEstablishAccess.setOnAction(event ->
+    {
+      btnReEstablishAccess.setDisable(true);
+      vbRefMgr.getChildren().add(apLinkToExtBibMgr);
+      selectLibraryType(db.getBibLibrary().type());
+    });
 
     authUrl = new SimpleStringProperty();
 
@@ -320,12 +328,15 @@ public class SettingsDlgCtrlr extends ModalDialog
         tpMain.getSelectionModel().select(pageToTab.get(newValue.getValue()));
     });
 
-    tabUnlinkFromExtBibMgr.setContent(null); // apUnlinkFromExtBibMgr has to be removed from this tab before it can be added to other tab
-
     if (db.isLoaded() && db.bibLibraryIsLinked())
     {
       setUnlinkMessage();
-      tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
+
+      vbRefMgr.getChildren().remove(1);
+    }
+    else
+    {
+      vbRefMgr.getChildren().remove(0);
     }
   }
 
@@ -397,6 +408,21 @@ public class SettingsDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Initializes a group of {@link ToggleButton}s with persistent preferences and behavior management.
+   * Ensures that the correct button is selected based on stored preferences,
+   * and updates preferences dynamically when a button is toggled.<br>
+   * Each ToggleButton is associated with a String value that will be saved to the preference key
+   * when the button is selected.
+   *
+   * @param prefs          The {@link Preferences} object used to persist user settings.
+   * @param prefKey        The key in the preferences to store the selected toggle button.
+   * @param refreshHandler A {@link Runnable} that is executed whenever a toggle button is selected.
+   *                       Can be null if no refresh action is required.
+   * @param defValue       The default {@link ToggleButton} to select if no preference is set or an invalid preference exists.
+   * @param map            A map linking preference keys to {@link ToggleButton} instances.
+   *                       Keys represent the preference value associated with each button.
+   */
   static void initToggleButtons(Preferences prefs, String prefKey, Runnable refreshHandler, ToggleButton defValue, Map<String, ToggleButton> map)
   {
     BiMap<String, ToggleButton> biMap = HashBiMap.create(map);
@@ -536,7 +562,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
   public void selectLibraryType(LibraryType libraryType)
   {
-    if ((db.isLoaded() == false) || db.bibLibraryIsLinked()) return;
+    if (db.isLoaded() == false) return;
 
     switch (libraryType)
     {
@@ -577,6 +603,15 @@ public class SettingsDlgCtrlr extends ModalDialog
     catch (IOException | InterruptedException | ExecutionException e)
     {
       errorPopup("Error: " + getThrowableMessage(e));
+
+      btnZoteroAuthorize  .setSelected(false);
+      btnMendeleyAuthorize.setSelected(false);
+
+      if (db.bibLibraryIsLinked())
+      {
+        btnReEstablishAccess.setDisable(false);
+        vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr);
+      }
     }
   }
 
@@ -587,14 +622,9 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     boolean success = false;
 
-    authUrl.set("");
-    btnZoteroAuthorize  .setSelected(false);
-    btnMendeleyAuthorize.setSelected(false);
-
     OAuth2AccessToken accessToken = null;
 
     String verificationCode = tfVerificationCode.getText();
-    tfVerificationCode.clear();
 
     try (OAuth20Service service = MendeleyOAuthApi.service())
     {
@@ -608,7 +638,12 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     try
     {
-      db.linkMendeleyLibrary(CryptoUtil.encrypt("", accessToken.getAccessToken()), CryptoUtil.encrypt("", accessToken.getRefreshToken()));
+      MendeleyWrapper dummyWrapper = MendeleyWrapper.getProfileInfoFromServer(accessToken.getAccessToken(), accessToken.getRefreshToken());
+
+      if (db.bibLibraryIsLinked())
+        db.getBibLibrary().enableSyncOnThisComputer("", accessToken.getAccessToken(), accessToken.getRefreshToken(), dummyWrapper.getUserID(), dummyWrapper.getUserName(), true);
+      else
+        db.linkMendeleyLibrary(accessToken.getAccessToken(), accessToken.getRefreshToken(), dummyWrapper.getUserID(), dummyWrapper.getUserName());
     }
     catch (Exception e)
     {
@@ -616,10 +651,16 @@ public class SettingsDlgCtrlr extends ModalDialog
       return;
     }
 
+    authUrl.set("");
+    btnZoteroAuthorize  .setSelected(false);
+    btnMendeleyAuthorize.setSelected(false);
+    tfVerificationCode.clear();
+
     SyncBibDlgCtrlr.sync();
 
+    vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr);
+    btnReEstablishAccess.setDisable(false);
     setUnlinkMessage();
-    tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
   }
 
 //---------------------------------------------------------------------------
@@ -629,14 +670,9 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     boolean success = false;
 
-    authUrl.set("");
-    btnZoteroAuthorize  .setSelected(false);
-    btnMendeleyAuthorize.setSelected(false);
-
     OAuth1AccessToken accessToken = null;
 
     String verificationCode = tfVerificationCode.getText();
-    tfVerificationCode.clear();
 
     try (OAuth10aService service = ZoteroOAuthApi.service())
     {
@@ -650,7 +686,10 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     try
     {
-      db.linkZoteroLibrary(CryptoUtil.encrypt("", accessToken.getTokenSecret()), accessToken.getParameter("userID"));
+      if (db.bibLibraryIsLinked())
+        db.getBibLibrary().enableSyncOnThisComputer(accessToken.getTokenSecret(), "", "", accessToken.getParameter("userID"), accessToken.getParameter("username"), true);
+      else
+        db.linkZoteroLibrary(accessToken.getTokenSecret(), accessToken.getParameter("userID"), accessToken.getParameter("username"));
     }
     catch (Exception e)
     {
@@ -658,10 +697,16 @@ public class SettingsDlgCtrlr extends ModalDialog
       return;
     }
 
+    authUrl.set("");
+    btnZoteroAuthorize  .setSelected(false);
+    btnMendeleyAuthorize.setSelected(false);
+    tfVerificationCode.clear();
+
     SyncBibDlgCtrlr.sync();
 
+    vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr);
+    btnReEstablishAccess.setDisable(false);
     setUnlinkMessage();
-    tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
   }
 
 //---------------------------------------------------------------------------
@@ -684,22 +729,20 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> library = db.getBibLibrary();
 
-    String userName = library.getUserName();
+    String userName = safeStr(library.getUserName());
 
-    if (userName.length() > 0)
-      userName = "Username: " + userName;
+    setLinkedMessage(userName.isBlank() ?
+      "Getting username from server..."
+    :
+      "Username: " + userName);
 
-    if ((userName.length() > 0) || (library.type() != LibraryType.ltMendeley))
-    {
-      setLinkedMessage(userName);
-      return;
-    }
-
-    setLinkedMessage("Getting username from server...");
-
-    ((MendeleyWrapper)library).getUserNameFromServer(
-      emailAddress -> setLinkedMessage("Username: " + emailAddress),
-      ex           -> setLinkedMessage("Unable to retrieve username from " + library.getUserFriendlyName() + " server."));
+    library.getProfileInfoFromServer(
+      _userName -> setLinkedMessage("Username: " + _userName),
+      ex        ->
+      {
+        if (userName.isBlank())
+          setLinkedMessage("Unable to retrieve username from " + library.getUserFriendlyName() + " server.");
+      });
   }
 
 //---------------------------------------------------------------------------
@@ -715,7 +758,7 @@ public class SettingsDlgCtrlr extends ModalDialog
       return;
 
     db.unlinkBibLibrary();
-    tabLinkToExtBibMgr.setContent(apLinkToExtBibMgr);
+    vbRefMgr.getChildren().setAll(apLinkToExtBibMgr);
   }
 
 //---------------------------------------------------------------------------

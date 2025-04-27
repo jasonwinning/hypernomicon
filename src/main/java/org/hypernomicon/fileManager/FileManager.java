@@ -39,7 +39,6 @@ import java.util.function.Predicate;
 import org.apache.commons.lang3.SystemUtils;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.model.Exceptions.*;

@@ -76,7 +76,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     PersonForDupCheck person = list.poll();
 
-    task.totalCount = list.size() * (list.size() + 1) / 2;
+    task.totalCount = ((long) list.size()) * ((long) (list.size() + 1)) / 2;
 
     while (list.size() > 0)
     {
