@@ -52,11 +52,8 @@ import com.google.common.collect.Lists;
 
 import javafx.concurrent.Worker.State;
 
-import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.util.json.JsonArray;
-import org.hypernomicon.util.json.JsonObj;
-import org.hypernomicon.HyperTask;
 import org.hypernomicon.Const.PrefKey;
+import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.*;
@@ -64,6 +61,9 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.HttpHeader;
+import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonObj;
 
 //---------------------------------------------------------------------------
 

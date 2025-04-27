@@ -51,19 +51,18 @@ import com.google.common.collect.EnumHashBiMap;
 
 import javafx.concurrent.Worker.State;
 
-import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.util.json.JsonArray;
-import org.hypernomicon.util.json.JsonObj;
-import org.hypernomicon.HyperTask;
 import org.hypernomicon.Const.PrefKey;
+import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.HttpHeader;
+import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonObj;
 
 //---------------------------------------------------------------------------
 
@@ -788,20 +787,39 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // If save is true and userID is passed in, that means the user is trying to re-establish access.
+  // If save is true and the userID is NOT passed in, the access token is being refreshed.
+  // If save is false, the library is being loaded from local persistent storage.
+
   @Override public void enableSyncOnThisComputer(String apiKey, String accessToken, String refreshToken, String userID, String userName, boolean save) throws HyperDataException
   {
     if (strNotNullOrBlank(userID))
     {
-      if ((this.userID.isBlank() == false) && (this.userID.equals(userID) == false))
-        throw new HyperDataException("User ID for local entries is " + this.userID + ", but user ID from server is " + userID);
-
-      for (MendeleyDocument document : getAllEntries())
+      if (this.userID.isBlank())
       {
-        String docUserID = document.getUserID();
+        if (save && getAllEntries().isEmpty())
+        {
+          // The user is trying to re-establish access without the userID previously being saved and with no entries in the library.
+          // It is not a good solution to try to get the existing userID from the server because we don't know the reason why the
+          // user is trying to re-establish access (existing tokens may have been deleted from the account, etc.).
 
-        if (strNotNullOrBlank(docUserID) && (docUserID.equals(userID) == false))
-          throw new HyperDataException("User ID for local entries is " + docUserID + ", but user ID from server is " + userID);
+          // In this situation, there is insufficient local information to confirm whether the account corresponding
+          // to the new access token is the same as the account this database was previously linked to. If not, then
+          // if we accept the new access token, Mendeley folder information could get synced to the wrong account.
+
+          throw new HyperDataException("Unable to re-establish access. You may need to unlink and re-link your Mendeley account.");
+        }
+
+        for (MendeleyDocument document : getAllEntries())
+        {
+          String docUserID = document.getUserID();
+
+          if (strNotNullOrBlank(docUserID) && (docUserID.equals(userID) == false))
+            throw new HyperDataException("User ID for local entries is " + docUserID + ", but user ID from server is " + userID);
+        }
       }
+      else if (this.userID.equals(userID) == false)
+        throw new HyperDataException("User ID for local entries is " + this.userID + ", but user ID from server is " + userID);
 
       this.userID = userID;
       this.userName = userName;
