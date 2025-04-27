@@ -55,7 +55,7 @@ public final class BibTexBibData extends BibDataStandalone
       if (auth.startsWith("and "))
         auth = auth.substring(4);
 
-      auth = ultraTrim(auth);
+      auth = auth.strip();
 
       if (auth.length() > 0)
         authors.add(authorType, new PersonName(auth));

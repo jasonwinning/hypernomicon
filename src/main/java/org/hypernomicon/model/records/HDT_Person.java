@@ -184,7 +184,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
       return existingKeyObj.record.getType() == hdtPerson ? (HDT_Person) existingKeyObj.record : null;
 
     for (String val : new SplitString(keys.toString(), ';'))
-      if (val.trim().equalsIgnoreCase(keyObj.text))
+      if (val.strip().equalsIgnoreCase(keyObj.text))
         return null;
 
     if (keys.length() > 0) keys.append("; ");
@@ -301,7 +301,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
       else
         first = first.substring(0, paren1);
 
-      first = first.trim();
+      first = first.strip();
     }
 
     SplitString splitStr = new SplitString(first, ' ');

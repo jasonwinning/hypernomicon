@@ -252,7 +252,7 @@ public final class MainTextWrapper
 
     int keyWorksSize = keyWorks == null ? 0 : getNestedKeyWorkCount(curRecord, keyWorks);
 
-    if (jsoupParse(html).text().trim().isEmpty() && ((keyWorksSize == 0) || (curRecord.getType() == hdtInvestigation)) && noDisplayRecords && canEdit())
+    if (strNullOrBlank(jsoupParse(html).text()) && ((keyWorksSize == 0) || (curRecord.getType() == hdtInvestigation)) && noDisplayRecords && canEdit())
       beginEditing(false);
     else
       setReadOnlyHTML(completeHtml, we, textViewInfo.scrollPos, null, true);
@@ -504,7 +504,7 @@ public final class MainTextWrapper
     if (styleTag == null)
       doc.head().prepend(styleTag());
 
-    MutableBoolean firstOpen = new MutableBoolean(doc.body().text().trim().isEmpty()),
+    MutableBoolean firstOpen = new MutableBoolean(strNullOrBlank(doc.body().text())),
                    haventRenderedKeyWorkDisplayOptionsYet = new MutableBoolean(true);
     StringBuilder innerHtml = new StringBuilder();
     MutableInt tagNdx = new MutableInt(0);
@@ -602,7 +602,7 @@ public final class MainTextWrapper
       });
     }
 
-    String plainText = doc.body().text().trim();
+    String plainText = doc.body().text().strip();
 
     if ((relRecordsHtml.length() > 0) || (plainText.length() > 0))
     {

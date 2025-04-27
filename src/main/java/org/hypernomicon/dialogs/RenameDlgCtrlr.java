@@ -57,7 +57,7 @@ public class RenameDlgCtrlr extends ModalDialog
 
 //---------------------------------------------------------------------------
 
-  public String getNewName() { return ultraTrim(tfName.getText()); }
+  public String getNewName() { return tfName.getText().strip(); }
 
 //---------------------------------------------------------------------------
 
@@ -124,7 +124,7 @@ public class RenameDlgCtrlr extends ModalDialog
 
   @Override protected boolean isValid()
   {
-    if (ultraTrim(tfName.getText()).isBlank())
+    if (tfName.getText().isBlank())
       return falseWithErrorPopup("Name cannot be blank.", tfName);
 
     if (nameType != ntRecord)

@@ -291,7 +291,7 @@ public class BibliographicDate implements Comparable<BibliographicDate>
     if (hasMonth())
       attribs = attribs + MONTH_ATTR_NAME + '=' + QUOTE + month + QUOTE + ' ';
 
-    if ((safeStr(year.rawValue).isBlank() == false) && (((year.numericValueWhereMinusOneEqualsOneBC() > 0) && year.rawValue.equals(parsedYearStr)) == false))
+    if (strNotNullOrBlank(year.rawValue) && (((year.numericValueWhereMinusOneEqualsOneBC() > 0) && year.rawValue.equals(parsedYearStr)) == false))
       attribs = attribs + RAW_YEAR_ATTR_NAME + '=' + QUOTE + xmlContentEscaper.escape(year.rawValue) + QUOTE + ' ';
 
     if (year.numericValueWhereMinusOneEqualsOneBC() != 0)

@@ -116,7 +116,7 @@ public class QueryWhereBibField extends WorkQuery
     if (field == null)
       return false;
 
-    String str = record.getBibData().getStr(field).toLowerCase().trim();
+    String str = record.getBibData().getStr(field).toLowerCase().strip();
 
     switch (getCellID(op2))
     {
@@ -124,11 +124,11 @@ public class QueryWhereBibField extends WorkQuery
 
         if (str.isEmpty()) return false;
 
-        return str.trim().equalsIgnoreCase(getCellText(op3).trim()) == (getCellID(op2) == EQUAL_TO_OPERAND_ID);
+        return str.strip().equalsIgnoreCase(getCellText(op3).strip()) == (getCellID(op2) == EQUAL_TO_OPERAND_ID);
 
       case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
 
-        String val3 = getCellText(op3).trim();
+        String val3 = getCellText(op3).strip();
         if (val3.isEmpty()) return false;
 
         return str.contains(val3.toLowerCase()) == (getCellID(op2) == CONTAINS_OPERAND_ID);

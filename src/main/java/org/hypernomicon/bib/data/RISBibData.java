@@ -67,7 +67,7 @@ public final class RISBibData extends BibDataStandalone
       if (m.matches())
       {
         String tag = m.group(1),
-               val = m.group(2).trim();
+               val = m.group(2).strip();
 
         if (tagsAndValues.isEmpty() && ("TY".equals(tag) == false))  // TY must always be the first tag
           throw new RISException();
@@ -96,7 +96,7 @@ public final class RISBibData extends BibDataStandalone
 
         tagsAndValues.put(tag, val);
       }
-      else if ("ER".equals(ultraTrim(line)))
+      else if ("ER".equals(line.strip()))
       {
         if (tagsAndValues.containsKey("TY") == false)
           throw new RISException();  // ER must always be the last tag, and TY must always be first
@@ -233,12 +233,12 @@ public final class RISBibData extends BibDataStandalone
 
     String containerTitle;
 
-    if (safeStr(t2).isBlank() == false)
+    if (strNotNullOrBlank(t2))
     {
       setMultiStr(bfTitle, safeListOf(singleTitle));
       containerTitle = t2;
     }
-    else if (safeStr(jf).isBlank() == false)
+    else if (strNotNullOrBlank(jf))
       containerTitle = jf;
     else
       containerTitle = safeStr(jo);

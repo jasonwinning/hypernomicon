@@ -286,7 +286,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
       while (newFullNameEngChar.contains("  "))
         newFullNameEngChar = newFullNameEngChar.replaceAll("  ", " ");
 
-      fullLCNameEngChar = ultraTrim(newFullNameEngChar).replaceAll("[.,;]", "");
+      fullLCNameEngChar = newFullNameEngChar.strip().replaceAll("[.,;]", "");
     }
 
   //---------------------------------------------------------------------------

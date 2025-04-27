@@ -98,7 +98,7 @@ public final class GoogleBibData extends BibDataStandalone
 
       if (jsonArray.isEmpty()) return null;
 
-      if ((jsonArray.size() == 1) || safeStr(title).isBlank())
+      if ((jsonArray.size() == 1) || strNullOrBlank(title))
         return new GoogleBibData(jsonArray.getObj(0).getObj("volumeInfo"), queryIsbn);
 
       LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();
@@ -165,7 +165,7 @@ public final class GoogleBibData extends BibDataStandalone
     if (isbn.length() > 0)
       return url + "isbn:" + isbn;
 
-    if (safeStr(title).isEmpty()) return url;
+    if (strNullOrBlank(title)) return url;
 
     authKeywords.clear();
     List<String> edKeywords = new ArrayList<>();
@@ -192,7 +192,7 @@ public final class GoogleBibData extends BibDataStandalone
     String auths = authKeywords.stream().map(keyword -> escapeURL('"' + keyword + '"', false))
                                         .collect(Collectors.joining("+"));
 
-    title = convertToEnglishChars(title).trim();
+    title = convertToEnglishChars(title).strip();
 
     if (title.length() > 0)
       url = url + escapeURL('"' + title + '"', false);
@@ -232,7 +232,7 @@ public final class GoogleBibData extends BibDataStandalone
       }
     }
 
-    if (isbn.isBlank() && safeStr(title).isBlank())
+    if (isbn.isBlank() && strNullOrBlank(title))
     {
       successHndlr.accept(null);
       return;

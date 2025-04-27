@@ -1787,7 +1787,7 @@ public final class MainCtrlr
         "Are you sure you want to delete this record?";
 
       String name = record.getCBText();
-      if (ultraTrim(name).isEmpty())
+      if (name.isBlank())
         name = activeTab().recordName();
 
       if (confirmDialog("Type: " + getTypeName(type) + '\n' +
@@ -2200,7 +2200,7 @@ public final class MainCtrlr
     }
 
     String name = record.getCBText();
-    if (ultraTrim(name).isEmpty())
+    if (name.isBlank())
       name = activeTab().recordName();
 
     if (confirmDialog("Type: " + getTypeName(type) + '\n' +
@@ -2986,10 +2986,10 @@ public final class MainCtrlr
   {
     String desc;
 
-    if      ((record2.getType() == hdtWorkLabel) && (record2.hasHub() == false))         desc = record1.getMainText().getHtml();
-    else if (ultraTrim(convertToSingleLine(record1.getMainText().getPlain())).isEmpty()) desc = record2.getMainText().getHtml();
-    else if (ultraTrim(convertToSingleLine(record2.getMainText().getPlain())).isEmpty()) desc = record1.getMainText().getHtml();
-    else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))    desc = record1.getMainText().getHtml();
+    if      ((record2.getType() == hdtWorkLabel) && (record2.hasHub() == false))      desc = record1.getMainText().getHtml();
+    else if (convertToSingleLine(record1.getMainText().getPlain()).isBlank())         desc = record2.getMainText().getHtml();
+    else if (convertToSingleLine(record2.getMainText().getPlain()).isBlank())         desc = record1.getMainText().getHtml();
+    else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml())) desc = record1.getMainText().getHtml();
     else
     {
       MergeSpokeDlgCtrlr msdc = new MergeSpokeDlgCtrlr(record1, record2);
@@ -3486,7 +3486,7 @@ public final class MainCtrlr
 
     if (nextID < 1)
     {
-      String text = HyperTableCell.getCellText(hcbGoTo.selectedHTC()).trim();
+      String text = HyperTableCell.getCellText(hcbGoTo.selectedHTC()).strip();
       if (text.length() > 0)
         lblStatus.setText("No results: searched " + getTypeName(selectorType()) + " records for \"" + text + '"');
 

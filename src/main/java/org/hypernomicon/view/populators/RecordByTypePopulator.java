@@ -182,7 +182,7 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
-    RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
+    RecordType type = ((id > 0) || strNotNullOrEmpty(text)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
 
     return createAndAddCell(row, rowToChoices, id, text, type);
   }

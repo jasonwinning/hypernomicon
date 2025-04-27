@@ -62,7 +62,7 @@ class CharacterGrid
     public Symbol(int codepoint, String html, String desc)
     {
       this.codepoint = codepoint;
-      this.html = safeStr(html).isBlank() ? "&#" + codepoint + ';' : html;
+      this.html = strNullOrBlank(html) ? "&#" + codepoint + ';' : html;
       this.desc = desc;
       ch = (char) codepoint;
     }

@@ -18,6 +18,7 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
@@ -68,9 +69,8 @@ public class MergeSpokeDlgCtrlr extends ModalDialog
     view2.setOnDragOver   (Event::consume);
     view2.setOnDragDropped(Event::consume);
 
-    if (extractTextFromHTML(mainText1).trim().isEmpty())
-      if (extractTextFromHTML(mainText2).trim().length() > 0)
-        rbDesc2.setSelected(true);
+    if (strNullOrBlank(extractTextFromHTML(mainText1)) && strNotNullOrBlank(extractTextFromHTML(mainText2)))
+      rbDesc2.setSelected(true);
 
     he3.setHtmlText(prepHtmlForEditing(""));
   }

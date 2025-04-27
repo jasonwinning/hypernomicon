@@ -73,7 +73,7 @@ public class WebButton
 
     private boolean nonblank(String str)
     {
-      return (safeStr(str).isBlank() == false) && ((this != NumericYear) || StringUtils.isNumeric(str));
+      return strNotNullOrBlank(str) && ((this != NumericYear) || StringUtils.isNumeric(str));
     }
 
   //---------------------------------------------------------------------------
@@ -191,14 +191,13 @@ public class WebButton
       }
       else if (field == WebButtonField.QueryName)
       {
-        String first1 = ultraTrim(removeFirstParenthetical(value));
+        String first1 = removeFirstParenthetical(value).strip();
 
         int ndx = first1.indexOf(' ');
 
         if (ndx >= 0)
         {
-          String first2 = ultraTrim(first1.replaceAll("^[^\\s]\\.", "")
-                                          .replaceAll("\\s[^\\s]\\.", ""));
+          String first2 = first1.replaceAll("^[^\\s]\\.", "").replaceAll("\\s[^\\s]\\.", "").strip();
 
           ndx = first2.indexOf(' ');
 

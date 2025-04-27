@@ -82,7 +82,7 @@ public class FilenameMap<T> implements Map<String, T>
 
   @Override public T put(String key, T value)
   {
-    if ((value == null) || safeStr(key).isEmpty()) return null;
+    if ((value == null) || strNullOrEmpty(key)) return null;
 
     T oldVal = remove(key);
 

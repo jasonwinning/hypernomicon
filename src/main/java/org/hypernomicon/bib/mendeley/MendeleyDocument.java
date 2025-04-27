@@ -149,7 +149,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
       case bfURL :
 
-        if (safeStr(newStr).isBlank())
+        if (strNullOrBlank(newStr))
           jObj.remove("websites");
         else
         {
@@ -168,7 +168,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       default : internalErrorPopup(90225); return;
     }
 
-    if (safeStr(newStr).isBlank())
+    if (strNullOrBlank(newStr))
     {
       jObj.remove(fieldKey);
       return;
@@ -188,13 +188,13 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
     if (idObj == null)
     {
-      if (safeStr(identifiersStr).isBlank())
+      if (strNullOrBlank(identifiersStr))
         return;
 
       jObj.put("identifiers", idObj = new JsonObj());
     }
 
-    if (safeStr(identifiersStr).isBlank())
+    if (strNullOrBlank(identifiersStr))
     {
       idObj.remove(fieldKey);
 
@@ -735,8 +735,8 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     for (JsonObj node : creatorsArr.getObjs())
     {
       PersonName personName;
-      String firstName = ultraTrim(node.getStrSafe("first_name")),
-             lastName  = ultraTrim(node.getStrSafe("last_name" ));
+      String firstName = node.getStrSafe("first_name").strip(),
+             lastName  = node.getStrSafe("last_name" ).strip();
 
       if ((firstName.length() > 0) || (lastName.length() > 0))
         personName = new PersonName(firstName, lastName);

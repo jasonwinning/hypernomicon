@@ -84,7 +84,7 @@ public class NewDatabaseDlgCtrlr extends ModalDialog
 
   private static boolean addNameToSet(FilePathSet set, String name)
   {
-    name = ultraTrim(name);
+    name = name.strip();
 
     if (name.isEmpty())
       return falseWithErrorPopup("Folder name cannot be blank.");
@@ -124,14 +124,14 @@ public class NewDatabaseDlgCtrlr extends ModalDialog
     {
       saveStringBuilderToFile(new StringBuilder(DEFAULT_XML_PATH + '/' + SETTINGS_FILE_NAME), filePath.resolve(HDB_DEFAULT_FILENAME));
 
-      filePath.resolve(DEFAULT_XML_PATH                   ).createDirectory();
-      filePath.resolve(ultraTrim(tfPictures    .getText())).createDirectory();
-      filePath.resolve(ultraTrim(tfBooks       .getText())).createDirectory();
-      filePath.resolve(ultraTrim(tfPapers      .getText())).createDirectory();
-      filePath.resolve(ultraTrim(tfUnentered   .getText())).createDirectory();
-      filePath.resolve(ultraTrim(tfMiscFiles   .getText())).createDirectory();
-      filePath.resolve(ultraTrim(tfResults     .getText())).createDirectory();
-      filePath.resolve(ultraTrim(tfTopicFolders.getText())).createDirectory();
+      filePath.resolve(DEFAULT_XML_PATH                ).createDirectory();
+      filePath.resolve(tfPictures    .getText().strip()).createDirectory();
+      filePath.resolve(tfBooks       .getText().strip()).createDirectory();
+      filePath.resolve(tfPapers      .getText().strip()).createDirectory();
+      filePath.resolve(tfUnentered   .getText().strip()).createDirectory();
+      filePath.resolve(tfMiscFiles   .getText().strip()).createDirectory();
+      filePath.resolve(tfResults     .getText().strip()).createDirectory();
+      filePath.resolve(tfTopicFolders.getText().strip()).createDirectory();
     }
     catch (IOException e)
     {
@@ -171,13 +171,13 @@ public class NewDatabaseDlgCtrlr extends ModalDialog
   {
     Map<String, String> folderMap = new HashMap<>();
 
-    folderMap.put(FolderIDPrefKey.PICTURES  , ultraTrim(tfPictures    .getText()));
-    folderMap.put(FolderIDPrefKey.BOOKS     , ultraTrim(tfBooks       .getText()));
-    folderMap.put(FolderIDPrefKey.PAPERS    , ultraTrim(tfPapers      .getText()));
-    folderMap.put(FolderIDPrefKey.UNENTERED , ultraTrim(tfUnentered   .getText()));
-    folderMap.put(FolderIDPrefKey.MISC_FILES, ultraTrim(tfMiscFiles   .getText()));
-    folderMap.put(FolderIDPrefKey.RESULTS   , ultraTrim(tfResults     .getText()));
-    folderMap.put(FolderIDPrefKey.TOPICAL   , ultraTrim(tfTopicFolders.getText()));
+    folderMap.put(FolderIDPrefKey.PICTURES  , tfPictures    .getText().strip());
+    folderMap.put(FolderIDPrefKey.BOOKS     , tfBooks       .getText().strip());
+    folderMap.put(FolderIDPrefKey.PAPERS    , tfPapers      .getText().strip());
+    folderMap.put(FolderIDPrefKey.UNENTERED , tfUnentered   .getText().strip());
+    folderMap.put(FolderIDPrefKey.MISC_FILES, tfMiscFiles   .getText().strip());
+    folderMap.put(FolderIDPrefKey.RESULTS   , tfResults     .getText().strip());
+    folderMap.put(FolderIDPrefKey.TOPICAL   , tfTopicFolders.getText().strip());
 
     return folderMap;
   }

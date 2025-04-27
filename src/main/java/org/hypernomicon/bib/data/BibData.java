@@ -120,7 +120,7 @@ public abstract class BibData
 
   void setDOI(String newStr)
   {
-    if (safeStr(newStr).isEmpty()) return;
+    if (strNullOrBlank(newStr)) return;
     String doi = matchDOI(newStr);
     if (doi.length() > 0)
       setStr(bfDOI, doi);
@@ -156,7 +156,7 @@ public abstract class BibData
       case bfDOI       : case bfVolume    : case bfIssue   : case bfPages    : case bfEntryType :
       case bfPubLoc    : case bfPublisher : case bfEdition : case bfLanguage : case bfWorkType  :
 
-        return ultraTrim(getStr(bibFieldEnum)).equals(ultraTrim(otherBD.getStr(bibFieldEnum)));
+        return getStr(bibFieldEnum).strip().equals(otherBD.getStr(bibFieldEnum).strip());
 
       case bfContainerTitle : case bfTitle : case bfMisc : case bfISBNs : case bfISSNs :
 
@@ -288,7 +288,7 @@ public abstract class BibData
       case bftAuthor      -> (int) getAuthors().stream().filter(author -> author.getType() == AuthorType.fromBibFieldEnum(bibFieldEnum)).count();
       case bftBibDate     -> BibliographicDate.isEmpty(getDate()) ? 0 : 1;
       case bftMultiString -> nullSwitch(getMultiStr(bibFieldEnum), 0, List::size);
-      case bftString      -> safeStr(getStr(bibFieldEnum)).isBlank() ? 0 : 1;
+      case bftString      -> strNullOrBlank(getStr(bibFieldEnum)) ? 0 : 1;
       case bftWorkType    -> getWorkType() == null ? 0 : 1;
 
       case bftEntryType ->

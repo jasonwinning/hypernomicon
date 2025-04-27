@@ -94,7 +94,7 @@ public class InvestigationsDlgCtrlr extends ModalDialog
     listView.setItems(data);
     listView.setCellFactory(CheckBoxListCell.forListView(InvestigationSetting::selectedProperty));
 
-    tfNew.textProperty().addListener((ob, ov, nv) -> chkNew.setSelected(nv.trim().length() > 0));
+    tfNew.textProperty().addListener((ob, ov, nv) -> chkNew.setSelected(strNotNullOrBlank(nv)));
 
     onShown = () -> safeFocus(tfNew);
   }

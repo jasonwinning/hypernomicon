@@ -51,7 +51,7 @@ public abstract class ReportGenerator
 
   public void addField(String fieldName, String text)
   {
-    if (safeStr(text).isBlank()) return;
+    if (strNullOrBlank(text)) return;
 
     fieldList.add(new ReportField(fieldName, text));
   }

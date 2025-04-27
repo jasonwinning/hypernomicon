@@ -442,7 +442,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     String indicator = getFileIndicator(record);
 
-    return indicator.isBlank() ? str : (str + " (" + indicator + ')').trim();
+    return indicator.isBlank() ? str : (str + " (" + indicator + ')').strip();
   }
 
 //---------------------------------------------------------------------------
@@ -619,7 +619,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public String makeWorkSearchKey(List<Author> authorsToUse, String yearToUse, boolean addLetter, boolean keyWorkLink)
   {
-    if ((authorsToUse == null) || authorsToUse.isEmpty() || safeStr(yearToUse).isBlank())
+    if (collEmpty(authorsToUse) || strNullOrBlank(yearToUse))
       return "";
 
     WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
@@ -638,14 +638,14 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     if (searchKey.isEmpty() == false)
       return searchKey;
 
-    String title = ultraTrim(new SplitString(name(), ':').next());
+    String title = new SplitString(name(), ':').next().strip();
     if (title.isBlank())
       return "Work ID=" + getID();
 
     if ((getYearStr().isBlank() == false) || largerWork.isNull())
       return makeKeyFromYearAndTitle();
 
-    String lwTitle = ultraTrim(new SplitString(largerWork.get().name(), ':').next());
+    String lwTitle = new SplitString(largerWork.get().name(), ':').next().strip();
     if (lwTitle.isBlank())
       return makeKeyFromYearAndTitle();
 
@@ -665,7 +665,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   private String makeKeyFromYearAndTitle()
   {
-    String title = ultraTrim(new SplitString(name(), ':').next());
+    String title = new SplitString(name(), ':').next().strip();
 
     if (title.isBlank())
       return "";

@@ -486,7 +486,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
       fileTitle = FilePath.removeInvalidFileNameChars(fileTitle);
 
-      tfFileTitle.setText(fileTitle.trim());
+      tfFileTitle.setText(fileTitle.strip());
     });
 
     tfFileTitle.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
@@ -535,7 +535,7 @@ public class WorkDlgCtrlr extends ModalDialog
           title = HDT_Work.fixCase(title);
 
         change.setRange(0, change.getControlText().length());
-        change.setText(ultraTrim(title));
+        change.setText(title.strip());
         alreadyChangingTitle.setFalse();
       }
 
@@ -733,7 +733,7 @@ public class WorkDlgCtrlr extends ModalDialog
       }
     }
 
-    tfNewFile.setText(ultraTrim(newFileName));
+    tfNewFile.setText(newFileName.strip());
   }
 
 //---------------------------------------------------------------------------
@@ -1331,12 +1331,12 @@ public class WorkDlgCtrlr extends ModalDialog
       (chkKeepFilenameUnchanged.isSelected() ?
         origFilePath
       :
-        origFilePath.getDirOnly().resolve(ultraTrim(tfNewFile.getText())))
+        origFilePath.getDirOnly().resolve(tfNewFile.getText().strip()))
     :
       (chkKeepFilenameUnchanged.isSelected() ?
         destFolder.getValue().filePath().resolve(origFilePath.getNameOnly())
       :
-        destFolder.getValue().filePath().resolve(ultraTrim(tfNewFile.getText())));
+        destFolder.getValue().filePath().resolve(tfNewFile.getText().strip()));
 
     HDT_RecordWithPath existingFile = HyperPath.getRecordFromFilePath(newFilePath);
 

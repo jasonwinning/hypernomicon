@@ -546,7 +546,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected String makeSortKeyTypeSpecific()
   {
-    return safeStr(sortKeyAttr).length() > 0 ? sortKeyAttr : name();
+    return strNotNullOrBlank(sortKeyAttr) ? sortKeyAttr : name();
   }
 
 //---------------------------------------------------------------------------
@@ -570,7 +570,7 @@ public abstract class HDT_RecordBase implements HDT_Record
           base = base.substring(4);
     }
 
-    return convertToEnglishChars(base).toLowerCase().replace("\"", "").replace("'", "").replace("(", "").replace(")", "").trim();
+    return convertToEnglishChars(base).toLowerCase().replace("\"", "").replace("'", "").replace("(", "").replace(")", "").strip();
   }
 
 //---------------------------------------------------------------------------

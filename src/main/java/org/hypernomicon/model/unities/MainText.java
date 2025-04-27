@@ -159,7 +159,7 @@ public class MainText
   {
     String keyWorksStr = getRecord().getType() == hdtInvestigation ? "" : getKeyWorksString();
 
-    return ultraTrim(htmlAndPlainText.getPlainText() + (keyWorksStr.isEmpty() ? "" : " Key works: " + keyWorksStr));
+    return (htmlAndPlainText.getPlainText() + (keyWorksStr.isEmpty() ? "" : " Key works: " + keyWorksStr)).strip();
   }
 
 //---------------------------------------------------------------------------
@@ -268,15 +268,14 @@ public class MainText
   public void setHtml(String newHtml)
   {
     boolean modify = true;
-    String oldPlainText = extractTextFromHTML(htmlAndPlainText.getHtml(), true).trim(),
-           newPlainText = extractTextFromHTML(newHtml, true).trim();
+    String oldPlainText = extractTextFromHTML(htmlAndPlainText.getHtml(), true).strip(),
+           newPlainText = extractTextFromHTML(newHtml, true).strip();
 
     if (oldPlainText.replaceAll("\\h+", "").equalsIgnoreCase(newPlainText.replaceAll("\\h+", "")))  // Remove all horizontal whitespaces and then compare
       modify = false;
 
-    if (ultraTrim(convertToSingleLine(newPlainText)).isEmpty())
-      if (ultraTrim(convertToSingleLine(oldPlainText)).isEmpty())
-        modify = false;
+    if (convertToSingleLine(newPlainText).isBlank() && convertToSingleLine(oldPlainText).isBlank())
+      modify = false;
 
     setInternal(newHtml);
 

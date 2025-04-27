@@ -375,7 +375,7 @@ public final class MediaUtil
 
   private static RecordType imgRelPathToType(String relPath)
   {
-    return safeStr(relPath).isBlank() ? hdtNone : switch (relPath)
+    return strNullOrBlank(relPath) ? hdtNone : switch (relPath)
     {
       case labelImgPath         -> hdtWorkLabel;
       case glossaryImgPath      -> hdtGlossary;

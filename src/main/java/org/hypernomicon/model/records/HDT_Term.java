@@ -161,7 +161,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
    */
   public static void merge(HDT_Term term1, HDT_Term term2, String newName, String newKey) throws SearchKeyException
   {
-    newKey = ultraTrim(newKey);
+    newKey = newKey.strip();
 
     if (newKey.isBlank())
       throw new SearchKeyTooShortException(term1, newKey);

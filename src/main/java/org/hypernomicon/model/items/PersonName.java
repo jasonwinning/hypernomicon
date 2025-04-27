@@ -40,12 +40,12 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
   public PersonName(String first, String last)
   {
-    this.first = ultraTrim(safeStr(first)); this.last = ultraTrim(safeStr(last));
+    this.first = stripSafe(first); this.last = stripSafe(last);
   }
 
   public PersonName(String name)
   {
-    name = ultraTrim(convertToSingleLine(safeStr(name)));
+    name = convertToSingleLine(safeStr(name)).strip();
     while (name.contains("  "))
       name = name.replaceAll("  ", " ");
 
@@ -59,14 +59,14 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
     if (ndx > 0)
     {
-      first = ultraTrim(name.substring(ndx + 1));
-      last = ultraTrim(name.substring(0, ndx));
+      first = name.substring(ndx + 1).strip();
+      last = name.substring(0, ndx).strip();
       return;
     }
 
     if (ndx == 0)
     {
-      first = ultraTrim(name.substring(ndx + 1));
+      first = name.substring(ndx + 1).strip();
       last = "";
       return;
     }
@@ -74,7 +74,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
     if (name.matches("[Vv][ao]n\\h.*"))
     {
       first = "";
-      last = ultraTrim(name);
+      last = name.strip();
       return;
     }
 
@@ -84,24 +84,24 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
       if (name.substring(--ndx).matches("[^A-Za-z][A-Z]\\..*"))  // Parses "John B. X. James"
       {
         ndx = ndx + 3;
-        first = ultraTrim(name.substring(0, ndx));
-        last = ultraTrim(name.substring(ndx));
+        first = name.substring(0, ndx).strip();
+        last = name.substring(ndx).strip();
         return;
       }
 
       if (name.substring(ndx).matches("[^A-Za-z][A-Za-z]+\\..*"))  // Parses "John B. St. James"
       {
         ndx = ndx + 1;
-        first = ultraTrim(name.substring(0, ndx));
-        last = ultraTrim(name.substring(ndx));
+        first = name.substring(0, ndx).strip();
+        last = name.substring(ndx).strip();
         return;
       }
 
       if (name.substring(ndx).matches("[^A-Za-z][Vv][ao]n\\h.*"))
       {
         ndx = ndx + 1;
-        first = ultraTrim(name.substring(0, ndx));
-        last = ultraTrim(name.substring(ndx));
+        first = name.substring(0, ndx).strip();
+        last = name.substring(ndx).strip();
         return;
       }
     }
@@ -110,15 +110,17 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
     if (ndx < 0)
     {
-      first = ""; last = ultraTrim(name);
+      first = ""; last = name.strip();
     }
     else if (ndx > 0)
     {
-      first = ultraTrim(name.substring(0, ndx + 1)); last = ultraTrim(name.substring(ndx + 1));
+      first = name.substring(0, ndx + 1).strip();
+      last = name.substring(ndx + 1).strip();
     }
     else
     {
-      first = ""; last = ultraTrim(name.substring(ndx + 1));
+      first = "";
+      last = name.substring(ndx + 1).strip();
     }
   }
 
@@ -129,7 +131,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public String getLastFirst()    { return (first.length() > 0) && (last.length() > 0) ? (last + ", " + first) : (last + first); }
   public boolean isEmpty()        { return (getLast().length() + getFirst().length()) == 0; }
   public PersonName toLowerCase() { return new PersonName(first.toLowerCase(), last.toLowerCase()); }
-  public String getFull()         { return (first + ' ' + last).trim(); }
+  public String getFull()         { return (first + ' ' + last).strip(); }
   public String getSingle()       { return getLast().length() > 0 ? getLast() : getFirst(); }
   public PersonName toEngChar()   { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
   public String getSortKey()      { return (last.isEmpty() || first.isEmpty() ? (last + first) : (last + '\u0000' + first)).toLowerCase(); }
@@ -217,7 +219,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
     for (String initial : initialList)
       bibName = bibName + initial + ". ";
 
-    return bibName.trim();
+    return bibName.strip();
   }
 
 //---------------------------------------------------------------------------

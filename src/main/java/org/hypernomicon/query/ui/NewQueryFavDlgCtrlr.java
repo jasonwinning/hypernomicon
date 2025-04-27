@@ -51,7 +51,7 @@ public class NewQueryFavDlgCtrlr extends ModalDialog
 
 //---------------------------------------------------------------------------
 
-  String getNewName()   { return ultraTrim(tfName.getText()); }
+  String getNewName()   { return tfName.getText().strip(); }
   boolean getAutoExec() { return chkAutoExec.isSelected(); }
 
 //---------------------------------------------------------------------------
@@ -59,10 +59,10 @@ public class NewQueryFavDlgCtrlr extends ModalDialog
 
   @Override protected boolean isValid()
   {
-    if (ultraTrim(tfName.getText()).isBlank())
+    if (strNullOrBlank(tfName.getText()))
       return falseWithErrorPopup("Name cannot be blank.", tfName);
 
-    if (ui.favorites.queryFavNameExists(ultraTrim(tfName.getText())))
+    if (ui.favorites.queryFavNameExists(tfName.getText().strip()))
       return falseWithErrorPopup("A favorite with that name already exists.", tfName);
 
     return true;

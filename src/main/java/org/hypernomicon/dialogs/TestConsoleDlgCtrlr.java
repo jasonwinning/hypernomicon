@@ -166,7 +166,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   {
     String folderNameStr = tfFolderName.getText();
 
-    FilePath transientDBFilePath = safeStr(folderNameStr).isBlank() ? getParentFilePath() : getTransientDBFilePath(false, false, null);
+    FilePath transientDBFilePath = strNullOrBlank(folderNameStr) ? getParentFilePath() : getTransientDBFilePath(false, false, null);
 
     if (FilePath.isEmpty(transientDBFilePath)) return;
 
@@ -289,7 +289,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   {
     String parentStr = tfParent.getText();
 
-    if (safeStr(parentStr).isBlank())
+    if (strNullOrBlank(parentStr))
     {
       falseWithErrorPopup("Select a parent folder.", tfParent);
       return null;
@@ -337,7 +337,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     String folderNameStr = tfFolderName.getText();
 
-    if (safeStr(folderNameStr).isBlank())
+    if (strNullOrBlank(folderNameStr))
     {
       falseWithErrorPopup("Enter a folder name.", tfFolderName);
       return null;

@@ -70,10 +70,10 @@ public class NewRegionDlgCtrlr extends ModalDialog
 
     for (HDT_Region otherRegion : db.regions)
     {
-      if (ultraTrim(convertToEnglishChars(otherRegion.name())).equalsIgnoreCase(ultraTrim(convertToEnglishChars(tfName.getText()))))
+      if (convertToEnglishChars(otherRegion.name()).strip().equalsIgnoreCase(convertToEnglishChars(tfName.getText()).strip()))
         return falseWithWarningPopup("A state/region with the name " + otherRegion.name() + " already exists.", tfName);
 
-      if (ultraTrim(convertToEnglishChars(otherRegion.getAbbreviation())).equalsIgnoreCase(ultraTrim(convertToEnglishChars(tfAbbrev.getText()))))
+      if (convertToEnglishChars(otherRegion.getAbbreviation()).strip().equalsIgnoreCase(convertToEnglishChars(tfAbbrev.getText()).strip()))
         return falseWithWarningPopup("A state/region with the abbreviation " + otherRegion.getAbbreviation() + " already exists.", tfName);
     }
 

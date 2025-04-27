@@ -108,7 +108,7 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
     {
       if (programmaticChange) return;
 
-      nv = ultraTrim(safeStr(nv));
+      nv = stripSafe(nv);
       if (nv.length() != 1)
       {
         programmaticChange = true;
@@ -129,7 +129,7 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
     {
       if (programmaticChange) return;
 
-      nv = ultraTrim(safeStr(nv));
+      nv = stripSafe(nv);
       int codePoint = parseInt(nv, -1);
 
       if ((codePoint < 1) || (codePoint > 65535))
@@ -152,7 +152,7 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
     {
       if (programmaticChange) return;
 
-      nv = ultraTrim(safeStr(nv));
+      nv = stripSafe(nv);
       int codePoint = parseHex(nv, -1);
 
       if ((codePoint < 1) || (codePoint > 65535))
@@ -175,7 +175,7 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
     {
       if (programmaticChange) return;
 
-      nv = ultraTrim(safeStr(nv));
+      nv = stripSafe(nv);
       String character = Parser.unescapeEntities(nv, false);
 
       if ((nv.endsWith(";") == false) || (character.length() != 1) || (character.equals(nv)))
@@ -240,7 +240,7 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
     Platform.runLater(() ->
     {
       String font = app.prefs.node("symbols").get("font", "Arial");
-      if (safeStr(font).isBlank()) font = "Arial";
+      if (strNullOrBlank(font)) font = "Arial";
 
       programmaticFontChange = true;
       cbFont.getSelectionModel().select(font);

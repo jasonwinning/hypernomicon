@@ -270,7 +270,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     if ((fileTypeID < 1) && hcbType.getText().isEmpty())
       return falseWithErrorPopup("You must enter a file type.", cbType);
 
-    if (saveNameIfBlank && ultraTrim(tfName.getText()).isBlank())
+    if (saveNameIfBlank && tfName.getText().isBlank())
       return falseWithErrorPopup("The record name is blank.", tfName);
 
     if (saveSearchKey(curMiscFile, tfSearchKey) == false)
@@ -307,7 +307,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   // End file type
 
-    if (saveNameIfBlank || (ultraTrim(tfName.getText()).isBlank() == false))
+    if (saveNameIfBlank || (tfName.getText().isBlank() == false))
       curMiscFile.setName(tfName.getText());
 
     curMiscFile.setAnnotated(checkAnnotated.isSelected());

@@ -550,7 +550,7 @@ public final class MainTextUtil
 
     secondaryHtml.append("</div>");
 
-    if ((ultraTrim(convertToSingleLine(mainText.getPlain())).length() > 0) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + ' '))
+    if ((convertToSingleLine(mainText.getPlain()).strip().length() > 0) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + ' '))
       secondaryHtml.append("<br>").append(embeddedHtml);
 
     return secondaryHtml.toString();
@@ -857,7 +857,7 @@ public final class MainTextUtil
 
   public static String extractTextFromHTML(String html, boolean forComparison)
   {
-    return ultraTrim(jsoupParse(prepHtmlForDisplay(html, forComparison)).text());
+    return jsoupParse(prepHtmlForDisplay(html, forComparison)).text().strip();
   }
 
 //---------------------------------------------------------------------------

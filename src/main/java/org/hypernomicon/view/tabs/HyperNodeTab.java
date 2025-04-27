@@ -22,7 +22,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -413,17 +412,17 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     if (nodeRecord.getType() == hdtConcept)
     {
-      if (ultraTrim(tfSearchKey.getText()).isBlank())
+      if (tfSearchKey.getText().isBlank())
         return falseWithErrorPopup("Unable to modify record: search key of term cannot be blank.", tfSearchKey);
 
-      if (saveNameIfBlank && ultraTrim(tfName.getText()).isBlank())
+      if (saveNameIfBlank && tfName.getText().isBlank())
         return falseWithErrorPopup("Unable to modify record: term cannot be zero-length.", tfName);
     }
     else if (saveNameIfBlank && nameCheck(tfName, "record name") == false) return false;
 
     if (saveSearchKey(nodeRecord, tfSearchKey) == false) return false;
 
-    if (saveNameIfBlank || (ultraTrim(tfName.getText()).isBlank() == false))
+    if (saveNameIfBlank || (tfName.getText().isBlank() == false))
       nodeRecord.setName(tfName.getText());
 
     mainText.save();

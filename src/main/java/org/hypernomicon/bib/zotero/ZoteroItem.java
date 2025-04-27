@@ -166,14 +166,14 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     String origRawDateStr = jData.getStrSafe("date"),
            origParsedDateStr = jObj.condObj("meta").condStrOrBlank("parsedDate");
 
-    if ((safeStr(newRawDateStr).isBlank() == false) && newRawDateStr.equals(origRawDateStr))
+    if (strNotNullOrBlank(newRawDateStr) && newRawDateStr.equals(origRawDateStr))
     {
       return;  // Preserve current date in the Zotero item JSON if raw versions are the same
     }
 
     if ((BibliographicDate.isEmpty(newDate) == false) &&
         Objects.equals(newDate, BibliographicDate.fromUserStr(origRawDateStr)) &&
-        (safeStr(origParsedDateStr).isBlank() || Objects.equals(newDate, ZoteroDate.parsedDateStrToBibDate(origParsedDateStr, false))))
+        (strNullOrBlank(origParsedDateStr) || Objects.equals(newDate, ZoteroDate.parsedDateStrToBibDate(origParsedDateStr, false))))
     {
       return;  // Preserve current date in the Zotero item JSON if it represents the same date
     }
@@ -287,7 +287,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     if (template == null) return false;
 
     String fieldKey = getFieldKey(bibFieldEnum);
-    if (safeStr(fieldKey).isEmpty()) return false;
+    if (strNullOrEmpty(fieldKey)) return false;
 
     return template.containsKey(fieldKey);
   }
@@ -897,8 +897,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
       type = camelToTitle(type);
       PersonName personName;
-      String firstName = ultraTrim(node.getStrSafe("firstName")),
-             lastName  = ultraTrim(node.getStrSafe("lastName" ));
+      String firstName = node.getStrSafe("firstName").strip(),
+             lastName  = node.getStrSafe("lastName" ).strip();
 
       if ((firstName.length() > 0) || (lastName.length() > 0))
         personName = new PersonName(firstName, lastName);

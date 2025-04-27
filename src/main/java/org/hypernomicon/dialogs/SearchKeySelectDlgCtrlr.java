@@ -145,7 +145,7 @@ public class SearchKeySelectDlgCtrlr extends ModalDialog
 
   @Override protected boolean isValid()
   {
-    return (safeStr(getKeyword()).isBlank() == false) || falseWithErrorPopup("No search key is selected.");
+    return strNotNullOrBlank(getKeyword()) || falseWithErrorPopup("No search key is selected.");
   }
 
 //---------------------------------------------------------------------------

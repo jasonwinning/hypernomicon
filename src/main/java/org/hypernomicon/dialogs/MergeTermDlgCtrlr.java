@@ -22,7 +22,6 @@ import static org.hypernomicon.view.MainCtrlr.*;
 import org.hypernomicon.dialogs.base.ModalDialog;
 
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Term;
@@ -106,10 +105,10 @@ public class MergeTermDlgCtrlr extends ModalDialog
     TextField nameField = selectedNameField(),
               keyField  = selectedKeyField();
 
-    if (ultraTrim(nameField.getText()).isBlank())
+    if (nameField.getText().isBlank())
       return falseWithErrorPopup("Unable to merge terms: Term cannot be blank.", nameField);
 
-    if (ultraTrim(keyField.getText()).isBlank())
+    if (keyField.getText().isBlank())
       return falseWithErrorPopup("Unable to merge terms: Search key cannot be blank.", keyField);
 
     try

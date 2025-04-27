@@ -228,9 +228,9 @@ public class BibDataRetriever
       }
     }
 
-    String title = workBD == null ? "" : ultraTrim(workBD.getStr(bfTitle));
+    String title = workBD == null ? "" : workBD.getStr(bfTitle).strip();
     if (title.isBlank())
-      title = pdfBD == null ? "" : ultraTrim(pdfBD.getStr(bfTitle));
+      title = pdfBD == null ? "" : pdfBD.getStr(bfTitle).strip();
 
     BibAuthors authors = workBD == null ? null : workBD.getAuthors();
 
@@ -349,7 +349,7 @@ public class BibDataRetriever
     {
       if (stopped) return;
 
-      title = workBD == null ? "" : ultraTrim(workBD.getStr(bfTitle));
+      title = workBD == null ? "" : workBD.getStr(bfTitle).strip();
       String yearStr = workBD == null ? "" : workBD.getYearStr();
 
       CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, "", alreadyCheckedIDs, bd ->

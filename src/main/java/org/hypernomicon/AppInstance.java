@@ -63,7 +63,7 @@ class AppInstance
     int portNum = parseInt(splitStr.next(), -1);
     FilePath dbPath = new FilePath(splitStr.next());
 
-    return safeStr(id).isBlank() || (portNum < 1) ? null : new AppInstance(id, portNum, dbPath);
+    return strNullOrBlank(id) || (portNum < 1) ? null : new AppInstance(id, portNum, dbPath);
   }
 
 //---------------------------------------------------------------------------

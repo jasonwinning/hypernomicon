@@ -204,7 +204,7 @@ public abstract class NonmodalWindow extends DialogBase
 
     getDividerPositions();
 
-    if (safeStr(prefKeyX).isBlank()) return;
+    if (strNullOrBlank(prefKeyX)) return;
 
     Bounds b = new BoundingBox(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
 

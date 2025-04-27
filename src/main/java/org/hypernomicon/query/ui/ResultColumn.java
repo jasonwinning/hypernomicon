@@ -62,10 +62,9 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   {
     this(caption, (cell1, cell2) ->
     {
-      if (caseSensitive)
-        return safeStr(cell1.text).trim().compareTo(safeStr(cell2.text).trim());
-
-      return safeStr(cell1.text).trim().compareToIgnoreCase(safeStr(cell2.text).trim());
+      return caseSensitive ?
+        stripSafe(cell1.text).compareTo          (stripSafe(cell2.text))  :
+        stripSafe(cell1.text).compareToIgnoreCase(stripSafe(cell2.text));
     });
   }
 
@@ -85,7 +84,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   private ResultColumn(String caption, Comparator<String> comparator, Object unused)
   {
-    this(caption, (cell1, cell2) -> comparator.compare(safeStr(cell1.text).trim(), safeStr(cell2.text).trim()));
+    this(caption, (cell1, cell2) -> comparator.compare(stripSafe(cell1.text), stripSafe(cell2.text)));
 
     // Assert that the unused parameter is the expected constant
     assert unused == UNUSED : "The unused parameter must be the UNUSED constant";
@@ -185,7 +184,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   static class RecordNameColumn extends ResultColumn { RecordNameColumn()
   {
-    super("Name", cell -> makeSortKeyByType(safeStr(cell.text).trim(), hdtWork));
+    super("Name", cell -> makeSortKeyByType(stripSafe(cell.text), hdtWork));
 
     setPrefWidth(scalePropertyValueForDPI(RECORD_NAME_COL_WIDTH));
 
@@ -267,7 +266,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
     {
       NonGeneralColumn col = switch (firstItem.tag)
       {
-        case tagTitle         -> new NonGeneralColumn(firstItem, cell -> makeSortKeyByType(safeStr(cell.text).trim(), hdtWork));
+        case tagTitle         -> new NonGeneralColumn(firstItem, cell -> makeSortKeyByType(stripSafe(cell.text), hdtWork));
         case tagBibDate       -> new NonGeneralColumn(firstItem, cell -> (cell.record == null) || (cell.record.getType() != hdtWork) ? BibliographicDate.EMPTY_DATE : ((HDT_Work)cell.record).getBibDate());
         case tagStartPageNum,
              tagEndPageNum    -> new NonGeneralColumn(firstItem, Util::compareNumberStrings);

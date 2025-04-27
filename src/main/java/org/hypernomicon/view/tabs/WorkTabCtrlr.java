@@ -580,7 +580,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     lblTitle.setOnMouseClicked(event ->
     {
-      String title = HDT_Work.fixCase(convertToSingleLine(ultraTrim(tfTitle.getText())));
+      String title = HDT_Work.fixCase(convertToSingleLine(tfTitle.getText().strip()));
 
       alreadyChangingTitle.setTrue();
       tfTitle.setText(title);
@@ -1471,7 +1471,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (saveSearchKey(curWork, tfSearchKey) == false) return false;
 
-    if (saveNameIfBlank || (ultraTrim(tfTitle.getText()).isBlank() == false))
+    if (saveNameIfBlank || (tfTitle.getText().isBlank() == false))
       curWork.setName(tfTitle.getText());
 
     curWork.workType.setID(hcbType.selectedID());
@@ -1732,7 +1732,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (crossref)
     {
-      if (safeStr(doi).isBlank())
+      if (strNullOrBlank(doi))
       {
         bd.setTitle(tfTitle.getText());
         bd.setDate(BibliographicDate.fromYearStr(tfYear.getText(), false));

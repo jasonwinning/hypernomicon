@@ -179,7 +179,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
 
     if (newSense == null)
     {
-      if (ultraTrim(safeStr(newSenseText)).isBlank() == false)
+      if (strNotNullOrBlank(newSenseText))
       {
         newSense = db.createNewBlankRecord(hdtConceptSense);
         newSense.setName(newSenseText);

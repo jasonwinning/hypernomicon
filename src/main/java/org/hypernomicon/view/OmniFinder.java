@@ -176,7 +176,7 @@ public class OmniFinder
     private void startOver()
     {
       lastQuery = query;
-      queryLC = convertToEnglishChars(query).toLowerCase().trim();
+      queryLC = convertToEnglishChars(query).toLowerCase().strip();
       queryPerson = new PersonForDupCheck(new PersonName(queryLC).toLowerCase(), null);
       recordToPersonList = new HashMap<>();
       lastShowingMore = showingMore;
@@ -277,7 +277,7 @@ public class OmniFinder
       {
         case tierAuthorContains:
 
-          return otherPerson.getAuthor().getNameLastFirst(true).toLowerCase().trim().contains(queryLC);
+          return otherPerson.getAuthor().getNameLastFirst(true).toLowerCase().strip().contains(queryLC);
 
         case tierAuthorMatch: case tierPersonMatch:
 
@@ -287,7 +287,7 @@ public class OmniFinder
 
           if (year.isBlank()) return false;
 
-          String singleName = (otherPerson.getAuthor().singleName(true).toLowerCase().trim() + ' ' + year).trim();
+          String singleName = (otherPerson.getAuthor().singleName(true).toLowerCase().strip() + ' ' + year).strip();
 
           if (removeFirstParenthetical(singleName).equals(queryLC)) return true;
 

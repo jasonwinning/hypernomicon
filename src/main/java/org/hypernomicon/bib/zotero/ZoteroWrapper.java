@@ -311,7 +311,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
       .setHeader(HttpHeader.Content_Type.toString(), "application/json")
       .setHeader(Zotero_API_Version.toString(), "3");
 
-    if (safeStr(apiKey).isBlank() == false)
+    if (strNotNullOrBlank(apiKey))
       rb = rb.setHeader(Zotero_API_Key.toString(), apiKey);
 
     request = rb

@@ -33,7 +33,6 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.SplitString;
-import org.hypernomicon.util.Util;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
@@ -114,7 +113,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
       new SplitString(db.prefs.get(FileNamePrefKey.EXCL_WORK_TYPES + prefNdx, ""), ';').forEach(workTypeStr ->
       {
-        String trimmedWorkTypeStr = ultraTrim(workTypeStr);
+        String trimmedWorkTypeStr = workTypeStr.strip();
         HDT_WorkType workType = db.workTypes.getByID(parseInt(trimmedWorkTypeStr, -1));
         if (HDT_Record.isEmpty(workType, false) == false)
           excludedWorkTypes.add(workType);
@@ -135,7 +134,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
       new SplitString(exclTypesStr, ';').forEach(workTypeStr ->
       {
-        String trimmedWorkTypeStr = ultraTrim(workTypeStr);
+        String trimmedWorkTypeStr = workTypeStr.strip();
 
         db.workTypes.forEach(workType ->
         {
@@ -386,13 +385,13 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     {
       switch (component.type)
       {
-        case fncAuthorLastNames : author    = ultraTrim(component.testStr); break;
-        case fncTitleNoSub      : title     = ultraTrim(component.testStr); break;
-        case fncYear            : year      = ultraTrim(component.testStr); break;
-        case fncTranslators     : trans     = ultraTrim(component.testStr); break;
-        case fncEditors         : editor    = ultraTrim(component.testStr); break;
-        case fncPublisher       : publisher = ultraTrim(component.testStr); break;
-        case fncContainerNoSub  : container = ultraTrim(component.testStr); break;
+        case fncAuthorLastNames : author    = component.testStr.strip(); break;
+        case fncTitleNoSub      : title     = component.testStr.strip(); break;
+        case fncYear            : year      = component.testStr.strip(); break;
+        case fncTranslators     : trans     = component.testStr.strip(); break;
+        case fncEditors         : editor    = component.testStr.strip(); break;
+        case fncPublisher       : publisher = component.testStr.strip(); break;
+        case fncContainerNoSub  : container = component.testStr.strip(); break;
 
         default                 : break;
       }
@@ -412,7 +411,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
   private static void addAuthorsToList(List<FileNameAuthor> authors, String authorsStr, boolean isEditor, boolean isTrans)
   {
-    new SplitString(authorsStr, ';').stream().map(Util::ultraTrim)
+    new SplitString(authorsStr, ';').stream().map(String::strip)
                                              .filter(str -> str.length() > 0)
                                              .forEach(str -> authors.add(new FileNameAuthor(str, isEditor, isTrans)));
   }

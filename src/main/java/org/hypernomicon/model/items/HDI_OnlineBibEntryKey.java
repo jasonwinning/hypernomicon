@@ -110,7 +110,7 @@ public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public int getResultCount(Tag tag)
   {
-    return safeStr(keyStr).isBlank() ? 0 : 1;
+    return strNullOrBlank(keyStr) ? 0 : 1;
   }
 
 //---------------------------------------------------------------------------

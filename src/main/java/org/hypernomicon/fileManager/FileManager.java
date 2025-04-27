@@ -1242,7 +1242,7 @@ public final class FileManager extends NonmodalWindow
       HDT_Record record = row.getRecord();
       if (record == null) continue;
 
-      if (record.hasDesc() && (((HDT_RecordWithDescription) record).getDesc().getPlain().trim().length() > 0))
+      if (record.hasDesc() && strNotNullOrBlank(((HDT_RecordWithDescription) record).getDesc().getPlain()))
       {
         recordTable.selectRow(row);
 

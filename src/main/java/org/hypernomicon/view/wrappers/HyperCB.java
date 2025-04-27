@@ -469,7 +469,7 @@ public class HyperCB implements CommitableWrapper
     if (cb.isEditable() == false)
       throw new AssertionError(new HDB_InternalError(16433));
 
-    RecordSelectDlgCtrlr ctrlr = new RecordSelectDlgCtrlr(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
+    RecordSelectDlgCtrlr ctrlr = new RecordSelectDlgCtrlr(populator, cells, convertToEnglishChars(cb.getEditor().getText()).strip());
     return ctrlr.showModal() ? populator.getChoiceByID(row, ctrlr.getRecord().getID()) : null;
   }
 

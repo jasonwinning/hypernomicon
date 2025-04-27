@@ -170,7 +170,7 @@ public class AutoCompleteCBHelper
     }
     else
     {
-      String str = convertToEnglishChars(cb.getEditor().getText()).trim().toLowerCase();
+      String str = convertToEnglishChars(cb.getEditor().getText()).strip().toLowerCase();
 
       if (str.length() > 0)
       {
@@ -294,7 +294,7 @@ public class AutoCompleteCBHelper
               continue cbItemsLoop;
             }
 
-        if (record.getNameEngChar().trim().toLowerCase().contains(str))
+        if (record.getNameEngChar().strip().toLowerCase().contains(str))
         {
           cells.add(cell);
           atLeastOneStrongMatch.setTrue();
@@ -468,7 +468,7 @@ public class AutoCompleteCBHelper
       editor.end();
     }
 
-    if ((inFocus == false) && (editorText.trim().length() > 0))
+    if ((inFocus == false) && (editorText.strip().length() > 0))
     {
       if (limitToChoices && (found == false))
       {

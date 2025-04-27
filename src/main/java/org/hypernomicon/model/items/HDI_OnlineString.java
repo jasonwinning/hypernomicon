@@ -63,7 +63,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
     return (tag == tagISBN) ?
       matchISBN(get()).size()
     :
-      (safeStr(get()).isBlank() ? 0 : 1);
+      (strNullOrBlank(get()) ? 0 : 1);
   }
 
 //---------------------------------------------------------------------------

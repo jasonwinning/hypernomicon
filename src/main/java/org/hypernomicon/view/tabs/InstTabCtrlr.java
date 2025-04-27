@@ -41,7 +41,6 @@ import static org.hypernomicon.model.records.HDT_Institution.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -359,8 +358,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     boolean locationChanged = false;
 
-    if (tfCity.getText().trim().length() > 0)
-      if (curInst.getCity().trim().equalsIgnoreCase(tfCity.getText().trim()) == false)
+    if (tfCity.getText().strip().length() > 0)
+      if (curInst.getCity().strip().equalsIgnoreCase(tfCity.getText().strip()) == false)
         locationChanged = true;
 
     if (hcbRegion.selectedRecord() != null)
@@ -373,7 +372,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     curInst.setCity(tfCity.getText());
 
-    if (saveNameIfBlank || (ultraTrim(tfName.getText()).isBlank() == false))
+    if (saveNameIfBlank || (tfName.getText().isBlank() == false))
     curInst.setName(tfName.getText());
 
     curInst.setURL(tfURL.getText());
@@ -416,9 +415,9 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   private boolean differentLocation(HDT_Institution instToCheck, HDT_Institution baseInst)
   {
-    String city = instToCheck.getCity().trim();
+    String city = instToCheck.getCity().strip();
 
-    if ((city.length() > 0) && (city.equalsIgnoreCase(baseInst.getCity().trim()) == false))
+    if ((city.length() > 0) && (city.equalsIgnoreCase(baseInst.getCity().strip()) == false))
       return true;
 
     HDT_Region region = instToCheck.region.get();

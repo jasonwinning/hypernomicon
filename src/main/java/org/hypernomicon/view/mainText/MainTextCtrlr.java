@@ -737,7 +737,7 @@ public class MainTextCtrlr
 
     if (dlg.showModal())
     {
-      String urlText = StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfURL.getText().trim()));
+      String urlText = StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfURL.getText().strip()));
 
       String anchorTag = "<a title=\"" + urlText + "\" href=\"" + urlText + "\">" + StringEscapeUtils.escapeEcmaScript(htmlEscaper.escape(dlg.tfDisplayText.getText())) + "</a>";
 

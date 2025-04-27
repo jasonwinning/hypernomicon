@@ -624,7 +624,7 @@ public class PictureDlgCtrlr extends ModalDialog
     if (Objects.equals(oldExt, newExt)) return;
 
     tfName.setText(oldExt.isEmpty() ?
-      (ultraTrim(fileName.toString()) + FilenameUtils.EXTENSION_SEPARATOR + newExt)
+      (fileName.toString().strip() + FilenameUtils.EXTENSION_SEPARATOR + newExt)
     :
       (StringUtils.removeEnd(fileName.toString(), oldExt) + newExt));
   }

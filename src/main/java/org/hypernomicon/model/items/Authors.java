@@ -124,7 +124,7 @@ public abstract class Authors implements Iterable<Author>
         peopleStr = peopleStr + delimiter + ' ';
 
         if ((ndx == (authors.size() - 1)) && amp)
-          peopleStr = peopleStr.trim() + " & ";
+          peopleStr = peopleStr.strip() + " & ";
       }
 
       peopleStr = peopleStr + (firstInitials ? authors.get(ndx).getBibName() : authors.get(ndx).getNameLastFirst());

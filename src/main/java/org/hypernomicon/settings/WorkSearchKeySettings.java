@@ -18,7 +18,6 @@
 package org.hypernomicon.settings;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
 import java.util.prefs.BackingStoreException;
@@ -172,7 +171,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
         if (parentheses == CitationParenthesesOption.aroundYear)
           str.append('(');
 
-        str.append(ultraTrim(year));
+        str.append(year.strip());
 
         if (parentheses == CitationParenthesesOption.aroundYear)
           str.append(')');
@@ -341,7 +340,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
         if (entry.getValue() != multipleAuthors)
           continue;
 
-        SearchKeyword hyperKey = db.getKeyByKeyword(entry.getKey().replace(year, (year + keyLetter).trim()));
+        SearchKeyword hyperKey = db.getKeyByKeyword(entry.getKey().replace(year, (year + keyLetter).strip()));
 
         if ((hyperKey != null) && (hyperKey.record != work))
         {
@@ -368,7 +367,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
       if (entry.getValue() != multipleAuthors)
         newMap.put(entry.getKey(), entry.getValue());
       else
-        newMap.put(entry.getKey().replace(year, (year + keyLetter).trim()), entry.getValue());
+        newMap.put(entry.getKey().replace(year, (year + keyLetter).strip()), entry.getValue());
     }
 
     return newMap;

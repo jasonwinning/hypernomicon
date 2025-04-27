@@ -251,7 +251,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   {
     boolean restartWatcher = folderTreeWatcher.stop();
 
-    FilePath childFilePath = filePath().resolve(ultraTrim(folderName));
+    FilePath childFilePath = filePath().resolve(folderName.strip());
     HDT_Folder childFolder = null;
 
     try

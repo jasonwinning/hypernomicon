@@ -54,7 +54,7 @@ public final class SearchKeys
     {
       this.record = record;
 
-      newKeyword = newKeyword.trim();
+      newKeyword = newKeyword.strip();
 
       if (newKeyword.isEmpty())
       {
@@ -137,7 +137,7 @@ public final class SearchKeys
 
   public static String prepSearchKey(String newKey)
   {
-    newKey = ultraTrim(newKey).replaceAll("\\h+", " ");
+    newKey = newKey.strip().replaceAll("\\h+", " ");
 
     return convertToEnglishChars(newKey).replaceAll("\\p{Pd}", "-"); // treat all dashes the same within search keyword
   }
@@ -160,7 +160,7 @@ public final class SearchKeys
   // ---------------------------
     for (String subStr : new SplitString(newKey, ';'))
     {
-      SearchKeyword keyword = new SearchKeyword(subStr.trim(), record);
+      SearchKeyword keyword = new SearchKeyword(subStr.strip(), record);
 
       if (keyword.text.isEmpty()) continue;
 

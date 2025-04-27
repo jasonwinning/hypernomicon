@@ -20,7 +20,6 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.List;
@@ -230,14 +229,14 @@ public final class SelectTermDlgCtrlr extends ModalDialog
   private HDT_Glossary     getGlossary() { return glossaryToUse != null ? glossaryToUse : hcbGlossary.selectedRecord(); }
   private HDT_ConceptSense getSense   () { return senseToUse    != null ? senseToUse    : hcbSense   .selectedRecord(); }
 
-  public void              moveConcept() { concept.moveToDifferentTerm(term, creatingNewTerm, getGlossary(), getSense(), ultraTrim(hcbSense.getText())); }
+  public void              moveConcept() { concept.moveToDifferentTerm(term, creatingNewTerm, getGlossary(), getSense(), hcbSense.getText().strip()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void btnCreateClick()
   {
-    if (ultraTrim(tfSearchKey.getText()).isBlank())
+    if (tfSearchKey.getText().isBlank())
     {
       falseWithErrorPopup("Unable to create term record: search key of term cannot be blank.", tfSearchKey);
       return;
@@ -316,7 +315,7 @@ public final class SelectTermDlgCtrlr extends ModalDialog
     {
       if (getSense() == null)
       {
-        String senseText = ultraTrim(hcbSense.getText());
+        String senseText = hcbSense.getText().strip();
 
         if (senseText.isBlank())
         {
@@ -327,7 +326,7 @@ public final class SelectTermDlgCtrlr extends ModalDialog
         {
           for (HDT_ConceptSense sense : db.conceptSenses)
           {
-            if (ultraTrim(sense.name()).equalsIgnoreCase(ultraTrim(senseText)))
+            if (sense.name().strip().equalsIgnoreCase(senseText.strip()))
               return falseWithErrorPopup("The term already has a definition for that glossary and sense.", cbSense);
           }
 

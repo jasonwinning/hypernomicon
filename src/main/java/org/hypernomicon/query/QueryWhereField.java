@@ -196,15 +196,15 @@ public class QueryWhereField extends RecordQuery
             String tagStrVal = record.resultTextForTag(tag);
             if (tagStrVal.isEmpty()) return false;
 
-            return tagStrVal.trim().equalsIgnoreCase(getCellText(op3).trim()) == (getCellID(op2) == EQUAL_TO_OPERAND_ID);
+            return tagStrVal.strip().equalsIgnoreCase(getCellText(op3).strip()) == (getCellID(op2) == EQUAL_TO_OPERAND_ID);
         }
 
       case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
 
-        String val3 = getCellText(op3).trim();
+        String val3 = getCellText(op3).strip();
         if (val3.isEmpty()) return false;
 
-        String tagStrVal = record.resultTextForTag(tag).toLowerCase().trim();
+        String tagStrVal = record.resultTextForTag(tag).toLowerCase().strip();
 
         return tagStrVal.contains(val3.toLowerCase()) == (getCellID(op2) == CONTAINS_OPERAND_ID);
 

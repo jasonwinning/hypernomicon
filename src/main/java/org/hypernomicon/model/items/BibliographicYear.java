@@ -53,7 +53,7 @@ public class BibliographicYear implements Comparable<BibliographicYear>
 
   BibliographicYear(String rawValue, boolean yearZeroIsOneBC)
   {
-    rawValue = ultraTrim(safeStr(rawValue));
+    rawValue = stripSafe(rawValue);
 
     Matcher m = yearPattern.matcher(rawValue);
     int tempNumericValue = 0;
@@ -62,7 +62,7 @@ public class BibliographicYear implements Comparable<BibliographicYear>
     {
       tempNumericValue = parseInt(m.group(1), 0);
 
-      if (safeStr(m.group(2)).length() > 0)  // If it ends with BC, B.C.E., etc.
+      if (strNotNullOrEmpty(m.group(2)))  // If it ends with BC, B.C.E., etc.
         tempNumericValue = Math.abs(tempNumericValue) * -1;
 
       if (yearZeroIsOneBC && (tempNumericValue < 1))
@@ -78,7 +78,7 @@ public class BibliographicYear implements Comparable<BibliographicYear>
   private BibliographicYear(int numericValue, String rawValue)
   {
     this.numericValue = numericValue;
-    this.rawValue = ultraTrim(safeStr(rawValue));
+    this.rawValue = stripSafe(rawValue);
   }
 
 //---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ public class BibliographicYear implements Comparable<BibliographicYear>
   {
     if (bibYear == null) return true;
 
-    return (bibYear.numericValue == 0) && safeStr(bibYear.rawValue).isBlank();
+    return (bibYear.numericValue == 0) && strNullOrBlank(bibYear.rawValue);
   }
 
 //---------------------------------------------------------------------------
@@ -173,7 +173,7 @@ public class BibliographicYear implements Comparable<BibliographicYear>
 
     if (isEmpty(other)) return isEmpty(this);
 
-    return (numericValue == other.numericValue) && Objects.equals(safeStr(rawValue), safeStr(other.rawValue));
+    return (numericValue == other.numericValue) && safeStr(rawValue).equals(safeStr(other.rawValue));
   }
 
 //---------------------------------------------------------------------------

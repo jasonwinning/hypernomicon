@@ -44,7 +44,7 @@ public class NameItem
   public void set(String newName)
   {
     name = safeStr(newName);
-    nameEngChar = convertToEnglishChars(name).trim();
+    nameEngChar = convertToEnglishChars(name.strip());
   }
 
 //---------------------------------------------------------------------------

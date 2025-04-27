@@ -138,7 +138,7 @@ public class BibField
 
     list.forEach(titleStr ->
     {
-      titleStr = titleStr.trim();
+      titleStr = titleStr.strip();
 
       if (titleStr.isEmpty()) return;
 
@@ -196,7 +196,7 @@ public class BibField
       return;
     }
 
-    if (ultraTrim(safeStr(newStr)).isEmpty()) return;
+    if (strNullOrBlank(newStr)) return;
 
     switch (bibFieldEnum)
     {

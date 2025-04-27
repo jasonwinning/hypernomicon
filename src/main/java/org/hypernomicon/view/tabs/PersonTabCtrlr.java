@@ -790,7 +790,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     if (saveSearchKey(curPerson, tfSearchKey) == false) return false;
 
-    if (saveNameIfBlank || (ultraTrim(tfFirst.getText() + tfLast.getText()).isBlank() == false))
+    if (saveNameIfBlank || ((tfFirst.getText() + tfLast.getText()).isBlank() == false))
     {
       PersonName personName = new PersonName(tfFirst.getText(), tfLast.getText());
 

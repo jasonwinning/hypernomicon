@@ -252,7 +252,7 @@ public final class DesktopUtil
 
   public static void searchORCID(String orcid, String first, String last)
   {
-    if (safeStr(orcid).length() > 0)
+    if (strNotNullOrEmpty(orcid))
     {
       openWebLink("http://orcid.org/" + escapeURL(orcid, false));
       return;
@@ -291,7 +291,7 @@ public final class DesktopUtil
 
   public static void openWebLink(String url)
   {
-    url = url.trim();
+    url = url.strip();
 
     if (url.isEmpty()) return;
 
@@ -460,7 +460,7 @@ public final class DesktopUtil
 
   private static String formatName(String name)
   {
-    return ultraTrim(safeStr(name).replaceAll("\\p{C}", ""));
+    return stripSafe(name).replaceAll("\\p{C}", "");
   }
 
   public static String getComputerName()
@@ -495,7 +495,7 @@ public final class DesktopUtil
     }
     catch (IOException | InterruptedException e) { noOp(); }
 
-    uuid = ultraTrim(safeStr(uuid));
+    uuid = stripSafe(uuid);
     return computerName = uuid.isBlank() ? hostName : (hostName.replace("::::", "") + "::::" + uuid.toLowerCase());
   }
 
@@ -602,7 +602,7 @@ public final class DesktopUtil
 
     for (String line : FileUtils.readLines(file, Charset.defaultCharset()))
     {
-      if (safeStr(key).isBlank())
+      if (strNullOrBlank(key))
         return line;
 
       SplitString ss = new SplitString(line, '=');

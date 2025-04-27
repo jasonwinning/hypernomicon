@@ -34,7 +34,7 @@ public final class PlainTextReportGenerator extends ReportGenerator
 
   @Override public String makeRow(String fieldName, String value)
   {
-    return value.trim().isEmpty() ? "" : fieldName + ": " + value;
+    return strNullOrBlank(value) ? "" : fieldName + ": " + value;
   }
 
 //---------------------------------------------------------------------------
@@ -42,8 +42,8 @@ public final class PlainTextReportGenerator extends ReportGenerator
 
   @Override public String makeRows(String fieldName, Stream<String> stream)
   {
-    String line = stream.filter(str -> safeStr(str).isBlank() == false)
-                        .map(Util::ultraTrim)
+    String line = stream.filter(Util::strNotNullOrBlank)
+                        .map(String::strip)
                         .collect(Collectors.joining("; "));
 
     return makeRow(fieldName, line);

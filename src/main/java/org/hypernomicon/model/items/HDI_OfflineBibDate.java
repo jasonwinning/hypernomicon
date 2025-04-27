@@ -61,7 +61,7 @@ public class HDI_OfflineBibDate extends HDI_OfflineBase
 
     value = bdElement.getBibDate();
 
-    if (safeStr(nodeText).isBlank() == false) // Backwards compatibility for record data version 1.7 or lower
+    if (strNotNullOrBlank(nodeText)) // Backwards compatibility for record data version 1.7 or lower
       value = value.setYear(nodeText, false);
   }
 

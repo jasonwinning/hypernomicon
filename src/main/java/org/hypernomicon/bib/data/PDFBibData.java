@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -63,7 +64,7 @@ public class PDFBibData extends BibDataStandalone
 
     private PathParts(String str)
     {
-      if (safeStr(str).isEmpty()) return;
+      if (strNullOrEmpty(str)) return;
 
       if (str.startsWith("["))
       {
@@ -92,6 +93,7 @@ public class PDFBibData extends BibDataStandalone
     private final XMPNode parent;
     private final XMPMeta xmpMeta;
     private final XMPPropertyInfo propInfo;
+
     private final Map<String, Map<String, XMPNode>> prefixToNameToChild = new LinkedHashMap<>();
     private final List<XMPNode> elements = new ArrayList<>();
     private final String ns, path, value, prefix, name;
@@ -187,7 +189,7 @@ public class PDFBibData extends BibDataStandalone
     {
       String line = "";
 
-      if (safeStr(value).length() > 0)
+      if (strNotNullOrBlank(value))
       {
         if (arrayNdx >= 0)
           line = "[" + (arrayNdx + 1) + ']';
@@ -217,8 +219,8 @@ public class PDFBibData extends BibDataStandalone
     {
       String line = parent == null ? "" : parent.getCsvPath();
 
-      if (safeStr(name).length() > 0)
-        line = (safeStr(name).isEmpty() ? "" : (line + ',')) + escape(prefix) + ',' + escape(name);
+      if (strNotNullOrEmpty(name))
+        line = (strNullOrEmpty(line) ? "" : (line + ',')) + escape(prefix) + ',' + escape(name);
 
       return line;
     }
@@ -227,9 +229,7 @@ public class PDFBibData extends BibDataStandalone
 
     private static boolean nameIsNotExcluded(String nameStr)
     {
-      nameStr = safeStr(nameStr).toLowerCase();
-
-      return ! (nameStr.contains("journaldoi") || nameStr.contains("instanceid") || nameStr.contains("documentid"));
+      return StringUtils.containsAny(safeStr(nameStr).toLowerCase(), "journaldoi", "instanceid", "documentid") == false;
     }
 
   //---------------------------------------------------------------------------
@@ -460,20 +460,20 @@ public class PDFBibData extends BibDataStandalone
 
   private void populateFromFile()
   {
-    if (safeStr(docInfo.getAuthor()).length() > 0)
+    if (strNotNullOrBlank(docInfo.getAuthor()))
     {
       authors.clear();
       authors.setOneLiner(docInfo.getAuthor());
     }
 
-    if (safeStr(docInfo.getTitle()).length() > 0)
+    if (strNotNullOrBlank(docInfo.getTitle()))
     {
       String title = docInfo.getTitle();
       if ("untitled".equalsIgnoreCase(title) == false)
         setTitle(title);
     }
 
-    if (safeStr(docInfo.getSubject()).length() > 0)
+    if (strNotNullOrBlank(docInfo.getSubject()))
       addStr(bfMisc, docInfo.getSubject());
 
     if (xmpRoot != null)

@@ -40,7 +40,7 @@ public class PageRange implements Comparable<PageRange>
 
   public PageRange(String input)
   {
-    input = ultraTrim(safeStr(input));
+    input = stripSafe(input);
     String romanStr = match(input, romanNumeralPattern);
 
     int tempRomanInt = 0, tempDecimalInt = 0;
@@ -68,7 +68,7 @@ public class PageRange implements Comparable<PageRange>
 
   private static String match(String input, Pattern pattern)
   {
-    if (input == null || input.isBlank()) return "";
+    if (strNullOrBlank(input)) return "";
 
     Matcher matcher = pattern.matcher(input);
 
@@ -143,9 +143,9 @@ public class PageRange implements Comparable<PageRange>
 
   private static int romanToInt(String s)
   {
-    if ((s == null) || s.isBlank()) return 0;
+    if (strNullOrBlank(s)) return 0;
 
-    s = ultraTrim(s);
+    s = s.strip();
 
     if (romanMap.isEmpty())
     {

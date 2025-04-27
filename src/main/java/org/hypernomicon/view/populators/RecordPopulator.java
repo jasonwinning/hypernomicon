@@ -143,7 +143,7 @@ public abstract class RecordPopulator extends Populator
   {
     // Create RecordHTC if there is a type and ID, or if it is a blank cell. Otherwise, create a non-record HTC.
 
-    HyperTableCell cell = ((type != hdtNone) && (id > 0)) || (safeStr(text).isBlank() && (id < 1) && (type == hdtNone)) ?
+    HyperTableCell cell = ((type != hdtNone) && (id > 0)) || (strNullOrBlank(text) && (id < 1) && (type == hdtNone)) ?
       new RecordHTC(id, text, type)
     :
       new GenericNonRecordHTC(id, text, type);

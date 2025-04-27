@@ -68,7 +68,7 @@ class HtmlAndPlainText
 
     plainText = extractTextFromHTML(inputHtml);
 
-    if (ultraTrim(convertToSingleLine(plainText)).isEmpty() && (inputHtml.contains("&lt;" + EMBEDDED_FILE_TAG + ' ') == false))
+    if (convertToSingleLine(plainText).isBlank() && (inputHtml.contains("&lt;" + EMBEDDED_FILE_TAG + ' ') == false))
     {
       html = "";
       plainText = "";

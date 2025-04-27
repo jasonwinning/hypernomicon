@@ -83,7 +83,7 @@ public final class ZoteroDate
 
   public static void setLocale(String newLocale)
   {
-    if (safeStr(newLocale).isBlank())
+    if (strNullOrBlank(newLocale))
       return;
 
     if (Objects.equal(newLocale, localeStr))
@@ -200,7 +200,7 @@ public final class ZoteroDate
   {
     str = str.replaceAll("[\\xA0\\r\\n\\s]", " ");
     str = convertToSingleLine(str);
-    return ultraTrim(str);
+    return str.strip();
   }
 
 //---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ public final class ZoteroDate
 
   private static String insertDateOrderPart(String dateOrder, String part, ZoteroPart partOrder)
   {
-    if (safeStr(dateOrder).isBlank())
+    if (strNullOrBlank(dateOrder))
       return part;
 
     if ("true".equalsIgnoreCase(partOrder.before))
@@ -217,7 +217,7 @@ public final class ZoteroDate
     if ("true".equalsIgnoreCase(partOrder.after))
       return dateOrder + part;
 
-    if (safeStr(partOrder.before).isBlank() == false)
+    if (strNotNullOrBlank(partOrder.before))
     {
       int pos = dateOrder.indexOf(partOrder.before);
       if (pos == -1)
@@ -226,7 +226,7 @@ public final class ZoteroDate
       return dateOrder.replace(partOrder.before, part + partOrder.before);
     }
 
-    if (safeStr(partOrder.after).isBlank() == false)
+    if (strNotNullOrBlank(partOrder.after))
     {
       int pos = dateOrder.indexOf(partOrder.after);
       if (pos == -1)
@@ -266,7 +266,7 @@ public final class ZoteroDate
     if ((newLocaleStr != null) && (newLocaleStr.equals(localeStr) == false))
       setLocale(newLocaleStr);
 
-    if (safeStr(localeStr).isBlank())
+    if (strNullOrBlank(localeStr))
       return null;
 
     ZoteroDate date = new ZoteroDate();
@@ -495,7 +495,7 @@ public final class ZoteroDate
             {
               part = parts.get(i).partStr.substring(0, m.start());
 
-              if (safeStr(m.group(2)).isBlank() == false)
+              if (strNotNullOrBlank(m.group(2)))
                 part += ' ' + m.group(2);
             }
             else
@@ -635,7 +635,7 @@ public final class ZoteroDate
 
   public static BibliographicDate parsedDateStrToBibDate(String parsedDateStr, boolean yearZeroIsOneBC)
   {
-    if (safeStr(parsedDateStr).isBlank())
+    if (strNullOrBlank(parsedDateStr))
       return BibliographicDate.EMPTY_DATE;
 
     Matcher m = parsedDatePattern.matcher(parsedDateStr);

@@ -194,11 +194,11 @@ public final class Util
   {
     input = safeStr(input).replace("\ufffd", "");  // I don't know what this is but it is usually appended at the end when copying text from Acrobat
 
-    if (ultraTrim(convertToSingleLine(input)).isEmpty()) return "";
+    if (convertToSingleLine(input).isBlank()) return "";
 
     List<String> list = convertMultiLineStrToStrList(input, true);
 
-    list.replaceAll(Util::ultraTrim);
+    list.replaceAll(String::strip);
 
     return strListToStr(list, true);
   }
@@ -242,7 +242,7 @@ public final class Util
     }
 
     if (preserveIntermediateEmpties == false)
-      list.removeIf(s -> ultraTrim(s).isBlank());
+      list.removeIf(String::isBlank);
 
     return list;
   }
@@ -276,7 +276,8 @@ public final class Util
   {
     if (list == null) return "";
 
-    return list.stream().filter(one -> includeEmptyLines || (safeStr(one).length() > 0))
+    return list.stream().filter(one -> includeEmptyLines || strNotNullOrEmpty(one))
+                        .map(Util::safeStr)
                         .collect(Collectors.joining(useSystemNewLineChar ? System.lineSeparator() : "\n"));
   }
 
@@ -285,7 +286,7 @@ public final class Util
 
   public static String strListToSpaceDelimitedStr(List<String> list)
   {
-    return ultraTrim(list.stream().map(Util::ultraTrim).collect(Collectors.joining(" ")));
+    return list.stream().map(String::strip).collect(Collectors.joining(" ")).strip();
   }
 
 //---------------------------------------------------------------------------
@@ -374,6 +375,18 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Compares two lists of strings to determine if they are equal.<br>
+   * The comparison can be case-sensitive or case-insensitive based on the {@code ignoreCase} parameter.<br>
+   * Null values within a list are treated as equal to an empty String.
+   *
+   * @param list1      The first list of strings to compare. Can be {@code null}.
+   * @param list2      The second list of strings to compare. Can be {@code null}.
+   * @param ignoreCase If {@code true}, the comparison is case-insensitive; otherwise, it is case-sensitive.
+   * @return {@code true} if both lists are equal according to the specified criteria; {@code false} otherwise.
+   *         Returns {@code false} if one list is {@code null} and the other is not.
+   *         If both lists are {@code null}, returns {@code true}.
+   */
   public static boolean strListsEqual(List<String> list1, List<String> list2, boolean ignoreCase)
   {
     if ((list1 == null) != (list2 == null)) return false;
@@ -382,8 +395,8 @@ public final class Util
 
     for (int ndx = 0; ndx < list1.size(); ndx++)
     {
-      String str1 = ultraTrim(list1.get(ndx)),
-             str2 = ultraTrim(list2.get(ndx));
+      String str1 = stripSafe(list1.get(ndx)),
+             str2 = stripSafe(list2.get(ndx));
 
       if ((ignoreCase ? str1.equalsIgnoreCase(str2) : str1.equals(str2)) == false)
         return false;
@@ -395,6 +408,19 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Removes all parenthetical expressions (i.e., text enclosed within parentheses)
+   * from the given string. Strips any leading or trailing whitespace from the resulting string.
+   *
+   * This method repeatedly removes parenthetical content using the {@link #removeFirstParenthetical(String)} method
+   * until no opening parenthesis '(' is found in the string.
+   *
+   * @param str The input string from which all parenthetical expressions will be removed.
+   *            If the string contains no opening parentheses, it is returned as is.
+   * @return A new string with all parenthetical expressions removed and excess whitespace trimmed.
+   * @throws NullPointerException If the input string is null. Ensure the provided string is properly initialized.
+   * @see #removeFirstParenthetical(String) For details on how individual parentheticals are removed.
+   */
   public static String removeAllParentheticals(String str)
   {
     while (str.contains("("))
@@ -406,6 +432,16 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Removes the first parenthetical expression (i.e., text enclosed within parentheses)
+   * from the given string. Strips any leading or trailing whitespace from the resulting string.
+   *
+   * @param str The input string from which the first parenthetical expression will be removed.
+   *            If no opening parenthesis '(' is found, the original string is returned.
+   * @return A new string with the first parenthetical expression removed and excess whitespace trimmed.
+   *         If the closing parenthesis ')' is missing, only text preceding the opening parenthesis is retained.
+   * @throws NullPointerException If the input string is null. Ensure the provided string is properly initialized.
+   */
   public static String removeFirstParenthetical(String str)
   {
     int pos1 = str.indexOf('(');
@@ -413,9 +449,9 @@ public final class Util
       return str;
 
     int pos2 = str.indexOf(')');
-    String result = str.substring(0, pos1).trim();
+    String result = str.substring(0, pos1).strip();
     if (pos2 > pos1)
-      result = (result + ' ' + safeSubstring(str, pos2 + 1, str.length())).trim();
+      result = (result + ' ' + safeSubstring(str, pos2 + 1, str.length())).strip();
 
     return result;
   }
@@ -428,7 +464,7 @@ public final class Util
     if (removeParen)
       url = removeFirstParenthetical(url);
 
-    return URLEncoder.encode(url.trim(), UTF_8);
+    return URLEncoder.encode(url.strip(), UTF_8);
   }
 
 //---------------------------------------------------------------------------
@@ -459,7 +495,7 @@ public final class Util
   {
     if (s == null) return false;
 
-    String lowerCaseValue = ultraTrim(s).toLowerCase();
+    String lowerCaseValue = s.strip().toLowerCase();
 
     return "true"   .equals(lowerCaseValue) ||
            "yes"    .equals(lowerCaseValue) ||
@@ -542,7 +578,7 @@ public final class Util
     String language = locale.getLanguage();
     String country = locale.getCountry();
 
-    return safeStr(country).isBlank() ?
+    return strNullOrBlank(country) ?
       language
     :
       language + '-' + country;
@@ -644,19 +680,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Removes all horizontal whitespace characters [ \t\xA0\u005Cu1680\u005Cu180e\u005Cu2000-\u005Cu200a\u005Cu202f\u005Cu205f\u005Cu3000] at the beginning and end of the string.
-   * @param text Input string
-   * @return Trimmed string
-   */
-  public static String ultraTrim(String text)
-  {
-    return text.trim().replaceAll("(^\\h+)|(\\h+$)", "");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static String camelToTitle(String in)
   {
     String out = "";
@@ -690,7 +713,7 @@ public final class Util
       currentChar = nextChar;
     }
 
-    return out.replace("  ", " ").trim();
+    return out.replace("  ", " ").strip();
   }
 
 //---------------------------------------------------------------------------
@@ -698,7 +721,7 @@ public final class Util
 
   public static String sentenceCase(String str)
   {
-    if (safeStr(str).isEmpty()) return "";
+    if (strNullOrEmpty(str)) return "";
 
     str = str.toLowerCase();
 
@@ -733,7 +756,7 @@ public final class Util
 
       if (start > 0)
       {
-        pre = str.substring(0, start).trim();
+        pre = str.substring(0, start).strip();
         if (pre.length() > 0)
         {
           lastChar = pre.charAt(pre.length() - 1);
@@ -874,16 +897,105 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns true if the input non-null and contains characters other than horizontal or vertical whitespace.
+   * @param s Input string
+   * @return boolean result
+   */
+  public static boolean strNotNullOrBlank(String s)   { return strNullOrBlank(s) == false; }
+
+  /**
+   * Returns true if the input non-null and not zero-length.
+   * @param s Input string
+   * @return boolean result
+   */
+  public static boolean strNotNullOrEmpty(String s)   { return strNullOrEmpty(s) == false; }
+
+  /**
+   * Returns true if the input is null, zero-length, or only contains horizontal or vertical whitespace.
+   * Equivalent to s.isBlank() if s is non-null.
+   * @param s Input string
+   * @return boolean result
+   */
+  public static boolean strNullOrBlank(String s)   { return (s == null) || s.isBlank(); }
+
+  /**
+   * Returns true if the input is null or zero-length.
+   * @param s Input string
+   * @return boolean result
+   */
+  public static boolean strNullOrEmpty(String s)   { return (s == null) || s.isEmpty(); }
+
+  /**
+   * Safely trims leading and trailing whitespace from a string.
+   * <p>
+   * If the input string is {@code null}, this method returns an empty string
+   * ({@code ""}). Otherwise, it uses {@code String.strip()} to remove all leading
+   * and trailing whitespace, including Unicode whitespace characters.
+   * </p>
+   *
+   * @param s the string to be stripped; may be {@code null}
+   * @return the stripped string, or an empty string if the input is {@code null}
+   */
+  public static String stripSafe(String s)         { return s == null ? "" : s.strip(); }
+
+  /**
+   * Safely converts a potentially null string to a non-null value.
+   * <p>
+   * If the input string is {@code null}, this method returns an empty string
+   * ({@code ""}). Otherwise, it simply returns the original string.
+   * This ensures that null values are safely handled and do not cause errors
+   * in subsequent processing.
+   * </p>
+   *
+   * @param s the input string; may be {@code null}
+   * @return the original string if it is non-null, or an empty string if it is {@code null}
+   */
   public static String safeStr(String s)           { return s == null ? "" : s; }
 
+  /**
+   * Returns true iff c is null or empty.
+   * @param c
+   * @return Boolean return value
+   */
   public static boolean collEmpty(Collection<?> c) { return (c == null) || c.isEmpty(); }  // See ObjectUtils.isEmpty
+
+  /**
+   * Returns true iff m is null or empty.
+   * @param m
+   * @return Boolean return value
+   */
   public static boolean collEmpty(Map<?, ?> m)     { return (m == null) || m.isEmpty(); }  // See ObjectUtils.isEmpty
 
+  /**
+   * Creates a singleton list containing the specified element, or an empty list if the element is {@code null}.
+   * <p>
+   * This method ensures safe handling of {@code null} values by returning an immutable empty list when
+   * the input element is {@code null}. If the element is non-null, it returns an immutable list containing
+   * only that element. This is useful for safely creating lists without the risk of {@code null} values.
+   * </p>
+   *
+   * @param <E> the type of the element
+   * @param e1 the element to include in the list; may be {@code null}
+   * @return an immutable list containing the element if it is non-null, or an empty list if the element is {@code null}
+   * @throws NullPointerException if the element is {@code null} and the underlying {@code List.of()} implementation
+   *         does not support {@code null}
+   */
   public static <E> List<E> safeListOf(E e1)       { return e1 == null ? List.of() : List.of(e1); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Removes all specified objects from the given collection.
+   *
+   * @param <T>  The type of elements in the collection.
+   * @param col  The collection from which the specified objects will be removed.
+   * @param objs The objects to be removed from the collection. This is a variable-length argument.
+   *             Note that the method is annotated with {@code @SafeVarargs}, ensuring safe usage with generics.
+   * @throws NullPointerException If the collection or any of the objects provided are null.
+   *                              Ensure that all arguments are properly initialized.
+   */
   @SafeVarargs public static <T> void removeAll(Collection<T> col, T... objs)
   {
     col.removeAll(Arrays.asList(objs));
@@ -964,7 +1076,7 @@ public final class Util
 
   public static boolean isStringUrl(String selText)
   {
-    selText = ultraTrim(selText);
+    selText = selText.strip();
 
     return selText.contains("www." ) || selText.contains("http" ) ||
            selText.contains(".com" ) || selText.contains(".htm" ) ||
@@ -1409,7 +1521,7 @@ public final class Util
     if (size < 0)
       throw new IllegalArgumentException("Size must be non-negative");
 
-    if ((charsStr == null) || (charsStr.isEmpty()))
+    if (strNullOrEmpty(charsStr))
       throw new IllegalArgumentException("charsStr must not be null or empty");
 
     if (size == 0) return "";
@@ -1477,7 +1589,7 @@ public final class Util
     boolean numeric1 = true, numeric2 = true;
     int int1 = 0, int2 = 0;
 
-    if (safeStr(str1).isEmpty() && safeStr(str2).isEmpty())
+    if (strNullOrEmpty(str1) && strNullOrEmpty(str2))
     {
       result.setValue(0);
       return true;
@@ -1585,7 +1697,7 @@ public final class Util
     // DOI legal characters according to Crossref: "a-z", "A-Z", "0-9" and "-._;()/"
     // But I've seen at least one Crossref DOI that included a colon
 
-    if (safeStr(str).isBlank()) return "";
+    if (strNullOrBlank(str)) return "";
 
     String doi = matchDOIiteration(str);
 
@@ -1729,7 +1841,7 @@ public final class Util
   public static List<String> matchISSN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();
-    if (safeStr(str).isEmpty()) return list;
+    if (strNullOrBlank(str)) return list;
 
     str = prepareForIDMatch(str, true);
 
@@ -1784,7 +1896,7 @@ public final class Util
   public static List<String> matchISBN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();
-    if (safeStr(str).isEmpty()) return list;
+    if (strNullOrBlank(str)) return list;
 
     matchISBNiteration(str, list);
 
@@ -1946,7 +2058,7 @@ public final class Util
   {
     String msg = e.getMessage();
 
-    if (safeStr(msg).isBlank() || "null".equals(String.valueOf(msg)))
+    if (strNullOrBlank(msg) || "null".equals(msg))
       msg = "";
 
     if (e instanceof UnknownHostException)
@@ -1991,7 +2103,7 @@ public final class Util
    */
   public static String userFriendlyClassName(Class<?> klass)
   {
-    return camelToTitle(klass.getSimpleName()).trim();
+    return camelToTitle(klass.getSimpleName()).strip();
   }
 
 //---------------------------------------------------------------------------
@@ -2005,7 +2117,7 @@ public final class Util
    */
   public static String userFriendlyThrowableName(Throwable e)
   {
-    return StringUtils.removeEnd(userFriendlyClassName(e.getClass()), "Exception").trim();
+    return StringUtils.removeEnd(userFriendlyClassName(e.getClass()), "Exception").strip();
   }
 
 //---------------------------------------------------------------------------

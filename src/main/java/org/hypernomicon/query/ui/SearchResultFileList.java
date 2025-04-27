@@ -320,7 +320,7 @@ class SearchResultFileList
   {
     String errors = strListToStr(errList, false);
 
-    if (ultraTrim(convertToSingleLine(errors)).length() > 0)
+    if (strNotNullOrBlank(convertToSingleLine(errors)))
       errorPopup(errors);
   }
 

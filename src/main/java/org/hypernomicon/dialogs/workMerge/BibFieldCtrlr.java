@@ -146,9 +146,9 @@ public abstract class BibFieldCtrlr
 
     @Override public RadioButton getToggle()             { return radioBtn; }
     @Override public void setLabelVisible(boolean value) { }  // There is a different label in the row fxml
-    @Override protected void mergeInto(BibData mergedBD) { mergedBD.setTitle(ultraTrim(tf.getText())); }
+    @Override protected void mergeInto(BibData mergedBD) { mergedBD.setTitle(tf.getText().strip()); }
 
-    public boolean isBlank()                             { return ultraTrim(tf.getText()).isBlank(); }
+    public boolean isBlank()                             { return tf.getText().isBlank(); }
     public TextField getTextField()                      { return tf; }
 
     public void fixCase()
@@ -418,7 +418,7 @@ public abstract class BibFieldCtrlr
       tf.textProperty().addListener((obs, ov, nv) -> radioBtn.setSelected(true));
     }
 
-    @Override public boolean sourceNotEmpty()            { return safeStr(bibData.getDateRawStr()).isBlank() == false; }
+    @Override public boolean sourceNotEmpty()            { return strNotNullOrBlank(bibData.getDateRawStr()); }
     @Override public RadioButton getToggle()             { return radioBtn; }
     @Override public void setLabelVisible(boolean value) { label.setVisible(value); }
 

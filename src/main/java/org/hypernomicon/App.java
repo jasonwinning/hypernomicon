@@ -281,7 +281,7 @@ public final class App extends Application
 
     String versionStr = manifestValue("Impl-Version");
 
-    if ((safeStr(versionStr).isEmpty() == false) && (new VersionNumber(versionStr).equals(appVersion) == false))
+    if (strNotNullOrBlank(versionStr) && (new VersionNumber(versionStr).equals(appVersion) == false))
     {
       internalErrorPopup(69698);
       ui.shutDown(ShutDownMode.InitializationFailure);

@@ -54,8 +54,8 @@ public class HDI_OfflinePersonName extends HDI_OfflineBase
 
   @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    if      (element.getTag() == tagFirstName) firstName = ultraTrim(convertToSingleLine(nodeText));
-    else if (element.getTag() == tagLastName)  lastName  = ultraTrim(convertToSingleLine(nodeText));
+    if      (element.getTag() == tagFirstName) firstName = convertToSingleLine(nodeText).strip();
+    else if (element.getTag() == tagLastName)  lastName  = convertToSingleLine(nodeText).strip();
   }
 
 //---------------------------------------------------------------------------

@@ -376,8 +376,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     // Show the confirmation box if either the name wasn't blank before, or this is
     // the first time editing this record (view instant is close to creation instant).
 
-    if ((ultraTrim(savedName).isBlank() == false) || (milliDiff(record.getViewDate(), record.getCreationDate()) < 1000L))
-      if (ultraTrim(newName).isBlank())
+    if ((savedName.isBlank() == false) || (milliDiff(record.getViewDate(), record.getCreationDate()) < 1000L))
+      if (newName.isBlank())
         if (confirmDialog("Are you sure you want to leave the " + whatToCallName + " blank?", "Yes", GO_BACK_BUTTON_CAPTION, false) == false)
         {
           Platform.runLater(() -> safeFocus(nodeToFocus));

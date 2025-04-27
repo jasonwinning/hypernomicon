@@ -67,7 +67,7 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
   @Override public HyperPath getPath()           { return path; }
   @Override public Authors getAuthors()          { return nullSwitch(work.get(), new FileAuthors(getObjList(rtAuthorOfFile), this), HDT_Work::getAuthors); }
   @Override public String listName()             { return name(); }
-  @Override public String makeKeyWorkSearchKey() { return ultraTrim(name()); }
+  @Override public String makeKeyWorkSearchKey() { return name().strip(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

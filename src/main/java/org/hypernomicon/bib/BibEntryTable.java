@@ -224,9 +224,9 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 
   public void filter(String txt, boolean requireByDefault)
   {
-    String text = ultraTrim(safeStr(txt).toLowerCase());
+    String text = safeStr(txt).strip().toLowerCase();
 
-    if (text.isBlank())
+    if (text.isEmpty())
     {
       filteredRows.setPredicate(row -> true);
       return;

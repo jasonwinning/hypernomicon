@@ -18,7 +18,6 @@
 package org.hypernomicon.view.mainText;
 
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.ArrayList;
@@ -104,7 +103,7 @@ class HtmlTextNodeList
       {
         String nodeText = textNode.getWholeText();
 
-        if (ultraTrim(nodeText).isBlank() == false)
+        if (nodeText.isBlank() == false)
         {
           HtmlTextNode node = new HtmlTextNode(nodeText, textNode, plainText.indexOf(nodeText, textNdx.intValue()));
 

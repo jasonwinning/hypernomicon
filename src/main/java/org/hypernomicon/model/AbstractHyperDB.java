@@ -926,7 +926,7 @@ public abstract class AbstractHyperDB
     if (getOtherLockOwner() != null)
       return false;
 
-    if (FilePath.isEmpty(newRootFilePath) || safeStr(hdbFileName).isBlank())
+    if (FilePath.isEmpty(newRootFilePath) || strNullOrBlank(hdbFileName))
       return false;
 
     boolean dbChanged = FilePath.isEmpty(rootFilePath) || (rootFilePath.equals(newRootFilePath) == false);
@@ -1499,7 +1499,7 @@ public abstract class AbstractHyperDB
       }
 
       String dbCreationDateStr = prefs.get(PrefKey.DB_CREATION_DATE, "");
-      if (safeStr(dbCreationDateStr).length() > 0)
+      if (strNotNullOrEmpty(dbCreationDateStr))
       {
         dbCreationDate = parseIso8601offset(dbCreationDateStr);
 
@@ -1849,7 +1849,7 @@ public abstract class AbstractHyperDB
                       else
                       {
                         // Backwards compatibility for record data version 1.7 or lower
-                        if ((topLevelItemElement instanceof HDX_BibDateElement) && (safeStr(nodeText).isBlank() == false) && ComparableUtils.is(dataVersion).greaterThan(new VersionNumber(1, 7)))
+                        if ((topLevelItemElement instanceof HDX_BibDateElement) && strNotNullOrBlank(nodeText) && ComparableUtils.is(dataVersion).greaterThan(new VersionNumber(1, 7)))
                           throw new HyperDataException(tagBibDate.name + " XML tags can only have attributes, not text. Found text: " + nodeText);
 
                         xmlRecord.setItemFromXML(topLevelItemElement, nodeText, nestedItems);

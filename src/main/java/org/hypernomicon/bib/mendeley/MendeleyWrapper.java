@@ -116,10 +116,10 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     wrapper.loadAllFromJsonFile(filePath);
 
-    if (safeStr(userID).isBlank() == false)
+    if (strNotNullOrBlank(userID))
       return wrapper;
 
-    String docUserID = findFirst(wrapper.getAllEntries(), doc -> safeStr(doc.getUserID()).isBlank() == false, MendeleyDocument::getUserID);
+    String docUserID = findFirst(wrapper.getAllEntries(), doc -> strNotNullOrBlank(doc.getUserID()), MendeleyDocument::getUserID);
 
     if (docUserID != null)
     {
@@ -158,7 +158,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
   static Instant getSyncInstantFromJsonStr(String jsonStr)
   {
-    return safeStr(jsonStr).isBlank() ? Instant.EPOCH : parseIso8601(jsonStr);
+    return strNullOrBlank(jsonStr) ? Instant.EPOCH : parseIso8601(jsonStr);
   }
 
 //---------------------------------------------------------------------------
@@ -288,7 +288,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
       try
       {
-        if (safeStr(userID).isBlank())
+        if (strNullOrBlank(userID))
           getProfileInfoFromServer();
 
         do
@@ -671,7 +671,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     new CondJsonArray(jsonArray).condObj(0).condStr("message", jsonMsg -> assignSB(errMsg, jsonMsg));
 
-    throw new HttpResponseException(jsonClient.getStatusCode(), errMsg + (safeStr(documentID).isBlank() ? "" : ("\n\nEntry ID: " + documentID)));
+    throw new HttpResponseException(jsonClient.getStatusCode(), errMsg + (strNullOrBlank(documentID) ? "" : ("\n\nEntry ID: " + documentID)));
   }
 
 //---------------------------------------------------------------------------
@@ -734,7 +734,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
       userName = profile.getStrSafe("email");
 
-      if (safeStr(userID).isBlank())
+      if (strNullOrBlank(userID))
         userID = profile.getStrSafe("id");
 
       if (userName.isBlank() || userID.isBlank())
@@ -790,7 +790,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
   @Override public void enableSyncOnThisComputer(String apiKey, String accessToken, String refreshToken, String userID, String userName, boolean save) throws HyperDataException
   {
-    if (safeStr(userID).isBlank() == false)
+    if (strNotNullOrBlank(userID))
     {
       if ((this.userID.isBlank() == false) && (this.userID.equals(userID) == false))
         throw new HyperDataException("User ID for local entries is " + this.userID + ", but user ID from server is " + userID);
@@ -799,7 +799,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
       {
         String docUserID = document.getUserID();
 
-        if ((safeStr(docUserID).isBlank() == false) && (docUserID.equals(userID) == false))
+        if (strNotNullOrBlank(docUserID) && (docUserID.equals(userID) == false))
           throw new HyperDataException("User ID for local entries is " + docUserID + ", but user ID from server is " + userID);
       }
 

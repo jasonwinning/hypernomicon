@@ -65,7 +65,7 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
   {
     if (element.getObjID() < 1)
     {
-      nodeText = ultraTrim(convertToSingleLine(nodeText));
+      nodeText = convertToSingleLine(nodeText).strip();
       if (nodeText.isEmpty()) return;
     }
 

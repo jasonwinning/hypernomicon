@@ -118,7 +118,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
       usedComponentTypes.add(component.type);
     }
 
-    fileName = fileName.trim();
+    fileName = fileName.strip();
 
     if (db.prefs.getBoolean(FileNamePrefKey.POSIX, false))
     {
@@ -153,13 +153,13 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
       if ((fileName.length() + extLen) > maxLen)
         fileName = fileName.substring(0, (maxLen - extLen));
 
-      return fileName.trim() + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
+      return fileName.strip() + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
     }
 
     if (fileName.length() > maxLen)
       fileName = fileName.substring(0, maxLen);
 
-    return fileName.trim();
+    return fileName.strip();
   }
 
 //---------------------------------------------------------------------------
@@ -252,7 +252,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
         break;
     }
 
-    compStr = ultraTrim(compStr).replace(" ", component.withinSep);
+    compStr = compStr.strip().replace(" ", component.withinSep);
 
     if (compStr.length() > 0)
       compStr = component.beforeSep + compStr + component.afterSep;

@@ -147,7 +147,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 
   public void addParentDisplayRecord()
   {
-    if (mainText.getPlain().trim().length() > 0) return;
+    if (mainText.getPlain().strip().length() > 0) return;
 
     HDT_RecordWithMainText parent = null;
     List<DisplayItem> displayItems = mainText.getDisplayItemsCopy();

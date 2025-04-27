@@ -90,7 +90,7 @@ public final class CrossrefBibData extends BibDataStandalone
       if (jsonArray.isEmpty())
         return null;
 
-      if ((jsonArray.size() == 1) || safeStr(title).isBlank())
+      if ((jsonArray.size() == 1) || strNullOrBlank(title))
         return new CrossrefBibData(jsonArray.getObj(0), queryDoi);
     }
     catch (NullPointerException | IndexOutOfBoundsException e)
@@ -280,7 +280,7 @@ public final class CrossrefBibData extends BibDataStandalone
     if (doi.length() > 0)
       return url + '/' + doi;
 
-    if (safeStr(title).isEmpty()) return url;
+    if (strNullOrBlank(title)) return url;
 
     url = url + '?';
 
@@ -303,10 +303,10 @@ public final class CrossrefBibData extends BibDataStandalone
       }
     }
 
-    auths = ultraTrim(auths);
-    if (auths.isBlank()) auths = ultraTrim(eds);
+    auths = auths.strip();
+    if (auths.isEmpty()) auths = eds.strip();
 
-    title = convertToEnglishChars(title).trim();
+    title = convertToEnglishChars(title.strip());
     title = title.replace(":", "");
     title = title.replace("?", "");
 

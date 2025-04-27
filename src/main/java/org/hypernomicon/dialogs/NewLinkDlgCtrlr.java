@@ -49,8 +49,8 @@ public class NewLinkDlgCtrlr extends ModalDialog
 
     this.anchor = null;
 
-    String clipText = getClipboardText(true).trim();
-    selText = selText.trim();
+    String clipText = getClipboardText(true).strip();
+    selText = selText.strip();
 
     if (isStringUrl(selText))
     {
@@ -86,7 +86,7 @@ public class NewLinkDlgCtrlr extends ModalDialog
 
   private void initPasteButton()
   {
-    btnPaste.setOnAction(event -> tfURL.setText(ultraTrim(getClipboardText(true))));
+    btnPaste.setOnAction(event -> tfURL.setText(getClipboardText(true).strip()));
     setToolTip(btnPaste, "Paste text from clipboard");
   }
 
@@ -95,15 +95,15 @@ public class NewLinkDlgCtrlr extends ModalDialog
 
   @Override protected boolean isValid()
   {
-    if (tfDisplayText.getText().trim().isEmpty())
+    if (tfDisplayText.getText().isBlank())
       return falseWithErrorPopup("Enter the text to be displayed.", tfDisplayText);
 
-    if (tfURL.getText().trim().isEmpty())
+    if (tfURL.getText().isBlank())
       return falseWithErrorPopup("Enter a web address (URL).", tfURL);
 
     if (anchor != null)
     {
-      String urlText = tfURL.getText().trim();
+      String urlText = tfURL.getText().strip();
 
       anchor.setHref(urlText);
       anchor.setTitle(htmlEscaper.escape(urlText));

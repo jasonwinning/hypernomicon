@@ -179,7 +179,7 @@ public final class QueryCtrlr
 
     tfCustomLogic.textProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (programmaticCustomLogicChange || (newValue == null) || ultraTrim(newValue).equals(ultraTrim(safeStr(oldValue)))) return;
+      if (programmaticCustomLogicChange || (newValue == null) || newValue.strip().equals(stripSafe(oldValue))) return;
 
       tgLogic.selectToggle(btnCustom);
     });
@@ -582,7 +582,7 @@ public final class QueryCtrlr
       if (ctrlr.showModal() == false) return;
 
       fav = tgLogic.getSelectedToggle() == btnCustom ?
-        new QueryFavorite(ctrlr.getNewName(), ctrlr.getAutoExec(), ultraTrim(tfCustomLogic.getText()), false)
+        new QueryFavorite(ctrlr.getNewName(), ctrlr.getAutoExec(), tfCustomLogic.getText().strip(), false)
       :
         new QueryFavorite(ctrlr.getNewName(), ctrlr.getAutoExec(), "", tgLogic.getSelectedToggle() == btnOr);
 

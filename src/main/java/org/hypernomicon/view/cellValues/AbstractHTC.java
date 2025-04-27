@@ -19,7 +19,7 @@ package org.hypernomicon.view.cellValues;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.safeStr;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
@@ -104,7 +104,7 @@ public abstract class AbstractHTC implements HyperTableCell
         return false;
 
       if ((getID() < 0) && (other.getID() < 0))
-        return safeStr(getText()).isEmpty() && safeStr(other.getText()).isEmpty();
+        return strNullOrEmpty(getText()) && strNullOrEmpty(other.getText());
 
       return false;
     }
