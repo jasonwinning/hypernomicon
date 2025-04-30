@@ -43,8 +43,14 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
+//---------------------------------------------------------------------------
+
 public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollection_T>, BibCollection_T extends BibCollection> extends BibData implements BibEntity
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   protected final boolean thisIsBackup;
   protected JsonObj jObj;
   protected BibEntry<BibEntry_T, BibCollection_T> backupItem = null;
@@ -67,6 +73,8 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   public abstract BibliographicDate getDateFromJson();
   protected abstract String getUserID();
 
+//---------------------------------------------------------------------------
+
   @SuppressWarnings("unchecked")
   public BibEntry(LibraryWrapper<BibEntry_T, BibCollection_T> libWrapper, boolean thisIsBackup)
   {
@@ -76,6 +84,8 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
     jObj = new JsonObj();
     thisEntry = (BibEntry_T)this;
   }
+
+//---------------------------------------------------------------------------
 
   public int numericID()                      { return getLibrary().numericID(getKey()); }
   public boolean linkedToWork()               { return (thisIsBackup != true) && (getWork() != null); }

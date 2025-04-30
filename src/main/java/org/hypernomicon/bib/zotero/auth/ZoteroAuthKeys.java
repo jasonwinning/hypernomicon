@@ -15,80 +15,75 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.zotero.auth;
 
-import org.hypernomicon.bib.CollectionTree.BibCollectionType;
+import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.Util.*;
 
-import static org.hypernomicon.bib.CollectionTree.BibCollectionType.*;
-import javafx.scene.control.TreeItem;
+import org.hypernomicon.Const.PrefKey;
+import org.hypernomicon.bib.auth.BibAuthKeys;
+import org.hypernomicon.util.CryptoUtil;
+
+import com.github.scribejava.core.model.OAuth1AccessToken;
 
 //---------------------------------------------------------------------------
 
-class BibCollectionRow
+public final class ZoteroAuthKeys extends BibAuthKeys
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final TreeItem<BibCollectionRow> treeItem;
-  private final String key;
-  private final BibCollectionType type;
-
-  private BibCollection coll;
+  private final String apiKey;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  BibCollectionRow(BibCollectionType type) { this(type, null); }
-  BibCollectionRow(BibCollection coll)     { this(bctUser, coll); }
-
-  TreeItem<BibCollectionRow> getTreeItem() { return treeItem; }
-  BibCollectionType getType()              { return type; }
-  String getKey()                          { return key; }
-  void updateCollObj(BibCollection coll)   { this.coll = coll; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private BibCollectionRow(BibCollectionType type, BibCollection coll)
+  private ZoteroAuthKeys(String apiKey)
   {
-    treeItem = new TreeItem<>(this);
-    this.type = type;
-    this.coll = coll;
+    this.apiKey = safeStr(apiKey);
+  }
 
-    key = coll == null ? null : coll.getKey();
+//---------------------------------------------------------------------------
+
+  public static String getApiKey(ZoteroAuthKeys authKeys) { return authKeys == null ? "" : authKeys.apiKey; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isEmpty()
+  {
+    return strNullOrEmpty(apiKey);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getSortKey()
+  @Override protected boolean saveToDBSettings() throws Exception
   {
-    return switch (type)
-    {
-      case bctAll           -> "\u00001";
-      case bctAllAssigned   -> "\u00002";
-      case bctAllUnassigned -> "\u00003";
-      case bctUnsorted      -> "\u00004";
-      case bctTrash         -> "\uffff";
-      default               -> coll.getName();
-    };
+    if (isEmpty())
+      return false;
+
+    db.prefs.put(PrefKey.BIB_API_KEY, CryptoUtil.encrypt("", apiKey));
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getText()
+  public static ZoteroAuthKeys loadFromDBSettings() throws Exception
   {
-    return switch (type)
-    {
-      case bctAll           -> "All Entries";
-      case bctAllAssigned   -> "All Entries Assigned to Work Records";
-      case bctAllUnassigned -> "All Entries Not Assigned to Work Records";
-      case bctUnsorted      -> "Unsorted";
-      case bctTrash         -> "Trash";
-      default               -> coll.getName();
-    };
+    String bibEncApiKey = db.prefs.get(PrefKey.BIB_API_KEY, "");
+
+    return new ZoteroAuthKeys(bibEncApiKey.isBlank() ? "" : CryptoUtil.decrypt("", bibEncApiKey));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static ZoteroAuthKeys createFromOauthToken(OAuth1AccessToken oauth1Token)
+  {
+    return new ZoteroAuthKeys(oauth1Token.getTokenSecret());
   }
 
 //---------------------------------------------------------------------------

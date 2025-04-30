@@ -67,7 +67,10 @@ import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
+import org.hypernomicon.bib.auth.BibAuthKeys;
+import org.hypernomicon.bib.mendeley.auth.MendeleyAuthKeys;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
+import org.hypernomicon.bib.zotero.auth.ZoteroAuthKeys;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
@@ -1155,20 +1158,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void linkZoteroLibrary(String apiKey, String userID, String userName) throws IOException, ParseException, HDB_InternalError
-  {
-    linkBibLibrary(LibraryType.ltZotero, apiKey, "", "", userID, userName);
-  }
-
-  public void linkMendeleyLibrary(String accessToken, String refreshToken, String userID, String userName) throws IOException, ParseException, HDB_InternalError
-  {
-    linkBibLibrary(LibraryType.ltMendeley, "", accessToken, refreshToken, userID, userName);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected void linkBibLibrary(LibraryType libType, String apiKey, String accessToken, String refreshToken, String userID, String userName) throws IOException, ParseException, HDB_InternalError
+  public void linkBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws IOException, ParseException, HDB_InternalError
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21174);
@@ -1185,21 +1175,21 @@ public abstract class AbstractHyperDB
         getFolderTreeWatcher().createNewWatcherAndStart();
     }
 
-    loadBibLibrary(libType, apiKey, accessToken, refreshToken, userID, userName);
+    loadBibLibrary(libType, authKeys, userID, userName);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadBibLibrary(LibraryType libType, String apiKey, String accessToken, String refreshToken, String userID, String userName) throws HDB_InternalError, IOException, ParseException
+  private void loadBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws HDB_InternalError, IOException, ParseException
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21173);
 
     bibLibrary = switch (libType)
     {
-      case ltZotero   -> ZoteroWrapper  .create(apiKey                   , userID, userName, xmlPath(BIB_FILE_NAME));
-      case ltMendeley -> MendeleyWrapper.create(accessToken, refreshToken, userID, userName, xmlPath(BIB_FILE_NAME));
+      case ltZotero   -> ZoteroWrapper  .create((ZoteroAuthKeys  ) authKeys, userID, userName, xmlPath(BIB_FILE_NAME));
+      case ltMendeley -> MendeleyWrapper.create((MendeleyAuthKeys) authKeys, userID, userName, xmlPath(BIB_FILE_NAME));
     };
 
     bibChangedHandlers.forEach(Runnable::run);
@@ -1518,12 +1508,9 @@ public abstract class AbstractHyperDB
 
   private void initBibLibraryLinkFromDBSettings() throws HyperDataException
   {
-    String bibEncApiKey       = prefs.get(PrefKey.BIB_API_KEY      , ""),
-           bibUserID          = prefs.get(PrefKey.BIB_USER_ID      , ""),
-           bibUserName        = prefs.get(PrefKey.BIB_USER_NAME    , ""),
-           bibTypeDescriptor  = prefs.get(PrefKey.BIB_LIBRARY_TYPE , ""),
-           bibEncAccessToken  = prefs.get(PrefKey.BIB_ACCESS_TOKEN , ""),
-           bibEncRefreshToken = prefs.get(PrefKey.BIB_REFRESH_TOKEN, "");
+    String bibUserID          = prefs.get(PrefKey.BIB_USER_ID     , ""),
+           bibUserName        = prefs.get(PrefKey.BIB_USER_NAME   , ""),
+           bibTypeDescriptor  = prefs.get(PrefKey.BIB_LIBRARY_TYPE, "");
 
     LibraryType libType = LibraryType.getByDescriptor(bibTypeDescriptor);
 
@@ -1531,11 +1518,7 @@ public abstract class AbstractHyperDB
 
     try
     {
-      String apiKey       = bibEncApiKey      .isBlank() ? "" : CryptoUtil.decrypt("", bibEncApiKey      ),
-             accessToken  = bibEncAccessToken .isBlank() ? "" : CryptoUtil.decrypt("", bibEncAccessToken ),
-             refreshToken = bibEncRefreshToken.isBlank() ? "" : CryptoUtil.decrypt("", bibEncRefreshToken);
-
-      loadBibLibrary(libType, apiKey, accessToken, refreshToken, bibUserID, bibUserName);
+      loadBibLibrary(libType, BibAuthKeys.loadFromDBSettings(libType), bibUserID, bibUserName);
     }
     catch (Exception e)
     {
@@ -2122,6 +2105,7 @@ public abstract class AbstractHyperDB
     {
       bibLibrary = null;
       bibChangedHandlers.forEach(Runnable::run);
+
       prefs.remove(PrefKey.BIB_API_KEY);
       prefs.remove(PrefKey.BIB_USER_ID);
       prefs.remove(PrefKey.BIB_USER_NAME);

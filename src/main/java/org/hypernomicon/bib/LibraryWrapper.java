@@ -30,6 +30,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.bib.auth.BibAuthKeys;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
@@ -106,9 +107,9 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   protected abstract void savePrefs();
   protected abstract String entryFileNode();
   protected abstract String collectionFileNode();
+  protected abstract BibAuthKeys getAuthKeys();
 
-  public abstract void enableSyncOnThisComputer(String apiKey, String accessToken, String refreshToken, String userID, String userName, boolean save) throws HyperDataException;
-  public abstract void saveRefMgrSecretsToDBSettings();
+  public abstract void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean save) throws HyperDataException;
   public abstract void getProfileInfoFromServer(Consumer<String> successHndlr, Consumer<Throwable> failHndlr);
   public abstract SyncTask createNewSyncTask();
   public abstract LibraryType type();
@@ -335,11 +336,26 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     {
       saveStringBuilderToFile(json, db.xmlPath(BIB_FILE_NAME));
       savePrefs();
-      saveRefMgrSecretsToDBSettings();
+      saveSecretsToDBSettings();
     }
     catch (IOException e)
     {
       errorPopup("An error occurred while saving bibliographic data to disk.");
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public final void saveSecretsToDBSettings()
+  {
+    try
+    {
+      BibAuthKeys.saveToDBSettings(getAuthKeys());
+    }
+    catch (Exception e)
+    {
+      errorPopup("An error occurred while saving access token: " + getThrowableMessage(e));
     }
   }
 

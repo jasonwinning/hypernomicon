@@ -20,23 +20,14 @@ package org.hypernomicon.util;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.util.filePath.FilePath;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 
 import static java.nio.charset.StandardCharsets.*;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.Charset;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.FileSystemException;
-import java.nio.file.Files;
-import java.security.DigestOutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.nio.file.*;
+import java.security.*;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -45,14 +36,10 @@ import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.stream.*;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

@@ -54,12 +54,13 @@ import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.bib.auth.BibAuthKeys;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.bib.zotero.auth.ZoteroAuthKeys;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
-import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.HttpHeader;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -74,7 +75,8 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 
   private final String userID;
-  private String apiKey, userName = "";
+  private String userName = "";
+  private ZoteroAuthKeys authKeys;
   private long offlineLibVersion = -1, onlineLibVersion = -1;
   private Instant backoffTime = null, retryTime = null;
 
@@ -91,11 +93,11 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ZoteroWrapper(String apiKey, String userID, String userName)
+  private ZoteroWrapper(ZoteroAuthKeys authKeys, String userID, String userName)
   {
     this.userID = userID;
 
-    try { enableSyncOnThisComputer(apiKey, "", "", userID, userName, false); }
+    try { enableSyncOnThisComputer(authKeys, userID, userName, false); }
     catch (HyperDataException e) { throw new AssertionError(e); }
   }
 
@@ -103,7 +105,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
   static JsonObj getTemplate(EntryType type)   { return templates.get(type); }
 
-  public static ZoteroWrapper createForTesting() { return new ZoteroWrapper("", "", ""); }
+  public static ZoteroWrapper createForTesting() { return new ZoteroWrapper(null, "", ""); }
 
   @Override public LibraryType type()          { return LibraryType.ltZotero; }
   @Override public String entryFileNode()      { return "items"; }
@@ -113,13 +115,15 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
 
+  @Override protected ZoteroAuthKeys getAuthKeys() { return authKeys; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @NonNull
-  public static ZoteroWrapper create(String apiKey, String userID, String userName, FilePath filePath) throws HDB_InternalError, IOException, ParseException
+  public static ZoteroWrapper create(ZoteroAuthKeys authKeys, String userID, String userName, FilePath filePath) throws HDB_InternalError, IOException, ParseException
   {
-    ZoteroWrapper wrapper = new ZoteroWrapper(apiKey, userID, userName);
+    ZoteroWrapper wrapper = new ZoteroWrapper(authKeys, userID, userName);
 
     wrapper.loadAllFromJsonFile(filePath);
 
@@ -311,8 +315,8 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
       .setHeader(HttpHeader.Content_Type.toString(), "application/json")
       .setHeader(Zotero_API_Version.toString(), "3");
 
-    if (strNotNullOrBlank(apiKey))
-      rb = rb.setHeader(Zotero_API_Key.toString(), apiKey);
+    if (ZoteroAuthKeys.isNotEmpty(authKeys))
+      rb = rb.setHeader(Zotero_API_Key.toString(), ZoteroAuthKeys.getApiKey(authKeys));
 
     request = rb
       .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
@@ -807,16 +811,16 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void enableSyncOnThisComputer(String apiKey, String accessToken, String refreshToken, String userID, String userName, boolean save) throws HyperDataException
+  @Override public void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean save) throws HyperDataException
   {
     if (this.userID.equals(userID) == false)
       throw new HyperDataException("User ID for local entries is " + this.userID + ", but user ID from server is " + userID);
 
-    this.apiKey = apiKey;
+    this.authKeys = (ZoteroAuthKeys) authKeys;
     this.userName = userName;
 
     if (save)
-      saveRefMgrSecretsToDBSettings();
+      saveSecretsToDBSettings();
   }
 
 //---------------------------------------------------------------------------
@@ -828,23 +832,6 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     db.prefs.put(PrefKey.BIB_USER_ID, userID);
     db.prefs.put(PrefKey.BIB_USER_NAME, userName);
     db.prefs.put(PrefKey.BIB_LIBRARY_TYPE, type().descriptor);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void saveRefMgrSecretsToDBSettings()
-  {
-    assert(app.debugging);
-
-    try
-    {
-      db.prefs.put(PrefKey.BIB_API_KEY, CryptoUtil.encrypt("", apiKey));
-    }
-    catch (Exception e)
-    {
-      errorPopup("An error occurred while saving access token: " + getThrowableMessage(e));
-    }
   }
 
 //---------------------------------------------------------------------------

@@ -29,8 +29,14 @@ import javafx.scene.control.TreeView;
 import static org.hypernomicon.bib.CollectionTree.BibCollectionType.*;
 import static org.hypernomicon.util.Util.*;
 
+//---------------------------------------------------------------------------
+
 class CollectionTree
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   enum BibCollectionType { bctAll, bctAllAssigned, bctAllUnassigned, bctUnsorted, bctTrash, bctUser }
 
   private final TreeView<BibCollectionRow> treeView;
@@ -39,12 +45,10 @@ class CollectionTree
   private BibCollectionRow treeRowAllEntries, treeRowAllAssigned, treeRowAllUnassigned, treeRowUnsorted, treeRowTrash;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   void selectAllEntries() { treeView.getSelectionModel().select(treeRowAllEntries.getTreeItem()); }
   void selectTrash()      { treeView.getSelectionModel().select(treeRowTrash.getTreeItem()); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   CollectionTree(TreeView<BibCollectionRow> treeView)

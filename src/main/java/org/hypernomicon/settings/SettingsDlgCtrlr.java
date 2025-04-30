@@ -40,9 +40,10 @@ import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
-import org.hypernomicon.bib.mendeley.MendeleyOAuthApi;
-import org.hypernomicon.bib.mendeley.MendeleyWrapper;
-import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
+import org.hypernomicon.bib.mendeley.*;
+import org.hypernomicon.bib.mendeley.auth.MendeleyAuthKeys;
+import org.hypernomicon.bib.zotero.*;
+import org.hypernomicon.bib.zotero.auth.ZoteroAuthKeys;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -622,13 +623,13 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     boolean success = false;
 
-    OAuth2AccessToken accessToken = null;
+    OAuth2AccessToken token = null;
 
     String verificationCode = tfVerificationCode.getText();
 
     try (OAuth20Service service = MendeleyOAuthApi.service())
     {
-      accessToken = service.getAccessToken(verificationCode);
+      token = service.getAccessToken(verificationCode);
       success = true;
     }
     catch (OAuthException e)                                          { errorPopup("Verification code was rejected by the server."); }
@@ -636,14 +637,16 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     if (success == false) return;
 
+    MendeleyAuthKeys authKeys = MendeleyAuthKeys.createFromOauthToken(token);
+
     try
     {
-      MendeleyWrapper dummyWrapper = MendeleyWrapper.getProfileInfoFromServer(accessToken.getAccessToken(), accessToken.getRefreshToken());
+      MendeleyWrapper dummyWrapper = MendeleyWrapper.getProfileInfoFromServer(authKeys);
 
       if (db.bibLibraryIsLinked())
-        db.getBibLibrary().enableSyncOnThisComputer("", accessToken.getAccessToken(), accessToken.getRefreshToken(), dummyWrapper.getUserID(), dummyWrapper.getUserName(), true);
+        ((MendeleyWrapper)db.getBibLibrary()).enableSyncOnThisComputer(authKeys, dummyWrapper.getUserID(), dummyWrapper.getUserName(), true);
       else
-        db.linkMendeleyLibrary(accessToken.getAccessToken(), accessToken.getRefreshToken(), dummyWrapper.getUserID(), dummyWrapper.getUserName());
+        db.linkBibLibrary(LibraryType.ltMendeley, authKeys, dummyWrapper.getUserID(), dummyWrapper.getUserName());
     }
     catch (Exception e)
     {
@@ -670,13 +673,13 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     boolean success = false;
 
-    OAuth1AccessToken accessToken = null;
+    OAuth1AccessToken token = null;
 
     String verificationCode = tfVerificationCode.getText();
 
     try (OAuth10aService service = ZoteroOAuthApi.service())
     {
-      accessToken = service.getAccessToken(requestToken, verificationCode);
+      token = service.getAccessToken(requestToken, verificationCode);
       success = true;
     }
     catch (OAuthException e)                                          { errorPopup("Verification code was rejected by the server."); }
@@ -684,12 +687,14 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     if (success == false) return;
 
+    ZoteroAuthKeys authKeys = ZoteroAuthKeys.createFromOauthToken(token);
+
     try
     {
       if (db.bibLibraryIsLinked())
-        db.getBibLibrary().enableSyncOnThisComputer(accessToken.getTokenSecret(), "", "", accessToken.getParameter("userID"), accessToken.getParameter("username"), true);
+        ((ZoteroWrapper)db.getBibLibrary()).enableSyncOnThisComputer(authKeys, token.getParameter("userID"), token.getParameter("username"), true);
       else
-        db.linkZoteroLibrary(accessToken.getTokenSecret(), accessToken.getParameter("userID"), accessToken.getParameter("username"));
+        db.linkBibLibrary(LibraryType.ltZotero, authKeys, token.getParameter("userID"), token.getParameter("username"));
     }
     catch (Exception e)
     {

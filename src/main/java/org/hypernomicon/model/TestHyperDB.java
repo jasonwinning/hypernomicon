@@ -29,6 +29,7 @@ import java.util.zip.ZipInputStream;
 
 import org.hypernomicon.App;
 import org.hypernomicon.FolderTreeWatcher;
+import org.hypernomicon.bib.auth.BibAuthKeys;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
@@ -133,7 +134,7 @@ public final class TestHyperDB extends AbstractHyperDB
     throw new UnsupportedOperationException();
   }
 
-  @Override protected void linkBibLibrary(LibraryType libType, String apiKey, String accessToken, String refreshToken, String userID, String userName)
+  @Override public void linkBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName)
   {
     throw new UnsupportedOperationException();
   }

@@ -49,11 +49,11 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private final ObservableList<BibEntryRow> rows;
@@ -65,7 +65,6 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
   void updateKey(String oldKey, String newKey) { keyToRow.put(newKey, keyToRow.remove(oldKey)); }
   boolean containsKey(String bibEntryKey)      { return keyToRow.containsKey(bibEntryKey); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked") BibEntryTable(TableView<BibEntryRow> tv, BibManager dlg)

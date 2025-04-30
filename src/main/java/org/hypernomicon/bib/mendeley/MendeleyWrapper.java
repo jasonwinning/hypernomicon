@@ -53,12 +53,13 @@ import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.bib.auth.BibAuthKeys;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.bib.mendeley.auth.MendeleyAuthKeys;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
-import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.HttpHeader;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -72,7 +73,8 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String accessToken, refreshToken, userID = "", userName = "";
+  private String userID = "", userName = "";
+  private MendeleyAuthKeys authKeys;
   private Instant lastSyncTime = Instant.EPOCH;
 
   private static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
@@ -89,9 +91,9 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private MendeleyWrapper(String accessToken, String refreshToken, String userID, String userName)
+  private MendeleyWrapper(MendeleyAuthKeys authKeys, String userID, String userName)
   {
-    try { enableSyncOnThisComputer("", accessToken, refreshToken, userID, userName, false); }
+    try { enableSyncOnThisComputer(authKeys, userID, userName, false); }
     catch (HyperDataException e) { throw new AssertionError(e); }
   }
 
@@ -105,13 +107,15 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
 
+  @Override protected MendeleyAuthKeys getAuthKeys() { return authKeys; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @NonNull
-  public static MendeleyWrapper create(String accessToken, String refreshToken, String userID, String userName, FilePath filePath) throws IOException, ParseException
+  public static MendeleyWrapper create(MendeleyAuthKeys authKeys, String userID, String userName, FilePath filePath) throws IOException, ParseException
   {
-    MendeleyWrapper wrapper = new MendeleyWrapper(accessToken, refreshToken, userID, userName);
+    MendeleyWrapper wrapper = new MendeleyWrapper(authKeys, userID, userName);
 
     wrapper.loadAllFromJsonFile(filePath);
 
@@ -189,7 +193,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     if (rb == null) return null;
 
     request = rb.setUri(url)
-                .setHeader(HttpHeader.Authorization.toString(), "Bearer " + accessToken)
+                .setHeader(HttpHeader.Authorization.toString(), "Bearer " + MendeleyAuthKeys.getAccessToken(authKeys))
                 .build();
 
     JsonArray jsonArray;
@@ -245,11 +249,11 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
         {
           try (OAuth20Service service = MendeleyOAuthApi.service())
           {
-            OAuth2AccessToken token = service.refreshAccessToken(refreshToken);
+            OAuth2AccessToken token = service.refreshAccessToken(MendeleyAuthKeys.getRefreshToken(authKeys));
 
             try
             {
-              enableSyncOnThisComputer("", token.getAccessToken(), token.getRefreshToken(), "", "", true);
+              enableSyncOnThisComputer(MendeleyAuthKeys.createFromOauthToken(token), "", "", true);
             }
             catch (Exception e)
             {
@@ -713,9 +717,9 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MendeleyWrapper getProfileInfoFromServer(String accessToken, String refreshToken) throws HyperDataException
+  public static MendeleyWrapper getProfileInfoFromServer(MendeleyAuthKeys authKeys) throws HyperDataException
   {
-    MendeleyWrapper wrapper = new MendeleyWrapper(accessToken, refreshToken, "", "");
+    MendeleyWrapper wrapper = new MendeleyWrapper(authKeys, "", "");
 
     wrapper.getProfileInfoFromServer();
 
@@ -791,7 +795,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
   // If save is true and the userID is NOT passed in, the access token is being refreshed.
   // If save is false, the library is being loaded from local persistent storage.
 
-  @Override public void enableSyncOnThisComputer(String apiKey, String accessToken, String refreshToken, String userID, String userName, boolean save) throws HyperDataException
+  @Override public void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean save) throws HyperDataException
   {
     if (strNotNullOrBlank(userID))
     {
@@ -825,29 +829,10 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
       this.userName = userName;
     }
 
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
+    this.authKeys = (MendeleyAuthKeys) authKeys;
 
     if (save)
-      saveRefMgrSecretsToDBSettings();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void saveRefMgrSecretsToDBSettings()
-  {
-    assert(app.debugging);
-
-    try
-    {
-      db.prefs.put(PrefKey.BIB_ACCESS_TOKEN , CryptoUtil.encrypt("", accessToken ));
-      db.prefs.put(PrefKey.BIB_REFRESH_TOKEN, CryptoUtil.encrypt("", refreshToken));
-    }
-    catch (Exception e)
-    {
-      errorPopup("An error occurred while saving access token: " + getThrowableMessage(e));
-    }
+      saveSecretsToDBSettings();
   }
 
 //---------------------------------------------------------------------------
