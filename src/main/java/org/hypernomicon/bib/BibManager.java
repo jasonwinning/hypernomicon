@@ -396,6 +396,16 @@ public final class BibManager extends NonmodalWindow
 
     stop();
 
+    try
+    {
+      syncTask = libraryWrapper.createNewSyncTask();
+    }
+    catch (HyperDataException e)
+    {
+      errorPopup(LibraryWrapper.syncErrorMessage(e));
+      return;
+    }
+
     RotateTransition rt1 = new RotateTransition(Duration.millis(1000), btnSync.getGraphic());
     rt1.setByAngle(360);
     rt1.setCycleCount(1);
@@ -412,8 +422,6 @@ public final class BibManager extends NonmodalWindow
     btnStop.setDisable(false);
 
     libraryWrapper.setKeyChangeHandler(entryTable::updateKey);
-
-    syncTask = libraryWrapper.createNewSyncTask();
 
     syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
     {

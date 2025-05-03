@@ -29,6 +29,7 @@ import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuth10aService;
 import com.github.scribejava.core.oauth.OAuth20Service;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
@@ -190,6 +191,8 @@ public class SettingsDlgCtrlr extends ModalDialog
       vbRefMgr.getChildren().add(apLinkToExtBibMgr);
       selectLibraryType(db.getBibLibrary().type());
     });
+
+    setToolTip(btnReEstablishAccess, "Renew access to reference manager account. Use this option only if there is a problem with syncing.");
 
     authUrl = new SimpleStringProperty();
 

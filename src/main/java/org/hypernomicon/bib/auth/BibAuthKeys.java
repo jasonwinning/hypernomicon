@@ -18,6 +18,7 @@
 package org.hypernomicon.bib.auth;
 
 import static org.hypernomicon.App.app;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.mendeley.auth.MendeleyAuthKeys;
@@ -39,11 +40,22 @@ public abstract class BibAuthKeys
 
   public static boolean isNotEmpty(BibAuthKeys authKeys) { return (authKeys != null) && authKeys.isNotEmpty(); }
 
-  protected abstract boolean saveToDBSettings() throws Exception;
+  @Deprecated
+  protected abstract void saveToDBSettings() throws Exception;
+
+  protected abstract void saveToKeyringIfUnsaved(String userID);
+
+  protected abstract void removeFromKeyring(String userID);
+
+//---------------------------------------------------------------------------
+
+  protected static String getReadTaskMessage (LibraryType libType) { return "Loading " + libType.userFriendlyName + " configuration..."; }
+  protected static String getWriteTaskMessage(LibraryType libType) { return "Saving "  + libType.userFriendlyName + " configuration..."; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Deprecated
   public static BibAuthKeys loadFromDBSettings(LibraryType libType) throws Exception
   {
     return switch (libType)
@@ -56,11 +68,47 @@ public abstract class BibAuthKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean saveToDBSettings(BibAuthKeys authKeys) throws Exception
+  @Deprecated
+  public static void saveToDBSettings(BibAuthKeys authKeys) throws Exception
   {
     assert(app.debugging);
 
-    return isNotEmpty(authKeys) && authKeys.saveToDBSettings();
+    if (isNotEmpty(authKeys))
+      authKeys.saveToDBSettings();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Only saves the authKeys to the keyring if authKeys is not null or empty, userID is not null or blank, and the authKeys have not been saved to the keyring yet.
+   * @param authKeys Can be null
+   * @param userID Can be null
+   */
+  public static void saveToKeyringIfUnsaved(BibAuthKeys authKeys, String userID)
+  {
+    if (strNotNullOrBlank(userID) && isNotEmpty(authKeys))
+      authKeys.saveToKeyringIfUnsaved(userID);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void removeFromKeyring(BibAuthKeys authKeys, String userID)
+  {
+    if (strNullOrBlank(userID))
+    {
+      System.out.println("Unable to remove auth keys from keyring: user ID is blank.");
+      return;
+    }
+
+    if (authKeys == null)
+    {
+      System.out.println("Unable to remove auth keys from keyring: authKeys is null.");
+      return;
+    }
+
+    authKeys.removeFromKeyring(userID);
   }
 
 //---------------------------------------------------------------------------

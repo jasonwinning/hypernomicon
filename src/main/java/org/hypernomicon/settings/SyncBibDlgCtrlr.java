@@ -18,10 +18,13 @@
 package org.hypernomicon.settings;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.dialogs.base.ModalDialog;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ProgressBar;
@@ -37,21 +40,26 @@ public final class SyncBibDlgCtrlr extends ModalDialog
 
   static void sync()
   {
-    new SyncBibDlgCtrlr().showModal();
+    try
+    {
+      new SyncBibDlgCtrlr(db.getBibLibrary().createNewSyncTask()).showModal();
+    }
+    catch (HyperDataException e)
+    {
+      errorPopup("Unable to download library data: " + getThrowableMessage(e));
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SyncBibDlgCtrlr()
+  private SyncBibDlgCtrlr(SyncTask syncTask)
   {
     super("settings/SyncBibDlg", "Link to " + db.bibLibraryUserFriendlyName(), true, true);
 
     onShown = () ->
     {
       BibManager.instance().clearCollectionTree();
-
-      SyncTask syncTask = db.getBibLibrary().createNewSyncTask();
 
       syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
       {

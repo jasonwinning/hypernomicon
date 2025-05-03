@@ -50,8 +50,8 @@ public final class ProgressDlgCtrlr extends ModalDialog
     super("ProgressDlg", appTitle, true);
 
     lblTask.setText("");
-    lblPercent.setText("Progress: 0 %");
-    progressBar.setProgress(0.0);
+
+    updateProgressLabel(task.progressProperty().longValue());
 
     lblTask    .textProperty    ().bind(task.messageProperty ());
     progressBar.progressProperty().bind(task.progressProperty());
@@ -65,7 +65,7 @@ public final class ProgressDlgCtrlr extends ModalDialog
 
       lastPercent = percent;
 
-      lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + Math.round(newValue.doubleValue() * 100.0) + " %");
+      updateProgressLabel(percent);
     });
 
     task.runWhenFinalStateSet(state -> stage.close());
@@ -95,6 +95,26 @@ public final class ProgressDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void updateProgressLabel(long percent)
+  {
+    lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + percent + " %");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Run the specified task while showing progress updates in a progress dialog.
+   * This method blocks execution in the calling thread until the task completes.
+   *
+   * <p>The task may already be running when this method is called.
+   * If it is not, it will be started automatically.</p>
+   *
+   * <p>To show an indeterminate animation in the progress dialog, pass <code>false</code> for the
+   * <code>withProgressUpdates</code> parameter in the {@link HyperTask} constructor.</p>
+   * @param task The task to execute
+   * @return The final {@link State} of the task.
+   */
   public static State performTask(HyperTask task)
   {
     new ProgressDlgCtrlr(task).showModal();

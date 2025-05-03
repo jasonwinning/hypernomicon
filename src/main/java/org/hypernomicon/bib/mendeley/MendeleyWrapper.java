@@ -91,10 +91,12 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private MendeleyWrapper(MendeleyAuthKeys authKeys, String userID, String userName)
+  private MendeleyWrapper(MendeleyAuthKeys authKeys, String userID, String userName) throws HyperDataException
   {
-    try { enableSyncOnThisComputer(authKeys, userID, userName, false); }
-    catch (HyperDataException e) { throw new AssertionError(e); }
+    if (strNotNullOrBlank(userID) && BibAuthKeys.isEmpty(authKeys))
+      authKeys = MendeleyAuthKeys.loadFromKeyring(userID);
+
+    enableSyncOnThisComputer(authKeys, userID, userName, false);
   }
 
 //---------------------------------------------------------------------------
@@ -113,7 +115,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 
   @NonNull
-  public static MendeleyWrapper create(MendeleyAuthKeys authKeys, String userID, String userName, FilePath filePath) throws IOException, ParseException
+  public static MendeleyWrapper create(MendeleyAuthKeys authKeys, String userID, String userName, FilePath filePath) throws IOException, ParseException, HyperDataException
   {
     MendeleyWrapper wrapper = new MendeleyWrapper(authKeys, userID, userName);
 
@@ -127,10 +129,19 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     if (docUserID != null)
     {
       wrapper.userID = docUserID;
+
+      // We may not have been able to save before because the userID was blank
+      BibAuthKeys.saveToKeyringIfUnsaved(authKeys, wrapper.userID);
+
       return wrapper;
     }
 
-    wrapper.getProfileInfoFromServer(_userName -> noOp(), ex -> noOp());
+    wrapper.getProfileInfoFromServer(_userName ->
+    {
+      // We may not have been able to save before because the userID was blank
+      BibAuthKeys.saveToKeyringIfUnsaved(authKeys, wrapper.userID);
+
+    }, ex -> noOp());
 
     return wrapper;
   }
@@ -253,7 +264,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
             try
             {
-              enableSyncOnThisComputer(MendeleyAuthKeys.createFromOauthToken(token), "", "", true);
+              enableSyncOnThisComputer(MendeleyAuthKeys.createFromOauthToken(token), "", "", false);
             }
             catch (Exception e)
             {
@@ -281,276 +292,291 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public SyncTask createNewSyncTask() { return syncTask = new SyncTask()
+  @Override public SyncTask createNewSyncTask() throws HyperDataException
   {
-    @Override public void call() throws CancelledTaskException, HyperDataException
+    if (strNullOrBlank(userID))
+      getProfileInfoFromServer();
+
+    if (strNotNullOrBlank(userID) && BibAuthKeys.isEmpty(authKeys))
     {
-    //---------------------------------------------------------------------------
+      authKeys = MendeleyAuthKeys.loadFromKeyring(userID);
 
-      Set<String> trashedIDs = new HashSet<>(), nonTrashedIDs = new HashSet<>();
+      enableSyncOnThisComputer(authKeys, userID, userName, false);
+    }
+    else
+      BibAuthKeys.saveToKeyringIfUnsaved(authKeys, userID);
 
-      try
+    return createNewSyncTaskInt();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private SyncTask createNewSyncTaskInt() { return syncTask = new SyncTask() { @Override public void call() throws CancelledTaskException, HyperDataException
+  {
+
+//---------------------------------------------------------------------------
+
+    Set<String> trashedIDs = new HashSet<>(), nonTrashedIDs = new HashSet<>();
+
+    try
+    {
+      do
       {
-        if (strNullOrBlank(userID))
-          getProfileInfoFromServer();
-
-        do
-        {
-          didMergeDuringSync = false;
+        didMergeDuringSync = false;
 
 // Get list of remotely changed documents ---------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-          Map<String, JsonObj> remoteChangeIDtoObj = new HashMap<>();
+        Map<String, JsonObj> remoteChangeIDtoObj = new HashMap<>();
 
-          nonTrashedIDs.clear();
-          doReadCommand(MendeleyCmd.readDocuments).getObjs().forEach(jObj ->
-          {
-            String entryKey = jObj.getStrSafe("id");
-            remoteChangeIDtoObj.put(entryKey, jObj);
-            nonTrashedIDs.add(entryKey);
-          });
+        nonTrashedIDs.clear();
+        doReadCommand(MendeleyCmd.readDocuments).getObjs().forEach(jObj ->
+        {
+          String entryKey = jObj.getStrSafe("id");
+          remoteChangeIDtoObj.put(entryKey, jObj);
+          nonTrashedIDs.add(entryKey);
+        });
 
 // Get list of remotely changed documents in trash ------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-          trashedIDs.clear();
-          doReadCommand(MendeleyCmd.readTrash).getObjs().forEach(jObj ->
-          {
-            String entryKey = jObj.getStrSafe("id");
-            remoteChangeIDtoObj.put(entryKey, jObj);
-            trashedIDs.add(entryKey);
-          });
+        trashedIDs.clear();
+        doReadCommand(MendeleyCmd.readTrash).getObjs().forEach(jObj ->
+        {
+          String entryKey = jObj.getStrSafe("id");
+          remoteChangeIDtoObj.put(entryKey, jObj);
+          trashedIDs.add(entryKey);
+        });
 
 // Get list of remotely deleted documents ---------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-          JsonArray remoteDeletions = doReadCommand(MendeleyCmd.readDeletedDocuments);
+        JsonArray remoteDeletions = doReadCommand(MendeleyCmd.readDeletedDocuments);
 
 // Locally delete remotely deleted documents ------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-          remoteDeletions.getObjs().forEach(jObj ->
+        remoteDeletions.getObjs().forEach(jObj ->
+        {
+          changed = true;
+          String key = jObj.getStrSafe("id");
+
+          if (keyToAllEntry.containsKey(key))
           {
-            changed = true;
-            String key = jObj.getStrSafe("id");
+            // A remote deletion will simply override local changes. Undocument code to change this behavior.
 
-            if (keyToAllEntry.containsKey(key))
-            {
-              // A remote deletion will simply override local changes. Undocument code to change this behavior.
-
-//              MendeleyDocument document = keyToAllEntry.get(key);
+//            MendeleyDocument document = keyToAllEntry.get(key);
 //
-//              if (document.isSynced())
-//              {
-                HDT_Work work = db.getWorkByBibEntryKey(key);
-                if (work != null)
-                  work.setBibEntryKey("");
+//            if (document.isSynced())
+//            {
+              HDT_Work work = db.getWorkByBibEntryKey(key);
+              if (work != null)
+                work.setBibEntryKey("");
 
-                keyToAllEntry.remove(key);
-                keyToTrashEntry.remove(key);
-//              }
-//              else
-//              {
-//                // Perform conflict resolution!
-//                noOp();
-//              }
-            }
-          });
+              keyToAllEntry.remove(key);
+              keyToTrashEntry.remove(key);
+//            }
+//            else
+//            {
+//              // Perform conflict resolution!
+//              noOp();
+//            }
+          }
+        });
 
-          lastSyncTime = Instant.now();
+        lastSyncTime = Instant.now();
 
 // Ignore documents with old modified date --------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-          remoteChangeIDtoObj.entrySet().removeIf(entry ->
-          {
-            MendeleyDocument document = keyToAllEntry.get(entry.getKey());
+        remoteChangeIDtoObj.entrySet().removeIf(entry ->
+        {
+          MendeleyDocument document = keyToAllEntry.get(entry.getKey());
 
-            return (document != null) && (document.lastModifiedOnServer().isBefore(getSyncInstantFromJsonStr(entry.getValue().getStr(Document_Last_Modified_JSON_Key))) == false);
-          });
+          return (document != null) && (document.lastModifiedOnServer().isBefore(getSyncInstantFromJsonStr(entry.getValue().getStr(Document_Last_Modified_JSON_Key))) == false);
+        });
 
-          if (remoteChangeIDtoObj.isEmpty() == false)
-            changed = true;
+        if (remoteChangeIDtoObj.isEmpty() == false)
+          changed = true;
 
-          if (app.debugging)
-            System.out.println("Number of Mendeley documents modified on server: " + (remoteChangeIDtoObj.keySet().size() + remoteDeletions.size()));
+        if (app.debugging)
+          System.out.println("Number of Mendeley documents modified on server: " + (remoteChangeIDtoObj.keySet().size() + remoteDeletions.size()));
 
 // If document that was assigned to a work now has unrecognized entry type, unassign it -----------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-          Set<String> dontMergeThese = new HashSet<>();
+        Set<String> dontMergeThese = new HashSet<>();
 
-          remoteChangeIDtoObj.forEach((entryKey, jObj) ->
+        remoteChangeIDtoObj.forEach((entryKey, jObj) ->
+        {
+          MendeleyDocument document = keyToAllEntry.get(entryKey);
+
+          if (document == null)
+            return;
+
+          String entryTypeStr = MendeleyDocument.getEntryTypeStrFromSpecifiedJson(jObj);
+
+          if (parseEntryType(entryTypeStr) == etOther)
           {
-            MendeleyDocument document = keyToAllEntry.get(entryKey);
+            dontMergeThese.add(entryKey);
 
-            if (document == null)
-              return;
-
-            String entryTypeStr = MendeleyDocument.getEntryTypeStrFromSpecifiedJson(jObj);
-
-            if (parseEntryType(entryTypeStr) == etOther)
+            if (document.linkedToWork())
             {
-              dontMergeThese.add(entryKey);
-
-              if (document.linkedToWork())
-              {
-                int workID = document.getWork().getID();
-                document.unassignWork();
-                warningPopup("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID);
-              }
+              int workID = document.getWork().getID();
+              document.unassignWork();
+              warningPopup("Unassigning work record due to unrecognized entry type: \"" + entryTypeStr + "\"\n\nWork ID: " + workID);
             }
-          });
+          }
+        });
 
 // Build list of locally changed documents and documents to merge; merge local and remote changes -------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-          List<MendeleyDocument> localChanges = new ArrayList<>();
+        List<MendeleyDocument> localChanges = new ArrayList<>();
 
-          getAllEntries().forEach(entry ->
+        getAllEntries().forEach(entry ->
+        {
+          if (entry.isSynced() == false)
           {
-            if (entry.isSynced() == false)
+            localChanges.add(entry);
+            String entryKey = entry.getKey();
+
+            if (remoteChangeIDtoObj.containsKey(entryKey) && (dontMergeThese.contains(entryKey) == false))
             {
-              localChanges.add(entry);
-              String entryKey = entry.getKey();
-
-              if (remoteChangeIDtoObj.containsKey(entryKey) && (dontMergeThese.contains(entryKey) == false))
-              {
-                doMerge(entry, remoteChangeIDtoObj.get(entryKey));
-                remoteChangeIDtoObj.remove(entryKey);
-              }
+              doMerge(entry, remoteChangeIDtoObj.get(entryKey));
+              remoteChangeIDtoObj.remove(entryKey);
             }
-          });
+          }
+        });
 
-          if (app.debugging)
-            System.out.println("Number of Mendeley documents modified locally: " + localChanges.size());
+        if (app.debugging)
+          System.out.println("Number of Mendeley documents modified locally: " + localChanges.size());
 
-          remoteChangeIDtoObj.forEach((entryKey, jObj) ->
-          {
-            MendeleyDocument document = keyToAllEntry.get(entryKey);
+        remoteChangeIDtoObj.forEach((entryKey, jObj) ->
+        {
+          MendeleyDocument document = keyToAllEntry.get(entryKey);
 
-            if (document == null)
-              keyToAllEntry.put(entryKey, new MendeleyDocument(MendeleyWrapper.this, jObj, false));
-            else
-              document.update(jObj, true, false);
-          });
+          if (document == null)
+            keyToAllEntry.put(entryKey, new MendeleyDocument(MendeleyWrapper.this, jObj, false));
+          else
+            document.update(jObj, true, false);
+        });
 
 // Create new documents on server and update locally changed documents on server, checking for 412 status -----------
 // ------------------------------------------------------------------------------------------------------------------
 
-          Iterator<MendeleyDocument> it = localChanges.iterator();
-          while (it.hasNext() && (jsonClient.getStatusCode() != HttpStatus.SC_PRECONDITION_FAILED))
-          {
-            MendeleyDocument document = it.next();
-
-            if (document.isNewEntry())
-            {
-              String oldKey = document.getKey();
-
-              JsonArray jsonArray = createDocumentOnServer(document);
-
-              document.update(jsonArray.getObj(0), false, false);
-
-              updateKey(oldKey, document.getKey());
-              changed = true;
-            }
-            else
-            {
-              JsonArray jsonArray = updateDocumentOnServer(document);
-              if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
-              {
-                document.update(jsonArray.getObj(0), false, false);
-                changed = true;
-              }
-              else if (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED)
-              {
-                document.mergeWithBackupCopy();
-                changed = true;
-              }
-            }
-          }
-
-// If 412 status received, start over -------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------
-
-        } while ((jsonClient.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED) || didMergeDuringSync);
-
-// Get list of folders from server ----------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------
-
-        Map<String, JsonObj> remoteFolderIDtoObj = new HashMap<>();
-        doReadCommand(MendeleyCmd.readFolders).getObjs().forEach(jObj -> remoteFolderIDtoObj.put(jObj.getStrSafe("id"), jObj));
-
-// Delete local folders not on list ---------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------
-
-        List.copyOf(keyToColl.keySet()).forEach(collKey ->
+        Iterator<MendeleyDocument> it = localChanges.iterator();
+        while (it.hasNext() && (jsonClient.getStatusCode() != HttpStatus.SC_PRECONDITION_FAILED))
         {
-          if (remoteFolderIDtoObj.containsKey(collKey) == false)
+          MendeleyDocument document = it.next();
+
+          if (document.isNewEntry())
           {
-            // A remote deletion will simply override local changes. Undocument code to change this behavior.
+            String oldKey = document.getKey();
 
-//          MendeleyFolder folder = keyToColl.get(collKey);
-//
-//          if (folder.isSynced())
-//          {
-            keyToColl.remove(collKey);
-            changed = true;
-//          }
-//          else
-//          {
-//            // Perform conflict resolution!
-//            noOp();
-//          }
-          }
-        });
+            JsonArray jsonArray = createDocumentOnServer(document);
 
-// Create new local folders and update existing local folders -------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------
+            document.update(jsonArray.getObj(0), false, false);
 
-        remoteFolderIDtoObj.forEach((collKey, jObj) ->
-        {
-          MendeleyFolder folder = keyToColl.get(collKey);
-
-          if (folder == null)
-          {
-            keyToColl.put(collKey, new MendeleyFolder(jObj));
+            updateKey(oldKey, document.getKey());
             changed = true;
           }
           else
           {
-            if (folder.lastModifiedOnServer().isBefore(getSyncInstantFromJsonStr(jObj.getStr(Folder_Last_Modified_JSON_Key))))
+            JsonArray jsonArray = updateDocumentOnServer(document);
+            if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
+            {
+              document.update(jsonArray.getObj(0), false, false);
               changed = true;
-
-            folder.update(jObj, true, false);
+            }
+            else if (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED)
+            {
+              document.mergeWithBackupCopy();
+              changed = true;
+            }
           }
-        });
+        }
+
+// If 412 status received, start over -------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+
+      } while ((jsonClient.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED) || didMergeDuringSync);
+
+// Get list of folders from server ----------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+
+      Map<String, JsonObj> remoteFolderIDtoObj = new HashMap<>();
+      doReadCommand(MendeleyCmd.readFolders).getObjs().forEach(jObj -> remoteFolderIDtoObj.put(jObj.getStrSafe("id"), jObj));
+
+// Delete local folders not on list ---------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+
+      List.copyOf(keyToColl.keySet()).forEach(collKey ->
+      {
+        if (remoteFolderIDtoObj.containsKey(collKey) == false)
+        {
+          // A remote deletion will simply override local changes. Undocument code to change this behavior.
+
+//        MendeleyFolder folder = keyToColl.get(collKey);
+//
+//        if (folder.isSynced())
+//        {
+          keyToColl.remove(collKey);
+          changed = true;
+//        }
+//        else
+//        {
+//          // Perform conflict resolution!
+//          noOp();
+//        }
+        }
+      });
+
+// Create new local folders and update existing local folders -------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------
+
+      remoteFolderIDtoObj.forEach((collKey, jObj) ->
+      {
+        MendeleyFolder folder = keyToColl.get(collKey);
+
+        if (folder == null)
+        {
+          keyToColl.put(collKey, new MendeleyFolder(jObj));
+          changed = true;
+        }
+        else
+        {
+          if (folder.lastModifiedOnServer().isBefore(getSyncInstantFromJsonStr(jObj.getStr(Folder_Last_Modified_JSON_Key))))
+            changed = true;
+
+          folder.update(jObj, true, false);
+        }
+      });
 
 // Locally update whether documents are in the trash (using nonTrashedIDs and trashedIDs lists) ---------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-        nonTrashedIDs.forEach(entryKey ->
-        {
-          if (keyToTrashEntry.remove(entryKey) != null)
-            changed = true;
-        });
-
-        trashedIDs.forEach(entryKey ->
-        {
-          if (keyToTrashEntry.containsKey(entryKey))
-            return;
-
-          keyToTrashEntry.put(entryKey, keyToAllEntry.get(entryKey));
-          changed = true;
-        });
-      }
-      catch (UnsupportedOperationException | IOException | ParseException e)
+      nonTrashedIDs.forEach(entryKey ->
       {
-        throw new HyperDataException("An error occurred while syncing: " + getThrowableMessage(e), e);
-      }
+        if (keyToTrashEntry.remove(entryKey) != null)
+          changed = true;
+      });
+
+      trashedIDs.forEach(entryKey ->
+      {
+        if (keyToTrashEntry.containsKey(entryKey))
+          return;
+
+        keyToTrashEntry.put(entryKey, keyToAllEntry.get(entryKey));
+        changed = true;
+      });
     }
-  }; }
+    catch (UnsupportedOperationException | IOException | ParseException e)
+    {
+      throw new HyperDataException(syncErrorMessage(e), e);
+    }
+  } }; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -761,7 +787,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
 //---------------------------------------------------------------------------
 
-    HyperTask hyperTask = new HyperTask("GetMendeleyProfileInfo")
+    HyperTask hyperTask = new HyperTask("GetMendeleyProfileInfo", false)
     {
       @Override protected void call() throws HyperDataException
       {
@@ -791,17 +817,23 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // If save is true and userID is passed in, that means the user is trying to re-establish access.
-  // If save is true and the userID is NOT passed in, the access token is being refreshed.
-  // If save is false, the library is being loaded from local persistent storage.
-
-  @Override public void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean save) throws HyperDataException
+  @Override public void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean reestablishing) throws HyperDataException
   {
+    // If the access token is being refreshed, userID and userName will be passed in blank, and reestablishing will be false.
+    // If the library is being loaded from persistent storage (whether authKeys came from DB settings or keyring), userID and
+    //      userName may be blank, and reestablishing will be false.
+    // If re-establishing access permission, userID and userName will not be blank, and reestablishing will be true.
+
     if (strNotNullOrBlank(userID))
     {
+      // If reestablishing is false at this point, the library is being loaded from persistent storage.
+      // In that case, this.userID is always blank, and the authKeys might have come from DB settings or the keyring.
+
+      BibAuthKeys.saveToKeyringIfUnsaved(authKeys, userID);  // Save to the keyring even if these are auth keys for the wrong user;
+                                                             // the passed-in authKeys must match the passed-in user ID at least
       if (this.userID.isBlank())
       {
-        if (save && getAllEntries().isEmpty())
+        if (reestablishing && getAllEntries().isEmpty())
         {
           // The user is trying to re-establish access without the userID previously being saved and with no entries in the library.
           // It is not a good solution to try to get the existing userID from the server because we don't know the reason why the
@@ -813,6 +845,9 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
           throw new HyperDataException("Unable to re-establish access. You may need to unlink and re-link your Mendeley account.");
         }
+
+        // If reestablishing is false, and this.userID is blank, then we loaded authKeys from DB settings.
+        // Might as well do the check in that case too.
 
         for (MendeleyDocument document : getAllEntries())
         {
@@ -831,8 +866,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     this.authKeys = (MendeleyAuthKeys) authKeys;
 
-    if (save)
-      saveSecretsToDBSettings();
+    BibAuthKeys.saveToKeyringIfUnsaved(this.authKeys, this.userID);
   }
 
 //---------------------------------------------------------------------------
@@ -848,7 +882,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     try
     {
-      System.out.print("Checking list of Mendeley document types from server against local list: ");
+      System.out.println("Checking list of Mendeley document types from server against local list.");
 
       JsonArray jsonArray = doHttpRequest("https://api.mendeley.com/document_types",
                                           HttpRequestType.get,
@@ -882,7 +916,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
       failMsg = getThrowableMessage(e);
     }
 
-    System.out.println(failMsg.isBlank() ? "Success." : "Fail. Reason:\n" + failMsg);
+    System.out.println("Result of checking Mendeley document types: " + (failMsg.isBlank() ? "Success." : "Fail. Reason:\n" + failMsg));
   }
 
 //---------------------------------------------------------------------------

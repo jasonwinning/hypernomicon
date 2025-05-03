@@ -52,7 +52,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   @FXML private TextField tfParent, tfFolderName;
-  @FXML private Button btnFromExisting, btnClose, btnCloseDB;
+  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets;
   @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private ToggleGroup tgLink;
 
@@ -60,6 +60,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("deprecation")
   public TestConsoleDlgCtrlr()
   {
     super("TestConsoleDlg", appTitle + " Test Console", true);
@@ -72,6 +73,13 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     toggleToLibraryType = Map.of(rbZotero, ltZotero, rbMendeley, ltMendeley);
 
     setToolTip(btnClose, "Close this window");
+
+    btnSaveRefMgrSecrets  .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
+    btnRemoveRefMgrSecrets.setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
+
+    btnSaveRefMgrSecrets.setOnAction(event -> db.getBibLibrary().saveAuthKeysToDBSettings());
+
+    btnRemoveRefMgrSecrets.setOnAction(event -> db.getBibLibrary().removeSecretsFromKeyring());
   }
 
 //---------------------------------------------------------------------------

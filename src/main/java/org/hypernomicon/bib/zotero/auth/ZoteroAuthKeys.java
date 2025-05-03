@@ -17,12 +17,14 @@
 
 package org.hypernomicon.bib.zotero.auth;
 
+import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.CryptoUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.Const.PrefKey;
+import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.auth.BibAuthKeys;
-import org.hypernomicon.util.CryptoUtil;
 
 import com.github.scribejava.core.model.OAuth1AccessToken;
 
@@ -35,6 +37,8 @@ public final class ZoteroAuthKeys extends BibAuthKeys
 //---------------------------------------------------------------------------
 
   private final String apiKey;
+
+  private boolean savedToKeyring = false;
 
 //---------------------------------------------------------------------------
 
@@ -58,24 +62,46 @@ public final class ZoteroAuthKeys extends BibAuthKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected boolean saveToDBSettings() throws Exception
+  @Deprecated
+  @Override protected void saveToDBSettings() throws Exception
   {
     if (isEmpty())
-      return false;
+      return;
 
-    db.prefs.put(PrefKey.BIB_API_KEY, CryptoUtil.encrypt("", apiKey));
+    assert(app.debugging);
 
-    return true;
+    db.prefs.put(PrefKey.BIB_API_KEY, encrypt("", apiKey));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static String secretNameForAPIKey(String userID)
+  {
+    return "Hypernomicon_ZoteroAPIKey_" + userID;
+  }
+
+//---------------------------------------------------------------------------
+
+  public static ZoteroAuthKeys loadFromKeyring(String userID)
+  {
+    char[] tokenChars = readFromKeyring(secretNameForAPIKey(userID), getReadTaskMessage(LibraryType.ltZotero));
+
+    ZoteroAuthKeys authKeys = new ZoteroAuthKeys(tokenChars == null ? "" : new String(tokenChars));
+
+    authKeys.savedToKeyring = true;
+    return authKeys;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Deprecated
   public static ZoteroAuthKeys loadFromDBSettings() throws Exception
   {
     String bibEncApiKey = db.prefs.get(PrefKey.BIB_API_KEY, "");
 
-    return new ZoteroAuthKeys(bibEncApiKey.isBlank() ? "" : CryptoUtil.decrypt("", bibEncApiKey));
+    return new ZoteroAuthKeys(bibEncApiKey.isBlank() ? "" : decrypt("", bibEncApiKey));
   }
 
 //---------------------------------------------------------------------------
@@ -84,6 +110,38 @@ public final class ZoteroAuthKeys extends BibAuthKeys
   public static ZoteroAuthKeys createFromOauthToken(OAuth1AccessToken oauth1Token)
   {
     return new ZoteroAuthKeys(oauth1Token.getTokenSecret());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected void saveToKeyringIfUnsaved(String userID)
+  {
+    if (savedToKeyring || strNullOrBlank(userID) || isEmpty())
+      return;
+
+    if (saveToKeyring(secretNameForAPIKey(userID), apiKey.toCharArray(), "API key for Hypernomicon Zotero integration, user " + userID, getWriteTaskMessage(LibraryType.ltZotero)))
+    {
+      db.prefs.remove(PrefKey.BIB_API_KEY);
+      db.prefs.remove(PrefKey.BIB_ACCESS_TOKEN);
+      db.prefs.remove(PrefKey.BIB_REFRESH_TOKEN);
+
+      savedToKeyring = true;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected void removeFromKeyring(String userID)
+  {
+    if (strNullOrBlank(userID))
+      return;
+
+    if (deleteFromKeyring(secretNameForAPIKey(userID), getWriteTaskMessage(LibraryType.ltZotero)))
+    {
+      savedToKeyring = false;
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -47,7 +47,7 @@ public final class InternetCheckDlgCtrlr extends ModalDialog
   {
     super("InternetCheckDlg", appTitle, true);
 
-    HyperTask task = new HyperTask("CheckForInternet") { @Override protected void call()
+    HyperTask task = new HyperTask("CheckForInternet", false) { @Override protected void call()
     {
       try
       {
@@ -92,7 +92,6 @@ public final class InternetCheckDlgCtrlr extends ModalDialog
 
     return result == mrIgnore;
   }
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -154,6 +154,10 @@
       <url>https://repo.maven.apache.org/maven2</url>
     </repository>
     <repository>
+      <id>netbeans</id>
+      <url>https://repository.apache.org/content/groups/public/org/netbeans</url>
+    </repository>
+    <repository>
       <id>com.teamdev</id>
       <url>https://europe-maven.pkg.dev/jxbrowser/releases</url>
     </repository>
@@ -193,6 +197,18 @@
       <version>6.24.3</version>
       <type>pom</type>
     </dependency>
+
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-modules-keyring</artifactId>
+      <version>RELEASE250</version>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.modules</groupId>
+      <artifactId>org-netbeans-modules-keyring-impl</artifactId>
+      <version>RELEASE250</version>
+    </dependency>
+
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>

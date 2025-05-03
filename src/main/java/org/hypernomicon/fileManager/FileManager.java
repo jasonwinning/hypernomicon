@@ -451,10 +451,8 @@ public final class FileManager extends NonmodalWindow
     final FilePathSet srcSet = new FilePathSet(), destSet = new FilePathSet();
     srcPathToHilite = null;
 
-    if (new HyperTask("BuildFileList", "Building list of files...") { @Override protected void call() throws HyperDataException, CancelledTaskException
+    if (new HyperTask("BuildFileList", "Building list of files...", false) { @Override protected void call() throws HyperDataException, CancelledTaskException
     {
-      updateProgress(-1, 1);
-
       for (AbstractEntityWithPath pathItem : getSrcPaths(dragging))
       {
         if (FilePath.isEmpty(srcPathToHilite))

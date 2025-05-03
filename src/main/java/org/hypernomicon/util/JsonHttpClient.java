@@ -200,9 +200,9 @@ public class JsonHttpClient
         {
           obj = jsonParser.parse(new InputStreamReader(is, UTF_8));
         }
-        catch (Error er)
+        catch (Throwable th)
         {
-          throw new IOException("Unknown JSON parsing error", er);
+          throw new IOException("Unknown JSON parsing error", th);
         }
 
         if (obj instanceof JSONObject jObj)
@@ -225,7 +225,7 @@ public class JsonHttpClient
           return true;
         }
       }
-      catch (IOException | ParseException e)
+      catch (IOException e)
       {
         lastException = e;
 

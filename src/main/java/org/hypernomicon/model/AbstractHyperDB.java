@@ -37,17 +37,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.InvalidPreferencesFormatException;
-import java.util.prefs.Preferences;
+import java.util.prefs.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
 
 import javax.xml.stream.*;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import javax.xml.stream.events.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.compare.ComparableUtils;
@@ -55,9 +51,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.json.simple.parser.ParseException;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.*;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -1134,22 +1128,9 @@ public abstract class AbstractHyperDB
 
     boolean startWatcher = nullSwitch(getFolderTreeWatcher(), false, FolderTreeWatcher::stop);
 
-    bibLibrary = null;
+    clearBibLinkData();
 
     xmlPath(BIB_FILE_NAME).deletePromptOnFail(true);
-
-    prefs.remove(PrefKey.BIB_API_KEY);
-    prefs.remove(PrefKey.BIB_USER_ID);
-    prefs.remove(PrefKey.BIB_USER_NAME);
-    prefs.remove(PrefKey.BIB_ACCESS_TOKEN);
-    prefs.remove(PrefKey.BIB_REFRESH_TOKEN);
-    prefs.remove(PrefKey.BIB_LIBRARY_VERSION);
-    prefs.remove(PrefKey.BIB_LAST_SYNC_TIME);
-    prefs.remove(PrefKey.BIB_LIBRARY_TYPE);
-
-    works.forEach(work -> work.setBibEntryKey(""));
-
-    bibChangedHandlers.forEach(Runnable::run);
 
     if (startWatcher)
       getFolderTreeWatcher().createNewWatcherAndStart();
@@ -1158,7 +1139,46 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void linkBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws IOException, ParseException, HDB_InternalError
+  /**
+   * Clears all bibliographic link data associated with the current session.
+   * This method resets stored library information, removes associated user preferences,
+   * and triggers any registered change handlers.
+   *
+   * <p>Actions performed by this method:</p>
+   * <ul>
+   *   <li>Sets <code>bibLibrary</code> to null</li>
+   *   <li>Clears bibliographic entry keys for all works</li>
+   *   <li>Triggers registered handlers for bibliographic data changes</li>
+   *   <li>Removes stored user identifiers and synchronization metadata from DB settings</li>
+   *   <li>Deletes authentication-related credentials from DB settings (API key, access token, refresh token)</li>
+   * </ul>
+   * <p>This method does NOT delete the Bib.json file that has the reference manager entries.</p>
+   *
+   * @see #bibLibrary
+   */
+  private void clearBibLinkData()
+  {
+    bibLibrary = null;
+
+    works.forEach(work -> work.setBibEntryKey(""));
+
+    bibChangedHandlers.forEach(Runnable::run);
+
+    prefs.remove(PrefKey.BIB_USER_ID);
+    prefs.remove(PrefKey.BIB_USER_NAME);
+    prefs.remove(PrefKey.BIB_LIBRARY_VERSION);
+    prefs.remove(PrefKey.BIB_LAST_SYNC_TIME);
+    prefs.remove(PrefKey.BIB_LIBRARY_TYPE);
+
+    prefs.remove(PrefKey.BIB_API_KEY);
+    prefs.remove(PrefKey.BIB_ACCESS_TOKEN);
+    prefs.remove(PrefKey.BIB_REFRESH_TOKEN);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void linkBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws IOException, ParseException, HyperDataException
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21174);
@@ -1181,7 +1201,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws HDB_InternalError, IOException, ParseException
+  private void loadBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws IOException, ParseException, HyperDataException
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21173);
@@ -1506,6 +1526,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("deprecation")
   private void initBibLibraryLinkFromDBSettings() throws HyperDataException
   {
     String bibUserID          = prefs.get(PrefKey.BIB_USER_ID     , ""),
@@ -2102,17 +2123,7 @@ public abstract class AbstractHyperDB
     xmlChecksums     .clear();
 
     if (bibLibrary != null)
-    {
-      bibLibrary = null;
-      bibChangedHandlers.forEach(Runnable::run);
-
-      prefs.remove(PrefKey.BIB_API_KEY);
-      prefs.remove(PrefKey.BIB_USER_ID);
-      prefs.remove(PrefKey.BIB_USER_NAME);
-      prefs.remove(PrefKey.BIB_LIBRARY_VERSION);
-      prefs.remove(PrefKey.BIB_LAST_SYNC_TIME);
-      prefs.remove(PrefKey.BIB_LIBRARY_TYPE);
-    }
+      clearBibLinkData();
 
     if (datasetsToKeep == null)
       prefs = null;

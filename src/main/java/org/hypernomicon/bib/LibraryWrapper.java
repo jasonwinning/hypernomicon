@@ -81,7 +81,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public static abstract class SyncTask extends HyperTask
   {
-    protected SyncTask() { super("SyncReferenceLibrary"); }
+    protected SyncTask() { super("SyncReferenceLibrary", false); }
 
     protected boolean changed = false;
     public boolean getChanged() { return changed; }
@@ -109,9 +109,9 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   protected abstract String collectionFileNode();
   protected abstract BibAuthKeys getAuthKeys();
 
-  public abstract void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean save) throws HyperDataException;
+  public abstract void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean reestablishing) throws HyperDataException;
   public abstract void getProfileInfoFromServer(Consumer<String> successHndlr, Consumer<Throwable> failHndlr);
-  public abstract SyncTask createNewSyncTask();
+  public abstract SyncTask createNewSyncTask() throws HyperDataException;
   public abstract LibraryType type();
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
   public abstract String getUserID();
@@ -136,6 +136,14 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   protected AccessDeniedException newAccessDeniedException()
   {
     return new AccessDeniedException("Valid " + getUserFriendlyName() + " access token not found. Go to Tools \u279c Settings \u279c Bibliography Manager \u279c Re-Establish Access to acquire a new access token.");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static String syncErrorMessage(Throwable e)
+  {
+    return "An error occurred while syncing: " + getThrowableMessage(e);
   }
 
 //---------------------------------------------------------------------------
@@ -336,7 +344,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     {
       saveStringBuilderToFile(json, db.xmlPath(BIB_FILE_NAME));
       savePrefs();
-      saveSecretsToDBSettings();
     }
     catch (IOException e)
     {
@@ -347,7 +354,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void saveSecretsToDBSettings()
+  @Deprecated
+  public final void saveAuthKeysToDBSettings()
   {
     try
     {
@@ -357,6 +365,14 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     {
       errorPopup("An error occurred while saving access token: " + getThrowableMessage(e));
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public final void removeSecretsFromKeyring()
+  {
+    BibAuthKeys.removeFromKeyring(getAuthKeys(), getUserID());
   }
 
 //---------------------------------------------------------------------------

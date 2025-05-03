@@ -74,16 +74,18 @@ public abstract class HyperTask
   private final class InnerTask extends Task<Void>
   {
     private final String startingMessage;
+    private final boolean withProgressUpdates;
 
-    private InnerTask(String startingMessage)
+    private InnerTask(String startingMessage, boolean withProgressUpdates)
     {
       this.startingMessage = startingMessage;
+      this.withProgressUpdates = withProgressUpdates;
     }
 
     @Override protected Void call() throws HyperDataException
     {
       updateMessage(startingMessage);
-      updateProgress(0, 1);
+      updateProgress(withProgressUpdates ? 0 : -1, 1);
 
       try                              { HyperTask.this.call(); }
       catch (CancelledTaskException e) { cancel();              }
@@ -119,23 +121,66 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTask(String threadName)
+  /**
+   * Create task
+   * @param threadName Name to use for thread
+   * @param withProgressUpdates If true, the progress bar will show the progress. If false, it will show the indeterminate animation.
+   */
+  public HyperTask(String threadName, boolean withProgressUpdates)
   {
-    this(threadName, "Working...");
+    this(threadName, "Working...", withProgressUpdates);
   }
 
+  /**
+   * Create task
+   * @param threadName Name to use for thread
+   * @param message Description of work being done shown on progress dialog
+   */
   public HyperTask(String threadName, String message)
   {
-    this(threadName, message, 1);
+    this(threadName, message, true);
   }
 
+  /**
+   * Create task
+   * @param threadName Name to use for thread
+   * @param message Description of work being done shown on progress dialog
+   * @param withProgressUpdates If true, the progress bar will show the progress. If false, it will show the indeterminate animation.
+   */
+  public HyperTask(String threadName, String message, boolean withProgressUpdates)
+  {
+    this(threadName, message, 1, withProgressUpdates);
+  }
+
+  /**
+   * Create task
+   * @param threadName Name to use for thread
+   * @param message Description of work being done shown on progress dialog
+   * @param totalCount Total progress units
+   */
   public HyperTask(String threadName, String message, long totalCount)
+  {
+    this(threadName, message, totalCount, true);
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Create task
+   * @param threadName Name to use for thread
+   * @param message Description of work being done shown on progress dialog
+   * @param totalCount Total progress units
+   * @param withProgressUpdates If true, the progress bar will show the progress. If false, it will show the indeterminate animation.
+   */
+  private HyperTask(String threadName, String message, long totalCount, boolean withProgressUpdates)
   {
     this.threadName = threadName;
     this.totalCount = totalCount;
 
-    innerTask = new InnerTask(message);
+    innerTask = new InnerTask(message, withProgressUpdates);
   }
+
+//---------------------------------------------------------------------------
 
   private final InnerTask innerTask;
   private final String threadName;
@@ -203,6 +248,17 @@ public abstract class HyperTask
     throwExceptionIfCancelled(this);
   }
 
+  /**
+   * Run the specified task while showing progress updates in a progress dialog.
+   * This method blocks execution in the calling thread until the task completes.
+   *
+   * <p>The task may already be running when this method is called.
+   * If it is not, it will be started automatically.</p>
+   *
+   * <p>To show an indeterminate animation in the progress dialog, pass <code>false</code> for the
+   * <code>withProgressUpdates</code> parameter in the {@link HyperTask} constructor.</p>
+   * @return The final {@link State} of the task.
+   */
   public State runWithProgressDialog() { return ProgressDlgCtrlr.performTask(this); }
 
 //---------------------------------------------------------------------------
@@ -210,9 +266,17 @@ public abstract class HyperTask
 
   protected synchronized boolean waitUntilThreadDies()
   {
-    if (thread == null) return true;
+    if ((thread == null) || (thread.isAlive() == false)) return true;
 
-    try { thread.join(); } catch (InterruptedException e) { return false; }
+    try
+    {
+      thread.join();
+    }
+    catch (InterruptedException e)
+    {
+      Thread.currentThread().interrupt();
+      return false;
+    }
 
     return true;
   }

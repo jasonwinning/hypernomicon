@@ -93,19 +93,21 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ZoteroWrapper(ZoteroAuthKeys authKeys, String userID, String userName)
+  private ZoteroWrapper(ZoteroAuthKeys authKeys, String userID, String userName) throws HyperDataException
   {
     this.userID = userID;
 
-    try { enableSyncOnThisComputer(authKeys, userID, userName, false); }
-    catch (HyperDataException e) { throw new AssertionError(e); }
+    if (strNotNullOrBlank(userID) && BibAuthKeys.isEmpty(authKeys))
+      authKeys = ZoteroAuthKeys.loadFromKeyring(userID);
+
+    enableSyncOnThisComputer(authKeys, userID, userName, false);
   }
 
 //---------------------------------------------------------------------------
 
   static JsonObj getTemplate(EntryType type)   { return templates.get(type); }
 
-  public static ZoteroWrapper createForTesting() { return new ZoteroWrapper(null, "", ""); }
+  public static ZoteroWrapper createForTesting() { try { return new ZoteroWrapper(null, "", ""); } catch (HyperDataException e) { throw new AssertionError(e); } }
 
   @Override public LibraryType type()          { return LibraryType.ltZotero; }
   @Override public String entryFileNode()      { return "items"; }
@@ -121,7 +123,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 
   @NonNull
-  public static ZoteroWrapper create(ZoteroAuthKeys authKeys, String userID, String userName, FilePath filePath) throws HDB_InternalError, IOException, ParseException
+  public static ZoteroWrapper create(ZoteroAuthKeys authKeys, String userID, String userName, FilePath filePath) throws IOException, ParseException, HyperDataException
   {
     ZoteroWrapper wrapper = new ZoteroWrapper(authKeys, userID, userName);
 
@@ -315,7 +317,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
       .setHeader(HttpHeader.Content_Type.toString(), "application/json")
       .setHeader(Zotero_API_Version.toString(), "3");
 
-    if (ZoteroAuthKeys.isNotEmpty(authKeys))
+    if (BibAuthKeys.isNotEmpty(authKeys))
       rb = rb.setHeader(Zotero_API_Key.toString(), ZoteroAuthKeys.getApiKey(authKeys));
 
     request = rb
@@ -448,7 +450,22 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public SyncTask createNewSyncTask() { return syncTask = new SyncTask()
+  @Override public SyncTask createNewSyncTask() throws HyperDataException
+  {
+    if (strNotNullOrBlank(userID) && BibAuthKeys.isEmpty(authKeys))
+    {
+      authKeys = ZoteroAuthKeys.loadFromKeyring(userID);
+
+      enableSyncOnThisComputer(authKeys, userID, userName, false);
+    }
+
+    return createNewSyncTaskInt();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private SyncTask createNewSyncTaskInt() { return syncTask = new SyncTask()
   {
     @Override public void call() throws CancelledTaskException, HyperDataException
     {
@@ -566,7 +583,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
       }
       catch (UnsupportedOperationException | IOException | ParseException e)
       {
-        throw new HyperDataException("An error occurred while syncing: " + getThrowableMessage(e), e);
+        throw new HyperDataException(syncErrorMessage(e), e);
       }
     }
 
@@ -772,7 +789,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
 //---------------------------------------------------------------------------
 
-    HyperTask hyperTask = new HyperTask("GetZoteroProfileInfo")
+    HyperTask hyperTask = new HyperTask("GetZoteroProfileInfo", false)
     {
       @Override protected void call() throws HyperDataException, CancelledTaskException
       {
@@ -811,16 +828,18 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean save) throws HyperDataException
+  @Override public void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean reestablishing) throws HyperDataException
   {
     if (this.userID.equals(userID) == false)
+    {
+      // This can only happen when reestablishing or there is data corruption.
       throw new HyperDataException("User ID for local entries is " + this.userID + ", but user ID from server is " + userID);
+    }
 
     this.authKeys = (ZoteroAuthKeys) authKeys;
     this.userName = userName;
 
-    if (save)
-      saveSecretsToDBSettings();
+    BibAuthKeys.saveToKeyringIfUnsaved(this.authKeys, this.userID);
   }
 
 //---------------------------------------------------------------------------
@@ -829,6 +848,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
   @Override public void savePrefs()
   {
     db.prefs.putLong(PrefKey.BIB_LIBRARY_VERSION, offlineLibVersion);
+
     db.prefs.put(PrefKey.BIB_USER_ID, userID);
     db.prefs.put(PrefKey.BIB_USER_NAME, userName);
     db.prefs.put(PrefKey.BIB_LIBRARY_TYPE, type().descriptor);

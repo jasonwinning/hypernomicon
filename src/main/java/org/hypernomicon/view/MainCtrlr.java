@@ -1904,14 +1904,16 @@ public final class MainCtrlr
 
     mnuFolders.setDisable(false);
 
-    items.addAll(makeTopicalMenu("Papers"               , db.papersPath   ()),
-                 makeTopicalMenu("Books"                , db.booksPath    ()),
-                 makeTopicalMenu("Works not entered yet", db.unenteredPath()),
-                 makeTopicalMenu("Topical"              , db.topicalPath  ()),
-                 makeTopicalMenu("Pictures"             , db.picturesPath ()),
-                 makeTopicalMenu("Misc. files"          , db.miscFilesPath()),
-                 makeTopicalMenu("Search results"       , db.resultsPath  ()),
-                 makeTopicalMenu("Database root folder" , db.getRootPath  ()));
+    // Each of these needs to be added at index=0 to prevent IndexOutOfBoundsException on Mac
+
+    items.add(0, makeTopicalMenu("Database root folder" , db.getRootPath  ()));
+    items.add(0, makeTopicalMenu("Search results"       , db.resultsPath  ()));
+    items.add(0, makeTopicalMenu("Misc. files"          , db.miscFilesPath()));
+    items.add(0, makeTopicalMenu("Pictures"             , db.picturesPath ()));
+    items.add(0, makeTopicalMenu("Topical"              , db.topicalPath  ()));
+    items.add(0, makeTopicalMenu("Works not entered yet", db.unenteredPath()));
+    items.add(0, makeTopicalMenu("Books"                , db.booksPath    ()));
+    items.add(0, makeTopicalMenu("Papers"               , db.papersPath   ()));
 
     int separatorPos = items.size();
     FilePath topicalPath = db.topicalPath();
@@ -1933,6 +1935,11 @@ public final class MainCtrlr
 
     if (items.size() > separatorPos)
       items.add(separatorPos, new SeparatorMenuItem());
+
+    // This next part has to be done because otherwise the menu will sometimes appear empty on Mac
+
+    mnuFolders.setVisible(false);
+    mnuFolders.setVisible(true);
   }
 
 //---------------------------------------------------------------------------
