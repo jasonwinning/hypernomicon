@@ -43,7 +43,9 @@ public abstract class BibAuthKeys
   @Deprecated
   protected abstract void saveToDBSettings() throws Exception;
 
-  protected abstract void saveToKeyringIfUnsaved(String userID);
+  protected abstract boolean saveToKeyringIfUnsaved(String userID);
+
+  protected abstract boolean stillNeedsToBeSavedToKeyring();
 
   protected abstract void removeFromKeyring(String userID);
 
@@ -84,11 +86,19 @@ public abstract class BibAuthKeys
    * Only saves the authKeys to the keyring if authKeys is not null or empty, userID is not null or blank, and the authKeys have not been saved to the keyring yet.
    * @param authKeys Can be null
    * @param userID Can be null
+   * @return False if it is non-empty and saving wasn't successful; true otherwise
    */
-  public static void saveToKeyringIfUnsaved(BibAuthKeys authKeys, String userID)
+  public static boolean saveToKeyringIfUnsaved(BibAuthKeys authKeys, String userID)
   {
-    if (strNotNullOrBlank(userID) && isNotEmpty(authKeys))
-      authKeys.saveToKeyringIfUnsaved(userID);
+    return strNullOrBlank(userID) || isEmpty(authKeys) || authKeys.saveToKeyringIfUnsaved(userID);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean stillNeedsToBeSavedToKeyring(BibAuthKeys authKeys)
+  {
+    return isNotEmpty(authKeys) && authKeys.stillNeedsToBeSavedToKeyring();
   }
 
 //---------------------------------------------------------------------------
@@ -96,19 +106,8 @@ public abstract class BibAuthKeys
 
   public static void removeFromKeyring(BibAuthKeys authKeys, String userID)
   {
-    if (strNullOrBlank(userID))
-    {
-      System.out.println("Unable to remove auth keys from keyring: user ID is blank.");
-      return;
-    }
-
-    if (authKeys == null)
-    {
-      System.out.println("Unable to remove auth keys from keyring: authKeys is null.");
-      return;
-    }
-
-    authKeys.removeFromKeyring(userID);
+    if (strNotNullOrBlank(userID) && isNotEmpty(authKeys))
+      authKeys.removeFromKeyring(userID);
   }
 
 //---------------------------------------------------------------------------

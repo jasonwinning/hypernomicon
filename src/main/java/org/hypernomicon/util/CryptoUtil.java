@@ -42,6 +42,7 @@ import org.openide.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import static org.hypernomicon.App.app;
 import static org.hypernomicon.util.Util.*;
 
 import static org.netbeans.modules.keyring.utils.Utils.*;
@@ -83,11 +84,19 @@ public final class CryptoUtil
         .findFirst()
         .map(KeyringProvider.class::cast)
         .orElseGet(DummyKeyringProvider::new);
-
-      System.out.println("Using keyring provider: " + keyring.getClass().getCanonicalName());
     }
 
     return keyring;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void logMessage(String message)
+  {
+    String providerMessage = "Keyring provider: " + nullSwitch(getKeyring(), "null", _keyring -> _keyring.getClass().getCanonicalName());
+
+    System.out.println((providerMessage + ' ' + safeStr(message)).strip());
   }
 
 //---------------------------------------------------------------------------
@@ -112,24 +121,17 @@ public final class CryptoUtil
 
     try
     {
-      final Future<char[]> futureResult = keyringService.submit(() ->
-      {
-        System.out.println("Reading secret: " + secretName);
-        return getKeyring().read(secretName);
-      });
+      final Future<char[]> futureResult = keyringService.submit(() -> getKeyring().read(secretName));
 
-      if (Platform.isFxApplicationThread())
+      if (Platform.isFxApplicationThread() && (futureResult.isDone() == false))
       {
-        if (futureResult.isDone() == false)
+        try
         {
-          try
-          {
-            return futureResult.get(SHOW_PROGRESS_DIALOG_THRESHOLD_MS, TimeUnit.MILLISECONDS);
-          }
-          catch (TimeoutException ex)
-          {
-            return finishReadingWithProgressDialog(futureResult, taskMessage);
-          }
+          return futureResult.get(SHOW_PROGRESS_DIALOG_THRESHOLD_MS, TimeUnit.MILLISECONDS);
+        }
+        catch (TimeoutException ex)
+        {
+          return finishReadingWithProgressDialog(futureResult, taskMessage);
         }
       }
 
@@ -139,9 +141,9 @@ public final class CryptoUtil
     {
       Thread.currentThread().interrupt();
     }
-    catch (ExecutionException e)  // If this happens there is a bug somewhere
+    catch (ExecutionException e)
     {
-      e.printStackTrace();
+      logMessage("Unable to read secret " + secretName + ": " + getThrowableMessage(e));
     }
 
     return null;
@@ -176,15 +178,13 @@ public final class CryptoUtil
 
     Task task = keyringService.post(() ->
     {
-      System.out.println("Saving secret: " + secretName);
-
       try
       {
         getKeyring().save(secretName, secret, description);
       }
       catch (Exception e)
       {
-        System.out.println("Unable to save secret " + secretName + ": " + getThrowableMessage(e));
+        logMessage("Unable to save secret " + secretName + ": " + getThrowableMessage(e));
         retVal.setFalse();
       }
 
@@ -221,7 +221,8 @@ public final class CryptoUtil
 
     Task task = keyringService.post(() ->
     {
-      System.out.println("Deleting secret: " + secretName);
+      if (app.debugging)
+        logMessage("Deleting secret: " + secretName);
 
       try
       {
@@ -229,7 +230,7 @@ public final class CryptoUtil
       }
       catch (Exception e)
       {
-        System.out.println("Unable to delete secret " + secretName + ": " + getThrowableMessage(e));
+        logMessage("Unable to delete secret " + secretName + ": " + getThrowableMessage(e));
         retVal.setFalse();
       }
     });
@@ -273,9 +274,9 @@ public final class CryptoUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static char[] finishReadingWithProgressDialog(Future<char[]> result, String taskMessage)
+  private static char[] finishReadingWithProgressDialog(Future<char[]> result, String taskMessage) throws ExecutionException, InterruptedException
   {
-    State state = new HyperTask("LoadFromKeyring", taskMessage, false) { @Override protected void call() throws CancelledTaskException
+    return new HyperTask("LoadFromKeyring", taskMessage, false) { @Override protected void call() throws CancelledTaskException
     {
       while (result.isDone() == false)
       {
@@ -286,24 +287,7 @@ public final class CryptoUtil
           throw new CancelledTaskException();
       }
 
-    }}.runWithProgressDialog();
-
-    if (state != State.SUCCEEDED)
-      return null;
-
-    try
-    {
-      return result.get();
-    }
-    catch (InterruptedException e)
-    {
-      return null;
-    }
-    catch (ExecutionException e)  // If this happens there is a bug somewhere
-    {
-      e.printStackTrace();
-      return null;
-    }
+    }}.runWithProgressDialog() == State.SUCCEEDED ? result.get() : null;
   }
 
 //---------------------------------------------------------------------------

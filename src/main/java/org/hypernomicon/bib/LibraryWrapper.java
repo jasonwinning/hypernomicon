@@ -378,6 +378,31 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Save secrets to keyring only if it is not empty and they are not saved to the keyring yet
+   * @return False if it is non-empty and saving wasn't successful; true otherwise
+   */
+  public boolean saveSecretsToKeyringIfUnsaved()
+  {
+    return BibAuthKeys.saveToKeyringIfUnsaved(getAuthKeys(), getUserID());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Determines whether the authKeys can immediately be saved to the keyring but haven't been yet
+   * @return True if userID is not null or blank, authKeys are not null or blank, but they have
+   * not been saved to the keyring yet. False otherwise.
+   */
+  public boolean secretsStillNeedToBeSavedToKeyring()
+  {
+    return strNotNullOrBlank(getUserID()) && BibAuthKeys.stillNeedsToBeSavedToKeyring(getAuthKeys());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public int numericID(String key)
   {
     int ndx = keyList.indexOf(key);

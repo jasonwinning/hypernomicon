@@ -41,7 +41,7 @@ public class TagItemPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class TagItemCell extends GenericNonRecordHTC
+  private static final class TagItemCell extends GenericNonRecordHTC
   {
     private TagItemCell(Tag tag, RecordType recordType)
     {

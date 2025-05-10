@@ -111,6 +111,7 @@ public class AboutDlgCtrlr extends ModalDialog
       "<li>" + anchorTag("ScribeJava", "https://github.com/scribejava/scribejava") + "</li>" +
       "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
       "<li>" + anchorTag("JODConverter", "https://github.com/jodconverter/jodconverter") + "</li>" +
+      "<li>" + anchorTag("NetBeans Keyring", "https://netbeans.apache.org/front/main/index.html") + "</li>" +
       "<li>" + anchorTag("JUnit Jupiter", "https://junit.org/junit5/") + "</li>" +
       "<li>" + anchorTag("SLF4J Simple", "http://www.slf4j.org") + "</li>" +
       "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +

@@ -398,7 +398,7 @@ public final class Util
   /**
    * Removes all parenthetical expressions (i.e., text enclosed within parentheses)
    * from the given string. Strips any leading or trailing whitespace from the resulting string.
-   *
+   * <p>
    * This method repeatedly removes parenthetical content using the {@link #removeFirstParenthetical(String)} method
    * until no opening parenthesis '(' is found in the string.
    *
@@ -942,14 +942,14 @@ public final class Util
 
   /**
    * Returns true iff c is null or empty.
-   * @param c
+   * @param c the collection
    * @return Boolean return value
    */
   public static boolean collEmpty(Collection<?> c) { return (c == null) || c.isEmpty(); }  // See ObjectUtils.isEmpty
 
   /**
    * Returns true iff m is null or empty.
-   * @param m
+   * @param m the map
    * @return Boolean return value
    */
   public static boolean collEmpty(Map<?, ?> m)     { return (m == null) || m.isEmpty(); }  // See ObjectUtils.isEmpty
@@ -1728,7 +1728,7 @@ public final class Util
    * @param disregardLetters True if the ID should not contain letters (e.g., 'I' will be interpreted as '1')
    * @return the normalized string prepared for ID matching
    */
-  public static String prepareForIDMatch(String str, boolean disregardLetters)
+  private static String prepareForIDMatch(String str, boolean disregardLetters)
   {
     str = str.replaceAll("[|\\uFE31\\uFE32]", "1")  // Vertical dashes
              .replaceAll("[\\p{Pd}\\u00AD]", "-")   // "soft hyphen" is not included in the \p{Pd} punctuation-dash class

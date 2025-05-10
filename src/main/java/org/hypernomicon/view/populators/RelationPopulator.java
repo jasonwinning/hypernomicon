@@ -41,7 +41,7 @@ public class RelationPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class RelationCell extends GenericNonRecordHTC
+  private static final class RelationCell extends GenericNonRecordHTC
   {
     private RelationCell(RelationType relType, RecordType objType)
     {

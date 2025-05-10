@@ -41,7 +41,7 @@ public final class Const
    * Change this and the version in pom.xml to set the application version
    * <br>
    */
-  public static final VersionNumber appVersion = new VersionNumber(1, 30, 3);  // 1.30.3
+  public static final VersionNumber appVersion = new VersionNumber(1, 31);  // 1.31
 
   /**
    * This is the minimum version that the application version (or higher) is able to load
@@ -89,7 +89,8 @@ public final class Const
     .put(new VersionNumber(1, 19, 4), new VersionNumber(1, 1))
     .put(new VersionNumber(1, 22, 1), new VersionNumber(1, 2))
     .put(new VersionNumber(1, 23, 1), new VersionNumber(1, 3))
-    .put(appVersion, new VersionNumber(1, 4))
+    .put(new VersionNumber(1, 30, 3), new VersionNumber(1, 4))
+    .put(appVersion, new VersionNumber(1, 5))
     .build();
 
 //---------------------------------------------------------------------------
@@ -200,6 +201,7 @@ public final class Const
       BIB_API_KEY = "bibApiKey",
       BIB_USER_ID = "bibUserID",
       BIB_USER_NAME = "bibUserName",
+      BIB_UNIT_TEST_USER_ID = "bibUnitTestUserID",
       BIB_ACCESS_TOKEN = "bibAccessToken",
       BIB_REFRESH_TOKEN = "bibRefreshToken",
       BIB_LIBRARY_TYPE = "bibType",

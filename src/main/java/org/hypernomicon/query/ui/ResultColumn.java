@@ -51,21 +51,19 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static final double COL_MAX_WIDTH = 1200.0,
-                      COL_DEFAULT_WIDTH = 80.0,
-                      ID_COL_WIDTH  = 55.0,
-                      RECORD_NAME_COL_WIDTH = 230.0;
+  private static final double COL_MAX_WIDTH = 1200.0,
+                              COL_DEFAULT_WIDTH = 80.0,
+                              ID_COL_WIDTH  = 55.0,
+                              RECORD_NAME_COL_WIDTH = 230.0;
 
   ResultColumn countCol;
 
   private ResultColumn(String caption, boolean caseSensitive)
   {
     this(caption, (cell1, cell2) ->
-    {
-      return caseSensitive ?
+      caseSensitive ?
         stripSafe(cell1.text).compareTo          (stripSafe(cell2.text))  :
-        stripSafe(cell1.text).compareToIgnoreCase(stripSafe(cell2.text));
-    });
+        stripSafe(cell1.text).compareToIgnoreCase(stripSafe(cell2.text)));
   }
 
 //---------------------------------------------------------------------------

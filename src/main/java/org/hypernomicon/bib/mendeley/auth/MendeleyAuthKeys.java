@@ -124,10 +124,22 @@ public final class MendeleyAuthKeys extends BibAuthKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void saveToKeyringIfUnsaved(String userID)
+  @Override protected boolean stillNeedsToBeSavedToKeyring()
+  {
+    return (savedToKeyring == false) && isNotEmpty();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Save secrets to keyring only if it is not empty and they are not saved to the keyring yet
+   * @return False if it is non-empty and saving wasn't successful; true otherwise
+   */
+  @Override protected boolean saveToKeyringIfUnsaved(String userID)
   {
     if (savedToKeyring || strNullOrBlank(userID) || isEmpty())
-      return;
+      return true;
 
     if (saveToKeyring(secretNameForAccessToken (userID), accessToken .toCharArray(), "Access token for Hypernomicon Mendeley integration, user "  + userID, getWriteTaskMessage(LibraryType.ltMendeley)) &&
         saveToKeyring(secretNameForRefreshToken(userID), refreshToken.toCharArray(), "Refresh token for Hypernomicon Mendeley integration, user " + userID, getWriteTaskMessage(LibraryType.ltMendeley)))
@@ -138,6 +150,8 @@ public final class MendeleyAuthKeys extends BibAuthKeys
 
       savedToKeyring = true;
     }
+
+    return savedToKeyring;
   }
 
 //---------------------------------------------------------------------------

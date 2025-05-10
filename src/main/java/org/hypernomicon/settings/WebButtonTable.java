@@ -50,7 +50,7 @@ class WebButtonTable extends WebButtonCtrl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class WebButtonCell extends GenericNonRecordHTC
+  private static final class WebButtonCell extends GenericNonRecordHTC
   {
     private WebButtonCell(WebButton webButton)
     {

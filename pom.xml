@@ -4,7 +4,7 @@
   <groupId>org.hypernomicon</groupId>
   <artifactId>hypernomicon</artifactId>
   <packaging>jar</packaging>
-  <version>1.30.3</version>
+  <version>1.31</version>
   <name>Hypernomicon</name>
   <url>http://hypernomicon.org</url>
   <inceptionYear>2012</inceptionYear>
@@ -197,7 +197,6 @@
       <version>6.24.3</version>
       <type>pom</type>
     </dependency>
-
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-modules-keyring</artifactId>
@@ -208,7 +207,6 @@
       <artifactId>org-netbeans-modules-keyring-impl</artifactId>
       <version>RELEASE250</version>
     </dependency>
-
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>

@@ -1535,7 +1535,11 @@ public abstract class AbstractHyperDB
 
     LibraryType libType = LibraryType.getByDescriptor(bibTypeDescriptor);
 
-    if ((libType != LibraryType.ltMendeley) && ((libType != LibraryType.ltZotero) || bibUserID.isBlank())) return;
+    if ((libType != LibraryType.ltMendeley) && ((libType != LibraryType.ltZotero) || bibUserID.isBlank()))
+    {
+      clearBibLinkData();
+      return;
+    }
 
     try
     {
@@ -2311,7 +2315,10 @@ public abstract class AbstractHyperDB
 
     LOCK_FILE_NAME = "dblock.dat",
     REQUEST_MSG_FILE_NAME = "request_message.dat",
-    RESPONSE_MSG_FILE_NAME = "response_message.dat",
+    RESPONSE_MSG_FILE_NAME = "response_message.dat";
+
+  private static final String
+
     OTHER_FILE_NAME = "Other.xml",
     PERSON_FILE_NAME = "People.xml",
     INSTITUTION_FILE_NAME = "Institutions.xml",

@@ -21,7 +21,7 @@ import org.hypernomicon.bib.BibEntity;
 
 //---------------------------------------------------------------------------
 
-public interface ZoteroEntity extends BibEntity
+interface ZoteroEntity extends BibEntity
 {
 
 //---------------------------------------------------------------------------

@@ -1018,7 +1018,7 @@ public final class QueryCtrlr
 
   /**
    * Determines the record to highlight based on the query rows in the table.
-   *
+   * <p>
    * This method iterates through all data rows in the table and examines their query type.
    * It prioritizes finding a record associated with the <code>qtAllRecords</code> query type, and if no such
    * record is found, it returns the first matching record for a non-report query type.
@@ -1037,7 +1037,8 @@ public final class QueryCtrlr
 
       if ((queryTypeID == qtAllRecords.getCode()) && (record != null))
         return record;
-      else if ((altRecord == null) && (queryTypeID != qtReport.getCode()))
+
+      if ((altRecord == null) && (queryTypeID != qtReport.getCode()))
         altRecord = record;
     }
 

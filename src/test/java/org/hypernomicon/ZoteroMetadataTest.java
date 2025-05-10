@@ -37,6 +37,8 @@ import org.json.simple.parser.ParseException;
 
 import org.junit.jupiter.api.Test;
 
+//---------------------------------------------------------------------------
+
 class ZoteroMetadataTest
 {
 
@@ -47,7 +49,7 @@ class ZoteroMetadataTest
   void templatesTest()
   {
     JsonArray jServerTemplatesArr;
-    ZoteroWrapper zoteroWrapper = ZoteroWrapper.createForTesting();
+    ZoteroWrapper zoteroWrapper = assertDoesNotThrow(ZoteroWrapper::createForTesting);
 
     try
     {
@@ -96,7 +98,7 @@ class ZoteroMetadataTest
   void creatorTypesTest()
   {
     JsonObj jServerCreatorTypesObj = null;
-    ZoteroWrapper zoteroWrapper = ZoteroWrapper.createForTesting();
+    ZoteroWrapper zoteroWrapper = assertDoesNotThrow(ZoteroWrapper::createForTesting);
 
     try
     {

@@ -75,20 +75,15 @@ public class HDT_Position extends HDT_RecordWithMainText
   {
     HDT_Position currentPosition = this;
 
-    do
+    while (currentPosition != null)
     {
       if (currentPosition.largerDebates.isEmpty() == false)
         return currentPosition.largerDebates.get(0);
 
-      if (currentPosition.largerPositions.isEmpty())
-        return null;
-
-      currentPosition = currentPosition.largerPositions.get(0);
+      currentPosition = currentPosition.largerPositions.isEmpty() ? null : currentPosition.largerPositions.get(0);
     }
-    while (Boolean.TRUE);
 
-    // This line is technically unreachable but necessary to satisfy the compiler
-    return null;
+    return null; // Reached only if no larger debate exists
   }
 
 //---------------------------------------------------------------------------

@@ -467,8 +467,6 @@ public final class GeneralQueries
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return false; }
-
-      @Override public boolean show(QueryType queryType, RecordType recordType) { return queryType == qtAllRecords; }
     });
   }
 

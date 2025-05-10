@@ -107,6 +107,7 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
   * [ScribeJava](https://github.com/scribejava/scribejava)
   * [XMP Toolkit for Java](https://www.adobe.com/devnet/xmp.html)
   * [JODConverter](https://github.com/jodconverter/jodconverter)
+  * [NetBeans Keyring](https://netbeans.apache.org/front/main/index.html)
   * [JUnit Jupiter](https://junit.org/junit5/)
   * [SLF4J Simple](http://www.slf4j.org)
   * [JBibTex](https://github.com/jbibtex/jbibtex)

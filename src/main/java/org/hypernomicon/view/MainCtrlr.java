@@ -57,9 +57,7 @@ import org.hypernomicon.previewWindow.ContentsWindow;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryType;
-import org.hypernomicon.query.ui.QueriesTabCtrlr;
-import org.hypernomicon.query.ui.QueryCtrlr;
-import org.hypernomicon.query.ui.ResultRow;
+import org.hypernomicon.query.ui.*;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
@@ -419,7 +417,7 @@ public final class MainCtrlr
     mnuFindNextInName    .setOnAction(event -> tree().find(true,  true ));
     mnuFindPreviousInName.setOnAction(event -> tree().find(false, true ));
 
-    btnSaveAll           .setOnAction(event -> saveAllToXML(true, true, false));
+    btnSaveAll           .setOnAction(event -> saveAllToXML(true, true, false, false));
     btnDelete            .setOnAction(event -> deleteCurrentRecord(true));
     btnRevert            .setOnAction(event -> update());
 
@@ -827,8 +825,8 @@ public final class MainCtrlr
 
     scene.getAccelerators().putAll(Map.of
     (
-      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) saveAllToXML(true, true, false); },
-      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { if (db.isLoaded()) hideFindTable();                 },
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) saveAllToXML(true, true, false, false); },
+      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { if (db.isLoaded()) hideFindTable();                        },
 
       new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () ->
       {
@@ -1280,7 +1278,7 @@ public final class MainCtrlr
         if ((shuttingDown == false) && app.prefs.getBoolean(PrefKey.CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
           return;
 
-        if (saveAllToXML(false, false, false) == false)
+        if (saveAllToXML(false, false, false, true) == false)
         {
           shuttingDown = false;
           return;
@@ -1457,7 +1455,15 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean saveAllToXML(boolean saveRecord, boolean restartWatcher, boolean updateUI)
+  /**
+   *
+   * @param saveRecord Whether to try to save the current record first
+   * @param restartWatcher Whether to restart the folder tree watcher if it was running
+   * @param updateUI
+   * @param confirmRefMgrSecretsSaved Whether to confirm that reference manager secrets have been saved; should be done when closing the database
+   * @return
+   */
+  public boolean saveAllToXML(boolean saveRecord, boolean restartWatcher, boolean updateUI, boolean confirmRefMgrSecretsSaved)
   {
     try
     {
@@ -1465,6 +1471,25 @@ public final class MainCtrlr
         return falseWithErrorPopup("No database is currently loaded.");
 
       if (saveRecord && cantSaveRecord()) return false;
+
+      if (confirmRefMgrSecretsSaved && db.bibLibraryIsLinked() && db.getBibLibrary().secretsStillNeedToBeSavedToKeyring())
+      {
+        // This will probably only be relevant for Linux because the Windows and Mac KeyringProviders
+        // don't have a programmatic way of signalling whether a failure occured besides logging a
+        // warning message.
+
+        DialogResult result = mrRetry;
+
+        while ((result == mrRetry) && (db.getBibLibrary().saveSecretsToKeyringIfUnsaved() == false))
+        {
+          String msg = "Warning: Previous attempt(s) to save " + db.bibLibraryUserFriendlyName() + " configuration failed.\n" +
+                       "You may need to re-establish account access next time if it is not saved.";
+
+          result = abortRetryIgnoreDialog(msg);
+
+          if (result == mrAbort) return false;
+        }
+      }
 
       db.prefs.putInt(RecordIDPrefKey.PERSON     , personHyperTab  ().activeID());
       db.prefs.putInt(RecordIDPrefKey.INSTITUTION, instHyperTab    ().activeID());
@@ -1509,7 +1534,7 @@ public final class MainCtrlr
 
   @FXML private void mnuSaveReloadAllClick()
   {
-    if (saveAllToXML(true, false, false) == false) return;
+    if (saveAllToXML(true, false, false, true) == false) return;
 
     app.prefs.put(PrefKey.SOURCE_FILENAME, db.getHdbPath().getNameOnly().toString());
     app.prefs.put(PrefKey.SOURCE_PATH, db.getRootPath().toString());
@@ -1607,9 +1632,10 @@ public final class MainCtrlr
     {
       DialogResult result = yesNoCancelDialog("Save data to XML files?");
 
-      if (result == mrCancel) return false;
+      if (result == mrCancel)
+        return false;
 
-      if ((result == mrYes) && (saveAllToXML(true, false, false) == false))
+      if ((result == mrYes) && (saveAllToXML(true, false, false, true) == false))
         return false;
 
       NewDatabaseDlgCtrlr dlg = new NewDatabaseDlgCtrlr(rootPath.toString());
@@ -1649,7 +1675,7 @@ public final class MainCtrlr
 
       clearAllTabsAndViews();
 
-      if (saveAllToXML(false, false, false) == false)
+      if (saveAllToXML(false, false, false, false) == false)
       {
         close(false);
         return false;
@@ -1815,15 +1841,11 @@ public final class MainCtrlr
     {
       DialogResult result = yesNoCancelDialog("Save data to XML files before closing?");
 
-      if (result == mrCancel) return false;
+      if (result == mrCancel)
+        return false;
 
-      if (result == mrYes)
-      {
-        if (cantSaveRecord()) return false;
-
-        if (saveAllToXML(false, false, false) == false)
-          return false;
-      }
+      if ((result == mrYes) && (saveAllToXML(true, false, false, true) == false))
+        return false;
     }
 
     resetUIPreClose();
@@ -3555,7 +3577,7 @@ public final class MainCtrlr
   {
     omniSearchMode.addListener((ob, oldValue, newValue) ->
     {
-      if ((newValue == null) || (newValue.equals(oldValue))) return;
+      if ((newValue == null) || newValue.equals(oldValue)) return;
 
       btnTextSearchToggleIsProgrammatic = true;
 

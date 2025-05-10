@@ -361,7 +361,7 @@ public final class BibManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setLibrary(LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper)
+  private void setLibrary(LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper)
   {
     this.libraryWrapper = libraryWrapper;
 
@@ -381,8 +381,6 @@ public final class BibManager extends NonmodalWindow
     stop();
 
     entryTable.clear();
-
-    if (libraryWrapper == null) return;
   }
 
 //---------------------------------------------------------------------------
@@ -454,7 +452,7 @@ public final class BibManager extends NonmodalWindow
       refresh();
 
       ui.update();
-      ui.saveAllToXML(true, true, true);
+      ui.saveAllToXML(true, true, true, false);
     });
 
     syncTask.startWithNewThreadAsDaemon();

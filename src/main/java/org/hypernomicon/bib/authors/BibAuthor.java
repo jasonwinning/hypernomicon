@@ -21,7 +21,6 @@ import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 
-import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -36,18 +35,9 @@ public final class BibAuthor implements Cloneable
 
   public enum AuthorType
   {
-    author(bfAuthors),
-    editor(bfEditors),
-    translator(bfTranslators);
-
-    private final BibFieldEnum bibFieldEnum;
-
-    AuthorType(BibFieldEnum bibFieldEnum)
-    {
-      this.bibFieldEnum = bibFieldEnum;
-    }
-
-    public BibFieldEnum toBibFieldEnum() { return bibFieldEnum; }
+    author,
+    editor,
+    translator;
 
     public static AuthorType fromBibFieldEnum(BibFieldEnum bibFieldEnum)
     {

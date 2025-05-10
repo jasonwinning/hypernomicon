@@ -133,16 +133,7 @@ public class SelectWorkDlgCtrlr extends ModalDialog
         String doi = bibEntry.getStr(BibFieldEnum.bfDOI);
 
         if (doi.length() > 0)
-        {
-          for (HDT_Work curWork : db.works)
-          {
-            if (curWork.getDOI().equalsIgnoreCase(doi))
-            {
-              work = curWork;
-              break;
-            }
-          }
-        }
+          work = findFirst(db.works, _work -> _work.getDOI().equalsIgnoreCase(doi));
 
         if ((work == null) && (HDT_WorkType.getEnumVal(bibEntry.getWorkType()) == WorkTypeEnum.wtBook))
         {

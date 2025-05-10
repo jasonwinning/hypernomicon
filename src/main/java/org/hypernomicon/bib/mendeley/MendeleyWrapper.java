@@ -101,6 +101,8 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
 //---------------------------------------------------------------------------
 
+  public static MendeleyWrapper createForTesting(String userID) throws HyperDataException { return new MendeleyWrapper(null, userID, ""); }
+
   @Override public LibraryType type()          { return LibraryType.ltMendeley; }
   @Override public String entryFileNode()      { return "documents"; }
   @Override public String collectionFileNode() { return "folders"; }
@@ -724,9 +726,6 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     lastSyncTime = getSyncInstantFromJsonStr(db.prefs.get(PrefKey.BIB_LAST_SYNC_TIME, ""));
 
     loadFromJSON(jMainObj);
-
-    if (app.debugging)
-      checkDocumentTypesFromServer();
   }
 
 //---------------------------------------------------------------------------
@@ -872,18 +871,14 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Unfortunately this cannot be done as a unit test because for some
+  // Unfortunately this requires AuthKeys to be loaded because for some
   // unfathomable reason, Mendeley (unlike Zotero) requires an access
   // token just to get the list of valid document types.
 
-  private void checkDocumentTypesFromServer()
+  public String checkDocumentTypesFromServer()
   {
-    String failMsg = "";
-
     try
     {
-      System.out.println("Checking list of Mendeley document types from server against local list.");
-
       JsonArray jsonArray = doHttpRequest("https://api.mendeley.com/document_types",
                                           HttpRequestType.get,
                                           null,
@@ -899,24 +894,18 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
         if (entryTypeMap.containsValue(typeName))
           unusedTypes.remove(entryTypeMap.inverse().get(typeName));
         else
-        {
-          failMsg = "Unrecognized Mendeley document type: " + typeName;
-          errorPopup(failMsg);
-        }
+          return "Unrecognized Mendeley document type: " + typeName;
       }
 
       if (unusedTypes.isEmpty() == false)
-      {
-        failMsg = "One or more locally recognized Mendeley document type(s) not listed by server: " + unusedTypes;
-        errorPopup(failMsg);
-      }
+        return "One or more locally recognized Mendeley document type(s) not listed by server: " + unusedTypes;
     }
     catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
     {
-      failMsg = getThrowableMessage(e);
+      return "Exception: " + getThrowableMessage(e);
     }
 
-    System.out.println("Result of checking Mendeley document types: " + (failMsg.isBlank() ? "Success." : "Fail. Reason:\n" + failMsg));
+    return "";
   }
 
 //---------------------------------------------------------------------------

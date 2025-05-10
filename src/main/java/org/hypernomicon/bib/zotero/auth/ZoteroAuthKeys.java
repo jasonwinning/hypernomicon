@@ -115,10 +115,22 @@ public final class ZoteroAuthKeys extends BibAuthKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void saveToKeyringIfUnsaved(String userID)
+  @Override protected boolean stillNeedsToBeSavedToKeyring()
+  {
+    return (savedToKeyring == false) && isNotEmpty();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Save secrets to keyring only if it is not empty and they are not saved to the keyring yet
+   * @return False if it is non-empty and saving wasn't successful; true otherwise
+   */
+  @Override protected boolean saveToKeyringIfUnsaved(String userID)
   {
     if (savedToKeyring || strNullOrBlank(userID) || isEmpty())
-      return;
+      return true;
 
     if (saveToKeyring(secretNameForAPIKey(userID), apiKey.toCharArray(), "API key for Hypernomicon Zotero integration, user " + userID, getWriteTaskMessage(LibraryType.ltZotero)))
     {
@@ -128,6 +140,8 @@ public final class ZoteroAuthKeys extends BibAuthKeys
 
       savedToKeyring = true;
     }
+
+    return savedToKeyring;
   }
 
 //---------------------------------------------------------------------------

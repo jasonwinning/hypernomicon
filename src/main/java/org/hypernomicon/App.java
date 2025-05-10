@@ -86,6 +86,10 @@ import javafx.scene.text.Text;
  */
 public final class App extends Application
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final Preferences prefs;
   public final boolean debugging;
 

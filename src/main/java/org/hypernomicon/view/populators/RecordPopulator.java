@@ -37,7 +37,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
 
-public abstract class RecordPopulator extends Populator
+abstract class RecordPopulator extends Populator
 {
   private final DisplayKind displayKind;
   private final Predicate<Integer> idFilter;

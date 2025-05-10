@@ -107,7 +107,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
   static JsonObj getTemplate(EntryType type)   { return templates.get(type); }
 
-  public static ZoteroWrapper createForTesting() { try { return new ZoteroWrapper(null, "", ""); } catch (HyperDataException e) { throw new AssertionError(e); } }
+  public static ZoteroWrapper createForTesting() throws HyperDataException { return new ZoteroWrapper(null, "", ""); }
 
   @Override public LibraryType type()          { return LibraryType.ltZotero; }
   @Override public String entryFileNode()      { return "items"; }
@@ -458,6 +458,8 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
       enableSyncOnThisComputer(authKeys, userID, userName, false);
     }
+    else
+      BibAuthKeys.saveToKeyringIfUnsaved(authKeys, userID);
 
     return createNewSyncTaskInt();
   }

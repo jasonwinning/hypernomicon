@@ -515,7 +515,14 @@ public class PDFJSWrapper
 
       JSValue window = browser.executeJavaScriptAndReturnValue("window");
 
-      window.asObject().setProperty("javaApp", javascriptToJava);
+      try
+      {
+        window.asObject().setProperty("javaApp", javascriptToJava);
+      }
+      catch (IllegalStateException e)
+      {
+        noOp();
+      }
 
       pdfjsMode = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
 

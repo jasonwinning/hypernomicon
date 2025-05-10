@@ -26,7 +26,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="689.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.TestConsoleDlgCtrlr">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="561.0" prefWidth="689.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.TestConsoleDlgCtrlr">
   <TextField fx:id="tfParent" layoutX="52.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="542.0" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="95.0" AnchorPane.topAnchor="60.0" />
   <Label layoutX="52.0" layoutY="37.0" text="Parent folder of transient test database folder" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0" />
   <Button layoutX="602.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnBrowseClick" prefHeight="25.0" text="..." AnchorPane.rightAnchor="63.0" AnchorPane.topAnchor="60.0" />
@@ -61,4 +61,7 @@
   <Button layoutX="391.0" layoutY="243.0" mnemonicParsing="false" onAction="#btnWelcomeWindowClick" prefHeight="25.0" prefWidth="190.0" text="Open Welcome window" />
    <Button fx:id="btnSaveRefMgrSecrets" layoutX="52.0" layoutY="294.0" mnemonicParsing="false" text="Save reference manager secret(s) to database settings" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="294.0" />
    <Button fx:id="btnRemoveRefMgrSecrets" layoutX="52.0" layoutY="326.0" mnemonicParsing="false" text="Remove secrets for current ref. mgr. account from keyring" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="326.0" />
+   <Label layoutX="52.0" layoutY="362.0" text="Ref. mgr. user ID:" />
+   <TextField fx:id="tfRefMgrUserID" editable="false" layoutX="154.0" layoutY="358.0" prefHeight="25.0" prefWidth="219.0" />
+   <Button fx:id="btnUseMendeleyID" layoutX="52.0" layoutY="390.0" mnemonicParsing="false" text="Use current Mendeley ID for unit tests" />
 </AnchorPane>

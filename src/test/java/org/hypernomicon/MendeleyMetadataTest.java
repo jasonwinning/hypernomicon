@@ -15,42 +15,45 @@
  *
  */
 
-package org.hypernomicon.fileManager;
+package org.hypernomicon;
 
-import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.util.filePath.FilePath;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.prefs.Preferences;
 
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.Const.PrefKey;
+import org.hypernomicon.bib.mendeley.MendeleyWrapper;
+
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
+
 //---------------------------------------------------------------------------
 
-abstract class AbstractEntityWithPath
+class MendeleyMetadataTest
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean related, relatedSet = false;
-
-//---------------------------------------------------------------------------
-
-  public abstract FilePath getFilePath();
-  public abstract boolean isDirectory();
-  public abstract HyperPath getHyperPath();
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean isRelated()
+  @Test
+  void documentTypesTest()
   {
-    if (relatedSet == false)
-    {
-      related = nullSwitch(getHyperPath(), false, hyperPath -> strNotNullOrEmpty(hyperPath.getRecordsString()));
+    Preferences appPrefs = Preferences.userNodeForPackage(App.class);
 
-      relatedSet = true;
-    }
+    // userID is needed to load the AuthKeys from secure storage because
+    // the Mendeley server call requires an access token
 
-    return related;
+    String userID = appPrefs.get(PrefKey.BIB_UNIT_TEST_USER_ID, "");
+
+    Assumptions.assumeTrue(strNotNullOrBlank(userID));
+
+    MendeleyWrapper mendeleyWrapper = assertDoesNotThrow(() -> MendeleyWrapper.createForTesting(userID));
+
+    String errorMsg = mendeleyWrapper.checkDocumentTypesFromServer();
+
+    assertTrue(strNullOrBlank(errorMsg), errorMsg);
   }
 
 //---------------------------------------------------------------------------
