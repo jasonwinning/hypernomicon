@@ -75,7 +75,7 @@ public final class TestHyperDB extends AbstractHyperDB
     synchronized(HyperDB.class)
     {
       if (HyperDB.db != null)
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Only one database can be instantiated.");
 
       HyperDB.db = this;
     }
@@ -131,12 +131,12 @@ public final class TestHyperDB extends AbstractHyperDB
 
   @Override public boolean saveAllToPersistentStorage(HyperFavorites favorites)
   {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("Save");
   }
 
   @Override public void linkBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName)
   {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("Link to reference manager");
   }
 
 //---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ public final class TestHyperDB extends AbstractHyperDB
     }
     catch (CancelledTaskException e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
     }
     catch (IOException | HyperDataException e)
     {
@@ -201,7 +201,7 @@ public final class TestHyperDB extends AbstractHyperDB
     }
     catch (CancelledTaskException e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
     }
     catch (HyperDataException e)
     {
@@ -226,7 +226,7 @@ public final class TestHyperDB extends AbstractHyperDB
     }
     catch (HDB_InternalError e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
     }
   }
 
@@ -251,7 +251,7 @@ public final class TestHyperDB extends AbstractHyperDB
     }
     catch (HDB_UnrecoverableInternalError e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
     }
 
     open();

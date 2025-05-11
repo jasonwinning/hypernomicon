@@ -67,7 +67,7 @@ public final class FileDownloadUtility
 
 //---------------------------------------------------------------------------
 
-  private FileDownloadUtility() { throw new UnsupportedOperationException(); }
+  private FileDownloadUtility() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

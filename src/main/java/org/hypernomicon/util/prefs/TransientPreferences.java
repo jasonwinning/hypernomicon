@@ -21,6 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.prefs.AbstractPreferences;
 
+//---------------------------------------------------------------------------
+
 class TransientPreferences extends AbstractPreferences
 {
 
@@ -33,10 +35,9 @@ class TransientPreferences extends AbstractPreferences
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  TransientPreferences()                                                 { this(null, ""); }
+  TransientPreferences()                                                 { super(null, ""); }
 
   private TransientPreferences(TransientPreferences parent, String name) { super(parent, name); }
-
 
   @Override public boolean isUserNode()                     { return true; }
   @Override protected boolean isRemoved()                   { return super.isRemoved(); } // Increase visibility
@@ -56,15 +57,7 @@ class TransientPreferences extends AbstractPreferences
 
   @Override protected AbstractPreferences childSpi(String name)
   {
-    TransientPreferences child = children.get(name);
-
-    if ((child == null) || child.isRemoved())
-    {
-      child = new TransientPreferences(this, name);
-      children.put(name, child);
-    }
-
-    return child;
+    return children.compute(name, (key, child) -> ((child == null) || child.isRemoved()) ? new TransientPreferences(this, key) : child);
   }
 
 //---------------------------------------------------------------------------

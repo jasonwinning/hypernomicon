@@ -36,7 +36,7 @@ public final class KeywordLinkList
 
 //---------------------------------------------------------------------------
 
-  private KeywordLinkList() { throw new UnsupportedOperationException(); }
+  private KeywordLinkList() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
 //---------------------------------------------------------------------------
 

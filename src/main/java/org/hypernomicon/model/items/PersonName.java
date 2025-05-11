@@ -137,7 +137,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public String getSortKey()      { return (last.isEmpty() || first.isEmpty() ? (last + first) : (last + '\u0000' + first)).toLowerCase(); }
 
   @Override public PersonName clone()
-  { try { return (PersonName) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
+  { try { return (PersonName) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
 
   @Override public int compareTo(PersonName o) { return getSortKey().compareTo(o.getSortKey()); }
 

@@ -24,6 +24,7 @@ import org.hypernomicon.view.wrappers.AbstractRow;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.Util.newAssertionError;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 //---------------------------------------------------------------------------
@@ -61,7 +62,7 @@ public final class ResultRow extends AbstractRow<HDT_Record, ResultRow> implemen
   @Override public boolean getSortToBottom()               { return false; }
 
   @Override public ResultRow clone()
-  { try { return (ResultRow) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
+  { try { return (ResultRow) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

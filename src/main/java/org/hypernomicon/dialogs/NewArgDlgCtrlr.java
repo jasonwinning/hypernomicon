@@ -336,7 +336,7 @@ public class NewArgDlgCtrlr extends ModalDialog
     {
       HDT_Argument targetArg = (HDT_Argument)target;
 
-      try { argument.addTargetArg(targetArg, (HDT_ArgumentVerdict)verdict); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+      try { argument.addTargetArg(targetArg, (HDT_ArgumentVerdict)verdict); } catch (RelationCycleException e) { throw newAssertionError(e); }
       targetArg.positions.forEach(position -> argument.addPosition(position, null));
     }
 

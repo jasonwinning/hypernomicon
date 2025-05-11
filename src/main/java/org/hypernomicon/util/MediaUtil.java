@@ -17,19 +17,13 @@
 
 package org.hypernomicon.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,10 +35,7 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypeException;
 
 import org.hypernomicon.App;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.util.filePath.FilePath;
 
@@ -63,7 +54,7 @@ public final class MediaUtil
 
   private static volatile TikaConfig tikaConfig;
 
-  private MediaUtil() { throw new UnsupportedOperationException(); }
+  private MediaUtil() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
 //---------------------------------------------------------------------------
 
@@ -452,7 +443,7 @@ public final class MediaUtil
   {
     assignSB(strBuilder, "");
 
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(App.class.getResourceAsStream(relPath), UTF_8)))
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(App.class.getResourceAsStream(relPath), StandardCharsets.UTF_8)))
     {
       String line;
 

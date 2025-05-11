@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model;
 
-import static java.nio.charset.StandardCharsets.*;
 import static java.util.Collections.*;
 
 import static org.hypernomicon.App.*;
@@ -76,7 +75,7 @@ public final class HyperDB extends AbstractHyperDB
     synchronized(HyperDB.class)
     {
       if (db != null)
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Only one database can be instantiated.");
 
       db = this;
     }
@@ -198,7 +197,7 @@ public final class HyperDB extends AbstractHyperDB
     {
       List<String> s;
 
-      try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
+      try { s = filePath.readToStrList(); }
       catch (IOException e) { return "[Unknown]"; }
 
       if (collEmpty(s) == false)
@@ -265,7 +264,7 @@ public final class HyperDB extends AbstractHyperDB
 
       List<String> s;
 
-      try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
+      try { s = filePath.readToStrList(); }
       catch (IOException e)
       {
         errorPopup("An error occurred while trying to read description template files: " + getThrowableMessage(e));

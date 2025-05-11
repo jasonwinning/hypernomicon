@@ -289,7 +289,7 @@ public final class MainCtrlr
     synchronized(MainCtrlr.class)
     {
       if (ui != null)
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("MainCtrlr can only be instantiated once.");
 
       ui = this;
     }
@@ -3066,7 +3066,12 @@ public final class MainCtrlr
 
   public void importMiscFile(FileRow fileRow, FilePath filePath)
   {
-    if (cantSaveRecord()) return;
+    importMiscFile(fileRow, filePath, true);
+  }
+
+  public void importMiscFile(FileRow fileRow, FilePath filePath, boolean save)
+  {
+    if (save && cantSaveRecord()) return;
 
     HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
 
@@ -3089,6 +3094,11 @@ public final class MainCtrlr
 
   public boolean importWorkFile(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord)
   {
+    return importWorkFile(person, filePathToUse, promptForExistingRecord, false);
+  }
+
+  public boolean importWorkFile(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord, boolean includeMiscFileOption)
+  {
     if (filePathToUse != null)
     {
       if (filePathToUse.equals(lastImportFilePath) && (milliDiff(Instant.now(), lastImportTime) < 10000L))
@@ -3107,8 +3117,14 @@ public final class MainCtrlr
 
     if (promptForExistingRecord)
     {
-      SelectWorkDlgCtrlr swdc = new SelectWorkDlgCtrlr(person, filePathToUse);
+      SelectWorkDlgCtrlr swdc = new SelectWorkDlgCtrlr(person, filePathToUse, includeMiscFileOption);
       if (swdc.showModal() == false) return false;
+
+      if (swdc.getButtonClicked() == SelectWorkDlgCtrlr.ButtonClicked.NewMisc)
+      {
+        importMiscFile(null, swdc.getFilePath(), false);
+        return false;
+      }
 
       filePathToUse = swdc.getFilePath();
       work = swdc.getWork();
@@ -3244,14 +3260,29 @@ public final class MainCtrlr
 
     if (mediaTypeStr.contains("pdf"))
     {
-      importWorkFile(null, filePath, true);
+      importWorkFile(null, filePath, true, true);
       return;
     }
 
     if (mediaTypeStr.contains("text"))
     {
-      importBibFile(null, filePath);
-      return;
+      BibDataStandalone fileBibData = null;
+
+      try
+      {
+        if (filePath.size() < 50000)
+          fileBibData = BibDataStandalone.detectWithinTextFile(null, filePath);
+      }
+      catch (TokenMgrException | IOException | ParseException e)
+      {
+        noOp();
+      }
+
+      if (fileBibData != null)
+      {
+        importBibFile(null, filePath);
+        return;
+      }
     }
 
     switch (new PopupDialog("What should the file be imported as?")
@@ -3292,15 +3323,12 @@ public final class MainCtrlr
 
     try
     {
-      fileBibData = BibTexBibData.create(lines);
+      fileBibData = BibDataStandalone.detectWithinTextFile(lines, null);
     }
-    catch (TokenMgrException | ParseException e)
+    catch (TokenMgrException | IOException | ParseException e)
     {
       ex = e;
     }
-
-    if (fileBibData == null)
-      fileBibData = RISBibData.create(lines);
 
     if (fileBibData == null)
     {

@@ -17,16 +17,9 @@
 
 package org.hypernomicon;
 
-import static java.nio.charset.StandardCharsets.*;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
@@ -44,7 +37,7 @@ public final class InterProcClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private InterProcClient() { throw new UnsupportedOperationException(); }
+  private InterProcClient() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
 //---------------------------------------------------------------------------
 
@@ -77,7 +70,7 @@ public final class InterProcClient
 
     List<String> lines = null;
 
-    try { lines = FileUtils.readLines(filePath.toFile(), UTF_8); }
+    try { lines = filePath.readToStrList(); }
     catch (IOException e) { e.printStackTrace(); }
 
     if (collEmpty(lines) == false) lines.forEach(line ->
@@ -207,12 +200,10 @@ public final class InterProcClient
     newDbPath = newDbPath.getDirOnly();
 
     for (AppInstance instance : updateRunningInstancesFile().values())
-    {
       if (instance.getID().equals(thisInstanceID) == false)
         if (FilePath.isEmpty(instance.getDBPath()) == false)
           if (instance.getDBPath().isSubpath(newDbPath) || newDbPath.isSubpath(instance.getDBPath()))
             return true;
-    }
 
     return false;
   }

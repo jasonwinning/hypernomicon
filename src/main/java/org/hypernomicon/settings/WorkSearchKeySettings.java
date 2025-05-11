@@ -18,6 +18,7 @@
 package org.hypernomicon.settings;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.Util.newAssertionError;
 
 import java.util.*;
 import java.util.prefs.BackingStoreException;
@@ -258,7 +259,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
   public void saveToPrefNode()
   {
     Preferences node = db.prefs.node("workSearchKeys");
-    try { node.removeNode(); } catch (BackingStoreException e) { throw new AssertionError(e); }
+    try { node.removeNode(); } catch (BackingStoreException e) { throw newAssertionError(e); }
     node = db.prefs.node("workSearchKeys");
 
     node.putInt("count", size());

@@ -29,7 +29,25 @@ import org.hypernomicon.model.records.RecordType;
 @SuppressWarnings("serial")
 public final class Exceptions
 {
-  private Exceptions() { throw new UnsupportedOperationException(); }
+  private Exceptions() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class CancelledTaskException extends Exception
+  {
+    public CancelledTaskException() { super("Task was cancelled by user."); }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class HyperDataException extends Exception
+  {
+    public HyperDataException(String msg             ) { super(msg                      ); }
+    public HyperDataException(String msg, Throwable e) { super(msg                   , e); }
+    public HyperDataException(            Throwable e) { super(getThrowableMessage(e), e); }
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -51,14 +69,6 @@ public final class Exceptions
     {
       super("Invalid XML attribute: \"" + attrName + "\". Item tag: \"" + tag.name + "\". Record type: " + Tag.getTypeTagStr(recordType) + " ID: " + recordID);
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static class CancelledTaskException extends Exception
-  {
-    public CancelledTaskException() { super("Task was cancelled by user."); }
   }
 
 //---------------------------------------------------------------------------
@@ -148,16 +158,6 @@ public final class Exceptions
       super("Unable to assign " + getTypeName(child.getType()) + " ID " + child.getID() + " as child of " +
             getTypeName(parent.getType()) + " ID " + parent.getID() + ": A cycle would result.");
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static class HyperDataException extends Exception
-  {
-    public HyperDataException(String msg             ) { super(msg                      ); }
-    public HyperDataException(String msg, Throwable e) { super(msg                   , e); }
-    public HyperDataException(            Throwable e) { super(getThrowableMessage(e), e); }
   }
 
 //---------------------------------------------------------------------------

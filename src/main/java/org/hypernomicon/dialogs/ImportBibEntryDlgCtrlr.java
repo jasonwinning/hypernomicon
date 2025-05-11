@@ -26,8 +26,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-
+import org.hypernomicon.bib.data.BibDataStandalone;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.filePath.FilePath;
@@ -35,11 +34,12 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 
+import org.jbibtex.ParseException;
+import org.jbibtex.TokenMgrException;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
-
-import static java.nio.charset.StandardCharsets.*;
 
 //---------------------------------------------------------------------------
 
@@ -93,9 +93,6 @@ public class ImportBibEntryDlgCtrlr extends ModalDialog
     hcbWork = new HyperCB(cbWork, ctEditableLimitedDropDown, new StandardPopulator(hdtWork));
     hcbWork.populate(false);
 
-    if (cbWork.getItems().size() > 0)
-      hcbWork.select(cbWork.getItems().get(0));
-
     if (lines == null)
     {
       if (FilePath.isEmpty(filePath))
@@ -105,6 +102,11 @@ public class ImportBibEntryDlgCtrlr extends ModalDialog
     }
     else
       loadEntry(lines);
+
+    // Select most recently viewed work if no work was detected
+
+    if ((hcbWork.selectedRecord() == null) && (cbWork.getItems().size() > 0))
+      hcbWork.select(cbWork.getItems().get(0));
   }
 
 //---------------------------------------------------------------------------
@@ -116,7 +118,7 @@ public class ImportBibEntryDlgCtrlr extends ModalDialog
 
     try
     {
-      lines = FileUtils.readLines(filePath.toFile(), UTF_8);
+      lines = filePath.readToStrList();
     }
     catch (IOException e)
     {
@@ -144,6 +146,25 @@ public class ImportBibEntryDlgCtrlr extends ModalDialog
     }
 
     taContents.setText(strListToStr(lines, false));
+
+    BibDataStandalone fileBibData = null;
+
+    try
+    {
+      fileBibData = BibDataStandalone.detectWithinTextFile(lines, null);
+    }
+    catch (TokenMgrException | IOException | ParseException e)
+    {
+      noOp();
+    }
+
+    if (fileBibData == null)
+      return;
+
+    HDT_Work work = fileBibData.findMatchingWork();
+
+    if (work != null)
+      hcbWork.selectIDofRecord(work);
   }
 
 //---------------------------------------------------------------------------

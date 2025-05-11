@@ -50,7 +50,7 @@ public abstract class AbstractHTC implements HyperTableCell
   @Override public boolean getSortToBottom() { return sortToBottom; }
 
   @Override public AbstractHTC clone()
-  { try { return (AbstractHTC) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
+  { try { return (AbstractHTC) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

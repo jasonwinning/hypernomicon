@@ -37,7 +37,7 @@ public final class SimpleRecordTypes
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SimpleRecordTypes() { throw new UnsupportedOperationException(); }
+  private SimpleRecordTypes() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
   static abstract class HDT_SimpleRecord extends HDT_RecordBase
   {

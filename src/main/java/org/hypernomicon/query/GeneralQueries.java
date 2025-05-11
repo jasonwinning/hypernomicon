@@ -57,7 +57,7 @@ public final class GeneralQueries
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private GeneralQueries() { throw new UnsupportedOperationException(); }
+  private GeneralQueries() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
   // Numeric IDs associated with queries should never be changed. Changing them could break user query favorite settings.
 

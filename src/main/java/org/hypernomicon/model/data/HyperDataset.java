@@ -137,7 +137,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
       idToAssign = -1;
 
-      try { add(record); } catch (DuplicateRecordException e) { throw new AssertionError(getThrowableMessage(e), e); }
+      try { add(record); } catch (DuplicateRecordException e) { throw newAssertionError(e); }
     }
 
     needIDs.clear();

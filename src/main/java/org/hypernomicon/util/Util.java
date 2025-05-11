@@ -22,10 +22,9 @@ import org.hypernomicon.util.filePath.FilePath;
 
 import java.io.*;
 
-import static java.nio.charset.StandardCharsets.*;
-
 import java.net.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.*;
 import java.text.NumberFormat;
@@ -84,7 +83,7 @@ public final class Util
                               xmlContentEscaper   = XmlEscapers.xmlContentEscaper(),
                               xmlAttributeEscaper = XmlEscapers.xmlAttributeEscaper();
 
-  private Util() { throw new UnsupportedOperationException(); }
+  private Util() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -451,7 +450,7 @@ public final class Util
     if (removeParen)
       url = removeFirstParenthetical(url);
 
-    return URLEncoder.encode(url.strip(), UTF_8);
+    return URLEncoder.encode(url.strip(), StandardCharsets.UTF_8);
   }
 
 //---------------------------------------------------------------------------
@@ -461,7 +460,7 @@ public final class Util
   {
     try
     {
-      return URLDecoder.decode(safeStr(url), UTF_8);
+      return URLDecoder.decode(safeStr(url), StandardCharsets.UTF_8);
     }
     catch (IllegalArgumentException e)
     {
@@ -582,10 +581,11 @@ public final class Util
    *
    * @param sb the StringBuilder containing the content to be saved
    * @param filePath the path of the file where the content will be saved
+   * @param encoding The character set
    * @return the MD5 checksum of the saved content as a hexadecimal string
    * @throws IOException if an I/O error occurs while writing to the file
    */
-  public static String saveStringBuilderToFile(StringBuilder sb, FilePath filePath) throws IOException
+  public static String saveStringBuilderToFile(StringBuilder sb, FilePath filePath, Charset encoding) throws IOException
   {
     int bufLen = 65536;
     char[] charArray = new char[bufLen];
@@ -594,7 +594,7 @@ public final class Util
 
     try (OutputStream os = Files.newOutputStream(filePath.toPath());
          DigestOutputStream dos = new DigestOutputStream(os, md);
-         OutputStreamWriter writer = new OutputStreamWriter(dos, UTF_8))
+         OutputStreamWriter writer = new OutputStreamWriter(dos, encoding))
     {
       for (int offsetIntoSB = 0; offsetIntoSB < sb.length(); offsetIntoSB += bufLen)
       {
@@ -638,7 +638,7 @@ public final class Util
     }
     catch (NoSuchAlgorithmException e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
     }
   }
 
@@ -2029,6 +2029,23 @@ public final class Util
   public static String underlinedChar(char c)
   {
     return c + "\u0332";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns an {@code AssertionError} with a user-friendly message extracted from the given throwable.
+   *
+   * <p>This method constructs an assertion error using {@link getThrowableMessage(Throwable)}, ensuring
+   * meaningful exception messages while preserving the original cause.</p>
+   *
+   * @param e the throwable that triggered the assertion failure
+   * @return AssertionError containing the processed message and original exception
+   */
+  public static AssertionError newAssertionError(Throwable e)
+  {
+    return new AssertionError(getThrowableMessage(e), e);
   }
 
 //---------------------------------------------------------------------------

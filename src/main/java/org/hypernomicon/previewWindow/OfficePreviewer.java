@@ -54,7 +54,7 @@ final class OfficePreviewer
 
   private static volatile OfficePreviewInfo lastInfo, nextInfo;
 
-  private OfficePreviewer() { throw new UnsupportedOperationException(); }
+  private OfficePreviewer() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

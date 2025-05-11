@@ -373,7 +373,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     curInst.setCity(tfCity.getText());
 
     if (saveNameIfBlank || (tfName.getText().isBlank() == false))
-    curInst.setName(tfName.getText());
+      curInst.setName(tfName.getText());
 
     curInst.setURL(tfURL.getText());
     curInst.region.setID(hcbRegion.selectedID());

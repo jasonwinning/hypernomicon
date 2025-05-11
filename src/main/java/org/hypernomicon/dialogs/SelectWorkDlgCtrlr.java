@@ -62,8 +62,13 @@ public class SelectWorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public enum ButtonClicked
+  {
+    SelectedWork, NewWork, NewMisc, None
+  }
+
   @FXML private ComboBox<HyperTableCell> cbAuthor, cbWork, cbBibEntry;
-  @FXML private Button btnCreateNew, btnStop, btnLaunch;
+  @FXML private Button btnSelectedWork, btnNewWork, btnNewMisc, btnStop, btnLaunch;
   @FXML private Label lblBibEntry;
   @FXML private ToggleButton btnPreview;
   @FXML private TextField tfFile;
@@ -83,30 +88,33 @@ public class SelectWorkDlgCtrlr extends ModalDialog
   private HDT_Work work;
   private HDT_Person author = null;
   private BibEntry<?, ?> bibEntry;
-  private boolean createNewClicked = false, previewInitialized = false;
+  private boolean previewInitialized = false;
+  private ButtonClicked buttonClicked = ButtonClicked.None;
 
-  public FilePath getFilePath()       { return filePath; }
-  public HDT_Work getWork()           { return work; }
-  public BibEntry<?, ?> getBibEntry() { return HDT_Work.isUnenteredSet(work) ? null : bibEntry; }
-  public BibData getBibData()         { return bd; }
-  public HDT_Person getAuthor()       { return author; }
+  public ButtonClicked getButtonClicked() { return buttonClicked; }
+  public FilePath getFilePath()           { return filePath; }
+  public HDT_Work getWork()               { return work; }
+  public BibEntry<?, ?> getBibEntry()     { return HDT_Work.isUnenteredSet(work) ? null : bibEntry; }
+  public BibData getBibData()             { return bd; }
+  public HDT_Person getAuthor()           { return author; }
 
 //---------------------------------------------------------------------------
 
-  public SelectWorkDlgCtrlr(HDT_Person authorToUse, FilePath filePathToUse)
+  public SelectWorkDlgCtrlr(HDT_Person authorToUse, FilePath filePathToUse, boolean includeMiscFileOption)
   {
-    this(null, authorToUse, filePathToUse, true, null, false);
+    this(null, authorToUse, filePathToUse, true, null, false, includeMiscFileOption);
   }
 
   public SelectWorkDlgCtrlr(HDT_Work workToUse, BibEntry<?, ?> bibEntryToUse)
   {
-    this(workToUse, null, null, false, bibEntryToUse, true);
+    this(workToUse, null, null, false, bibEntryToUse, true, false);
   }
 
 //---------------------------------------------------------------------------
 
   private SelectWorkDlgCtrlr(HDT_Work workToUse, HDT_Person authorToUse, FilePath       filePathToUse, boolean filePathIsConstant,
-                                                                         BibEntry<?, ?> bibEntryToUse, boolean bibEntryIsConstant)
+                                                                         BibEntry<?, ?> bibEntryToUse, boolean bibEntryIsConstant,
+                                                                                                       boolean includeMiscFileOption)
   {
     super("SelectWorkDlg", "Select a Work Record", true);
 
@@ -117,6 +125,9 @@ public class SelectWorkDlgCtrlr extends ModalDialog
 
     if (db.bibLibraryIsLinked() == false)
       cbBibEntry.setDisable(true);
+
+    if (includeMiscFileOption == false)
+      removeFromParent(btnNewMisc);
 
     if ((filePathToUse == null) && filePathIsConstant)
     {
@@ -130,21 +141,7 @@ public class SelectWorkDlgCtrlr extends ModalDialog
     {
       if ((authorToUse == null) && (bibEntry != null))
       {
-        String doi = bibEntry.getStr(BibFieldEnum.bfDOI);
-
-        if (doi.length() > 0)
-          work = findFirst(db.works, _work -> _work.getDOI().equalsIgnoreCase(doi));
-
-        if ((work == null) && (HDT_WorkType.getEnumVal(bibEntry.getWorkType()) == WorkTypeEnum.wtBook))
-        {
-          List<String> isbns = bibEntry.getMultiStr(BibFieldEnum.bfISBNs);
-
-          if (isbns.isEmpty() == false)
-            for (HDT_Work curWork : db.works)
-              if (curWork.getWorkTypeEnum() == WorkTypeEnum.wtBook)
-                if (curWork.getISBNs().stream().anyMatch(isbns::contains))
-                  work = curWork;
-        }
+        work = bibEntry.findMatchingWork();
 
         if (work == null)
           authorToUse = findFirstHaving(bibEntry.getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
@@ -198,9 +195,21 @@ public class SelectWorkDlgCtrlr extends ModalDialog
                                                     .collect(Collectors.toCollection(ArrayList::new));
     }));
 
-    btnCreateNew.setOnAction(event ->
+    btnSelectedWork.setOnAction(event ->
     {
-      createNewClicked = true;
+      buttonClicked = ButtonClicked.SelectedWork;
+      btnOkClick();
+    });
+
+    btnNewWork.setOnAction(event ->
+    {
+      buttonClicked = ButtonClicked.NewWork;
+      btnOkClick();
+    });
+
+    btnNewMisc.setOnAction(event ->
+    {
+      buttonClicked = ButtonClicked.NewMisc;
       btnOkClick();
     });
 
@@ -537,10 +546,10 @@ public class SelectWorkDlgCtrlr extends ModalDialog
 
   @Override protected boolean isValid()
   {
-    if ((hcbWork.selectedID() < 1) && (createNewClicked == false))
+    if ((hcbWork.selectedID() < 1) && (buttonClicked == ButtonClicked.SelectedWork))
       return falseWithInfoPopup("Select a work record.", cbWork);
 
-    work = createNewClicked ? null : hcbWork.selectedRecord();
+    work = (buttonClicked == ButtonClicked.SelectedWork) ? hcbWork.selectedRecord() : null;
     author = hcbAuthor.selectedRecord();
 
     if (db.bibLibraryIsLinked())

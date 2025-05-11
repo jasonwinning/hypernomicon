@@ -47,7 +47,7 @@ public final class WorkQueries
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private WorkQueries() { throw new UnsupportedOperationException(); }
+  private WorkQueries() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
   private static final int QUERY_LIKELY_EDITED_VOLS        = 2001,  // "likely edited volumes"
                            QUERY_ANALYZE_METADATA          = 2003,  // "analyze pdf metadata"

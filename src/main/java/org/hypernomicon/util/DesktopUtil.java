@@ -18,18 +18,10 @@
 package org.hypernomicon.util;
 
 import java.awt.Desktop;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.ServerSocket;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -42,7 +34,6 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -61,7 +52,7 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private DesktopUtil() { throw new UnsupportedOperationException(); }
+  private DesktopUtil() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -235,7 +226,7 @@ public final class DesktopUtil
 
         try (InputStream is = proc.getErrorStream())
         {
-          assignSB(errorSB, IOUtils.toString(is, StandardCharsets.UTF_8));
+          assignSB(errorSB, IOUtils.toString(is, Charset.defaultCharset()));
         }
       }
     }
@@ -522,7 +513,7 @@ public final class DesktopUtil
 
     if (SystemUtils.IS_OS_WINDOWS == false) try
     {
-      for (String line : FileUtils.readLines(new File("/etc/hostname"), Charset.defaultCharset()))
+      for (String line : new FilePath("/etc/hostname").readToStrList())
       {
         hostName = formatName(line);
         if (hostName.length() > 0) return hostName;
@@ -594,13 +585,13 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String readValueFromFile(String filePath, String key) throws IOException
+  private static String readValueFromFile(String filePathStr, String key) throws IOException
   {
-    File file = new File(filePath);
-    if (file.exists() == false)
+    FilePath filePath = new FilePath(filePathStr);
+    if (filePath.exists() == false)
       return null;
 
-    for (String line : FileUtils.readLines(file, Charset.defaultCharset()))
+    for (String line : filePath.readToStrList())
     {
       if (strNullOrBlank(key))
         return line;

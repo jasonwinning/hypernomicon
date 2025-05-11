@@ -37,7 +37,7 @@ public final class PersonQueries
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private PersonQueries() { throw new UnsupportedOperationException(); }
+  private PersonQueries() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
   private static final int QUERY_SET_DECEASED_AS_PAST = 1001;  // "Set deceased people as past members of institutions"
 

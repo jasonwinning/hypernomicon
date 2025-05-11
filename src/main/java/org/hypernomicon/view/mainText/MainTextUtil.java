@@ -29,61 +29,49 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.text.StringEscapeUtils.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_Note;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
-import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.model.unities.KeyWork;
-import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.unities.*;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.HtmlTextNodeList.HtmlTextNode;
+
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
+import org.jsoup.nodes.*;
 import org.jsoup.parser.Parser;
 
 import com.google.common.collect.Ordering;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.*;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
+//---------------------------------------------------------------------------
+
 public final class MainTextUtil
 {
-  private MainTextUtil() { throw new UnsupportedOperationException(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private MainTextUtil() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
   public static String        headContent,
                               scriptContent;

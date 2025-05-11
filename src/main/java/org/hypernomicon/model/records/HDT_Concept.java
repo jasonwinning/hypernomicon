@@ -141,7 +141,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
     HDT_Term newTerm = HDT_Term.create(glossary.get());
     HDT_Concept childConcept = newTerm.getConcept(glossary.get(), null);
 
-    try { childConcept.addParentConcept(this); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+    try { childConcept.addParentConcept(this); } catch (RelationCycleException e) { throw newAssertionError(e); }
 
     return childConcept;
   }

@@ -22,17 +22,21 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.text.similarity.LevenshteinDistance;
+
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.reports.ReportGenerator;
 import org.hypernomicon.model.items.BibliographicDate;
-import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -298,6 +302,77 @@ public abstract class BibData
         yield (entryType == null) || (entryType == etUnentered) || (entryType == etNone) ? 0 : 1;
       }
     };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+  * Finds a work in the database with a matching DOI or, if both are books or
+  * the titles are a fuzzy match, a matching ISBN.
+  * @return The matching work, or null if none found.
+  */
+  public HDT_Work findMatchingWork()
+  {
+    HDT_Work work = getWork();
+
+    if (work != null)
+      return work;
+
+    // Match DOI first
+    String doi = getStr(BibFieldEnum.bfDOI);
+
+    if (doi.isEmpty() == false)
+    {
+      work = findFirst(db.works, _work -> _work.getDOI().equalsIgnoreCase(doi));
+
+      if (work != null)
+        return work;
+    }
+
+    // Retrieve ISBNs and title
+    List<String> isbns = getMultiStr(BibFieldEnum.bfISBNs);
+    String title = HDT_RecordBase.makeSortKeyByType(getStr(BibFieldEnum.bfTitle), RecordType.hdtWork);
+
+    if (isbns.isEmpty() == false)
+    {
+      LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();
+      HDT_Work bestMatch = null;
+      double bestDist = Double.MAX_VALUE;
+
+      for (HDT_Work curWork : db.works)
+      {
+        boolean isbnMatch = curWork.getISBNs().stream().anyMatch(isbns::contains);
+
+        if (isbnMatch == false) continue;
+
+        if ((curWork.getWorkTypeEnum() == WorkTypeEnum.wtBook) && (HDT_WorkType.getEnumVal(getWorkType()) == WorkTypeEnum.wtBook))
+          return curWork;
+
+        double curDist = titleDistance(alg, title, curWork.getSortKey());
+
+        if ((curDist < LEVENSHTEIN_THRESHOLD) && (curDist < bestDist))
+        {
+          bestMatch = curWork;
+          bestDist = curDist;
+        }
+      }
+
+      return bestMatch;
+    }
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static final double LEVENSHTEIN_THRESHOLD = 0.25;
+
+  public static double titleDistance(LevenshteinDistance alg, String title1, String title2)
+  {
+    int len = Math.min(title1.length(), title2.length());
+    return (double)alg.apply(safeSubstring(title1, 0, len), safeSubstring(title2, 0, len)) / (double)len;
   }
 
 //---------------------------------------------------------------------------

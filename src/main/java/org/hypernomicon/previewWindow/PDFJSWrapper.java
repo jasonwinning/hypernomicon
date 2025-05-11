@@ -19,6 +19,7 @@ package org.hypernomicon.previewWindow;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
@@ -33,8 +34,6 @@ import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
 import com.teamdev.jxbrowser.chromium.javafx.BrowserView;
 import com.teamdev.jxbrowser.chromium.javafx.DefaultDialogHandler;
 import com.teamdev.jxbrowser.chromium.javafx.internal.dialogs.MessageDialog;
-
-import static java.nio.charset.StandardCharsets.*;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -833,7 +832,7 @@ public class PDFJSWrapper
 
     if (isHtml)
     {
-      Document doc = Jsoup.parse(FileUtils.readFileToString(file.toFile(), UTF_8));
+      Document doc = Jsoup.parse(FileUtils.readFileToString(file.toFile(), Charset.defaultCharset()));
 
       doc.getElementsByTag("script").forEach(Element::remove);
 

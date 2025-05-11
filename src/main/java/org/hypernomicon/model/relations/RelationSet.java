@@ -236,7 +236,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtFolderOfNote             -> new RelationSet<>(relType, HDT_Note         .class, HDT_Folder         .class);
       case rtPictureFolderOfPerson    -> new RelationSet<>(relType, HDT_Person       .class, HDT_Folder         .class);
 
-      default                         -> throw new AssertionError(new HDB_InternalError(84723));
+      default                         -> throw newAssertionError(new HDB_InternalError(84723));
     };
   }
 
@@ -587,7 +587,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       if (list.add(obj) == false)
       {
         try                              { list.throwLastException(); }
-        catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+        catch (RelationCycleException e) { throw newAssertionError(e); }
         return;
       }
 
@@ -799,7 +799,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     while (getObjectCount(subj) > 0)
     {
       HDT_Obj obj = getObject(subj, 0);
-      try { removeObject(subj, obj, 0); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+      try { removeObject(subj, obj, 0); } catch (RelationCycleException e) { throw newAssertionError(e); }
     }
   }
 
@@ -900,7 +900,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       if (HDT_Record.isEmptyThrowsException(obj, false))
       {
-        try { removeObject(subj, obj, ndx); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+        try { removeObject(subj, obj, ndx); } catch (RelationCycleException e) { throw newAssertionError(e); }
       }
       else if (hasNestedItems)
       {

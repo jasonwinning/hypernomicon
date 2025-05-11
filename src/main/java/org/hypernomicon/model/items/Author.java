@@ -86,7 +86,7 @@ public final class Author implements Cloneable, Comparable<Author>
   @Override public int compareTo(Author o)        { return getSortKey().compareTo(o.getSortKey()); }
 
   @Override public Author clone()
-  { try { return (Author) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
+  { try { return (Author) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
 
   public boolean getIsEditor()   { return person == null ? isEditor   : (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
   public boolean getIsTrans()    { return person == null ? isTrans    : (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }

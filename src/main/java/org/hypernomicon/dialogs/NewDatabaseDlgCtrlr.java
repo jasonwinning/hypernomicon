@@ -122,7 +122,7 @@ public class NewDatabaseDlgCtrlr extends ModalDialog
 
     try
     {
-      saveStringBuilderToFile(new StringBuilder(DEFAULT_XML_PATH + '/' + SETTINGS_FILE_NAME), filePath.resolve(HDB_DEFAULT_FILENAME));
+      saveStringBuilderToFile(new StringBuilder(DEFAULT_XML_PATH + '/' + SETTINGS_FILE_NAME), filePath.resolve(HDB_DEFAULT_FILENAME), XML_FILES_CHARSET);
 
       filePath.resolve(DEFAULT_XML_PATH                ).createDirectory();
       filePath.resolve(tfPictures    .getText().strip()).createDirectory();

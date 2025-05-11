@@ -37,7 +37,7 @@ public final class ArgumentQueries
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ArgumentQueries() { throw new UnsupportedOperationException(); }
+  private ArgumentQueries() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
   private static final int QUERY_SOURCES_AT_LEAST = 4001;  // "with at least ___ sources"
 

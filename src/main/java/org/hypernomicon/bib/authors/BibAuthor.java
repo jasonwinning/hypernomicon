@@ -93,7 +93,7 @@ public final class BibAuthor implements Cloneable
 //---------------------------------------------------------------------------
 
   @Override public BibAuthor clone()
-  { try { return (BibAuthor) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }}
+  { try { return (BibAuthor) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

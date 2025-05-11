@@ -24,10 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -198,7 +197,7 @@ public class JsonHttpClient
 
         try
         {
-          obj = jsonParser.parse(new InputStreamReader(is, UTF_8));
+          obj = jsonParser.parse(new InputStreamReader(is, StandardCharsets.UTF_8));
         }
         catch (Throwable th)
         {

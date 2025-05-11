@@ -19,7 +19,6 @@ package org.hypernomicon.settings;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -33,7 +32,6 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 import org.hypernomicon.App;
@@ -838,7 +836,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     List<String> s;
 
-    try { s = FileUtils.readLines(logFilePath.toFile(), Charset.defaultCharset()); }
+    try { s = logFilePath.readToStrList(); }
     catch (IOException e)
     {
       errorPopup("An error occurred while trying to read the log file: " + getThrowableMessage(e));

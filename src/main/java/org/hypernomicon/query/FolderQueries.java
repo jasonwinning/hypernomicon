@@ -36,7 +36,7 @@ public final class FolderQueries
 
 //---------------------------------------------------------------------------
 
-  private FolderQueries() { throw new UnsupportedOperationException(); }
+  private FolderQueries() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
   private static final int QUERY_DUPLICATE_FOLDERS = 3001;  // "that are duplicate folders"
 

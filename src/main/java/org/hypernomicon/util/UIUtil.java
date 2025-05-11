@@ -61,7 +61,7 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private UIUtil() { throw new UnsupportedOperationException(); }
+  private UIUtil() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
   private static final Map<String, Double> dividerMap = new HashMap<>();
 

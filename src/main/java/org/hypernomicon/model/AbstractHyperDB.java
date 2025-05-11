@@ -28,6 +28,8 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.*;
 import java.time.Instant;
@@ -773,7 +775,7 @@ public abstract class AbstractHyperDB
 
     if (xml.isEmpty())
     {
-      xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append(System.lineSeparator()).append(System.lineSeparator())
+      xml.append("<?xml version=\"1.0\" encoding=\"" + XML_FILES_CHARSET.name() + "\"?>").append(System.lineSeparator()).append(System.lineSeparator())
          .append("<records version=\"").append(getVersionNumberSavingAs(appVersionToMaxRecordsXMLVersion)).append("\" xmlns=\"org.hypernomicon\"")
 
       //   .append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"org.hypernomicon http://hypernomicon.org/records.xsd\"")
@@ -855,7 +857,7 @@ public abstract class AbstractHyperDB
         writeDatasetToXML(xmlList, this, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
 
         for (int ndx = 0; ndx < filenameList.size(); ndx++)
-          xmlChecksums.put(filenameList.get(ndx), saveStringBuilderToFile(xmlList.get(ndx), xmlPath(filenameList.get(ndx))));
+          xmlChecksums.put(filenameList.get(ndx), saveStringBuilderToFile(xmlList.get(ndx), xmlPath(filenameList.get(ndx)), XML_FILES_CHARSET));
       }
       catch (IOException | HDB_InternalError e)
       {
@@ -876,7 +878,7 @@ public abstract class AbstractHyperDB
 
       prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
-      prefs.exportSubtree(dos);
+      prefs.exportSubtree(dos);  // Hardcoded to export in UTF_8
     }
     catch (IOException | BackingStoreException e)
     {
@@ -1299,7 +1301,7 @@ public abstract class AbstractHyperDB
         mentionsIndex.removeRecord(record);
 
       if (record.getType() != hdtConcept)
-        try { record.setSearchKey(""); } catch (SearchKeyException e) { throw new AssertionError(getThrowableMessage(e), e); }
+        try { record.setSearchKey(""); } catch (SearchKeyException e) { throw newAssertionError(e); }
     }
 
     if (deletionInProgress)
@@ -1443,7 +1445,7 @@ public abstract class AbstractHyperDB
 
     try (DigestInputStream dis = new DigestInputStream(is, md))
     {
-      prefs = XmlSupport.importPreferences(dis).node("org").node("hypernomicon").node("model");
+      prefs = XmlSupport.importPreferences(dis, XML_FILES_CHARSET).node("org").node("hypernomicon").node("model");
 
       xmlChecksums.put(SETTINGS_FILE_NAME, digestHexStr(md));
 
@@ -1705,7 +1707,7 @@ public abstract class AbstractHyperDB
     {
       errorMessage(e);
     }
-    catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { throw new AssertionError(e); }
+    catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { throw newAssertionError(e); }
 
     return null;
   }
@@ -1773,7 +1775,7 @@ public abstract class AbstractHyperDB
 
     try (DigestInputStream dis = new DigestInputStream(is, md))
     {
-      XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(dis);
+      XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(dis, XML_FILES_CHARSET.name());
 
       VersionNumber dataVersion = getVersionNumberFromXML(eventReader);
 
@@ -1913,7 +1915,7 @@ public abstract class AbstractHyperDB
           {
             createNewRecordFromState(xmlRecord, false);
           }
-          catch (RelationCycleException | SearchKeyException e) { throw new AssertionError(getThrowableMessage(e), e); }
+          catch (RelationCycleException | SearchKeyException e) { throw newAssertionError(e); }
 
           VersionNumber previousDataVersion = recordTypeToDataVersion.get(xmlRecord.type);
 
@@ -2162,7 +2164,7 @@ public abstract class AbstractHyperDB
     }
     catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
     }
     catch (HDB_InternalError e)
     {
@@ -2294,6 +2296,8 @@ public abstract class AbstractHyperDB
   private static final int DEFAULT_XML_FOLDER_ID = 2; // 2 is the default for new databases. Old ones may have 9 as the XML folder ID.
 
   public static final int ROOT_FOLDER_ID = 1;
+
+  public static final Charset XML_FILES_CHARSET = StandardCharsets.UTF_8;
 
   public static final String
 
@@ -2589,7 +2593,7 @@ public abstract class AbstractHyperDB
       case FolderIDPrefKey.MISC_FILES : miscFilesFolder = folder; break;
       case FolderIDPrefKey.TOPICAL    : topicalFolder   = folder; break;
 
-      default                         : throw new AssertionError(new HDB_InternalError(59294));
+      default                         : throw newAssertionError(new HDB_InternalError(59294));
     }
   }
 

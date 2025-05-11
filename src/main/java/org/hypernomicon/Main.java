@@ -18,8 +18,7 @@
 package org.hypernomicon;
 
 import java.io.PrintStream;
-
-import static java.nio.charset.StandardCharsets.*;
+import java.nio.charset.StandardCharsets;
 
 public final class Main
 {
@@ -27,7 +26,7 @@ public final class Main
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Main() { throw new UnsupportedOperationException(); }
+  private Main() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -42,7 +41,7 @@ public final class Main
         // pointing to exact file location of JavaFX modules, or simply setting the classpath as the module path (which
         // causes errors). As far as I can tell, no harm is actually done by loading the JavaFX classes from the classpath.
 
-        if (! (new String(buf, UTF_8).contains("Unsupported JavaFX configuration: classes were loaded from 'unnamed module")))
+        if (! (new String(buf, StandardCharsets.UTF_8).contains("Unsupported JavaFX configuration: classes were loaded from 'unnamed module")))
           super.write(buf, off, len);
       }
     });

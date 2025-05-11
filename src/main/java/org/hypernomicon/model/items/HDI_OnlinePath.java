@@ -114,7 +114,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
     HDI_OfflinePath offlinePath = new HDI_OfflinePath(getSchema(), recordWithPath.getRecordStateBackup());
     offlinePath.folderID = db.getPicturesFolder().getID();
-    try { setFromOfflineValue(offlinePath, Tag.tagPictureFolder); } catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+    try { setFromOfflineValue(offlinePath, Tag.tagPictureFolder); } catch (RelationCycleException e) { throw newAssertionError(e); }
   }
 
 //---------------------------------------------------------------------------

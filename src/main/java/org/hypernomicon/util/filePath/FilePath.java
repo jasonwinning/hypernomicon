@@ -30,10 +30,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
+
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.*;
@@ -329,7 +331,7 @@ public class FilePath implements Comparable<FilePath>
 
       try (InputStream is = proc.getInputStream())
       {
-        String errStr = IOUtils.toString(is, StandardCharsets.UTF_8);
+        String errStr = IOUtils.toString(is, Charset.defaultCharset());
 
         if (errStr.length() > 0)
         {
@@ -371,7 +373,7 @@ public class FilePath implements Comparable<FilePath>
 
       try (InputStream is = proc.getInputStream())
       {
-        String errStr = IOUtils.toString(is, StandardCharsets.UTF_8);
+        String errStr = IOUtils.toString(is, Charset.defaultCharset());
 
         if (errStr.length() > 0)
         {
@@ -571,6 +573,19 @@ public class FilePath implements Comparable<FilePath>
     });
 
     return hasFiles.booleanValue();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final long MAX_SIZE_TO_READ_INTO_STRING_LIST = 500000;
+
+  public List<String> readToStrList() throws IOException
+  {
+    if (size() > MAX_SIZE_TO_READ_INTO_STRING_LIST)
+      throw new IOException("File is too large");
+
+    return FileUtils.readLines(toFile(), Charset.defaultCharset());
   }
 
 //---------------------------------------------------------------------------

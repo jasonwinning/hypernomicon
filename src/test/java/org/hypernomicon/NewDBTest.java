@@ -69,7 +69,7 @@ class NewDBTest
 
         if (path.getFileName().equals(settingsFileNamePath))
         {
-          Preferences prefs = XmlSupport.importPreferences(new ByteArrayInputStream(zis.readAllBytes())).node("org").node("hypernomicon").node("model");
+          Preferences prefs = XmlSupport.importPreferences(new ByteArrayInputStream(zis.readAllBytes()), XML_FILES_CHARSET).node("org").node("hypernomicon").node("model");
 
           String versionStr = prefs.get(PrefKey.SETTINGS_VERSION, "");
 
@@ -81,7 +81,7 @@ class NewDBTest
         }
         else if ("xml".equalsIgnoreCase(FilenameUtils.getExtension(entry.getName())))
         {
-          XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(new ByteArrayInputStream(zis.readAllBytes()));
+          XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(new ByteArrayInputStream(zis.readAllBytes()), XML_FILES_CHARSET.name());
 
           VersionNumber dataVersion = getVersionNumberFromXML(eventReader);
 

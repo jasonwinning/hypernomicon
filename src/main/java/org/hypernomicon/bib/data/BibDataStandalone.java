@@ -17,21 +17,22 @@
 
 package org.hypernomicon.bib.data;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.IOException;
+import java.util.*;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
-import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.BibAuthorsStandalone;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.util.filePath.FilePath;
+
+import org.jbibtex.ParseException;
+import org.jbibtex.TokenMgrException;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
@@ -221,6 +222,61 @@ public abstract class BibDataStandalone extends BibData
     String[] arr = field.getStr().split("-");
 
     field.setStr((arr.length > 0 ? arr[0] : "") + '-' + value);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Parses a text file to detect a bibliographic entry in either RIS or BibTex format. It will use <code>lines</code>
+   * if that is non-null; otherwise it will use <code>filePath</code>.
+   * @param lines Lines of the input file
+   * @param filePath Path to the input file; this is ignored if <code>lines</code> is non-null
+   * @return The RISBibData or BibTexBibData object if an entry is detected; null otherwise
+   * @throws IOException If an error occurs while reading lines from <code>filePath</code>
+   * @throws TokenMgrException If an RIS entry is not detected, this may be thrown while detecting BibTex
+   * @throws ParseException If an RIS entry is not detected, this may be thrown while detecting BibTex
+   */
+  public static BibDataStandalone detectWithinTextFile(List<String> lines, FilePath filePath) throws IOException, TokenMgrException, ParseException
+  {
+    if (lines == null)
+    {
+      if (FilePath.isEmpty(filePath))
+        return null;
+
+      lines = filePath.readToStrList();
+    }
+
+    BibDataStandalone fileBibData = null;
+    TokenMgrException tokenMgrException = null;
+    ParseException parseException = null;
+
+    try
+    {
+      fileBibData = BibTexBibData.create(lines);
+    }
+    catch (TokenMgrException e)
+    {
+      tokenMgrException = e;
+    }
+    catch (ParseException e)
+    {
+      parseException = e;
+    }
+
+    if (fileBibData == null)
+      fileBibData = RISBibData.create(lines);
+
+    if (fileBibData == null)
+    {
+      if (tokenMgrException != null)
+        throw tokenMgrException;
+
+      if (parseException != null)
+        throw parseException;
+    }
+
+    return fileBibData;
   }
 
 //---------------------------------------------------------------------------

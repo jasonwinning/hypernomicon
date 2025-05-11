@@ -24,20 +24,18 @@ import org.hypernomicon.model.Exceptions.*;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
+import java.security.*;
 import java.util.function.Consumer;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContexts;
 
 //---------------------------------------------------------------------------
 
@@ -144,27 +142,21 @@ public class AsyncHttpClient
 
   static CloseableHttpClient createClient()
   {
-    SSLContext sc;
-
     try
     {
-      sc = SSLContext.getInstance("TLS");
+      SSLContext sc = SSLContexts.custom()
+        .loadTrustMaterial(new TrustSelfSignedStrategy())
+        .build();
 
-      TrustManager trustMgr = new X509TrustManager()
-      {
-        @Override public void checkClientTrusted(X509Certificate[] chain, String authType) { return; }
-        @Override public void checkServerTrusted(X509Certificate[] chain, String authType) { return; }
-        @Override public X509Certificate[] getAcceptedIssuers()                            { return null; }
-      };
-
-      sc.init(null, new TrustManager[] { trustMgr }, new SecureRandom());
+      return HttpClientBuilder.create()
+        .setSSLContext(sc)
+        .setSSLHostnameVerifier(new DefaultHostnameVerifier())
+        .build();
     }
-    catch (NoSuchAlgorithmException | KeyManagementException e)
+    catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e)
     {
-      throw new AssertionError("Error while creating SSLContext", e);
+      throw new IllegalStateException("Error while creating HTTP client", e);
     }
-
-    return HttpClientBuilder.create().setSSLContext(sc).setSSLHostnameVerifier((hostname, session) -> true).build();
   }
 
 //---------------------------------------------------------------------------

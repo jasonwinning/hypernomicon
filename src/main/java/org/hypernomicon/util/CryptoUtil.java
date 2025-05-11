@@ -17,6 +17,7 @@
 
 package org.hypernomicon.util;
 
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
@@ -40,8 +41,6 @@ import org.netbeans.spi.keyring.KeyringProvider;
 
 import org.openide.util.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.util.Util.*;
 
@@ -58,7 +57,7 @@ public final class CryptoUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private CryptoUtil() { throw new UnsupportedOperationException("No instances"); }
+  private CryptoUtil() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
 //---------------------------------------------------------------------------
 
@@ -368,7 +367,7 @@ public final class CryptoUtil
     Cipher ecipher = Cipher.getInstance(key.getAlgorithm());
     ecipher.init(Cipher.ENCRYPT_MODE, key, new PBEParameterSpec(salt, iterationCount));
 
-    return new String(Base64.getEncoder().encode(ecipher.doFinal(plainText.getBytes(UTF_8))));
+    return new String(Base64.getEncoder().encode(ecipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8))));
   }
 
 //---------------------------------------------------------------------------
@@ -391,7 +390,7 @@ public final class CryptoUtil
     Cipher dcipher = Cipher.getInstance(key.getAlgorithm());
     dcipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(salt, iterationCount));
 
-    return new String(dcipher.doFinal(Base64.getDecoder().decode(encryptedText)), UTF_8);
+    return new String(dcipher.doFinal(Base64.getDecoder().decode(encryptedText)), StandardCharsets.UTF_8);
   }
 
 //---------------------------------------------------------------------------

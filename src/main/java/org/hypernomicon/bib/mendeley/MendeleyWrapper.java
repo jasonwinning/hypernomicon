@@ -27,13 +27,12 @@ import static org.hypernomicon.util.json.JsonObj.*;
 
 import java.io.*;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
-
-import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.Header;
@@ -193,11 +192,11 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     {
       case get   -> RequestBuilder.get  ().setHeader(HttpHeader.Accept.toString(), mediaType);
 
-      case patch -> RequestBuilder.patch().setEntity(new StringEntity(jsonData, UTF_8))
+      case patch -> RequestBuilder.patch().setEntity(new StringEntity(jsonData, StandardCharsets.UTF_8))
                                           .setHeader(HttpHeader.Content_Type.toString(), mediaType)
                                           .setHeader(HttpHeader.If_Unmodified_Since.toString(), dateTimeToHttpDate(ifUnmodifiedSince));
 
-      case post ->  RequestBuilder.post ().setEntity(new StringEntity(jsonData, UTF_8))
+      case post ->  RequestBuilder.post ().setEntity(new StringEntity(jsonData, StandardCharsets.UTF_8))
                                           .setHeader(HttpHeader.Content_Type.toString(), mediaType)
                                           .setHeader(HttpHeader.Accept.toString(), mediaType);
       default -> null;
@@ -714,7 +713,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     try (InputStream in = Files.newInputStream(filePath.toPath()))
     {
-      jMainObj = parseJsonObj(new InputStreamReader(in, UTF_8));
+      jMainObj = parseJsonObj(new InputStreamReader(in, XML_FILES_CHARSET));
     }
     catch (FileNotFoundException | NoSuchFileException e)
     {
@@ -774,7 +773,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     }
     catch (CancelledTaskException e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
     }
   }
 

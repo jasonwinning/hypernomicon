@@ -42,7 +42,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
   {
     @Override public KeyIDpair clone()
     {
-      try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException e) { throw new AssertionError(e); }
+      try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }
     }
 
     //---------------------------------------------------------------------------

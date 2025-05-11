@@ -28,14 +28,13 @@ import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
 
 import java.io.*;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.Header;
@@ -305,7 +304,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     {
       case post -> RequestBuilder.post()
                                  .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
-                                 .setEntity(new StringEntity(postJsonData, UTF_8));
+                                 .setEntity(new StringEntity(postJsonData, StandardCharsets.UTF_8));
 
       case get  -> RequestBuilder.get();
 
@@ -439,7 +438,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
       :
         ZOTERO_TEMPLATE_FILE_NAME);
 
-      saveStringBuilderToFile(json, filePath);
+      saveStringBuilderToFile(json, filePath, XML_FILES_CHARSET);
     }
     catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
     {
@@ -865,7 +864,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
     try (InputStream in = Files.newInputStream(filePath.toPath()))
     {
-      jMainObj = parseJsonObj(new InputStreamReader(in, UTF_8));
+      jMainObj = parseJsonObj(new InputStreamReader(in, XML_FILES_CHARSET));
     }
     catch (FileNotFoundException | NoSuchFileException e)
     {

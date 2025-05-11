@@ -219,7 +219,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
       modStart();
 
       try { relSet.removeObject(subj, obj, -1); }
-      catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+      catch (RelationCycleException e) { throw newAssertionError(e); }
 
       modEnd();
     }
@@ -569,7 +569,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
       modStart();
 
       try { relSet.removeObject(subj, obj, index); }
-      catch (RelationCycleException e) { throw new AssertionError(getThrowableMessage(e), e); }
+      catch (RelationCycleException e) { throw newAssertionError(e); }
 
       modEnd();
     }

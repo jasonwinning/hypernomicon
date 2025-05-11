@@ -17,35 +17,31 @@
 
 package org.hypernomicon.util.prefs;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.*;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 
-// This class consists of code adapted from java.util.prefs.XmlSupport from JRE 11
+//---------------------------------------------------------------------------
 
+/**
+ * This class consists of code adapted from java.util.prefs.XmlSupport from JRE 11
+ */
 public final class XmlSupport
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private XmlSupport() { throw new UnsupportedOperationException(); }
+  private XmlSupport() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -61,23 +57,21 @@ public final class XmlSupport
    *           Data on input stream does not constitute a valid XML document
    *           with the mandated document type.
    */
-  public static Preferences importPreferences(InputStream is) throws IOException, InvalidPreferencesFormatException
+  public static Preferences importPreferences(InputStream is, Charset encoding) throws IOException, InvalidPreferencesFormatException
   {
-    try
-    {
-      Document doc = loadPrefsDoc(is);
-      String xmlVersion = doc.getDocumentElement().getAttribute("EXTERNAL_XML_VERSION");
-      if (xmlVersion.compareTo(EXTERNAL_XML_VERSION) > 0) throw new InvalidPreferencesFormatException("Exported preferences file format version " + xmlVersion + " is not supported. This java installation can read" + " versions " + EXTERNAL_XML_VERSION + " or older. You may need" + " to install a newer version of JDK.");
+    Document doc = loadPrefsDoc(is, encoding);
+    String xmlVersion = doc.getDocumentElement().getAttribute("EXTERNAL_XML_VERSION");
 
-      TransientPreferences prefsRoot = new TransientPreferences();
-      importSubtree(prefsRoot, doc.getDocumentElement().getChildNodes().item(0));
+    if (xmlVersion.compareTo(EXTERNAL_XML_VERSION) > 0)
+      throw new InvalidPreferencesFormatException(String.join(" ",
+          "Exported preferences file format version", xmlVersion,
+          "is not supported. This Java installation can read versions",
+          EXTERNAL_XML_VERSION, "or older. You may need to install a newer JDK."));
 
-      return prefsRoot;
-    }
-    catch (SAXException e)
-    {
-      throw new InvalidPreferencesFormatException(e);
-    }
+    TransientPreferences prefsRoot = new TransientPreferences();
+    importSubtree(prefsRoot, doc.getDocumentElement().getChildNodes().item(0));
+
+    return prefsRoot;
   }
 
 //---------------------------------------------------------------------------
@@ -86,42 +80,51 @@ public final class XmlSupport
   /**
    * Load an XML document from specified input stream, which must have the
    * requisite DTD URI.
+   * @throws InvalidPreferencesFormatException if the XML format is invalid or unsupported.
    */
-  private static Document loadPrefsDoc(InputStream in) throws SAXException, IOException
+  private static Document loadPrefsDoc(InputStream inputStream, Charset encoding) throws IOException, InvalidPreferencesFormatException
   {
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
-    dbf.setIgnoringElementContentWhitespace(true);
-    dbf.setValidating(true);
-    dbf.setCoalescing(true);
-    dbf.setIgnoringComments(true);
+    documentBuilderFactory.setIgnoringElementContentWhitespace(true);
+    documentBuilderFactory.setValidating(true);
+    documentBuilderFactory.setCoalescing(true);
+    documentBuilderFactory.setIgnoringComments(true);
 
     try
     {
-      DocumentBuilder db = dbf.newDocumentBuilder();
+      DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
-      db.setEntityResolver((pid, sid) ->
+      // publicIdentifier: The public identifier of the external entity being referenced
+      // systemIdentifier: The system identifier of the external entity being referenced.
+
+      documentBuilder.setEntityResolver((publicIdentifier, systemIdentifier) ->
       {
-        if (sid.equals(PREFS_DTD_URI) == false)
-          throw new SAXException("Invalid system identifier: " + sid);
+        if (PREFS_DTD_URI.equals(systemIdentifier) == false)
+          throw new SAXException("Invalid system identifier: " + systemIdentifier);
 
-        InputSource is = new InputSource(new StringReader(PREFS_DTD));
-        is.setSystemId(PREFS_DTD_URI);
-        return is;
+        InputSource inputSource = new InputSource(new StringReader(PREFS_DTD));
+        inputSource.setEncoding(encoding.name());
+        inputSource.setSystemId(PREFS_DTD_URI);
+        return inputSource;
       });
 
-      db.setErrorHandler(new ErrorHandler()
+      documentBuilder.setErrorHandler(new ErrorHandler()
       {
-        @Override public void error     (SAXParseException x) throws SAXException { throw x; }
-        @Override public void fatalError(SAXParseException x) throws SAXException { throw x; }
-        @Override public void warning   (SAXParseException x) throws SAXException { throw x; }
+        @Override public void error     (SAXParseException e) throws SAXException { throw e; }
+        @Override public void fatalError(SAXParseException e) throws SAXException { throw e; }
+        @Override public void warning   (SAXParseException e) throws SAXException { throw e; }
       });
 
-      return db.parse(new InputSource(in));
+      return documentBuilder.parse(new InputSource(inputStream));
     }
     catch (ParserConfigurationException e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
+    }
+    catch (SAXException e)
+    {
+      throw new InvalidPreferencesFormatException(e);
     }
   }
 
@@ -139,27 +142,20 @@ public final class XmlSupport
     if (prefsNode.isRemoved()) return;
 
     NodeList xmlKids = xmlNode.getChildNodes();
-    int numXmlKids = xmlKids.getLength();
 
     NodeList entries = xmlKids.item(0).getChildNodes();
-    for (int i = 0, numEntries = entries.getLength(); i < numEntries; i++)
+    for (int i = 0; i < entries.getLength(); i++)
     {
       Element entry = (Element) entries.item(i);
       prefsNode.put(entry.getAttribute("key"), entry.getAttribute("value"));
     }
 
-    TransientPreferences[] prefsKids = new TransientPreferences[numXmlKids - 1];
-
-    // Get involved children
-    for (int i = 1; i < numXmlKids; i++)
-    {
-      Element xmlKid = (Element) xmlKids.item(i);
-      prefsKids[i - 1] = (TransientPreferences) prefsNode.node(xmlKid.getAttribute("name"));
-    }
-
     // import children
-    for (int i = 1; i < numXmlKids; i++)
-      importSubtree(prefsKids[i - 1], xmlKids.item(i));
+    for (int i = 1; i < xmlKids.getLength(); i++)
+    {
+      if (xmlKids.item(i) instanceof Element xmlKid)
+        importSubtree((TransientPreferences) prefsNode.node(xmlKid.getAttribute("name")), xmlKid);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -170,7 +166,7 @@ public final class XmlSupport
 
   // The actual DTD corresponding to the URI
   private static final String PREFS_DTD = """
-    <?xml version="1.0" encoding="UTF-8"?>
+    <?xml version="1.0" encoding="%s"?>
 
     <!-- DTD for preferences -->
 
@@ -187,12 +183,10 @@ public final class XmlSupport
               name CDATA #REQUIRED >
 
     <!ELEMENT map (entry*) >
-    <!ATTLIST map
-      MAP_XML_VERSION CDATA "0.0"  >
     <!ELEMENT entry EMPTY >
     <!ATTLIST entry
               key CDATA #REQUIRED
-              value CDATA #REQUIRED >""";
+              value CDATA #REQUIRED >""".formatted(XML_FILES_CHARSET);
 
   /**
    * Version number for the format exported preferences files.

@@ -1556,7 +1556,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   public boolean showWorkDialog(HDT_WorkFile workFile, boolean saveFirst, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
-    if (saveFirst && ui.cantSaveRecord()) return false;
+    if (saveFirst && ui.cantSaveRecord(false)) return false;
 
     if (HDT_Work.isUnenteredSet(curWork))
     {

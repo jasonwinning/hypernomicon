@@ -267,7 +267,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @Override public boolean saveToRecord(boolean saveNameIfBlank)
   {
     int fileTypeID = hcbType.selectedID();
-    if ((fileTypeID < 1) && hcbType.getText().isEmpty())
+    if (saveNameIfBlank && (fileTypeID < 1) && hcbType.getText().isEmpty())
       return falseWithErrorPopup("You must enter a file type.", cbType);
 
     if (saveNameIfBlank && tfName.getText().isBlank())
@@ -320,7 +320,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   public boolean showFileDialog(FilePath srcFilePath, boolean saveFirst)
   {
-    if (saveFirst && ui.cantSaveRecord()) return false;
+    if (saveFirst && ui.cantSaveRecord(false)) return false;
 
     fdc = new FileDlgCtrlr("Miscellaneous file", curMiscFile, tfName.getText(), false);
 

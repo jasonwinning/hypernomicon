@@ -96,7 +96,7 @@ public class DragConceptDlgCtrlr extends ModalDialog
     }
     catch (RelationCycleException e)
     {
-      throw new AssertionError(getThrowableMessage(e), e);
+      throw newAssertionError(e);
     }
     finally
     {
@@ -128,7 +128,7 @@ public class DragConceptDlgCtrlr extends ModalDialog
     }
     catch (RelationCycleException e)
     {
-      throw new AssertionError(getThrowableMessage(e), e);
+      throw newAssertionError(e);
     }
     finally
     {

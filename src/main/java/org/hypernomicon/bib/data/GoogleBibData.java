@@ -114,9 +114,8 @@ public final class GoogleBibData extends BibDataStandalone
                             curObj.getArraySafe("authors").strStream().anyMatch(jsonAuthStr -> authKeywords.stream().anyMatch(jsonAuthStr::contains));
 
         GoogleBibData curBD = new GoogleBibData(curObj, queryIsbn);
-        String curTitle = HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork);
-        int len = Math.min(title.length(), curTitle.length());
-        double curDist = (double)alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len)) / (double)len;
+
+        double curDist = titleDistance(alg, title, HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork));
 
         if (authMatch)
         {
@@ -136,8 +135,8 @@ public final class GoogleBibData extends BibDataStandalone
         }
       }
 
-      if (bestDistWithAuthMatch <= 0.25) return bestBDwithAuthMatch;
-      return bestDistNoAuthMatch > 0.25 ? null : bestBDnoAuthMatch;
+      if (bestDistWithAuthMatch <= LEVENSHTEIN_THRESHOLD) return bestBDwithAuthMatch;
+      return bestDistNoAuthMatch > LEVENSHTEIN_THRESHOLD ? null : bestBDnoAuthMatch;
     }
     catch (NullPointerException e)
     {

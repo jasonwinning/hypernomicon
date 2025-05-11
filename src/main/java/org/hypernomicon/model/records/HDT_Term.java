@@ -183,7 +183,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
       }
       catch (SearchKeyException e1)
       {
-        throw new AssertionError(getThrowableMessage(e1), e1);
+        throw newAssertionError(e1);
       }
 
       throw e;

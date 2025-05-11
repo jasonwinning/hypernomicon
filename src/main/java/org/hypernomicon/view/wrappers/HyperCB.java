@@ -392,7 +392,7 @@ public class HyperCB implements CommitableWrapper
   public HyperTableCell handleLackOfStrongMatch()
   {
     if (cb.isEditable() == false)
-      throw new AssertionError(new HDB_InternalError(16432));
+      throw newAssertionError(new HDB_InternalError(16432));
 
     if (dontCreateNewRecord || ui.isShuttingDown())
       return null;
@@ -467,7 +467,7 @@ public class HyperCB implements CommitableWrapper
   public HyperTableCell showPopupToSelectFromMatches(List<HyperTableCell> cells)
   {
     if (cb.isEditable() == false)
-      throw new AssertionError(new HDB_InternalError(16433));
+      throw newAssertionError(new HDB_InternalError(16433));
 
     RecordSelectDlgCtrlr ctrlr = new RecordSelectDlgCtrlr(populator, cells, convertToEnglishChars(cb.getEditor().getText()).strip());
     return ctrlr.showModal() ? populator.getChoiceByID(row, ctrlr.getRecord().getID()) : null;

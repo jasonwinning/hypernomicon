@@ -131,18 +131,16 @@ public final class CrossrefBibData extends BibDataStandalone
       while (curTitle.endsWith("."))
         curTitle = curTitle.substring(0, curTitle.length() - 1);
 
-      curTitle = HDT_RecordBase.makeSortKeyByType(curTitle, hdtWork);
-      int len = Math.min(title.length(), curTitle.length());
-      double curDist = (double)alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len)) / (double)len;
+      double curDist = titleDistance(alg, title, HDT_RecordBase.makeSortKeyByType(curTitle, hdtWork));
 
-      if (curDist < bestDist)
+      if ((curDist < LEVENSHTEIN_THRESHOLD) && (curDist < bestDist))
       {
         bestBD = curBD;
         bestDist = curDist;
       }
     }
 
-    return bestDist > 0.25 ? null : bestBD;
+    return bestBD;
   }
 
 //---------------------------------------------------------------------------

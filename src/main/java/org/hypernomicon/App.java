@@ -124,7 +124,7 @@ public final class App extends Application
     synchronized(App.class)
     {
       if (app != null)
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("App can only be instantiated once.");
 
       app = this;
     }

@@ -221,7 +221,7 @@ public class HyperPath
     }
     catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e)
     {
-      throw new AssertionError(e);
+      throw newAssertionError(e);
     }
     catch (HDB_InternalError e)
     {

@@ -10,4 +10,5 @@ bin
 pom2*.xml
 *.bak
 *.log
+*.patch
 *.iml

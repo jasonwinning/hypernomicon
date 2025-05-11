@@ -379,7 +379,7 @@ public abstract class HDT_RecordBase implements HDT_Record
       }
       catch (HyperDataException e1)
       {
-        throw new AssertionError(e1);
+        throw newAssertionError(e1);
       }
 
       throw e;

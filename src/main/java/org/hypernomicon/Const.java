@@ -33,7 +33,7 @@ public final class Const
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Const() { throw new UnsupportedOperationException(); }
+  private Const() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
 //---------------------------------------------------------------------------
 
@@ -212,7 +212,7 @@ public final class Const
 
       WEB_BUTTONS = "webButtons";
 
-    private PrefKey() { throw new UnsupportedOperationException(); }
+    private PrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
 
 //---------------------------------------------------------------------------
@@ -228,7 +228,7 @@ public final class Const
       QUERYTAB = "queryTabZoom",
       TREETAB  = "treeTabZoom";
 
-    private ZoomPrefKey() { throw new UnsupportedOperationException(); }
+    private ZoomPrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
 
 //---------------------------------------------------------------------------
@@ -247,7 +247,7 @@ public final class Const
       DOI        = "doiSrch",
       ISBN       = "isbnSrch";
 
-    private WebButtonContextPrefKey() { throw new UnsupportedOperationException(); }
+    private WebButtonContextPrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
 
 //---------------------------------------------------------------------------
@@ -267,7 +267,7 @@ public final class Const
       FILE        = "fileID",
       NOTE        = "noteID";
 
-    private RecordIDPrefKey() { throw new UnsupportedOperationException(); }
+    private RecordIDPrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
 
 //---------------------------------------------------------------------------
@@ -286,7 +286,7 @@ public final class Const
       MISC_FILES = "miscFilesFolderID",
       TOPICAL    = "topicalFolderID";
 
-    private FolderIDPrefKey() { throw new UnsupportedOperationException(); }
+    private FolderIDPrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
 
 //---------------------------------------------------------------------------
@@ -311,7 +311,7 @@ public final class Const
       LOWERCASE = "fnLowercase",
       MAX_CHAR = "fnMaxChar";
 
-    private FileNamePrefKey() { throw new UnsupportedOperationException(); }
+    private FileNamePrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
 
 //---------------------------------------------------------------------------
@@ -352,7 +352,7 @@ public final class Const
       BIB_LEFT_HORIZ      = "bibLeftHoriz",
       BIB_RIGHT_HORIZ     = "bibRightHoriz";
 
-    private DividerPositionPrefKey() { throw new UnsupportedOperationException(); }
+    private DividerPositionPrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
 
 //---------------------------------------------------------------------------
@@ -401,7 +401,7 @@ public final class Const
       MGR_FILES       = "htMgrFiles",
       BIB_ENTRIES     = "htBibEntries";
 
-    private TablePrefKey() { throw new UnsupportedOperationException(); }
+    private TablePrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
 
 //---------------------------------------------------------------------------
