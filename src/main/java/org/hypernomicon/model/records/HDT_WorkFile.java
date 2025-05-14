@@ -70,15 +70,6 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void expire()
-  {
-    path.clear();
-    super.expire();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static class FileNameAuthor
   {
     private final String name;

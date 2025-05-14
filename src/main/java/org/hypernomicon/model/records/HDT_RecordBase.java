@@ -212,6 +212,21 @@ public abstract class HDT_RecordBase implements HDT_Record
       return;
     }
 
+    if (db.resolvingPointers() && (type != hdtHub))
+    {
+      // Currently, the only case where a record can get expired
+      // during pointer resolution is if a hub has less than 2
+      // spokes when loading the database from XML.
+      // If other integrity checks are added so that other
+      // record types can get expired during pointer resolution,
+      // this check should be updated.
+      //
+      // See HyperCore.resolvePointers and HDI_OnlineHubSpokes.resolvePointers
+
+      internalErrorPopup(29947);
+      return;
+    }
+
     if (expired) return;
 
     if (dummyFlag == false)
@@ -221,8 +236,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     id = -1;
     expired = true;
-
-    db.setResolvePointersAgain();
   }
 
 //---------------------------------------------------------------------------
@@ -512,7 +525,12 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void resolvePointers() throws HDB_InternalError
+  /**
+   * This method is final because special operations here should be done
+   * at the item level not record level.
+   * @throws HDB_InternalError if a non-expired record has a positive ID
+   */
+  @Override public final void resolvePointers() throws HDB_InternalError
   {
     if (db.resolvingPointers() == false) throw new HDB_InternalError(59928);
 

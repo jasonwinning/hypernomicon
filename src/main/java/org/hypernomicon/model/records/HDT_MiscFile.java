@@ -75,8 +75,6 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
 
   @Override public void expire()
   {
-    path.clear();
-
     nullSwitch(fileType.get(), oldFileType ->
     {
       fileType.setID(-1);

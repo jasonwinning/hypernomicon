@@ -1796,7 +1796,7 @@ public final class MainCtrlr
 
         break;
 
-      case hdtNone : case hdtConcept : case hdtFolder : case hdtWorkFile : case hdtHub :
+      case hdtNone : case hdtAuxiliary : case hdtHub : case hdtConcept : case hdtFolder : case hdtWorkFile :
 
         infoPopup("Records of that type cannot be deleted by this method.");
         return;

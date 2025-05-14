@@ -68,7 +68,7 @@ public class HDI_OfflineHubSpokes extends HDI_OfflineBase
   private static void writeTag(int id, RecordType type, StringBuilder xml)
   {
     if (id > 0)
-      writePointerTag(xml, tagLinkedRecord, id, type, db.records(type).getByID(id).getXMLObjectName());
+      writePointerTag(xml, tagSpokeRecord, id, type, db.records(type).getByID(id).getXMLObjectName());
   }
 
 //---------------------------------------------------------------------------

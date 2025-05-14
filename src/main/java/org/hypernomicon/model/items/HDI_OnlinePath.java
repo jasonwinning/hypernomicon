@@ -62,6 +62,8 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
   private void initPath() { hyperPath = recordWithPath.getPath(); }
 
+  @Override public void expire() { hyperPath.clear(); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

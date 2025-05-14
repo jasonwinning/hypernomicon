@@ -88,48 +88,6 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void resolvePointers() throws HDB_InternalError
-  {
-    super.resolvePointers();
-
-    if (HDT_Record.isEmptyThrowsException(hub, false))
-      hub = null;
-
-    mainText.resolvePointers();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void expire()
-  {
-    boolean expiringHub = false;
-
-    if (hasHub())
-    {
-      int cnt = 0;
-
-      if (hub.getDebate  () != null) cnt++;
-      if (hub.getLabel   () != null) cnt++;
-      if (hub.getNote    () != null) cnt++;
-      if (hub.getPosition() != null) cnt++;
-      if (hub.getConcept () != null) cnt++;
-
-      if (cnt == 2) expiringHub = true;
-    }
-
-    for (KeyWork keyWork : mainText.getKeyWorksUnmod())
-    {
-      if (expiringHub) db.handleKeyWork(hub, keyWork.getRecord(), false); // hub is also getting deleted after this; go ahead and remove it from index
-      db.handleKeyWork(this, keyWork.getRecord(), false);
-    }
-
-    super.expire();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   void modifyMainText()
   {
     modifyNow();

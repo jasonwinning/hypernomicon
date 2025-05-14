@@ -100,7 +100,7 @@ class UnitiesTest
 
 // Disunite the position
 
-    assertTrue(hub.disuniteRecord(hdtPosition, true));
+    assertTrue(hub.disuniteRecord(hdtPosition));
 
     assertFalse(HDT_Record.isEmpty(hub, false));
 
@@ -134,13 +134,13 @@ class UnitiesTest
     assertEquals(label.getMainText().getHtml(), html3);
     assertEquals(hub  .getMainText().getHtml(), html3);
 
-    assertFalse(hub.disuniteRecord(hdtPosition, true));
+    assertFalse(hub.disuniteRecord(hdtPosition));
 
     assertFalse(HDT_Record.isEmpty(hub, false));
 
 // Disunite the note
 
-    assertTrue(hub.disuniteRecord(hdtNote, true));
+    assertTrue(hub.disuniteRecord(hdtNote));
 
     assertTrue(HDT_Record.isEmpty(hub, false));
 

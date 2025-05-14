@@ -30,6 +30,7 @@ import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub.DisplayItem;
 import org.hypernomicon.model.items.Authors;
@@ -63,12 +64,31 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
   @Override public void expire()
   {
-    if (recordWMT.getType() == hdtHub) return;
+    // Spoke and hub records share a single MainText object
+
+    if (recordWMT.getType() == hdtHub)
+    {
+      // For each key work, remove it from the index and run handler (remove from TreeView)
+
+      recordWMT.mainText.getKeyWorksUnmod().forEach(keyWork -> db.handleKeyWork(recordWMT, keyWork.getRecord(), false));
+      return;
+    }
 
     if (hasHub())
-      getHub().disuniteRecord(recordWMT.getType(), false);
+      getHub().disuniteRecord(recordWMT.getType());
 
     getMainText().expire();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void resolvePointers() throws HDB_InternalError
+  {
+    if (HDT_Record.isEmptyThrowsException(recordWMT.hub, false))
+      recordWMT.hub = null;
+
+    getMainText().resolvePointers();
   }
 
 //---------------------------------------------------------------------------
@@ -92,9 +112,12 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
             {
               HDT_RecordWithMainText displayed = (HDT_RecordWithMainText) db.records(displayItem.recordType).getByID(displayItem.recordID);
 
-              mainText.displayItems.add(new MainText.DisplayItem(displayed));
+              if (HDT_Record.isEmpty(displayed, false) == false)
+              {
+                mainText.displayItems.add(new MainText.DisplayItem(displayed));
 
-              db.handleDisplayRecord(mainText, displayed.getMainText(), true);
+                db.handleDisplayRecord(mainText, displayed.getMainText(), true);
+              }
             }
             else if (displayItem.type == diKeyWorks)
             {
@@ -129,13 +152,13 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
           if (recordState.type == hdtHub)
           {
-            HDI_OfflineHubSpokes spokes = (HDI_OfflineHubSpokes) recordState.items.get(tagLinkedRecord);
+            HDI_OfflineHubSpokes spokes = (HDI_OfflineHubSpokes) recordState.items.get(tagSpokeRecord);
 
-            if (spokes.debateID   > 0) db.handleKeyWork(db.debates   .getByID(spokes.debateID  ), keyWorkRecord, true);
-            if (spokes.positionID > 0) db.handleKeyWork(db.positions .getByID(spokes.positionID), keyWorkRecord, true);
-            if (spokes.noteID     > 0) db.handleKeyWork(db.notes     .getByID(spokes.noteID    ), keyWorkRecord, true);
-            if (spokes.conceptID  > 0) db.handleKeyWork(db.concepts  .getByID(spokes.conceptID ), keyWorkRecord, true);
-            if (spokes.labelID    > 0) db.handleKeyWork(db.workLabels.getByID(spokes.labelID   ), keyWorkRecord, true);
+            if (spokes.debateID   > 0) nullSwitch(db.debates   .getByID(spokes.debateID  ), debate   -> db.handleKeyWork(debate  , keyWorkRecord, true));
+            if (spokes.positionID > 0) nullSwitch(db.positions .getByID(spokes.positionID), position -> db.handleKeyWork(position, keyWorkRecord, true));
+            if (spokes.noteID     > 0) nullSwitch(db.notes     .getByID(spokes.noteID    ), note     -> db.handleKeyWork(note    , keyWorkRecord, true));
+            if (spokes.conceptID  > 0) nullSwitch(db.concepts  .getByID(spokes.conceptID ), concept  -> db.handleKeyWork(concept , keyWorkRecord, true));
+            if (spokes.labelID    > 0) nullSwitch(db.workLabels.getByID(spokes.labelID   ), label    -> db.handleKeyWork(label   , keyWorkRecord, true));
           }
           else
             db.handleKeyWork(recordWMT, keyWorkRecord, true);

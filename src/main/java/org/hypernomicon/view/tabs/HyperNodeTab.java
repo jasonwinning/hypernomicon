@@ -156,7 +156,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     mnuDisunite.setOnAction(event ->
     {
       if (ui.cantSaveRecord()) return;
-      record.getHub().disuniteRecord(record.getType(), true);
+      record.getHub().disuniteRecord(record.getType());
       record.modifyNow();
       ui.update();
     });

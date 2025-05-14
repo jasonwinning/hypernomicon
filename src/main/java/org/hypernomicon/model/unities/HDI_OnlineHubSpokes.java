@@ -21,7 +21,9 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.HDI_Schema;
@@ -93,28 +95,35 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void resolvePointers() throws HDB_InternalError
   {
+    // All of the logic in this function is for cases where
+    // a hub has less than 2 spokes when the database is first
+    // loaded from XML. Under normal circumstances, the hub gets
+    // deleted when HDI_OnlineMainTextAndHub.expire calls
+    // HDT_Hub.disuniteRecord.
+
     int spokeCount = 0;
 
-    for (HDT_RecordWithMainText spoke : List.copyOf(hub.spokes.values()))
+    Iterator<Entry<RecordType, HDT_RecordWithMainText>> iterator = hub.spokes.entrySet().iterator();
+
+    while (iterator.hasNext())
     {
-      if (HDT_Record.isEmptyThrowsException(spoke, false))
-        hub.spokes.remove(spoke.getType());
+      Entry<RecordType, HDT_RecordWithMainText> entry = iterator.next();
+
+      if (HDT_Record.isEmptyThrowsException(entry.getValue(), false))
+        iterator.remove();
       else
         spokeCount++;
     }
 
-    if (spokeCount == 1)  // If only one spoke left, no reason for hub to exist...
+    if (spokeCount == 1)  // If less than 2 spokes left, no reason for hub to exist...
     {
-      HDT_RecordWithMainText spoke = List.copyOf(hub.spokes.values()).get(0);
-      hub.disuniteRecord(spoke.getType(), false);
+      HDT_RecordWithMainText spoke = hub.spokes.values().iterator().next();
+      hub.disuniteRecord(spoke.getType());  // This will delete the hub
       spoke.modifyNow();
-
-      spokeCount = 0;
     }
-                                       // hub.expire should be called here, not db.deleteRecord, because pointer resolution is already in progress.
-    if (spokeCount == 0) hub.expire(); // HDI_OnlineHubSpokes.resolvePointers (this function) is ultimately called by HyperCore.resolvePointers.
-                                       // After the pointers for the hub record items are resolved, HyperCore.resolvePointers checks to see if the
-  }                                    // record became expired during the process. If so, the hub is removed from the HyperCore (i.e., it is deleted).
+    else if (spokeCount == 0)
+      db.deleteRecord(hub);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

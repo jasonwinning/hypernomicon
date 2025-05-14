@@ -213,7 +213,9 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
       Entry<Integer, HDT_DT> entry = it.next();
       HDT_DT record = entry.getValue();
 
-      if (record.isExpired() == false)
+      boolean wasExpired = record.isExpired();
+
+      if (wasExpired == false)
       {
         if (record.getID() < 1)
         {
@@ -224,8 +226,22 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
         record.resolvePointers();
       }
 
-      if (record.isExpired()) // See HDI_OnlineHubSpokes.resolvePointers
+      if (record.isExpired())
       {
+        if ((wasExpired == false) && (type != RecordType.hdtHub))
+        {
+          // Currently, the only case where a record can get expired
+          // during pointer resolution is if a hub has less than 2
+          // spokes when loading the database from XML.
+          // If other integrity checks are added so that other
+          // record types can get expired during pointer resolution,
+          // this check should be updated.
+          //
+          // See HDT_RecordBase.expire and HDI_OnlineHubSpokes.resolvePointers
+
+          throw new HDB_InternalError(88387);
+        }
+
         int id = entry.getKey();
 
         it.remove();

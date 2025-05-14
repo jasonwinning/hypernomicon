@@ -148,7 +148,7 @@ class MentionsAndDisplayIndexTest
     assertFalse(db.keyWorkMentionerStream(work, hdtWorkLabel).anyMatch(rec -> rec == debate));
     assertTrue (db.keyWorkMentionerStream(work, hdtWorkLabel).anyMatch(rec -> rec == label ));
 
-    debate.getHub().disuniteRecord(hdtWorkLabel, true);
+    debate.getHub().disuniteRecord(hdtWorkLabel);
 
     assertTrue(db.keyWorkMentionerStream(work, true ).anyMatch(rec -> rec == debate));
     assertTrue(db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == debate));
@@ -243,7 +243,7 @@ class MentionsAndDisplayIndexTest
     assertTrue(db.firstMentionsSecond(note  , term, false, new MutableBoolean(false)));
     assertTrue(db.firstMentionsSecond(debate, term, false, new MutableBoolean(false)));
 
-    assertTrue(debate.getHub().disuniteRecord(hdtDebate, true));
+    assertTrue(debate.getHub().disuniteRecord(hdtDebate));
 
     assertTrue(db.firstMentionsSecond(note  , term, false, new MutableBoolean(false)));
     assertTrue(db.firstMentionsSecond(debate, term, false, new MutableBoolean(false)));
@@ -272,7 +272,7 @@ class MentionsAndDisplayIndexTest
     assertTrue(firstDisplaysSecond(debate, concept));
     assertTrue(firstDisplaysSecond(note  , concept));
 
-    assertTrue(debate.getHub().disuniteRecord(hdtDebate, true));
+    assertTrue(debate.getHub().disuniteRecord(hdtDebate));
 
     assertTrue(firstDisplaysSecond(debate, concept));
     assertTrue(firstDisplaysSecond(note  , concept));

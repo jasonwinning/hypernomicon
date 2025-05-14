@@ -117,16 +117,6 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void expire()
-  {
-    mainText.getKeyWorksUnmod().forEach(keyWork -> db.handleKeyWork(this, keyWork.getRecord(), false));
-
-    super.expire();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public final void modifyNow()
   {
     if (db.runningConversion || alreadyModifying) return;
@@ -250,13 +240,12 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 
   /**
-   * Disconnects a spoke from the hub and optionally deletes the hub if it has no more spokes.
+   * Disconnects a spoke from the hub and deletes the hub if it has no more spokes.
    *
    * @param spokeType the type of the spoke to disconnect.
-   * @param deleteHub if true, deletes the hub if it has no more spokes.
    * @return true if the spoke was successfully disconnected, false if the spoke was not found.
    */
-  public boolean disuniteRecord(RecordType spokeType, boolean deleteHub)
+  public boolean disuniteRecord(RecordType spokeType)
   {
     // Disconnect the spoke
 
@@ -273,9 +262,9 @@ public class HDT_Hub extends HDT_RecordWithMainText
     // Done disconnecting, now need to disconnect other spoke if only one left
 
     if (spokes.size() == 1)
-      return disuniteRecord(List.copyOf(spokes.keySet()).get(0), deleteHub);
+      return disuniteRecord(List.copyOf(spokes.keySet()).get(0));
 
-    if (deleteHub && spokes.isEmpty())
+    if (spokes.isEmpty())
       db.deleteRecord(this);  // Hub now has no more spokes, must be sacrificed
 
     return true;

@@ -53,29 +53,9 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   private Authors getAuthors() { return ((HDT_RecordWithAuthors<?>) record).getAuthors(); }
 
+  @Override public void expire()                                   { getAuthors().expire(); }
+  @Override public void resolvePointers() throws HDB_InternalError { getAuthors().resolvePointers(); }
   @Override public int getResultCount(Tag tag)                     { return getAuthors().size(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void expire()
-  {
-    if (record.getType() == hdtMiscFile)
-      db.getObjectList(rtAuthorOfFile, record, false).clear();
-    else
-      getAuthors().expire();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void resolvePointers() throws HDB_InternalError
-  {
-    if (record.getType() == hdtMiscFile)
-      db.resolvePointersByRelation(rtAuthorOfFile, record);
-    else
-      getAuthors().resolvePointers();
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

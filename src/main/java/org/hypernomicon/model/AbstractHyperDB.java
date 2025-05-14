@@ -256,11 +256,11 @@ public abstract class AbstractHyperDB
    * @param oldMT The previous MainText object the record was pointing to
    * @param newMT The new MainText object the record will be pointing to
    */
-  public void replaceMainText(MainText oldMT, MainText newMT)                               { displayedAtIndex.replaceItem(oldMT, newMT); }
+  public void replaceMainText(MainText oldMT, MainText newMT) { displayedAtIndex.replaceItem(oldMT, newMT); }
 
-  public void rebuildMentions()                                                             { if (loaded) mentionsIndex.startRebuild(); }
-  public void updateMentioner(HDT_Record record)                                            { if (loaded) mentionsIndex.updateMentioner(record); }
-  public boolean waitUntilRebuildIsDone()                                                   { return mentionsIndex.waitUntilRebuildIsDone(); }
+  public void rebuildMentions()                               { if (loaded) mentionsIndex.startRebuild(); }
+  public void updateMentioner(HDT_Record record)              { if (loaded) mentionsIndex.updateMentioner(record); }
+  public boolean waitUntilRebuildIsDone()                     { return mentionsIndex.waitUntilRebuildIsDone(); }
 
   public boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait) {
     return mentionsIndex.firstMentionsSecond(mentioner, target, descOnly, choseNotToWait); }
@@ -684,7 +684,7 @@ public abstract class AbstractHyperDB
   private void addBibEntryKeyItem() { addItem(hdtWork,   hdcBibEntryKey, rtNone, tagBibEntryKey           ); }
 
   private void addPersonNameItem () { addItem(hdtPerson, hdcPersonName,  rtNone, tagFirstName, tagLastName); }
-  private void addHubSpokesItem  () { addItem(hdtHub,    hdcHubSpokes,   rtNone, tagLinkedRecord          ); }
+  private void addHubSpokesItem  () { addItem(hdtHub,    hdcHubSpokes,   rtNone, tagSpokeRecord           ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -720,17 +720,6 @@ public abstract class AbstractHyperDB
     getOrphans(rtParentLabelOfLabel      , HDT_WorkLabel  .class).forEach(label    -> label   .parentLabels    .add(workLabels  .getByID(1)));
     getOrphans(rtParentGroupOfGroup      , HDT_PersonGroup.class).forEach(group    -> group   .parentGroups    .add(personGroups.getByID(1)));
     getOrphans(rtParentGlossaryOfGlossary, HDT_Glossary   .class).forEach(glossary -> glossary.parentGlossaries.add(glossaries  .getByID(1)));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setResolvePointersAgain()
-  {
-    if ((deletionInProgress == false) && (pointerResolutionInProgress == false))
-      internalErrorMessage(44928);
-
-    resolveAgain = true;
   }
 
 //---------------------------------------------------------------------------
@@ -1271,12 +1260,35 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This is the main entry point for deleting a record in the database. This calls
+   * the record's expire method to do pre-deletion cleanup (which may include deleting
+   * other records) and then calls resolvePointers to actually remove the record, and
+   * any other record that became expired in the process, from their HyperCores (this
+   * is the actual deletion).
+   * <p>
+   * This method may be called during record expiration or during
+   * pointer resolution. In either of those cases, it will clear the search key and
+   * just expire the passed-in record and exit to prevent an unnecessary round of
+   * pointer resolution.
+   * <p>
+   * If pointer resolution was already in progress, the flag is set to do another
+   * iteration of pointer resolution, at which point the expired record will be cleaned
+   * up by HyperCore.resolvePointers.
+   * @param record The record to delete
+   */
   public void deleteRecord(HDT_Record record)
   {
-    Objects.requireNonNull(record, "Record to delete is null");
-
     if (deletionInProgress == false)
       startMentionsRebuildAfterDelete = false;
+
+    Objects.requireNonNull(record, "Record to delete is null.");
+
+    if ((record instanceof HDT_Hub hub) && (hub.getSpokes().count() > 0))
+    {
+      internalErrorMessage(58372);
+      return;
+    }
 
     if (record.isExpired())
     {
@@ -1292,6 +1304,14 @@ public abstract class AbstractHyperDB
 
     if (record.isDummy() == false)
     {
+      if (record.getType() != hdtConcept)
+      {
+        if (strNotNullOrBlank(record.getSearchKey()))
+          startMentionsRebuildAfterDelete = true;
+
+        try { setSearchKey(record, "", false, false); } catch (SearchKeyException e) { throw newAssertionError(e); }
+      }
+
       if (mentionsIndex.isRebuilding())
       {
         startMentionsRebuildAfterDelete = true;
@@ -1299,14 +1319,15 @@ public abstract class AbstractHyperDB
       }
       else
         mentionsIndex.removeRecord(record);
-
-      if (record.getType() != hdtConcept)
-        try { record.setSearchKey(""); } catch (SearchKeyException e) { throw newAssertionError(e); }
     }
 
-    if (deletionInProgress)
+    if (deletionInProgress || pointerResolutionInProgress)
     {
       record.expire();
+
+      if (pointerResolutionInProgress)
+        resolveAgain = true;
+
       return;
     }
 

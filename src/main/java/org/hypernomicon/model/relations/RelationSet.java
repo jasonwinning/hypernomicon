@@ -692,7 +692,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
           if (trackOrphans && objList.isEmpty() && (isUnstoredRecord(subj.getID(), subjType) == false))
             orphans.add(subj);
 
-          if ((HDT_Record.isEmpty(subj, false) == false) && (HDT_Record.isEmpty(obj, false) == false))  // Only run change handlers if the record is not in the process of being deleted
+          if (HDT_Record.isEmpty(obj, false) == false)  // Only run change handlers if the record is not in the process of being deleted
             if (changeHandlers.size() > 0)
               Platform.runLater(() -> changeHandlers.forEach(handler -> handler.handle(subj, obj, false)));
         }

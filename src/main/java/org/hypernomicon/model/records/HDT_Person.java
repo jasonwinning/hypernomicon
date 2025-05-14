@@ -159,8 +159,6 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     while (investigations.isEmpty() == false)
       db.deleteRecord(investigations.get(0));
 
-    picture.clear();
-
     nullSwitch(subfield.get(), oldSubfield ->
     {
       subfield.setID(-1);
