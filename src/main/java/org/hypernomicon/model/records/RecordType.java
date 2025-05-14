@@ -17,9 +17,7 @@
 
 package org.hypernomicon.model.records;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.hypernomicon.model.Tag.*;
 
@@ -32,6 +30,10 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public enum RecordType
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   hdtNone           (HDT_Record         .class),
 
   hdtFolder         (HDT_Folder         .class),  // Folders must be brought online first. See HyperPath.assignNameInternal

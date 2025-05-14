@@ -52,7 +52,7 @@ public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extend
   public abstract void getToOfflineValue(HDI_Derived val, Tag tag);
 
   /**
-   * @throws HDB_InternalError - if a non-expired record has a positive ID
+   * @throws HDB_InternalError if a non-expired record has a positive ID
    */
   public void resolvePointers() throws HDB_InternalError { }
 

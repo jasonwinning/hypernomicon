@@ -79,6 +79,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
   @Override public final boolean hasMainText() { return true; }
   @Override public final boolean hasDesc()     { return true; }
   @Override public final MainText getDesc()    { return mainText; }
+
   public MainText getMainText()                { return mainText; }
   public HDT_Hub getHub()                      { return hub; }
   public boolean hasHub()                      { return hub != null; }

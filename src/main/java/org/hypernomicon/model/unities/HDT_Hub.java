@@ -22,21 +22,14 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_Debate;
-import org.hypernomicon.model.records.HDT_Note;
-import org.hypernomicon.model.records.HDT_Position;
-import org.hypernomicon.model.records.HDT_WorkLabel;
-import org.hypernomicon.model.records.RecordState;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
+
+//---------------------------------------------------------------------------
 
 public class HDT_Hub extends HDT_RecordWithMainText
 {
@@ -48,12 +41,16 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
   final Map<RecordType, HDT_RecordWithMainText> spokes = new EnumMap<>(RecordType.class);
 
+//---------------------------------------------------------------------------
+
   public HDT_Hub(RecordState xmlState, DatasetAccessor<HDT_Hub> dataset)
   {
     super(xmlState, dataset);
 
     hub = this;
   }
+
+//---------------------------------------------------------------------------
 
   public HDT_Note      getNote    () { return (HDT_Note     ) spokes.get(hdtNote     ); }
   public HDT_Concept   getConcept () { return (HDT_Concept  ) spokes.get(hdtConcept  ); }
@@ -222,7 +219,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
 
     HDT_Hub hub;
 
-    if (spoke1.hasHub())      hub = spoke1.getHub();
+    if      (spoke1.hasHub()) hub = spoke1.getHub();
     else if (spoke2.hasHub()) hub = spoke2.getHub();
     else                      hub = db.createNewBlankRecord(hdtHub);
 

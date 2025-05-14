@@ -24,12 +24,17 @@ import java.util.List;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Debate extends HDT_RecordWithMainText
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Debate> largerDebates, subDebates;
   public final List<HDT_Position> largerPositions, subPositions;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Debate(RecordState xmlState, DatasetAccessor<HDT_Debate> dataset)
@@ -43,7 +48,6 @@ public class HDT_Debate extends HDT_RecordWithMainText
     subPositions = getSubjList(rtParentDebateOfPos   );
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName()          { return name(); }

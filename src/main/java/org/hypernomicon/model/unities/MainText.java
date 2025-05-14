@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.*;
 
+//---------------------------------------------------------------------------
+
 /**
  * Every record that has a main HTML description field refers to an object of
  * this class, which stores the HTML. All such record classes are subclasses of
@@ -42,6 +44,8 @@ import org.hypernomicon.model.records.*;
  */
 public class MainText
 {
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public enum DisplayItemType { diKeyWorks, diDescription, diRecord }
@@ -100,6 +104,13 @@ public class MainText
   void setInternal(String newHtml)                { htmlAndPlainText = new HtmlAndPlainText(newHtml); }
   public HDT_RecordWithMainText getRecord()       { return recordWMT; }
   private boolean hasKeyWork(HDT_Record rec)      { return getKeyWork(rec) != null; }
+
+  /**
+   * For each key work, it will remove it from this object. Then it will
+   * unassign it from all records sharing this MainText (hub and spokes)
+   * in the keyWorksIndex and call the database handler to remove it from
+   * the Tree view for each of those records.
+   */
   void expire()                                   { removeKeyWorks(false); }
 
   /**
@@ -296,6 +307,14 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * For each key work (only if the key work record is expired if onlyIfExpired
+   * is true), it will remove it from this object. Then it will unassign
+   * it from all records sharing this MainText (hub and spokes) in the
+   * keyWorksIndex and call the database handler to remove it from the Tree
+   * view for each of those records.
+   * @param onlyIfExpired Whether removal depends on the KeyWork being expired
+   */
   private void removeKeyWorks(boolean onlyIfExpired)
   {
     Iterator<KeyWork> keyWorkIT = keyWorks.iterator();

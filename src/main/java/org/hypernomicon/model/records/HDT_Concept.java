@@ -32,14 +32,19 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Concept extends HDT_RecordWithMainText
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Concept> subConcepts, parentConcepts;
   public final HyperSubjPointer<HDT_Term, HDT_Concept> term;
   public final HyperObjPointer<HDT_Concept, HDT_Glossary> glossary;
   public final HyperObjPointer<HDT_Concept, HDT_ConceptSense> sense;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Concept(RecordState xmlState, DatasetAccessor<HDT_Concept> dataset)
@@ -53,7 +58,6 @@ public class HDT_Concept extends HDT_RecordWithMainText
     subConcepts = getSubjList(rtParentConceptOfConcept);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String name()                           { return term.isNull() ? "" : term.get().name(); }

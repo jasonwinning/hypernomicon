@@ -27,22 +27,24 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
-import org.hypernomicon.model.items.Author;
-import org.hypernomicon.model.items.Authors;
-import org.hypernomicon.model.items.FileAuthors;
-import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
+//---------------------------------------------------------------------------
+
 public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<Authors>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperPath path;
 
   public final HyperObjPointer<HDT_MiscFile, HDT_Work> work;
   public final HyperObjPointer<HDT_MiscFile, HDT_FileType> fileType;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_MiscFile(RecordState xmlState, DatasetAccessor<HDT_MiscFile> dataset)
@@ -55,8 +57,7 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
     path = new HyperPath(getObjPointer(rtFolderOfMiscFile), this);
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------//---------------------------------------------------------------------------
 
   public boolean setAuthors(List<HDT_Person> list) { return updateObjectsFromList(rtAuthorOfFile, list); }
 

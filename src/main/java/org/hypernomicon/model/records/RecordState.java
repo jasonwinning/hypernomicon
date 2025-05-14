@@ -26,9 +26,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HDX_Element;
@@ -39,8 +37,14 @@ import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub;
 import org.hypernomicon.model.unities.HDI_OfflineHubSpokes;
 
+//---------------------------------------------------------------------------
+
 public class RecordState
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final Map<Tag, HDI_OfflineBase> items;
   public final RecordType type;
   final String sortKeyAttr, searchKey;
@@ -56,7 +60,6 @@ public class RecordState
   String simpleName;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   // This is only called when a new, blank record is being created as a result of
   // user interaction with the UI, like clicking the Create New button
@@ -68,7 +71,6 @@ public class RecordState
     nullSwitch(db.getMainTextTemplate(type), this::setMainText);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public RecordState(RecordType type, int id)

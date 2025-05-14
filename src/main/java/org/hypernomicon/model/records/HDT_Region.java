@@ -26,11 +26,19 @@ import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.model.relations.HyperObjPointer;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Region extends HDT_RecordBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Institution> institutions;
 
   public final HyperObjPointer<HDT_Region, HDT_Country> country;
+
+//---------------------------------------------------------------------------
 
   public HDT_Region(RecordState xmlState, DatasetAccessor<HDT_Region> dataset)
   {
@@ -40,7 +48,6 @@ public class HDT_Region extends HDT_RecordBase
     country = getObjPointer(rtCountryOfRegion);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String getCBText()        { return name(); }

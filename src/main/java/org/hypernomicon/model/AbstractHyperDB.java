@@ -878,7 +878,7 @@ public abstract class AbstractHyperDB
 
       prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
-      prefs.exportSubtree(dos);  // Hardcoded to export in UTF_8
+      prefs.exportSubtree(dos);  // Hardcoded to export in UTF-8
     }
     catch (IOException | BackingStoreException e)
     {

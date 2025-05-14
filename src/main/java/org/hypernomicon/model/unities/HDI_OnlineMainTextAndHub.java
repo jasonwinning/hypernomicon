@@ -30,9 +30,7 @@ import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithAuthors;
-import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub.DisplayItem;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OnlineBase;
@@ -41,13 +39,17 @@ import org.hypernomicon.model.items.HDI_OnlineBase;
 
 public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainTextAndHub>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HDT_RecordWithMainText recordWMT;
 
   private HDT_Hub getHub()       { return recordWMT.getHub(); }
   private boolean hasHub()       { return recordWMT.hasHub(); }
   private MainText getMainText() { return recordWMT.getMainText(); }
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public HDI_OnlineMainTextAndHub(HDI_Schema schema, HDT_RecordWithMainText record)
   {

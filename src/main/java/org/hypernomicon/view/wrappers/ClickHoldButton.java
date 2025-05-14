@@ -32,6 +32,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 
@@ -124,8 +125,12 @@ public class ClickHoldButton
       });
     });
 
-    btn.setOnMouseReleased(mouseEvent ->
+    btn.addEventFilter(MouseEvent.MOUSE_RELEASED, event ->
     {
+      // This needs to be an event filter because if clicking the button
+      // opens a modal popup, the onMouseReleased event won't fire until
+      // after the modal popup closes.
+
       mouseDown = false;
       mouseDownCtr++;
     });

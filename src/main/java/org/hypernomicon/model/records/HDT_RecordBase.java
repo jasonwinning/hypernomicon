@@ -18,33 +18,18 @@
 package org.hypernomicon.model.records;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.*;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
-import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.*;
-import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.relations.HyperObjList;
-import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.model.relations.HyperSubjList;
-import org.hypernomicon.model.relations.HyperSubjPointer;
-import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.relations.RelationSet.*;
-import org.hypernomicon.model.unities.HDI_OnlineMainTextAndHub;
-import org.hypernomicon.model.unities.HDI_OnlineHubSpokes;
-import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.model.unities.*;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
@@ -72,6 +57,8 @@ public abstract class HDT_RecordBase implements HDT_Record
   private RecordState xmlState;
 
   private boolean online = false, expired = false;
+
+//---------------------------------------------------------------------------
 
   @Override public final Instant getViewDate()             { return type.getDisregardDates() ? null : viewDate; }
   @Override public final Instant getCreationDate()         { return type.getDisregardDates() ? null : creationDate; }

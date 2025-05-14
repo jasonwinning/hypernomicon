@@ -19,6 +19,8 @@ package org.hypernomicon.model.unities;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+//---------------------------------------------------------------------------
+
 /**
  * Instantiating this class implies that a record has at least one description field. Calling {@code getDesc()}
  * retrieves the default description field.<br>

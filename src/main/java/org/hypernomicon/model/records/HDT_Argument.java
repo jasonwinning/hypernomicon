@@ -22,10 +22,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.items.Author;
@@ -41,9 +38,15 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 public class HDT_Argument extends HDT_RecordWithMainText
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Position> positions;
   public final List<HDT_Argument> targetArgs, responseArgs;
   public final List<HDT_Work> works;
+
+//---------------------------------------------------------------------------
 
   public HDT_Argument(RecordState xmlState, DatasetAccessor<HDT_Argument> dataset)
   {
@@ -55,7 +58,6 @@ public class HDT_Argument extends HDT_RecordWithMainText
     responseArgs = getSubjList(rtTargetArgOfArg);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName()                      { return name(); }

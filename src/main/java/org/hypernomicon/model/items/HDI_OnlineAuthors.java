@@ -53,6 +53,8 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   private Authors getAuthors() { return ((HDT_RecordWithAuthors<?>) record).getAuthors(); }
 
+  @Override public int getResultCount(Tag tag)                     { return getAuthors().size(); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -73,6 +75,25 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
       db.resolvePointersByRelation(rtAuthorOfFile, record);
     else
       getAuthors().resolvePointers();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  {
+    if (searchLinkedRecords)
+      getAuthors().forEach(author -> list.add(author.getNameLastFirst()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public String getResultTextForTag(Tag tag)
+  {
+    return getAuthors().stream().map(Author::getNameLastFirst)
+                                .filter(name -> name.length() > 0)
+                                .collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------
@@ -160,33 +181,6 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
       val.authors.add(offlineAuthor);
     });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
-  {
-    if (searchLinkedRecords)
-      getAuthors().forEach(author -> list.add(author.getNameLastFirst()));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public String getResultTextForTag(Tag tag)
-  {
-    return getAuthors().stream().map(Author::getNameLastFirst)
-                                .filter(name -> name.length() > 0)
-                                .collect(Collectors.joining("; "));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int getResultCount(Tag tag)
-  {
-    return getAuthors().size();
   }
 
 //---------------------------------------------------------------------------

@@ -33,6 +33,10 @@ import org.hypernomicon.model.relations.HyperSubjList;
 
 public class HDT_Institution extends HDT_RecordBase
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final int UNIV_SYS_INST_TYPE_ID    = 1,
                           SCHOOL_INST_TYPE_ID      = 5,
                           COLLEGE_SYS_INST_TYPE_ID = 6,
@@ -48,7 +52,6 @@ public class HDT_Institution extends HDT_RecordBase
   public final HyperObjPointer<HDT_Institution, HDT_Institution    > parentInst;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public HDT_Institution(RecordState xmlState, DatasetAccessor<HDT_Institution> dataset)
   {
@@ -63,7 +66,6 @@ public class HDT_Institution extends HDT_RecordBase
     parentInst = getObjPointer(rtParentInstOfInst);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void setCity(String newCity) { updateTagString(tagCity, newCity); }

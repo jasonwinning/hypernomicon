@@ -30,11 +30,16 @@ import org.hypernomicon.model.items.HDI_OnlineBase;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 {
-  private final HDT_Hub hub;
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private final HDT_Hub hub;
+
 //---------------------------------------------------------------------------
 
   public HDI_OnlineHubSpokes(HDI_Schema schema, HDT_Hub hub)
@@ -44,7 +49,6 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
     this.hub = hub;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { return; }
@@ -56,11 +60,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void setFromOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
-    setOnlineSpoke(hdtDebate,    val.debateID  );
-    setOnlineSpoke(hdtPosition,  val.positionID);
-    setOnlineSpoke(hdtNote,      val.noteID    );
+    setOnlineSpoke(hdtDebate   , val.debateID  );
+    setOnlineSpoke(hdtPosition , val.positionID);
+    setOnlineSpoke(hdtNote     , val.noteID    );
     setOnlineSpoke(hdtWorkLabel, val.labelID   );
-    setOnlineSpoke(hdtConcept,   val.conceptID );
+    setOnlineSpoke(hdtConcept  , val.conceptID );
   }
 
 //---------------------------------------------------------------------------

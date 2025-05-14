@@ -24,11 +24,16 @@ import java.util.List;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
+//---------------------------------------------------------------------------
+
 public class HDT_WorkLabel extends HDT_RecordWithMainText
 {
-  public final List<HDT_WorkLabel> parentLabels, subLabels;
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public final List<HDT_WorkLabel> parentLabels, subLabels;
+
 //---------------------------------------------------------------------------
 
   public HDT_WorkLabel(RecordState xmlState, DatasetAccessor<HDT_WorkLabel> dataset)
@@ -39,7 +44,6 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
     subLabels    = getSubjList(rtParentLabelOfLabel);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName()          { return name(); }

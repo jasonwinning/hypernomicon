@@ -33,8 +33,14 @@ import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.util.filePath.FilePath;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Folder> childFolders;
   public final List<HDT_Note> notes;
 
@@ -44,6 +50,8 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   private final HyperPath path;
   private boolean checkedForExistence;
+
+//---------------------------------------------------------------------------
 
   public HDT_Folder(RecordState xmlState, DatasetAccessor<HDT_Folder> dataset)
   {
@@ -60,7 +68,6 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     path = new HyperPath(getObjPointer(rtParentFolderOfFolder), this);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public boolean isSpecial(boolean checkSubfolders) { return db.isSpecialFolder(getID(), checkSubfolders); }

@@ -26,10 +26,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,16 +37,10 @@ import org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.items.Author;
-import org.hypernomicon.model.items.BibliographicDate;
-import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.items.WorkAuthors;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
-import org.hypernomicon.model.relations.HyperObjList;
-import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.model.relations.HyperSubjList;
-import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.settings.WorkSearchKeySettings;
 import org.hypernomicon.settings.WorkSearchKeySettings.WorkSearchKeyConfig;
@@ -57,8 +48,14 @@ import org.hypernomicon.util.SplitString;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<WorkAuthors>, Comparable<HDT_Work>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final WorkAuthors authors;
 
   public final List<HDT_Person> authorRecords;
@@ -71,7 +68,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public final HyperObjPointer<HDT_Work, HDT_WorkType> workType;
   public final HyperObjPointer<HDT_Work, HDT_Work> largerWork;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Work(RecordState xmlState, DatasetAccessor<HDT_Work> dataset)

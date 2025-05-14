@@ -90,10 +90,10 @@
         <BorderPane pickOnBounds="false" prefHeight="200.0" prefWidth="200.0">
           <center>
             <HBox alignment="CENTER" pickOnBounds="false" spacing="4.0">
-              <Button fx:id="btnSelectedWork" maxWidth="164.0" minWidth="60.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="164.0" text="Use Selected Work Record" />
+              <Button fx:id="btnSelectedWork" mnemonicParsing="false" prefHeight="25.0" text="Use Selected Work Record" />
               <Button fx:id="btnNewWork" mnemonicParsing="false" prefHeight="25.0" text="Create New Work Record" />
-                     <Button fx:id="btnNewMisc" mnemonicParsing="false" text="Create New Misc. File Record" />
-              <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="60.0" text="Cancel" />
+                     <Button fx:id="btnNewMisc" mnemonicParsing="false" prefHeight="25.0" text="Create New Misc. File Record" />
+              <Button fx:id="btnCancel" cancelButton="true" maxWidth="70.0" minWidth="70.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="70.0" text="Cancel" />
             </HBox>
           </center>
         </BorderPane>

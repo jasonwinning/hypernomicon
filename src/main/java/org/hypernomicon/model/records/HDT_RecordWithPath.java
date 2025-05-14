@@ -33,7 +33,6 @@ public interface HDT_RecordWithPath extends HDT_Record
   HyperPath getPath();
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   default boolean  pathNotEmpty()   { return nullSwitch(getPath(), false, HyperPath::isNotEmpty); }
   default FilePath filePath()       { return nullSwitch(getPath(), null , HyperPath::filePath); }

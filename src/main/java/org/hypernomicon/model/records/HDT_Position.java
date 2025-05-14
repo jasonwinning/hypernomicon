@@ -27,13 +27,18 @@ import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Position extends HDT_RecordWithMainText
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Debate> largerDebates, subDebates;
   public final List<HDT_Position> largerPositions, subPositions;
   public final List<HDT_Argument> arguments;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Position(RecordState xmlState, DatasetAccessor<HDT_Position> dataset)
@@ -48,7 +53,6 @@ public class HDT_Position extends HDT_RecordWithMainText
     subDebates   = getSubjList(rtParentPosOfDebate );
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName()          { return name(); }

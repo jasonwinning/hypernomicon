@@ -28,12 +28,17 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPath
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Note> parentNotes, subNotes;
   public final HyperObjPointer<HDT_Note, HDT_Folder> folder;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Note(RecordState xmlState, DatasetAccessor<HDT_Note> dataset)
@@ -45,7 +50,6 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPa
     folder = getObjPointer(rtFolderOfNote);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public boolean setParentNotes(List<HDT_Note> list) { return updateObjectsFromList(rtParentNoteOfNote, list); }

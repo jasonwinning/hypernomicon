@@ -21,9 +21,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.*;
@@ -34,10 +32,13 @@ import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.model.Tag;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public interface HDT_Record
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   int keyNdx();
   int getID();
   RecordType getType();

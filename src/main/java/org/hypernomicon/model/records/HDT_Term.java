@@ -39,11 +39,16 @@ import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.MainText;
 
+//---------------------------------------------------------------------------
+
 public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescription
 {
-  public final HyperObjList<HDT_Term, HDT_Concept> concepts;
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public final HyperObjList<HDT_Term, HDT_Concept> concepts;
+
 //---------------------------------------------------------------------------
 
   public HDT_Term(RecordState xmlState, DatasetAccessor<HDT_Term> dataset)
@@ -53,7 +58,6 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
     concepts = getObjList(rtConceptOfTerm);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName()       { return name(); }

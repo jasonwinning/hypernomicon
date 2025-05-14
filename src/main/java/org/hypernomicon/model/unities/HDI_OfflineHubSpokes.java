@@ -23,16 +23,17 @@ import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.Map;
 
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HDX_Element;
-import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.*;
 import org.hypernomicon.model.items.HDI_OfflineBase;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public class HDI_OfflineHubSpokes extends HDI_OfflineBase
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   int noteID = -1, conceptID = -1, debateID = -1, positionID = -1, labelID = -1;

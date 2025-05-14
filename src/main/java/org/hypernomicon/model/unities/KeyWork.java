@@ -27,11 +27,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithAuthors;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.settings.WorkSearchKeySettings;
 import org.hypernomicon.settings.WorkSearchKeySettings.CitationParenthesesOption;
 import org.hypernomicon.settings.WorkSearchKeySettings.WorkSearchKeyConfig;
@@ -146,14 +142,12 @@ public class KeyWork implements Comparable<KeyWork>
   private boolean searchKeyInitialized = false;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public KeyWork(HDT_RecordWithAuthors<? extends Authors> recordWithAuthors)
   {
     recordPtr = new OnlineRecordPointer(recordWithAuthors);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public KeyWork(RecordType recordType, int recordID, String searchKey, boolean online)
@@ -167,7 +161,6 @@ public class KeyWork implements Comparable<KeyWork>
     searchKeyInitialized = true;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public RecordType getRecordType()     { return recordPtr.getType(); }

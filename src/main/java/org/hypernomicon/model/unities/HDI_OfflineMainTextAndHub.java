@@ -17,9 +17,7 @@
 
 package org.hypernomicon.model.unities;
 
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HDX_Element;
-import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.*;
 import org.hypernomicon.model.items.HDI_OfflineBase;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
@@ -30,12 +28,9 @@ import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+//---------------------------------------------------------------------------
 
 public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 {
@@ -70,7 +65,6 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
   private final Map<RecordType, Set<Integer>> usedKeyWorks;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public HDI_OfflineMainTextAndHub(HDI_Schema schema, RecordState recordState)
   {
@@ -83,7 +77,6 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
     usedKeyWorks = new EnumMap<>(RecordType.class);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   int getHubID()               { return hubID; }

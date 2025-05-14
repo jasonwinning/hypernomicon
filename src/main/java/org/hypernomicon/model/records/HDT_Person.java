@@ -22,9 +22,7 @@ import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Field;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PersonStatus;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Rank;
+import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.SplitString;
@@ -48,6 +46,10 @@ import static org.hypernomicon.util.Util.*;
 
 public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWithPath
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public final List<HDT_Institution> institutions;
   public final List<HDT_Work> works;
   public final List<HDT_MiscFile> miscFiles;
@@ -60,7 +62,6 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
   private final HyperPath picture;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Person(RecordState xmlState, DatasetAccessor<HDT_Person> dataset)
@@ -84,7 +85,6 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public String getWebURL()                                { return getTagString(tagWebURL); }
   public String getOrcID()                                 { return getTagString(tagORCID); }
@@ -101,6 +101,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   @Override public String listName()        { return getNameLastFirst(false); }
   @Override public HyperPath getPath()      { return picture; }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public PersonName getName(boolean engChar)
