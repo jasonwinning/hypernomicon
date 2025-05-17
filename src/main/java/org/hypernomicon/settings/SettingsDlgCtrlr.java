@@ -360,7 +360,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     }
     catch (IOException e)
     {
-      e.printStackTrace();
+      logThrowable(e);
     }
 
     return null;

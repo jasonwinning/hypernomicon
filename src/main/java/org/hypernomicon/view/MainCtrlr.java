@@ -1953,7 +1953,7 @@ public final class MainCtrlr
           items.add(makeTopicalMenu(relFilePath.toString(), entryFilePath));
       });
     }
-    catch (DirectoryIteratorException | IOException e) { e.printStackTrace(); }
+    catch (DirectoryIteratorException | IOException e) { logThrowable(e); }
 
     if (items.size() > separatorPos)
       items.add(separatorPos, new SeparatorMenuItem());

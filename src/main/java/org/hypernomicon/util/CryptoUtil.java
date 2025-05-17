@@ -128,7 +128,7 @@ public final class CryptoUtil
         {
           return futureResult.get(SHOW_PROGRESS_DIALOG_THRESHOLD_MS, TimeUnit.MILLISECONDS);
         }
-        catch (TimeoutException ex)
+        catch (TimeoutException e)
         {
           return finishReadingWithProgressDialog(futureResult, taskMessage);
         }

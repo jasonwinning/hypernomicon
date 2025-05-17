@@ -402,7 +402,7 @@ public final class UIUtil
     }
     catch (Exception e)
     {
-      e.printStackTrace();
+      logThrowable(e);
     }
   }
 
@@ -825,7 +825,7 @@ public final class UIUtil
    */
   public static boolean falseWithErrPopupCond(boolean showErrMsg, Throwable e)
   {
-    return showErrMsg && falseWithErrorPopup(getThrowableMessage(e));
+    return showErrMsg && falseWithErrorPopup(e);
   }
 
   public static boolean falseWithInternalErrorPopup(int num) { return falseWithErrorPopup(new HDB_InternalError(num)); }

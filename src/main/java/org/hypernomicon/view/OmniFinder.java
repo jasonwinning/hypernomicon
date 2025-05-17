@@ -23,6 +23,7 @@ import static org.hypernomicon.view.OmniFinder.TierEnum.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
@@ -58,12 +59,13 @@ public class OmniFinder
   private final EnumMap<TierEnum, ImmutableSet<RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
   private final Set<HDT_Record> records = new HashSet<>();
   private final RecordType typeFilter;
+  private final AtomicBoolean stopRequested = new AtomicBoolean(false);
   private final boolean incremental;
 
   private volatile String query = "";
   private volatile Iterator<HDT_Record> source = null;
   private FinderThread finderThread = null;
-  private volatile boolean stopRequested = false, showingMore = false;
+  private volatile boolean showingMore = false;
   public Runnable doneHndlr = null;
 
   public boolean noResults()  { return collEmpty(records); }
@@ -535,11 +537,8 @@ public class OmniFinder
 
       while (true)
       {
-        if (stopRequested)
-        {
-          stopRequested = false;
+        if (stopRequested.compareAndSet(true, false))
           return;
-        }
 
         if ((query.equals(lastQuery) == false) || (showingMore != lastShowingMore))
           startOver();
@@ -639,7 +638,7 @@ public class OmniFinder
   {
     if (isRunning())
     {
-      stopRequested = true;
+      stopRequested.set(true);
 
       try { finderThread.join(); } catch (InterruptedException e) { noOp(); }
     }

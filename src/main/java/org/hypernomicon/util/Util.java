@@ -18,6 +18,8 @@
 package org.hypernomicon.util;
 
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.model.Exceptions;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.util.filePath.FilePath;
 
 import java.io.*;
@@ -1140,7 +1142,7 @@ public final class Util
     timeline.getKeyFrames().add(new KeyFrame(Duration.millis(delayMS), event ->
     {
       try { runnable.run(); }
-      catch (Exception e) { e.printStackTrace(); }  // Handle the exception or log it as needed
+      catch (Exception e) { logThrowable(e); }
     }));
     timeline.play();
   }
@@ -1329,12 +1331,12 @@ public final class Util
    *
    * @param <T> the type of the object to be tested and passed to the consumer
    * @param obj the object to be tested for null
-   * @param ex the consumer function to be executed if the object is non-null
+   * @param consumer the consumer function to be executed if the object is non-null
    */
-  public static <T> void nullSwitch(T obj, Consumer<T> ex)
+  public static <T> void nullSwitch(T obj, Consumer<T> consumer)
   {
     if (obj != null)
-      ex.accept(obj);
+      consumer.accept(obj);
   }
 
   /**
@@ -1365,12 +1367,12 @@ public final class Util
    * @param <T2> the type of the object to be tested for null
    * @param obj the object to be tested for null
    * @param def the default value to return if the object is null
-   * @param ex the function to apply to the object if it is non-null
+   * @param function the function to apply to the object if it is non-null
    * @return the result of applying the function to the object if it is non-null, otherwise the default value
    */
-  public static <T1, T2> T1 nullSwitch(T2 obj, T1 def, Function<T2, T1> ex)
+  public static <T1, T2> T1 nullSwitch(T2 obj, T1 def, Function<T2, T1> function)
   {
-    return obj == null ? def : ex.apply(obj);
+    return obj == null ? def : function.apply(obj);
   }
 
 //---------------------------------------------------------------------------
@@ -2033,6 +2035,43 @@ public final class Util
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  /**
+   * Logs the stack trace for a throwable, preventing HDB_InternalError
+   * or any Throwable having HDB_InternalError in its chain of causes
+   * logged twice.
+   * @param e The throwable
+   */
+  public static void logThrowable(Throwable e)
+  {
+    Exceptions.log(e);
+  }
+
+  /**
+   * Creates a new NullPointerException caused by an HDB_InternalError with the specified
+   * characteristics
+   * @param internalErrorNum The internal error number
+   * @param immediatelyLog Whether to immediately log the internal error
+   * @return The new NullPointerException
+   */
+  public static NullPointerException newNullPointerInternalError(int internalErrorNum, boolean immediatelyLog)
+  {
+    HDB_InternalError internalError = new HDB_InternalError(internalErrorNum, immediatelyLog);
+    NullPointerException npe = new NullPointerException(getThrowableMessage(internalError));
+    npe.initCause(internalError);
+    return npe;
+  }
+
+  /**
+   * Returns an {@code AssertionError} that wraps an HDB_InternalError.
+   *
+   * @param internalErrorNum The number for the internal error
+   * @return AssertionError containing the original exception
+   */
+  public static AssertionError newAssertionError(int internalErrorNum)
+  {
+    return newAssertionError(new HDB_InternalError(internalErrorNum));
+  }
 
   /**
    * Returns an {@code AssertionError} with a user-friendly message extracted from the given throwable.

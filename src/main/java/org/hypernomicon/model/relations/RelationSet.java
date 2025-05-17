@@ -236,7 +236,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtFolderOfNote             -> new RelationSet<>(relType, HDT_Note         .class, HDT_Folder         .class);
       case rtPictureFolderOfPerson    -> new RelationSet<>(relType, HDT_Person       .class, HDT_Folder         .class);
 
-      default                         -> throw newAssertionError(new HDB_InternalError(84723));
+      default                         -> throw newAssertionError(84723);
     };
   }
 
@@ -635,8 +635,9 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   {
     if ((subj == null) || (obj == null))
     {
-      internalErrorPopup(30299);
-      throw new NullPointerException(getThrowableMessage(new HDB_InternalError(30299)));
+      NullPointerException e = newNullPointerInternalError(30299, false);
+      errorPopup(e);
+      throw e;
     }
 
     List<HDT_Obj> objList = subjToObjList.get(subj);

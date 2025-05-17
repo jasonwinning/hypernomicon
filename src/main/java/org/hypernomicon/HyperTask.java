@@ -18,6 +18,7 @@
 package org.hypernomicon;
 
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -97,12 +98,12 @@ public abstract class HyperTask
 
     @Override protected void failed()
     {
-      Throwable ex = getException();
+      Throwable e = getException();
 
-      if (ex instanceof HyperDataException)
-        Platform.runLater(() -> errorPopup(ex));
-      else if (ex != null)
-        ex.printStackTrace();
+      if (e instanceof HyperDataException)
+        Platform.runLater(() -> errorPopup(e));
+      else if (e != null)
+        logThrowable(e);
     }
 
     /**
@@ -112,9 +113,9 @@ public abstract class HyperTask
      */
     private Throwable catchException()
     {
-      Throwable ex = getException();
+      Throwable e = getException();
       ((ObjectProperty<Throwable>) exceptionProperty()).set(null);
-      return ex;
+      return e;
     }
   }
 

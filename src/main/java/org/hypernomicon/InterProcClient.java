@@ -71,7 +71,7 @@ public final class InterProcClient
     List<String> lines = null;
 
     try { lines = filePath.readToStrList(); }
-    catch (IOException e) { e.printStackTrace(); }
+    catch (IOException e) { logThrowable(e); }
 
     if (collEmpty(lines) == false) lines.forEach(line ->
     {

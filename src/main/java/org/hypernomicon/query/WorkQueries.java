@@ -26,6 +26,7 @@ import javafx.concurrent.Worker.State;
 
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -121,7 +122,7 @@ public final class WorkQueries
         }
         catch (IOException e)
         {
-          e.printStackTrace();
+          logThrowable(e);
         }
 
         csvFile = new ArrayList<>();
@@ -139,7 +140,7 @@ public final class WorkQueries
             }
             catch (IOException e)
             {
-              e.printStackTrace();
+              logThrowable(e);
             }
           }
         });
@@ -159,7 +160,7 @@ public final class WorkQueries
         }
         catch (IOException e)
         {
-          e.printStackTrace();
+          logThrowable(e);
         }
       }
 

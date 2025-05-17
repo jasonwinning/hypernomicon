@@ -150,7 +150,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       }
       catch (Throwable th)
       {
-        th.printStackTrace();
+        logThrowable(th);
       }
 
       event.consume();
@@ -164,7 +164,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       }
       catch (Throwable th)
       {
-        th.printStackTrace();
+        logThrowable(th);
       }
 
       event.consume();
@@ -181,7 +181,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
         }
         catch (Throwable th)
         {
-          th.printStackTrace();
+          logThrowable(th);
         }
 
         event.consume();
@@ -198,7 +198,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
         }
         catch (Throwable th)
         {
-          th.printStackTrace();
+          logThrowable(th);
         }
 
         event.consume();
@@ -215,7 +215,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
         }
         catch (Throwable th)
         {
-          th.printStackTrace();
+          logThrowable(th);
         }
 
         event.consume();
@@ -230,7 +230,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       }
       catch (Throwable th)
       {
-        th.printStackTrace();
+        logThrowable(th);
       }
 
       event.consume();

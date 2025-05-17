@@ -261,7 +261,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     db.addCloseDBHandler(() ->
     {
-      try { initTTV(); } catch (IOException e) { e.printStackTrace(); }
+      try { initTTV(); } catch (IOException e) { logThrowable(e); }
     });
 
     db.addDBLoadedHandler(() -> loaded = true);

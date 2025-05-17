@@ -2593,7 +2593,7 @@ public abstract class AbstractHyperDB
       case FolderIDPrefKey.MISC_FILES : miscFilesFolder = folder; break;
       case FolderIDPrefKey.TOPICAL    : topicalFolder   = folder; break;
 
-      default                         : throw newAssertionError(new HDB_InternalError(59294));
+      default                         : throw newAssertionError(59294);
     }
   }
 

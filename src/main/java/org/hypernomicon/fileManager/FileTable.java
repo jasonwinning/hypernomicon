@@ -23,10 +23,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.Const.*;
 
 import java.io.IOException;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -45,12 +42,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Control;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
@@ -146,7 +138,7 @@ class FileTable extends DragNDropContainer<FileRow>
       }
       catch (Throwable th)
       {
-        th.printStackTrace();
+        logThrowable(th);
       }
 
       event.consume();
@@ -160,7 +152,7 @@ class FileTable extends DragNDropContainer<FileRow>
       }
       catch (Throwable th)
       {
-        th.printStackTrace();
+        logThrowable(th);
       }
 
       event.consume();
@@ -175,7 +167,7 @@ class FileTable extends DragNDropContainer<FileRow>
       }
       catch (Throwable th)
       {
-        th.printStackTrace();
+        logThrowable(th);
       }
 
       event.consume();

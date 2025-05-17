@@ -20,6 +20,10 @@ package org.hypernomicon.model;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
@@ -30,6 +34,44 @@ import org.hypernomicon.model.records.RecordType;
 public final class Exceptions
 {
   private Exceptions() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Logs the stack trace for a throwable, preventing HDB_InternalError
+   * or any Throwable having HDB_InternalError in its chain of causes
+   * logged twice.
+   * @param e The throwable
+   */
+  public static void log(Throwable e)
+  {
+    HDB_InternalError internalError = getInternalError(e);
+
+    if ((internalError == null) || internalError.logged.compareAndSet(false, true))
+      e.printStackTrace();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static HDB_InternalError getInternalError(Throwable e)
+  {
+    Set<Throwable> seen = new HashSet<>();
+
+    while (e != null)
+    {
+      if (seen.add(e) == false) // If already seen, break to prevent infinite loop
+        return null;
+
+      if (e instanceof HDB_InternalError)
+        return (HDB_InternalError) e;
+
+      e = e.getCause();
+    }
+
+    return null;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -166,9 +208,33 @@ public final class Exceptions
   public static class HDB_InternalError extends HyperDataException
   {
     private final int num;
+    private final AtomicBoolean logged = new AtomicBoolean(false);
 
-    public HDB_InternalError(int num             ) { super("Internal error #" + String.format("%05d", num)   ); this.num = num; }
-    public HDB_InternalError(int num, Throwable e) { super("Internal error #" + String.format("%05d", num), e); this.num = num; }
+    public HDB_InternalError(int num)
+    {
+      this(num, true);
+    }
+
+    public HDB_InternalError(int num, Throwable e)
+    {
+      super(createMessage(num), e);
+      this.num = num;
+      log(this);
+    }
+
+    public HDB_InternalError(int num, boolean immediatelyLog)
+    {
+      super(createMessage(num));
+      this.num = num;
+
+      if (immediatelyLog)
+        log(this);
+    }
+
+    private static String createMessage(int num)
+    {
+      return "Internal error #" + String.format("%05d", num);
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -19,6 +19,7 @@ package org.hypernomicon.settings;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
 import java.util.ArrayList;
@@ -430,7 +431,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
     }
     catch (BackingStoreException e)
     {
-      e.printStackTrace();
+      logThrowable(e);
     }
   }
 

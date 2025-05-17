@@ -122,7 +122,7 @@ public class FolderTreeWatcher
       }
       catch (IOException e)
       {
-        e.printStackTrace();
+        logThrowable(e);
         errorPopup("Unable to start watch service: " + getThrowableMessage(e));
         return;
       }
@@ -528,7 +528,7 @@ public class FolderTreeWatcher
 
         sentResponse = false;
 
-        try { Files.delete(db.getResponseMessageFilePath(false).toPath()); } catch (IOException e) { e.printStackTrace(); }
+        try { Files.delete(db.getResponseMessageFilePath(false).toPath()); } catch (IOException e) { logThrowable(e); }
 
         if (requestType == hmtUnlockRequest)
         {
@@ -572,7 +572,7 @@ public class FolderTreeWatcher
       }
       catch (IOException e)
       {
-        e.printStackTrace();
+        logThrowable(e);
         return true;
       }
     }
@@ -609,7 +609,7 @@ public class FolderTreeWatcher
     }
     catch (IOException e)
     {
-      e.printStackTrace();
+      logThrowable(e);
       return falseWithErrorPopup("Unable to start watch service: " + getThrowableMessage(e));
     }
 
@@ -658,7 +658,7 @@ public class FolderTreeWatcher
       }
       catch (IOException e)
       {
-        e.printStackTrace();
+        logThrowable(e);
       }
     }
 

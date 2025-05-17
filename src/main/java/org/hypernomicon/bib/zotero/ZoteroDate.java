@@ -22,10 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -101,7 +98,7 @@ public final class ZoteroDate
     }
     catch (Exception e)
     {
-      e.printStackTrace();
+      logThrowable(e);
       return;
     }
 

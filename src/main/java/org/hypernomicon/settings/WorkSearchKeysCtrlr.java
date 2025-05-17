@@ -108,7 +108,7 @@ public class WorkSearchKeysCtrlr implements SettingsControl
     }
     catch (IOException e)
     {
-      e.printStackTrace();
+      logThrowable(e);
       return null;
     }
   }

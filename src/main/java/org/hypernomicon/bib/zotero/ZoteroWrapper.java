@@ -442,7 +442,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     }
     catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
     {
-      e.printStackTrace();
+      logThrowable(e);
     }
   }
 

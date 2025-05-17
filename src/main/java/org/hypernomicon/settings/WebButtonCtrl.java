@@ -127,7 +127,7 @@ abstract class WebButtonCtrl
       }
       catch (BackingStoreException e)
       {
-        e.printStackTrace();
+        logThrowable(e);
       }
 
       int ndx = 1;

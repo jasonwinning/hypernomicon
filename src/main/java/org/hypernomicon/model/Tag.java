@@ -20,18 +20,18 @@ package org.hypernomicon.model;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.RecordType;
 
 //---------------------------------------------------------------------------
 
 public enum Tag
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   tagPerson          ("person"            , "Person"                   , hdtPerson         , true),
   tagPersonStatus    ("person_status"     , "Status"                   , hdtPersonStatus   , true),
   tagInstitution     ("institution"       , "Institution"              , hdtInstitution    , true),
@@ -132,7 +132,6 @@ public enum Tag
   private static final Map<RecordType, Tag> objTypeToTag;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   Tag(String name, String header)
   {
@@ -167,7 +166,7 @@ public enum Tag
       if (tag == tagNone) return;
 
       if (numToTag.containsKey(tag.num))
-        throw newAssertionError(new HDB_InternalError(99215));  // Duplicate tag hash codes
+        throw newAssertionError(99215);  // Duplicate tag hash codes
 
       numToTag .put(tag.num , tag);
       nameToTag.put(tag.name, tag);

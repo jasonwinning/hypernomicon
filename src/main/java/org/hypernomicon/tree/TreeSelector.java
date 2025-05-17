@@ -28,7 +28,6 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -189,7 +188,7 @@ public class TreeSelector
   public boolean select(HDT_Record record)
   {
     if (base == null)
-      return falseWithErrorPopup(new HDB_InternalError(91827));
+      return falseWithInternalErrorPopup(91827);
 
     if (record == null) return false;
 

@@ -26,7 +26,6 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.RecordSelectDlgCtrlr;
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
@@ -392,7 +391,7 @@ public class HyperCB implements CommitableWrapper
   public HyperTableCell handleLackOfStrongMatch()
   {
     if (cb.isEditable() == false)
-      throw newAssertionError(new HDB_InternalError(16432));
+      throw newAssertionError(16432);
 
     if (dontCreateNewRecord || ui.isShuttingDown())
       return null;
@@ -467,7 +466,7 @@ public class HyperCB implements CommitableWrapper
   public HyperTableCell showPopupToSelectFromMatches(List<HyperTableCell> cells)
   {
     if (cb.isEditable() == false)
-      throw newAssertionError(new HDB_InternalError(16433));
+      throw newAssertionError(16433);
 
     RecordSelectDlgCtrlr ctrlr = new RecordSelectDlgCtrlr(populator, cells, convertToEnglishChars(cb.getEditor().getText()).strip());
     return ctrlr.showModal() ? populator.getChoiceByID(row, ctrlr.getRecord().getID()) : null;
