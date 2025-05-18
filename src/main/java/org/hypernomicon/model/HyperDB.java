@@ -312,6 +312,8 @@ public final class HyperDB extends AbstractHyperDB
 
   @Override public void fileNoLongerInUse(FilePath filePath)
   {
+    if (recordDeletionTestInProgress) return;
+
     if (isDeletionInProgress() == false)
     {
       if (confirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be permanently deleted?", false))

@@ -21,13 +21,14 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.LibraryWrapper.LibraryType.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 
@@ -37,6 +38,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.dialogs.base.ModalDialog;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.application.Platform;
@@ -53,7 +55,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   @FXML private TextField tfParent, tfFolderName, tfRefMgrUserID;
-  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID;
+  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest;
   @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private ToggleGroup tgLink;
 
@@ -75,6 +77,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     setToolTip(btnClose, "Close this window");
 
+    btnNukeTest           .setDisable (db.isLoaded() == false);
     btnSaveRefMgrSecrets  .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
     btnRemoveRefMgrSecrets.setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
     btnUseMendeleyID      .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false) || (db.getBibLibrary().type() != ltMendeley));
@@ -266,36 +269,82 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FXML private void btnLoadClick()
+  {
+    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (FilePath.isEmpty(transientDBFilePath))
+    {
+      errorPopup("Transient DB path not entered.");
+      return;
+    }
+
+    FilePath hdbFilePath = getHdbFile(transientDBFilePath);
+
+    if (FilePath.isEmpty(hdbFilePath))
+    {
+      errorPopup("HDB file not found.");
+      return;
+    }
+
+    stage.hide();
+
+    Platform.runLater(() -> ui.openDB(hdbFilePath));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private void btnDeleteClick()
+  {
+    deleteTransientDB(true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean deleteTransientDB(boolean deleteRootFolder)
   {
     MutableBoolean nonEmptyWithNoHdbFile = new MutableBoolean(false);
 
     FilePath transientDBFilePath = getTransientDBFilePath(true, true, nonEmptyWithNoHdbFile);
 
-    if (FilePath.isEmpty(transientDBFilePath)) return;
+    if (FilePath.isEmpty(transientDBFilePath)) return false;
 
     if (transientDBFilePath.exists() == false)
     {
       falseWithErrorPopup("Path \"" + transientDBFilePath + "\" does not exist.", tfFolderName);
-      return;
+      return false;
     }
 
     String prompt = nonEmptyWithNoHdbFile.isTrue() ?
-      "Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file. Are you sure you want to delete it?"
+      (deleteRootFolder ?
+        "Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file. Are you sure you want to delete it?"
+      :
+        "Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file. Are you sure you want to delete all contents?")
     :
-      "Delete folder \"" + transientDBFilePath + "\" and everything in it?";
+      (deleteRootFolder ?
+        "Delete folder \"" + transientDBFilePath + "\" and everything in it?"
+      :
+        "Delete all contents of folder \"" + transientDBFilePath + "\"?");
 
     if (confirmDialog(prompt, false) == false)
-      return;
+      return false;
 
     try
     {
-      transientDBFilePath.deleteDirectory(true);
+      if (deleteRootFolder)
+        transientDBFilePath.deleteDirectory(true);
+      else
+        FileUtils.cleanDirectory(transientDBFilePath.toFile());
     }
     catch (IOException e)
     {
       errorPopup("One or more files were not deleted. Reason: " + getThrowableMessage(e));
+      return false;
     }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -427,6 +476,144 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     if (strNotNullOrBlank(userID))
       app.prefs.put(PrefKey.BIB_UNIT_TEST_USER_ID, userID);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void nukeTest()
+  {
+    if (db.isLoaded() == false) return;
+
+    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (db.getRootPath().equals(transientDBFilePath) == false)
+    {
+      errorPopup("This can only be done when the transient DB is loaded.");
+      return;
+    }
+
+    if (confirmDialog("This will delete most of the records in the entire database. Proceed?", false) == false)
+      return;
+
+    db.recordDeletionTestInProgress = true;
+
+    Random random = new Random();
+
+    EnumSet<RecordType> types = EnumSet.allOf(RecordType.class);
+    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
+    List<RecordType> typeList = List.copyOf(types);
+
+    deleteCtr = 0;
+
+    while (types.stream().anyMatch(recordType -> (nextRecordToDelete(recordType) > 0)))
+    {
+      RecordType randomType;
+      int randomID;
+
+      do
+      {
+        randomType = typeList.get(random.nextInt(typeList.size()));
+
+        randomID = db.records(randomType).getRandomUsedID(random);
+      }
+      while (randomID < 1);
+
+      HDT_Record record = db.records(randomType).getByID(randomID);
+
+      boolean doDelete = (HDT_Record.isEmpty(record, false) == false) && (db.isProtectedRecord(record, true) == false);
+
+      // Glossary should only be deleted if it has no concepts
+      if (doDelete && (randomType == hdtGlossary))
+      {
+        HDT_Glossary glossary = (HDT_Glossary) record;
+
+        if (glossary.concepts.isEmpty() == false)
+          doDelete = false;
+      }
+
+      if (doDelete)
+      {
+        db.deleteRecord(record);
+
+        System.out.println(String.format("%5d %s", randomID, randomType.name().substring(3)));
+
+        noOp(deleteCtr++);
+
+        if ((deleteCtr % 100) == 0)
+          System.out.println("----------------------------------------------------- Records deleted: " + deleteCtr);
+      }
+    }
+
+    System.out.println("Record deletion complete.");
+
+    db.recordDeletionTestInProgress = false;
+    db.rebuildMentions();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static int deleteCtr;
+
+  private int nextRecordToDelete(RecordType recordType)
+  {
+    return db.records(recordType).stream().filter(record -> (HDT_Record.isEmpty(record, false) == false))
+                                          .filter(record -> (db.isProtectedRecord(record, true) == false))
+                                          .map(HDT_Record::getID)
+                                          .findFirst()
+                                          .orElse(-1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void copyForNukeTest()
+  {
+    if (db.isLoaded() == false)
+      return;
+
+    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (db.getRootPath().equals(transientDBFilePath))
+    {
+      errorPopup("Transient DB is currently loaded.");
+      return;
+    }
+
+    if (deleteTransientDB(false) == false)
+      return;
+
+    try
+    {
+      db.getHdbPath().copyTo(transientDBFilePath.resolve(db.getHdbPath().getNameOnly()) , false);
+
+      FileUtils.copyDirectory(db.xmlPath().toFile(), transientDBFilePath.resolve(DEFAULT_XML_PATH).toFile());
+
+      String command = "xcopy \"" + db.getRootPath() + "\" \"" + transientDBFilePath + "\" /t /e /y";
+
+      ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", command);
+      processBuilder.inheritIO();  // Redirects output to console
+      Process process = processBuilder.start();
+      process.waitFor(); // Wait for process to complete
+    }
+    catch (IOException | InterruptedException e)
+    {
+      errorPopup("Error while copying: " + getThrowableMessage(e));
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private FilePath getHdbFile(FilePath dir)
+  {
+    File[] files = dir.toFile().listFiles((_dir, name) -> name.endsWith(".hdb"));
+
+    if ((files == null) || (files.length == 0))
+      return null;
+
+    return new FilePath(files[0]);
   }
 
 //---------------------------------------------------------------------------

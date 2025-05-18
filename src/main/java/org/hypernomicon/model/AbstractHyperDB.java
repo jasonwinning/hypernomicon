@@ -203,8 +203,9 @@ public abstract class AbstractHyperDB
   private boolean loaded       = false, pointerResolutionInProgress     = false, deletionInProgress      = false, resolveAgain = false,
                   initialized  = false, startMentionsRebuildAfterDelete = false, alreadyShowedUpgradeMsg = false;
 
-  public boolean runningConversion     = false, // suppresses "modified date" updating
-                 viewTestingInProgress = false; // suppresses "view date" updating
+  public boolean runningConversion            = false,  // suppresses "modified date" updating
+                 viewTestingInProgress        = false,  // suppresses "view date" updating
+                 recordDeletionTestInProgress = false;  // suppresses file deletion prompts and mentions index building
 
 //---------------------------------------------------------------------------
   @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Record subject, HDT_Record object, boolean affirm); }
@@ -258,7 +259,7 @@ public abstract class AbstractHyperDB
    */
   public void replaceMainText(MainText oldMT, MainText newMT) { displayedAtIndex.replaceItem(oldMT, newMT); }
 
-  public void rebuildMentions()                               { if (loaded) mentionsIndex.startRebuild(); }
+  public void rebuildMentions()                               { if (loaded && !recordDeletionTestInProgress) mentionsIndex.startRebuild(); }
   public void updateMentioner(HDT_Record record)              { if (loaded) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                     { return mentionsIndex.waitUntilRebuildIsDone(); }
 
@@ -1301,6 +1302,9 @@ public abstract class AbstractHyperDB
       errorMessage("Unable to delete record.");
       return;
     }
+
+    if (recordDeletionTestInProgress)
+      mentionsIndex.stopRebuild();
 
     if (record.isDummy() == false)
     {

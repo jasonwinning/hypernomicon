@@ -38,12 +38,12 @@
   <RadioButton fx:id="rbMendeley" layoutX="391.0" layoutY="176.0" mnemonicParsing="false" text="Mendeley" toggleGroup="$tgLink" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="176.0" />
   <Label layoutX="391.0" layoutY="117.0" text="Link new database to:" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="117.0" />
   <RadioButton layoutX="391.0" layoutY="206.0" mnemonicParsing="false" text="None" toggleGroup="$tgLink" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="206.0" />
-  <AnchorPane layoutX="52.0" layoutY="96.0" prefHeight="198.0" prefWidth="274.0">
-    <TextField fx:id="tfFolderName" layoutX="2.0" layoutY="25.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="241.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="38.0" AnchorPane.topAnchor="25.0" />
+  <AnchorPane layoutX="52.0" layoutY="96.0" prefHeight="162.0" prefWidth="274.0">
+    <TextField fx:id="tfFolderName" layoutX="2.0" layoutY="25.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="190.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="84.0" AnchorPane.topAnchor="25.0" />
     <Label layoutX="2.0" layoutY="4.0" text="Transient test database folder name" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
     <Button layoutX="2.0" layoutY="73.0" mnemonicParsing="false" onAction="#btnFromScratchClick" prefHeight="25.0" prefWidth="259.0" text="Test creating database from scratch" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="73.0" />
-    <Button fx:id="btnFromExisting" layoutX="2.0" layoutY="110.0" mnemonicParsing="false" onAction="#btnFromExistingClick" prefHeight="25.0" prefWidth="259.0" text="Test creating database based on this one" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="110.0" />
-    <Button layoutX="2.0" layoutY="148.0" mnemonicParsing="false" onAction="#btnDeleteClick" prefHeight="25.0" prefWidth="134.0" text="Delete folder" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="148.0" />
+    <Button fx:id="btnFromExisting" layoutY="102.0" mnemonicParsing="false" onAction="#btnFromExistingClick" prefHeight="25.0" prefWidth="259.0" text="Test creating database based on this one" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="102.0" />
+    <Button layoutY="132.0" mnemonicParsing="false" onAction="#btnDeleteClick" prefHeight="25.0" prefWidth="134.0" text="Delete folder" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="132.0" />
     <Button layoutX="234.0" layoutY="25.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnLaunchClick" prefHeight="25.0" prefWidth="25.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
       <graphic>
         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
@@ -51,7 +51,8 @@
         </ImageView>
       </graphic>
     </Button>
-    <Button fx:id="btnCloseDB" layoutX="156.0" layoutY="148.0" mnemonicParsing="false" onAction="#btnCloseDB" prefHeight="25.0" prefWidth="134.0" text="Close Database" AnchorPane.rightAnchor="0.0" />
+    <Button fx:id="btnCloseDB" layoutX="140.0" layoutY="132.0" mnemonicParsing="false" onAction="#btnCloseDB" prefHeight="25.0" prefWidth="134.0" text="Close Database" AnchorPane.rightAnchor="0.0" />
+      <Button layoutX="195.0" layoutY="25.0" mnemonicParsing="false" onAction="#btnLoadClick" text="Load" />
   </AnchorPane>
   <BorderPane layoutX="193.0" layoutY="223.0" prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
     <center>
@@ -59,9 +60,11 @@
     </center>
   </BorderPane>
   <Button layoutX="391.0" layoutY="243.0" mnemonicParsing="false" onAction="#btnWelcomeWindowClick" prefHeight="25.0" prefWidth="190.0" text="Open Welcome window" />
-   <Button fx:id="btnSaveRefMgrSecrets" layoutX="52.0" layoutY="294.0" mnemonicParsing="false" text="Save reference manager secret(s) to database settings" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="294.0" />
-   <Button fx:id="btnRemoveRefMgrSecrets" layoutX="52.0" layoutY="326.0" mnemonicParsing="false" text="Remove secrets for current ref. mgr. account from keyring" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="326.0" />
-   <Label layoutX="52.0" layoutY="362.0" text="Ref. mgr. user ID:" />
-   <TextField fx:id="tfRefMgrUserID" editable="false" layoutX="154.0" layoutY="358.0" prefHeight="25.0" prefWidth="219.0" />
-   <Button fx:id="btnUseMendeleyID" layoutX="52.0" layoutY="390.0" mnemonicParsing="false" text="Use current Mendeley ID for unit tests" />
+   <Button fx:id="btnSaveRefMgrSecrets" layoutX="52.0" layoutY="274.0" mnemonicParsing="false" text="Save reference manager secret(s) to database settings" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="274.0" />
+   <Button fx:id="btnRemoveRefMgrSecrets" layoutX="52.0" layoutY="306.0" mnemonicParsing="false" text="Remove secrets for current ref. mgr. account from keyring" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="306.0" />
+   <Label layoutX="52.0" layoutY="342.0" text="Ref. mgr. user ID:" />
+   <TextField fx:id="tfRefMgrUserID" editable="false" layoutX="154.0" layoutY="338.0" prefHeight="25.0" prefWidth="219.0" />
+   <Button fx:id="btnUseMendeleyID" layoutX="52.0" layoutY="370.0" mnemonicParsing="false" text="Use current Mendeley ID for unit tests" />
+   <Button fx:id="btnNukeTest" layoutX="52.0" layoutY="455.0" mnemonicParsing="false" onAction="#nukeTest" text="Test Mass Record Deletion" />
+   <Button layoutX="52.0" layoutY="424.0" mnemonicParsing="false" onAction="#copyForNukeTest" text="Copy current DB without user files to transient folder" />
 </AnchorPane>

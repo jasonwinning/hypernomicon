@@ -91,6 +91,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
   @Override public Stream<HDT_DT> stream()              { return sortedIDs.stream().map(idToRecord::get); }
   @Override public int getIDNdxByID(int id)             { return Math.max(-1, binarySearch(sortedIDs, id)); }
   @Override public int getKeyNdxByID(int id)            { return Math.max(-1, binarySearch(sortedKeys, new KeyIDpair(id, idToKey.get(id)))); }
+  @Override public int getRandomUsedID(Random random)   { return isEmpty() ? -1 : getIDbyIDNdx(random.nextInt(size())); }
 
   @Override public String getKeyByID(int id)            { return idToKey.get(id); }
   @Override public HDT_DT getByID(int id)               { return idToRecord.get(id); }

@@ -1558,7 +1558,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void openDB(FilePath filePath)
+  public void openDB(FilePath filePath)
   {
     if (FilePath.isEmpty(filePath))
     {
