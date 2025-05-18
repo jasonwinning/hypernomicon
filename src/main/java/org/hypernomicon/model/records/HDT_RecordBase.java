@@ -528,7 +528,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   /**
    * This method is final because special operations here should be done
    * at the item level not record level.
-   * @throws HDB_InternalError if a non-expired record has a positive ID
+   * @throws HDB_InternalError if a non-expired record has ID < 1
    */
   @Override public final void resolvePointers() throws HDB_InternalError
   {

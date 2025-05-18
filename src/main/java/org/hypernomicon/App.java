@@ -39,19 +39,15 @@ import org.hypernomicon.view.MainCtrlr.ShutDownMode;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.json.simple.parser.ParseException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.*;
+import java.net.*;
+import java.nio.charset.Charset;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
 import static java.lang.management.ManagementFactory.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -60,6 +56,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.logging.log4j.Level;
@@ -214,7 +211,13 @@ public final class App extends Application
 
     try
     {
-      logFileOut = new PrintStream(newLogFilePath.toFile());
+      FilePath dbPath = (db == null) || (db.isLoaded() == false) ? new FilePath("") : db.getRootPath();
+
+      // Clear log if this is the first instance
+      if (InterProcClient.updateRunningInstancesFile(dbPath).size() == 1)
+        FileUtils.write(newLogFilePath.toFile(), "", Charset.defaultCharset());
+
+      logFileOut = new PrintStream(new FileOutputStream(newLogFilePath.toFile(), true));
     }
     catch (IOException e)
     {

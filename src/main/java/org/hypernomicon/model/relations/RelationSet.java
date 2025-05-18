@@ -906,6 +906,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       else if (hasNestedItems)
       {
         Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> nestedItemMap = objectGroups.get(subj, obj);
+
         if (nestedItemMap != null)
         {
           for (HDI_OnlineBase<? extends HDI_OfflineBase> nestedItem : nestedItemMap.values())

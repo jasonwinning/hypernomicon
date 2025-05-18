@@ -67,4 +67,5 @@
    <Button fx:id="btnUseMendeleyID" layoutX="52.0" layoutY="370.0" mnemonicParsing="false" text="Use current Mendeley ID for unit tests" />
    <Button fx:id="btnNukeTest" layoutX="52.0" layoutY="455.0" mnemonicParsing="false" onAction="#nukeTest" text="Test Mass Record Deletion" />
    <Button layoutX="52.0" layoutY="424.0" mnemonicParsing="false" onAction="#copyForNukeTest" text="Copy current DB without user files to transient folder" />
+   <Button layoutX="391.0" layoutY="274.0" mnemonicParsing="false" onAction="#btnLogMessageClick" prefHeight="25.0" prefWidth="190.0" text="Write message to log" />
 </AnchorPane>

@@ -41,7 +41,7 @@ public final class Exceptions
   /**
    * Logs the stack trace for a throwable, preventing HDB_InternalError
    * or any Throwable having HDB_InternalError in its chain of causes
-   * logged twice.
+   * from getting logged twice.
    * @param e The throwable
    */
   public static void log(Throwable e)
@@ -167,7 +167,9 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 
   /**
-   * Exception intended to be thrown in {@link org.hypernomicon.model.records.HDT_Record#restoreTo(RecordState,boolean) HDT_Record.restoreTo}, when restoring data to a record from its backup record state.
+   * Exception intended to be thrown in {@link org.hypernomicon.model.records.HDT_Record#restoreTo(RecordState,boolean) HDT_Record.restoreTo},
+   * when restoring data to a record from its backup record state.
+   * <p>
    * Thrown when existing data in the record (like the record's hub, or a term record's concept records) conflicts with
    * data in the recordState.
    */

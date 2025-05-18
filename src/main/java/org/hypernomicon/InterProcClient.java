@@ -158,10 +158,10 @@ public final class InterProcClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void updateRunningInstancesFile(FilePath newDbPath)
+  public static Map<String, AppInstance> updateRunningInstancesFile(FilePath newDbPath)
   {
     dbPath = FilePath.isEmpty(newDbPath) ? new FilePath("") : newDbPath;
-    updateRunningInstancesFile();
+    return updateRunningInstancesFile();
   }
 
 //---------------------------------------------------------------------------

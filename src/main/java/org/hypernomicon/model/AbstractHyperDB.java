@@ -328,7 +328,7 @@ public abstract class AbstractHyperDB
 
   @SuppressWarnings("unchecked")
   public <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
-  { ((RelationSet<HDT_SubjType, HDT_ObjType>)relationSets.get(relType)).resolvePointers(subj); }
+  { ((RelationSet<HDT_SubjType, HDT_ObjType>) relationSets.get(relType)).resolvePointers(subj); }
 
   private HDT_Folder xmlFolder, booksFolder, papersFolder, miscFilesFolder, picturesFolder, resultsFolder, unenteredFolder, topicalFolder;
 
@@ -922,10 +922,10 @@ public abstract class AbstractHyperDB
 
     close(null);
 
-    updateRunningInstancesFile(newRootFilePath);
-
     rootFilePath = newRootFilePath;
     hdbFilePath = rootFilePath.resolve(hdbFileName);
+
+    updateRunningInstancesFile(newRootFilePath);
 
     if (dbChanged)
       dbPreChangeHandlers.forEach(Runnable::run);

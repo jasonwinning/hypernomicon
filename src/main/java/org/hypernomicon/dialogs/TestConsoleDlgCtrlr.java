@@ -28,13 +28,14 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-
+import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.dialogs.base.ModalDialog;
@@ -614,6 +615,14 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return null;
 
     return new FilePath(files[0]);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnLogMessageClick()
+  {
+    System.out.println("Test button clicked on instance " + InterProcClient.getInstanceID() + " at " + timeToUserReadableStr(LocalDateTime.now()));
   }
 
 //---------------------------------------------------------------------------
