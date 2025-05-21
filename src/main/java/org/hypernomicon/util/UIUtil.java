@@ -28,8 +28,8 @@ import java.util.*;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import org.controlsfx.control.MasterDetailPane;
 
 import org.hypernomicon.dialogs.LockedDlgCtrlr;
@@ -673,14 +673,6 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void showStackTrace(Throwable e)
-  {
-    showLongMessage("Error", ExceptionUtils.getStackTrace(e));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static FilePath   showDirDialog         (DirectoryChooser chooser) { return ui.windows.showDirDialog         (chooser); }
   public static FilePath   showOpenDialog        (FileChooser      chooser) { return ui.windows.showOpenDialog        (chooser); }
   public static FilePath   showSaveDialog        (FileChooser      chooser) { return ui.windows.showSaveDialog        (chooser); }
@@ -815,7 +807,7 @@ public final class UIUtil
    * Evaluates a condition and displays an error popup with a user-friendly message derived from the specified Throwable if the condition is true.
    *
    * <p>This method checks if {@code showErrMsg} is true. If it is, it calls {@link #falseWithErrorPopup(String)}
-   * with a user-friendly message obtained from {@link #getThrowableMessage(Throwable)} using the provided Throwable {@code e}
+   * with a user-friendly message obtained from {@link org.hypernomicon.util.Util#getThrowableMessage(Throwable) getThrowableMessage} using the provided Throwable {@code e}
    * and returns the result.
    *
    * @param showErrMsg a boolean indicating whether to show the error message.

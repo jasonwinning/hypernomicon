@@ -336,7 +336,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     }
     catch (Throwable e)
     {
-      showStackTrace(e);
+      logThrowable(e);
+      errorPopup("An error occurred while saving bibliographic data: " + getThrowableMessage(e));
       return;
     }
 
@@ -347,7 +348,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     }
     catch (IOException e)
     {
-      errorPopup("An error occurred while saving bibliographic data to disk.");
+      errorPopup("An error occurred while saving bibliographic data: " + getThrowableMessage(e));
     }
   }
 

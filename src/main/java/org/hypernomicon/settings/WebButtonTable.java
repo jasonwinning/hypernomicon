@@ -97,7 +97,8 @@ class WebButtonTable extends WebButtonCtrl
       }
       catch (IOException e)
       {
-        showStackTrace(e);
+        logThrowable(e);
+        errorPopup("Internal error while initializing dialog window");
       }
     });
 

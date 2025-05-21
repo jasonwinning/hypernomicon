@@ -17,11 +17,7 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkLabel;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.filePath.FilePath;
@@ -31,9 +27,7 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
-import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.*;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -43,7 +37,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.fileTabEnum;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
@@ -54,15 +48,7 @@ import org.hypernomicon.fileManager.FileManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
@@ -83,7 +69,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @FXML private TextField tfFileName, tfName, tfSearchKey;
 
   private final MainTextWrapper mainText;
-  private final HyperTable htLabels, htAuthors, htKeyMentioners;
+  private final HyperTable htLabels, htAuthors, htMentioners;
   private final HyperCB hcbWork, hcbType;
 
   public FileDlgCtrlr fdc = null;
@@ -126,13 +112,13 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htLabels.addRemoveMenuItem();
     htLabels.addChangeOrderMenuItem(true);
 
-    htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, TablePrefKey.FILE_MENTIONERS);
+    htMentioners = new HyperTable(tvKeyMentions, 1, false, TablePrefKey.FILE_MENTIONERS);
 
-    htKeyMentioners.addDefaultMenuItems();
+    htMentioners.addDefaultMenuItems();
 
-    htKeyMentioners.addIconCol();
-    htKeyMentioners.addLabelCol(hdtNone);
-    htKeyMentioners.addLabelCol(hdtNone);
+    htMentioners.addIconCol();
+    htMentioners.addLabelCol(hdtNone);
+    htMentioners.addLabelCol(hdtNone);
 
     hcbType = new HyperCB(cbType, ctEditableUnlimitedDropDown, new StandardPopulator(hdtFileType), true);
     hcbWork = new HyperCB(cbWork, ctEditableLimitedDropDown  , new StandardPopulator(hdtWork    ), true);
@@ -150,6 +136,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     setToolTip(btnWork  , "Go to this Work record");
 
     MainCtrlr.setSearchKeyToolTip(tfSearchKey);
+
+    db.addMentionsNdxCompleteHandler(() -> NoteTabCtrlr.updateMentioners(curMiscFile, htMentioners));
   }
 
 //---------------------------------------------------------------------------
@@ -179,10 +167,10 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     hcbType.selectIDofRecord(curMiscFile.fileType);
 
-  // Populate key mentioners
-  // -----------------------
+  // Populate mentioners
+  // -------------------
 
-    WorkTabCtrlr.populateDisplayersAndKeyMentioners(curMiscFile, htKeyMentioners);
+    NoteTabCtrlr.updateMentioners(curMiscFile, htMentioners);
 
   // Populate authors
   // ----------------
@@ -255,7 +243,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     htAuthors      .clear();
     htLabels       .clear();
-    htKeyMentioners.clear();
+    htMentioners.clear();
 
     hcbType.clear();
     hcbWork.clear();

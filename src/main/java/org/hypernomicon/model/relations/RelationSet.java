@@ -29,31 +29,13 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.EnumBasedTable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.ConcurrentModificationException;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
+import com.google.common.collect.*;
 import com.google.common.collect.Table.Cell;
 
 import javafx.application.Platform;
@@ -70,6 +52,10 @@ import static org.hypernomicon.util.Util.*;
 
 public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_Record>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Set<HDT_Subj> orphans = new HashSet<>();
   private ArrayListMultimap<HDT_Obj, HDT_Subj> objToSubjList = ArrayListMultimap.create();
   private ArrayListMultimap<HDT_Subj, HDT_Obj> subjToObjList = ArrayListMultimap.create();
@@ -88,6 +74,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   private final RelationType type;
   private final RecordType objType, subjType;
   private final boolean hasNestedItems, trackOrphans;
+
+//---------------------------------------------------------------------------
 
   public RecordType getObjType()                          { return objType; }
   public RecordType getSubjType()                         { return subjType; }
@@ -263,14 +251,14 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     }
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    private void initCycleGroup()
-    {
-      if (cycleGroup != null)
-        cycleGroup.removeIf(relType -> relationSets.get(relType).subjType != objType);
-    }
+  private void initCycleGroup()
+  {
+    if (cycleGroup != null)
+      cycleGroup.removeIf(relType -> relationSets.get(relType).subjType != objType);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -924,6 +912,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public enum RelationType
   {
+
  // rtObjectOfSubject
 
     rtNone                    ( 1, ""                     , ""),

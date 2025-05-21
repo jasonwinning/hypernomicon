@@ -70,7 +70,6 @@ public class BasicTextMatcher
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   private final List<Term> terms = new ArrayList<>();
   private final boolean caseSensitive;

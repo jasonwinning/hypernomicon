@@ -19,28 +19,13 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager;
-import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.bib.data.BibDataRetriever;
-import org.hypernomicon.bib.data.BibDataStandalone;
-import org.hypernomicon.bib.data.CrossrefBibData;
-import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.data.GUIBibData;
-import org.hypernomicon.bib.data.GoogleBibData;
-import org.hypernomicon.bib.data.PDFBibData;
-import org.hypernomicon.dialogs.ChooseParentWorkFileDlgCtrlr;
-import org.hypernomicon.dialogs.FileDlgCtrlr;
-import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
-import org.hypernomicon.dialogs.WorkDlgCtrlr;
+import org.hypernomicon.bib.data.*;
+import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.items.Author;
-import org.hypernomicon.model.items.Authors;
-import org.hypernomicon.model.items.BibliographicDate;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
@@ -53,9 +38,7 @@ import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
-import org.hypernomicon.view.cellValues.BibDateHTC;
-import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.PageRangeHTC;
+import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
@@ -75,7 +58,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.MainCtrlr.*;
-import static org.hypernomicon.view.populators.Populator.CellValueType.cvtPageRange;
+import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
@@ -83,12 +66,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.prefs.Preferences;
@@ -105,24 +83,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.SingleSelectionModel;
-import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.SplitPane;
+import javafx.scene.control.*;
 import javafx.scene.control.SplitPane.Divider;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.InputEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
@@ -832,7 +796,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Populate displayers, key mentioners, and investigations
   // -------------------------------------------------------
 
-    populateDisplayersAndKeyMentioners(curWork, htKeyMentioners);
+    populateDisplayersAndKeyMentioners();
 
   // Other stuff
   // -----------
@@ -946,18 +910,18 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void populateDisplayersAndKeyMentioners(HDT_RecordWithAuthors<? extends Authors> record, HyperTable table)
+  private void populateDisplayersAndKeyMentioners()
   {
     Set<HDT_RecordWithMainText> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
 
-    Stream<HDT_RecordWithMainText> stream = db.keyWorkMentionerStream(record, true).filter(recordWMT -> recordWMT.getType() != hdtWorkLabel);
+    Stream<HDT_RecordWithMainText> stream = db.keyWorkMentionerStream(curWork, true).filter(recordWMT -> recordWMT.getType() != hdtWorkLabel);
 
-    if (record.hasMainText())
-      stream = Stream.concat(stream, db.displayerStream((HDT_RecordWithMainText)record));
+    if (curWork.hasMainText())
+      stream = Stream.concat(stream, db.displayerStream(curWork));
 
     stream.forEachOrdered(mentioner -> (mentioner.getType() == hdtInvestigation ? invSet : set).add(mentioner));
 
-    table.buildRows(Stream.concat(invSet.stream(), set.stream()), (row, mentioner) ->
+    htKeyMentioners.buildRows(Stream.concat(invSet.stream(), set.stream()), (row, mentioner) ->
     {
       row.setCellValue(0, mentioner, "");
       row.setCellValue(1, mentioner, mentioner.getCBText());

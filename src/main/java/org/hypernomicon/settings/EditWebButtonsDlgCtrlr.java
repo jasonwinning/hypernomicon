@@ -25,6 +25,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.WebButton.UrlPattern;
 import org.hypernomicon.util.WebButton.WebButtonField;
@@ -72,7 +73,7 @@ public class EditWebButtonsDlgCtrlr extends ModalDialog
       }
       catch (IOException e)
       {
-        showStackTrace(e);
+        errorPopup(new HDB_InternalError(56584, e));
       }
     });
   }

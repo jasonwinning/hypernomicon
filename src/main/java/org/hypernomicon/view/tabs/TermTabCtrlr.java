@@ -29,9 +29,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.scene.control.TabPane;
 import javafx.application.Platform;
 import javafx.scene.Node;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 
 import static org.hypernomicon.App.*;
@@ -47,15 +45,10 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
-import org.hypernomicon.dialogs.MergeTermDlgCtrlr;
-import org.hypernomicon.dialogs.RecordDropdownDlgCtrlr;
-import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
+import org.hypernomicon.dialogs.*;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;

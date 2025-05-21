@@ -24,14 +24,8 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 
 import static org.hypernomicon.App.ui;
 
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 
 //---------------------------------------------------------------------------
 

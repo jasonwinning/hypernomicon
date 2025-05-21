@@ -75,7 +75,7 @@ public class HyperPath
 
     if (db.getRootPath().isSubpath(filePath) == false)
     {
-      errorPopup("Internal error: Hyperpath not in database folder tree");
+      internalErrorPopup(90177);
       return;
     }
 

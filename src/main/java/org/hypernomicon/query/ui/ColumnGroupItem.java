@@ -20,6 +20,8 @@ package org.hypernomicon.query.ui;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
+//---------------------------------------------------------------------------
+
 /**
  * Multiple ColumnGroupItems can be associated with a single column if multiple record types have the same tag.
  * <br>These ColumnGroupItems will only be in a RecordTypeColumnGroup.

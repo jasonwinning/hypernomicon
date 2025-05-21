@@ -55,7 +55,7 @@ public final class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDB_InternalError getInternalError(Throwable e)
+  private static HDB_InternalError getInternalError(Throwable e)
   {
     Set<Throwable> seen = new HashSet<>();
 

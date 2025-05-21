@@ -33,13 +33,16 @@ import static org.hypernomicon.util.Util.*;
 
 public class NestedValue
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public String str = "";
   public boolean bool = false;
   public Ternary ternary = Ternary.Unset;
   public HDT_Record target = null;
   final HyperDataCategory hdc;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   NestedValue(HDI_OnlineBase<? extends HDI_OfflineBase> item)
@@ -57,12 +60,19 @@ public class NestedValue
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public NestedValue(HyperDataCategory hdc)
   {
     this.hdc = hdc;
   }
+
+//---------------------------------------------------------------------------
+
+  public static boolean isEmpty(String str)        { return strNullOrEmpty(str); }
+  public static boolean isEmpty(boolean bool)      { return !bool; }
+  public static boolean isEmpty(Ternary ternary)   { return ternary.isUnset(); }
+  public static boolean isEmpty(int id)            { return id < 1; }
+  public static boolean isEmpty(HDT_Record target) { return HDT_Record.isEmpty(target, false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -113,15 +123,6 @@ public class NestedValue
       default               -> false;
     };
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean isEmpty(String str)        { return strNullOrEmpty(str); }
-  public static boolean isEmpty(boolean bool)      { return !bool; }
-  public static boolean isEmpty(Ternary ternary)   { return ternary.isUnset(); }
-  public static boolean isEmpty(int id)            { return id < 1; }
-  public static boolean isEmpty(HDT_Record target) { return HDT_Record.isEmpty(target, false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

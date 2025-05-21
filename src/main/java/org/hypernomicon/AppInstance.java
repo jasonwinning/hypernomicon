@@ -24,7 +24,7 @@ import org.hypernomicon.util.filePath.FilePath;
 
 //---------------------------------------------------------------------------
 
-class AppInstance
+public class AppInstance
 {
   private final String id;
   private final int portNum;

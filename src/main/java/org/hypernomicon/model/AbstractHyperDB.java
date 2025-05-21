@@ -765,7 +765,7 @@ public abstract class AbstractHyperDB
 
     if (xml.isEmpty())
     {
-      xml.append("<?xml version=\"1.0\" encoding=\"" + XML_FILES_CHARSET.name() + "\"?>").append(System.lineSeparator()).append(System.lineSeparator())
+      xml.append("<?xml version=\"1.0\" encoding=\"").append(XML_FILES_CHARSET.name()).append("\"?>").append(System.lineSeparator()).append(System.lineSeparator())
          .append("<records version=\"").append(getVersionNumberSavingAs(appVersionToMaxRecordsXMLVersion)).append("\" xmlns=\"org.hypernomicon\"")
 
       //   .append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"org.hypernomicon http://hypernomicon.org/records.xsd\"")
@@ -1007,12 +1007,11 @@ public abstract class AbstractHyperDB
     if (bibLibraryIsLinked() && ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWork, new VersionNumber(1))).lessThan(new VersionNumber(1, 8)))
       doBibDateConversion();
 
-    checkWhetherFoldersExist();
-
     loaded = true;
     dbLoadedHandlers.forEach(Runnable::run);
 
     rebuildMentions();
+    checkWhetherFoldersExist();
 
     try
     {
@@ -1285,7 +1284,7 @@ public abstract class AbstractHyperDB
 
     Objects.requireNonNull(record, "Record to delete is null.");
 
-    if ((record instanceof HDT_Hub hub) && (hub.getSpokes().count() > 0))
+    if ((record instanceof HDT_Hub hub) && hub.getSpokes().findAny().isPresent())
     {
       internalErrorMessage(58372);
       return;

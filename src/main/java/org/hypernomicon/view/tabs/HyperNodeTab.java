@@ -24,12 +24,11 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;

@@ -645,7 +645,7 @@ public class SettingsDlgCtrlr extends ModalDialog
       MendeleyWrapper dummyWrapper = MendeleyWrapper.getProfileInfoFromServer(authKeys);
 
       if (db.bibLibraryIsLinked())
-        ((MendeleyWrapper)db.getBibLibrary()).enableSyncOnThisComputer(authKeys, dummyWrapper.getUserID(), dummyWrapper.getUserName(), true);
+        db.getBibLibrary().enableSyncOnThisComputer(authKeys, dummyWrapper.getUserID(), dummyWrapper.getUserName(), true);
       else
         db.linkBibLibrary(LibraryType.ltMendeley, authKeys, dummyWrapper.getUserID(), dummyWrapper.getUserName());
     }
@@ -693,7 +693,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     try
     {
       if (db.bibLibraryIsLinked())
-        ((ZoteroWrapper)db.getBibLibrary()).enableSyncOnThisComputer(authKeys, token.getParameter("userID"), token.getParameter("username"), true);
+        db.getBibLibrary().enableSyncOnThisComputer(authKeys, token.getParameter("userID"), token.getParameter("username"), true);
       else
         db.linkBibLibrary(LibraryType.ltZotero, authKeys, token.getParameter("userID"), token.getParameter("username"));
     }

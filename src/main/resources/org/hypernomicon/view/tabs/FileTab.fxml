@@ -126,7 +126,7 @@
     <TableView fx:id="tvKeyMentions" maxHeight="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <columns>
         <TableColumn maxWidth="200.0" minWidth="69.0" prefWidth="69.0" text="Type" />
-        <TableColumn prefWidth="629.0" text="Record Listing This Under Key Works" />
+        <TableColumn prefWidth="629.0" text="Name of Record Linking to This Misc. File" />
         <TableColumn prefWidth="766.0" text="Description" />
       </columns>
       <columnResizePolicy>

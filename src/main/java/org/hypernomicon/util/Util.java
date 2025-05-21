@@ -2076,7 +2076,7 @@ public final class Util
   /**
    * Returns an {@code AssertionError} with a user-friendly message extracted from the given throwable.
    *
-   * <p>This method constructs an assertion error using {@link getThrowableMessage(Throwable)}, ensuring
+   * <p>This method constructs an assertion error using {@link #getThrowableMessage(Throwable) getThrowableMessage}, ensuring
    * meaningful exception messages while preserving the original cause.</p>
    *
    * @param e the throwable that triggered the assertion failure

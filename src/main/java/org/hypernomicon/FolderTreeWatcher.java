@@ -540,14 +540,15 @@ public class FolderTreeWatcher
         return true;
       }
 
-      if (db.getRequestMessageFilePath(false).exists() == false)
+      InterComputerMsg receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath(false));
+
+      if (receivedMsg == null)
         return false;
 
-      InterComputerMsg receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath(false));
       requestType = hmtNone;
       String compName = DesktopUtil.getComputerName();
 
-      if ((receivedMsg != null) && receivedMsg.getDest().equals(compName))
+      if (receivedMsg.getDest().equals(compName))
         requestType = receivedMsg.getType();
 
       try

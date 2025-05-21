@@ -92,7 +92,7 @@
             <HBox alignment="CENTER" pickOnBounds="false" spacing="4.0">
               <Button fx:id="btnSelectedWork" mnemonicParsing="false" prefHeight="25.0" text="Use Selected Work Record" />
               <Button fx:id="btnNewWork" mnemonicParsing="false" prefHeight="25.0" text="Create New Work Record" />
-                     <Button fx:id="btnNewMisc" mnemonicParsing="false" prefHeight="25.0" text="Create New Misc. File Record" />
+              <Button fx:id="btnNewMisc" mnemonicParsing="false" prefHeight="25.0" text="Create New Misc. File Record" />
               <Button fx:id="btnCancel" cancelButton="true" maxWidth="70.0" minWidth="70.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="70.0" text="Cancel" />
             </HBox>
           </center>

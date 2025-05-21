@@ -37,12 +37,9 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import java.io.IOException;
 
 import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
-import org.hypernomicon.model.records.HDT_Debate;
-import org.hypernomicon.model.records.HDT_Position;
-import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
-import org.hypernomicon.model.records.HDT_Record;
 
 //---------------------------------------------------------------------------
 

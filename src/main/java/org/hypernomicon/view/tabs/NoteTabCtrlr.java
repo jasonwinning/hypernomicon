@@ -160,7 +160,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     htMentioners.addLabelCol(hdtNone);
     htMentioners.addLabelCol(hdtNone);
 
-    db.addMentionsNdxCompleteHandler(this::updateMentioners);
+    db.addMentionsNdxCompleteHandler(() -> updateMentioners(curNote, htMentioners));
 
     btnCreateFolder.setOnAction(event -> createFolder());
     btnBrowse      .setOnAction(event -> browseClick());
@@ -269,7 +269,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htSubnotes.sortAscending(1);
 
-    updateMentioners();
+    updateMentioners(curNote, htMentioners);
   }
 
 //---------------------------------------------------------------------------
@@ -296,11 +296,11 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateMentioners()
+  static void updateMentioners(HDT_Record target, HyperTable htMentioners)
   {
     htMentioners.clear();
 
-    if ((db.isLoaded() == false) || (curNote == null)) return;
+    if ((db.isLoaded() == false) || (target == null)) return;
 
     if (db.reindexingMentioners())
     {
@@ -308,7 +308,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
       return;
     }
 
-    Set<HDT_Record> mentioners = removeDupMentioners(db.getMentionerSet(curNote, true));
+    Set<HDT_Record> mentioners = removeDupMentioners(db.getMentionerSet(target, true), target);
 
     htMentioners.buildRows(mentioners, (row, mentioner) ->
     {
@@ -323,15 +323,15 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<HDT_Record> removeDupMentioners(Iterable<HDT_Record> mentioners)
+  private static Set<HDT_Record> removeDupMentioners(Iterable<HDT_Record> mentioners, HDT_Record target)
   {
     Set<HDT_Record> output = new HashSet<>();
     Set<HDT_Hub> usedHubs = new HashSet<>();
-    HDT_Hub thisHub = curNote.getHub();
+    HDT_Hub thisHub = target.hasMainText() ? ((HDT_RecordWithMainText)target).getHub() : null;
 
     mentioners.forEach(mentioner ->
     {
-      if (mentioner.equals(curNote)) return;
+      if (mentioner.equals(target)) return;
 
       HDT_Hub hub = ((HDT_RecordWithMainText) mentioner).getHub();
 

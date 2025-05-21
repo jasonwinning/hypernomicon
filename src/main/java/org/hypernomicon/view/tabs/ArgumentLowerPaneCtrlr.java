@@ -18,10 +18,9 @@
 package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import javafx.fxml.FXML;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 
 //---------------------------------------------------------------------------
 

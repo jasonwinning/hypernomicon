@@ -19,6 +19,7 @@ package org.hypernomicon.dialogs.base;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.App;
 
@@ -96,6 +97,7 @@ public abstract class DialogBase
     }
     catch (IOException e)
     {
+      logThrowable(e);
       errorPopup("Internal error while initializing dialog window");
     }
     finally

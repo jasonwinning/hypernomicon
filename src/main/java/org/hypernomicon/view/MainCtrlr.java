@@ -1459,9 +1459,9 @@ public final class MainCtrlr
    *
    * @param saveRecord Whether to try to save the current record first
    * @param restartWatcher Whether to restart the folder tree watcher if it was running
-   * @param updateUI
+   * @param updateUI Whether to update what is showing in the current tab
    * @param confirmRefMgrSecretsSaved Whether to confirm that reference manager secrets have been saved; should be done when closing the database
-   * @return
+   * @return True if the data was actually saved to XML; false otherwise
    */
   public boolean saveAllToXML(boolean saveRecord, boolean restartWatcher, boolean updateUI, boolean confirmRefMgrSecretsSaved)
   {
@@ -1524,7 +1524,8 @@ public final class MainCtrlr
     }
     catch (Throwable e)
     {
-      showStackTrace(e);
+      logThrowable(e);
+      errorPopup("An error occurred while saving to XML files: " + getThrowableMessage(e));
       return false;
     }
   }
@@ -3069,7 +3070,7 @@ public final class MainCtrlr
     importMiscFile(fileRow, filePath, true);
   }
 
-  public void importMiscFile(FileRow fileRow, FilePath filePath, boolean save)
+  private void importMiscFile(FileRow fileRow, FilePath filePath, boolean save)
   {
     if (save && cantSaveRecord()) return;
 
@@ -3097,7 +3098,7 @@ public final class MainCtrlr
     return importWorkFile(person, filePathToUse, promptForExistingRecord, false);
   }
 
-  public boolean importWorkFile(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord, boolean includeMiscFileOption)
+  private boolean importWorkFile(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord, boolean includeMiscFileOption)
   {
     if (filePathToUse != null)
     {

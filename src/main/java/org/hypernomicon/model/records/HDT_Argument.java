@@ -133,12 +133,12 @@ public class HDT_Argument extends HDT_RecordWithMainText
    * <p>
    * This method first searches for a debate by applying the {@link HDT_Position#getLargerDebate}
    * function to the positions associated with this argument. If no debate is found, it then
-   * searches the arguments that this argument responds to by applying the {@link HDT_Argument#getDebate}
-   * function to the target arguments.
+   * searches the arguments that this argument responds to by applying this
+   * function recursively to the target arguments.
    * </p>
    *
    * <p>
-   * The method returns the first non-null debate found using the {@link #findFirstHaving} utility.
+   * The method returns the first non-null debate found using the {@link org.hypernomicon.util.Util#findFirstHaving findFirstHaving} utility.
    * If neither the positions nor the target arguments yield a debate, the method returns {@code null}.
    * </p>
    *

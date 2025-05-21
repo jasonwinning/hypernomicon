@@ -17,9 +17,7 @@
 
 package org.hypernomicon.util.json;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,16 +29,18 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public final class JsonArray implements Cloneable
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   final JSONArray jArr;
 
   public JsonArray(JSONArray jArr) { this.jArr = jArr; }
   public JsonArray()               { jArr = new JSONArray(); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void clear()                     { jArr.clear(); }
@@ -53,7 +53,6 @@ public final class JsonArray implements Cloneable
   public JsonObjIterator getObjs()        { return new JsonObjIterator(); }
   public Stream<JsonObj> objStream()      { return ((Stream<?>)jArr.stream()).map(obj -> new JsonObj((JSONObject) obj)); }
   public Stream<String> strStream()       { return ((Stream<?>)jArr.stream()).map(obj -> obj instanceof String str ? str : ""); }
-
 
   @SuppressWarnings("unchecked") public void set(int ndx, JsonObj element)   { jArr.set(ndx, element); }
   @SuppressWarnings("unchecked") public void set(int ndx, JsonArray element) { jArr.set(ndx, element); }
@@ -70,13 +69,12 @@ public final class JsonArray implements Cloneable
   @Override public String toString() { return jArr.toJSONString(); }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public class JsonObjIterator implements Iterator<JsonObj>, Iterable<JsonObj>
   {
     private int lastNdx = -1, nextNdx = 0;
 
-    //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
     @Override public boolean hasNext()            { return nextNdx < jArr.size(); }
     @Override public Iterator<JsonObj> iterator() { return this; }

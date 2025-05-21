@@ -275,10 +275,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
 
     if (FilePath.isEmpty(transientDBFilePath))
-    {
-      errorPopup("Transient DB path not entered.");
       return;
-    }
 
     FilePath hdbFilePath = getHdbFile(transientDBFilePath);
 
@@ -465,7 +462,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void useCurrentMendeleyUserIDforUnitTests()
+  private static void useCurrentMendeleyUserIDforUnitTests()
   {
     if ((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false)) return;
 
@@ -505,7 +502,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
     List<RecordType> typeList = List.copyOf(types);
 
-    deleteCtr = 0;
+    int deleteCtr = 0;
 
     while (types.stream().anyMatch(recordType -> (nextRecordToDelete(recordType) > 0)))
     {
@@ -537,7 +534,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       {
         db.deleteRecord(record);
 
-        System.out.println(String.format("%5d %s", randomID, randomType.name().substring(3)));
+        System.out.printf("%5d %s%n", randomID, randomType.name().substring(3));
 
         noOp(deleteCtr++);
 
@@ -555,9 +552,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static int deleteCtr;
-
-  private int nextRecordToDelete(RecordType recordType)
+  private static int nextRecordToDelete(RecordType recordType)
   {
     return db.records(recordType).stream().filter(record -> (HDT_Record.isEmpty(record, false) == false))
                                           .filter(record -> (db.isProtectedRecord(record, true) == false))
@@ -575,6 +570,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return;
 
     FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (FilePath.isEmpty(transientDBFilePath))
+      return;
 
     if (db.getRootPath().equals(transientDBFilePath))
     {
@@ -607,7 +605,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private FilePath getHdbFile(FilePath dir)
+  private static FilePath getHdbFile(FilePath dir)
   {
     File[] files = dir.toFile().listFiles((_dir, name) -> name.endsWith(".hdb"));
 
