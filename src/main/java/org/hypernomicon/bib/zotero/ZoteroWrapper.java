@@ -18,13 +18,13 @@
 package org.hypernomicon.bib.zotero;
 
 import static org.hypernomicon.App.app;
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
-import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
 
 import java.io.*;
 import java.net.SocketException;
@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.Header;
@@ -409,29 +410,41 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public JsonArray getTemplates() throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
+  public JsonArray getTemplates(boolean getItemTypesFromServer) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
-    JsonArray jArr = new JsonArray();
+    Stream<String> typesStream;
 
-    for (String zType : streamToIterable(entryTypeMap.values().stream().sorted()))
+    if (getItemTypesFromServer)
     {
-      jArr.add(doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, HttpRequestType.get, null).getObj(0));
+      JsonArray jTypesArr = doHttpRequest("https://api.zotero.org/itemTypes", HttpRequestType.get, null);
+      typesStream = jTypesArr.objStream().map(jObj -> jObj.getStr("itemType")).filter(zType -> ZoteroItem.nonItemTypes.contains(zType) == false);
+    }
+    else
+      typesStream = entryTypeMap.values().stream();
+
+    JsonArray jTemplatesArr = new JsonArray();
+
+    for (String zType : streamToIterable(typesStream.sorted()))
+    {
+      jTemplatesArr.add(doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, HttpRequestType.get, null).getObj(0));
     }
 
-    return jArr;
+    return jTemplatesArr;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void retrieveMetadataAndSaveToFile(boolean getCreatorsNotTemplates)
+  public static void retrieveMetadataAndSaveToFile(boolean getCreatorsNotTemplates)
   {
     try
     {
+      ZoteroWrapper zoteroWrapper = createForTesting();
+
       StringBuilder json = new StringBuilder(getCreatorsNotTemplates ?
-        getCreatorTypes().toString()
+        zoteroWrapper.getCreatorTypes().toString()
       :
-        getTemplates().toString());
+        zoteroWrapper.getTemplates(true).toString());
 
       FilePath filePath = db.xmlPath(getCreatorsNotTemplates ?
         ZOTERO_CREATOR_TYPES_FILE_NAME
@@ -440,7 +453,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
       saveStringBuilderToFile(json, filePath, XML_FILES_CHARSET);
     }
-    catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
+    catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException | HyperDataException e)
     {
       logThrowable(e);
     }
@@ -927,6 +940,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     map.put(etBookChapter, "bookSection");
     map.put(etCase, "case");
     map.put(etConferencePaper, "conferencePaper");
+    map.put(etDataSet, "dataset");
     map.put(etDictionaryEntry, "dictionaryEntry");
     map.put(etDocument, "document");
     map.put(etEmail, "email");
@@ -949,6 +963,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     map.put(etRadioBroadcast, "radioBroadcast");
     map.put(etReport, "report");
     map.put(etSoftware, "computerProgram");
+    map.put(etStandard, "standard");
     map.put(etStatute, "statute");
     map.put(etTVBroadcast, "tvBroadcast");
     map.put(etThesis, "thesis");

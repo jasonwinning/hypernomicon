@@ -17,10 +17,7 @@
 
 package org.hypernomicon.bib.zotero;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
@@ -89,18 +86,16 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
 
+  public static final Set<String> nonItemTypes = Set.of("attachment", "note", "annotation");
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   static ZoteroItem create(ZoteroWrapper zWrapper, JsonObj jObj)
   {
-    JsonObj subObj = jObj.getObj("data");
+    String itemTypeStr = jObj.getObj("data").getStrSafe("itemType").toLowerCase();
 
-    return switch (subObj.getStrSafe("itemType").toLowerCase())
-    {
-      case "", "attachment", "note", "annotation" -> null;
-      default -> new ZoteroItem(zWrapper, jObj, false);
-    };
+    return (strNullOrEmpty(itemTypeStr) || nonItemTypes.contains(itemTypeStr)) ? null : new ZoteroItem(zWrapper, jObj, false);
   }
 
 //---------------------------------------------------------------------------
@@ -594,7 +589,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         if (thisTypeHasFieldKey(bibFieldEnum) == false)
         {
           String fieldKey = getFieldKey(bibFieldEnum);
-          if (fieldKey.length() > 0)
+          if (strNotNullOrBlank(fieldKey))
             jStandaloneObj.getObj("data").remove(getFieldKey(bibFieldEnum)); // This should be done even if missingKeysOK == true
         }
 
@@ -900,7 +895,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       String firstName = node.getStrSafe("firstName").strip(),
              lastName  = node.getStrSafe("lastName" ).strip();
 
-      if ((firstName.length() > 0) || (lastName.length() > 0))
+      if (strNotNullOrBlank(firstName) || strNotNullOrBlank(lastName))
         personName = new PersonName(firstName, lastName);
       else
       {

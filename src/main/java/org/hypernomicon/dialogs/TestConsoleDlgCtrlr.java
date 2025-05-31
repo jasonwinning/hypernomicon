@@ -38,6 +38,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
+import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.filePath.FilePath;
@@ -56,7 +57,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   @FXML private TextField tfParent, tfFolderName, tfRefMgrUserID;
-  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest;
+  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
+                       btnZoteroItemTemplates, btnZoteroCreatorTypes;
   @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private ToggleGroup tgLink;
 
@@ -78,16 +80,21 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     setToolTip(btnClose, "Close this window");
 
+    btnZoteroItemTemplates.setDisable(db.isLoaded() == false);
+    btnZoteroCreatorTypes .setDisable(db.isLoaded() == false);
+
     btnNukeTest           .setDisable (db.isLoaded() == false);
     btnSaveRefMgrSecrets  .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
     btnRemoveRefMgrSecrets.setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
     btnUseMendeleyID      .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false) || (db.getBibLibrary().type() != ltMendeley));
 
-    btnSaveRefMgrSecrets.setOnAction(event -> db.getBibLibrary().saveAuthKeysToDBSettings());
-
+    btnSaveRefMgrSecrets  .setOnAction(event -> db.getBibLibrary().saveAuthKeysToDBSettings());
     btnRemoveRefMgrSecrets.setOnAction(event -> db.getBibLibrary().removeSecretsFromKeyring());
 
     btnUseMendeleyID.setOnAction(event -> useCurrentMendeleyUserIDforUnitTests());
+
+    btnZoteroItemTemplates.setOnAction(event -> ZoteroWrapper.retrieveMetadataAndSaveToFile(false));
+    btnZoteroCreatorTypes .setOnAction(event -> ZoteroWrapper.retrieveMetadataAndSaveToFile(true ));
 
     if (db.bibLibraryIsLinked())
       tfRefMgrUserID.setText(db.getBibLibrary().getUserID());

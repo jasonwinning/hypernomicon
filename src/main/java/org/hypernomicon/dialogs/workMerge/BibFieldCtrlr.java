@@ -244,7 +244,7 @@ public abstract class BibFieldCtrlr
       htAuthors.addChangeOrderMenuItem(true);
 
       htAuthors.addContextMenuItem("Remove this row",
-        row -> (row.getText(0).length() > 0) && (row.getID(0) < 1),
+        row -> strNotNullOrEmpty(row.getText(0)) && (row.getID(0) < 1),
         htAuthors::removeRow);
 
       if (bibData.getWork() != null)
@@ -362,8 +362,18 @@ public abstract class BibFieldCtrlr
         EntryType entryType = bibData.getEntryType();
         if (cb.getItems().contains(entryType) == false)
         {
-          warningPopup('"' + entryType.getUserFriendlyName() + "\" is not a valid " + db.bibLibraryUserFriendlyName() + " entry type.");
-          cb.getSelectionModel().select(null);
+          String invalidMsg = '"' + entryType.getUserFriendlyName() + "\" is not a valid " + db.bibLibraryUserFriendlyName() + " entry type.";
+
+          if ((entryType == EntryType.etMonograph) && (cb.getItems().contains(EntryType.etBook)))
+          {
+            warningPopup(invalidMsg + "\n\"" + EntryType.etBook.getUserFriendlyName() + "\" will be used instead.");
+            cb.getSelectionModel().select(EntryType.etBook);
+          }
+          else
+          {
+            warningPopup(invalidMsg);
+            cb.getSelectionModel().select(null);
+          }
         }
         else
         {

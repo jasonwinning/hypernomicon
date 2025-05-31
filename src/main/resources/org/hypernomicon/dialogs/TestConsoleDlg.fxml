@@ -26,7 +26,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="561.0" prefWidth="689.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.TestConsoleDlgCtrlr">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="561.0" prefWidth="689.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.TestConsoleDlgCtrlr">
   <TextField fx:id="tfParent" layoutX="52.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="542.0" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="95.0" AnchorPane.topAnchor="60.0" />
   <Label layoutX="52.0" layoutY="37.0" text="Parent folder of transient test database folder" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0" />
   <Button layoutX="602.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnBrowseClick" prefHeight="25.0" text="..." AnchorPane.rightAnchor="63.0" AnchorPane.topAnchor="60.0" />
@@ -68,4 +68,6 @@
    <Button fx:id="btnNukeTest" layoutX="52.0" layoutY="455.0" mnemonicParsing="false" onAction="#nukeTest" text="Test Mass Record Deletion" />
    <Button layoutX="52.0" layoutY="424.0" mnemonicParsing="false" onAction="#copyForNukeTest" text="Copy current DB without user files to transient folder" />
    <Button layoutX="391.0" layoutY="274.0" mnemonicParsing="false" onAction="#btnLogMessageClick" prefHeight="25.0" prefWidth="190.0" text="Write message to log" />
+   <Button fx:id="btnZoteroItemTemplates" layoutX="391.0" layoutY="319.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="190.0" text="Retrieve Zotero Item Templates" />
+   <Button fx:id="btnZoteroCreatorTypes" layoutX="391.0" layoutY="351.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="190.0" text="Retrieve Zotero Creator Types" />
 </AnchorPane>

@@ -53,7 +53,7 @@ class ZoteroMetadataTest
 
     try
     {
-      jServerTemplatesArr = zoteroWrapper.getTemplates();
+      jServerTemplatesArr = zoteroWrapper.getTemplates(true);
     }
     catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException e)
     {
@@ -67,9 +67,14 @@ class ZoteroMetadataTest
     {
       String entryTypeStr = jServerTemplateObj.getStrSafe("itemType");
 
-      // Sometimes the server says that "webPage" is an entry type, and sometimes "webpage"
+      EntryType entryType = switch (entryTypeStr)
+      {
+        case "webpage"  -> etWebPage;  // is supposed to be webPage, but server is inconsistent
+        case "Preprint" -> etPreprint; // is supposed to be preprint, but server is inconsistent
 
-      EntryType entryType = "webPage".equalsIgnoreCase(entryTypeStr) ? etWebPage : zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(entryTypeStr, etOther);
+        default         -> zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(entryTypeStr, etOther);
+      };
+
       assertNotEquals(etOther, entryType, "Unrecognized Zotero item type found in templates JSON from server: " + jServerTemplateObj.getStrSafe("itemType"));
 
       unusedTypes.remove(entryType);
@@ -78,7 +83,8 @@ class ZoteroMetadataTest
       {
         JsonObj jLocalObj = ZoteroWrapper.getTemplateInitIfNecessary(entryType);
 
-        String serverStr = jServerTemplateObj.toString().replace("\"webPage\"", "\"webpage\"");
+        String serverStr = jServerTemplateObj.toString().replace("\"webPage\"", "\"webpage\"")
+                                                        .replace("\"Preprint\"", "\"preprint\"");
 
         assertEquals(jLocalObj.toString(), serverStr, "Zotero entry templates should be the same as the ones from the server");
       }
@@ -113,6 +119,9 @@ class ZoteroMetadataTest
     {
       EntryType entryType = zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(serverItemTypeStr, etOther);
       assertNotEquals(etOther, entryType, "Unrecognized Zotero item type found in creator types JSON from server: " + serverItemTypeStr);
+
+      if (creatorTypes.rowKeySet().contains(entryType) == false)
+        fail("No creator type mapping exists for entryType: " + entryType.getUserFriendlyName());
 
       JsonArray jServerCreatorTypesArr = jServerCreatorTypesObj.getArray(serverItemTypeStr);
 

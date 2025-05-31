@@ -109,7 +109,7 @@ public class ZoteroAuthors extends BibAuthors
       String firstName = creatorObj.getStrSafe("firstName"),
              lastName  = creatorObj.getStrSafe("lastName");
 
-      list.add(new BibAuthor(aType, (firstName.length() > 0) || (lastName.length() > 0) ?
+      list.add(new BibAuthor(aType, strNotNullOrBlank(firstName) || strNotNullOrBlank(lastName) ?
         new PersonName(firstName, lastName)
       :
         new PersonName(creatorObj.getStrSafe("name"))));
@@ -178,6 +178,19 @@ public class ZoteroAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This a table that maps Zotero creator type to Hypernomicon author type for
+   * each Zotero item type.
+   * <p>
+   * Only one Zotero creator type should map to each Hypernomicon author type for
+   * any given item type, and only one Hypernomicon author type should be associated
+   * with each Zotero creator type for any given item type.
+   * <p>
+   * Some Zotero creator types will not map to any Hypernomicon author type for
+   * a given item type; that is okay, and means that Hypernomicon will ignore
+   * those "authors".
+   * @return The mapping table
+   */
   private static ImmutableTable<EntryType, String, AuthorType> buildCreatorTypes()
   {
     return new ImmutableTable.Builder<EntryType, String, AuthorType>()
@@ -187,7 +200,6 @@ public class ZoteroAuthors extends BibAuthors
       .put(etAudioRecording, "performer", author)
 
       .put(etBill, "sponsor", author)
-      .put(etBill, "cosponsor", author)
 
       .put(etBlogPost, "author", author)
 
@@ -204,6 +216,8 @@ public class ZoteroAuthors extends BibAuthors
       .put(etConferencePaper, "author", author)
       .put(etConferencePaper, "editor", editor)
       .put(etConferencePaper, "translator", translator)
+
+      .put(etDataSet, "author", author)
 
       .put(etDictionaryEntry, "author", author)
       .put(etDictionaryEntry, "editor", editor)
@@ -263,6 +277,8 @@ public class ZoteroAuthors extends BibAuthors
       .put(etReport, "translator", translator)
 
       .put(etSoftware, "programmer", author)
+
+      .put(etStandard, "author", author)
 
       .put(etStatute, "author", author)
 
