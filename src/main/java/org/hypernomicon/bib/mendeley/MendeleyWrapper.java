@@ -293,7 +293,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public SyncTask createNewSyncTask() throws HyperDataException
+  @Override public SyncTask createNewSyncTask(String message) throws HyperDataException
   {
     if (strNullOrBlank(userID))
       getProfileInfoFromServer();
@@ -307,13 +307,13 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     else
       BibAuthKeys.saveToKeyringIfUnsaved(authKeys, userID);
 
-    return createNewSyncTaskInt();
+    return createNewSyncTaskInt(message);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SyncTask createNewSyncTaskInt() { return syncTask = new SyncTask() { @Override public void call() throws CancelledTaskException, HyperDataException
+  private SyncTask createNewSyncTaskInt(String message) { return syncTask = new SyncTask(message) { @Override public void call() throws CancelledTaskException, HyperDataException
   {
 
 //---------------------------------------------------------------------------
@@ -791,22 +791,17 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
       {
         getProfileInfoFromServer();
       }
-    };
+
+    }.setSilent(true);
 
 //---------------------------------------------------------------------------
 
-    hyperTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
+    hyperTask.addDoneHandler(state ->
     {
-      if (wasRunning && Boolean.FALSE.equals(isRunning))
-      {
-        if ((hyperTask.getState() == State.FAILED) || (hyperTask.getState() == State.CANCELLED))
-        {
-          failHndlr.accept(hyperTask.catchException());
-          return;
-        }
-
+      if ((state == State.FAILED) || (state == State.CANCELLED))
+        failHndlr.accept(hyperTask.getException());
+      else
         successHndlr.accept(userName);
-      }
     });
 
     hyperTask.startWithNewThreadAsDaemon();

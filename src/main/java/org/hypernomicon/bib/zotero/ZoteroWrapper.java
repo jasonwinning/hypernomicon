@@ -190,14 +190,14 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
         break;
 
       case readCollections:
-        if (collectionKey.length() > 0)
+        if (strNotNullOrBlank(collectionKey))
           url += "collections?collectionKey=" + collectionKey;
         else
           url += "collections";
         break;
 
       case readItems:
-        if (itemKey.length() > 0)
+        if (strNotNullOrBlank(itemKey))
           url += "items?itemKey=" + itemKey;
         else
           url += "items";
@@ -220,7 +220,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
         break;
 
       case readTrash:
-        if (itemKey.length() > 0)
+        if (strNotNullOrBlank(itemKey))
           url += "items/trash?itemKey=" + itemKey;
         else
           url += "items/trash";
@@ -449,7 +449,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public SyncTask createNewSyncTask() throws HyperDataException
+  @Override public SyncTask createNewSyncTask(String message) throws HyperDataException
   {
     if (strNotNullOrBlank(userID) && BibAuthKeys.isEmpty(authKeys))
     {
@@ -460,13 +460,13 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     else
       BibAuthKeys.saveToKeyringIfUnsaved(authKeys, userID);
 
-    return createNewSyncTaskInt();
+    return createNewSyncTaskInt(message);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SyncTask createNewSyncTaskInt() { return syncTask = new SyncTask()
+  private SyncTask createNewSyncTaskInt(String message) { return syncTask = new SyncTask(message)
   {
     @Override public void call() throws CancelledTaskException, HyperDataException
     {
@@ -769,7 +769,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
     String unchanged = jUnchanged.keySet().stream().map(jUnchanged::getStr).collect(Collectors.joining(", "));
 
-    if (unchanged.length() > 0)
+    if (strNotNullOrBlank(unchanged))
       errMsgList.add("Unchanged: " + unchanged);
 
     jFailed.keySet().forEach(queueNdx ->
@@ -805,22 +805,17 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
           throw new HyperDataException("An error occurred while retrieving profile information from server: " + getThrowableMessage(e), e);
         }
       }
-    };
+
+    }.setSilent(true);
 
 //---------------------------------------------------------------------------
 
-    hyperTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
+    hyperTask.addDoneHandler(state ->
     {
-      if (wasRunning && Boolean.FALSE.equals(isRunning))
-      {
-        if ((hyperTask.getState() == State.FAILED) || (hyperTask.getState() == State.CANCELLED))
-        {
-          failHndlr.accept(hyperTask.catchException());
-          return;
-        }
-
+      if ((state == State.FAILED) || (state == State.CANCELLED))
+        failHndlr.accept(hyperTask.getException());
+      else
         successHndlr.accept(userName);
-      }
     });
 
     hyperTask.startWithNewThreadAsDaemon();

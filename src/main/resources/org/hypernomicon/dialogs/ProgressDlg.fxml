@@ -16,45 +16,32 @@
    limitations under the License.
 -->
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="120.0" minHeight="120.0" prefHeight="120.0" prefWidth="581.0" minWidth="200.0"
-            xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.hypernomicon.dialogs.ProgressDlgCtrlr">
-  <GridPane hgap="6.0" layoutX="191.0" layoutY="76.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-    <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-    </columnConstraints>
-    <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-    </rowConstraints>
-    <padding>
-      <Insets left="6.0" right="6.0"/>
-    </padding>
-    <Label fx:id="lblTask" text="Here is the task I am performing."/>
-    <Label fx:id="lblPercent" text="Progress: 100%" GridPane.rowIndex="1"/>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-      <ProgressBar fx:id="progressBar" layoutX="52.0" layoutY="11.0" prefWidth="200.0" progress="0.0"
-                   AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0"
-                   AnchorPane.topAnchor="4.0"/>
+<AnchorPane maxHeight="1.7976931348623157E308" minWidth="200.0" prefWidth="581.0" xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.ProgressDlgCtrlr">
+  <VBox fx:id="vbox" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <AnchorPane maxHeight="30.0" minHeight="30.0" prefHeight="30.0">
+      <ProgressBar fx:id="progressBar" progress="0.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="10.0"
+                   AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="4.0"/>
     </AnchorPane>
-    <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-      <center>
-        <Button fx:id="btnCancel" maxWidth="75.0" minWidth="75.0" mnemonicParsing="false" onAction="#btnCancelClick"
-                prefWidth="75.0" text="Cancel" BorderPane.alignment="TOP_CENTER"/>
-      </center>
-    </BorderPane>
-  </GridPane>
+    <AnchorPane maxHeight="30.0" minHeight="30.0" prefHeight="30.0">
+      <BorderPane layoutX="159.0" layoutY="-85.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <center>
+          <HBox alignment="TOP_CENTER" fillHeight="false" spacing="6.0" BorderPane.alignment="CENTER">
+            <Button fx:id="btnSkip" maxWidth="75.0" minWidth="75.0" mnemonicParsing="false" onAction="#btnOkClick"
+                    prefWidth="75.0" text="Skip"/>
+            <Button fx:id="btnCancel" maxWidth="75.0" minWidth="75.0" mnemonicParsing="false"
+                    onAction="#btnCancelClick" prefWidth="75.0" text="Cancel"/>
+          </HBox>
+        </center>
+      </BorderPane>
+    </AnchorPane>
+  </VBox>
 </AnchorPane>

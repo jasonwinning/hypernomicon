@@ -20,9 +20,7 @@ package org.hypernomicon.bib;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 import org.apache.http.client.methods.HttpUriRequest;
@@ -81,7 +79,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public static abstract class SyncTask extends HyperTask
   {
-    protected SyncTask() { super("SyncReferenceLibrary", false); }
+    protected SyncTask(String message) { super("SyncReferenceLibrary", message, false); }
 
     protected boolean changed = false;
     public boolean getChanged() { return changed; }
@@ -111,7 +109,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public abstract void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean reestablishing) throws HyperDataException;
   public abstract void getProfileInfoFromServer(Consumer<String> successHndlr, Consumer<Throwable> failHndlr);
-  public abstract SyncTask createNewSyncTask() throws HyperDataException;
+  public abstract SyncTask createNewSyncTask(String message) throws HyperDataException;
   public abstract LibraryType type();
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
   public abstract String getUserID();

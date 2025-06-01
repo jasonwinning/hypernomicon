@@ -84,9 +84,9 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     mainText = new MainTextWrapper(apDescription);
     tfFileName.setEditable(false);
 
-    addShowMenuItem("Show in System Explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
-    addShowMenuItem("Show in File Manager"   , event -> { if (tfFileName.getText().length() > 0) FileManager.show(curMiscFile.filePath()); });
-    addShowMenuItem("Copy Path to Clipboard" , event -> { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
+    addShowMenuItem("Show in System Explorer", event -> { if (strNotNullOrBlank(tfFileName.getText())) highlightFileInExplorer(curMiscFile.filePath()); });
+    addShowMenuItem("Show in File Manager"   , event -> { if (strNotNullOrBlank(tfFileName.getText())) FileManager.show       (curMiscFile.filePath()); });
+    addShowMenuItem("Copy Path to Clipboard" , event -> { if (strNotNullOrBlank(tfFileName.getText())) copyToClipboard        (curMiscFile.getPath().toString()); });
 
     addShowMenuItem("Unassign File", event ->
     {
@@ -127,8 +127,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     btnWork  .setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
     btnTree  .setOnAction(event -> ui.goToTreeRecord(curMiscFile));
-    btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.filePath()); });
-    btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
+    btnLaunch.setOnAction(event -> { if (strNotNullOrBlank(tfFileName.getText())) launchFile(curMiscFile.filePath()); });
+    btnShow  .setOnAction(event -> { if (strNotNullOrBlank(tfFileName.getText())) highlightFileInExplorer(curMiscFile.filePath()); });
 
     setToolTip(btnShow  , "Show file in system explorer");
     setToolTip(btnManage, "Update or rename file");
@@ -241,8 +241,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     checkAnnotated.setSelected(false);
 
-    htAuthors      .clear();
-    htLabels       .clear();
+    htAuthors   .clear();
+    htLabels    .clear();
     htMentioners.clear();
 
     hcbType.clear();
@@ -280,7 +280,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   // Start file type
 
-    if ((fileTypeID < 1) && (hcbType.getText().length() > 0))
+    if ((fileTypeID < 1) && strNotNullOrBlank(hcbType.getText()))
     {
       HDT_FileType fileType = db.createNewBlankRecord(hdtFileType);
       fileTypeID = fileType.getID();

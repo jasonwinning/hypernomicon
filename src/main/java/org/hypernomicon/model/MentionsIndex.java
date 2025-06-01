@@ -195,7 +195,7 @@ class MentionsIndex
 
       String plainText = mainText.getPlain();
 
-      if (plainText.length() > 0)
+      if (strNotNullOrBlank(plainText))
         KeywordLinkList.generate(plainText).forEach(link -> mentionedInDescToMentioners.addForward(link.key().record, record));
 
       mainText.getDisplayItemsUnmod().forEach(displayItem ->
@@ -262,15 +262,6 @@ class MentionsIndex
 
     task = new HyperTask("MentionsIndex", "The requested operation will be performed after indexing has completed...")
     {
-      @Override protected void done() { Platform.runLater(() ->
-      {
-        waitUntilThreadDies();
-
-        ui.updateProgress("", -1);
-
-        ndxCompleteHandlers.forEach(Runnable::run);
-      }); }
-
       @Override protected void call() throws CancelledTaskException
       {
         clear();
@@ -286,6 +277,13 @@ class MentionsIndex
           }
       }
     };
+
+    task.addDoneHandler(state ->
+    {
+      ui.updateProgress("", -1);
+
+      ndxCompleteHandlers.forEach(Runnable::run);
+    });
 
     task.progressProperty().addListener((ob, oldValue, newValue) -> Platform.runLater(() ->
     {

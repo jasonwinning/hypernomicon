@@ -37,6 +37,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
 import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.mendeley.*;
@@ -660,7 +661,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     btnMendeleyAuthorize.setSelected(false);
     tfVerificationCode.clear();
 
-    SyncBibDlgCtrlr.sync();
+    BibManager.instance().syncWithModalPopup();
 
     vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr);
     btnReEstablishAccess.setDisable(false);
@@ -708,7 +709,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     btnMendeleyAuthorize.setSelected(false);
     tfVerificationCode.clear();
 
-    SyncBibDlgCtrlr.sync();
+    BibManager.instance().syncWithModalPopup();
 
     vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr);
     btnReEstablishAccess.setDisable(false);
@@ -722,7 +723,7 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     String message = "This database is currently linked to a " + db.bibLibraryUserFriendlyName() + " library.";
 
-    if (additionalInfo.length() > 0)
+    if (strNotNullOrBlank(additionalInfo))
       message = message + ' ' + additionalInfo;
 
     lblCurrentlyLinked.setText(message);

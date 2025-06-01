@@ -562,7 +562,7 @@ public final class QueryCtrlr
       htFields.selectRow(0);
     }
 
-    if (caption.length() > 0)
+    if (strNotNullOrBlank(caption))
       tab.setText(caption);
 
     return btnExecuteClick(caption.isEmpty());
@@ -661,7 +661,7 @@ public final class QueryCtrlr
       for (int colNdx = QUERY_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
       {
         String text = row.getText(colNdx);
-        if (text.length() > 0)
+        if (strNotNullOrBlank(text))
           tab.setText(text);
       }
     });
@@ -926,7 +926,7 @@ public final class QueryCtrlr
 
     };
 
-    task.runWhenFinalStateSet(state -> queries.values().forEach(query -> query.cleanup(state)));
+    task.addDoneHandler(state -> queries.values().forEach(query -> query.cleanup(state)));
 
     boolean succeeded = task.runWithProgressDialog() == State.SUCCEEDED;
 
@@ -1079,7 +1079,7 @@ public final class QueryCtrlr
           if (((VariablePopulator) htFields.getPopulator(colNdx)).getRestricted(row) == false)
           {
             String cellText = getCellText(row.getCell(colNdx));
-            if (cellText.length() > 0)
+            if (strNotNullOrBlank(cellText))
               return cellText;
           }
         }

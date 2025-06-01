@@ -28,6 +28,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
+
 import static java.util.Objects.*;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ import com.google.common.collect.Ordering;
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
+import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.EntryType;
@@ -59,8 +61,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextUtil;
-import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.*;
 
 import javafx.animation.*;
 import javafx.application.Platform;
@@ -111,9 +112,8 @@ public final class BibManager extends NonmodalWindow
   private final HyperTable htRelatives;
   private final BibEntryTable entryTable;
   private final CollectionTree collTree;
-  private final String assignCaption, unassignCaption;
-  private final ImageView assignImg, unassignImg;
   private final CustomTextField searchField;
+  private final ToolBarWrapper toolBarWrapper;
 
   public static final Property<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
 
@@ -125,8 +125,8 @@ public final class BibManager extends NonmodalWindow
 
   private void hideBottomControls()                      { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); borderPane.setTop(null); }
   private void viewInRefMgr()                            { viewInRefMgr(tableView.getSelectionModel().getSelectedItem().getEntry()); }
-  public  void rebuildCollectionTree()                   { collTree.rebuild(libraryWrapper.getKeyToColl()); }
-  public  void clearCollectionTree()                     { collTree.clear(); }
+  private void rebuildCollectionTree()                   { collTree.rebuild(libraryWrapper.getKeyToColl()); }
+  private void clearCollectionTree()                     { collTree.clear(); }
 
   private static void viewInRefMgr(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getURLtoViewEntryInRefMgr()); }
   public  static void close(boolean exitingApp)          { close(instance, exitingApp); }
@@ -151,18 +151,16 @@ public final class BibManager extends NonmodalWindow
 
     searchField = setupSearchField();
 
-    assignCaption = btnAssign.getText();
-    unassignCaption = btnUnassign.getText();
-    assignImg = (ImageView) btnAssign.getGraphic();
-    unassignImg = (ImageView) btnUnassign.getGraphic();
-    btnUnassign.setGraphic(null);
+    toolBarWrapper = new ToolBarWrapper(toolBar);
+    toolBarWrapper.setVisible(false, btnUnassign, progressBar, btnDelete, btnPreviewWindow); // Latter 2 are not yet supported. (Not sure if the preview button is needed?)
 
-    toolBar.getItems().removeAll(btnUnassign, progressBar, btnDelete, btnPreviewWindow); // Latter 2 are not yet supported. (Not sure if the preview button is needed?)
+    btnAssign      .setOnAction(event -> assign  (tableView.getSelectionModel().getSelectedItem()));
+    btnUnassign    .setOnAction(event -> unassign(tableView.getSelectionModel().getSelectedItem()));
 
-    btnMainWindow.setOnAction(event -> ui.windows.focusStage(ui.getStage()));
-    btnSync.setOnAction(event -> sync());
-    btnStop.setOnAction(event -> stop());
-    btnAutofill.setOnAction(event -> autofill());
+    btnMainWindow  .setOnAction(event -> ui.windows.focusStage(ui.getStage()));
+    btnSync        .setOnAction(event -> sync());
+    btnStop        .setOnAction(event -> stop());
+    btnAutofill    .setOnAction(event -> autofill());
     btnViewInRefMgr.setOnAction(event -> viewInRefMgr());
 
     Supplier<String> viewEntryInRefMgrCaptionSupplier = () -> "View this entry in " + libraryWrapper.getUserFriendlyName();
@@ -215,7 +213,7 @@ public final class BibManager extends NonmodalWindow
 
     tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> Platform.runLater(this::doRefresh));
 
-    entryTable.addContextMenuItem(viewEntryInRefMgrCaptionSupplier, row -> row.getURLtoViewEntryInRefMgr().length() > 0, row -> viewInRefMgr(row.getEntry()));
+    entryTable.addContextMenuItem(viewEntryInRefMgrCaptionSupplier, row -> strNotNullOrBlank(row.getURLtoViewEntryInRefMgr()), row -> viewInRefMgr(row.getEntry()));
 
     entryTable.addContextMenuItem("Go to work record", HDT_Work.class, work -> ui.goToRecord(work, true));
 
@@ -367,7 +365,7 @@ public final class BibManager extends NonmodalWindow
 
     if (libraryWrapper == null)
     {
-      collTree.clear();
+      clearCollectionTree();
     }
     else
     {
@@ -396,7 +394,7 @@ public final class BibManager extends NonmodalWindow
 
     try
     {
-      syncTask = libraryWrapper.createNewSyncTask();
+      syncTask = libraryWrapper.createNewSyncTask("Syncing...");
     }
     catch (HyperDataException e)
     {
@@ -421,10 +419,8 @@ public final class BibManager extends NonmodalWindow
 
     libraryWrapper.setKeyChangeHandler(entryTable::updateKey);
 
-    syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
+    syncTask.addDoneHandler(state ->
     {
-      if (Boolean.FALSE.equals(wasRunning) || Boolean.TRUE.equals(isRunning)) return;
-
       stop();
       seqT.stop();
 
@@ -433,7 +429,7 @@ public final class BibManager extends NonmodalWindow
       iv1.setFitHeight(16);
       btnSync.setGraphic(iv1);
 
-      if (syncTask.getState() == State.CANCELLED)
+      if (state == State.CANCELLED)
       {
         // If the task failed, and it was a HyperDataException, a popup is displayed by HyperTask.InnerTask.failed()
 
@@ -466,7 +462,8 @@ public final class BibManager extends NonmodalWindow
     if (bibDataRetriever != null)
       bibDataRetriever.stop();
 
-    toolBar.getItems().remove(progressBar);
+    toolBarWrapper.setVisible(false, progressBar);
+
     btnStop.setDisable(true);
     btnSync.setDisable(false);
 
@@ -484,8 +481,8 @@ public final class BibManager extends NonmodalWindow
     stop();
 
     btnStop.setDisable(false);
-    toolBar.getItems().add(progressBar);
     btnSync.setDisable(true);
+    toolBarWrapper.setVisible(true, progressBar);
 
     BibEntry<?, ?> entry = tableView.getSelectionModel().getSelectedItem().getEntry();
 
@@ -862,22 +859,15 @@ public final class BibManager extends NonmodalWindow
 
     BibEntryRow row = tableView.getSelectionModel().getSelectedItem();
 
-    btnAssign   .setDisable(row == null);
-    btnAutofill .setDisable(row == null);
+    btnAssign      .setDisable (row == null);
+    btnAutofill    .setDisable (row == null);
     btnViewInRefMgr.setDisable((row == null) || row.getURLtoViewEntryInRefMgr().isBlank());
 
-    if ((row == null) || (row.getWork() == null))
-    {
-      btnAssign.setOnAction(event -> assign(tableView.getSelectionModel().getSelectedItem()));
-      btnAssign.setGraphic(assignImg);
-      btnAssign.setText(assignCaption);
-    }
-    else
-    {
-      btnAssign.setOnAction(event -> unassign(tableView.getSelectionModel().getSelectedItem()));
-      btnAssign.setGraphic(unassignImg);
-      btnAssign.setText(unassignCaption);
-    }
+    toolBarWrapper.setVisibleNoUpdate((libraryWrapper != null) && (libraryWrapper.type() != LibraryType.ltMendeley), btnViewInRefMgr);
+    toolBarWrapper.setVisibleNoUpdate((row == null) || (row.getWork() == null), btnAssign  );
+    toolBarWrapper.setVisibleNoUpdate((row != null) && (row.getWork() != null), btnUnassign);
+
+    toolBarWrapper.update();
   }
 
 //---------------------------------------------------------------------------
@@ -949,6 +939,32 @@ public final class BibManager extends NonmodalWindow
     show(instance);
 
     if (focusOnSearchField) Platform.runLater(() -> safeFocus(instance.searchField));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void syncWithModalPopup()
+  {
+    try
+    {
+      syncTask = libraryWrapper.createNewSyncTask("Downloading library data...");
+    }
+    catch (HyperDataException e)
+    {
+      errorPopup("Unable to download library data: " + getThrowableMessage(e));
+      return;
+    }
+
+    syncTask.startWithNewThread();  // Start before calling runWithProgressDialog because we want to cancel it by calling LibraryWrapper.stop()
+
+    syncTask.runWithProgressDialog();
+
+    libraryWrapper.stop();
+
+    syncTask.cancelAndWait();
+
+    rebuildCollectionTree();
   }
 
 //---------------------------------------------------------------------------

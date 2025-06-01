@@ -63,7 +63,9 @@ public final class CryptoUtil
 
   private static final RequestProcessor keyringService = new RequestProcessor(Keyring.class);
 
-  private static final long SHOW_PROGRESS_DIALOG_THRESHOLD_MS = 300;
+  private static final String SECURITY_PROMPT_MESSAGE = "You might need to respond to a password prompt in a separate window.";
+
+  private static final long SHOW_PROGRESS_DIALOG_THRESHOLD_MS = 750;
 
   private static KeyringProvider keyring;
 
@@ -258,7 +260,7 @@ public final class CryptoUtil
               throwExceptionIfCancelled(this);
             }
 
-          }}.runWithProgressDialog();
+          }}.addMessage(SECURITY_PROMPT_MESSAGE).runWithProgressDialog();
         }
       }
       catch (InterruptedException e)
@@ -286,7 +288,7 @@ public final class CryptoUtil
           throw new CancelledTaskException();
       }
 
-    }}.runWithProgressDialog() == State.SUCCEEDED ? result.get() : null;
+    }}.addMessage(SECURITY_PROMPT_MESSAGE).runWithProgressDialog() == State.SUCCEEDED ? result.get() : null;
   }
 
 //---------------------------------------------------------------------------

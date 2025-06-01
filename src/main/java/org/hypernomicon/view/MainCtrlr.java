@@ -195,7 +195,6 @@ public final class MainCtrlr
   public enum OmniSearchMode
   {
     asYouType,
-    name,
     allFields,
     currentDesc
   }
@@ -1275,7 +1274,7 @@ public final class MainCtrlr
 
         dontInteract = false;
 
-        if ((shuttingDown == false) && app.prefs.getBoolean(PrefKey.CHECK_INTERNET, true) && (InternetCheckDlgCtrlr.check() == false))
+        if ((shuttingDown == false) && app.prefs.getBoolean(PrefKey.CHECK_INTERNET, true) && (checkInternet() == false))
           return;
 
         if (saveAllToXML(false, false, false, true) == false)
@@ -2098,7 +2097,7 @@ public final class MainCtrlr
     if (progressBar.isVisible() == false)
       progressBar.setVisible(true);
 
-    if (task.length() > 0)
+    if (strNotNullOrBlank(task))
     {
       if (lblProgress.isVisible() == false)
         lblProgress.setVisible(true);
@@ -2379,7 +2378,7 @@ public final class MainCtrlr
 
     if (internetNotCheckedYet && app.prefs.getBoolean(PrefKey.CHECK_INTERNET, true))
     {
-      if (InternetCheckDlgCtrlr.check() == false)
+      if (checkInternet() == false)
         return false;
 
       internetNotCheckedYet = false;
@@ -3349,7 +3348,7 @@ public final class MainCtrlr
 
     BibData workBibData = work.getBibData();
 
-    if (work.getBibEntryKey().length() > 0)
+    if (strNotNullOrBlank(work.getBibEntryKey()))
       showNewEntry = false;
 
     MergeWorksDlgCtrlr mwd;
@@ -3502,7 +3501,7 @@ public final class MainCtrlr
     if (omniSearchMode.getValue() != OmniSearchMode.asYouType)
       return;
 
-    if ((dontShowOmniTable == false) && (newValue.length() > 0) && (selectorTabEnum() == omniTabEnum))
+    if ((dontShowOmniTable == false) && strNotNullOrBlank(newValue) && (selectorTabEnum() == omniTabEnum))
       showFindTable();
 
     if (newValue.isEmpty())
@@ -3545,7 +3544,7 @@ public final class MainCtrlr
     if (nextID < 1)
     {
       String text = HyperTableCell.getCellText(hcbGoTo.selectedHTC()).strip();
-      if (text.length() > 0)
+      if (strNotNullOrBlank(text))
         lblStatus.setText("No results: searched " + getTypeName(selectorType()) + " records for \"" + text + '"');
 
       return;

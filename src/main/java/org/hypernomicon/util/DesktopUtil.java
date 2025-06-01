@@ -24,12 +24,12 @@ import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.WebButton.WebButtonField.*;
@@ -37,12 +37,20 @@ import static org.hypernomicon.util.WebButton.WebButtonField.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.utils.URIBuilder;
+
+import org.hypernomicon.HyperTask;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
+import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
+import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
 import com.google.common.collect.Lists;
+
+import javafx.concurrent.Worker.State;
 
 //---------------------------------------------------------------------------
 
@@ -273,7 +281,7 @@ public final class DesktopUtil
   public static void searchDOI(String str)
   {
     String doi = matchDOI(str);
-    if (doi.length() > 0)
+    if (strNotNullOrBlank(doi))
       openWebLink("http://dx.doi.org/" + escapeURL(doi, false));
   }
 
@@ -433,14 +441,11 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void findAvailablePorts(int numToFind, List<Integer> ports) throws IOException
+  public static void findAvailablePorts(int numToFind, Collection<Integer> ports) throws IOException
   {
-    if (numToFind < 1) return;
-
-    try (ServerSocket socket = new ServerSocket(0))
+    while (numToFind-- > 0) try (ServerSocket socket = new ServerSocket(0))
     {
       ports.add(socket.getLocalPort());
-      findAvailablePorts(numToFind - 1, ports);
     }
   }
 
@@ -496,18 +501,18 @@ public final class DesktopUtil
   private static String getHostName()
   {
     String hostName = formatName(SystemUtils.getHostName());
-    if (hostName.length() > 0) return hostName;
+    if (strNotNullOrBlank(hostName)) return hostName;
 
     hostName = formatName(System.getenv("HOSTNAME"));
-    if (hostName.length() > 0) return hostName;
+    if (strNotNullOrBlank(hostName)) return hostName;
 
     hostName = formatName(System.getenv("COMPUTERNAME"));
-    if (hostName.length() > 0) return hostName;
+    if (strNotNullOrBlank(hostName)) return hostName;
 
     try
     {
       hostName = formatName(execReadToString(new String[] {"hostname"}));
-      if (hostName.length() > 0) return hostName;
+      if (strNotNullOrBlank(hostName)) return hostName;
     }
     catch (IOException | InterruptedException e) { noOp(); }
 
@@ -516,7 +521,7 @@ public final class DesktopUtil
       for (String line : new FilePath("/etc/hostname").readToStrList())
       {
         hostName = formatName(line);
-        if (hostName.length() > 0) return hostName;
+        if (strNotNullOrBlank(hostName)) return hostName;
       }
     }
     catch (IOException e) { noOp(); }
@@ -602,6 +607,47 @@ public final class DesktopUtil
     }
 
     return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean checkInternet()
+  {
+    DialogResult result = mrRetry;
+
+    while (result == mrRetry)
+    {
+      HyperTask task = new HyperTask("CheckForInternet", "Checking for internet connection...", false) { @Override protected void call() throws HyperDataException, CancelledTaskException
+      {
+        try
+        {
+          HttpURLConnection con = (HttpURLConnection) URI.create("https://www.google.com/").toURL().openConnection();
+          con.connect();
+
+          if (con.getResponseCode() == HttpURLConnection.HTTP_OK)
+            return;
+
+          throw new HttpResponseException(con.getResponseCode(), con.getResponseMessage());
+        }
+        catch (UnknownHostException e) { throw new CancelledTaskException(); }
+        catch (IOException          e) { throw new HyperDataException(e); }
+
+      }}.setSilent(true)
+        .setSkippable(true)
+        .addMessage("Press \"Skip\" if internet connection is not needed.");
+
+      if (task.runWithProgressDialog() == State.SUCCEEDED)
+        return true;
+
+      Throwable e = task.getException();
+
+      String msg = e instanceof HyperDataException ? getThrowableMessage(e.getCause()) : (e == null ? "" : getThrowableMessage(e));
+
+      result = abortRetryIgnoreDialog("Warning: Internet connection check failed" + (strNullOrBlank(msg) ? '.' : ": " + msg));
+    }
+
+    return result == mrIgnore;
   }
 
 //---------------------------------------------------------------------------

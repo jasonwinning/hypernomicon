@@ -20,10 +20,12 @@ package org.hypernomicon.dialogs;
 import javafx.application.Platform;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.base.ModalDialog;
@@ -36,11 +38,15 @@ public final class ProgressDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private Label lblPercent;
   private boolean ownThread = true;
   private long lastPercent = -200;
 
+  @FXML private Button btnSkip;
   @FXML private ProgressBar progressBar;
-  @FXML private Label lblTask, lblPercent;
+  @FXML private VBox vbox;
+
+  private static final double ROW_HEIGHT = 30.0;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -49,12 +55,24 @@ public final class ProgressDlgCtrlr extends ModalDialog
   {
     super("ProgressDlg", appTitle, true);
 
-    lblTask.setText("");
+    task.setInitialized();  // Prevent progress dialog configuration from being changed
+
+    Label lblMessage = newLabelRow("");
+
+    task.getAdditionalMessages().forEach(this::newLabelRow);
+
+    if (task.willHaveProgressUpdates())
+      lblPercent = newLabelRow("");
+
+    if (task.getSkippable() == false)
+      removeFromParent(btnSkip);
 
     updateProgressLabel(task.progressProperty().longValue());
 
-    lblTask    .textProperty    ().bind(task.messageProperty ());
+    lblMessage .textProperty    ().bind(task.messageProperty ());
     progressBar.progressProperty().bind(task.progressProperty());
+
+    setHeights(rootPane, ROW_HEIGHT * vbox.getChildren().size());
 
     task.progressProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -68,7 +86,7 @@ public final class ProgressDlgCtrlr extends ModalDialog
       updateProgressLabel(percent);
     });
 
-    task.runWhenFinalStateSet(state -> stage.close());
+    task.addDoneHandler(state -> stage.close());
 
     onShown = () -> Platform.runLater(() ->       // This needs to be done in a runLater because the task may have been started so recently that
     {                                             // the task's running property has not yet been set to true. It gets set to true by a runnable
@@ -83,7 +101,7 @@ public final class ProgressDlgCtrlr extends ModalDialog
       if (task.isRunning() && ownThread)
         task.cancelAndWait();
 
-      lblTask.textProperty().unbind();
+      lblMessage .textProperty    ().unbind();
       progressBar.progressProperty().unbind();
     });
   }
@@ -95,9 +113,28 @@ public final class ProgressDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private Label newLabelRow(String message)
+  {
+    Label label = new Label(message);
+
+    AnchorPane.setBottomAnchor(label, 5.0);
+    AnchorPane.setLeftAnchor  (label, 6.0);
+
+    AnchorPane ap = new AnchorPane(label);
+    setHeights(ap, ROW_HEIGHT);
+
+    vbox.getChildren().add(vbox.getChildren().size() - 2, ap);
+
+    return label;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void updateProgressLabel(long percent)
   {
-    lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + percent + " %");
+    if (lblPercent != null)
+      lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + percent + " %");
   }
 
 //---------------------------------------------------------------------------
@@ -110,6 +147,10 @@ public final class ProgressDlgCtrlr extends ModalDialog
    * <p>The task may already be running when this method is called.
    * If it is not, it will be started automatically.</p>
    *
+   * <p>If the task was already running, and the user clicks Cancel or Skip,
+   * this method does not tell the task to cancel or terminate; this should
+   * be handled by the caller.</p>
+   *
    * <p>To show an indeterminate animation in the progress dialog, pass <code>false</code> for the
    * <code>withProgressUpdates</code> parameter in the {@link HyperTask} constructor.</p>
    * @param task The task to execute
@@ -117,8 +158,7 @@ public final class ProgressDlgCtrlr extends ModalDialog
    */
   public static State performTask(HyperTask task)
   {
-    new ProgressDlgCtrlr(task).showModal();
-    return task.getState();
+    return new ProgressDlgCtrlr(task).showModal() ? State.SUCCEEDED : task.getState();
   }
 
 //---------------------------------------------------------------------------

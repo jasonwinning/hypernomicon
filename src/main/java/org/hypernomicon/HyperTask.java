@@ -20,6 +20,8 @@ package org.hypernomicon;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -77,6 +79,8 @@ public abstract class HyperTask
     private final String startingMessage;
     private final boolean withProgressUpdates;
 
+    private boolean silent = false;
+
     private InnerTask(String startingMessage, boolean withProgressUpdates)
     {
       this.startingMessage = startingMessage;
@@ -94,28 +98,17 @@ public abstract class HyperTask
     }
 
     @Override protected void updateProgress(double cur, double total) { super.updateProgress(cur, total); } // Make visible to outer class
-    @Override protected void done()                                   { HyperTask.this.done(); }
 
     @Override protected void failed()
     {
+      if (silent) return;
+
       Throwable e = getException();
 
       if (e instanceof HyperDataException)
         Platform.runLater(() -> errorPopup(e));
       else if (e != null)
         logThrowable(e);
-    }
-
-    /**
-     * Prevent exception from being presented to the user in the InnerTask.failed method.<br>
-     * This can be called from a "running" property listener.
-     * @return The exception
-     */
-    private Throwable catchException()
-    {
-      Throwable e = getException();
-      ((ObjectProperty<Throwable>) exceptionProperty()).set(null);
-      return e;
     }
   }
 
@@ -184,9 +177,11 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 
   private final InnerTask innerTask;
+  private final List<String> additionalMessages = new ArrayList<>();
   private final String threadName;
 
-  private HyperThread thread;
+  protected HyperThread thread;
+  private boolean skippable = false, initialized = false;
 
   /**
    * If completedCount is negative, then the progress will be shown as indeterminate, regardless of what totalCount is.
@@ -197,41 +192,25 @@ public abstract class HyperTask
   protected abstract void call() throws HyperDataException, CancelledTaskException;
 
   /**
-   * Protected method invoked when this task transitions to state
-   * {@code isDone} (whether normally or via cancellation). The
-   * default implementation does nothing.  Subclasses may override
-   * this method to invoke completion callbacks or perform
-   * bookkeeping. Note that you can query status inside the
-   * implementation of this method to determine whether this task
-   * has been cancelled.
-   */
-  protected void done() { }
-
-  /**
    * Terminates execution of this task.
    *
    * @return returns true if the cancel was successful
    */
   public boolean cancel() { return innerTask.cancel(); }
 
-  public Throwable getException() { return innerTask.getException(); }
-
-  /**
-   * Prevent exception from being presented to the user in the InnerTask.failed method.<br>
-   * This can be called from a "running" property listener.
-   * @return The exception
-   */
-  public Throwable catchException() { return innerTask.catchException(); }
-  public State getState()           { return innerTask.getState(); }
+  public Throwable getException()             { return innerTask.getException(); }
+  public State getState()                     { return innerTask.getState(); }
+  public List<String> getAdditionalMessages() { return additionalMessages; }
 
   public ReadOnlyStringProperty  messageProperty () { return innerTask.messageProperty (); }
-  public ReadOnlyBooleanProperty runningProperty () { return innerTask.runningProperty (); }
   public ReadOnlyDoubleProperty  progressProperty() { return innerTask.progressProperty(); }
 
-  public boolean threadIsAlive() { return HyperThread.isRunning(thread); }
-  public boolean isRunning()     { return innerTask.isRunning(); }
-  public boolean isCancelled()   { return innerTask.isCancelled(); }
-  public boolean isDone()        { return innerTask.isDone(); }
+  public boolean getSkippable()            { return skippable; }
+  public boolean threadIsAlive()           { return HyperThread.isRunning(thread); }
+  public boolean isRunning()               { return innerTask.isRunning(); }
+  public boolean isCancelled()             { return innerTask.isCancelled(); }
+  public boolean isDone()                  { return innerTask.isDone(); }
+  public boolean willHaveProgressUpdates() { return innerTask.withProgressUpdates; }
 
   protected void incrementAndUpdateProgress() throws CancelledTaskException { completedCount++; updateProgress(); }
 
@@ -256,6 +235,10 @@ public abstract class HyperTask
    * <p>The task may already be running when this method is called.
    * If it is not, it will be started automatically.</p>
    *
+   * <p>If the task was already running, and the user clicks Cancel or Skip,
+   * this method does not tell the task to cancel or terminate; this should
+   * be handled by the caller.</p>
+   *
    * <p>To show an indeterminate animation in the progress dialog, pass <code>false</code> for the
    * <code>withProgressUpdates</code> parameter in the {@link HyperTask} constructor.</p>
    * @return The final {@link State} of the task.
@@ -265,7 +248,65 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected synchronized boolean waitUntilThreadDies()
+  /**
+   * Prevent further changes to progress dialog configuration.
+   * <p>
+   * This should only be called from ProgressDlgCtrlr
+   */
+  public void setInitialized() { initialized = true; }
+
+  /**
+   * If true, then if an exception is thrown during the task's <code>call</code> method,
+   * no popup will be shown and the exception will not automatically be logged.
+   * @param silent Whether to report exceptions
+   * @return This HyperTask
+   */
+  public HyperTask setSilent(boolean silent)
+  {
+    if (initialized) throw new IllegalStateException("Already initialized");
+
+    innerTask.silent = silent;
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Add an additional message to be shown on the progress popup window
+   * @param message The message
+   * @return This HyperTask
+   */
+  public HyperTask addMessage(String message)
+  {
+    if (initialized) throw new IllegalStateException("Already initialized");
+
+    additionalMessages.add(message);
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * If true, a "Skip" button will appear in addition to the Cancel button. If "Skip"
+   * is pressed, the task will stop running early (the same as if Cancel was clicked)
+   * but the progress dialog's showModal method will return true (as if OK was clicked).
+   * @param skippable Whether the "Skip" button should be shown
+   * @return This HyperTask
+   */
+  public HyperTask setSkippable(boolean skippable)
+  {
+    if (initialized) throw new IllegalStateException("Already initialized");
+
+    this.skippable = skippable;
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private synchronized boolean waitUntilThreadDies()
   {
     if ((thread == null) || (thread.isAlive() == false)) return true;
 
@@ -292,8 +333,7 @@ public abstract class HyperTask
    */
   public boolean cancelAndWait()
   {
-    if (cancel() == false)
-      return false;
+    cancel();
 
     return waitUntilThreadDies();
   }
@@ -312,6 +352,8 @@ public abstract class HyperTask
 
   public void startWithNewThreadAsDaemon()
   {
+    initialized = true;
+
     if (getState() != State.READY)
       throw new IllegalStateException("Can only start a task in the READY state. Was in state " + getState());
 
@@ -328,6 +370,8 @@ public abstract class HyperTask
 
   public void startWithNewThread()
   {
+    initialized = true;
+
     if (getState() != State.READY)
       throw new IllegalStateException("Can only start a task in the READY state. Was in state " + getState());
 
@@ -340,26 +384,50 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void runWhenFinalStateSet(Consumer<State> hndlr)
+  /**
+   * Add a handler that will run after the task is finished, regardless of whether
+   * it was cancelled, failed, or succeeded.
+   * <p>
+   * It will only run after both (1) a final
+   * state is set, and (2) the task thread is no longer alive.
+   * <p>
+   * The final state is
+   * passed as a parameter to the handler.
+   * @param hndlr The handler
+   */
+  public void addDoneHandler(Consumer<State> hndlr)
   {
     EventHandler<WorkerStateEvent> successHndlr = innerTask.getOnSucceeded(),
                                    failHndlr    = innerTask.getOnFailed(),
                                    cancelHndlr  = innerTask.getOnCancelled();
+
     innerTask.setOnSucceeded(e ->
     {
-      if (successHndlr != null) successHndlr.handle(e);
+      if (successHndlr != null)
+        successHndlr.handle(e);
+      else
+        waitUntilThreadDies();
+
       hndlr.accept(State.SUCCEEDED);
     });
 
     innerTask.setOnFailed(e ->
     {
-      if (failHndlr != null) failHndlr.handle(e);
+      if (failHndlr != null)
+        failHndlr.handle(e);
+      else
+        waitUntilThreadDies();
+
       hndlr.accept(State.FAILED);
     });
 
     innerTask.setOnCancelled(e ->
     {
-      if (cancelHndlr != null) cancelHndlr.handle(e);
+      if (cancelHndlr != null)
+        cancelHndlr.handle(e);
+      else
+        waitUntilThreadDies();
+
       hndlr.accept(State.CANCELLED);
     });
   }
