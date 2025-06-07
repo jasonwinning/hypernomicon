@@ -32,7 +32,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static final PersonName EMPTY = new PersonName("", "");
+  public static final PersonName EMPTY = new PersonName("", "");
 
   private final String first, last;
 

@@ -17,16 +17,10 @@
 
 package org.hypernomicon.bib.authors;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Iterators;
 
@@ -68,7 +62,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   public void clear()               { throw new UnsupportedOperationException("clear"); }
 
   public boolean isEmpty()          { return iterator().hasNext() == false; }
-  public Stream<BibAuthor> stream() { return StreamSupport.stream(spliterator(), false); }
+  public Stream<BibAuthor> stream() { return iterableToStream(this); }
 
   private void add(AuthorType authorType, HDT_Person person)    { add(new BibAuthor(authorType, person)); }
   public final void add(AuthorType authorType, PersonName name) { add(new BibAuthor(authorType, name)); }

@@ -34,9 +34,7 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -52,7 +50,6 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -113,7 +110,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   int getMainColNdx()                                           { return mainCol; }
   public void removeRow(HyperTableRow row)                      { rows.remove(row); }
   public Iterable<HyperTableRow> dataRows()                     { return new DataRowIterator(); }
-  public Stream<HyperTableRow> dataRowStream()                  { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
+  public Stream<HyperTableRow> dataRowStream()                  { return iterableToStream(dataRows()); }
   public int dataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
   public void addRefreshHandler(Runnable handler)               { refreshHandler = handler; }
   public HyperTableRow selectRowByRecord(HDT_Record record)     { return nullSwitch(getRowByRecord(record), null, this::selectRow); }

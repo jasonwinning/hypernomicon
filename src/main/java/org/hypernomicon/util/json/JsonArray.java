@@ -44,6 +44,7 @@ public final class JsonArray implements Cloneable
 //---------------------------------------------------------------------------
 
   public void clear()                     { jArr.clear(); }
+  public void remove(int ndx)             { jArr.remove(ndx); }
   public JsonObj getObj(int ndx)          { return new JsonObj((JSONObject) jArr.get(ndx)); }
   public JsonArray getArray(int ndx)      { return new JsonArray((JSONArray) jArr.get(ndx)); }
   public int size()                       { return jArr.size(); }

@@ -1395,7 +1395,7 @@ public final class Util
    */
   public static <T1, T2> T1 findFirstHaving(Iterable<T2> iterable, Function<T2, T1> func)
   {
-    return StreamSupport.stream(iterable.spliterator(), false).map(func).filter(Objects::nonNull).findFirst().orElse(null);
+    return iterableToStream(iterable).map(func).filter(Objects::nonNull).findFirst().orElse(null);
   }
 
   /**
@@ -1415,7 +1415,7 @@ public final class Util
    */
   public static <T1, T2> T1 findFirstHaving(Iterable<T2> iterable, Function<T2, T1> func, Predicate<T1> pred)
   {
-    return StreamSupport.stream(iterable.spliterator(), false).map(func).filter(obj -> (obj != null) && pred.test(obj)).findFirst().orElse(null);
+    return iterableToStream(iterable).map(func).filter(obj -> (obj != null) && pred.test(obj)).findFirst().orElse(null);
   }
 
   /**
@@ -1473,7 +1473,7 @@ public final class Util
    */
   public static <T> T findFirst(Iterable<T> iterable, Predicate<T> pred)
   {
-    return StreamSupport.stream(iterable.spliterator(), false).filter(pred).findFirst().orElse(null);
+    return iterableToStream(iterable).filter(pred).findFirst().orElse(null);
   }
 
 //---------------------------------------------------------------------------
@@ -2211,6 +2211,20 @@ public final class Util
   public static <T> Iterable<T> streamToIterable(Stream<T> stream)
   {
     return stream::iterator;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Utility function to convert an {@link java.lang.Iterable} into a {@link java.util.stream.Stream}.
+   * @param <T> the type of elements in the stream
+   * @param iterable the iterable to be converted into a stream
+   * @return a stream of elements that would be returned by the iterable
+   */
+  public static <T> Stream<T> iterableToStream(Iterable<T> iterable)
+  {
+    return StreamSupport.stream(iterable.spliterator(), false);
   }
 
 //---------------------------------------------------------------------------

@@ -17,24 +17,19 @@
 
 package org.hypernomicon.model.items;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import org.hypernomicon.model.records.HDT_Person;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.records.HDT_Person;
+
+import static org.hypernomicon.util.Util.*;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 //---------------------------------------------------------------------------
 
@@ -71,7 +66,7 @@ public abstract class Authors implements Iterable<Author>
   public boolean isEmpty()                     { return size() == 0; }
   public Collection<Author> asCollection()     { return Sets.newLinkedHashSet(this); }
   public List<Author> asList()                 { return ImmutableList.copyOf(this); }
-  public Stream<Author> stream()               { return StreamSupport.stream(spliterator(), false); }
+  public Stream<Author> stream()               { return iterableToStream(this); }
   void expire()                                { clearNoMod(); }
 
   @Override public Iterator<Author> iterator() { return new AuthorIterator(); }

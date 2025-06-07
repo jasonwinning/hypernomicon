@@ -127,32 +127,32 @@ public final class RISBibData extends BibDataStandalone
 
         case "A1" : case "AU" :
 
-          getAuthors().add(AuthorType.author, new PersonName(val)); break;
+          authors.add(AuthorType.author, new PersonName(val)); break;
 
         case "A2" :
 
           if (getEntryType().isChild())
-            getAuthors().add(AuthorType.editor, new PersonName(val));
+            authors.add(AuthorType.editor, new PersonName(val));
 
           break;
 
         case "A3" :
 
           if ((tagsAndValues.containsKey("ED") == false) && (tagsAndValues.containsKey("A2") == false))
-            getAuthors().add(AuthorType.editor, new PersonName(val));
+            authors.add(AuthorType.editor, new PersonName(val));
 
           break;
 
         case "A4" :
 
           if (getEntryType().isParent())
-            getAuthors().add(AuthorType.translator, new PersonName(val));
+            authors.add(AuthorType.translator, new PersonName(val));
 
           break;
 
         case "ED" :
 
-          getAuthors().add(AuthorType.editor, new PersonName(val)); break;
+          authors.add(AuthorType.editor, new PersonName(val)); break;
 
         case "CY" : case "PP" :
 
