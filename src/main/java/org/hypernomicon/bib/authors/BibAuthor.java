@@ -120,8 +120,8 @@ public final class BibAuthor implements Cloneable
 
 //---------------------------------------------------------------------------
 
-  public String getGiven()      { return getName().getFirst(); }
-  public String getFamily()     { return getName().getLast(); }
+  public String firstName()     { return getName().getFirst(); }
+  public String lastName()      { return getName().getLast(); }
   public PersonName getName()   { return person == null ? name : person.getName(); }
   public HDT_Person getPerson() { return person; }
   public boolean getIsAuthor()  { return (isEditor == false) && (isTrans == false); }

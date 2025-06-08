@@ -257,8 +257,8 @@ public abstract class BibFieldCtrlr
           {
             Populator pop = htAuthors.getPopulator(0);
             pop.populate(false);
-            pop.addEntry(author.getNameLastFirst());
-            row.setCellValue(0, author.getNameLastFirst(), hdtPerson);
+            pop.addEntry(author.nameLastFirst());
+            row.setCellValue(0, author.nameLastFirst(), hdtPerson);
           }
           else
           {

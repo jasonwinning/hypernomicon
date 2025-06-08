@@ -269,16 +269,16 @@ public class AutoCompleteCBHelper
           for (Author author : ((HDT_Work)record).getAuthors())
           {
             if ((personName.getFirst().length() > 0) &&
-                (author.getFirstName(true).toLowerCase().contains(personName.getFirst()) ||
-                 author.getLastName (true).toLowerCase().contains(personName.getFirst())))
+                (author.firstName(true).toLowerCase().contains(personName.getFirst()) ||
+                 author.lastName (true).toLowerCase().contains(personName.getFirst())))
             {
               cells.add(cell);
               continue cbItemsLoop;
             }
 
             if ((personName.getLast().length() > 0) &&
-                (author.getFirstName(true).toLowerCase().contains(personName.getLast()) ||
-                 author.getLastName (true).toLowerCase().contains(personName.getLast())))
+                (author.firstName(true).toLowerCase().contains(personName.getLast()) ||
+                 author.lastName (true).toLowerCase().contains(personName.getLast())))
             {
               cells.add(cell);
               continue cbItemsLoop;

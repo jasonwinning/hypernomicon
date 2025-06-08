@@ -50,6 +50,14 @@ class MendeleyAuthors extends BibAuthors
     this.entryType = entryType;
   }
 
+  MendeleyAuthors(Iterable<BibAuthor> otherAuthors, EntryType entryType)
+  {
+    jsonObj = new JsonObj();
+    this.entryType = entryType;
+
+    setAll(otherAuthors);
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -76,11 +84,11 @@ class MendeleyAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private List<BibAuthor> getList(JsonArray arr, AuthorType aType)
+  private List<BibAuthor> getList(JsonArray arr, AuthorType authorType)
   {
     List<BibAuthor> list = new ArrayList<>();
 
-    if ((arr == null) || (ignoreEditors() && (aType == AuthorType.editor))) return list;
+    if ((arr == null) || (ignoreEditors() && (authorType == AuthorType.editor))) return list;
 
     arr.getObjs().forEach(jObj ->
     {
@@ -88,7 +96,7 @@ class MendeleyAuthors extends BibAuthors
              lastName  = jObj.getStrSafe("last_name");
 
       if (strNotNullOrEmpty(firstName) || strNotNullOrEmpty(lastName))
-        list.add(new BibAuthor(aType, new PersonName(firstName, lastName)));
+        list.add(new BibAuthor(authorType, new PersonName(firstName, lastName)));
     });
 
     return list;
@@ -154,8 +162,8 @@ class MendeleyAuthors extends BibAuthors
 
     JsonObj personObj = new JsonObj();
 
-    personObj.put("first_name", removeAllParentheticals(bibAuthor.getGiven()));
-    personObj.put("last_name", bibAuthor.getFamily());
+    personObj.put("first_name", removeAllParentheticals(bibAuthor.firstName()));
+    personObj.put("last_name", bibAuthor.lastName());
 
     jsonObj.getOrAddArray(authorTypeStr).add(personObj);
 

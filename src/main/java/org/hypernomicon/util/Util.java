@@ -36,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.*;
 import java.util.regex.Matcher;
@@ -76,7 +77,7 @@ public final class Util
    */
   public static final Object UNUSED = new Object();
 
-  public static final ReentrantLock globalLock = new ReentrantLock();
+  public static final Lock globalLock = new ReentrantLock();
 
   public static final StopWatch stopWatch1 = new StopWatch(), stopWatch2 = new StopWatch(), stopWatch3 = new StopWatch(),
                                 stopWatch4 = new StopWatch(), stopWatch5 = new StopWatch(), stopWatch6 = new StopWatch();
@@ -1766,6 +1767,17 @@ public final class Util
     "\\u2089\\uFF19]"
   );
 
+  /**
+   * Converts Unicode numerals to their ASCII equivalents.
+   *
+   * <p>This method scans the input string for Unicode numerals, including superscript,
+   * subscript, full-width, and circled numerals, and replaces them with their ASCII
+   * counterparts using {@link #unicodeToAsciiNumeral(char)}.</p>
+   *
+   * @param input The string potentially containing Unicode numerals. Must not be {@code null}.
+   * @return A string where Unicode numerals are replaced with their ASCII equivalents.
+   * @throws NullPointerException if {@code input} is {@code null}.
+   */
   public static String convertUnicodeNumeralsToAscii(String input)
   {
     Matcher matcher = UNICODE_NUMERALS_PATTERN.matcher(input);
@@ -2012,6 +2024,17 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Converts a byte buffer to a string using the detected character set.
+   *
+   * <p>This method takes a byte array and decodes it into a string using the charset
+   * determined by {@link #detectCharset(byte[])}.</p>
+   *
+   * @param buf The byte array to convert. Must not be {@code null}.
+   * @return A string representation of the byte buffer using the detected charset.
+   * @throws NullPointerException if {@code buf} is {@code null}.
+   * @throws java.nio.charset.UnsupportedCharsetException if the detected charset is not supported.
+   */
   public static String byteBufferToString(byte[] buf)
   {
     return new String(buf, detectCharset(buf));
@@ -2020,6 +2043,17 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Determines whether the shortcut key (Cmd on macOS, Ctrl on other OS) is currently pressed.
+   *
+   * <p>This method checks the appropriate modifier key based on the operating system:
+   * - On macOS, it checks if the Meta (Command) key is down.
+   * - On non-macOS systems, it checks if the Control key is down.</p>
+   *
+   * @param keyEvent The {@link KeyEvent} to evaluate. Must not be {@code null}.
+   * @return {@code true} if the appropriate shortcut key is down, otherwise {@code false}.
+   * @throws NullPointerException if {@code keyEvent} is {@code null}.
+   */
   public static boolean shortcutKeyIsDown(KeyEvent keyEvent)
   {
     return SystemUtils.IS_OS_MAC ? keyEvent.isMetaDown() : keyEvent.isControlDown();
@@ -2028,6 +2062,15 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns the given character with an added combining underline.
+   *
+   * <p>The method appends the Unicode combining low line character (U+0332)
+   * to the input character, visually underlining it in supported environments.</p>
+   *
+   * @param c The character to underline.
+   * @return A string containing the input character followed by a combining underline.
+   */
   public static String underlinedChar(char c)
   {
     return c + "\u0332";
@@ -2166,6 +2209,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Checks if any of the given objects is an instance of the specified class.
+   *
+   * @param clazz   The class to check against. Must not be {@code null}.
+   * @param objects The objects to check. Can be empty.
+   * @return {@code true} if at least one object is an instance of {@code clazz}, otherwise {@code false}.
+   * @throws NullPointerException if {@code clazz} is {@code null}.
+   */
   public static boolean anyIsInstanceOf(Class<?> clazz, Object... objects)
   {
     return Arrays.stream(objects).anyMatch(clazz::isInstance);
@@ -2174,6 +2225,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Checks if all given objects are instances of the specified class.
+   *
+   * @param clazz   The class to check against. Must not be {@code null}.
+   * @param objects The objects to check. Can be empty.
+   * @return {@code true} if all objects are instances of {@code clazz}, otherwise {@code false}.
+   * @throws NullPointerException if {@code clazz} is {@code null}.
+   */
   public static boolean allAreInstancesOf(Class<?> clazz, Object... objects)
   {
     return Arrays.stream(objects).allMatch(clazz::isInstance);
@@ -2225,6 +2284,21 @@ public final class Util
   public static <T> Stream<T> iterableToStream(Iterable<T> iterable)
   {
     return StreamSupport.stream(iterable.spliterator(), false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Use this in functions that are only supposed to run in a unit test.
+   */
+  public static void assertThatThisIsUnitTestThread()
+  {
+    for (StackTraceElement element : Thread.currentThread().getStackTrace())
+      if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("junit."))
+        return;
+
+    throw new AssertionError("Can only run in unit test.");
   }
 
 //---------------------------------------------------------------------------

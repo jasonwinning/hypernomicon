@@ -217,11 +217,21 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public BibEntry_T addEntry(EntryType newType)
   {
-    BibEntry_T item = BibEntry.create(this, newType);
+    BibEntry_T entry = BibEntry.create(this, newType);
 
-    keyToAllEntry.put(item.getKey(), item);
+    keyToAllEntry.put(entry.getKey(), entry);
 
-    return item;
+    return entry;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void addEntryForUnitTest(BibEntry_T entry)
+  {
+    assertThatThisIsUnitTestThread();
+
+    keyToAllEntry.put(entry.getKey(), entry);
   }
 
 //---------------------------------------------------------------------------

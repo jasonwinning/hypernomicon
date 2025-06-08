@@ -68,6 +68,28 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
   }
 
 //---------------------------------------------------------------------------
+
+  /**
+   * This constructor is for unit tests only and will throw an assertion error if run
+   * outside of a unit test thread.
+   * @param mWrapper Mendeley wrapper
+   * @param jObj Pre-populated JSON object
+   * @param newType Entry type
+   */
+  private MendeleyDocument(MendeleyWrapper mWrapper, JsonObj jObj, EntryType newType)
+  {
+    super(mWrapper, false);
+
+    assertThatThisIsUnitTestThread();
+
+    jObj.put(entryTypeKey, mWrapper.getEntryTypeMap().getOrDefault(newType, ""));
+
+    jObj.put("id", "_!_" + randomAlphanumericStr(12));
+    jObj.put(Document_Last_Modified_JSON_Key, dateTimeToIso8601(Instant.now()));  // These two lines will convert this into
+    update(jObj, false, true);                                                    // a "synced" entry, not a "new" one
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private static final List<String> Noneditable_Document_JSON_Keys = List.of
@@ -93,6 +115,26 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
   @Override protected void setAllAuthors(Iterable<BibAuthor> otherAuthors) { ((MendeleyAuthors) getAuthors()).setAll(otherAuthors); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * This factory method is for unit tests only and will throw an assertion error if run
+   * outside of a unit test.
+   * @param mWrapper Mendeley wrapper
+   * @param jObj Pre-populated JSON object
+   * @param newType Entry type
+   * @return The new document
+   */
+  public static MendeleyDocument createForUnitTest(MendeleyWrapper mWrapper, JsonObj jObj, EntryType newType)
+  {
+    MendeleyDocument entry = new MendeleyDocument(mWrapper, jObj, newType);
+
+    mWrapper.addEntryForUnitTest(entry);
+
+    return entry;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -486,7 +528,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
    * @param serverPatch True if we are patching a server document, so we have to set null to clear out values
    * @return The standalone JSON object
    */
-  JsonObj exportStandaloneJsonObj(boolean serverPatch)
+  public JsonObj exportStandaloneJsonObj(boolean serverPatch)
   {
     JsonObj jStandaloneObj = jObj.clone();
 
@@ -546,8 +588,8 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     {
       JsonObj personObj = new JsonObj();
 
-      personObj.put("first_name", removeAllParentheticals(editor.getGiven()));
-      personObj.put("last_name", editor.getFamily());
+      personObj.put("first_name", removeAllParentheticals(editor.firstName()));
+      personObj.put("last_name", editor.lastName());
 
       jsonArr.add(personObj);
     }

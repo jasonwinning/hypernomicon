@@ -21,6 +21,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -180,7 +181,7 @@ public abstract class HyperTask
   private final List<String> additionalMessages = new ArrayList<>();
   private final String threadName;
 
-  protected HyperThread thread;
+  private HyperThread thread;
   private boolean skippable = false, initialized = false;
 
   /**
@@ -200,7 +201,7 @@ public abstract class HyperTask
 
   public Throwable getException()             { return innerTask.getException(); }
   public State getState()                     { return innerTask.getState(); }
-  public List<String> getAdditionalMessages() { return additionalMessages; }
+  public List<String> getAdditionalMessages() { return Collections.unmodifiableList(additionalMessages); }
 
   public ReadOnlyStringProperty  messageProperty () { return innerTask.messageProperty (); }
   public ReadOnlyDoubleProperty  progressProperty() { return innerTask.progressProperty(); }

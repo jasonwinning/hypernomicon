@@ -104,7 +104,7 @@ public abstract class Authors implements Iterable<Author>
       eds = authors.size() > 1 ? " (Eds.)" : " (Ed.)";
 
     if (authors.size() == 1)
-      return (firstInitials && (fullNameIfSingleton == false) ? authors.get(0).getBibName() : authors.get(0).getNameLastFirst()) + eds;
+      return (firstInitials && (fullNameIfSingleton == false) ? authors.get(0).getBibName() : authors.get(0).nameLastFirst()) + eds;
 
     if (sort)
       authors.sort(null);
@@ -122,7 +122,7 @@ public abstract class Authors implements Iterable<Author>
           peopleStr = peopleStr.strip() + " & ";
       }
 
-      peopleStr = peopleStr + (firstInitials ? authors.get(ndx).getBibName() : authors.get(ndx).getNameLastFirst());
+      peopleStr = peopleStr + (firstInitials ? authors.get(ndx).getBibName() : authors.get(ndx).nameLastFirst());
     }
 
     if (num < authors.size())

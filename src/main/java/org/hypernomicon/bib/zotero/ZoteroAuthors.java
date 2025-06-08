@@ -85,13 +85,13 @@ public class ZoteroAuthors extends BibAuthors
   {
     return creatorsArr.objStream().map(creatorObj ->
     {
-      AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
-      if ((aType == null) || ((aType == editor) && ignoreEditors())) return null;
+      AuthorType authorType = getAuthorTypeIfShouldSync(creatorObj);
+      if (authorType == null) return null;
 
       String firstName = creatorObj.getStrSafe("firstName"),
              lastName  = creatorObj.getStrSafe("lastName");
 
-       return new BibAuthor(aType, strNotNullOrBlank(firstName) || strNotNullOrBlank(lastName) ?
+       return new BibAuthor(authorType, strNotNullOrBlank(firstName) || strNotNullOrBlank(lastName) ?
          new PersonName(firstName, lastName)
        :
          new PersonName(creatorObj.getStrSafe("name")));
@@ -123,7 +123,7 @@ public class ZoteroAuthors extends BibAuthors
 
     while (nextInsertNdx < creatorsArr.size())
     {
-      if (dontOverwriteCreator(creatorsArr.getObj(nextInsertNdx)))
+      if (getAuthorTypeIfShouldSync(creatorsArr.getObj(nextInsertNdx)) == null)
         nextInsertNdx++;
       else
         creatorsArr.remove(nextInsertNdx);
@@ -153,13 +153,13 @@ public class ZoteroAuthors extends BibAuthors
     JsonObj creatorObj = new JsonObj();
     creatorObj.put("creatorType", creatorTypeStr);
 
-    creatorObj.put("firstName", removeAllParentheticals(bibAuthor.getGiven()));
-    creatorObj.put("lastName", bibAuthor.getFamily());
+    creatorObj.put("firstName", removeAllParentheticals(bibAuthor.firstName()));
+    creatorObj.put("lastName", bibAuthor.lastName());
 
     // Leave the authors that don't map to a Hypernomicon author type, and editors if
     // ignoreEditors is true, in the same positions as before
 
-    while ((nextInsertNdx < creatorsArr.size()) && dontOverwriteCreator(creatorsArr.getObj(nextInsertNdx)))
+    while ((nextInsertNdx < creatorsArr.size()) && (getAuthorTypeIfShouldSync(creatorsArr.getObj(nextInsertNdx)) == null))
       nextInsertNdx++;
 
     if (nextInsertNdx < creatorsArr.size())
@@ -173,19 +173,11 @@ public class ZoteroAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean dontOverwriteCreator(JsonObj creatorObj)
+  private AuthorType getAuthorTypeIfShouldSync(JsonObj creatorObj)
   {
-    AuthorType authorType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
+    AuthorType authorType = creatorTypes.get(entryType, creatorObj.getStrSafe("creatorType"));
 
-    return (authorType == null) || ((authorType == editor) && ignoreEditors());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private AuthorType getAuthorTypeForStr(String str)
-  {
-    return creatorTypes.get(entryType, str);
+    return ((authorType == editor) && ignoreEditors()) ? null : authorType;
   }
 
 //---------------------------------------------------------------------------
@@ -216,7 +208,7 @@ public class ZoteroAuthors extends BibAuthors
    * <p>
    * Some Zotero creator types will not map to any Hypernomicon author type for
    * a given item type; that is okay, and means that Hypernomicon will ignore
-   * those "authors".
+   * those "creators".
    * @return The mapping table
    */
   private static ImmutableTable<EntryType, String, AuthorType> buildCreatorTypes()

@@ -30,6 +30,9 @@ import java.util.zip.ZipInputStream;
 import org.hypernomicon.App;
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.bib.auth.BibAuthKeys;
+import org.hypernomicon.bib.mendeley.MendeleyWrapper;
+import org.hypernomicon.bib.zotero.ZoteroWrapper;
+import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
@@ -255,6 +258,38 @@ public final class TestHyperDB extends AbstractHyperDB
     }
 
     open();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  public <T extends LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection>> T linkBibLibrary(LibraryType libType, String userID) throws HyperDataException
+  {
+    assertThatThisIsUnitTestThread();
+
+    if (bibLibraryIsLinked())
+      unlinkBibLibrary();
+
+    T libWrapper = switch (libType)
+    {
+      case ltZotero   -> (T)ZoteroWrapper  .createForTesting();
+      case ltMendeley -> (T)MendeleyWrapper.createForTesting(userID);
+    };
+
+    linkBibLibraryForUnitTest(libWrapper);
+
+    return libWrapper;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void unlinkBibLibrary()
+  {
+    unlinkBibLibraryForUnitTest();
+
+    works.forEach(work -> work.setBibEntryKey(""));
   }
 
 //---------------------------------------------------------------------------

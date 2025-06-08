@@ -200,10 +200,11 @@ public final class BibManager extends NonmodalWindow
 
         lblSelect.setText("Assigning to work record: " + newValue.getCBText());
         setAllVisible(true, lblSelect, btnCreateNew, cbNewType);
-        return;
       }
-
-      hideBottomControls();
+      else
+      {
+        hideBottomControls();
+      }
     });
 
     btnCreateNew.setOnAction(event -> btnCreateNewClick());
@@ -231,7 +232,7 @@ public final class BibManager extends NonmodalWindow
     htRelatives.addLabelCol(hdtWork, smTextSimple);
     htRelatives.addIconCol();
     htRelatives.addLabelCol(hdtWork, smTextSimple);
-    htRelatives.setDblClickHandler(HDT_Work.class, this::goToWork);
+    htRelatives.setDblClickHandler(HDT_Work.class, work -> goToWork(work, false));
 
     htRelatives.addDefaultMenuItems();
 
@@ -731,7 +732,7 @@ public final class BibManager extends NonmodalWindow
 
     ui.update();
 
-    goToWork(work);
+    goToWork(work, false);
   }
 
 //---------------------------------------------------------------------------
@@ -814,7 +815,7 @@ public final class BibManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void goToWork(HDT_Work work)
+  private void goToWork(HDT_Work work, boolean setAssigning)
   {
     if (HDT_Work.isUnenteredSet(work))
     {
@@ -822,9 +823,9 @@ public final class BibManager extends NonmodalWindow
       return;
     }
 
-    workRecordToAssign.setValue(work);
-
     String key = work.getBibEntryKey();
+
+    workRecordToAssign.setValue(setAssigning && key.isEmpty() ? work : null);
 
     if (key.isEmpty()) return;
 
@@ -918,12 +919,12 @@ public final class BibManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void show(HDT_Work work)
+  public static void show(HDT_Work work, boolean setAssigning)
   {
     if (instance == null) return;
 
     show(false);
-    instance.goToWork(work);
+    instance.goToWork(work, setAssigning);
   }
 
 //---------------------------------------------------------------------------

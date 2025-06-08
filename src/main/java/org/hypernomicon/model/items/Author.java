@@ -74,24 +74,24 @@ public final class Author implements Cloneable, Comparable<Author>
 
 //---------------------------------------------------------------------------
 
-  public PersonName getName()                     { return getName(false); }
-  public String getLastName()                     { return getLastName(false); }
-  public String getLastName(boolean engChar)      { return getName(engChar).getLast(); }
-  public String getFirstName()                    { return getFirstName(false); }
-  public String getFirstName(boolean engChar)     { return getName(engChar).getFirst(); }
-  public String getNameLastFirst(boolean engChar) { return getName(engChar).getLastFirst(); }
-  public String getFullName(boolean engChar)      { return getName(engChar).getFull(); }
-  public String singleName()                      { return singleName(false); }
-  public String singleName(boolean engChar)       { return getName(engChar).getSingle(); }
-  public String getNameLastFirst()                { return getNameLastFirst(false); }
-  public HDT_Person getPerson()                   { return person; }
-  public HDT_Work getWork()                       { return work; }
-  public boolean outOfDate()                      { return (work != null) && work.getAuthors().stream().noneMatch(this::equals); }
-  String getBibName()                             { return getName().getBibName(); }
-  private PersonName getName(boolean engChar)     { return person == null ? (engChar ? nameEngChar : name) : person.getName(engChar); }
-  private String getSortKey()                     { return person == null ? nameEngChar.getSortKey() : person.getSortKey(); }
+  public PersonName getName()                  { return getName(false); }
+  public String lastName()                     { return lastName(false); }
+  public String lastName(boolean engChar)      { return getName(engChar).getLast(); }
+  public String firstName()                    { return firstName(false); }
+  public String firstName(boolean engChar)     { return getName(engChar).getFirst(); }
+  public String nameLastFirst(boolean engChar) { return getName(engChar).getLastFirst(); }
+  public String fullName(boolean engChar)      { return getName(engChar).getFull(); }
+  public String singleName()                   { return singleName(false); }
+  public String singleName(boolean engChar)    { return getName(engChar).getSingle(); }
+  public String nameLastFirst()                { return nameLastFirst(false); }
+  public HDT_Person getPerson()                { return person; }
+  public HDT_Work getWork()                    { return work; }
+  public boolean outOfDate()                   { return (work != null) && work.getAuthors().stream().noneMatch(this::equals); }
+  String getBibName()                          { return getName().getBibName(); }
+  private PersonName getName(boolean engChar)  { return person == null ? (engChar ? nameEngChar : name) : person.getName(engChar); }
+  private String getSortKey()                  { return person == null ? nameEngChar.getSortKey() : person.getSortKey(); }
 
-  @Override public int compareTo(Author o)        { return getSortKey().compareTo(o.getSortKey()); }
+  @Override public int compareTo(Author o)     { return getSortKey().compareTo(o.getSortKey()); }
 
   @Override public Author clone()
   { try { return (Author) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}

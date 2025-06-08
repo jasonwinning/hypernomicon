@@ -269,7 +269,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
     public PersonForDupCheck(PersonName name, Author author) { this(author, name, convertToEnglishChars(name.getFull())); }
     public PersonForDupCheck(HDT_Person person)              { this(new Author(person)); }
-    public PersonForDupCheck(Author author)                  { this(author, author.getName(), author.getFullName(true)); }
+    public PersonForDupCheck(Author author)                  { this(author, author.getName(), author.fullName(true)); }
 
   //---------------------------------------------------------------------------
 
@@ -545,8 +545,8 @@ public class NewPersonDlgCtrlr extends ModalDialog
     {
       Author author = curDupAuthor();
 
-      tfDupFirstName.setText(author.getFirstName());
-      tfDupLastName .setText(author.getLastName());
+      tfDupFirstName.setText(author.firstName());
+      tfDupLastName .setText(author.lastName());
 
       nullSwitch(author.getPerson(), authPerson -> tfDupSearchKey.setText(authPerson.getSearchKey()));
 

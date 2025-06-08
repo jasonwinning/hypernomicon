@@ -115,27 +115,37 @@ class ZoteroMetadataTest
       fail("Error occurred while retrieving Zotero creator types from server: " + getThrowableMessage(e));
     }
 
+    // Make sure the creator types map and entry types map have the same entry types
+
+    for (EntryType entryType : zoteroWrapper.getEntryTypeMap().keySet())
+      if (creatorTypes.rowKeySet().contains(entryType) == false)
+        fail("Entry types map contains entry type that is missing from creator types map: " + entryType.getUserFriendlyName());
+
+    for (EntryType entryType : creatorTypes.rowKeySet())
+      if (zoteroWrapper.getEntryTypeMap().containsKey(entryType) == false)
+        fail("Creator types map contains entry type that is missing from entry types map: " + entryType.getUserFriendlyName());
+
     for (String serverItemTypeStr : jServerCreatorTypesObj.keySet())
     {
+      // Make sure all entry types in the creator types listing from server are in local entry type map
+
       EntryType entryType = zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(serverItemTypeStr, etOther);
       assertNotEquals(etOther, entryType, "Unrecognized Zotero item type found in creator types JSON from server: " + serverItemTypeStr);
 
-      if (creatorTypes.rowKeySet().contains(entryType) == false)
-        fail("No creator type mapping exists for entryType: " + entryType.getUserFriendlyName());
+      // Make sure each creator type in the local creator map for this entry type is
+      // one of the creator types for this entry type in the list from the server
 
       JsonArray jServerCreatorTypesArr = jServerCreatorTypesObj.getArray(serverItemTypeStr);
 
       for (String creatorTypeStr : creatorTypes.row(entryType).keySet())
-      {
         if (jServerCreatorTypesArr.objStream().noneMatch(creatorsObj -> creatorsObj.getStr("creatorType").equals(creatorTypeStr)))
           fail("Hypernomicon lists creator type not found in creator types JSON from server: " + creatorTypeStr);
-      }
     }
 
+    // Make sure all the entry types in the local entry type map are in the creator types listing from server
+
     for (String localItemTypeStr : zoteroWrapper.getEntryTypeMap().values())
-    {
       assertTrue(jServerCreatorTypesObj.containsKey(localItemTypeStr), "Creator types JSON from server does not contain item type: " + localItemTypeStr);
-    }
   }
 
 //---------------------------------------------------------------------------

@@ -413,7 +413,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     btnDOI.setOnAction(event -> searchDOI(tfDOI.getText()));
     setToolTip(btnDOI, "Use this DOI to locate the document online");
 
-    btnBibManager.setOnAction(event -> BibManager.show(curWork));
+    btnBibManager.setOnAction(event -> BibManager.show(curWork, true));
 
     btnStop.setOnAction(event -> stopRetrieving());
 
@@ -726,8 +726,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         Populator pop = htAuthors.getPopulator(1);
         pop.populate(false);
-        pop.addEntry(author.getNameLastFirst());
-        row.setCellValue(1, author.getNameLastFirst(), hdtPerson);
+        pop.addEntry(author.nameLastFirst());
+        row.setCellValue(1, author.nameLastFirst(), hdtPerson);
       }
       else
         row.setCellValue(1, authorRecord, authorRecord.listName());

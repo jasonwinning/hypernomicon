@@ -74,6 +74,29 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   }
 
 //---------------------------------------------------------------------------
+
+  /**
+   * This constructor is for unit tests only and will throw an assertion error if run
+   * outside of a unit test thread.
+   * @param zWrapper Zotero wrapper
+   * @param jData Customized template
+   */
+  private ZoteroItem(ZoteroWrapper zWrapper, JsonObj jData)
+  {
+    super(zWrapper, false);
+
+    assertThatThisIsUnitTestThread();
+
+    this.jData = jData;
+
+    jObj.put("data", jData);
+
+    jData.put("key", "_!_" + randomAlphanumericStr(12));
+    jData.put("version", 1L);  // These two lines will convert this into
+    update(jObj, false, true);       // a "synced" entry, not a "new" one
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String toString()               { return exportStandaloneJsonObj(false).toString(); }
@@ -99,6 +122,25 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     String itemTypeStr = jObj.getObj("data").getStrSafe("itemType").toLowerCase();
 
     return (strNullOrEmpty(itemTypeStr) || nonItemTypes.contains(itemTypeStr)) ? null : new ZoteroItem(zWrapper, jObj, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * This factory method is for unit tests only and will throw an assertion error if run
+   * outside of a unit test.
+   * @param zWrapper Zotero wrapper
+   * @param jData Customized template
+   * @return The new item
+   */
+  public static ZoteroItem createForUnitTest(ZoteroWrapper zWrapper, JsonObj jData)
+  {
+    ZoteroItem zItem = new ZoteroItem(zWrapper, jData);
+
+    zWrapper.addEntryForUnitTest(zItem);
+
+    return zItem;
   }
 
 //---------------------------------------------------------------------------
@@ -558,7 +600,12 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  JsonObj exportStandaloneJsonObj(boolean forUploadToServer)
+  /**
+   * Convert the entry to a standalone JSON object
+   * @param forUploadToServer True if this is being exported to send to the Zotero server
+   * @return The standalone JSON object
+   */
+  public JsonObj exportStandaloneJsonObj(boolean forUploadToServer)
   {
     JsonObj jStandaloneObj = jObj.clone();
 
@@ -644,8 +691,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     {
       JsonObj creatorObj = new JsonObj();
 
-      creatorObj.put("firstName", removeAllParentheticals(author.getGiven()));
-      creatorObj.put("lastName", author.getFamily());
+      creatorObj.put("firstName", removeAllParentheticals(author.firstName()));
+      creatorObj.put("lastName", author.lastName());
       creatorObj.put("creatorType", "bookAuthor");
 
       creatorsArr.add(creatorObj);
@@ -655,8 +702,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     {
       JsonObj creatorObj = new JsonObj();
 
-      creatorObj.put("firstName", removeAllParentheticals(editor.getGiven()));
-      creatorObj.put("lastName", editor.getFamily());
+      creatorObj.put("firstName", removeAllParentheticals(editor.firstName()));
+      creatorObj.put("lastName", editor.lastName());
       creatorObj.put("creatorType", "editor");
 
       creatorsArr.add(creatorObj);

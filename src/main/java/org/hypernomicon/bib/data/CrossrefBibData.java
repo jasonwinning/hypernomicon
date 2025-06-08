@@ -212,7 +212,7 @@ public final class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addAuthorsFromJson(JsonArray jsonArr, AuthorType aType)
+  private void addAuthorsFromJson(JsonArray jsonArr, AuthorType authorType)
   {
     if (jsonArr == null)
       return;
@@ -223,7 +223,7 @@ public final class CrossrefBibData extends BibDataStandalone
       if ((first + last).isBlank())
         last = author.getStrSafe("name");
 
-      authors.add(new BibAuthor(aType, new PersonName(first, last)));
+      authors.add(new BibAuthor(authorType, new PersonName(first, last)));
     });
   }
 

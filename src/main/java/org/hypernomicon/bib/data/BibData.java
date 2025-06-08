@@ -306,12 +306,12 @@ public abstract class BibData
     {
       case bftAuthor ->
       {
-        AuthorType aType = AuthorType.fromBibFieldEnum(bibFieldEnum);
+        AuthorType authorType = AuthorType.fromBibFieldEnum(bibFieldEnum);
 
         yield (int) getAuthors().stream().filter(author ->
-          ((aType == AuthorType.author    ) && author.getIsAuthor())   ||
-          ((aType == AuthorType.editor    ) && author.getIsEditor())   ||
-          ((aType == AuthorType.translator) && author.getIsTrans ())).count();
+          ((authorType == AuthorType.author    ) && author.getIsAuthor())   ||
+          ((authorType == AuthorType.editor    ) && author.getIsEditor())   ||
+          ((authorType == AuthorType.translator) && author.getIsTrans ())).count();
       }
       case bftBibDate     -> BibliographicDate.isEmpty(getDate()) ? 0 : 1;
       case bftMultiString -> nullSwitch(getMultiStr(bibFieldEnum), 0, List::size);

@@ -63,7 +63,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (searchLinkedRecords)
-      getAuthors().forEach(author -> list.add(author.getNameLastFirst()));
+      getAuthors().forEach(author -> list.add(author.nameLastFirst()));
   }
 
 //---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    return getAuthors().stream().map(Author::getNameLastFirst)
+    return getAuthors().stream().map(Author::nameLastFirst)
                                 .filter(name -> name.length() > 0)
                                 .collect(Collectors.joining("; "));
   }

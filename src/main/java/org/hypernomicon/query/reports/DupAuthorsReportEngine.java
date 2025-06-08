@@ -100,16 +100,16 @@ public class DupAuthorsReportEngine extends ReportEngine
       ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(GenericNonRecordHTC.blankCell);
 
       cells.add(author.getPerson() == null ?
-        new GenericNonRecordHTC(author.getNameLastFirst(false), hdtNone)
+        new GenericNonRecordHTC(author.nameLastFirst(false), hdtNone)
       :
-        new RecordHTC(author.getPerson(), author.getNameLastFirst(false)));
+        new RecordHTC(author.getPerson(), author.nameLastFirst(false)));
 
       cells.add(getWorkCell(author));
 
       cells.add(match.getPerson() == null ?
-        new GenericNonRecordHTC(match.getNameLastFirst(false), hdtNone)
+        new GenericNonRecordHTC(match.nameLastFirst(false), hdtNone)
       :
-        new RecordHTC(match.getPerson(), match.getNameLastFirst(false)));
+        new RecordHTC(match.getPerson(), match.nameLastFirst(false)));
 
       cells.add(getWorkCell(match));
 

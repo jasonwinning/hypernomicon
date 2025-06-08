@@ -1169,6 +1169,23 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  void linkBibLibraryForUnitTest(LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libWrapper)
+  {
+    assertThatThisIsUnitTestThread();
+
+    this.bibLibrary = libWrapper;
+  }
+
+  void unlinkBibLibraryForUnitTest()
+  {
+    assertThatThisIsUnitTestThread();
+
+    this.bibLibrary = null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void linkBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws IOException, ParseException, HyperDataException
   {
     if (bibLibrary != null)

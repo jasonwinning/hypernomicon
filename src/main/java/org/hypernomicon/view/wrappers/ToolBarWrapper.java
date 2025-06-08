@@ -24,6 +24,8 @@ import java.util.Map.Entry;
 import javafx.scene.Node;
 import javafx.scene.control.ToolBar;
 
+import static org.hypernomicon.util.UIUtil.*;
+
 //---------------------------------------------------------------------------
 
 public class ToolBarWrapper
@@ -55,7 +57,12 @@ public class ToolBarWrapper
   {
     for (Node node : nodes)
       if (allItems.containsKey(node) && (allItems.put(node, newValue) != newValue))
+      {
         changed = true;
+
+        if (newValue)             // If the node was in a popup window and not visible
+          scaleNodeForDPI(node);  // originally, it may not have been scaled yet
+      }
   }
 
 //---------------------------------------------------------------------------

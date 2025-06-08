@@ -279,7 +279,7 @@ public class OmniFinder
       {
         case tierAuthorContains:
 
-          return otherPerson.getAuthor().getNameLastFirst(true).toLowerCase().strip().contains(queryLC);
+          return otherPerson.getAuthor().nameLastFirst(true).toLowerCase().strip().contains(queryLC);
 
         case tierAuthorMatch: case tierPersonMatch:
 
