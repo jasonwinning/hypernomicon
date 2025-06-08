@@ -27,6 +27,7 @@ import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.bib.authors.BibAuthor;
+import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.RISBibData;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicYear;
@@ -37,6 +38,30 @@ import org.junit.jupiter.api.Test;
 
 class RISTest
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void getLists(BibAuthors authors, List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
+  {
+    authorList    .clear();
+    editorList    .clear();
+    translatorList.clear();
+
+    authors.forEach(author ->
+    {
+      if (author.getIsEditor())
+      {
+        editorList.add(author);
+        if (author.getIsTrans())
+          translatorList.add(author);
+      }
+      else if (author.getIsTrans())
+        translatorList.add(author);
+      else
+        authorList.add(author);
+    });
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -74,7 +99,7 @@ class RISTest
     assertEquals(new BibliographicDate(0, 1, BibliographicYear.fromNumberWhereMinusOneEqualsOneBC(2017)), risBibData.getDate());
     assertEquals("https://doi.org/10.1007/s11229-016-1307-6", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(6, authorList.size());
     assertEquals("Green, Sara"     , authorList.get(0).getName().getLastFirst());
@@ -124,7 +149,7 @@ class RISTest
     assertEquals("https://www.journals.uchicago.edu/doi/pdf/10.1093/bjps/axp036", risBibData.getStr(bfURL));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(3, authorList.size());
     assertEquals("Mossio, Matteo", authorList.get(0).getName().getLastFirst());
@@ -166,7 +191,7 @@ class RISTest
     assertEquals(List.of("9781617370151", "9781592594511"), risBibData.getMultiStr(bfISBNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
     assertEquals("Kaufman, Frederik" , authorList.get(0).getName().getLastFirst());
@@ -209,7 +234,7 @@ class RISTest
     assertEquals(List.of("9781617370151", "9781592594511"), risBibData.getMultiStr(bfISBNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
     assertEquals("van Hooft, Stan" , authorList.get(0).getName().getLastFirst());
@@ -251,7 +276,7 @@ class RISTest
     assertEquals(List.of("9781617370151", "9781592594511"), risBibData.getMultiStr(bfISBNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
     assertEquals("Boorse, Christopher" , authorList.get(0).getName().getLastFirst());
@@ -288,7 +313,7 @@ class RISTest
     assertEquals(List.of("9781617370151", "9781592594511"), risBibData.getMultiStr(bfISBNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(0, authorList.size());
 
@@ -330,7 +355,7 @@ class RISTest
     assertEquals(List.of("0039-3681"), risBibData.getMultiStr(bfISSNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(2, authorList.size());
     assertEquals("Segundo-Ortin, Miguel", authorList.get(0).getName().getLastFirst());
@@ -373,7 +398,7 @@ class RISTest
     assertEquals(List.of("0169-3867", "1572-8404"), risBibData.getMultiStr(bfISSNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
     assertEquals("Keizer, Fred", authorList.get(0).getName().getLastFirst());
@@ -414,7 +439,7 @@ class RISTest
     assertEquals(List.of("0039-3681"), risBibData.getMultiStr(bfISSNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
     assertEquals("Adams, Fred", authorList.get(0).getName().getLastFirst());
@@ -457,7 +482,7 @@ class RISTest
     assertEquals(List.of("0951-5089", "1465-394X"), risBibData.getMultiStr(bfISSNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(2, authorList.size());
     assertEquals("Keizer, Fred", authorList.get(0).getName().getLastFirst());
@@ -500,7 +525,7 @@ class RISTest
     assertEquals(List.of("0169-3867", "1572-8404"), risBibData.getMultiStr(bfISSNs));
     assertEquals("", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(2, authorList.size());
     assertEquals("Keizer, Fred", authorList.get(0).getName().getLastFirst());
@@ -547,7 +572,7 @@ class RISTest
     assertEquals("http://www.tandfonline.com/doi/abs/10.1080/00201740902917119", risBibData.getStr(bfURL));
     assertEquals(List.of("0020-174X", "1502-3923"), risBibData.getMultiStr(bfISSNs));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
     assertEquals("Steward, Helen", authorList.get(0).getName().getLastFirst());
@@ -603,7 +628,7 @@ class RISTest
     assertEquals("https://www.cambridge.org/core/product/identifier/S0140525X10000968/type/journal_article", risBibData.getStr(bfURL));
     assertEquals(List.of("0140-525X", "1469-1825"), risBibData.getMultiStr(bfISSNs));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(2, authorList.size());
     assertEquals("Mercier, Hugo", authorList.get(0).getName().getLastFirst());
@@ -646,7 +671,7 @@ class RISTest
     assertEquals("en-US", risBibData.getStr(bfLanguage));
     assertEquals("The most annus horribilis of years in decades is nearly over. Looking to 2021, there are reasons for hope, @HelenBranswell writes.", risBibData.getStr(bfMisc));
 
-    risBibData.getAuthors().getLists(authorList, editorList, translatorList);
+    getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
     assertEquals("Branswell, Helen", authorList.get(0).getName().getLastFirst());

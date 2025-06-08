@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.mendeley;
 
-import java.util.List;
+import java.util.*;
 
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
@@ -26,6 +26,8 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
+
+import com.google.common.collect.Iterators;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -49,25 +51,14 @@ class MendeleyAuthors extends BibAuthors
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  @Override public void clear()
+  private boolean ignoreEditors()
   {
-    JsonArray authorsArr = jsonObj.getArray("authors"),
-              editorsArr = jsonObj.getArray("editors"),
-              transArr   = jsonObj.getArray("translators");
-
-    if (authorsArr != null) authorsArr.clear();
-    if (transArr   != null) transArr  .clear();
-
-    if (ignoreEditors()) return;
-
-    if (editorsArr != null) editorsArr.clear();
+    return ignoreEditors(entryType);
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  boolean ignoreEditors()
+  static boolean ignoreEditors(EntryType entryType)
   {
     return switch (entryType)
     {
@@ -85,76 +76,90 @@ class MendeleyAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void getList(JsonArray arr, List<BibAuthor> list, AuthorType aType)
+  private List<BibAuthor> getList(JsonArray arr, AuthorType aType)
   {
-    if ((arr == null) || (ignoreEditors() && (aType == AuthorType.editor))) return;
+    List<BibAuthor> list = new ArrayList<>();
+
+    if ((arr == null) || (ignoreEditors() && (aType == AuthorType.editor))) return list;
 
     arr.getObjs().forEach(jObj ->
     {
       String firstName = jObj.getStrSafe("first_name"),
              lastName  = jObj.getStrSafe("last_name");
 
-      if ((firstName.length() > 0) || (lastName.length() > 0))
+      if (strNotNullOrEmpty(firstName) || strNotNullOrEmpty(lastName))
         list.add(new BibAuthor(aType, new PersonName(firstName, lastName)));
     });
+
+    return list;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
+  @Override public Iterator<BibAuthor> iterator()
   {
-    authorList    .clear();
-    editorList    .clear();
-    translatorList.clear();
-
-    getList(jsonObj.getArray("authors"    ), authorList    , AuthorType.author    );
-    getList(jsonObj.getArray("editors"    ), editorList    , AuthorType.editor    );
-    getList(jsonObj.getArray("translators"), translatorList, AuthorType.translator);
+    return Iterators.unmodifiableIterator(Iterators.concat(getList(jsonObj.getArray("authors"    ), AuthorType.author    ).iterator(),
+                                                           getList(jsonObj.getArray("editors"    ), AuthorType.editor    ).iterator(),
+                                                           getList(jsonObj.getArray("translators"), AuthorType.translator).iterator()));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void add(BibAuthor bibAuthor)
+  void setAll(Iterable<BibAuthor> otherAuthors)
   {
-    String aTypeStr;
+    int nextAuthorInsertNdx = 0,
+        nextEditorInsertNdx = 0,
+        nextTransInsertNdx  = 0;
 
-    switch (bibAuthor.getType())
+    jsonObj.remove("authors");
+    jsonObj.remove("translators");
+
+    if (ignoreEditors() == false)
+      jsonObj.remove("editors");
+
+    for (BibAuthor otherAuthor : otherAuthors)
     {
-      case author :
+      if (otherAuthor.getIsAuthor())
+        nextAuthorInsertNdx = add(otherAuthor, nextAuthorInsertNdx);
 
-        aTypeStr = "authors";
-        break;
+      if (otherAuthor.getIsEditor())
+        nextEditorInsertNdx = add(new BibAuthor(otherAuthor.getName(), otherAuthor.getPerson(), true, false), nextEditorInsertNdx);
 
-      case translator :
-
-        aTypeStr = "translators";
-        break;
-
-      case editor     :
-
-        if (ignoreEditors())
-          return;
-
-        aTypeStr = "editors";
-        break;
-
-      default :
-
-        return;
+      if (otherAuthor.getIsTrans())
+        nextTransInsertNdx = add(new BibAuthor(otherAuthor.getName(), otherAuthor.getPerson(), false, true), nextTransInsertNdx);
     }
+
+    // No need to remove anything here since we cleared the author types that are
+    // being modified at the start.
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private int add(BibAuthor bibAuthor, int nextInsertNdx)
+  {
+    String authorTypeStr;
+
+    if (bibAuthor.getIsEditor())
+    {
+      if (bibAuthor.getIsTrans()) throw newAssertionError(84316);
+      if (ignoreEditors()) return nextInsertNdx;
+
+      authorTypeStr = "editors";
+    }
+    else if (bibAuthor.getIsTrans()) authorTypeStr = "translators";
+    else                             authorTypeStr = "authors";
 
     JsonObj personObj = new JsonObj();
 
     personObj.put("first_name", removeAllParentheticals(bibAuthor.getGiven()));
     personObj.put("last_name", bibAuthor.getFamily());
 
-    JsonArray jArr = jsonObj.getArray(aTypeStr);
-    if (jArr == null)
-      jsonObj.put(aTypeStr, jArr = new JsonArray());
+    jsonObj.getOrAddArray(authorTypeStr).add(personObj);
 
-    jArr.add(personObj);
+    return nextInsertNdx + 1;
   }
 
 //---------------------------------------------------------------------------

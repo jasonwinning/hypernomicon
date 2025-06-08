@@ -275,7 +275,7 @@ public final class CrossrefBibData extends BibDataStandalone
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
-    if (doi.length() > 0)
+    if (strNotNullOrEmpty(doi))
       return url + '/' + doi;
 
     if (strNullOrBlank(title)) return url;
@@ -286,8 +286,8 @@ public final class CrossrefBibData extends BibDataStandalone
     {
       for (BibAuthor author : authors)
       {
-        boolean ed = author.getType() == AuthorType.editor,
-                tr = author.getType() == AuthorType.translator;
+        boolean ed = author.getIsEditor(),
+                tr = author.getIsTrans();
 
         String name = engCharForAuthors ?
           author.getName().toEngChar().getLast()
@@ -310,19 +310,19 @@ public final class CrossrefBibData extends BibDataStandalone
 
     yearStr = safeStr(yearStr);
 
-    if ((yearStr.length() > 0) && StringUtils.isNumeric(yearStr))
+    if (strNotNullOrEmpty(yearStr) && StringUtils.isNumeric(yearStr))
     {
       int year = parseInt(yearStr, -1);
       if (year > 1929)
         url = url + "query.bibliographic=" + yearStr + '&';
     }
 
-    if (auths.length() > 0)
+    if (strNotNullOrEmpty(auths))
       url = url + "query.author=" + escapeURL(auths, false);
 
-    if (title.length() > 0)
+    if (strNotNullOrEmpty(title))
     {
-      if (auths.length() > 0)
+      if (strNotNullOrEmpty(auths))
         url = url + '&';
 
       url = url + "query.bibliographic=" + escapeURL(title, false); // query.title is deprecated
@@ -349,7 +349,7 @@ public final class CrossrefBibData extends BibDataStandalone
   private static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, BibAuthors authors, boolean engCharForAuthors,
                                     String doi, Set<String> alreadyCheckedIDs, Consumer<CrossrefBibData> successHndlr, Consumer<Exception> failHndlr)
   {
-    if ((doi.length() > 0) && alreadyCheckedIDs.contains(doi.toLowerCase()))
+    if (strNotNullOrEmpty(doi) && alreadyCheckedIDs.contains(doi.toLowerCase()))
     {
       successHndlr.accept(null);
       return;

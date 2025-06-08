@@ -17,9 +17,8 @@
 
 package org.hypernomicon.bib.authors;
 
-import java.util.List;
+import java.util.Iterator;
 
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.records.HDT_Work;
 
 //---------------------------------------------------------------------------
@@ -38,29 +37,8 @@ public class WorkBibAuthors extends BibAuthors
 
 //---------------------------------------------------------------------------
 
-  @Override public boolean isEmpty() { return work.getAuthors().isEmpty(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
-  {
-    authorList    .clear();
-    editorList    .clear();
-    translatorList.clear();
-
-    work.getAuthors().forEach(author ->
-    {
-      if ((author.getIsEditor() == false) && (author.getIsTrans() == false))
-        authorList.add(new BibAuthor(AuthorType.author, author));
-
-      if (author.getIsEditor())
-        editorList.add(new BibAuthor(AuthorType.editor, author));
-
-      if (author.getIsTrans())
-        translatorList.add(new BibAuthor(AuthorType.translator, author));
-    });
-  }
+  @Override public Iterator<BibAuthor> iterator() { return work.getAuthors().stream().map(BibAuthor::new).iterator(); }
+  @Override public boolean isEmpty()              { return work.getAuthors().isEmpty(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

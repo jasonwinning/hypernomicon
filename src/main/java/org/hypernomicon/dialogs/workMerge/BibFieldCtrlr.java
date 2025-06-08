@@ -292,7 +292,7 @@ public abstract class BibFieldCtrlr
       if (work != null)
         work.setAuthors(authGroups);
       else
-        mergedBD.getAuthors().setAllFromTable(authGroups);
+        mergedBD.setAllAuthorsFromTable(authGroups);
     }
   }
 

@@ -172,11 +172,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htAuthors.addChangeOrderMenuItem(true);
 
     htAuthors.addContextMenuItem("Remove this row",
-      row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
+      row -> strNotNullOrEmpty(row.getText(1)) && (row.getID(1) < 1),
       htAuthors::removeRow);
 
     htAuthors.addContextMenuItem("Create person record",
-      row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
+      row -> strNotNullOrEmpty(row.getText(1)) && (row.getID(1) < 1),
       row ->
       {
         if (ui.cantSaveRecord()) return;
@@ -393,7 +393,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       row -> ui.webButtonMap.get(WebButtonContextPrefKey.ISBN).first(WebButtonField.ISBN, row.getText(0)).go());
 
     htISBN.addContextMenuItem("Google Books query",
-      row -> row.getText(0).length() > 0,
+      row -> strNotNullOrEmpty(row.getText(0)),
       row ->
       {
         List<String> list = matchISBN(row.getText(0));
@@ -429,7 +429,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     mnuCrossref.setOnAction(event ->
     {
-      if (tfDOI.getText().length() > 0)
+      if (strNotNullOrEmpty(tfDOI.getText()))
         retrieveBibData(true, tfDOI.getText(), null);
     });
 
@@ -502,7 +502,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           return;
         }
 
-        if (curWork.getBibEntryKey().length() > 0)
+        if (strNotNullOrEmpty(curWork.getBibEntryKey()))
         {
           programmaticTypeChange = true;
           errorPopup("You cannot change a work that is assigned to a " + db.bibLibraryUserFriendlyName() + " entry into an unentered set of work files.");
@@ -523,7 +523,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     EventHandler<ActionEvent> handler = event ->
     {
-      if ((tfURL.getText().length() > 0) && (tfURL.getText().charAt(0) != '('))
+      if (strNotNullOrEmpty(tfURL.getText()) && (tfURL.getText().charAt(0) != '('))
         launchFile(new FilePath(tfURL.getText()));
     };
 
@@ -532,7 +532,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     addFolderMenuItem("Show in file manager", event ->
     {
-      if ((tfURL.getText().length() > 0) && (tfURL.getText().charAt(0) != '('))
+      if (strNotNullOrEmpty(tfURL.getText()) && (tfURL.getText().charAt(0) != '('))
         FileManager.show(new FilePath(tfURL.getText()));
     });
 
@@ -811,7 +811,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tfSearchKey.setText(curWork.getSearchKey());
     if (tfSearchKey.getText().isEmpty())
-      if (curWork.getYearStr().length() > 0)
+      if (strNotNullOrEmpty(curWork.getYearStr()))
         if (curWork.authorRecords.size() > 0)
           if (curWork.authorRecords.get(0).getName().getSingle().isBlank() == false)
             tfSearchKey.setText(curWork.makeWorkSearchKey(true, false));
@@ -842,7 +842,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
             updatePreview = false;
     }
 
-    if (curWork.getBibEntryKey().length() > 0)
+    if (strNotNullOrEmpty(curWork.getBibEntryKey()))
     {
       ImageView iv = imgViewFromRelPath("resources/images/card-catalog.png");
       iv.setFitWidth(16);
@@ -1415,7 +1415,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (tfSearchKey.getText().isEmpty())
       lblSearchKeyClick();
-    else if (curWork.getYearStr().length() > 0)
+    else if (strNotNullOrEmpty(curWork.getYearStr()))
     {
       if (tfSearchKey.getText().contains(curWork.getYearStr()))
         if (workTypeEnumVal != wtUnenteredSet)
@@ -1692,7 +1692,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     };
 
     GUIBibData bd = new GUIBibData();
-    bd.getAuthors().setAllFromTable(getAuthorGroups());
+    bd.setAllAuthorsFromTable(getAuthorGroups());
 
     if (crossref)
     {
@@ -1865,7 +1865,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     bd.setMultiStr(bfMisc, convertMultiLineStrToStrList(taMiscBib.getText(), true));
 
-    bd.getAuthors().setAllFromTable(getAuthorGroups());
+    bd.setAllAuthorsFromTable(getAuthorGroups());
   }
 
 //---------------------------------------------------------------------------

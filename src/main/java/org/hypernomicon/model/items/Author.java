@@ -21,6 +21,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -50,6 +51,13 @@ public final class Author implements Cloneable, Comparable<Author>
 
   public Author(HDT_Person person)
   { this(person.works.isEmpty() ? null : person.works.get(0), person, null, false, false, Ternary.Unset); }
+
+//---------------------------------------------------------------------------
+
+  public Author(HDT_Work work, BibAuthor bibAuthor, Ternary inFileName)
+  {
+    this(work, bibAuthor.getPerson(), bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), inFileName);
+  }
 
 //---------------------------------------------------------------------------
 

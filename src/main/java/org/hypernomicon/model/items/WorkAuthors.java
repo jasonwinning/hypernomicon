@@ -22,12 +22,10 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+
 import static java.util.Objects.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -37,9 +35,7 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.relations.HyperObjList;
-import org.hypernomicon.model.relations.NestedValue;
-import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.model.relations.*;
 
 //---------------------------------------------------------------------------
 
@@ -363,22 +359,13 @@ public class WorkAuthors extends Authors
 
     if (BibAuthors.isEmpty(bibAuthors)) return;
 
-    List<PersonName> nameList = new ArrayList<>();
-    List<HDT_Person> personList = new ArrayList<>();
-    Map<PersonName, Boolean> nameToEd = new HashMap<>(), nameToTr = new HashMap<>();
-
-    bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, work);
-
-    for (int ndx = 0; ndx < nameList.size(); ndx++)
+    bibAuthors.getListForWorkMerge(work).forEach(bibAuthor ->
     {
-      PersonName name = nameList.get(ndx);
-      HDT_Person person = personList.get(ndx);
-
-      if (person != null)
-        add(person, nameToEd.get(name), nameToTr.get(name), Ternary.Unset);
+      if (bibAuthor.getPerson() == null)
+        add(bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset);
       else
-        add(name, nameToEd.get(name), nameToTr.get(name), Ternary.Unset);
-    }
+        add(bibAuthor.getPerson(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset);
+    });
   }
 
 //---------------------------------------------------------------------------

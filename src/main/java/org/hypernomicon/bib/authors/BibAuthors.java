@@ -19,10 +19,8 @@ package org.hypernomicon.bib.authors;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.google.common.collect.Iterators;
+import java.util.function.Predicate;
+import java.util.stream.*;
 
 import javafx.concurrent.Worker.State;
 
@@ -34,10 +32,11 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.relations.ObjectGroup;
 
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 //---------------------------------------------------------------------------
 
@@ -47,27 +46,12 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Populate the passed-in lists with the authors for each corresponding author type.
-   * <p>
-   * The passed-in lists are always cleared first before being populated with this entry's data.
-   * @param authorList List of authors
-   * @param editorList List of editors; will <b>not</b> include editors of parent work.
-   * @param translatorList List of translators; will <b>not</b> include translators of parent work.
-   */
-  public abstract void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList);
-
-  @SuppressWarnings("unused")
-  public void add(BibAuthor author) { throw new UnsupportedOperationException("add"); }
-  public void clear()               { throw new UnsupportedOperationException("clear"); }
-
   public boolean isEmpty()          { return iterator().hasNext() == false; }
   public Stream<BibAuthor> stream() { return iterableToStream(this); }
 
-  private void add(AuthorType authorType, HDT_Person person)    { add(new BibAuthor(authorType, person)); }
-  public final void add(AuthorType authorType, PersonName name) { add(new BibAuthor(authorType, name)); }
-
   public static boolean isEmpty(BibAuthors bibAuthors) { return (bibAuthors == null) || bibAuthors.isEmpty(); }
+
+  public List<BibAuthor> normalizedList(boolean doLookup) { return normalizeAuthors(this, doLookup); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -75,19 +59,12 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   public String getStr()
   {
     Function<? super BibAuthor, String> mapper = bibAuthor ->
-    {
-      String auth = bibAuthor.getName().getLastFirst();
+      bibAuthor.getName().getLastFirst() + (bibAuthor.getIsEditor() ?
+        (bibAuthor.getIsTrans() ? "(ed, tr)" : "(ed)")
+      :
+        (bibAuthor.getIsTrans() ? "(tr)" : ""));
 
-      return switch (bibAuthor.getType())
-      {
-        case editor     -> auth + " (ed)";
-        case translator -> auth + " (tr)";
-        default         -> auth;
-      };
-    };
-
-    return stream().map(mapper)
-                   .collect(Collectors.joining("; "));
+    return stream().map(mapper).collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------
@@ -95,7 +72,14 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   public String getStr(AuthorType authorType)
   {
-    return stream().filter(bibAuthor -> bibAuthor.getType() == authorType)
+    Predicate<BibAuthor> predicate = bibAuthor -> switch (authorType)
+    {
+      case author     -> bibAuthor.getIsAuthor();
+      case editor     -> bibAuthor.getIsEditor();
+      case translator -> bibAuthor.getIsTrans ();
+    };
+
+    return stream().filter(predicate)
                    .map(bibAuthor -> bibAuthor.getName().getLastFirst())
                    .collect(Collectors.joining("; "));
   }
@@ -103,129 +87,175 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public Iterator<BibAuthor> iterator()
+  /**
+   * Return a consolidated version of the passed in iterable so that there are no authors that
+   * are duplicates in terms of associated person record or exact name match, unless
+   * one was an author and the other was an editor and/or translator.
+   * @param origAuthors Source for the authors to consolidate
+   * @param doLookup Whether to lookup person records by name
+   * @return The consolidated list
+   */
+  private static List<BibAuthor> normalizeAuthors(Iterable<BibAuthor> origAuthors, boolean doLookup)
   {
-    List<BibAuthor> authorList = new ArrayList<>(),
-                    editorList = new ArrayList<>(),
-                    translatorList = new ArrayList<>();
+    List<BibAuthor> outputList = new ArrayList<>();
 
-    getLists(authorList, editorList, translatorList);
+    if (origAuthors.iterator().hasNext() == false) return outputList;
 
-    return Iterators.unmodifiableIterator(Iterators.concat(authorList.iterator(), editorList.iterator(), translatorList.iterator()));
+    BiMap<PersonName, Integer> nameIndices   = HashBiMap.create();
+    BiMap<HDT_Person, Integer> personIndices = HashBiMap.create();
+
+    for (BibAuthor bibAuthor : origAuthors)
+    {
+      HDT_Person person = bibAuthor.getPerson();
+      PersonName name = bibAuthor.getName();
+      if (name.isEmpty() && (bibAuthor.getPerson() == null))
+        continue;
+
+      int authNdx1 = -1, authNdx2 = -1;
+
+      if ((bibAuthor.getPerson() != null) && personIndices.containsKey(bibAuthor.getPerson()))
+        authNdx1 = personIndices.get(person);
+      else if ((name.isEmpty() == false) && nameIndices.containsKey(name))
+        authNdx1 = nameIndices.get(name);
+
+      if (doLookup && (person == null))
+      {
+        person = HDT_Person.lookUpByName(name);
+        if (personIndices.containsKey(person))
+        {
+          if (authNdx1 == -1)
+            authNdx1 = personIndices.get(person);
+          else
+            authNdx2 = personIndices.get(person);
+        }
+      }
+
+      if (authNdx1 == authNdx2)
+        authNdx2 = -1;
+
+      if (person != null)
+        name = person.getName();
+
+      boolean addNew = true;
+
+      if (authNdx1 > -1)
+      {
+        BibAuthor bibAuthor1 = outputList.get(authNdx1),
+                  bibAuthor2 = bibAuthor;
+
+        if (bibAuthor1.getIsAuthor() == bibAuthor2.getIsAuthor())
+        {
+          addNew = false;
+          outputList.set(authNdx1, new BibAuthor(name, person, bibAuthor1.getIsEditor() || bibAuthor2.getIsEditor(),
+                                                               bibAuthor1.getIsTrans () || bibAuthor2.getIsTrans ()));
+        }
+        else
+        {
+          outputList.set(authNdx1, new BibAuthor(name, person, bibAuthor1.getIsEditor(), bibAuthor1.getIsTrans()));
+        }
+
+        nameIndices  .forcePut(name  , authNdx1);
+        personIndices.forcePut(person, authNdx1);
+      }
+
+      if (authNdx2 > -1)
+      {
+        BibAuthor bibAuthor1 = outputList.get(authNdx1),
+                  bibAuthor2 = outputList.get(authNdx2);
+
+        if (bibAuthor1.getIsAuthor() == bibAuthor2.getIsAuthor())
+        {
+          // Remove the duplicate with the higher index
+
+          int lowerNdx  = Math.min(authNdx1, authNdx2),
+              higherNdx = Math.max(authNdx1, authNdx2);
+
+          nameIndices  .inverse().remove(higherNdx);
+          personIndices.inverse().remove(higherNdx);
+          outputList             .remove(higherNdx);
+
+          nameIndices  .forcePut(name  , lowerNdx);
+          personIndices.forcePut(person, lowerNdx);
+
+          outputList.set(lowerNdx, new BibAuthor(name, person, bibAuthor1.getIsEditor() || bibAuthor2.getIsEditor(),
+                                                               bibAuthor1.getIsTrans () || bibAuthor2.getIsTrans ()));
+        }
+        else
+        {
+          // Keep both
+
+          nameIndices  .forcePut(name  , authNdx1);
+          personIndices.forcePut(person, authNdx1);
+
+          outputList.set(authNdx1, new BibAuthor(name, person, bibAuthor1.getIsEditor(), bibAuthor1.getIsTrans()));
+
+          nameIndices  .forcePut(name  , authNdx2);
+          personIndices.forcePut(person, authNdx2);
+
+          outputList.set(authNdx2, new BibAuthor(name, person, bibAuthor2.getIsEditor(), bibAuthor2.getIsTrans()));
+
+          if (addNew)
+          {
+            // Now need to check if second one is duplicate with current bibAuthor
+
+            bibAuthor1 = outputList.get(authNdx2);
+            bibAuthor2 = bibAuthor;
+
+            if (bibAuthor1.getIsAuthor() == bibAuthor2.getIsAuthor())
+            {
+              addNew = false;
+              outputList.set(authNdx1, new BibAuthor(name, person, bibAuthor1.getIsEditor() || bibAuthor2.getIsEditor(),
+                                                                   bibAuthor1.getIsTrans () || bibAuthor2.getIsTrans ()));
+            }
+          }
+        }
+      }
+
+      if (addNew)
+      {
+        outputList.add(new BibAuthor(name, person, bibAuthor.getIsEditor(), bibAuthor.getIsTrans()));
+      }
+    }
+
+    return outputList;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setAllFromTable(Iterable<ObjectGroup> authGroups)
+  /**
+   * Return a consolidated version of this BibAuthors so that there are no authors that
+   * are duplicates in terms of associated person record or exact name match, unless
+   * one was an author and the other was an editor and/or translator.
+   * <p>
+   * This also uses a duplicate search algorithm and prompts the user to merge authors
+   * that appear to be a duplicate with one in the database.
+   * @param destWork The work record data will be merged into
+   * @return The consolidated list
+   */
+  public List<BibAuthor> getListForWorkMerge(HDT_Work destWork)
   {
-    clear();
-    List<AuthorType> authorTypes = new ArrayList<>();
+    List<BibAuthor> outputList = normalizeAuthors(this, true);
 
-    authGroups.forEach(authGroup ->
-    {
-      boolean ed = authGroup.getValue(tagEditor).bool,
-              tr = authGroup.getValue(tagTranslator).bool;
-
-      authorTypes.clear();
-
-      if ((ed == false) && (tr == false))
-        authorTypes.add(AuthorType.author);
-
-      if (ed) authorTypes.add(AuthorType.editor);
-      if (tr) authorTypes.add(AuthorType.translator);
-
-      HDT_Person person = authGroup.getPrimary();
-
-      authorTypes.forEach(person == null ?
-        authorType -> add(authorType, new PersonName(authGroup.getPrimaryStr()))
-      :
-        authorType -> add(authorType, person));
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void getListsForWorkMerge(List<PersonName> nameList,         // list of names that will be shown in work merge dialog table
-                                   List<HDT_Person> personList,       // person records that will be populated in work merge dialog table
-                                   Map<PersonName, Boolean> nameToEd,
-                                   Map<PersonName, Boolean> nameToTr,
-                                   HDT_Work destWork)
-  {
-    if (isEmpty()) return;
-
-    List<BibAuthor> authorList     = new ArrayList<>(),  // list of authors for this bib entry
-                    editorList     = new ArrayList<>(),  // list of editors for this bib entry
-                    translatorList = new ArrayList<>();  // list of translators for this bib entry
-
-    getLists(authorList, editorList, translatorList);
-
-    translatorList.forEach(bibAuthor ->
-    {
-      PersonName name = bibAuthor.getName();
-      if (name.isEmpty()) return;
-
-      if (nameList.contains(name) == false)
-      {
-        nameList.add(name);
-        personList.add(HDT_Person.lookUpByName(name));
-        nameToTr.put(name, true);
-        nameToEd.put(name, false);
-      }
-
-      nullSwitch(bibAuthor.getPerson(), person -> personList.set(nameList.indexOf(name), person));
-    });
-
-    editorList.forEach(bibAuthor ->
-    {
-      PersonName name = bibAuthor.getName();
-      if (name.isEmpty()) return;
-
-      if (nameList.contains(name) == false)
-      {
-        nameList.add(name);
-        personList.add(HDT_Person.lookUpByName(name));
-      }
-
-      nameToTr.putIfAbsent(name, false);
-      nameToEd.put(name, true);
-
-      nullSwitch(bibAuthor.getPerson(), person -> personList.set(nameList.indexOf(name), person));
-    });
-
-    authorList.forEach(bibAuthor ->
-    {
-      PersonName name = bibAuthor.getName();
-      if (name.isEmpty()) return;
-
-      if (nameList.contains(name) == false)
-      {
-        nameList.add(name);
-        personList.add(HDT_Person.lookUpByName(name));
-      }
-
-      nameToTr.put(name, false);
-      nameToEd.put(name, false);
-
-      nullSwitch(bibAuthor.getPerson(), person -> personList.set(nameList.indexOf(name), person));
-    });
-
-    removeDupPersonRecordsFromLists(nameList, personList);
+    // At this point, the output list represents a consolidated version of this BibAuthors so that
+    // there are no authors that are duplicates in terms of associated person record or exact name
+    // match, unless one was an author and the other was an editor and/or translator.
 
     List<PersonName> nonRecordNames   = new ArrayList<>(); // list containing only non-record authors
     List<Author>     nonRecordAuthors = new ArrayList<>(); // author objects for each non-record author
-    List<Integer>    nameListIndices  = new ArrayList<>(); // index into nameList for this non-record author
+    List<Integer>    outputIndices    = new ArrayList<>(); // index into outputList for this non-record author
 
-    for (int ndx = 0; ndx < nameList.size(); ndx++)
+    for (int ndx = 0; ndx < outputList.size(); ndx++)
     {
-      if (personList.get(ndx) == null)
+      BibAuthor bibAuthor = outputList.get(ndx);
+
+      if (bibAuthor.getPerson() == null)
       {
-        PersonName name = nameList.get(ndx);
+        PersonName name = bibAuthor.getName();
 
         nonRecordNames.add(name);
-        nonRecordAuthors.add(new Author(destWork, name, nameToEd.get(name), nameToTr.get(name), Ternary.Unset));
-        nameListIndices.add(ndx);
+        nonRecordAuthors.add(new Author(destWork, bibAuthor, Ternary.Unset));
+        outputIndices.add(ndx);
       }
     }
 
@@ -240,7 +270,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
                                                             matchedAuthorsList,
                                                             null);
 
-      if (task.runWithProgressDialog() != State.SUCCEEDED) return;
+      if (task.runWithProgressDialog() != State.SUCCEEDED) return outputList;
 
       int ndx;
 
@@ -248,67 +278,40 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
       {
         ArrayList<Author> matchedAuthors = matchedAuthorsList.get(ndx - startNdx);
 
-        if (matchedAuthors.size() > 0)
-        {
-          int nameListNdx = nameListIndices.get(ndx);
-          PersonName name = nonRecordAuthors.get(ndx).getName();
-          boolean ed = nameToEd.get(name), tr = nameToTr.get(name);
-          NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(name, null, false, null, null, matchedAuthors);
+        if (matchedAuthors.isEmpty()) continue;
 
-          if (npdc.showModal() == false) return;
+        int outputListNdx = outputIndices.get(ndx);
+        Author origAuthor = nonRecordAuthors.get(ndx);
 
-          if (npdc.getPerson() != null)
-          {
-            HDT_Person person = npdc.getPerson();
-            personList.set(nameListNdx, person);
-            name = person.getName();
-          }
-          else
-          {
-            personList.set(nameListNdx, null);
-            name = npdc.getName();
-          }
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, false, null, null, matchedAuthors);
 
-          nameList.set(nameListNdx, name);
-          nameToEd.put(name, ed);
-          nameToTr.put(name, tr);
+        if (npdc.showModal() == false) continue;
 
-          startNdx = ndx + 1;
-          break;
-        }
+        outputList.set(outputListNdx, new BibAuthor(npdc.getName(), npdc.getPerson(), origAuthor.getIsEditor(), origAuthor.getIsTrans()));
+
+        startNdx = ndx + 1;
+        break;
       }
 
       if (ndx == nonRecordNames.size())
         startNdx = ndx;
     }
 
-    removeDupPersonRecordsFromLists(nameList, personList);
+    // Remove duplicates again
+
+    return normalizeAuthors(outputList, false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void removeDupPersonRecordsFromLists(List<PersonName> nameList, List<HDT_Person> personList)
+  public static boolean authorListsAreEqual(List<BibAuthor> list1, List<BibAuthor> list2, boolean ignorePersonRecords, boolean ignoreParenthetical)
   {
-    Set<Integer> indicesToRemove = new HashSet<>();
+    if (list1 == list2) return true;
+    if ((list1 == null) != (list2 == null)) return false;
+    if (list1.size() != list2.size()) return false;
 
-    for (int ndx = 0; ndx < nameList.size(); ndx++)
-    {
-      if (indicesToRemove.contains(ndx)) continue;
-
-      HDT_Person person1 = personList.get(ndx);
-      if (person1 == null) continue;
-
-      for (int ndx2 = ndx + 1; ndx2 < nameList.size(); ndx2++)
-        if (person1 == personList.get(ndx2))
-          indicesToRemove.add(ndx2);
-    }
-
-    indicesToRemove.forEach(ndx ->
-    {
-      personList.remove(ndx.intValue());
-      nameList  .remove(ndx.intValue());
-    });
+    return IntStream.range(0, list1.size()).allMatch(ndx -> BibAuthor.areEqual(list1.get(ndx), list2.get(ndx), ignorePersonRecords, ignoreParenthetical));
   }
 
 //---------------------------------------------------------------------------

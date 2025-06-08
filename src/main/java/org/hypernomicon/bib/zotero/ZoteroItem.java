@@ -79,14 +79,17 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   @Override public String toString()               { return exportStandaloneJsonObj(false).toString(); }
   @Override public String getKey()                 { return jObj.getStrSafe("key"); }
   @Override public long getVersion()               { return jObj.getLong("version", 0); }
-  @Override protected boolean isNewEntry()         { return jObj.containsKey("version") == false; }
-  @Override protected JsonArray getCollJsonArray() { return jObj.getObj("data").getArray("collections"); }
   @Override public BibAuthors getAuthors()         { return linkedToWork() ? new WorkBibAuthors(getWork()) : new ZoteroAuthors(jData.getOrAddArray("creators"), getEntryType()); }
   @Override public EntryType getEntryType()        { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jData)); }
 
+  @Override protected boolean isNewEntry()         { return jObj.containsKey("version") == false; }
+  @Override protected JsonArray getCollJsonArray() { return jObj.getObj("data").getArray("collections"); }
+
+  @Override protected void setAllAuthors(Iterable<BibAuthor> otherAuthors) { ((ZoteroAuthors) getAuthors()).setAll(otherAuthors); }
+
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
 
-  public static final Set<String> nonItemTypes = Set.of("attachment", "note", "annotation");
+  static final Set<String> nonItemTypes = Set.of("attachment", "note", "annotation");
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -499,24 +502,18 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   @Override protected boolean authorsChanged()
   {
-    List<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
-                    editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
-                    translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
-
-    getAuthors().getLists(authorList1, editorList1, translatorList1);
-    backupItem.getAuthors().getLists(authorList2, editorList2, translatorList2);
-
     EntryType entryType = getEntryType();
 
-    // Backup item will not have authors of certain types if they are not allowed by Zotero for this entry type
+    // Create new "standalone" ZoteroAuthors object using the same logic that is used by exportStandaloneJsonObj
+    // for comparison purposes so that author types not supported by this Zotero creator type will be filtered out.
 
-    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.author    ).isEmpty()) authorList1    .clear();
-    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.editor    ).isEmpty()) editorList1    .clear();
-    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.translator).isEmpty()) translatorList1.clear();
+    // The iterator method for both objects also filters out editors if ignoreEditors is true.
 
-    if ((authorList1    .size() != authorList2    .size()) ||
-        (editorList1    .size() != editorList2    .size()) ||
-        (translatorList1.size() != translatorList2.size()))   return true;
+    List<BibAuthor> list1 = new ZoteroAuthors(getAuthors(), entryType).normalizedList(false),
+                    list2 = backupItem.getAuthors()                   .normalizedList(false);
+
+    if (BibAuthors.authorListsAreEqual(list1, list2, true, true) == false)
+      return true;
 
     // Now check book editors
 
@@ -554,15 +551,6 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         if (ed1.getStrSafe("lastName" ).equals(ed2.getStrSafe("lastName" )) == false) return true;
       }
     }
-
-    for (int ndx = 0; ndx < authorList1.size(); ndx++)
-      if (authorList1.get(ndx).getName().equalsExceptParenthetical(authorList2.get(ndx).getName()) == false) return true;
-
-    for (int ndx = 0; ndx < editorList1.size(); ndx++)
-      if (editorList1.get(ndx).getName().equalsExceptParenthetical(editorList2.get(ndx).getName()) == false) return true;
-
-    for (int ndx = 0; ndx < translatorList1.size(); ndx++)
-      if (translatorList1.get(ndx).getName().equalsExceptParenthetical(translatorList2.get(ndx).getName()) == false) return true;
 
     return false;
   }
@@ -614,10 +602,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       if (missingKeysOK || thisTypeHasFieldKey(bfMisc )) standaloneItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
       if (missingKeysOK || thisTypeHasFieldKey(bfTitle)) standaloneItem.setTitle(getStr(bfTitle));
 
-      BibAuthors standaloneAuthors = standaloneItem.getAuthors();
-      standaloneAuthors.clear();
-
-      getAuthors().forEach(standaloneAuthors::add);
+      standaloneItem.setAllAuthors(getAuthors());
     }
 
     if (forUploadToServer)
@@ -642,11 +627,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   @Override protected void setParentAuthorsFrom(BibAuthors authors)
   {
-    List<BibAuthor> authorList     = new ArrayList<>(),
-                    editorList     = new ArrayList<>(),
-                    translatorList = new ArrayList<>();
-
-    authors.getLists(authorList, editorList, translatorList);
+    List<BibAuthor> normalizedList = authors.normalizedList(false);
 
     JsonArray creatorsArr = jData.getOrAddArray("creators");
 
@@ -659,7 +640,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         it.remove();
     }
 
-    for (BibAuthor author : authorList)
+    for (BibAuthor author : streamToIterable(normalizedList.stream().filter(BibAuthor::getIsAuthor)))
     {
       JsonObj creatorObj = new JsonObj();
 
@@ -670,7 +651,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       creatorsArr.add(creatorObj);
     }
 
-    for (BibAuthor editor : editorList)
+    for (BibAuthor editor : streamToIterable(normalizedList.stream().filter(BibAuthor::getIsEditor)))
     {
       JsonObj creatorObj = new JsonObj();
 

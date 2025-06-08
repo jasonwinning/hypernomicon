@@ -18,9 +18,7 @@
 package org.hypernomicon.bib.mendeley;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 import org.hypernomicon.bib.BibEntry;
@@ -30,9 +28,7 @@ import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.reports.ReportGenerator;
-import org.hypernomicon.model.items.BibliographicDate;
-import org.hypernomicon.model.items.BibliographicYear;
-import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField;
@@ -84,14 +80,17 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
   @Override public String toString()                   { return exportStandaloneJsonObj(false).toString(); }
   @Override public String getKey()                     { return jObj.getStrSafe("id"); }
-  @Override protected boolean isNewEntry()             { return jObj.containsKey(Document_Last_Modified_JSON_Key) == false; }
-  @Override protected void updateJsonObj(JsonObj jObj) { this.jObj = jObj; }
-  @Override protected JsonArray getCollJsonArray()     { return jObj.getArray("folder_uuids"); }
   @Override public String getURLtoViewEntryInRefMgr()  { return ""; }
   @Override public BibAuthors getAuthors()             { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
   @Override public EntryType getEntryType()            { return getLibrary().parseEntryType(getEntryTypeStrFromSpecifiedJson(jObj)); }
   @Override public Instant lastModifiedOnServer()      { return MendeleyWrapper.getSyncInstantFromJsonStr(jObj.getStrSafe(Document_Last_Modified_JSON_Key)); }
+
+  @Override protected boolean isNewEntry()             { return jObj.containsKey(Document_Last_Modified_JSON_Key) == false; }
+  @Override protected void updateJsonObj(JsonObj jObj) { this.jObj = jObj; }
+  @Override protected JsonArray getCollJsonArray()     { return jObj.getArray("folder_uuids"); }
   @Override protected String getUserID()               { return jObj.getStrSafe("profile_id"); }
+
+  @Override protected void setAllAuthors(Iterable<BibAuthor> otherAuthors) { ((MendeleyAuthors) getAuthors()).setAll(otherAuthors); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
 
@@ -444,20 +443,22 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
   @Override protected boolean authorsChanged()
   {
-    List<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
-                    editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
-                    translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
+    EntryType entryType = getEntryType();
 
-    getAuthors().getLists(authorList1, editorList1, translatorList1);
-    backupItem.getAuthors().getLists(authorList2, editorList2, translatorList2);
+    // Create new "standalone" MendeleyAuthors object using the same logic that is used by exportStandaloneJsonObj
+    // for comparison purposes.
 
-    if ((authorList1    .size() != authorList2    .size()) ||
-        (editorList1    .size() != editorList2    .size()) ||
-        (translatorList1.size() != translatorList2.size()))   return true;
+    // The iterator method for both objects filters out editors if ignoreEditors is true.
+
+    List<BibAuthor> list1 = new MendeleyAuthors(getAuthors(), entryType).normalizedList(false),
+                    list2 = backupItem.getAuthors()                     .normalizedList(false);
+
+    if (BibAuthors.authorListsAreEqual(list1, list2, true, true) == false)
+      return true;
 
     // Now check book editors
 
-    if (((MendeleyAuthors) backupItem.getAuthors()).ignoreEditors())
+    if (MendeleyAuthors.ignoreEditors(entryType))
     {
       JsonArray jArr1 = jObj.getArraySafe("editors"),
                 jArr2 = ((MendeleyDocument) backupItem).jObj.getArraySafe("editors");
@@ -473,15 +474,6 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         if (ed1.getStrSafe("last_name" ).equals(ed2.getStrSafe("last_name" )) == false) return true;
       }
     }
-
-    for (int ndx = 0; ndx < authorList1.size(); ndx++)
-      if (authorList1.get(ndx).getName().equalsExceptParenthetical(authorList2.get(ndx).getName()) == false) return true;
-
-    for (int ndx = 0; ndx < editorList1.size(); ndx++)
-      if (editorList1.get(ndx).getName().equalsExceptParenthetical(editorList2.get(ndx).getName()) == false) return true;
-
-    for (int ndx = 0; ndx < translatorList1.size(); ndx++)
-      if (translatorList1.get(ndx).getName().equalsExceptParenthetical(translatorList2.get(ndx).getName()) == false) return true;
 
     return false;
   }
@@ -517,10 +509,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       standaloneItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
       standaloneItem.setTitle(getStr(bfTitle));
 
-      BibAuthors standaloneAuthors = standaloneItem.getAuthors();
-      standaloneAuthors.clear();
-
-      getAuthors().forEach(standaloneAuthors::add);
+      standaloneItem.setAllAuthors(getAuthors());
     }
 
     if (serverPatch)
@@ -547,19 +536,13 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
   @Override protected void setParentAuthorsFrom(BibAuthors authors)
   {
-    List<BibAuthor> authorList     = new ArrayList<>(),
-                    editorList     = new ArrayList<>(),
-                    translatorList = new ArrayList<>();
-
-    authors.getLists(authorList, editorList, translatorList);
-
     JsonArray jsonArr = jObj.getArray("editors");
     if (jsonArr == null)
       jObj.put("editors", jsonArr = new JsonArray());
 
     jsonArr.clear();
 
-    for (BibAuthor editor : editorList)
+    for (BibAuthor editor : streamToIterable(authors.normalizedList(false).stream().filter(BibAuthor::getIsEditor)))
     {
       JsonObj personObj = new JsonObj();
 
@@ -738,7 +721,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       String firstName = node.getStrSafe("first_name").strip(),
              lastName  = node.getStrSafe("last_name" ).strip();
 
-      if ((firstName.length() > 0) || (lastName.length() > 0))
+      if (strNotNullOrEmpty(firstName) || strNotNullOrEmpty(lastName))
         personName = new PersonName(firstName, lastName);
       else
         continue;

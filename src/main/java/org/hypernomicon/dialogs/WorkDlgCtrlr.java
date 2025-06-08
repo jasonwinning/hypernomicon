@@ -37,6 +37,7 @@ import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.BibManager;
+import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -191,7 +192,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     chkCreateBibEntry.setSelected(newEntryChoice.isTrue());
 
-    if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
+    if ((db.bibLibraryIsLinked() == false) || strNotNullOrEmpty(curWork.getBibEntryKey()))
       setAllVisible(false, chkCreateBibEntry, cbEntryType);
     else
       chkCreateBibEntry.setText("Create new " + db.bibLibraryUserFriendlyName() + " entry of type:");
@@ -347,7 +348,7 @@ public class WorkDlgCtrlr extends ModalDialog
     hyperTable.addTextEditCol(hdtWork, true);
 
     hyperTable.addContextMenuItem("Use this ISBN to fill in fields",
-      row -> row.getText(0).length() > 0,
+      row -> strNotNullOrEmpty(row.getText(0)),
       row ->
       {
         List<String> list = matchISBN(row.getText(0));
@@ -427,7 +428,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     hyperTable.addRemoveMenuItem(removeHandler);
 
-    hyperTable.addContextMenuItem("Remove this row", row -> (row.getText(0).length() > 0) && (row.getID(0) < 1), row ->
+    hyperTable.addContextMenuItem("Remove this row", row -> strNotNullOrEmpty(row.getText(0)) && (row.getID(0) < 1), row ->
     {
       hyperTable.removeRow(row);
       removeHandler.accept(row);
@@ -465,7 +466,7 @@ public class WorkDlgCtrlr extends ModalDialog
     mnuPopulateUsingDOI.setOnAction(event ->
     {
       String doi = matchDOI(tfDOI.getText());
-      if (doi.length() > 0)
+      if (strNotNullOrEmpty(doi))
         industryIdClick(true, doi, null);
     });
 
@@ -520,7 +521,7 @@ public class WorkDlgCtrlr extends ModalDialog
     {
       if (alreadyChangingTitle.isTrue()) return change;
 
-      if ((rb != null) && ((change.getText().length() > 0) || ((change.getRangeEnd() - change.getRangeStart()) > 0)))
+      if ((rb != null) && (strNotNullOrEmpty(change.getText()) || ((change.getRangeEnd() - change.getRangeStart()) > 0)))
         rb.setSelected(true);
 
       if (change.getText().length() > 1)
@@ -698,7 +699,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     htAuthors.dataRows().forEach(row ->
     {
-      if ((row.getRecord() != null) || (row.getText(0).length() > 0))
+      if ((row.getRecord() != null) || strNotNullOrEmpty(row.getText(0)))
         if (row.getCheckboxValue(2))
           authors.add(new FileNameAuthor(row.getText(0), row.getCheckboxValue(3), row.getCheckboxValue(4)));
     });
@@ -1112,20 +1113,24 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addAuthorToTable(PersonName authorName, boolean editor, boolean trans, HDT_Person author, HyperTable htAuthors, boolean hasShowInFileCol)
+  private static void addAuthorToTable(BibAuthor bibAuthor, HyperTable htAuthors, boolean hasShowInFileCol)
   {
-    if (authorName.isEmpty()) return;
+    PersonName name = bibAuthor.getName();
+
+    if (name.isEmpty()) return;
 
     HyperTableRow row = htAuthors.newDataRow();
 
-    if (author != null)
+    HDT_Person person = bibAuthor.getPerson();
+
+    if (person != null)
     {
-      row.setCellValue(0, author, author.listName());
+      row.setCellValue(0, person, person.listName());
       row.setCheckboxValue(1, true);
     }
     else
     {
-      String authorStr = authorName.getLastFirst();
+      String authorStr = name.getLastFirst();
 
       htAuthors.getPopulator(0).addEntry(authorStr);
       row.setCellValue(0, authorStr, hdtPerson);
@@ -1133,10 +1138,10 @@ public class WorkDlgCtrlr extends ModalDialog
 
     int addend = hasShowInFileCol ? 1 : 0;
 
-    if (editor)
+    if (bibAuthor.getIsEditor())
       row.setCheckboxValue(2 + addend, true);
 
-    if (trans)
+    if (bibAuthor.getIsTrans())
       row.setCheckboxValue(3 + addend, true);
   }
 
@@ -1147,20 +1152,9 @@ public class WorkDlgCtrlr extends ModalDialog
   {
     if (BibAuthors.isEmpty(bibAuthors)) return;
 
-    List<PersonName> nameList = new ArrayList<>();
-    List<HDT_Person> personList = new ArrayList<>();
-    Map<PersonName, Boolean> nameToEd = new HashMap<>(), nameToTr = new HashMap<>();
-
-    bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, destWork);
-
     clearAuthors(htAuthors);
 
-    for (int ndx = 0; ndx < nameList.size(); ndx++)
-    {
-      PersonName name = nameList.get(ndx);
-
-      addAuthorToTable(name, nameToEd.get(name), nameToTr.get(name), personList.get(ndx), htAuthors, hasShowInFileCol);
-    }
+    bibAuthors.getListForWorkMerge(destWork).forEach(bibAuthor -> addAuthorToTable(bibAuthor, htAuthors, hasShowInFileCol));
   }
 
 //---------------------------------------------------------------------------
@@ -1178,7 +1172,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     curBD.setMultiStr(bfISBNs, htISBN.dataRowStream().map(row -> row.getText(0)).toList());
 
-    curBD.getAuthors().setAllFromTable(getAuthorGroups());
+    curBD.setAllAuthorsFromTable(getAuthorGroups());
 
     return curBD;
   }
@@ -1303,7 +1297,7 @@ public class WorkDlgCtrlr extends ModalDialog
     }
 
     if (chkKeepFilenameUnchanged.isSelected() == false)
-      if ((tfOrigFile.getText().length() > 0) && tfNewFile.getText().isBlank())
+      if (strNotNullOrBlank(tfOrigFile.getText()) && strNullOrBlank(tfNewFile.getText()))
         return falseWithWarningPopup("Enter destination file name.", tfNewFile);
 
     if (hcbType.selectedID() < 1)

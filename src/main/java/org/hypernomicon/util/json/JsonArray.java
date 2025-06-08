@@ -55,17 +55,17 @@ public final class JsonArray implements Cloneable
   public Stream<JsonObj> objStream()      { return ((Stream<?>)jArr.stream()).map(obj -> new JsonObj((JSONObject) obj)); }
   public Stream<String> strStream()       { return ((Stream<?>)jArr.stream()).map(obj -> obj instanceof String str ? str : ""); }
 
-  @SuppressWarnings("unchecked") public void set(int ndx, JsonObj element)   { jArr.set(ndx, element); }
-  @SuppressWarnings("unchecked") public void set(int ndx, JsonArray element) { jArr.set(ndx, element); }
-  @SuppressWarnings("unchecked") public void set(int ndx, String element)    { jArr.set(ndx, element); }
+  @SuppressWarnings("unchecked") public void set(int ndx, JsonObj   element) { jArr.set(ndx, element.jObj); }
+  @SuppressWarnings("unchecked") public void set(int ndx, JsonArray element) { jArr.set(ndx, element.jArr); }
+  @SuppressWarnings("unchecked") public void set(int ndx, String    element) { jArr.set(ndx, element); }
 
-  @SuppressWarnings("unchecked") public void add(int ndx, JsonObj element)   { jArr.add(ndx, element.jObj); }
+  @SuppressWarnings("unchecked") public void add(int ndx, JsonObj   element) { jArr.add(ndx, element.jObj); }
   @SuppressWarnings("unchecked") public void add(int ndx, JsonArray element) { jArr.add(ndx, element.jArr); }
-  @SuppressWarnings("unchecked") public void add(int ndx, String element)    { jArr.add(ndx, element); }
+  @SuppressWarnings("unchecked") public void add(int ndx, String    element) { jArr.add(ndx, element); }
 
-  @SuppressWarnings("unchecked") public void add(JsonObj element)   { jArr.add(element.jObj); }
+  @SuppressWarnings("unchecked") public void add(JsonObj   element) { jArr.add(element.jObj); }
   @SuppressWarnings("unchecked") public void add(JsonArray element) { jArr.add(element.jArr); }
-  @SuppressWarnings("unchecked") public void add(String element)    { jArr.add(element); }
+  @SuppressWarnings("unchecked") public void add(String    element) { jArr.add(element); }
 
   @Override public String toString() { return jArr.toJSONString(); }
 

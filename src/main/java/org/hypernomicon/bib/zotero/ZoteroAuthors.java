@@ -17,11 +17,10 @@
 
 package org.hypernomicon.bib.zotero;
 
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
 
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Iterators;
 
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
@@ -56,18 +55,12 @@ public class ZoteroAuthors extends BibAuthors
     this.entryType = entryType;
   }
 
-//---------------------------------------------------------------------------
-
-  @Override public void clear()
+  ZoteroAuthors(Iterable<BibAuthor> otherAuthors, EntryType entryType)
   {
-    Iterators.removeIf(creatorsArr.getObjs(), creatorObj ->
-    {
-      AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
+    creatorsArr = new JsonArray();
+    this.entryType = entryType;
 
-      boolean keep = (aType == null) || ((aType == editor) && ignoreEditors());
-
-      return keep == false;    // If the creatorType does not map onto a Hypernomicon-aware
-    });                        // type (author, editor, or translator), then ignore it
+    setAll(otherAuthors);
   }
 
 //---------------------------------------------------------------------------
@@ -88,68 +81,103 @@ public class ZoteroAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
+  @Override public Iterator<BibAuthor> iterator()
   {
-    authorList.clear();
-    editorList.clear();
-    translatorList.clear();
-
-    creatorsArr.getObjs().forEach(creatorObj ->
+    return creatorsArr.objStream().map(creatorObj ->
     {
       AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
-      if ((aType == null) || ((aType == editor) && ignoreEditors())) return;
-
-      List<BibAuthor> list = switch (aType)
-      {
-        case author     -> authorList;
-        case editor     -> editorList;
-        case translator -> translatorList;
-      };
+      if ((aType == null) || ((aType == editor) && ignoreEditors())) return null;
 
       String firstName = creatorObj.getStrSafe("firstName"),
              lastName  = creatorObj.getStrSafe("lastName");
 
-      list.add(new BibAuthor(aType, strNotNullOrBlank(firstName) || strNotNullOrBlank(lastName) ?
-        new PersonName(firstName, lastName)
-      :
-        new PersonName(creatorObj.getStrSafe("name"))));
-    });
+       return new BibAuthor(aType, strNotNullOrBlank(firstName) || strNotNullOrBlank(lastName) ?
+         new PersonName(firstName, lastName)
+       :
+         new PersonName(creatorObj.getStrSafe("name")));
+
+    }).filter(Objects::nonNull).iterator();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void add(BibAuthor bibAuthor)
+  void setAll(Iterable<BibAuthor> otherAuthors)
   {
-    AuthorType aType = bibAuthor.getType();
-    if ((aType == editor) && ignoreEditors()) return;
+    int nextInsertNdx = 0;
 
-    String aTypeStr = getCreatorTypeStr(aType);
-    if (strNullOrBlank(aTypeStr)) return;
+    for (BibAuthor otherAuthor : otherAuthors)
+    {
+      if (otherAuthor.getIsAuthor())
+        nextInsertNdx = add(otherAuthor, nextInsertNdx);
+
+      if (otherAuthor.getIsEditor())
+        nextInsertNdx = add(new BibAuthor(otherAuthor.getName(), otherAuthor.getPerson(), true, false), nextInsertNdx);
+
+      if (otherAuthor.getIsTrans())
+        nextInsertNdx = add(new BibAuthor(otherAuthor.getName(), otherAuthor.getPerson(), false, true), nextInsertNdx);
+    }
+
+    // Now remove any authors that do map to a Hypernomicon author type, unless it
+    // is an editor and ignoreEditors is true, after the last one that was added
+
+    while (nextInsertNdx < creatorsArr.size())
+    {
+      if (dontOverwriteCreator(creatorsArr.getObj(nextInsertNdx)))
+        nextInsertNdx++;
+      else
+        creatorsArr.remove(nextInsertNdx);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private int add(BibAuthor bibAuthor, int nextInsertNdx)
+  {
+    AuthorType authorType;
+
+    if (bibAuthor.getIsEditor())
+    {
+      if (bibAuthor.getIsTrans()) throw newAssertionError(84317);
+      if (ignoreEditors()) return nextInsertNdx;
+
+      authorType = editor;
+    }
+    else if (bibAuthor.getIsTrans()) authorType = translator;
+    else                             authorType = author;
+
+    String creatorTypeStr = getCreatorTypeStr(authorType);
+    if (strNullOrBlank(creatorTypeStr)) return nextInsertNdx;
 
     JsonObj creatorObj = new JsonObj();
-    creatorObj.put("creatorType", aTypeStr);
+    creatorObj.put("creatorType", creatorTypeStr);
 
     creatorObj.put("firstName", removeAllParentheticals(bibAuthor.getGiven()));
     creatorObj.put("lastName", bibAuthor.getFamily());
 
-    // Now the new author should be inserted before the authors that don't map to a Hypernomicon author type
+    // Leave the authors that don't map to a Hypernomicon author type, and editors if
+    // ignoreEditors is true, in the same positions as before
 
-    int insertNdx = -1;
+    while ((nextInsertNdx < creatorsArr.size()) && dontOverwriteCreator(creatorsArr.getObj(nextInsertNdx)))
+      nextInsertNdx++;
 
-    for (int ndx = 0; ndx < creatorsArr.size(); ndx++)
-    {
-      if (getAuthorTypeForStr(creatorsArr.getObj(ndx).getStrSafe("creatorType")) == null)
-      {
-        insertNdx = ndx;
-        break;
-      }
-    }
-
-    if (insertNdx == -1)
-      creatorsArr.add(creatorObj);
+    if (nextInsertNdx < creatorsArr.size())
+      creatorsArr.set(nextInsertNdx, creatorObj);
     else
-      creatorsArr.add(insertNdx, creatorObj);
+      creatorsArr.add(creatorObj);
+
+    return nextInsertNdx + 1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean dontOverwriteCreator(JsonObj creatorObj)
+  {
+    AuthorType authorType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
+
+    return (authorType == null) || ((authorType == editor) && ignoreEditors());
   }
 
 //---------------------------------------------------------------------------
@@ -168,7 +196,7 @@ public class ZoteroAuthors extends BibAuthors
     return getCreatorTypeStr(entryType, authorType);
   }
 
-  static String getCreatorTypeStr(EntryType entryType, AuthorType authorType)
+  private static String getCreatorTypeStr(EntryType entryType, AuthorType authorType)
   {
     if (authorType == null) return "";
 

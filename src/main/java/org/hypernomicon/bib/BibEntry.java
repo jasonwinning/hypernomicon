@@ -22,6 +22,7 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -210,13 +211,13 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
            titleStr = getStr(bfTitle),
            cbStr = "";
 
-    if (authorStr.length() > 0)
+    if (strNotNullOrEmpty(authorStr))
       cbStr = authorStr + ' ';
 
-    if (yearStr.length() > 0)
+    if (strNotNullOrEmpty(yearStr))
       cbStr += '(' + yearStr + ") ";
 
-    if (titleStr.length() > 0)
+    if (strNotNullOrEmpty(titleStr))
       cbStr += titleStr;
 
     return cbStr;
@@ -265,10 +266,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
     setMultiStr(bfISBNs, bd.getMultiStr(bfISBNs));
     setTitle(bd.getStr(bfTitle));
 
-    BibAuthors authors = getAuthors();
-    authors.clear();
-
-    bd.getAuthors().forEach(authors::add);
+    setAllAuthors(bd.getAuthors());
   }
 
 //---------------------------------------------------------------------------
@@ -305,20 +303,14 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   {
     return (e1, e2) ->
     {
-      List<BibAuthor> authorList = new ArrayList<>(),
-                      editorList = new ArrayList<>(),
-                      translatorList = new ArrayList<>();
+      List<BibAuthor> list1 = e1.getAuthors().normalizedList(false),
+                      list2 = e2.getAuthors().normalizedList(false);
 
-      e1.getAuthors().getLists(authorList, editorList, translatorList);
+      List<BibAuthor> authors1 = list1.stream().filter(BibAuthor::getIsAuthor).toList();
+      if (authors1.isEmpty()) authors1 = list1.stream().filter(BibAuthor::getIsEditor).toList();
 
-      List<BibAuthor> authors1 = authorList.isEmpty() ? editorList : authorList;
-
-      authorList = new ArrayList<>();
-      editorList = new ArrayList<>();
-
-      e2.getAuthors().getLists(authorList, editorList, translatorList);
-
-      List <BibAuthor> authors2 = authorList.isEmpty() ? editorList : authorList;
+      List<BibAuthor> authors2 = list2.stream().filter(BibAuthor::getIsAuthor).toList();
+      if (authors2.isEmpty()) authors2 = list2.stream().filter(BibAuthor::getIsEditor).toList();
 
       int cResult, numAuthors = Math.max(authors1.size(), authors2.size());
 

@@ -17,10 +17,7 @@
 
 package org.hypernomicon.bib.authors;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -38,43 +35,24 @@ public class BibAuthorsStandalone extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final EnumMap<AuthorType, List<BibAuthor>> authors = new EnumMap<>(AuthorType.class);
+  private final List<BibAuthor> authors = new ArrayList<>();
   private String oneLiner; // Sometimes all the authors appear in one line, in various formats and with various delimiting characters
 
 //---------------------------------------------------------------------------
 
-  public BibAuthorsStandalone()
+  @Override public boolean isEmpty()  { return authors.isEmpty() && strNullOrBlank(oneLiner); }
+
+  public void add(BibAuthor author)   { authors.add(author); }
+  public void setOneLiner(String str) { oneLiner = convertToSingleLine(safeStr(str)).strip(); }
+
+  public final void add(AuthorType authorType, PersonName name) { add(new BibAuthor(authorType, name)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void clear()
   {
-    authors.put(AuthorType.author    , new ArrayList<>());
-    authors.put(AuthorType.editor    , new ArrayList<>());
-    authors.put(AuthorType.translator, new ArrayList<>());
-  }
-
-//---------------------------------------------------------------------------
-
-  @Override public void add(BibAuthor author)   { authors.get(author.getType()).add(author); }
-  @Override public boolean isEmpty()            { return listsAreEmpty() && strNullOrBlank(oneLiner); }
-
-  public void setOneLiner(String str)           { oneLiner = convertToSingleLine(safeStr(str)).strip(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean listsAreEmpty()
-  {
-    return authors.get(AuthorType.author    ).isEmpty() &&
-           authors.get(AuthorType.editor    ).isEmpty() &&
-           authors.get(AuthorType.translator).isEmpty();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void clear()
-  {
-    authors.get(AuthorType.author    ).clear();
-    authors.get(AuthorType.editor    ).clear();
-    authors.get(AuthorType.translator).clear();
+    authors.clear();
     oneLiner = "";
   }
 
@@ -83,7 +61,7 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public String getStr()
   {
-    return listsAreEmpty() && strNotNullOrEmpty(oneLiner) ? oneLiner : super.getStr();
+    return authors.isEmpty() && strNotNullOrEmpty(oneLiner) ? oneLiner : super.getStr();
   }
 
 //---------------------------------------------------------------------------
@@ -91,7 +69,7 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public String getStr(AuthorType authorType)
   {
-    return (authorType == AuthorType.author) && listsAreEmpty() && strNotNullOrEmpty(oneLiner) ?
+    return (authorType == AuthorType.author) && authors.isEmpty() && strNotNullOrEmpty(oneLiner) ?
       oneLiner
     :
       super.getStr(authorType);
@@ -117,32 +95,10 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public Iterator<BibAuthor> iterator()
   {
-    return listsAreEmpty() ?
+    return authors.isEmpty() ?
       getOneLinerAsList().iterator()
     :
-      Iterators.unmodifiableIterator(Iterators.concat(authors.get(AuthorType.author    ).iterator(),
-                                                      authors.get(AuthorType.editor    ).iterator(),
-                                                      authors.get(AuthorType.translator).iterator()));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
-  {
-    authorList    .clear();
-    editorList    .clear();
-    translatorList.clear();
-
-    if (listsAreEmpty())
-    {
-      authorList.addAll(getOneLinerAsList());
-      return;
-    }
-
-    authorList    .addAll(authors.get(AuthorType.author    ));
-    editorList    .addAll(authors.get(AuthorType.editor    ));
-    translatorList.addAll(authors.get(AuthorType.translator));
+      Iterators.unmodifiableIterator(authors.iterator());
   }
 
 //---------------------------------------------------------------------------

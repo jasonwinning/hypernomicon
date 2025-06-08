@@ -24,19 +24,23 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
+import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.reports.ReportGenerator;
 import org.hypernomicon.model.items.BibliographicDate;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
+import org.hypernomicon.model.relations.ObjectGroup;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -55,7 +59,6 @@ public abstract class BibData
 
   public abstract EntryType getEntryType();
   public abstract void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list);
-  protected abstract void setEntryType(EntryType entryType);
   public abstract void setStr(BibFieldEnum bibFieldEnum, String newStr);
   public abstract List<String> getMultiStr(BibFieldEnum bibFieldEnum);
   public abstract String getStr(BibFieldEnum bibFieldEnum);
@@ -64,6 +67,9 @@ public abstract class BibData
   public abstract BibAuthors getAuthors();
   public abstract HDT_Work getWork();
   public abstract HDT_WorkType getWorkType();
+
+  protected abstract void setEntryType(EntryType entryType);
+  protected abstract void setAllAuthors(Iterable<BibAuthor> otherAuthors);
   protected abstract void setWorkType(HDT_WorkType workType);
 
 //---------------------------------------------------------------------------
@@ -96,7 +102,7 @@ public abstract class BibData
     return bibFieldEnum == bfDate ?
       (BibliographicDate.isEmpty(getDate()) == false)
     :
-      getStr(bibFieldEnum).length() > 0;
+      strNotNullOrEmpty(getStr(bibFieldEnum));
   }
 
 //---------------------------------------------------------------------------
@@ -126,7 +132,7 @@ public abstract class BibData
   {
     if (strNullOrBlank(newStr)) return;
     String doi = matchDOI(newStr);
-    if (doi.length() > 0)
+    if (strNotNullOrBlank(doi))
       setStr(bfDOI, doi);
   }
 
@@ -277,9 +283,18 @@ public abstract class BibData
 
     if ((includeAuthors == false) || bd.getAuthors().isEmpty()) return;
 
-    BibAuthors authors = getAuthors();
-    authors.clear();
-    bd.getAuthors().forEach(authors::add);
+    setAllAuthors(bd.getAuthors());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setAllAuthorsFromTable(Iterable<ObjectGroup> authGroups)
+  {
+    setAllAuthors(streamToIterable(iterableToStream(authGroups).map(authGroup -> new BibAuthor(new PersonName(authGroup.getPrimaryStr()),
+                                                                                               authGroup.getPrimary(),
+                                                                                               authGroup.getValue(tagEditor).bool,
+                                                                                               authGroup.getValue(tagTranslator).bool))));
   }
 
 //---------------------------------------------------------------------------
@@ -289,17 +304,24 @@ public abstract class BibData
   {
     return switch (bibFieldEnum.getType())
     {
-      case bftAuthor      -> (int) getAuthors().stream().filter(author -> author.getType() == AuthorType.fromBibFieldEnum(bibFieldEnum)).count();
+      case bftAuthor ->
+      {
+        AuthorType aType = AuthorType.fromBibFieldEnum(bibFieldEnum);
+
+        yield (int) getAuthors().stream().filter(author ->
+          ((aType == AuthorType.author    ) && author.getIsAuthor())   ||
+          ((aType == AuthorType.editor    ) && author.getIsEditor())   ||
+          ((aType == AuthorType.translator) && author.getIsTrans ())).count();
+      }
       case bftBibDate     -> BibliographicDate.isEmpty(getDate()) ? 0 : 1;
       case bftMultiString -> nullSwitch(getMultiStr(bibFieldEnum), 0, List::size);
       case bftString      -> strNullOrBlank(getStr(bibFieldEnum)) ? 0 : 1;
       case bftWorkType    -> getWorkType() == null ? 0 : 1;
-
-      case bftEntryType ->
+      case bftEntryType   ->
       {
         EntryType entryType = getEntryType();
 
-        yield (entryType == null) || (entryType == etUnentered) || (entryType == etNone) ? 0 : 1;
+        yield ((entryType == null) || (entryType == etUnentered) || (entryType == etNone)) ? 0 : 1;
       }
     };
   }
@@ -320,7 +342,7 @@ public abstract class BibData
       return work;
 
     // Match DOI first
-    String doi = getStr(BibFieldEnum.bfDOI);
+    String doi = getStr(bfDOI);
 
     if (doi.isEmpty() == false)
     {
@@ -331,8 +353,8 @@ public abstract class BibData
     }
 
     // Retrieve ISBNs and title
-    List<String> isbns = getMultiStr(BibFieldEnum.bfISBNs);
-    String title = HDT_RecordBase.makeSortKeyByType(getStr(BibFieldEnum.bfTitle), RecordType.hdtWork);
+    List<String> isbns = getMultiStr(bfISBNs);
+    String title = HDT_RecordBase.makeSortKeyByType(getStr(bfTitle), RecordType.hdtWork);
 
     if (isbns.isEmpty() == false)
     {
@@ -367,9 +389,9 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final double LEVENSHTEIN_THRESHOLD = 0.25;
+  static final double LEVENSHTEIN_THRESHOLD = 0.25;
 
-  public static double titleDistance(LevenshteinDistance alg, String title1, String title2)
+  static double titleDistance(LevenshteinDistance alg, String title1, String title2)
   {
     int len = Math.min(title1.length(), title2.length());
     return (double)alg.apply(safeSubstring(title1, 0, len), safeSubstring(title2, 0, len)) / (double)len;

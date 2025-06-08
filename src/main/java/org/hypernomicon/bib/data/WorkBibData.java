@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -58,6 +59,8 @@ public class WorkBibData extends BibData
   @Override public BibliographicDate getDate()             { return work.getBibDate(); }
   @Override public void setDate(BibliographicDate newDate) { work.setBibDate(newDate); }
 
+  @Override public void setAllAuthors(Iterable<BibAuthor> otherAuthors) { throw new UnsupportedOperationException("add"); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -65,7 +68,7 @@ public class WorkBibData extends BibData
   {
     String entryKey = work.getBibEntryKey();
 
-    return entryKey.length() > 0 ? db.getBibEntryByKey(entryKey) : null;
+    return strNotNullOrEmpty(entryKey) ? db.getBibEntryByKey(entryKey) : null;
   }
 
 //---------------------------------------------------------------------------

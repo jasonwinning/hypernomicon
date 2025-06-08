@@ -70,7 +70,7 @@ public final class GoogleBibData extends BibDataStandalone
     setEntryType(parseGoogleBooksType(jsonObj.getStrSafe("printType")));  // supposedly this will either be "BOOK" or "MAGAZINE", nothing else
 
     String publishedDate = jsonObj.getStrSafe(dtPublishedDate.desc);
-    if (publishedDate.length() > 0)
+    if (strNotNullOrEmpty(publishedDate))
       setDate(ZoteroDate.parsedDateStrToBibDate(publishedDate, false), dtPublishedDate, true);  // Date is in local ISO date format like Zotero's "parsed date"
                                                                                                 // Assumption here is that Google Books years are never BC
 
@@ -161,7 +161,7 @@ public final class GoogleBibData extends BibDataStandalone
   {
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
 
-    if (isbn.length() > 0)
+    if (strNotNullOrEmpty(isbn))
       return url + "isbn:" + isbn;
 
     if (strNullOrBlank(title)) return url;
@@ -173,8 +173,8 @@ public final class GoogleBibData extends BibDataStandalone
     {
       for (BibAuthor author : authors)
       {
-        boolean ed = author.getType() == AuthorType.editor,
-                tr = author.getType() == AuthorType.translator;
+        boolean ed = author.getIsEditor(),
+                tr = author.getIsTrans();
 
         String name = author.getName().toEngChar().getLast();
 
@@ -193,12 +193,12 @@ public final class GoogleBibData extends BibDataStandalone
 
     title = convertToEnglishChars(title).strip();
 
-    if (title.length() > 0)
+    if (strNotNullOrEmpty(title))
       url = url + escapeURL('"' + title + '"', false);
 
-    if (auths.length() > 0)
+    if (strNotNullOrEmpty(auths))
     {
-      if (title.length() > 0)
+      if (strNotNullOrEmpty(title))
         url = url + '+';
 
       url = url + auths;
