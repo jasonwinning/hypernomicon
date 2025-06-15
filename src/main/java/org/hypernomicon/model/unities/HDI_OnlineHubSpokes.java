@@ -54,7 +54,7 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 //---------------------------------------------------------------------------
 
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { }
-  @Override public String getResultTextForTag(Tag tag)                                      { return null; }
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)              { return null; }
   @Override public int getResultCount(Tag tag)                                              { return hub.spokes.size(); }
 
 //---------------------------------------------------------------------------

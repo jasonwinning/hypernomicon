@@ -139,9 +139,9 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getResultTextForTag(Tag tag)
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)
   {
-    return recordStreamResultText(db.getObjType(relType), db.getObjectList(relType, record, false).stream());
+    return recordStreamResultText(db.getObjType(relType), db.getObjectList(relType, record, false).stream(), limitTo20Items);
   }
 
 //---------------------------------------------------------------------------
@@ -155,11 +155,13 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String recordStreamResultText(RecordType objType, Stream<HDT_Record> stream)
+  public static String recordStreamResultText(RecordType objType, Stream<HDT_Record> stream, boolean limitTo20Items)
   {
     Function<? super HDT_Record, String> strFunction = objType == RecordType.hdtWork ? HDT_Record::getCBText : HDT_Record::listName;
 
-    return stream.map(strFunction).filter(Predicate.not(String::isBlank)).limit(20).collect(Collectors.joining("; "));
+    Stream<String> strStream = stream.map(strFunction).filter(Predicate.not(String::isBlank));
+
+    return limitTo20Items ? strStream.limit(20).collect(Collectors.joining("; ")) : strStream.collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------

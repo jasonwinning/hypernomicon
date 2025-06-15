@@ -144,8 +144,8 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     htParents.addLabelCol(hdtNote, smTextSimple);
 
     htParents.addDefaultMenuItems();
+    htParents.addChangeOrderMenuItem();
     htParents.addRemoveMenuItem();
-    htParents.addChangeOrderMenuItem(true);
 
     htSubnotes = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.NOTE_SUB);
 

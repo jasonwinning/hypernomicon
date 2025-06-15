@@ -78,8 +78,8 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     htParents.addColAltPopulator(hdtNone, ctEditableLimitedDropDown, new RecordByTypePopulator());
 
+    htParents.addChangeOrderMenuItem();
     htParents.addRemoveMenuItem();
-    htParents.addChangeOrderMenuItem(true);
 
     htParents.setDefaultValue(2, rtp.getChoiceByType(hdtDebate));
 

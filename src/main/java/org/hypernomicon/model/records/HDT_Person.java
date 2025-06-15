@@ -251,7 +251,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     HDT_Person otherPerson = null;
     StringBuilder keys = new StringBuilder();
 
-    PotentialKeySet keySet = makeSearchKeySet(name, false, false, false, true);
+    PotentialKeySet keySet = makeSearchKeySet(name, false, false);
 
     for (Entry<String, Boolean> entry : keySet.keys.entrySet())
     {
@@ -281,6 +281,9 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
   private static String getSearchKeyComponents(String first, String last, List<String> nameList, List<String> initialList, StringBuilder nickNames)
   {
+    if (first.matches("[A-Z]+"))                        // If first name is all caps, treat the letters as initials
+      first = String.join(".", first.split("")) + '.';  // E.g., "EG Marshall" -> "E. G. Marshall"
+
     first = first.replace(".", ". ");
 
     first = SearchKeys.prepSearchKey(first);
@@ -342,9 +345,9 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static PotentialKeySet makeSearchKeySet(PersonName personName, boolean useAllInitials, boolean lowerCase, boolean noNicknames, boolean caretOnLastName)
+  public static PotentialKeySet makeSearchKeySet(PersonName personName, boolean forDupCheck, boolean noNicknames)
   {
-    PotentialKeySet keySet = new PotentialKeySet(lowerCase);
+    PotentialKeySet keySet = new PotentialKeySet(forDupCheck);
     String first = personName.getFirst(), last = personName.getLast();
     StringBuilder nickNames = new StringBuilder();
 
@@ -353,16 +356,18 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     last = getSearchKeyComponents(first, last, nameList, initialList, nickNames);
 
-    keySet.add((caretOnLastName ? "^" : "") + last, false);
+    keySet.add((forDupCheck ? "" : "^") + last, false);
 
     if (nameList.size() > 0)
     {
-      if (nameList.get(0).length() > 0)
+      String name1 = nameList.get(0);
+
+      if (name1.length() > 0)
       {
-        if (useAllInitials)
+        if (forDupCheck)
           keySet.add(initialList.get(0) + ". " + last, false);
 
-        keySet.add(nameList.get(0) + ' ' + last, true);
+        keySet.add(name1 + ' ' + last, true);
       }
       else
       {
@@ -384,7 +389,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
         keySet.add(name + last, false);
 
-        if (useAllInitials)
+        if (forDupCheck)
         {
           for (int ndx = 1; ndx < initialList.size(); ndx++)
             keySet.add(initialList.get(ndx) + ". " + last, false);
@@ -408,7 +413,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
         keySet.add(name + last, true);
 
-        if (useAllInitials)
+        if (forDupCheck)
         {
           String middleNames = "", middleInits = "";
           for (int ndx = 1; ndx < nameList.size(); ndx++)

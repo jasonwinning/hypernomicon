@@ -168,13 +168,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htAuthors.addCheckboxCol();
     htAuthors.addCheckboxCol();
 
-    htAuthors.addRemoveMenuItem();
-    htAuthors.addChangeOrderMenuItem(true);
-
-    htAuthors.addContextMenuItem("Remove this row",
-      row -> strNotNullOrEmpty(row.getText(1)) && (row.getID(1) < 1),
-      htAuthors::removeRow);
-
     htAuthors.addContextMenuItem("Create person record",
       row -> strNotNullOrEmpty(row.getText(1)) && (row.getID(1) < 1),
       row ->
@@ -199,6 +192,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           ui.update();
         }
       });
+
+    htAuthors.addChangeOrderMenuItem();
+    htAuthors.addRemoveMenuItem();
+
+    htAuthors.addContextMenuItem("Remove this row",
+      row -> strNotNullOrEmpty(row.getText(1)) && (row.getID(1) < 1),
+      htAuthors::removeRow);
 
     htLabels = new HyperTable(tvLabels, 2, true, TablePrefKey.WORK_LABELS);
 

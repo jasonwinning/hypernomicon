@@ -177,8 +177,8 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
       {
         int ndx = 0;
 
-        // Sequential search is necessary because hashCode is not always the same
-        // when BibAuthorKey objects are equal.
+        // Sequential search is used to control which authors get
+        // merged when there are multiple duplicates.
 
         while (notFound && (ndx < outputList.size()))
         {

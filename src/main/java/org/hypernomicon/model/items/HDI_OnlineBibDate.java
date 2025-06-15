@@ -70,7 +70,7 @@ public class HDI_OnlineBibDate extends HDI_OnlineBase<HDI_OfflineBibDate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getResultTextForTag(Tag tag)
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)
   {
     return value.displayToUser();
   }

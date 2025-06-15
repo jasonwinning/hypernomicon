@@ -92,8 +92,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     jObj.put("data", jData);
 
     jData.put("key", "_!_" + randomAlphanumericStr(12));
-    jData.put("version", 1L);  // These two lines will convert this into
-    update(jObj, false, true);       // a "synced" entry, not a "new" one
+    jData.put("version", 1L);   // These two lines will convert this into
+    update(jObj, false, true);  // a "synced" entry, not a "new" one
   }
 
 //---------------------------------------------------------------------------

@@ -273,8 +273,8 @@ public final class TestHyperDB extends AbstractHyperDB
 
     T libWrapper = switch (libType)
     {
-      case ltZotero   -> (T)ZoteroWrapper  .createForTesting();
-      case ltMendeley -> (T)MendeleyWrapper.createForTesting(userID);
+      case ltZotero   -> (T) ZoteroWrapper  .createForTesting();
+      case ltMendeley -> (T) MendeleyWrapper.createForTesting(userID);
     };
 
     linkBibLibraryForUnitTest(libWrapper);

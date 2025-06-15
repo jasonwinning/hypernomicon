@@ -58,7 +58,7 @@ public interface HDT_Record
   Instant getCreationDate();
 
   HDI_Schema getSchema(Tag tag);
-  String resultTextForTag(Tag tag);
+  String resultTextForTag(Tag tag, boolean limitTo20Items);
   int resultCount(Tag tag);
   boolean getTagBoolean(Tag tag);
   Set<Tag> getAllTags();

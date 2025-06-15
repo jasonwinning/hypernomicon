@@ -289,9 +289,9 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
           if (item != null)
           {
             str = item.relType != rtNone ?
-              HDI_OnlinePointerMulti.recordStreamResultText(db.getObjType(item.relType), db.getSubjectList(item.relType, record).stream())
+              HDI_OnlinePointerMulti.recordStreamResultText(db.getObjType(item.relType), db.getSubjectList(item.relType, record).stream(), true)
             :
-              record.resultTextForTag(item.tag);
+              record.resultTextForTag(item.tag, true);
           }
         }
 

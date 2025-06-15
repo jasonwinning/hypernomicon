@@ -20,6 +20,7 @@ package org.hypernomicon.model.unities;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
@@ -250,15 +251,19 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getResultTextForTag(Tag tag) { return switch (tag)
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items) { return switch (tag)
   {
     case tagDisplayRecord -> getMainText().getDisplayItemsString();
     case tagKeyWork       ->
+    {
+      Stream<String> stream = getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
+                                                             .filter(Predicate.not(String::isBlank));
 
-      getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
-                                     .filter(Predicate.not(String::isBlank))
-                                     .limit(20)
-                                     .collect(Collectors.joining("; "));
+      yield limitTo20Items ?
+        stream.limit(20).collect(Collectors.joining("; "))
+      :
+        stream.collect(Collectors.joining("; "));
+    }
     case tagHub           -> "";
     default               -> getMainText().getPlain();
   };}

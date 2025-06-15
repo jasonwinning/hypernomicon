@@ -597,12 +597,12 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String resultTextForTag(Tag tag)
+  @Override public String resultTextForTag(Tag tag, boolean limitTo20Items)
   {
     return (tag == type.getNameTag()) || (tag == tagName) ?
       listName()
     :
-      nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag));
+      nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag, limitTo20Items));
   }
 
 //---------------------------------------------------------------------------

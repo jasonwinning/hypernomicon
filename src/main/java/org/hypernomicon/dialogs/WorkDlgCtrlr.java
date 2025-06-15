@@ -426,6 +426,8 @@ public class WorkDlgCtrlr extends ModalDialog
       Objects.requireNonNullElseGet(firstRecordRow, () -> hyperTable.dataRowStream().findFirst().orElseThrow()).setCheckboxValue(2, true);
     };
 
+    hyperTable.addChangeOrderMenuItem();
+
     hyperTable.addRemoveMenuItem(removeHandler);
 
     hyperTable.addContextMenuItem("Remove this row", row -> strNotNullOrEmpty(row.getText(0)) && (row.getID(0) < 1), row ->
@@ -433,8 +435,6 @@ public class WorkDlgCtrlr extends ModalDialog
       hyperTable.removeRow(row);
       removeHandler.accept(row);
     });
-
-    hyperTable.addChangeOrderMenuItem(true);
 
     return hyperTable;
   }
@@ -1059,17 +1059,17 @@ public class WorkDlgCtrlr extends ModalDialog
   private void clearFields()
   {
     populateFieldsFromBibData(new GUIBibData(), true);
-    clearAuthors(htAuthors);
+    clearAuthors(htAuthors, false);
     lblAutoPopulated.setText("");
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void clearAuthors(HyperTable htAuthors)
+  private static void clearAuthors(HyperTable htAuthors, boolean forceRepopulate)
   {
     htAuthors.clear();
-    htAuthors.getPopulator(0).populate(false);
+    htAuthors.getPopulator(0).populate(forceRepopulate);
   }
 
 //---------------------------------------------------------------------------
@@ -1152,9 +1152,11 @@ public class WorkDlgCtrlr extends ModalDialog
   {
     if (BibAuthors.isEmpty(bibAuthors)) return;
 
-    clearAuthors(htAuthors);
+    List<BibAuthor> listForWorkMerge = bibAuthors.getListForWorkMerge(destWork);
 
-    bibAuthors.getListForWorkMerge(destWork).forEach(bibAuthor -> addAuthorToTable(bibAuthor, htAuthors, hasShowInFileCol));
+    clearAuthors(htAuthors, true);  // Getting the list may have resulted in one or more new person records being created so force repopulate
+
+    listForWorkMerge.forEach(bibAuthor -> addAuthorToTable(bibAuthor, htAuthors, hasShowInFileCol));
   }
 
 //---------------------------------------------------------------------------

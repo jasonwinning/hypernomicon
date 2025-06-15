@@ -278,8 +278,8 @@ public class NewPersonDlgCtrlr extends ModalDialog
       this.author = author;
       this.name = name;
 
-      keySet = HDT_Person.makeSearchKeySet(name, true, true, false, false);
-      keySetNoNicknames = HDT_Person.makeSearchKeySet(name, true, true, true, false);
+      keySet            = HDT_Person.makeSearchKeySet(name, true, false);
+      keySetNoNicknames = HDT_Person.makeSearchKeySet(name, true, true );
 
       newFullNameEngChar = removeAllParentheticals(newFullNameEngChar.toLowerCase());
 
@@ -363,14 +363,8 @@ public class NewPersonDlgCtrlr extends ModalDialog
         {
           Author author2 = person2.author;
 
-          if (author2 != null)
-          {
-            if (work1 == author2.getWork())
-              continue;
-
-            if (nullSwitch(author2.getPerson(), false, personRec2 -> work1.getAuthors().containsPerson(personRec2)))
-              continue;
-          }
+          if ((author2 != null) && (work1 == author2.getWork()))
+            continue;
         }
 
         if (nullSwitch(person2.author     , false, author2    ->

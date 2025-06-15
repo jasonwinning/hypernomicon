@@ -58,7 +58,7 @@ public class HDI_OnlineBoolean extends HDI_OnlineBase<HDI_OfflineBoolean>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getResultTextForTag(Tag tag)
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)
   {
     return boolValue ? "True" : "False";
   }

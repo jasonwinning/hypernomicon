@@ -204,13 +204,13 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String resultTextForTag(Tag tag)
+  @Override public String resultTextForTag(Tag tag, boolean limitTo20Items)
   {
     return switch (tag)
     {
       case tagStartPageNum -> getStartPageNumStr();
       case tagEndPageNum   -> getEndPageNumStr();
-      default              -> super.resultTextForTag(tag);
+      default              -> super.resultTextForTag(tag, limitTo20Items);
     };
   }
 
@@ -261,13 +261,13 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
            titleStr = name(),
            cbStr = "";
 
-    if (authorStr.length() > 0)
+    if (strNotNullOrEmpty(authorStr))
       cbStr = authorStr + ' ';
 
-    if (yearStr.length() > 0)
+    if (strNotNullOrEmpty(yearStr))
       cbStr += '(' + yearStr + ") ";
 
-    if (titleStr.length() > 0)
+    if (strNotNullOrEmpty(titleStr))
       cbStr += titleStr;
 
     return cbStr;
@@ -318,7 +318,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
       return;
     }
 
-    if ((workFiles.size() != largerWorkRec.workFiles.size()) || (largerWorkRec.workFiles.containsAll(workFiles) == false))
+    if ((workFiles.size() != largerWorkRec.workFiles.size()) || (new HashSet<>(largerWorkRec.workFiles).containsAll(workFiles) == false))
     {
       String msg = workFiles.size() == 1 ? " file is " : " files are ";
       if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?", false))
@@ -517,7 +517,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     List<String> curISBNs = getISBNs();
 
-    if (curISBNs.containsAll(allIsbns) && allIsbns.containsAll(curISBNs))
+    if (new HashSet<>(curISBNs).equals(new HashSet<>(allIsbns)))
       return;
 
     String isbnStr = String.join("; ", allIsbns);
@@ -539,7 +539,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   {
     String entryKey = getBibEntryKey();
 
-    if (entryKey.length() > 0)
+    if (strNotNullOrEmpty(entryKey))
     {
       BibData bibData = db.getBibEntryByKey(entryKey);
       if (bibData != null) return bibData;

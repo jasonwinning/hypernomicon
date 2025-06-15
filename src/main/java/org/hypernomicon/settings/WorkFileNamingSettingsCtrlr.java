@@ -212,9 +212,9 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     hyperTable.setDefaultValue(3, new GenericNonRecordHTC(" ", hdtNone)); // Default within-separator is space
 
-    hyperTable.addRemoveMenuItem(row -> row != hyperTable.getRows().get(hyperTable.getRows().size() - 1), row -> refreshExample());
-
     hyperTable.addChangeOrderMenuItem(true, this::refreshExample);
+
+    hyperTable.addRemoveMenuItem(row -> row != hyperTable.getRows().get(hyperTable.getRows().size() - 1), row -> refreshExample());
 
     lblExample.setOnMouseClicked(event -> refreshExample());
 

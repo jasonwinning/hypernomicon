@@ -58,7 +58,7 @@ public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extend
 
   public abstract void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords);
 
-  public abstract String getResultTextForTag(Tag tag);
+  public abstract String getResultTextForTag(Tag tag, boolean limitTo20Items);
 
   public abstract int getResultCount(Tag tag);
 

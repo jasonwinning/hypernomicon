@@ -224,6 +224,26 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This regenerates the cell values for a column, assuming they were originally generated based on IDs.
+   * <p>
+   * Cells where the <code>id == -1</code> are ignored.
+   * <p>
+   * This assumes that the column has already been repopulated, so normally you have to call <code>populate(true)</code> first.
+   * @param colNdx Column index
+   */
+  public void regenerateCellsBasedOnIDs(int colNdx)
+  {
+    dataRows().forEach(row ->
+    {
+      if (row.getID(colNdx) >= 0)
+        row.setCellValue(colNdx, row.getPopulator(colNdx).getChoiceByID(row, row.getID(colNdx)));
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void saveColWidthsToPrefs()
   {
     registry.forEach((prefID, tv) ->
@@ -721,7 +741,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addChangeOrderMenuItem(boolean onlyIfCanAddRows) { addChangeOrderMenuItem(onlyIfCanAddRows, null); }
+  public void addChangeOrderMenuItem() { addChangeOrderMenuItem(true, null); }
 
   public void addChangeOrderMenuItem(boolean onlyIfCanAddRows, Runnable completeHandler)
   {

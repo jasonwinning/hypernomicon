@@ -53,7 +53,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { list.add(get()); }
 
-  @Override public String getResultTextForTag(Tag tag) { return convertToSingleLine(get()); }
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items) { return convertToSingleLine(get()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

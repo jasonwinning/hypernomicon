@@ -240,8 +240,8 @@ public abstract class BibFieldCtrlr
       htAuthors.addCheckboxCol();
       htAuthors.addCheckboxCol();
 
+      htAuthors.addChangeOrderMenuItem();
       htAuthors.addRemoveMenuItem();
-      htAuthors.addChangeOrderMenuItem(true);
 
       htAuthors.addContextMenuItem("Remove this row",
         row -> strNotNullOrEmpty(row.getText(0)) && (row.getID(0) < 1),
@@ -293,6 +293,13 @@ public abstract class BibFieldCtrlr
         work.setAuthors(authGroups);
       else
         mergedBD.setAllAuthorsFromTable(authGroups);
+    }
+
+    public void refresh()
+    {
+      htAuthors.getPopulator(0).populate(true);
+
+      htAuthors.regenerateCellsBasedOnIDs(0);
     }
   }
 

@@ -193,7 +193,7 @@ public class QueryWhereField extends RecordQuery
 
           default :
 
-            String tagStrVal = record.resultTextForTag(tag);
+            String tagStrVal = record.resultTextForTag(tag, false);
             if (tagStrVal.isEmpty()) return false;
 
             return tagStrVal.strip().equalsIgnoreCase(getCellText(op3).strip()) == (getCellID(op2) == EQUAL_TO_OPERAND_ID);
@@ -204,7 +204,7 @@ public class QueryWhereField extends RecordQuery
         String val3 = getCellText(op3).strip();
         if (val3.isEmpty()) return false;
 
-        String tagStrVal = record.resultTextForTag(tag).toLowerCase().strip();
+        String tagStrVal = record.resultTextForTag(tag, false).toLowerCase().strip();
 
         return tagStrVal.contains(val3.toLowerCase()) == (getCellID(op2) == CONTAINS_OPERAND_ID);
 
@@ -214,7 +214,7 @@ public class QueryWhereField extends RecordQuery
         {
           case cvtRecord  -> (db.getObjectList(schema.relType(), record, true).size() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
           case cvtBoolean -> getCellID(op2) == IS_EMPTY_OPERAND_ID;
-          default         -> (record.resultTextForTag(tag).length() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
+          default         -> (record.resultTextForTag(tag, true).length() > 0) == (getCellID(op2) == IS_NOT_EMPTY_OPERAND_ID);
         };
 
       default : return false;

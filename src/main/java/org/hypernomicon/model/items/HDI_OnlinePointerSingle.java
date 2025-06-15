@@ -110,7 +110,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getResultTextForTag(Tag tag)
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)
   {
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
 

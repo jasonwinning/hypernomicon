@@ -118,9 +118,6 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     htParents.addColAltPopulator(hdtNone, ctEditableLimitedDropDown, verdictPopulator);
 
-    htParents.addRemoveMenuItem();
-    htParents.addChangeOrderMenuItem(true);
-
     htWhereMade = new HyperTable(lowerCtrlr.tvWhereMade, 2, true, TablePrefKey.ARG_SRC);
 
     htWhereMade.addGoNewCol(hdtWork, 2);
@@ -155,9 +152,6 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
                .setValueType(cvtPageRange);
 
     htWhereMade.addLabelCol(hdtArgument);       // Date column
-
-    htWhereMade.addRemoveMenuItem();
-    htWhereMade.addChangeOrderMenuItem(true);
 
     htResponses = new HyperTable(lowerCtrlr.tvResponses, 3, true, TablePrefKey.ARG_RESPONSES);
 
@@ -278,6 +272,9 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
   private void initContextMenus()
   {
+    htParents.addChangeOrderMenuItem();
+    htParents.addRemoveMenuItem();
+
     htWhereMade.addDefaultMenuItems();
 
     htWhereMade.addContextMenuItem("Go to work record", HDT_Work.class,
@@ -285,6 +282,9 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     htWhereMade.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
+
+    htWhereMade.addChangeOrderMenuItem();
+    htWhereMade.addRemoveMenuItem();
 
     htResponses.addContextMenuItem("Launch work", HDT_Argument.class,
       arg -> HDT_Work.hasLaunchableWork(arg.works),

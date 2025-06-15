@@ -393,8 +393,35 @@ public abstract class BibData
 
   static double titleDistance(LevenshteinDistance alg, String title1, String title2)
   {
-    int len = Math.min(title1.length(), title2.length());
-    return (double)alg.apply(safeSubstring(title1, 0, len), safeSubstring(title2, 0, len)) / (double)len;
+    if (strNullOrBlank(title1) || strNullOrBlank(title2)) return 1.0;
+
+    StringBuilder sbTitle1 = new StringBuilder(title1),
+                  sbTitle2 = new StringBuilder(title2);
+
+    clearAfter(sbTitle1, sbTitle2, ":");
+    clearAfter(sbTitle1, sbTitle2, "?");
+    clearAfter(sbTitle1, sbTitle2, "(");
+
+    int len = Math.min(sbTitle1.length(), sbTitle2.length());
+
+    if (len == 0) return 1.0;
+
+    return (double)alg.apply(sbTitle1, sbTitle2) / (double)len;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void clearAfter(StringBuilder title1, StringBuilder title2, String startOfExcludedText)
+  {
+    int pos1 = title1.indexOf(startOfExcludedText),
+        pos2 = title2.indexOf(startOfExcludedText);
+
+    if ((pos1 < 0) != (pos2 < 0))
+    {
+      if (pos1 > 0) assignSB(title1, title1.substring(0, pos1).strip());
+      if (pos2 > 0) assignSB(title2, title2.substring(0, pos2).strip());
+    }
   }
 
 //---------------------------------------------------------------------------

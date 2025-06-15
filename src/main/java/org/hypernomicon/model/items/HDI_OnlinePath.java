@@ -131,7 +131,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getResultTextForTag(Tag tag)
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)
   {
     if (hyperPath.isEmpty()) return "";
 

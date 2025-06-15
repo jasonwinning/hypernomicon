@@ -97,8 +97,8 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
     htParents.addColAltPopulator(hdtNone, ctEditableLimitedDropDown, new RecordByTypePopulator());
 
+    htParents.addChangeOrderMenuItem();
     htParents.addRemoveMenuItem();
-    htParents.addChangeOrderMenuItem(true);
 
     htArguments = new HyperTable(tvLeftChildren, 5, true, TablePrefKey.POS_ARG);
 

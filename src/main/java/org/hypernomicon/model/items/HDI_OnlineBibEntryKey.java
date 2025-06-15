@@ -50,12 +50,12 @@ public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 
   public String get() { return keyStr; }
 
-  @Override public void setFromOfflineValue(HDI_OfflineString val, Tag tag) { set(val.get()); }
-  @Override public void getToOfflineValue  (HDI_OfflineString val, Tag tag) { val.set(keyStr); }
+  @Override public void setFromOfflineValue(HDI_OfflineString val, Tag tag)    { set(val.get()); }
+  @Override public void getToOfflineValue  (HDI_OfflineString val, Tag tag)    { val.set(keyStr); }
 
-  @Override public void expire()                       { set(""); }
-  @Override public String getResultTextForTag(Tag tag) { return keyStr; }
-  @Override public int getResultCount(Tag tag)         { return strNullOrBlank(keyStr) ? 0 : 1; }
+  @Override public void expire()                                               { set(""); }
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items) { return keyStr; }
+  @Override public int getResultCount(Tag tag)                                 { return strNullOrBlank(keyStr) ? 0 : 1; }
 
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { }
 

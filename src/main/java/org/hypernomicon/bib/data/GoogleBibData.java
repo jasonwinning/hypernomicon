@@ -73,7 +73,6 @@ public final class GoogleBibData extends BibDataStandalone
     if (strNotNullOrEmpty(publishedDate))
       setDate(ZoteroDate.parsedDateStrToBibDate(publishedDate, false), dtPublishedDate, true);  // Date is in local ISO date format like Zotero's "parsed date"
                                                                                                 // Assumption here is that Google Books years are never BC
-
     jsonObj.getArraySafe("authors").strStream().forEach(authStr ->
       authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr))));
 
@@ -194,7 +193,7 @@ public final class GoogleBibData extends BibDataStandalone
     title = convertToEnglishChars(title).strip();
 
     if (strNotNullOrEmpty(title))
-      url = url + escapeURL('"' + title + '"', false);
+      url = url + escapeURL(title, false);
 
     if (strNotNullOrEmpty(auths))
     {
@@ -223,7 +222,7 @@ public final class GoogleBibData extends BibDataStandalone
 
     if (isbnIt != null)
     {
-      while ((isbn.isBlank() && isbnIt.hasNext()))
+      while (isbn.isBlank() && isbnIt.hasNext())
       {
         isbn = isbnIt.next();
         if (alreadyCheckedIDs.contains(isbn.toLowerCase()))

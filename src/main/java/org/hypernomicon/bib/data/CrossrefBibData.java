@@ -325,7 +325,7 @@ public final class CrossrefBibData extends BibDataStandalone
       if (strNotNullOrEmpty(auths))
         url = url + '&';
 
-      url = url + "query.bibliographic=" + escapeURL(title, false); // query.title is deprecated
+      url = url + "query.title=" + escapeURL(title, false);
     }
 
     return url;

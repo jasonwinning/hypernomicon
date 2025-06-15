@@ -36,10 +36,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
-import org.hypernomicon.model.items.Author;
-import org.hypernomicon.model.items.Authors;
-import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -153,8 +150,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htPersonInst.addColAltPopulator(hdtInstitution, ctEditableLimitedDropDown, new SubjectPopulator(rtParentInstOfInst, true, DisplayKind.name));
 
+    htPersonInst.addChangeOrderMenuItem();
     htPersonInst.addRemoveMenuItem();
-    htPersonInst.addChangeOrderMenuItem(true);
 
     htWorks = new HyperTable(tvWorks, 4, false, TablePrefKey.PERSON_WORKS);
 

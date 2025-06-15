@@ -25,6 +25,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
@@ -69,11 +70,13 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getResultTextForTag(Tag tag)
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)
   {
-    return getAuthors().stream().map(Author::nameLastFirst)
-                                .filter(name -> name.length() > 0)
-                                .collect(Collectors.joining("; "));
+    Stream<Author> stream = limitTo20Items ? getAuthors().stream().limit(20) : getAuthors().stream();
+
+    return stream.map(Author::nameLastFirst)
+                 .filter(name -> name.length() > 0)
+                 .collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------

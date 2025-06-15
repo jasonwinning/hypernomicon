@@ -100,8 +100,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htAuthors.addActionCol(ctGoBtn, 1);
     htAuthors.addAuthorEditCol(null, null);
 
+    htAuthors.addChangeOrderMenuItem();
     htAuthors.addRemoveMenuItem();
-    htAuthors.addChangeOrderMenuItem(true);
 
     htLabels = new HyperTable(tvLabels, 2, true, TablePrefKey.FILE_LABELS);
 
@@ -109,8 +109,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
     htLabels.addCol(hdtWorkLabel, ctEditableLimitedDropDown);
 
+    htLabels.addChangeOrderMenuItem();
     htLabels.addRemoveMenuItem();
-    htLabels.addChangeOrderMenuItem(true);
 
     htMentioners = new HyperTable(tvKeyMentions, 1, false, TablePrefKey.FILE_MENTIONERS);
 
