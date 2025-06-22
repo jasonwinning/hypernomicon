@@ -42,6 +42,8 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.previewWindow.PreviewWindow;
+import org.hypernomicon.query.personMatch.PersonForDupCheck;
+import org.hypernomicon.query.personMatch.PersonMatcher;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -54,6 +56,7 @@ import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
+
 import org.hypernomicon.view.wrappers.*;
 
 import static java.util.Collections.*;
@@ -842,16 +845,18 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       return true;
     }
 
-    ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
+    PersonForDupCheck personForDupCheck = new PersonForDupCheck(new Author(curPerson), personName);
 
-    HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(personName, new Author(curPerson), matchedAuthorsList, null);
+    PersonMatcher matcher = new PersonMatcher();
+
+    HyperTask task = matcher.createDupCheckTask(personForDupCheck, null);
 
     if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
 
-    ArrayList<Author> matchedAuthors = matchedAuthorsList.get(0);
+    List<Author> matchedAuthors = matcher.getMatches(personForDupCheck);
 
     if (matchedAuthors.size() > 0)
-      return new NewPersonDlgCtrlr(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors).showModal();
+      return new NewPersonDlgCtrlr(personName, tfSearchKey.getText(), new Author(null, curPerson), matchedAuthors).showModal();
 
     curPerson.setName(personName);
     return true;

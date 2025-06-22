@@ -199,6 +199,8 @@ public class PictureDlgCtrlr extends ModalDialog
 
     btnWebSrch.setText(ui.webButtonMap.get(WebButtonContextPrefKey.PERSON_IMG).getCaption());
 
+    setToolTip(btnWebSrch, "Search for image using " + ui.webButtonMap.get(WebButtonContextPrefKey.PERSON_IMG).getName());
+
     btnWebSrch.setOnAction(event ->
     {
       String first = personHyperTab.tfFirst.getText(),
@@ -242,6 +244,8 @@ public class PictureDlgCtrlr extends ModalDialog
     });
 
     lblChangeName.setOnMouseClicked(event -> autoGenerateName());
+
+    setToolTip(lblChangeName, "Auto-generate file name");
 
     btnEdit  .setOnAction(event -> btnEditClick  ());
     btnDelete.setOnAction(event -> btnDeleteClick());

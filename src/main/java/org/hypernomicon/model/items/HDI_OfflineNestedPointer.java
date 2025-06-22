@@ -22,9 +22,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.Map;
 
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HDX_Element;
-import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.*;
 import org.hypernomicon.model.records.RecordState;
 
 //---------------------------------------------------------------------------

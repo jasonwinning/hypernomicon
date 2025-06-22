@@ -19,10 +19,7 @@ package org.hypernomicon.model.items;
 
 import java.util.Map;
 
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HDX_BibDateElement;
-import org.hypernomicon.model.HDX_Element;
-import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.*;
 import org.hypernomicon.model.records.RecordState;
 
 import static org.hypernomicon.util.Util.*;

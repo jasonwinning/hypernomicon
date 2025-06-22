@@ -333,6 +333,12 @@ public class WorkAuthors extends Authors
 
       if (author == oldAuthor)
       {
+        if (objListNoMod.contains(person))
+        {
+          authorList.remove(authorList.indexOf(oldAuthor));
+          return;
+        }
+
         objListNoMod.add(insertAfter == null ? 0 : objListNoMod.indexOf(insertAfter) + 1, person);
 
         work.setPersonIsEditor    (person, author.getIsEditor  ());

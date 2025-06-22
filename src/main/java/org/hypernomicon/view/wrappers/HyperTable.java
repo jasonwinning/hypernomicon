@@ -860,6 +860,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     db.getNestedTags(relType).stream().filter(Predicate.not(colNdxToTag::containsValue)).forEach(tag -> colNdxToTag.put(-1, tag));
 
+    Set<HDT_Record> existingObjects = new HashSet<>();
+
     rows.stream().filter(row -> row.getRecordType(objColNdx) == objType).forEach(row ->
     {
       int id = row.getID(objColNdx);
@@ -877,6 +879,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       else
       {
         obj = db.records(objType).getByID(id);
+
+        if (existingObjects.add(obj) == false) return;  // Filter out duplicate object records
+
         group = new ObjectGroup(obj);
       }
 

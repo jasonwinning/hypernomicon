@@ -17,18 +17,15 @@
 
 package org.hypernomicon.model.items;
 
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HDX_Element;
-import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.*;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
-
-import static org.hypernomicon.model.HyperDB.*;
 
 //---------------------------------------------------------------------------
 

@@ -32,6 +32,8 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.query.personMatch.PersonForDupCheck;
+import org.hypernomicon.query.personMatch.PersonMatcher;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -228,9 +230,8 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
     // there are no authors that are duplicates in terms of associated person record or exact name
     // match, unless one was an author and the other was an editor and/or translator.
 
-    List<PersonName> nonRecordNames   = new ArrayList<>(); // list containing only non-record authors
-    List<Author>     nonRecordAuthors = new ArrayList<>(); // author objects for each non-record author
-    List<Integer>    outputIndices    = new ArrayList<>(); // index into outputList for this non-record author
+    List<PersonForDupCheck> nonRecordAuthors = new ArrayList<>();
+    List<Integer>           outputIndices    = new ArrayList<>(); // index into outputList for this non-record author
 
     for (int ndx = 0; ndx < outputList.size(); ndx++)
     {
@@ -238,39 +239,33 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
       if (bibAuthor.getPerson() == null)
       {
-        PersonName name = bibAuthor.getName();
-
-        nonRecordNames.add(name);
-        nonRecordAuthors.add(new Author(destWork, bibAuthor, Ternary.Unset));
+        nonRecordAuthors.add(new PersonForDupCheck(new Author(destWork, bibAuthor, Ternary.Unset)));
         outputIndices.add(ndx);
       }
     }
 
     int startNdx = 0;
 
-    while (startNdx < nonRecordNames.size())
+    while (startNdx < nonRecordAuthors.size())
     {
-      ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>(); // List of matches for each non-record author
+      PersonMatcher matcher = new PersonMatcher();
 
-      HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(nonRecordNames  .subList(startNdx, nonRecordNames.size()),
-                                                            nonRecordAuthors.subList(startNdx, nonRecordNames.size()),
-                                                            matchedAuthorsList,
-                                                            null);
+      HyperTask task = matcher.createDupCheckTask(nonRecordAuthors.subList(startNdx, nonRecordAuthors.size()), null);
 
       if (task.runWithProgressDialog() != State.SUCCEEDED) return outputList;
 
       int ndx;
 
-      for (ndx = startNdx; ndx < nonRecordNames.size(); ndx++)
+      for (ndx = startNdx; ndx < nonRecordAuthors.size(); ndx++)
       {
-        ArrayList<Author> matchedAuthors = matchedAuthorsList.get(ndx - startNdx);
+        PersonForDupCheck person = nonRecordAuthors.get(ndx);
 
-        if (matchedAuthors.isEmpty()) continue;
+        if (matcher.hasMatchesFor(person) == false) continue;
 
         int outputListNdx = outputIndices.get(ndx);
-        Author origAuthor = nonRecordAuthors.get(ndx);
+        Author origAuthor = person.getAuthor();
 
-        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, false, null, null, matchedAuthors);
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, new Author(null, origAuthor.getName(), origAuthor.getIsEditor(), origAuthor.getIsTrans(), Ternary.Unset), matcher.getMatches(person));
 
         if (npdc.showModal() == false) continue;
 
@@ -280,7 +275,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         break;
       }
 
-      if (ndx == nonRecordNames.size())
+      if (ndx == nonRecordAuthors.size())
         startNdx = ndx;
     }
 

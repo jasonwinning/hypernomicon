@@ -21,20 +21,18 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.items.*;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_Person.PotentialKeySet;
-import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.query.personMatch.PersonForDupCheck;
+import org.hypernomicon.query.personMatch.PersonMatcher;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import static java.util.Collections.*;
-
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -44,6 +42,18 @@ import org.hypernomicon.view.MainCtrlr;
 
 //---------------------------------------------------------------------------
 
+/**
+ * This popup can be used to find duplicates of a given author, present the duplicates to the user,
+ * and allow the user to update the author's name and search key, create a person record for the
+ * author if one is not yet associated, and merge the author with one of the duplicates.
+ * <p>
+ * The popup will make whatever update the user has chosen upon closing, except when an author
+ * with no associated person record is being updated without being merged. In that case, the
+ * caller has to update the author's name.
+ * <p>
+ * If a set up potential duplicates is passed into origMatches parameter, it will present those
+ * to the user. If origMatches is empty, it will search for duplicates immediately upon opening.
+ */
 public class NewPersonDlgCtrlr extends ModalDialog
 {
 
@@ -59,57 +69,79 @@ public class NewPersonDlgCtrlr extends ModalDialog
   @FXML private ToggleGroup grpAction, grpName;
 
   private final Author origAuthor;
-  private final HDT_Work destWork;
-  private final ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
+  private final PersonMatcher matcher;
 
   private HDT_Person person;
   private boolean alreadyChangingName = false, noTabUpdate = false;
   private HyperTask task;
-  private ArrayList<Author> matchedAuthors;
 
   public HDT_Person getPerson()     { return person; }
   public PersonName getName()       { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
-  public String getNameLastFirst()  { return getName().getLastFirst(); }
-  private int numMatches()          { return nullSwitch(matchedAuthors, 0, List::size); }
-  private Author curDupAuthor()     { return numMatches() == 0 ? null : matchedAuthors.get(tabPane.getSelectionModel().getSelectedIndex()); }
+
+  public boolean updateWithoutCreateWasSelected() { return rbAddNoCreate.isSelected(); }
+
+  private Author curDupAuthor()     { return matcher.isEmpty() ? null : matcher.getMatchedAuthor(tabPane.getSelectionModel().getSelectedIndex()); }
   private HDT_Person curDupPerson() { return nullSwitch(curDupAuthor(), null, Author::getPerson); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Create popup window to select how to update or merge authors
+   * @param mustCreate If true, the option to update without creating a person record will not be shown, even if
+   *                   the author does not have an associated person record.
+   * @param name New name to default into the name fields; cannot be null. This name may be different from
+   *             the one in origAuthor, if origAuthor was previously saved to its associated work record.
+   * @param origAuthor Author object containing original name of author, associated work, and associated HDT_Person record.
+   *                   If the work is non-null, this may or may not indicate that the author was previously saved to the work.
+   */
   public NewPersonDlgCtrlr(boolean mustCreate, String name, Author origAuthor)
   {
-    this("Add a New Person to the Database", name, null, null, mustCreate, null, origAuthor, new ArrayList<>(), null);
+    this("Add a New Person to the Database", mustCreate, new PersonName(Objects.requireNonNull(name)), null, origAuthor, List.of());
   }
 
-  public NewPersonDlgCtrlr(boolean mustCreate, String name, Author origAuthor, HDT_Work destWork)
+  /**
+   * Create popup window to select how to update or merge authors
+   * @param personName New name to default into the name fields; cannot be null. This name may be different from
+   *                   the one in origAuthor, if origAuthor was previously saved to its associated work record.
+   * @param searchKey New searchKey to default into the name fields; will be generated from personName if null
+   * @param origAuthor Author object containing original name of author, associated work, and associated HDT_Person record.
+   *                   If the work is non-null, this may or may not indicate that the author was previously saved to the work.
+   * @param origMatches Duplicate matches to default in. May not be null but may be empty. If empty, the popup will
+   *                    immediately find matches.
+   */
+  public NewPersonDlgCtrlr(PersonName personName, String searchKey, Author origAuthor, List<Author> origMatches)
   {
-    this("Add a New Person to the Database", name, null, null, mustCreate, null, origAuthor, new ArrayList<>(), destWork);
+    this("Potential Duplicate(s)", false, personName, searchKey, origAuthor, origMatches);
   }
 
-  public NewPersonDlgCtrlr(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
-  {
-    this("Potential Duplicate(s)", null, personName, searchKey, mustCreate, person, origAuthor, matchedAuthors, null);
-  }
-
-  private NewPersonDlgCtrlr(String title, String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor,
-                            ArrayList<Author> matchedAuthors, HDT_Work destWork)
+  /**
+   * Create popup window to select how to update or merge authors
+   * @param title Title of the popup window
+   * @param mustCreate If true, the option to update without creating a person record will not be shown, even if
+   *                   the author does not have an associated person record.
+   * @param personName New name to default into the name fields; cannot be null. This name may be different from
+   *                   the one in origAuthor, if origAuthor was previously saved to its associated work record.
+   * @param searchKey New searchKey to default into the name fields; will be generated from personName if null
+   * @param origAuthor Author object containing original name of author, associated work, and associated HDT_Person record.
+   *                   If the work is non-null, this may or may not indicate that the author was previously saved to the work.
+   * @param origMatches Duplicate matches to default in. May not be null but may be empty. If empty, the popup will
+   *                    immediately find matches.
+   */
+  private NewPersonDlgCtrlr(String title, boolean mustCreate, PersonName personName, String searchKey, Author origAuthor, List<Author> origMatches)
   {
     super("NewPersonDlg", title, true);
 
-    this.matchedAuthors = matchedAuthors;
-    this.person = person;
+    Objects.requireNonNull(personName);
+    Objects.requireNonNull(origAuthor);
+    Objects.requireNonNull(origMatches);
+
     this.origAuthor = origAuthor;
-    this.destWork = destWork;
+    this.person     = origAuthor.getPerson();
+
+    matcher = new PersonMatcher(new PersonForDupCheck(origAuthor, personName), origMatches);
 
     rbCreateNoMerge.setText(person == null ? "Create Person Record" : "Don't Merge");
-
-    if ((person == null) && (origAuthor != null))
-      person = origAuthor.getPerson();
-
-    if (person != null) mustCreate = true;
-
-    matchedAuthorsList.add(matchedAuthors);
 
     setAllVisible(false, lblStatus, progressIndicator, tabPane);
 
@@ -139,7 +171,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
       startDupThread(new PersonName(newValue, tfLastName.getText()));
     });
 
-    if (mustCreate)
+    if (mustCreate || (person != null) || (origAuthor.getWork() == null))
     {
       rbAddNoCreate.setDisable(true);
       rbCreateNoMerge.setSelected(true);
@@ -192,31 +224,20 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
     alreadyChangingName = true;
 
-    if (name == null)
-    {
-      tfFirstName.setText(personName.getFirst());
-      tfLastName.setText(personName.getLast());
+    tfFirstName.setText(personName.getFirst());
+    tfLastName .setText(personName.getLast ());
 
-      if (searchKey == null)
-        setSearchKey(personName);
-      else
-        tfSearchKey.setText(searchKey);
-    }
-    else
-    {
-      personName = new PersonName(name);
-
-      tfFirstName.setText(personName.getFirst());
-      tfLastName.setText(personName.getLast());
+    if (searchKey == null)
       setSearchKey(personName);
-    }
+    else
+      tfSearchKey.setText(searchKey);
 
     alreadyChangingName = false;
 
-    if (matchedAuthors.size() > 0)
-      finishDupSearch();
-    else
+    if (matcher.isEmpty())
       startDupThread(personName);
+    else
+      finishDupSearch();
   }
 
 //---------------------------------------------------------------------------
@@ -260,163 +281,6 @@ public class NewPersonDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class PersonForDupCheck
-  {
-    private final Author author;
-    private final PersonName name;
-    private final PotentialKeySet keySet, keySetNoNicknames;
-    private final String fullLCNameEngChar;
-
-    public PersonForDupCheck(PersonName name, Author author) { this(author, name, convertToEnglishChars(name.getFull())); }
-    public PersonForDupCheck(HDT_Person person)              { this(new Author(person)); }
-    public PersonForDupCheck(Author author)                  { this(author, author.getName(), author.fullName(true)); }
-
-  //---------------------------------------------------------------------------
-
-    private PersonForDupCheck(Author author, PersonName name, String newFullNameEngChar)
-    {
-      this.author = author;
-      this.name = name;
-
-      keySet            = HDT_Person.makeSearchKeySet(name, true, false);
-      keySetNoNicknames = HDT_Person.makeSearchKeySet(name, true, true );
-
-      newFullNameEngChar = removeAllParentheticals(newFullNameEngChar.toLowerCase());
-
-      while (newFullNameEngChar.contains("  "))
-        newFullNameEngChar = newFullNameEngChar.replaceAll("  ", " ");
-
-      fullLCNameEngChar = newFullNameEngChar.strip().replaceAll("[.,;]", "");
-    }
-
-  //---------------------------------------------------------------------------
-
-    public HDT_Person getPerson()         { return nullSwitch(author, null, Author::getPerson); }
-    public Author getAuthor()             { return author; }
-    public PersonName getName()           { return name; }
-    public boolean startsWith(String str) { return keySetNoNicknames.startsWith(str.replaceAll("[.,;]", "")); }
-
-    public boolean matches(PersonForDupCheck person2)
-    {
-      return fullLCNameEngChar.equals(person2.fullLCNameEngChar) ||
-             keySetNoNicknames.isSubsetOf(person2.keySet)        ||
-             person2.keySetNoNicknames.isSubsetOf(keySet);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static LinkedList<PersonForDupCheck> createListForDupCheck()
-  {
-    LinkedList<PersonForDupCheck> list = new LinkedList<>();
-    Set<HDT_Person> persons = new HashSet<>();
-
-    db.works.forEach(work -> work.getAuthors().forEach(author ->
-    {
-      HDT_Person person = author.getPerson();
-
-      if (person != null)
-      {
-        if (persons.contains(person))
-          return;
-
-        persons.add(person);
-      }
-
-      PersonForDupCheck personForDupCheck = new PersonForDupCheck(author);
-
-      if (personForDupCheck.fullLCNameEngChar.length() > 0)
-        list.add(personForDupCheck);
-    }));
-
-    db.persons.stream().filter(person -> person.works.isEmpty()).map(PersonForDupCheck::new).forEachOrdered(personForDupCheck ->
-    {
-      if (personForDupCheck.fullLCNameEngChar.length() > 0)
-        list.add(personForDupCheck);
-    });
-
-    return list;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, List<Author> matchedAuthors, HyperTask task) throws CancelledTaskException
-  {
-    if (person1.fullLCNameEngChar.isEmpty()) return;
-
-    HDT_Work work1 = nullSwitch(person1.author, null, Author::getWork);
-
-    for (PersonForDupCheck person2 : list)
-    {
-      task.incrementAndUpdateProgress(10);
-
-      if (nullSwitch(person1.author     , false, author1    -> author1    == person2.author     )) continue;
-      if (nullSwitch(person1.getPerson(), false, personRec1 -> personRec1 == person2.getPerson())) continue;
-
-      boolean isMatch = false;
-
-      if (person1.matches(person2))
-      {
-        if (work1 != null)
-        {
-          Author author2 = person2.author;
-
-          if ((author2 != null) && (work1 == author2.getWork()))
-            continue;
-        }
-
-        if (nullSwitch(person2.author     , false, author2    ->
-            nullSwitch(author2.getWork()  , false, work2      ->
-            nullSwitch(person1.author     , false, author1    ->
-            nullSwitch(author1.getPerson(), false, personRec1 -> work2.getAuthors().containsPerson(personRec1))))))
-          continue;
-
-        isMatch = true;
-      }
-
-      if (isMatch)
-        matchedAuthors.add(person2.author);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static HyperTask createDupCheckTask(PersonName name, Author queryAuthor, ArrayList<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
-  {
-    // The list passed into the second parameter needs to be able to contain null values
-    return createDupCheckTask(singletonList(name), singletonList(queryAuthor), matchedAuthorsList, finishHndlr);
-  }
-
-  public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, List<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
-  {
-    return new HyperTask("CheckForDupAuthors", "Checking for duplicates...") { @Override protected void call() throws CancelledTaskException
-    {
-      matchedAuthorsList.clear();
-
-      LinkedList<PersonForDupCheck> list = createListForDupCheck();
-
-      for (int ndx = 0; ndx < nameList.size(); ndx++)
-      {
-        ArrayList<Author> matchedAuthors = new ArrayList<>();
-        matchedAuthorsList.add(matchedAuthors);
-        PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), queryAuthors.get(ndx));
-
-        completedCount = ((long) ndx) * ((long) (list.size()));
-        totalCount = ((long) nameList.size()) * ((long) list.size());
-
-        doDupCheck(person, list, matchedAuthors, this);
-      }
-
-      if (finishHndlr != null) runInFXThread(finishHndlr);
-    }};
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void startDupThread(PersonName personName)
   {
     stopDupThread();
@@ -425,14 +289,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
     lblStatus.setVisible(true);
     progressIndicator.setVisible(true);
 
-    // Next, make sure it doesn't find "duplicate" authors in the same work we are currently populating
-
-    Author author = (destWork != null) && ((origAuthor == null) || (origAuthor.getWork() == null)) ?
-      new Author(destWork, personName, false, false, Ternary.Unset)
-    :
-      origAuthor;
-
-    task = createDupCheckTask(personName, author, matchedAuthorsList, this::finishDupSearch);
+    task = matcher.createDupCheckTask(new PersonForDupCheck(origAuthor, personName), this::finishDupSearch);
 
     progressIndicator.progressProperty().bind(task.progressProperty());
 
@@ -447,12 +304,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
     progressIndicator.progressProperty().unbind();
     progressIndicator.setProgress(1.0);
 
-    matchedAuthors = matchedAuthorsList.size() > 0 ? matchedAuthorsList.get(0) : new ArrayList<>();
-
-    if (origAuthor != null)
-      matchedAuthors.removeIf(origAuthor::equals);
-
-    lblStatus.setText(matchedAuthors.size() + " potential duplicate(s) found.");
+    lblStatus.setText(matcher.numMatches() + " potential duplicate(s) found.");
     lblStatus.setVisible(true);
 
     tabPane.getSelectionModel().getSelectedItem().setContent(null);
@@ -466,11 +318,11 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
     tabPane.getTabs().get(0).setContent(apDup);
 
-    if (numMatches() > 0)
+    if (matcher.isEmpty() == false)
     {
       tabPane.getTabs().get(0).setText("Potential dup. #1");
 
-      int numTabs = Math.min(20, matchedAuthors.size()); // prevent large number of tabs from being created
+      int numTabs = Math.min(20, matcher.numMatches()); // prevent large number of tabs from being created
 
       for (int ndx = 1; ndx < numTabs; ndx++)
         tabPane.getTabs().add(new Tab("Potential dup. #" + (ndx + 1)));
@@ -503,7 +355,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
   private void updateRadioButtons()
   {
-    boolean noMatches = numMatches() == 0,
+    boolean noMatches  = matcher.isEmpty(),
             notMerging = rbCreateNoMerge.isSelected() || rbAddNoCreate.isSelected() || noMatches;
 
     if (notMerging)
@@ -530,7 +382,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
     lblDupType .setText("");
     lblDupYear .setText("");
 
-    if (numMatches() == 0)
+    if (matcher.isEmpty())
     {
       tfDupFirstName.setText("");
       tfDupLastName .setText("");
@@ -577,16 +429,10 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
     if (rbAddNoCreate.isSelected())
     {
+      // If there is no person record and one isn't being created, updating the
+      // author must be done by the caller.
+
       stopDupThread();
-
-      if (origAuthor != null)
-      {
-        HDT_Work work = origAuthor.getWork();
-        PersonName newName = new PersonName(tfFirstName.getText(), tfLastName.getText());
-
-        work.getAuthors().update(origAuthor, new Author(work, newName, origAuthor.getIsEditor(), origAuthor.getIsTrans(), origAuthor.getInFileName()));
-      }
-
       return true;
     }
 
@@ -641,7 +487,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
       if (dupPerson == null)
         dupAuthor.getWork().getAuthors().setAuthorRecord(dupAuthor, person);
 
-      if ((origAuthor != null) && (origAuthor.getPerson() == null))
+      if ((origAuthor.getPerson() == null) && (origAuthor.getWork() != null))
       {
         WorkAuthors authors = origAuthor.getWork().getAuthors();
 

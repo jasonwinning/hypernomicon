@@ -26,13 +26,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
+import org.hypernomicon.query.personMatch.PersonForDupCheck;
 import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -179,7 +179,7 @@ public class OmniFinder
     {
       lastQuery = query;
       queryLC = convertToEnglishChars(query).toLowerCase().strip();
-      queryPerson = new PersonForDupCheck(new PersonName(queryLC).toLowerCase(), null);
+      queryPerson = new PersonForDupCheck(new PersonName(queryLC).toLowerCase());
       recordToPersonList = new HashMap<>();
       lastShowingMore = showingMore;
       buffer.clear();

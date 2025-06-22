@@ -17,14 +17,12 @@
 
 package org.hypernomicon.model.items;
 
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.items.HDI_OfflineTernary.Ternary.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
 
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HDX_Element;
-import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.*;
 import org.hypernomicon.model.records.RecordState;
 
 //---------------------------------------------------------------------------

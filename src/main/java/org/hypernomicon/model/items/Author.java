@@ -43,14 +43,17 @@ public final class Author implements Cloneable, Comparable<Author>
 
 //---------------------------------------------------------------------------
 
+  public Author(PersonName name)
+  { this(null, null, name, false, false, Ternary.Unset); }
+
+  public Author(HDT_Person person)
+  { this(person.works.isEmpty() ? null : person.works.get(0), person); }
+
   public Author(HDT_Work work, HDT_Person person)
   { this(work, person, null, false, false, Ternary.Unset); }
 
   public Author(HDT_Work work, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
   { this(work, null, name, isEditor, isTrans, inFileName); }
-
-  public Author(HDT_Person person)
-  { this(person.works.isEmpty() ? null : person.works.get(0), person, null, false, false, Ternary.Unset); }
 
 //---------------------------------------------------------------------------
 

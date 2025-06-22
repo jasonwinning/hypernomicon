@@ -18,45 +18,43 @@
 package org.hypernomicon.query.reports;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.dialogs.NewPersonDlgCtrlr.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.Author;
-import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
-import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.query.personMatch.PersonForDupCheck;
+import org.hypernomicon.query.personMatch.PersonMatcher;
+import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 
+//---------------------------------------------------------------------------
+
 public class DupAuthorsReportEngine extends ReportEngine
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final List<HyperTableRow> rows = new ArrayList<>();
   private final Map<HyperTableRow, ImmutableSet<Author>> rowToMatch = new HashMap<>();
   private HyperTable ht;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public List<HyperTableRow> getRows()     { return rows; }
@@ -71,33 +69,23 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     if (db.isLoaded() == false) return;
 
-    Map<Author, List<Author>> matchMap = new LinkedHashMap<>();
-    LinkedList<PersonForDupCheck> list = createListForDupCheck();
-
-    PersonForDupCheck person = list.poll();
+    LinkedList<PersonForDupCheck> list = PersonMatcher.createListForDupCheck();
 
     task.totalCount = ((long) list.size()) * ((long) (list.size() + 1)) / 2;
 
-    while (list.size() > 0)
-    {
-      List<Author> matchedAuthors = new ArrayList<>();
+    PersonMatcher matcher = new PersonMatcher();
 
-      doDupCheck(person, list, matchedAuthors, task);
-
-      if (matchedAuthors.size() > 0)
-        matchMap.put(person.getAuthor(), matchedAuthors);
-
-      task.completedCount += list.size();
-
-      person = list.poll();
-    }
+    while (list.isEmpty() == false)
+      matcher.doDupCheck(list.poll(), list, task);
 
     rows.clear();
     rowToMatch.clear();
 
-    matchMap.forEach((author, authorList) -> authorList.forEach(match ->
+    matcher.forEachMatch((personForDupCheck, match) ->
     {
       ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(GenericNonRecordHTC.blankCell);
+
+      Author author = personForDupCheck.getAuthor();
 
       cells.add(author.getPerson() == null ?
         new GenericNonRecordHTC(author.nameLastFirst(false), hdtNone)
@@ -118,7 +106,7 @@ public class DupAuthorsReportEngine extends ReportEngine
       rows.add(row);
 
       rowToMatch.put(row, ImmutableSet.of(author, match));
-    }));
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -168,9 +156,16 @@ public class DupAuthorsReportEngine extends ReportEngine
         return;
       }
 
-      NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(author1.getName(), null, false, author1.getPerson(), author1, Lists.newArrayList(author2));
+      NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(author1.getName(), null, author1, List.of(author2));
 
       if (npdc.showModal() == false) return;
+
+      if (npdc.updateWithoutCreateWasSelected())
+      {
+        HDT_Work work = author1.getWork();
+
+        work.getAuthors().update(author1, new Author(work, npdc.getName(), author1.getIsEditor(), author1.getIsTrans(), author1.getInFileName()));
+      }
 
       ui.queryHyperTab().btnExecuteClick();
     });
