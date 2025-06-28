@@ -78,10 +78,10 @@ public class OmniFinder
   {
     tierExactName,
     tierAuthorYear,
-    tierPersonMatch,
     tierPersonMatchStart,
-    tierAuthorMatch,
     tierAuthorMatchStart,
+    tierPersonMatch,
+    tierAuthorMatch,
     tierNameStartExact,
     tierKeyword,
     tierKeywordStart,

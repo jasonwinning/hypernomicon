@@ -53,6 +53,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWrapper;
 import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.StringUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -529,8 +530,8 @@ public class WorkDlgCtrlr extends ModalDialog
         alreadyChangingTitle.setTrue();
 
         String title = convertToSingleLine(change.getControlNewText());
-        while (title.contains("  "))
-          title = title.replaceAll("  ", " ");
+
+        title = StringUtil.collapseSpaces(title);
 
         if (title.equals(title.toUpperCase()) || title.equals(title.toLowerCase()))
           title = HDT_Work.fixCase(title);

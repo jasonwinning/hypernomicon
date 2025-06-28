@@ -23,6 +23,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import java.util.List;
 
 import org.hypernomicon.settings.WorkSearchKeySettings.FinalConjunctionSymbol;
+import org.hypernomicon.util.StringUtil;
 
 //---------------------------------------------------------------------------
 
@@ -97,7 +98,7 @@ public class ArgumentNamingSettings
 
     WorkSearchKeySettings.WorkSearchKeyConfig.appendCitationAuthors(str, authors, truncationIndicator, multipleAuthors, oxfordSeparator, authorNumToTruncate, authorsToShowWhenTruncating, finalConjSymbol);
 
-    return str.toString().replaceAll("  ", " ");
+    return StringUtil.collapseSpaces(str.toString());
   }
 
 //---------------------------------------------------------------------------

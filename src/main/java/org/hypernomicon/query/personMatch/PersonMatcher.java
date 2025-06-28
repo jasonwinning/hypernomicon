@@ -63,6 +63,7 @@ public final class PersonMatcher
   public void forEachMatch(BiConsumer<PersonForDupCheck, Author> action) { matches.forEach(action); }
   public int numMatches()                                                { return matches.size(); }
   public boolean isEmpty()                                               { return matches.isEmpty(); }
+  public void clear()                                                    { matches.clear(); }
   public Author getMatchedAuthor(int ndx)                                { return matches.values().get(ndx); }
 
 //---------------------------------------------------------------------------

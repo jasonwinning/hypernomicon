@@ -18,7 +18,8 @@
 package org.hypernomicon.settings;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.util.Util.newAssertionError;
+import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
 import java.util.prefs.BackingStoreException;
@@ -178,7 +179,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
           str.append(')');
       }
 
-      return (parentheses == CitationParenthesesOption.aroundAll ? (str + ")") : str.toString()).replaceAll("  ", " ");
+      return collapseSpaces(parentheses == CitationParenthesesOption.aroundAll ? (str + ")") : str.toString());
     }
 
 //---------------------------------------------------------------------------

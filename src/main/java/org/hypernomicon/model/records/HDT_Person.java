@@ -212,32 +212,14 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class PotentialKeySet
+  private static final class PotentialKeySet
   {
     private final Map<String, Boolean> keys = new HashMap<>();
-    private final boolean lowerCase;
-
-    private PotentialKeySet(boolean lowerCase)
-    {
-      this.lowerCase = lowerCase;
-    }
-
-    private boolean containsKey(String key)           { return keys.containsKey(key); }
-    public boolean isSubsetOf(PotentialKeySet keySet) { return keys.keySet().stream().allMatch(keySet::containsKey); }
-
-//---------------------------------------------------------------------------
 
     private void add(String newKey, boolean newUseForDupCheck)
     {
       if (newKey.isEmpty() == false)
-        keys.put(lowerCase ? newKey.toLowerCase() : newKey, newUseForDupCheck);
-    }
-
-//---------------------------------------------------------------------------
-
-    public boolean startsWith(String str)
-    {
-      return keys.keySet().stream().anyMatch(key -> key.replaceAll("[.,;]", "").startsWith(str));
+        keys.put(newKey, newUseForDupCheck);
     }
   }
 
@@ -251,7 +233,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
     HDT_Person otherPerson = null;
     StringBuilder keys = new StringBuilder();
 
-    PotentialKeySet keySet = makeSearchKeySet(name, false, false);
+    PotentialKeySet keySet = makeSearchKeySet(name);
 
     for (Entry<String, Boolean> entry : keySet.keys.entrySet())
     {
@@ -345,9 +327,9 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static PotentialKeySet makeSearchKeySet(PersonName personName, boolean forDupCheck, boolean noNicknames)
+  private static PotentialKeySet makeSearchKeySet(PersonName personName)
   {
-    PotentialKeySet keySet = new PotentialKeySet(forDupCheck);
+    PotentialKeySet keySet = new PotentialKeySet();
     String first = personName.getFirst(), last = personName.getLast();
     StringBuilder nickNames = new StringBuilder();
 
@@ -356,7 +338,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     last = getSearchKeyComponents(first, last, nameList, initialList, nickNames);
 
-    keySet.add((forDupCheck ? "" : "^") + last, false);
+    keySet.add('^' + last, false);
 
     if (nameList.size() > 0)
     {
@@ -364,9 +346,6 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
       if (name1.length() > 0)
       {
-        if (forDupCheck)
-          keySet.add(initialList.get(0) + ". " + last, false);
-
         keySet.add(name1 + ' ' + last, true);
       }
       else
@@ -389,12 +368,6 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
         keySet.add(name + last, false);
 
-        if (forDupCheck)
-        {
-          for (int ndx = 1; ndx < initialList.size(); ndx++)
-            keySet.add(initialList.get(ndx) + ". " + last, false);
-        }
-
         if (nameList.get(0).length() > 0)
         {
           name = nameList.get(0) + ' ';
@@ -412,24 +385,10 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
           name = name + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + ' ') : (initialList.get(ndx) + ". "));
 
         keySet.add(name + last, true);
-
-        if (forDupCheck)
-        {
-          String middleNames = "", middleInits = "";
-          for (int ndx = 1; ndx < nameList.size(); ndx++)
-          {
-            middleNames = middleNames + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + ' ') : (initialList.get(ndx) + ". "));
-            middleInits = middleInits + initialList.get(ndx) + ". ";
-          }
-
-          keySet.add(initialList.get(0) + ". " + middleNames + last, true);
-          keySet.add(middleNames + last, true);
-          keySet.add(middleInits + last, true);
-        }
       }
     }
 
-    if ((noNicknames == false) && (nickNames.length() > 0))
+    if (nickNames.length() > 0)
       for (String nickName : parseNickNames(nickNames))
         keySet.add(nickName + ' ' + last, false);
 

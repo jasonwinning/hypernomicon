@@ -19,8 +19,9 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hypernomicon.util.SplitString;
 
@@ -36,6 +37,23 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
   private final String first, last;
 
+  private static final Pattern SINGLE_INITIAL_PATTERN       = Pattern.compile("\\P{L}\\p{Lu}\\..*", Pattern.UNICODE_CHARACTER_CLASS),
+                               FINAL_INITIAL_PATTERN        = Pattern.compile("^(?<prefix>.*\\P{L})(?<final>\\p{L}(\\.|$))$", Pattern.UNICODE_CHARACTER_CLASS),
+                               ABBREVIATION_PATTERN         = Pattern.compile("^(.*?\\P{L})(\\p{L}+\\..*)", Pattern.UNICODE_CHARACTER_CLASS),
+                               START_PARTICLE_PATTERN       = Pattern.compile("[Vv][ao]n\\h.*"),
+                               MID_PARTICLE_PATTERN         = Pattern.compile("\\P{L}[Vv][ao]n\\h.*", Pattern.UNICODE_CHARACTER_CLASS),
+                               NORMALIZE_WHITESPACE_PATTERN = Pattern.compile("\\s+"),
+                               SPACE_BEFORE_DOT_PATTERN     = Pattern.compile("\\h+\\."),
+                               MULTI_DOTS_PATTERN           = Pattern.compile("\\.{2,}");
+
+//  Todo: Maybe recognize more particles
+//
+//  private static final Set<String> SURNAME_PARTICLES = Set.of
+//  (
+//    "de", "del", "della", "di", "la", "le", "van", "von", "der", "den",
+//    "ter", "ten", "bin", "al", "da", "dos"
+//  );
+
 //---------------------------------------------------------------------------
 
   public PersonName(String first, String last)
@@ -46,14 +64,16 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public PersonName(String name)
   {
     name = convertToSingleLine(safeStr(name)).strip();
-    while (name.contains("  "))
-      name = name.replaceAll("  ", " ");
 
-    if ((name.matches(".*[A-Z].*") == false) || (name.matches(".*[a-z].*") == false))
+    name = NORMALIZE_WHITESPACE_PATTERN.matcher(name).replaceAll(" ");
+
+    if (lacksMixedCase(name))
       name = titleCase(name);
 
-    while (name.matches(".*\\h\\..*"))
-      name = name.replaceFirst("\\h\\.", ".");   // remove space before periods
+    // Get rid of spaces before periods and repeat periods
+
+    name = SPACE_BEFORE_DOT_PATTERN.matcher(name).replaceAll(".");
+    name = MULTI_DOTS_PATTERN      .matcher(name).replaceAll(".");
 
     int ndx = name.indexOf(',');
 
@@ -71,17 +91,25 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
       return;
     }
 
-    if (name.matches("[Vv][ao]n\\h.*"))
+    if (START_PARTICLE_PATTERN.matcher(name).matches())
     {
       first = "";
       last = name.strip();
       return;
     }
 
+    Matcher m = FINAL_INITIAL_PATTERN.matcher(name);
+    if (m.matches())
+    {
+      first = m.group("prefix").strip();
+      last = m.group("final").strip();
+      return;
+    }
+
     ndx = name.length();
     while (ndx > 0)
     {
-      if (name.substring(--ndx).matches("[^A-Za-z][A-Z]\\..*"))  // Parses "John B. X. James"
+      if (SINGLE_INITIAL_PATTERN.matcher(name.substring(--ndx)).matches())  // Parses "John B. X. James"
       {
         ndx = ndx + 3;
         first = name.substring(0, ndx).strip();
@@ -89,7 +117,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
         return;
       }
 
-      if (name.substring(ndx).matches("[^A-Za-z][A-Za-z]+\\..*"))  // Parses "John B. St. James"
+      if (ABBREVIATION_PATTERN.matcher(name.substring(ndx)).matches())  // Parses "John B. St. James"
       {
         ndx = ndx + 1;
         first = name.substring(0, ndx).strip();
@@ -97,7 +125,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
         return;
       }
 
-      if (name.substring(ndx).matches("[^A-Za-z][Vv][ao]n\\h.*"))
+      if (MID_PARTICLE_PATTERN.matcher(name.substring(ndx)).matches())
       {
         ndx = ndx + 1;
         first = name.substring(0, ndx).strip();
@@ -140,6 +168,15 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   { try { return (PersonName) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
 
   @Override public int compareTo(PersonName o) { return getSortKey().compareTo(o.getSortKey()); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean lacksMixedCase(String s)
+  {
+    return s.chars().noneMatch(Character::isUpperCase)  ||
+           s.chars().noneMatch(Character::isLowerCase);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

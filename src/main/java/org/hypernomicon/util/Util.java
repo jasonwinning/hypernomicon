@@ -703,7 +703,7 @@ public final class Util
       currentChar = nextChar;
     }
 
-    return out.replace("  ", " ").strip();
+    return StringUtil.collapseSpaces(out).strip();
   }
 
 //---------------------------------------------------------------------------
