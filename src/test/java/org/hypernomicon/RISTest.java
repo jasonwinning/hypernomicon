@@ -24,7 +24,7 @@ import java.util.List;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;

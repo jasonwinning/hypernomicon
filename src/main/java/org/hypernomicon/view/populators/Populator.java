@@ -98,9 +98,9 @@ public abstract class Populator
   protected boolean hasChanged(HyperTableRow row)                        { return true; }
 
   @SuppressWarnings("unused")
-  public void setChanged(HyperTableRow row)                              { return; }
+  public void setChanged(HyperTableRow row)                              { }
 
-  public void clear()                                                    { return; }
+  public void clear()                                                    { }
 
   @SuppressWarnings("unused")
   public RecordType getRecordType(HyperTableRow row)                     { return hdtNone; }

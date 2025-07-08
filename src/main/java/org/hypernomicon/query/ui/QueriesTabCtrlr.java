@@ -60,10 +60,11 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
-import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
@@ -114,8 +115,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override protected void updateFromRecord()        { curQueryCtrlr.refreshView(true); }
 
   @Override public int recordCount()                 { return results().size(); }
-  @Override public void setDividerPositions()        { return; }
-  @Override public void getDividerPositions()        { return; }
+  @Override public void setDividerPositions()        { }
+  @Override public void getDividerPositions()        { }
   @Override public HDT_Record activeRecord()         { return curQueryCtrlr == null ? null : curQueryCtrlr.getRecord(); }
   @Override public HDT_Record viewRecord()           { return activeRecord(); }
   @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }

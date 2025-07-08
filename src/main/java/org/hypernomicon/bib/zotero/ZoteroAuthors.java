@@ -30,9 +30,11 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.authors.BibAuthor.AuthorType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.Util.*;
+
 
 //---------------------------------------------------------------------------
 

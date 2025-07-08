@@ -18,6 +18,7 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.ByteArrayInputStream;

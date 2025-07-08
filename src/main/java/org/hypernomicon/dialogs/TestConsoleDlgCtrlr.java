@@ -23,6 +23,7 @@ import static org.hypernomicon.bib.LibraryWrapper.LibraryType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 

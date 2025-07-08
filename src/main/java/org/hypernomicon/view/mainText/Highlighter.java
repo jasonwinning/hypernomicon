@@ -19,7 +19,7 @@ package org.hypernomicon.view.mainText;
 
 import static org.hypernomicon.App.ui;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import java.io.IOException;
 

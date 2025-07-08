@@ -22,6 +22,7 @@ import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
@@ -169,6 +170,11 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
            HttpStatus.SC_PRECONDITION_FAILED
 
         -> jsonArray;
+
+      case HttpStatus.SC_UNAUTHORIZED,
+           HttpStatus.SC_FORBIDDEN
+
+        -> throw newAccessDeniedException();
 
       default
 

@@ -20,7 +20,7 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -28,10 +28,7 @@ import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.populators.HybridSubjectPopulator;
-import org.hypernomicon.view.populators.RecordTypePopulator;
-import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.populators.VariablePopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperCB;
 
 import javafx.fxml.FXML;

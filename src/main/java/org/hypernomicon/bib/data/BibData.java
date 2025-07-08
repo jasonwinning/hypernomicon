@@ -41,6 +41,7 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------

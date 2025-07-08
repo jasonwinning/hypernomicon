@@ -24,7 +24,7 @@ import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Work;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 //---------------------------------------------------------------------------
 

@@ -105,7 +105,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public final boolean saveToRecord()      { return saveToRecord(false); }
   public MainTextWrapper mainTextWrapper() { return null; }
   public boolean getUseTextViewInfo()      { return useTextViewInfo; }
-  public void rescale()                    { return; }
+  public void rescale()                    { }
   public int recordCount()                 { return db.records(type()).size(); }
   public final int activeID()              { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
   public int recordNdx()                   { return recordCount() < 1 ? -1 : nullSwitch(activeRecord(), -1, HDT_Record::keyNdx); }
@@ -114,7 +114,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public final Tab getTab()                { return tab; }
   public final TabEnum getTabEnum()        { return tabEnum; }
   public void enable(boolean enabled)      { getTab().getContent().setDisable(enabled == false); }
-  void updateWebButtons(Preferences node)  { return; }
+  void updateWebButtons(Preferences node)  { }
 
   public void nextSearchResult    ()       { nullSwitch(mainTextWrapper(), MainTextWrapper::nextSearchResult    ); }
   public void previousSearchResult()       { nullSwitch(mainTextWrapper(), MainTextWrapper::previousSearchResult); }

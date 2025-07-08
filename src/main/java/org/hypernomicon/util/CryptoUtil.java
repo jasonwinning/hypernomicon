@@ -42,6 +42,7 @@ import org.netbeans.spi.keyring.KeyringProvider;
 import org.openide.util.*;
 
 import static org.hypernomicon.App.app;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import static org.netbeans.modules.keyring.utils.Utils.*;

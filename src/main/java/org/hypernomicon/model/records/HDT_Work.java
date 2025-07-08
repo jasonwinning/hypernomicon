@@ -22,9 +22,10 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
 import java.util.function.Predicate;

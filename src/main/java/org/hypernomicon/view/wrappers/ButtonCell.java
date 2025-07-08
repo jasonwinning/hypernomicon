@@ -19,10 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableRow;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 
@@ -31,9 +28,10 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.util.DesktopUtil;
 
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 

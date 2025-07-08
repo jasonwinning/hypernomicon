@@ -17,6 +17,7 @@
 
 package org.hypernomicon.query.personMatch;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
@@ -27,7 +28,6 @@ import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -65,7 +65,7 @@ public class PersonForDupCheck
 
     newFullNameEngChar = removeAllParentheticals(newFullNameEngChar.toLowerCase());
 
-    newFullNameEngChar = StringUtil.collapseSpaces(newFullNameEngChar);
+    newFullNameEngChar = collapseSpaces(newFullNameEngChar);
 
     fullLCNameEngChar = NAME_PUNCTUATION_PATTERN.matcher(newFullNameEngChar.strip()).replaceAll("");
 
@@ -111,7 +111,7 @@ public class PersonForDupCheck
   {
     List<List<String>> variants = new ArrayList<>();
 
-    String cleanedName = StringUtil.collapseSpaces(NAME_PUNCTUATION_PATTERN.matcher(name).replaceAll(""));
+    String cleanedName = collapseSpaces(NAME_PUNCTUATION_PATTERN.matcher(name).replaceAll(" "));
 
     cleanedName = removeAllParentheticals(cleanedName).strip();
 
@@ -244,13 +244,15 @@ public class PersonForDupCheck
 
         if (normalizedToken.length() == 1)
         {
-          tokenVariants.add(List.of(normalizedToken));
+          // initial and absent
+
+          tokenVariants.add(List.of(normalizedToken, ""));
         }
         else
         {
-          // full form and initial
+          // full form, initial, and absent
 
-          tokenVariants.add(List.of(normalizedToken, normalizedToken.substring(0, 1)));
+          tokenVariants.add(List.of(normalizedToken, normalizedToken.substring(0, 1), ""));
         }
       }
 
@@ -287,8 +289,9 @@ public class PersonForDupCheck
 //---------------------------------------------------------------------------
 
   // tokenVariantsForAllNames is a list of the person's names, the first, second, up to but not including last.
-  // For each name, there is an inner list containing either just the initial or the spelled-out name
-  // initial, so the inner list always has either 1 or 2 elements.
+  // For each name, there is an inner list containing either just the initial or the spelled-out name and
+  // initial, as well as a blank representing that that name part is absent, so the inner list always has either
+  // 2 or 3 elements.
 
   // selectedVariantForAllNames is the selected variant for each of the person's names, built up through
   // recursive calls until we reach the second to last name, then we add all those names spelled out and
@@ -303,10 +306,10 @@ public class PersonForDupCheck
       // insert tokens + lastName into trie
       String firstNames = String.join(" ", selectedVariantForAllNames);
 
-      trieRoot.insertStr(firstNames + ' ' + normalizedLastName);
+      trieRoot.insertStr(collapseSpaces(firstNames + ' ' + normalizedLastName).strip());
 
       // insert lastname, joined tokens into trie
-      trieRoot.insertStr(normalizedLastName + ", " + firstNames);
+      trieRoot.insertStr(collapseSpaces(normalizedLastName + ", " + firstNames).strip());
 
       return;
     }

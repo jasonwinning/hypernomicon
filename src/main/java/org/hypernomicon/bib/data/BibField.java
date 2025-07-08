@@ -21,9 +21,10 @@ import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 
+import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 
 //---------------------------------------------------------------------------
 

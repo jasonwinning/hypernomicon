@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.prefs.Preferences;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;

@@ -17,6 +17,7 @@
 
 package org.hypernomicon;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import static org.junit.jupiter.api.Assertions.*;

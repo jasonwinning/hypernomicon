@@ -17,11 +17,9 @@
 
 package org.hypernomicon.bib.reports;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 //---------------------------------------------------------------------------

@@ -20,15 +20,14 @@ package org.hypernomicon.view.cellValues;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.ui.ResultRow;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 

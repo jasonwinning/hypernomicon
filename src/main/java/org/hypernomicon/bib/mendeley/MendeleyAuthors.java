@@ -29,6 +29,7 @@ import org.hypernomicon.util.json.JsonObj;
 
 import com.google.common.collect.Iterators;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------

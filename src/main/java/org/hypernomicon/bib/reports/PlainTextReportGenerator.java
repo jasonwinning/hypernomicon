@@ -20,9 +20,9 @@ package org.hypernomicon.bib.reports;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hypernomicon.util.Util;
+import org.hypernomicon.util.StringUtil;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 //---------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ public final class PlainTextReportGenerator extends ReportGenerator
 
   @Override public String makeRows(String fieldName, Stream<String> stream)
   {
-    String line = stream.filter(Util::strNotNullOrBlank)
+    String line = stream.filter(StringUtil::strNotNullOrBlank)
                         .map(String::strip)
                         .collect(Collectors.joining("; "));
 

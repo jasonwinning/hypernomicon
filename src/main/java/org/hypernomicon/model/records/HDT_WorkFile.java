@@ -32,6 +32,7 @@ import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameCompone
 import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponentType;
 import org.hypernomicon.util.filePath.FilePath;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.EnumSet;

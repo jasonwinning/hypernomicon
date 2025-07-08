@@ -19,30 +19,22 @@ package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSCommand;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.application.Platform;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------

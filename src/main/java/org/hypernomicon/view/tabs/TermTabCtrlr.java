@@ -26,7 +26,6 @@ import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import javafx.scene.control.TabPane;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.*;

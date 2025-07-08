@@ -20,6 +20,7 @@ package org.hypernomicon.bib.data;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.BufferedReader;
@@ -30,15 +31,8 @@ import java.util.Map.Entry;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
-import org.jbibtex.BibTeXDatabase;
-import org.jbibtex.BibTeXEntry;
-import org.jbibtex.BibTeXParser;
-import org.jbibtex.Key;
-import org.jbibtex.LaTeXParser;
-import org.jbibtex.LaTeXPrinter;
-import org.jbibtex.ParseException;
-import org.jbibtex.TokenMgrException;
-import org.jbibtex.Value;
+
+import org.jbibtex.*;
 
 //---------------------------------------------------------------------------
 

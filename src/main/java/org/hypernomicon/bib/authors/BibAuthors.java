@@ -35,6 +35,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.query.personMatch.PersonForDupCheck;
 import org.hypernomicon.query.personMatch.PersonMatcher;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------

@@ -17,16 +17,13 @@
 
 package org.hypernomicon.view.populators;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.model.records.HDT_Record;

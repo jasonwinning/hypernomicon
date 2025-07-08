@@ -18,8 +18,8 @@
 package org.hypernomicon.dialogs.base;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 
 import java.util.HashMap;
 import java.util.Map;

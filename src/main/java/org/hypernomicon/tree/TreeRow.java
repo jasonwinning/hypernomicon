@@ -20,12 +20,10 @@ package org.hypernomicon.tree;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
-import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 

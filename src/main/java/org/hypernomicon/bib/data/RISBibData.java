@@ -20,6 +20,7 @@ package org.hypernomicon.bib.data;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;

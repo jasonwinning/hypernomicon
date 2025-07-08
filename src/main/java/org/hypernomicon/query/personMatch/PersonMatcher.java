@@ -18,6 +18,7 @@
 package org.hypernomicon.query.personMatch;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;

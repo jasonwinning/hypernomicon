@@ -19,7 +19,7 @@ package org.hypernomicon.bib.authors;
 
 import java.util.*;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import com.google.common.collect.Iterators;
 

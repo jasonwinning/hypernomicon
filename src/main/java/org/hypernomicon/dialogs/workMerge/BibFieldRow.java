@@ -211,8 +211,8 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 
       for (ToggleCtrlr_T ctrlr : ctrlrList)
       {
-        if (ctrlr instanceof AuthorsCtrlr)
-          AuthorsCtrlr.class.cast(ctrlr).refresh();
+        if (ctrlr instanceof AuthorsCtrlr authorsCtrlr)
+          authorsCtrlr.refresh();
 
         if (ctrlr.sourceNotEmpty())
         {

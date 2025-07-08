@@ -18,7 +18,7 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;

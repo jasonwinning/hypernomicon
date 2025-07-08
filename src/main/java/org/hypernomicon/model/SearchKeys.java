@@ -27,6 +27,7 @@ import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.util.SplitString;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------

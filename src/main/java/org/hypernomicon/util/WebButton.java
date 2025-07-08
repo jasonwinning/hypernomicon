@@ -17,14 +17,10 @@
 
 package org.hypernomicon.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 

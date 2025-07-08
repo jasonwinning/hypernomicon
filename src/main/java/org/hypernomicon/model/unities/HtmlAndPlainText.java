@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.unities;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 //---------------------------------------------------------------------------

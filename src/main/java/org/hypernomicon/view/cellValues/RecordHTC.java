@@ -18,6 +18,7 @@
 package org.hypernomicon.view.cellValues;
 
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;

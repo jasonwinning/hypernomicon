@@ -21,7 +21,7 @@ import org.hypernomicon.model.*;
 import org.hypernomicon.model.records.RecordState;
 
 import static org.hypernomicon.model.Tag.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import java.util.Map;
 

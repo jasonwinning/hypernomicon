@@ -19,10 +19,7 @@ package org.hypernomicon.view.mainText;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -46,9 +43,10 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.view.mainText.MainTextWrapper.MTW_State.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import javafx.event.Event;
 import javafx.scene.input.MouseButton;
@@ -56,6 +54,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+
 import netscape.javascript.JSObject;
 
 //---------------------------------------------------------------------------

@@ -22,19 +22,14 @@ import javafx.scene.Cursor;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.App.*;
 
 import java.util.Iterator;
 import java.util.function.Consumer;

@@ -35,8 +35,9 @@ import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 

@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 //---------------------------------------------------------------------------
 
-public class PersonDupTest
+class PersonDupTest
 {
 
 //---------------------------------------------------------------------------
@@ -61,12 +61,12 @@ public class PersonDupTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean checkMatch(PersonName name1, PersonName name2)
+  private static boolean checkMatch(PersonName name1, PersonName name2)
   {
     return checkMatch(name1, name2, true);
   }
 
-  private boolean checkMatch(PersonName name1, PersonName name2, boolean tryOtherWayAround)
+  private static boolean checkMatch(PersonName name1, PersonName name2, boolean tryOtherWayAround)
   {
     matcher.clear();
 
@@ -84,7 +84,7 @@ public class PersonDupTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_Work createWork(String newTitle)
+  private static HDT_Work createWork(String newTitle)
   {
     HDT_Work work = db.createNewBlankRecord(hdtWork);
     work.setName(newTitle);
@@ -94,7 +94,7 @@ public class PersonDupTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_Person createPerson(PersonName name)
+  private static HDT_Person createPerson(PersonName name)
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
     person.setName(name);
@@ -446,6 +446,143 @@ public class PersonDupTest
     assertTrue(personFDC.startsWith("ML King"));
     assertFalse(personFDC.startsWith("mlks"));
     assertFalse(personFDC.startsWith("ML Kings"));
+  }
+
+  @Test
+  void testFullMatches()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("John Stuart", "Mill"));
+
+    assertTrue(personFDC.startsWith("John S Mill"), "Exact 'John S Mill' should match");
+    assertTrue(personFDC.startsWith("John Stuart Mill"), "Exact 'John Stuart Mill' should match");
+    assertTrue(personFDC.startsWith("Stuart Mill"), "Exact 'Stuart Mill' should match");
+    assertTrue(personFDC.startsWith("John Mill"), "Exact 'John Mill' should match");
+  }
+
+  @Test
+  void testPrefixMatches()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("John S", "Mill"));
+
+    assertTrue(personFDC.startsWith("Jo"), "Prefix 'Jo' should match");
+    assertTrue(personFDC.startsWith("S Mill"));
+    assertTrue(personFDC.startsWith("S. Mill"));
+    assertTrue(personFDC.startsWith("J. Mill"));
+    assertFalse(personFDC.startsWith("Jo. Mill"));
+    assertFalse(personFDC.startsWith("Jo Mill"));
+    assertTrue(personFDC.startsWith("Mill, Jo"));
+    assertFalse(personFDC.startsWith("Mill, John St"));
+    assertFalse(personFDC.startsWith("Mill, St"));
+    assertFalse(personFDC.startsWith("Mill, J St"));
+    assertFalse(personFDC.startsWith("Mill, Jo S"));
+    assertFalse(personFDC.startsWith("Mill, Jo St"));
+    assertFalse(personFDC.startsWith("Mi, John"));
+    assertTrue(personFDC.startsWith("john mi"), "Case-insensitive prefix 'john mi' should match");
+    assertTrue(personFDC.startsWith("John Mi"), "Mixed-case prefix 'John Mi' should match");
+  }
+
+  @Test
+  void testInitialSubstitutionMatches()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("John Stuart", "Mill"));
+
+    assertTrue(personFDC.startsWith("J Stuart Mill"), "Initial substitution in first position should match");
+    assertTrue(personFDC.startsWith("John S Mill"), "Initial substitution in second position should match");
+    assertFalse(personFDC.startsWith("Stuart John Mill"));
+    assertFalse(personFDC.startsWith("S. John Mill"));
+    assertFalse(personFDC.startsWith("Stuart J. Mill"));
+    assertTrue(personFDC.startsWith("J S M"), "Initial substitutions for all positions should match");
+    assertFalse(personFDC.startsWith("S J M"));
+    assertFalse(personFDC.startsWith("M J S"));
+  }
+
+  @Test
+  void testNegativeMatches()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("John S", "Mill"));
+
+    assertFalse(personFDC.startsWith("Joh Mill"), "Incomplete across boundary 'Joh Mil' should not match");
+    assertFalse(personFDC.startsWith("John Mill Phd"), "Query longer than candidate should not match");
+  }
+
+  @Test
+  void testCaseAndPunctuationInsensitive()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("J.D.", "Roe"));
+
+    assertTrue(personFDC.startsWith("J.D. Roe"), "Punctuation in query should be stripped");
+    assertTrue(personFDC.startsWith("jd roe"), "Lower-case 'jd roe' should match");
+    assertTrue(personFDC.startsWith("J D Roe"), "Spaces in place of punctuation should match");
+    assertTrue(personFDC.startsWith("j.d. r"), "Partial prefix with punctuation should match");
+    assertFalse(personFDC.startsWith("jr"), "Wrong concatenation without space should not match");
+  }
+
+  @Test
+  void testEmptyQuery()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("Alice B", "Smith"));
+
+    // Empty query should not match
+    assertFalse(personFDC.startsWith(""), "Empty query should return false");
+  }
+
+
+  @Test
+  void testNoVariants()
+  {
+    // No name variants provided
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName(""));
+
+    // Only empty query matches
+    assertFalse(personFDC.startsWith("Doe"), "With no variants, non-empty query should not match");
+    assertFalse(personFDC.startsWith(""), "Empty query should not match even with no variants");
+  }
+
+  @Test
+  void testDotAndSpaceAfterInitials()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("John D", "Smith"));
+
+    // Single initial with dot and space
+    assertTrue(personFDC.startsWith("J. D. Smith"), "Dots and space after initials should match");
+
+    // Extra spaces after the dot should collapse and match
+    assertTrue(personFDC.startsWith("J.  D. Smith"), "Multiple spaces after dot should collapse and match");
+
+    // No space between initials (dot only) should match
+    assertTrue(personFDC.startsWith("J.D. Smith"), "No space after dot should match");
+
+    // Consecutive initials without punctuation
+    assertTrue(personFDC.startsWith("JD Smith"), "Initials without space or dot should match");
+  }
+
+  @Test
+  void testWhitespaceHandling()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("  Alice  Bob  C", "  Smith  "));
+
+    assertTrue(personFDC.startsWith(" Alice Smith"), "Leading space in query should be trimmed and match");
+    assertTrue(personFDC.startsWith("Bob C Smith"), "Extra spaces in query should collapse and match");
+    assertFalse(personFDC.startsWith("AliceBob Smith"), "Merged tokens without space should not match");
+  }
+
+  @Test
+  void testMinimalVariantElements()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("A", "X"));
+
+    assertTrue(personFDC.startsWith("A X"));
+    assertTrue(personFDC.startsWith("X"));
+  }
+
+  @Test
+  void testPunctuationInVariants()
+  {
+    PersonForDupCheck personFDC = new PersonForDupCheck(new PersonName("O'Connor", "Mc'Gee"));
+
+    assertFalse(personFDC.startsWith("OConnor McGee"), "Punctuation in variant and last name doesn't get stripped");
+    assertTrue(personFDC.startsWith("O'Connor Mc'Gee"), "Original punctuation in query should be ignored and match");
+    assertFalse(personFDC.startsWith("O’Connor Mc’Gee"), "Unicode conversion must be done by the caller");
   }
 
 //---------------------------------------------------------------------------

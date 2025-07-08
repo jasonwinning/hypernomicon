@@ -335,7 +335,7 @@ public class WorkAuthors extends Authors
       {
         if (objListNoMod.contains(person))
         {
-          authorList.remove(authorList.indexOf(oldAuthor));
+          authorList.remove(oldAuthor);
           return;
         }
 

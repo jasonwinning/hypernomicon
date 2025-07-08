@@ -17,23 +17,17 @@
 
 package org.hypernomicon.settings;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsControl;
 import org.hypernomicon.settings.WorkSearchKeySettings.FinalConjunctionSymbol;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 
 //---------------------------------------------------------------------------
 

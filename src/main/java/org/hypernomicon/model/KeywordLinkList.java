@@ -22,10 +22,11 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
-import org.hypernomicon.util.StringUtil;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
+
+//---------------------------------------------------------------------------
 
 public final class KeywordLinkList
 {
@@ -87,7 +88,7 @@ public final class KeywordLinkList
       if (checkPeriods) // This happens less than 1 percent of the time
       {
         prefix = prefix.replace(".", ". ");
-        prefix = StringUtil.collapseSpaces(prefix);  // remove duplicate spaces
+        prefix = collapseSpaces(prefix);  // remove duplicate spaces
 
         prefix = safeSubstring(prefix, 0, 3);
       }
@@ -105,7 +106,7 @@ public final class KeywordLinkList
           matchLen = focusStr.length();
           focusStr = focusStr.replace(".", ". ");
 
-          focusStr = StringUtil.collapseSpaces(focusStr);
+          focusStr = collapseSpaces(focusStr);
 
           matchLen = key.text.length() - (focusStr.length() - matchLen);
           focusStr = safeSubstring(focusStr, 0, key.text.length());

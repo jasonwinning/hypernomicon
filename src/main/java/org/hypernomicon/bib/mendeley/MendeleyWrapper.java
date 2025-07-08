@@ -21,6 +21,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.mendeley.MendeleyEntity.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;

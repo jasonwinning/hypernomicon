@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model.items;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;

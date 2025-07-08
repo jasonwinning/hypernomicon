@@ -53,7 +53,6 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWrapper;
 import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.StringUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -68,10 +67,11 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.MainCtrlr.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -531,7 +531,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
         String title = convertToSingleLine(change.getControlNewText());
 
-        title = StringUtil.collapseSpaces(title);
+        title = collapseSpaces(title);
 
         if (title.equals(title.toUpperCase()) || title.equals(title.toLowerCase()))
           title = HDT_Work.fixCase(title);

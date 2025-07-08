@@ -22,21 +22,18 @@ import static org.hypernomicon.model.records.HDT_RecordBase.makeSortKeyByType;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.query.ui.ResultCellValue.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.EnumSet;
+import java.util.*;
 import java.util.function.Function;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
 import org.hypernomicon.util.Util;

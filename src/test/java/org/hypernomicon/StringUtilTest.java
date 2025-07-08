@@ -17,127 +17,520 @@
 
 package org.hypernomicon;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import static org.hypernomicon.util.StringUtil.*;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
 
 //---------------------------------------------------------------------------
 
+/**
+ * Unit test class for the utility functions in the {@code StringUtil} class.
+ *
+ * @see org.hypernomicon.util.StringUtil
+ */
 class StringUtilTest
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @BeforeEach
-  void clearThreadLocalBuffer()
+  @Test
+  void testConvertMultiLineStrToStrList_EmptyString()
   {
-    // ensure each test starts with a fresh buffer if your impl stores it in a
-    // ThreadLocal
-    clearCollapseBufferForTest();
+    String str = "";
+    List<String> expected = List.of();
+
+    List<String> result = convertMultiLineStrToStrList(str, true);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testEmptyString()
+  void testConvertMultiLineStrToStrList_SingleLine()
   {
-    String in = "";
-    String out = collapseSpaces(in);
-    assertSame(in, out, "Empty string should be returned as-is");
+    String str = "apple";
+    List<String> expected = List.of("apple");
+
+    List<String> result = convertMultiLineStrToStrList(str, true);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testNoSpaces()
+  void testConvertMultiLineStrToStrList_MultipleLines()
   {
-    String in = "abcdef";
-    String out = collapseSpaces(in);
-    assertSame(in, out, "String with no spaces should be returned as-is");
+    String str = "apple\nbanana\norange";
+    List<String> expected = List.of("apple", "banana", "orange");
+
+    List<String> result = convertMultiLineStrToStrList(str, true);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testOnlySingleSpaces()
+  void testConvertMultiLineStrToStrList_LeadingTrailingBlanks()
   {
-    String in = "a b c d";
-    String out = collapseSpaces(in);
-    assertSame(in, out, "String with only single spaces should be returned as-is");
+    String str = " \napple\nbanana\norange\n ";
+    List<String> expected = List.of("apple", "banana", "orange");
+
+    List<String> result = convertMultiLineStrToStrList(str, true);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testExactlyTwoSpaces()
+  void testConvertMultiLineStrToStrList_IntermediateEmptiesNotOK()
   {
-    String in = "a  b";
-    String expected = "a b";
-    String out = collapseSpaces(in);
+    String str = " \napple\n\nbanana\norange\n ";
+    List<String> expected = List.of("apple", "banana", "orange");
 
-    assertEquals(expected, out);
-    assertNotSame(in, out, "Collapsed string must be a new instance when spaces are removed");
+    List<String> result = convertMultiLineStrToStrList(str, false);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testThreeSpaces()
+  void testConvertMultiLineStrToStrList_IntermediateEmptiesOK()
   {
-    String in = "a   b";
-    String out = collapseSpaces(in);
-    assertEquals("a b", out);
+    String str = " \napple\n\nbanana\norange\n ";
+    List<String> expected = List.of("apple", "", "banana", "orange");
+
+    List<String> result = convertMultiLineStrToStrList(str, true);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testMultipleRunsOfSpaces()
+  void testConvertMultiLineStrToStrList_AllEmptyLines()
   {
-    String in = "foo    bar     baz";
-    String out = collapseSpaces(in);
-    assertEquals("foo bar baz", out);
+    String str = "\n\n\n";
+    List<String> expected = List.of();
+
+    List<String> result = convertMultiLineStrToStrList(str, false);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testLeadingSpaces()
+  void testConvertMultiLineStrToStrList_AllEmptyLinesOK()
   {
-    String in = "   hello";
-    String out = collapseSpaces(in);
-    assertEquals(" hello", out, "Leading runs of spaces should collapse to single space");
+    String str = "\n\n\n";
+    List<String> expected = List.of();
+
+    List<String> result = convertMultiLineStrToStrList(str, true);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testTrailingSpaces()
+  void testConvertMultiLineStrToStrList_OnlyBlanks()
   {
-    String in = "world   ";
-    String out = collapseSpaces(in);
-    assertEquals("world ", out, "Trailing runs of spaces should collapse to single space");
+    String str = " \n \n \n ";
+    List<String> expected = List.of();
+
+    List<String> result = convertMultiLineStrToStrList(str, true);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void testAllSpaces()
+  void testConvertMultiLineStrToStrList_TrailingNewline()
   {
-    String in = "     ";
-    String out = collapseSpaces(in);
-    assertEquals(" ", out, "String of only spaces should collapse to one space");
+    String str = "apple\nbanana\norange\n";
+    List<String> expected = List.of("apple", "banana", "orange");
+
+    List<String> result = convertMultiLineStrToStrList(str, true);
+
+    assertEquals(expected, result);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testStrListToStr_NullList()
+  {
+    List<String> list = null;
+    String expected = "";
+
+    String result = strListToStr(list, true, false);
+
+    assertEquals(expected, result);
+
+    result = strListToStr(list, true, true);
+
+    assertEquals(expected, result);
+
+    result = strListToStr(list, false, false);
+
+    assertEquals(expected, result);
+
+    result = strListToStr(list, false, true);
+
+    assertEquals(expected, result);
+
   }
 
   @Test
-  void testLongStringTriggersBufferGrowth()
+  void testStrListToStr_EmptyList()
   {
-    // Build a 200-char string with a run of two spaces in the middle
+    List<String> list = List.of();
+    String expected = "";
 
-    String in = "x".repeat(90) + "  " + "y".repeat(108);  // two spaces to collapse
+    String result = strListToStr(list, true, false);
 
-    String out = collapseSpaces(in);
-
-    assertEquals(199, out.length(), "Length should shrink by exactly one");
-    assertTrue(out.startsWith("x"), "Prefix preserved");
-    assertTrue(out.endsWith("y"), "Suffix preserved");
-    assertNotSame(in, out, "Should return new String on collapse");
+    assertEquals(expected, result);
   }
 
   @Test
-  void testDoesNotTouchTabsOrOtherWhitespace()
+  void testStrListToStr_SingleLine()
   {
-    // Only spaces should be collapsed; tabs remain
-    String in = "A\t \t  \tB";
-    String out = collapseSpaces(in);
-    // The two spaces between the two tabs should collapse to one
-    assertEquals("A\t \t \tB", out);
+    List<String> list = List.of("apple");
+    String expected = "apple";
+
+    String result = strListToStr(list, true, false);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testStrListToStr_MultipleLines()
+  {
+    List<String> list = List.of("apple", "banana", "orange");
+    String expected = "apple\nbanana\norange";
+
+    String result = strListToStr(list, true, false);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testStrListToStr_IncludeEmptyLines()
+  {
+    List<String> list = List.of("apple", "", "banana", "orange", "");
+    String expected = "apple\n\nbanana\norange\n";
+
+    String result = strListToStr(list, true, false);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testStrListToStr_ExcludeEmptyLines()
+  {
+    List<String> list = List.of("apple", "", "banana", "orange", "");
+    String expected = "apple\nbanana\norange";
+
+    String result = strListToStr(list, false, false);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testStrListToStr_UseSystemNewLineChar()
+  {
+    List<String> list = List.of("apple", "banana", "orange");
+    String expected = "apple" + System.lineSeparator() + "banana" + System.lineSeparator() + "orange";
+
+    String result = strListToStr(list, true, true);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testStrListToStr_IncludeEmptyLinesWithSystemNewLine()
+  {
+    List<String> list = List.of("apple", "", "banana", "orange", "");
+    String expected = "apple" + System.lineSeparator() + System.lineSeparator() + "banana" + System.lineSeparator() + "orange" + System.lineSeparator();
+
+    String result = strListToStr(list, true, true);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testStrListToStr_ExcludeEmptyLinesWithSystemNewLine()
+  {
+    List<String> list = List.of("apple", "", "banana", "orange", "");
+    String expected = "apple" + System.lineSeparator() + "banana" + System.lineSeparator() + "orange";
+
+    String result = strListToStr(list, false, true);
+
+    assertEquals(expected, result);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testConvertToSingleLine_SimpleNewlines()
+  {
+    String input = "This is a line.\nThis is another line.\nThis is yet another line.";
+    String expected = "This is a line. This is another line. This is yet another line.";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testConvertToSingleLine_MultipleNewlines()
+  {
+    String input = "This is a line.\n\n\nThis is another line.\r\n\r\nThis is yet another line.";
+    String expected = "This is a line. This is another line. This is yet another line.";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testConvertToSingleLine_VerticalSpaces()
+  {
+    String input = "This is a line.\u000B\u000BThis is another line.";
+    String expected = "This is a line. This is another line.";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testConvertToSingleLine_MixedSpaces()
+  {
+    String input = "This is a line.\n\u000B\nThis is another line.";
+    String expected = "This is a line. This is another line.";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testConvertToSingleLine_UnknownCharacter()
+  {
+    String input = "This is a line.\ufffd\nThis is another line.";
+    String expected = "This is a line. This is another line.";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testConvertToSingleLine_HorizontalSpaces()
+  {
+    String input = "This is a line.\u0020\u0020This is another line.";
+    String expected = "This is a line.\u0020\u0020This is another line.";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testConvertToSingleLine_EmptyString()
+  {
+    String input = "";
+    String expected = "";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testConvertToSingleLine_OnlyNewlines()
+  {
+    String input = "\n\n\n";
+    String expected = " ";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testConvertToSingleLine_OnlyVerticalSpaces()
+  {
+    String input = "\u000B\u000B\u000B";
+    String expected = " ";
+
+    String result = convertToSingleLine(input);
+
+    assertEquals(expected, result);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testTrimLines_EmptyString()
+  {
+    String input = "";
+    String expected = "";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_NullString()
+  {
+    String input = null;
+    String expected = "";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_SingleLine()
+  {
+    String input = "   apple   ";
+    String expected = "apple";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_MultipleLines()
+  {
+    String input = "   apple   \n   banana   \n   orange   ";
+    String expected = "apple\nbanana\norange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_MultipleLinesWithEmptyLines()
+  {
+    String input = "   apple   \n   \n   banana   \n   orange   ";
+    String expected = "apple\n\nbanana\norange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_LeadingAndTrailingWhitespace()
+  {
+    String input = " \t \n   apple   \n   banana   \n   orange   \n \t ";
+    String expected = "apple\nbanana\norange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_WhitespaceOnlyLines()
+  {
+    String input = "   \n   \n   \n";
+    String expected = "";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_UnknownCharacter()
+  {
+    String input = "apple \ufffd\nbanana \ufffd\norange \ufffd";
+    String expected = "apple\nbanana\norange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_MixedNewlinesAndVerticalSpaces()
+  {
+    String input = "apple\n\nbanana\u000B\u000Borange";
+    String expected = "apple\n\nbanana\n\norange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_OnlyNewlines()
+  {
+    String input = "\n\n\n";
+    String expected = "";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_OnlyVerticalSpaces()
+  {
+    String input = "\u000B\u000B\u000B";
+    String expected = "";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_TrailingNewline()
+  {
+    String input = "apple\nbanana\norange\n";
+    String expected = "apple\nbanana\norange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_IntermediateSpaces()
+  {
+    String input = "apple  banana  orange";
+    String expected = "apple  banana  orange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_TabSpaces()
+  {
+    String input = "   apple\tbanana\torange   ";
+    String expected = "apple\tbanana\torange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void testTrimLines_CombinationWhitespaces()
+  {
+    String input = "   apple\nbanana\torange\u000B";
+    String expected = "apple\nbanana\torange";
+
+    String result = trimLines(input);
+
+    assertEquals(expected, result);
   }
 
 //---------------------------------------------------------------------------

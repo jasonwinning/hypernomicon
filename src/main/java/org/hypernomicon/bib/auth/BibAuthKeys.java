@@ -18,7 +18,7 @@
 package org.hypernomicon.bib.auth;
 
 import static org.hypernomicon.App.app;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.mendeley.auth.MendeleyAuthKeys;

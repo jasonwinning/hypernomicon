@@ -21,9 +21,10 @@ import java.io.*;
 import java.net.Socket;
 import java.util.*;
 
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.hypernomicon.previewWindow.PDFJSWrapper;

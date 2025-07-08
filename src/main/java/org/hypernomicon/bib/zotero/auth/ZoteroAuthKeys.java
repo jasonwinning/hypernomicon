@@ -20,7 +20,7 @@ package org.hypernomicon.bib.zotero.auth;
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.CryptoUtil.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
