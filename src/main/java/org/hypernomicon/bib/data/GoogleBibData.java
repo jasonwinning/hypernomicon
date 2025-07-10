@@ -19,6 +19,7 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.StringUtil.*;
@@ -29,11 +30,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
-
-import org.hypernomicon.bib.authors.BibAuthor;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.zotero.ZoteroDate;
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -75,7 +75,7 @@ public final class GoogleBibData extends BibDataStandalone
       setDate(ZoteroDate.parsedDateStrToBibDate(publishedDate, false), dtPublishedDate, true);  // Date is in local ISO date format like Zotero's "parsed date"
                                                                                                 // Assumption here is that Google Books years are never BC
     jsonObj.getArraySafe("authors").strStream().forEach(authStr ->
-      authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr))));
+      authors.add(new AuthorStandalone(author, new PersonName(authStr))));
 
     jsonObj.getArraySafe("industryIdentifiers").getObjs().forEach(iiObj ->
     {
@@ -171,7 +171,7 @@ public final class GoogleBibData extends BibDataStandalone
 
     if (authors != null)
     {
-      for (BibAuthor author : authors)
+      for (Author author : authors)
       {
         boolean ed = author.getIsEditor(),
                 tr = author.getIsTrans();

@@ -19,6 +19,8 @@ package org.hypernomicon.bib.authors;
 
 import java.util.Iterator;
 
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.records.HDT_Work;
 
 //---------------------------------------------------------------------------
@@ -37,8 +39,8 @@ public class WorkBibAuthors extends BibAuthors
 
 //---------------------------------------------------------------------------
 
-  @Override public Iterator<BibAuthor> iterator() { return work.getAuthors().stream().map(BibAuthor::new).iterator(); }
-  @Override public boolean isEmpty()              { return work.getAuthors().isEmpty(); }
+  @Override public Iterator<Author> iterator() { return work.getAuthors().stream().map(AuthorStandalone::new).map(a -> (Author)a).iterator(); }
+  @Override public boolean isEmpty()           { return work.getAuthors().isEmpty(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

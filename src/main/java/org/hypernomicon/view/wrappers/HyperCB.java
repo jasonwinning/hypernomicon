@@ -24,8 +24,8 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.RecordSelectDlgCtrlr;
-import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
@@ -411,7 +411,7 @@ public class HyperCB implements CommitableWrapper
         String text = cb.getEditor().getText();
         HDT_Work work = workSupplier == null ? null : workSupplier.get();
 
-        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(table == null, text, new Author(work, new PersonName(text), false, false, Ternary.Unset));
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(table == null, text, new RecordAuthor(work, new PersonName(text), false, false, Ternary.Unset));
 
         if (npdc.showModal())
         {

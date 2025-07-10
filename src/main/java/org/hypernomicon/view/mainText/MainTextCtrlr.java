@@ -48,9 +48,9 @@ import org.hypernomicon.dialogs.InsertPictureDlgCtrlr;
 import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.dialogs.SearchKeySelectDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
@@ -559,7 +559,7 @@ public class MainTextCtrlr
     RecordType keyType = hcbKeyType.selectedType();
     List<KeyWork> keyWorks = curRecord.getMainText().getKeyWorksCopy();
 
-    HDT_RecordWithAuthors<? extends Authors> keyRecord = db.createNewBlankRecord(keyType);
+    HDT_RecordWithAuthors<? extends RecordAuthors> keyRecord = db.createNewBlankRecord(keyType);
     keyWorks.add(new KeyWork(keyRecord));
 
     curRecord.getMainText().setKeyWorksFromList(keyWorks);
@@ -595,7 +595,7 @@ public class MainTextCtrlr
       return;
 
     @SuppressWarnings("unchecked")
-    KeyWork keyWork = new KeyWork((HDT_RecordWithAuthors<? extends Authors>) db.records(keyType).getByID(keyID));
+    KeyWork keyWork = new KeyWork((HDT_RecordWithAuthors<? extends RecordAuthors>) db.records(keyType).getByID(keyID));
 
     String keyText = taKeyWorks.getText();
     keyText = keyText.isEmpty() ? keyWork.getEditorText() : (keyText + ", " + keyWork.getEditorText());

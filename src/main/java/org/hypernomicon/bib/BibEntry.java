@@ -27,7 +27,6 @@ import static org.hypernomicon.util.StringUtil.*;
 import java.util.*;
 
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
-import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.EntryType;
@@ -35,6 +34,7 @@ import org.hypernomicon.bib.mendeley.MendeleyDocument;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroItem;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -300,14 +300,14 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   {
     return (e1, e2) ->
     {
-      List<BibAuthor> list1 = e1.getAuthors().normalizedList(false),
-                      list2 = e2.getAuthors().normalizedList(false);
+      List<Author> list1 = e1.getAuthors().normalizedList(false),
+                   list2 = e2.getAuthors().normalizedList(false);
 
-      List<BibAuthor> authors1 = list1.stream().filter(BibAuthor::getIsAuthor).toList();
-      if (authors1.isEmpty()) authors1 = list1.stream().filter(BibAuthor::getIsEditor).toList();
+      List<Author> authors1 = list1.stream().filter(Author::getIsAuthor).toList();
+      if (authors1.isEmpty()) authors1 = list1.stream().filter(Author::getIsEditor).toList();
 
-      List<BibAuthor> authors2 = list2.stream().filter(BibAuthor::getIsAuthor).toList();
-      if (authors2.isEmpty()) authors2 = list2.stream().filter(BibAuthor::getIsEditor).toList();
+      List<Author> authors2 = list2.stream().filter(Author::getIsAuthor).toList();
+      if (authors2.isEmpty()) authors2 = list2.stream().filter(Author::getIsEditor).toList();
 
       int cResult, numAuthors = Math.max(authors1.size(), authors2.size());
 

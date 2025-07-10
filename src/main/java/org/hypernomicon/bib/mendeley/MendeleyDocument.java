@@ -23,11 +23,10 @@ import java.util.stream.Stream;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
-import org.hypernomicon.bib.authors.BibAuthor;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.reports.ReportGenerator;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
@@ -38,6 +37,7 @@ import org.hypernomicon.util.json.JsonObj;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -113,7 +113,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
   @Override protected JsonArray getCollJsonArray()     { return jObj.getArray("folder_uuids"); }
   @Override protected String getUserID()               { return jObj.getStrSafe("profile_id"); }
 
-  @Override protected void setAllAuthors(Iterable<BibAuthor> otherAuthors) { ((MendeleyAuthors) getAuthors()).setAll(otherAuthors); }
+  @Override protected void setAllAuthors(Iterable<Author> otherAuthors) { ((MendeleyAuthors) getAuthors()).setAll(otherAuthors); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
 
@@ -334,9 +334,9 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
         return jObj.getStrSafe(fieldKey);
 
-      case bfAuthors     : return getAuthors().getStr(AuthorType.author);
-      case bfEditors     : return getAuthors().getStr(AuthorType.editor);
-      case bfTranslators : return getAuthors().getStr(AuthorType.translator);
+      case bfAuthors     : return getAuthors().getStr(author);
+      case bfEditors     : return getAuthors().getStr(editor);
+      case bfTranslators : return getAuthors().getStr(translator);
 
       case bfContainerTitle : case bfTitle :
 
@@ -493,8 +493,8 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
     // The iterator method for both objects filters out editors if ignoreEditors is true.
 
-    List<BibAuthor> list1 = new MendeleyAuthors(getAuthors(), entryType).normalizedList(false),
-                    list2 = backupItem.getAuthors()                     .normalizedList(false);
+    List<Author> list1 = new MendeleyAuthors(getAuthors(), entryType).normalizedList(false),
+                 list2 = backupItem.getAuthors()                     .normalizedList(false);
 
     if (BibAuthors.authorListsAreEqual(list1, list2, true, true) == false)
       return true;
@@ -585,7 +585,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
     jsonArr.clear();
 
-    for (BibAuthor editor : streamToIterable(authors.normalizedList(false).stream().filter(BibAuthor::getIsEditor)))
+    for (Author editor : streamToIterable(authors.normalizedList(false).stream().filter(Author::getIsEditor)))
     {
       JsonObj personObj = new JsonObj();
 

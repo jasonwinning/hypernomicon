@@ -23,12 +23,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
-
-import org.hypernomicon.bib.authors.BibAuthor;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.reports.ReportGenerator;
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
@@ -39,6 +39,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.StringUtil.*;
@@ -70,7 +71,7 @@ public abstract class BibData
   public abstract HDT_WorkType getWorkType();
 
   protected abstract void setEntryType(EntryType entryType);
-  protected abstract void setAllAuthors(Iterable<BibAuthor> otherAuthors);
+  protected abstract void setAllAuthors(Iterable<Author> otherAuthors);
   protected abstract void setWorkType(HDT_WorkType workType);
 
 //---------------------------------------------------------------------------
@@ -246,9 +247,9 @@ public abstract class BibData
     addStrToReport     (bfTitle         , report);
     addDateToReport    (                  report);
 
-    addCreatorsToReport(bfAuthors       , report, authors.getStr(AuthorType.author    ));
-    addCreatorsToReport(bfEditors       , report, authors.getStr(AuthorType.editor    ));
-    addCreatorsToReport(bfTranslators   , report, authors.getStr(AuthorType.translator));
+    addCreatorsToReport(bfAuthors       , report, authors.getStr(author    ));
+    addCreatorsToReport(bfEditors       , report, authors.getStr(editor    ));
+    addCreatorsToReport(bfTranslators   , report, authors.getStr(translator));
 
     addStrToReport     (bfContainerTitle, report);
     addStrToReport     (bfEdition       , report);
@@ -292,10 +293,10 @@ public abstract class BibData
 
   public void setAllAuthorsFromTable(Iterable<ObjectGroup> authGroups)
   {
-    setAllAuthors(streamToIterable(iterableToStream(authGroups).map(authGroup -> new BibAuthor(new PersonName(authGroup.getPrimaryStr()),
-                                                                                               authGroup.getPrimary(),
-                                                                                               authGroup.getValue(tagEditor).bool,
-                                                                                               authGroup.getValue(tagTranslator).bool))));
+    setAllAuthors(streamToIterable(iterableToStream(authGroups).map(authGroup -> new AuthorStandalone(new PersonName(authGroup.getPrimaryStr()),
+                                                                                                      authGroup.getPrimary(),
+                                                                                                      authGroup.getValue(tagEditor).bool,
+                                                                                                      authGroup.getValue(tagTranslator).bool))));
   }
 
 //---------------------------------------------------------------------------
@@ -309,10 +310,10 @@ public abstract class BibData
       {
         AuthorType authorType = AuthorType.fromBibFieldEnum(bibFieldEnum);
 
-        yield (int) getAuthors().stream().filter(author ->
-          ((authorType == AuthorType.author    ) && author.getIsAuthor())   ||
-          ((authorType == AuthorType.editor    ) && author.getIsEditor())   ||
-          ((authorType == AuthorType.translator) && author.getIsTrans ())).count();
+        yield (int) getAuthors().stream().filter(auth ->
+          ((authorType == author    ) && auth.getIsAuthor())   ||
+          ((authorType == editor    ) && auth.getIsEditor())   ||
+          ((authorType == translator) && auth.getIsTrans ())).count();
       }
       case bftBibDate     -> BibliographicDate.isEmpty(getDate()) ? 0 : 1;
       case bftMultiString -> nullSwitch(getMultiStr(bibFieldEnum), 0, List::size);

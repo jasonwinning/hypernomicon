@@ -172,7 +172,6 @@ class StringUtilTest
     result = strListToStr(list, false, true);
 
     assertEquals(expected, result);
-
   }
 
   @Test

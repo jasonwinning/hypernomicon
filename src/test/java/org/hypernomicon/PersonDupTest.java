@@ -20,7 +20,7 @@ package org.hypernomicon;
 import java.util.*;
 
 import org.hypernomicon.model.TestHyperDB;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
@@ -146,41 +146,42 @@ class PersonDupTest
     w1.getAuthors().add(p18);  // Share w1
     w4.getAuthors().add(p19);
 
-    Author a1 = new Author(new PersonName("Donald Davidson"));
+    RecordAuthor a1 = new RecordAuthor(new PersonName("Donald Davidson"));
 
     // Construct candidate list
 
     List<PersonForDupCheck> candidates = List.of
     (
-      new PersonForDupCheck(p1),                                // C1
-      new PersonForDupCheck(p2),                                // C2
-      new PersonForDupCheck(p3),                                // C3
-      new PersonForDupCheck(p4),                                // C4
-      new PersonForDupCheck(p5),                                // C5
-      new PersonForDupCheck(p6),                                // C6
-      new PersonForDupCheck(p7),                                // C7
-      new PersonForDupCheck(new PersonName("")),                // C8: empty name
-      new PersonForDupCheck(p8),                                // C9
-      new PersonForDupCheck(p9),                                // C10
-      new PersonForDupCheck(p10),                               // C11
-      new PersonForDupCheck(new PersonName("", "B.")),          // C12 one-letter
-      new PersonForDupCheck(p11),                               // C13
-      new PersonForDupCheck(p12),                               // C14
-      new PersonForDupCheck(p13),                               // C15
-      new PersonForDupCheck(p14),                               // C16
-      new PersonForDupCheck(new PersonName(null, "")),          // C17
-      new PersonForDupCheck(new Author(w1, p14)),               // C18
-      new PersonForDupCheck(p15),                               // C19: same person as C1
-      new PersonForDupCheck(new Author(createWork("Alt Work"), p1)), // C20: same person, new work
-      new PersonForDupCheck(new Author(w2, p1)),                // C21: p1 linked to a different work
-      new PersonForDupCheck(new Author(createWork("Clone Work"), new PersonName("Jean", "St. James"), false, false, Ternary.Unset)), // C22 deep-clone name
-      new PersonForDupCheck(new Author(w4, p1)),                // C23: work4 contains p1
-      new PersonForDupCheck(p16),                               // C24: Unicode (composed)
-      new PersonForDupCheck(p17),                               // C25: Unicode (decomposed)
-      new PersonForDupCheck(p20),                               // C26: abbreviation-only
-      new PersonForDupCheck(p18),                               // C27: different person, same work as p1
-      new PersonForDupCheck(p19),                               // C28: all match-excluding conditions
-      new PersonForDupCheck(a1)                                 // C29
+      new PersonForDupCheck(p1),                                                                 // C1
+      new PersonForDupCheck(p2),                                                                 // C2
+      new PersonForDupCheck(p3),                                                                 // C3
+      new PersonForDupCheck(p4),                                                                 // C4
+      new PersonForDupCheck(p5),                                                                 // C5
+      new PersonForDupCheck(p6),                                                                 // C6
+      new PersonForDupCheck(p7),                                                                 // C7
+      new PersonForDupCheck(new PersonName("")),                                                 // C8: empty name
+      new PersonForDupCheck(p8),                                                                 // C9
+      new PersonForDupCheck(p9),                                                                 // C10
+      new PersonForDupCheck(p10),                                                                // C11
+      new PersonForDupCheck(new PersonName("", "B.")),                                           // C12 one-letter
+      new PersonForDupCheck(p11),                                                                // C13
+      new PersonForDupCheck(p12),                                                                // C14
+      new PersonForDupCheck(p13),                                                                // C15
+      new PersonForDupCheck(p14),                                                                // C16
+      new PersonForDupCheck(new PersonName(null, "")),                                           // C17
+      new PersonForDupCheck(new RecordAuthor(w1, p14)),                                          // C18
+      new PersonForDupCheck(p15),                                                                // C19: same person as C1
+      new PersonForDupCheck(new RecordAuthor(createWork("Alt Work"), p1)),                       // C20: same person, new work
+      new PersonForDupCheck(new RecordAuthor(w2, p1)),                                           // C21: p1 linked to a different work
+      new PersonForDupCheck(new RecordAuthor(createWork("Clone Work"),
+                            new PersonName("Jean", "St. James"), false, false, Ternary.Unset)),  // C22 deep-clone name
+      new PersonForDupCheck(new RecordAuthor(w4, p1)),                                           // C23: work4 contains p1
+      new PersonForDupCheck(p16),                                                                // C24: Unicode (composed)
+      new PersonForDupCheck(p17),                                                                // C25: Unicode (decomposed)
+      new PersonForDupCheck(p20),                                                                // C26: abbreviation-only
+      new PersonForDupCheck(p18),                                                                // C27: different person, same work as p1
+      new PersonForDupCheck(p19),                                                                // C28: all match-excluding conditions
+      new PersonForDupCheck(a1)                                                                  // C29
     );
 
     PersonMatcher matcher = findMatches(null, candidates);
@@ -210,15 +211,15 @@ class PersonDupTest
     matcher = findMatches(new PersonForDupCheck(a1, new PersonName("Donald Davidson")), candidates);  // Reject match if Author object is the same, even if name is the same
     assertEquals(0, matcher.numMatches());
 
-    matcher = findMatches(new PersonForDupCheck(new Author(p9), new PersonName("Fred Dretske")), candidates);
+    matcher = findMatches(new PersonForDupCheck(new RecordAuthor(p9), new PersonName("Fred Dretske")), candidates);
     assertEquals(0, matcher.numMatches());
 
-    matcher = findMatches(new PersonForDupCheck(new Author(p9), new PersonName(p9.getNameLastFirst(false))), candidates);  // Reject match if Person object is the same, even if name is the same
+    matcher = findMatches(new PersonForDupCheck(new RecordAuthor(p9), new PersonName(p9.getNameLastFirst(false))), candidates);  // Reject match if Person object is the same, even if name is the same
     assertEquals(0, matcher.numMatches());
 
-    Author a2 = new Author(w5, new PersonName("Nancy Cartwright"), false, false, Ternary.Unset),
-           a3 = new Author(w5, new PersonName("Nancy Cartwright"), false, false, Ternary.Unset),
-           a4 = new Author(w5, new PersonName("Noam Chomsky"    ), false, false, Ternary.Unset);
+    RecordAuthor a2 = new RecordAuthor(w5, new PersonName("Nancy Cartwright"), false, false, Ternary.Unset),
+                 a3 = new RecordAuthor(w5, new PersonName("Nancy Cartwright"), false, false, Ternary.Unset),
+                 a4 = new RecordAuthor(w5, new PersonName("Noam Chomsky"    ), false, false, Ternary.Unset);
 
     w5.getAuthors().add(a2);
     w5.getAuthors().add(a3);
@@ -246,7 +247,7 @@ class PersonDupTest
 
     matcher = findMatches(person1, candidates);
 
-    List<Author> result = matcher.getMatches(person1);
+    List<RecordAuthor> result = matcher.getMatches(person1);
 
     // A) Skipped are: C1, C8, C17, C18, C20, C21, C23, C27
 

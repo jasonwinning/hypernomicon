@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.authors;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
@@ -32,6 +32,7 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -39,7 +40,7 @@ import org.hypernomicon.model.relations.*;
 
 //---------------------------------------------------------------------------
 
-public class WorkAuthors extends Authors
+public class WorkAuthors extends RecordAuthors
 {
 
 //---------------------------------------------------------------------------
@@ -47,7 +48,7 @@ public class WorkAuthors extends Authors
 
   private final HyperObjList<HDT_Work, HDT_Person> objList, objListNoMod;
   private final HDT_Work work;
-  private final List<Author> authorList;
+  private final List<RecordAuthor> authorList;
   private boolean allRecords = true; // if this is true, ignore authorList and treat as pointer multi
 
 //---------------------------------------------------------------------------
@@ -71,9 +72,9 @@ public class WorkAuthors extends Authors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public Author get(int ndx)
+  @Override public RecordAuthor get(int ndx)
   {
-    return allRecords ? new Author(work, objList.get(ndx)) : authorList.get(ndx);
+    return allRecords ? new RecordAuthor(work, objList.get(ndx)) : authorList.get(ndx);
   }
 
 //---------------------------------------------------------------------------
@@ -91,7 +92,7 @@ public class WorkAuthors extends Authors
     if (allRecords)
       return;
 
-    authorList.add(new Author(work, person));
+    authorList.add(new RecordAuthor(work, person));
   }
 
 //---------------------------------------------------------------------------
@@ -119,7 +120,7 @@ public class WorkAuthors extends Authors
       }
     }
 
-    authorList.add(new Author(work, name, editor, translator, inFileName));
+    authorList.add(new RecordAuthor(work, name, editor, translator, inFileName));
   }
 
 //---------------------------------------------------------------------------
@@ -130,7 +131,7 @@ public class WorkAuthors extends Authors
     authorList.clear();
     allRecords = false;
 
-    objListNoMod.forEach(person -> authorList.add(new Author(work, person)));
+    objListNoMod.forEach(person -> authorList.add(new RecordAuthor(work, person)));
   }
 
 //---------------------------------------------------------------------------
@@ -162,7 +163,7 @@ public class WorkAuthors extends Authors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Author getAuthor(PersonName personName)
+  public RecordAuthor getAuthor(PersonName personName)
   {
     return allRecords ? null : findFirst(authorList, author -> isNull(author.getPerson()) && author.getName().equals(personName));
   }
@@ -196,7 +197,7 @@ public class WorkAuthors extends Authors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void update(Author oldAuthor, Author newAuthor)
+  public void update(RecordAuthor oldAuthor, RecordAuthor newAuthor)
   {
     if (oldAuthor.equals(newAuthor)) return;
 
@@ -216,28 +217,28 @@ public class WorkAuthors extends Authors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void setListFromObjectGroups(List<Author> authorList, Iterable<ObjectGroup> objGroups, HDT_Work work)
+  private static void setListFromObjectGroups(List<RecordAuthor> authorList, Iterable<ObjectGroup> objGroups, HDT_Work work)
   {
     authorList.clear();
 
     objGroups.forEach(objGroup ->
     {
       if (objGroup.getPrimary() != null)
-        authorList.add(new Author(work, objGroup.getPrimary()));
+        authorList.add(new RecordAuthor(work, objGroup.getPrimary()));
       else
-        authorList.add(new Author(work, new PersonName(objGroup.getPrimaryStr()),
-                                        objGroup.getValue(tagEditor).bool,
-                                        objGroup.getValue(tagTranslator).bool,
-                                        objGroup.getValue(tagInFileName).ternary));
+        authorList.add(new RecordAuthor(work, new PersonName(objGroup.getPrimaryStr()),
+                                              objGroup.getValue(tagEditor).bool,
+                                              objGroup.getValue(tagTranslator).bool,
+                                              objGroup.getValue(tagInFileName).ternary));
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static List<Author> getListFromObjectGroups(List<ObjectGroup> objGroups, HDT_Work work)
+  public static List<RecordAuthor> getListFromObjectGroups(List<ObjectGroup> objGroups, HDT_Work work)
   {
-    List<Author> authorList = new ArrayList<>();
+    List<RecordAuthor> authorList = new ArrayList<>();
 
     setListFromObjectGroups(authorList, objGroups, work);
 
@@ -251,7 +252,7 @@ public class WorkAuthors extends Authors
   {
     if (objGroup.getValue(tag) != null) return;
 
-    Author author = getAuthor(new PersonName(objGroup.getPrimaryStr()));
+    RecordAuthor author = getAuthor(new PersonName(objGroup.getPrimaryStr()));
     if (author == null) return;
 
     NestedValue val = new NestedValue(db.getNestedSchema(rtAuthorOfWork, tag).category());
@@ -278,7 +279,7 @@ public class WorkAuthors extends Authors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void add(Author author)
+  public void add(RecordAuthor author)
   {
     if (author.getPerson() == null)
       add(author.getName(), author.getIsEditor(), author.getIsTrans(), author.getInFileName());
@@ -294,7 +295,7 @@ public class WorkAuthors extends Authors
     if (allRecords)
       initAuthorList();
 
-    authorList.add(new Author(work, name, isEditor, isTrans, inFileName));
+    authorList.add(new RecordAuthor(work, name, isEditor, isTrans, inFileName));
     work.modifyNow();
   }
 
@@ -310,13 +311,13 @@ public class WorkAuthors extends Authors
     if (inFileName != Ternary.Unset) work.setPersonIsInFileName(person, inFileName);
 
     if (allRecords == false)
-      authorList.add(new Author(work, person));
+      authorList.add(new RecordAuthor(work, person));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setAuthorRecord(Author oldAuthor, HDT_Person person)
+  public void setAuthorRecord(RecordAuthor oldAuthor, HDT_Person person)
   {
     if (oldAuthor.getPerson() != null)
     {
@@ -326,7 +327,7 @@ public class WorkAuthors extends Authors
 
     HDT_Person insertAfter = null;
 
-    for (Author author : authorList)
+    for (RecordAuthor author : authorList)
     {
       HDT_Person curPerson = author.getPerson();
       if (curPerson != null) insertAfter = curPerson;
@@ -345,7 +346,7 @@ public class WorkAuthors extends Authors
         work.setPersonIsTranslator(person, author.getIsTrans   ());
         work.setPersonIsInFileName(person, author.getInFileName());
 
-        Author newAuthor = new Author(work, person);
+        RecordAuthor newAuthor = new RecordAuthor(work, person);
 
         authorList.set(authorList.indexOf(oldAuthor), newAuthor);
 

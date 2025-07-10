@@ -20,10 +20,10 @@ package org.hypernomicon.bib.data;
 import java.io.IOException;
 import java.util.*;
 
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.records.HDT_Work;
@@ -35,6 +35,7 @@ import org.jbibtex.TokenMgrException;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -127,7 +128,7 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setAllAuthors(Iterable<BibAuthor> otherAuthors)
+  @Override public void setAllAuthors(Iterable<Author> otherAuthors)
   {
     authors.clear();
     otherAuthors.forEach(authors::add);
@@ -183,9 +184,9 @@ public abstract class BibDataStandalone extends BibData
              bfMisc,
              bfTitle           -> bibFieldEnumToBibField.get(bibFieldEnum).getStr();
         case bfDate            -> getDateRawStr();
-        case bfAuthors         -> authors.getStr(AuthorType.author);
-        case bfEditors         -> authors.getStr(AuthorType.editor);
-        case bfTranslators     -> authors.getStr(AuthorType.translator);
+        case bfAuthors         -> authors.getStr(author);
+        case bfEditors         -> authors.getStr(editor);
+        case bfTranslators     -> authors.getStr(translator);
         default                ->
         {
           internalErrorPopup(90227);

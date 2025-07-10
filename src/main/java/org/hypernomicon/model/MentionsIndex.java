@@ -38,7 +38,7 @@ import javafx.concurrent.Worker.State;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
@@ -210,7 +210,7 @@ class MentionsIndex
         {
           mainText.getKeyWorksUnmod().forEach(keyWork ->
           {
-            HDT_RecordWithAuthors<? extends Authors> keyWorkRecord = keyWork.getRecord();
+            HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord = keyWork.getRecord();
 
             mentionedAnywhereToMentioners.addForward(keyWorkRecord, record);
             mentionedInDescToMentioners  .addForward(keyWorkRecord, record);

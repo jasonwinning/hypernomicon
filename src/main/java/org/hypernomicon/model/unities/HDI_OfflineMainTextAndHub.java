@@ -80,7 +80,6 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 
   int getHubID()               { return hubID; }
-  RecordState getRecordState() { return recordState; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

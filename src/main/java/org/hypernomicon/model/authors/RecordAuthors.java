@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.authors;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.items.HDI_OfflineBase;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Person;
 
@@ -33,19 +34,19 @@ import com.google.common.collect.Sets;
 
 //---------------------------------------------------------------------------
 
-public abstract class Authors implements Iterable<Author>
+public abstract class RecordAuthors implements Iterable<RecordAuthor>
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final class AuthorIterator implements Iterator<Author>
+  private final class AuthorIterator implements Iterator<RecordAuthor>
   {
     private int nextNdx = 0;
 
     @Override public boolean hasNext() { return nextNdx < size(); }
 
-    @Override public Author next()
+    @Override public RecordAuthor next()
     {
       if (hasNext()) return get(nextNdx++);
       throw new NoSuchElementException();
@@ -58,23 +59,23 @@ public abstract class Authors implements Iterable<Author>
   abstract int size();
   abstract boolean containsPerson(HDT_Person person);
   abstract void resolvePointers() throws HDB_InternalError;
-  abstract Author get(int ndx);
+  abstract RecordAuthor get(int ndx);
   abstract void clearNoMod();
   abstract void clear();
   abstract void addNoMod(HDT_Person person, Map<Tag, HDI_OfflineBase> tagToNestedItem) throws RelationCycleException, HDB_InternalError;
 
-  public boolean isEmpty()                     { return size() == 0; }
-  public Collection<Author> asCollection()     { return Sets.newLinkedHashSet(this); }
-  public List<Author> asList()                 { return ImmutableList.copyOf(this); }
-  public Stream<Author> stream()               { return iterableToStream(this); }
-  void expire()                                { clearNoMod(); }
+  public boolean isEmpty()                       { return size() == 0; }
+  public Collection<RecordAuthor> asCollection() { return Sets.newLinkedHashSet(this); }
+  public List<RecordAuthor> asList()             { return ImmutableList.copyOf(this); }
+  public Stream<RecordAuthor> stream()           { return iterableToStream(this); }
+  void expire()                                  { clearNoMod(); }
 
-  @Override public Iterator<Author> iterator() { return new AuthorIterator(); }
+  @Override public Iterator<RecordAuthor> iterator() { return new AuthorIterator(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getShortAuthorsStr(Stream<Author> authors, boolean sort, boolean fullNameIfSingleton, boolean includeEds)
+  public static String getShortAuthorsStr(Stream<? extends Author> authors, boolean sort, boolean fullNameIfSingleton, boolean includeEds)
   {
     return getAuthorsStr(authors, ',', true, true, sort, fullNameIfSingleton, includeEds);
   }
@@ -82,7 +83,7 @@ public abstract class Authors implements Iterable<Author>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getLongAuthorsStr(Stream<Author> authors, boolean fullNameIfSingleton, boolean includeEds)
+  public static String getLongAuthorsStr(Stream<? extends Author> authors, boolean fullNameIfSingleton, boolean includeEds)
   {
     return getAuthorsStr(authors, ';', false, false, false, fullNameIfSingleton, includeEds);
   }
@@ -90,7 +91,7 @@ public abstract class Authors implements Iterable<Author>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getAuthorsStr(Stream<Author> authorStream, char delimiter, boolean amp, boolean firstInitials,
+  private static String getAuthorsStr(Stream<? extends Author> authorStream, char delimiter, boolean amp, boolean firstInitials,
                                       boolean sort, boolean fullNameIfSingleton, boolean includeEds)
   {
     List<Author> authors = authorStream.collect(Collectors.toCollection(ArrayList::new));

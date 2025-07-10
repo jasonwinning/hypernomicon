@@ -37,6 +37,7 @@ import org.hypernomicon.bib.data.WorkBibData;
 import org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -594,14 +595,14 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static Author getSingleAuthorForSearchKey(List<Author> authors)
+  private static RecordAuthor getSingleAuthorForSearchKey(List<RecordAuthor> authors)
   {
-    for (Author author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
-    for (Author author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
-    for (Author author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
-    for (Author author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
-    for (Author author : authors) if                                                                       (author.getPerson() != null)  return author;
-    for (Author author : authors) if                                                                       (author.getPerson() == null)  return author;
+    for (RecordAuthor author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
+    for (RecordAuthor author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
+    for (RecordAuthor author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
+    for (RecordAuthor author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
+    for (RecordAuthor author : authors) if                                                                       (author.getPerson() != null)  return author;
+    for (RecordAuthor author : authors) if                                                                       (author.getPerson() == null)  return author;
 
     return null;
   }
@@ -614,7 +615,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     return makeWorkSearchKey(getAuthors().asList(), getYearStr(), addLetter, keyWorkLink);
   }
 
-  public String makeWorkSearchKey(List<Author> authorsToUse, String yearToUse, boolean addLetter, boolean keyWorkLink)
+  public String makeWorkSearchKey(List<RecordAuthor> authorsToUse, String yearToUse, boolean addLetter, boolean keyWorkLink)
   {
     if (collEmpty(authorsToUse) || strNullOrBlank(yearToUse))
       return "";

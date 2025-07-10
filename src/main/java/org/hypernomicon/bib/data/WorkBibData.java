@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -60,7 +60,7 @@ public class WorkBibData extends BibData
   @Override public BibliographicDate getDate()             { return work.getBibDate(); }
   @Override public void setDate(BibliographicDate newDate) { work.setBibDate(newDate); }
 
-  @Override public void setAllAuthors(Iterable<BibAuthor> otherAuthors) { throw new UnsupportedOperationException("add"); }
+  @Override public void setAllAuthors(Iterable<Author> otherAuthors) { throw new UnsupportedOperationException("add"); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

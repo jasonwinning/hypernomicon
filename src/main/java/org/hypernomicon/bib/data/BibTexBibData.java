@@ -19,6 +19,7 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -28,7 +29,7 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Map.Entry;
 
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.model.authors.Author.AuthorType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
 
@@ -81,11 +82,11 @@ public final class BibTexBibData extends BibDataStandalone
       switch (mapping.getKey().getValue())
       {
         case "address"   : setStr(bfPubLoc, val); break;
-        case "author"    : addBibTexAuthor(val, AuthorType.author); break;
+        case "author"    : addBibTexAuthor(val, author); break;
         case "booktitle" : // fall through
         case "journal"   : setMultiStr(bfContainerTitle, safeListOf(val)); break;
         case "edition"   : setStr(bfEdition, val); break;
-        case "editor"    : addBibTexAuthor(val, AuthorType.editor); break;
+        case "editor"    : addBibTexAuthor(val, editor); break;
         case "language"  : setStr(bfLanguage, val); break;
         case "note"      : addStr(bfMisc, val); break;
         case "number"    : setStr(bfIssue, val); break;

@@ -21,11 +21,10 @@ import java.util.*;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
-import org.hypernomicon.bib.authors.BibAuthor;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.reports.ReportGenerator;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -38,6 +37,7 @@ import org.hypernomicon.util.json.JsonObj;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -109,7 +109,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   @Override protected boolean isNewEntry()         { return jObj.containsKey("version") == false; }
   @Override protected JsonArray getCollJsonArray() { return jObj.getObj("data").getArray("collections"); }
 
-  @Override protected void setAllAuthors(Iterable<BibAuthor> otherAuthors) { ((ZoteroAuthors) getAuthors()).setAll(otherAuthors); }
+  @Override protected void setAllAuthors(Iterable<Author> otherAuthors) { ((ZoteroAuthors) getAuthors()).setAll(otherAuthors); }
 
   static String getEntryTypeStrFromSpecifiedJson(JsonObj specJObj) { return specJObj.getStrSafe(entryTypeKey); }
 
@@ -404,9 +404,9 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
         return jData.getStrSafe(fieldKey);
 
-      case bfAuthors     : return getAuthors().getStr(AuthorType.author);
-      case bfEditors     : return getAuthors().getStr(AuthorType.editor);
-      case bfTranslators : return getAuthors().getStr(AuthorType.translator);
+      case bfAuthors     : return getAuthors().getStr(author);
+      case bfEditors     : return getAuthors().getStr(editor);
+      case bfTranslators : return getAuthors().getStr(translator);
 
       case bfContainerTitle : case bfTitle :
 
@@ -552,8 +552,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     // The iterator method for both objects also filters out editors if ignoreEditors is true.
 
-    List<BibAuthor> list1 = new ZoteroAuthors(getAuthors(), entryType).normalizedList(false),
-                    list2 = backupItem.getAuthors()                   .normalizedList(false);
+    List<Author> list1 = new ZoteroAuthors(getAuthors(), entryType).normalizedList(false),
+                 list2 = backupItem.getAuthors()                   .normalizedList(false);
 
     if (BibAuthors.authorListsAreEqual(list1, list2, true, true) == false)
       return true;
@@ -675,7 +675,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   @Override protected void setParentAuthorsFrom(BibAuthors authors)
   {
-    List<BibAuthor> normalizedList = authors.normalizedList(false);
+    List<Author> normalizedList = authors.normalizedList(false);
 
     JsonArray creatorsArr = jData.getOrAddArray("creators");
 
@@ -688,7 +688,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         it.remove();
     }
 
-    for (BibAuthor author : streamToIterable(normalizedList.stream().filter(BibAuthor::getIsAuthor)))
+    for (Author author : streamToIterable(normalizedList.stream().filter(Author::getIsAuthor)))
     {
       JsonObj creatorObj = new JsonObj();
 
@@ -699,7 +699,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       creatorsArr.add(creatorObj);
     }
 
-    for (BibAuthor editor : streamToIterable(normalizedList.stream().filter(BibAuthor::getIsEditor)))
+    for (Author editor : streamToIterable(normalizedList.stream().filter(Author::getIsEditor)))
     {
       JsonObj creatorObj = new JsonObj();
 

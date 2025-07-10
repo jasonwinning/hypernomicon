@@ -34,7 +34,7 @@ import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
@@ -114,7 +114,7 @@ class ZoteroAuthorSyncTest
     work.getBibData().copyAllFieldsFrom(entry, false, false);
 
     entry.getAuthors().normalizedList(false).forEach(bibAuthor ->
-      work.getAuthors().add(new Author(work, bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset)));
+      work.getAuthors().add(new RecordAuthor(work, bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset)));
 
     work.setBibEntryKey(entry.getKey());
 
@@ -134,7 +134,7 @@ class ZoteroAuthorSyncTest
 
   private static void addCreatorToWork(HDT_Work work, int nameNumber, boolean isEd, boolean isTrans)
   {
-    work.getAuthors().add(new Author(work, new PersonName("firstName" + nameNumber, "lastName" + nameNumber), isEd, isTrans, Ternary.Unset));
+    work.getAuthors().add(new RecordAuthor(work, new PersonName("firstName" + nameNumber, "lastName" + nameNumber), isEd, isTrans, Ternary.Unset));
   }
 
 //---------------------------------------------------------------------------

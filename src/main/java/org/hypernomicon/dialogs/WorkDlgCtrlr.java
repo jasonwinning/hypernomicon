@@ -33,11 +33,11 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.BibManager;
-import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -244,7 +244,7 @@ public class WorkDlgCtrlr extends ModalDialog
       else
       {
         htAuthors.getPopulator(0).addEntry(authName);
-        Author auth = curWork.getAuthors().getAuthor(new PersonName(authName));
+        RecordAuthor auth = curWork.getAuthors().getAuthor(new PersonName(authName));
         if (auth != null)
           isInFileName = auth.getInFileName();
       }
@@ -597,7 +597,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
       String text = row.getText(0);
 
-      Author author = null;
+      RecordAuthor author = null;
       HDT_Work work = workSupplier.get();
 
       if (work != null)
@@ -605,7 +605,7 @@ public class WorkDlgCtrlr extends ModalDialog
         author = work.getAuthors().getAuthor(new PersonName(text));
 
         if (author == null)
-          author = new Author(work, new PersonName(text), false, false, Ternary.Unset);
+          author = new RecordAuthor(work, new PersonName(text), false, false, Ternary.Unset);
       }
 
       NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(true, text, author);
@@ -1114,15 +1114,15 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addAuthorToTable(BibAuthor bibAuthor, HyperTable htAuthors, boolean hasShowInFileCol)
+  private static void addAuthorToTable(Author author, HyperTable htAuthors, boolean hasShowInFileCol)
   {
-    PersonName name = bibAuthor.getName();
+    PersonName name = author.getName();
 
     if (name.isEmpty()) return;
 
     HyperTableRow row = htAuthors.newDataRow();
 
-    HDT_Person person = bibAuthor.getPerson();
+    HDT_Person person = author.getPerson();
 
     if (person != null)
     {
@@ -1139,10 +1139,10 @@ public class WorkDlgCtrlr extends ModalDialog
 
     int addend = hasShowInFileCol ? 1 : 0;
 
-    if (bibAuthor.getIsEditor())
+    if (author.getIsEditor())
       row.setCheckboxValue(2 + addend, true);
 
-    if (bibAuthor.getIsTrans())
+    if (author.getIsTrans())
       row.setCheckboxValue(3 + addend, true);
   }
 
@@ -1153,7 +1153,7 @@ public class WorkDlgCtrlr extends ModalDialog
   {
     if (BibAuthors.isEmpty(bibAuthors)) return;
 
-    List<BibAuthor> listForWorkMerge = bibAuthors.getListForWorkMerge(destWork);
+    List<Author> listForWorkMerge = bibAuthors.getListForWorkMerge(destWork);
 
     clearAuthors(htAuthors, true);  // Getting the list may have resulted in one or more new person records being created so force repopulate
 

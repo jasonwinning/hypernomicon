@@ -217,7 +217,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getBibName()
+  public String getBibName()
   {
     List<String> initialList = new ArrayList<>();
 

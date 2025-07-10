@@ -22,16 +22,17 @@ import java.util.Map.Entry;
 
 import com.google.common.collect.ImmutableTable;
 
-import org.hypernomicon.bib.authors.BibAuthor;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-import static org.hypernomicon.bib.authors.BibAuthor.AuthorType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -57,7 +58,7 @@ public class ZoteroAuthors extends BibAuthors
     this.entryType = entryType;
   }
 
-  ZoteroAuthors(Iterable<BibAuthor> otherAuthors, EntryType entryType)
+  ZoteroAuthors(Iterable<Author> otherAuthors, EntryType entryType)
   {
     creatorsArr = new JsonArray();
     this.entryType = entryType;
@@ -83,7 +84,7 @@ public class ZoteroAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public Iterator<BibAuthor> iterator()
+  @Override public Iterator<Author> iterator()
   {
     return creatorsArr.objStream().map(creatorObj ->
     {
@@ -93,31 +94,31 @@ public class ZoteroAuthors extends BibAuthors
       String firstName = creatorObj.getStrSafe("firstName"),
              lastName  = creatorObj.getStrSafe("lastName");
 
-       return new BibAuthor(authorType, strNotNullOrBlank(firstName) || strNotNullOrBlank(lastName) ?
+       return new AuthorStandalone(authorType, strNotNullOrBlank(firstName) || strNotNullOrBlank(lastName) ?
          new PersonName(firstName, lastName)
        :
          new PersonName(creatorObj.getStrSafe("name")));
 
-    }).filter(Objects::nonNull).iterator();
+    }).filter(Objects::nonNull).map(a -> (Author)a).iterator();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setAll(Iterable<BibAuthor> otherAuthors)
+  void setAll(Iterable<Author> otherAuthors)
   {
     int nextInsertNdx = 0;
 
-    for (BibAuthor otherAuthor : otherAuthors)
+    for (Author otherAuthor : otherAuthors)
     {
       if (otherAuthor.getIsAuthor())
         nextInsertNdx = add(otherAuthor, nextInsertNdx);
 
       if (otherAuthor.getIsEditor())
-        nextInsertNdx = add(new BibAuthor(otherAuthor.getName(), otherAuthor.getPerson(), true, false), nextInsertNdx);
+        nextInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), true, false), nextInsertNdx);
 
       if (otherAuthor.getIsTrans())
-        nextInsertNdx = add(new BibAuthor(otherAuthor.getName(), otherAuthor.getPerson(), false, true), nextInsertNdx);
+        nextInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), false, true), nextInsertNdx);
     }
 
     // Now remove any authors that do map to a Hypernomicon author type, unless it
@@ -135,7 +136,7 @@ public class ZoteroAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int add(BibAuthor bibAuthor, int nextInsertNdx)
+  private int add(Author bibAuthor, int nextInsertNdx)
   {
     AuthorType authorType;
 

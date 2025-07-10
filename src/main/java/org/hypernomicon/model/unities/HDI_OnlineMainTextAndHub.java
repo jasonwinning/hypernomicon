@@ -32,9 +32,9 @@ import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub.DisplayItem;
-import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OnlineBase;
 
 //---------------------------------------------------------------------------
@@ -146,7 +146,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
             return;
           }
 
-          HDT_RecordWithAuthors<? extends Authors> keyWorkRecord = keyWork.getRecord();
+          HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord = keyWork.getRecord();
           mainText.keyWorks.add(keyWork.getOnlineCopy());
 
           RecordState recordState = val.getRecordState();

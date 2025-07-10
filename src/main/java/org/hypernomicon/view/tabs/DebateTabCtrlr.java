@@ -36,7 +36,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
 
-import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
@@ -135,7 +135,7 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     htPositions.buildRows(curDebate.subPositions, (row, position) ->
     {
-      String authStr = Authors.getShortAuthorsStr(position.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true, false);
+      String authStr = RecordAuthors.getShortAuthorsStr(position.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true, false);
       PositionSource ps = position.getWorkWithAuthor();
       if (ps != null)
         row.setCellValue(1, ps.author, authStr);

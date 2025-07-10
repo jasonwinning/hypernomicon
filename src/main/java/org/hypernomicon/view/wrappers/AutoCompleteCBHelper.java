@@ -42,7 +42,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.ValueSelectDlgCtrlr;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 
@@ -267,7 +267,7 @@ public class AutoCompleteCBHelper
           if (personName == null)
             personName = new PersonName(str).toLowerCase();
 
-          for (Author author : ((HDT_Work)record).getAuthors())
+          for (RecordAuthor author : ((HDT_Work)record).getAuthors())
           {
             if ((personName.getFirst().length() > 0) &&
                 (author.firstName(true).toLowerCase().contains(personName.getFirst()) ||

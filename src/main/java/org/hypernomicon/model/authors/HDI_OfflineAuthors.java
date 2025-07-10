@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.authors;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -26,6 +26,8 @@ import static org.hypernomicon.util.Util.*;
 import java.util.*;
 
 import org.hypernomicon.model.*;
+import org.hypernomicon.model.items.HDI_OfflineBase;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.RecordState;
 
 //---------------------------------------------------------------------------

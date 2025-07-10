@@ -18,19 +18,18 @@
 package org.hypernomicon;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import static org.hypernomicon.bib.authors.BibAuthor.AuthorType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthorsStandalone;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.mendeley.MendeleyDocument;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.model.TestHyperDB;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
@@ -104,7 +103,7 @@ class MendeleyAuthorSyncTest
 
   private static void addCreatorToWork(HDT_Work work, int nameNumber, boolean isEd, boolean isTrans)
   {
-    work.getAuthors().add(new Author(work, new PersonName("firstName" + nameNumber, "lastName" + nameNumber), isEd, isTrans, Ternary.Unset));
+    work.getAuthors().add(new RecordAuthor(work, new PersonName("firstName" + nameNumber, "lastName" + nameNumber), isEd, isTrans, Ternary.Unset));
   }
 
 //---------------------------------------------------------------------------
@@ -180,8 +179,8 @@ class MendeleyAuthorSyncTest
 
     person.setName(new PersonName("firstName1", "lastName1"));
 
-    Author author1 = new Author(work, new PersonName("firstName2", "lastName2"), true, true, Ternary.Unset),
-           author2 = new Author(work, person);
+    RecordAuthor author1 = new RecordAuthor(work, new PersonName("firstName2", "lastName2"), true, true, Ternary.Unset),
+                 author2 = new RecordAuthor(work, person);
 
     work.getAuthors().add(author1);
     work.getAuthors().add(author2);

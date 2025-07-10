@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.authors;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
@@ -31,7 +31,8 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.items.HDI_OfflineAuthors.OfflineAuthor;
+import org.hypernomicon.model.authors.HDI_OfflineAuthors.OfflineAuthor;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordWithAuthors;
@@ -45,14 +46,14 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDI_OnlineAuthors(HDI_Schema schema, HDT_RecordWithAuthors<? extends Authors> record)
+  public HDI_OnlineAuthors(HDI_Schema schema, HDT_RecordWithAuthors<? extends RecordAuthors> record)
   {
     super(schema, record);
   }
 
 //---------------------------------------------------------------------------
 
-  private Authors getAuthors() { return ((HDT_RecordWithAuthors<?>) record).getAuthors(); }
+  private RecordAuthors getAuthors() { return ((HDT_RecordWithAuthors<?>) record).getAuthors(); }
 
   @Override public void expire()                                   { getAuthors().expire(); }
   @Override public void resolvePointers() throws HDB_InternalError { getAuthors().resolvePointers(); }
@@ -72,7 +73,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)
   {
-    Stream<Author> stream = limitTo20Items ? getAuthors().stream().limit(20) : getAuthors().stream();
+    Stream<RecordAuthor> stream = limitTo20Items ? getAuthors().stream().limit(20) : getAuthors().stream();
 
     return stream.map(Author::nameLastFirst)
                  .filter(name -> name.length() > 0)
@@ -84,7 +85,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   @Override public void setFromOfflineValue(HDI_OfflineAuthors val, Tag tag) throws RelationCycleException, HDB_InternalError
   {
-    Authors authors = getAuthors();
+    RecordAuthors authors = getAuthors();
 
     if ((record.getType() == hdtMiscFile) && (authors instanceof WorkAuthors))
       return;
@@ -116,7 +117,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
   {
     val.authors.clear();
 
-    Authors authors = getAuthors();
+    RecordAuthors authors = getAuthors();
 
     if ((record.getType() == hdtMiscFile) && (authors instanceof WorkAuthors))
       return;
@@ -135,31 +136,28 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
         boolean editor = author.getIsEditor();
         if (NestedValue.isEmpty(editor) == false)
         {
-          HDI_OfflineBoolean editorItem = new HDI_OfflineBoolean(db.getNestedSchema(rtAuthorOfWork, tagEditor), val.recordState);
-          editorItem.boolValue = editor;
+          HDI_OfflineBoolean editorItem = new HDI_OfflineBoolean(db.getNestedSchema(rtAuthorOfWork, tagEditor), val.getRecordState(), editor);
           offlineAuthor.nestedItems.put(tagEditor, editorItem);
         }
 
         boolean trans = author.getIsTrans();
         if (NestedValue.isEmpty(trans) == false)
         {
-          HDI_OfflineBoolean transItem = new HDI_OfflineBoolean(db.getNestedSchema(rtAuthorOfWork, tagTranslator), val.recordState);
-          transItem.boolValue = trans;
+          HDI_OfflineBoolean transItem = new HDI_OfflineBoolean(db.getNestedSchema(rtAuthorOfWork, tagTranslator), val.getRecordState(), trans);
           offlineAuthor.nestedItems.put(tagTranslator, transItem);
         }
 
         Ternary inFileName = author.getInFileName();
         if (NestedValue.isEmpty(inFileName) == false)
         {
-          HDI_OfflineTernary inFileNameItem = new HDI_OfflineTernary(db.getNestedSchema(rtAuthorOfWork, tagInFileName), val.recordState);
-          inFileNameItem.value = inFileName;
+          HDI_OfflineTernary inFileNameItem = new HDI_OfflineTernary(db.getNestedSchema(rtAuthorOfWork, tagInFileName), val.getRecordState(), inFileName);
           offlineAuthor.nestedItems.put(tagInFileName, inFileNameItem);
         }
       }
       else
       {
         offlineAuthor.personID = person.getID();
-        db.saveNestedValuesToOfflineMap(record, person, offlineAuthor.nestedItems, val.recordState);
+        db.saveNestedValuesToOfflineMap(record, person, offlineAuthor.nestedItems, val.getRecordState());
       }
 
       val.authors.add(offlineAuthor);

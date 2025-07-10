@@ -24,6 +24,7 @@ import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
@@ -178,7 +179,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         String text = row.getText(1);
 
         Ternary isInFileName = Ternary.Unset;
-        Author author = curWork.getAuthors().getAuthor(new PersonName(text));
+        RecordAuthor author = curWork.getAuthors().getAuthor(new PersonName(text));
         if (author != null)
           isInFileName = author.getInFileName();
 
@@ -586,16 +587,16 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @Override public String recordName()               { return tfTitle.getText(); }
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
-  private List<Author> getAuthorsFromUI()      { return WorkAuthors.getListFromObjectGroups(getAuthorGroups(), curWork); }
-  public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI().stream(), false, true, true); }
-  private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
-  private void lblSearchKeyClick()             { tfSearchKey.setText(curWork.makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), true, false)); }
-  public String getTitle()                     { return tfTitle.getText(); }
-  public BibliographicDate getDateFromUI()     { return dateCtrls.getDate(); }
-  private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ')'); }
-  private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).toList()); }
-  private void useDOIClick()                   { tfDOI.setText(getDoiFromBibTab()); }
-  private void useISBNClick()                  { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, isbn, hdtNone)); }
+  private List<RecordAuthor> getAuthorsFromUI() { return WorkAuthors.getListFromObjectGroups(getAuthorGroups(), curWork); }
+  public String getShortAuthorsStr()            { return RecordAuthors.getShortAuthorsStr(getAuthorsFromUI().stream(), false, true, true); }
+  private List<ObjectGroup> getAuthorGroups()   { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
+  private void lblSearchKeyClick()              { tfSearchKey.setText(curWork.makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), true, false)); }
+  public String getTitle()                      { return tfTitle.getText(); }
+  public BibliographicDate getDateFromUI()      { return dateCtrls.getDate(); }
+  private void setTabCaption(Tab tab, int cnt)  { tab.setText(tabCaptions.get(tab) + " (" + cnt + ')'); }
+  private void saveISBNs()                      { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).toList()); }
+  private void useDOIClick()                    { tfDOI.setText(getDoiFromBibTab()); }
+  private void useISBNClick()                   { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, isbn, hdtNone)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -633,7 +634,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private String getFirstAuthorSingleName()
   {
-    List<Author> authList = getAuthorsFromUI();
+    List<RecordAuthor> authList = getAuthorsFromUI();
     return collEmpty(authList) ? "" : authList.get(0).singleName();
   }
 

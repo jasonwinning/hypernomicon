@@ -20,6 +20,7 @@ package org.hypernomicon.dialogs;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -68,20 +69,20 @@ public class NewPersonDlgCtrlr extends ModalDialog
   @FXML private TextField tfDupFirstName, tfDupLastName, tfDupSearchKey, tfFirstName, tfLastName, tfSearchKey;
   @FXML private ToggleGroup grpAction, grpName;
 
-  private final Author origAuthor;
+  private final RecordAuthor origAuthor;
   private final PersonMatcher matcher;
 
   private HDT_Person person;
   private boolean alreadyChangingName = false, noTabUpdate = false;
   private HyperTask task;
 
-  public HDT_Person getPerson()     { return person; }
-  public PersonName getName()       { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
+  public HDT_Person getPerson() { return person; }
+  public PersonName getName()   { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
 
   public boolean updateWithoutCreateWasSelected() { return rbAddNoCreate.isSelected(); }
 
-  private Author curDupAuthor()     { return matcher.isEmpty() ? null : matcher.getMatchedAuthor(tabPane.getSelectionModel().getSelectedIndex()); }
-  private HDT_Person curDupPerson() { return nullSwitch(curDupAuthor(), null, Author::getPerson); }
+  private RecordAuthor curDupAuthor() { return matcher.isEmpty() ? null : matcher.getMatchedAuthor(tabPane.getSelectionModel().getSelectedIndex()); }
+  private HDT_Person curDupPerson()   { return nullSwitch(curDupAuthor(), null, Author::getPerson); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -95,7 +96,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
    * @param origAuthor Author object containing original name of author, associated work, and associated HDT_Person record.
    *                   If the work is non-null, this may or may not indicate that the author was previously saved to the work.
    */
-  public NewPersonDlgCtrlr(boolean mustCreate, String name, Author origAuthor)
+  public NewPersonDlgCtrlr(boolean mustCreate, String name, RecordAuthor origAuthor)
   {
     this("Add a New Person to the Database", mustCreate, new PersonName(Objects.requireNonNull(name)), null, origAuthor, List.of());
   }
@@ -110,7 +111,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
    * @param origMatches Duplicate matches to default in. May not be null but may be empty. If empty, the popup will
    *                    immediately find matches.
    */
-  public NewPersonDlgCtrlr(PersonName personName, String searchKey, Author origAuthor, List<Author> origMatches)
+  public NewPersonDlgCtrlr(PersonName personName, String searchKey, RecordAuthor origAuthor, List<RecordAuthor> origMatches)
   {
     this("Potential Duplicate(s)", false, personName, searchKey, origAuthor, origMatches);
   }
@@ -128,7 +129,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
    * @param origMatches Duplicate matches to default in. May not be null but may be empty. If empty, the popup will
    *                    immediately find matches.
    */
-  private NewPersonDlgCtrlr(String title, boolean mustCreate, PersonName personName, String searchKey, Author origAuthor, List<Author> origMatches)
+  private NewPersonDlgCtrlr(String title, boolean mustCreate, PersonName personName, String searchKey, RecordAuthor origAuthor, List<RecordAuthor> origMatches)
   {
     super("NewPersonDlg", title, true);
 
@@ -389,7 +390,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
     }
     else
     {
-      Author author = curDupAuthor();
+      RecordAuthor author = curDupAuthor();
 
       tfDupFirstName.setText(author.firstName());
       tfDupLastName .setText(author.lastName());
@@ -436,7 +437,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
       return true;
     }
 
-    Author dupAuthor = curDupAuthor();
+    RecordAuthor dupAuthor = curDupAuthor();
     HDT_Person dupPerson = curDupPerson();
 
     if (rbMerge.isSelected())

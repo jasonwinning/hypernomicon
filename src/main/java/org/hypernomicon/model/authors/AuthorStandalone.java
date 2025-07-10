@@ -15,9 +15,8 @@
  *
  */
 
-package org.hypernomicon.bib.authors;
+package org.hypernomicon.model.authors;
 
-import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 
@@ -26,35 +25,12 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Objects;
 
-import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-
 //---------------------------------------------------------------------------
 
-public final class BibAuthor implements Cloneable
+public final class AuthorStandalone extends Author implements Cloneable
 {
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public enum AuthorType
-  {
-    author,
-    editor,
-    translator;
-
-    public static AuthorType fromBibFieldEnum(BibFieldEnum bibFieldEnum)
-    {
-      return switch (bibFieldEnum)
-      {
-        case bfAuthors     -> author;
-        case bfEditors     -> editor;
-        case bfTranslators -> translator;
-
-        default -> throw new IllegalArgumentException("Unexpected value: " + bibFieldEnum);
-      };
-    }
-  }
-
 //---------------------------------------------------------------------------
 
   private final PersonName name;
@@ -63,7 +39,7 @@ public final class BibAuthor implements Cloneable
 
 //---------------------------------------------------------------------------
 
-  private BibAuthor(AuthorType type, HDT_Person person, PersonName name)
+  private AuthorStandalone(AuthorType type, HDT_Person person, PersonName name)
   {
     Objects.requireNonNull(type);
 
@@ -98,19 +74,19 @@ public final class BibAuthor implements Cloneable
 
 //---------------------------------------------------------------------------
 
-  public BibAuthor(AuthorType type, HDT_Person person) { this(type, person, null); }
-  public BibAuthor(AuthorType type, PersonName name)   { this(type, null, name);   }
+  public AuthorStandalone(AuthorType type, HDT_Person person) { this(type, person, null); }
+  public AuthorStandalone(AuthorType type, PersonName name)   { this(type, null, name);   }
 
 //---------------------------------------------------------------------------
 
-  public BibAuthor(Author author)
+  public AuthorStandalone(Author srcAuthor)
   {
-    this(author.getName(), author.getPerson(), author.getIsEditor(), author.getIsTrans());
+    this(srcAuthor.getName(), srcAuthor.getPerson(), srcAuthor.getIsEditor(), srcAuthor.getIsTrans());
   }
 
 //---------------------------------------------------------------------------
 
-  public BibAuthor(PersonName name, HDT_Person person, boolean isEditor, boolean isTrans)
+  public AuthorStandalone(PersonName name, HDT_Person person, boolean isEditor, boolean isTrans)
   {
     this.person = person;
     this.name = person != null ? null : name;
@@ -121,19 +97,16 @@ public final class BibAuthor implements Cloneable
 
 //---------------------------------------------------------------------------
 
-  public String firstName()     { return getName().getFirst(); }
-  public String lastName()      { return getName().getLast(); }
-  public PersonName getName()   { return person == null ? name : person.getName(); }
-  public HDT_Person getPerson() { return person; }
-  public boolean getIsAuthor()  { return (isEditor == false) && (isTrans == false); }
-  public boolean getIsEditor()  { return isEditor; }
-  public boolean getIsTrans ()  { return isTrans; }
+  @Override public PersonName getName()   { return person == null ? name : person.getName(); }
+  @Override public HDT_Person getPerson() { return person; }
+  @Override public boolean getIsEditor()  { return isEditor; }
+  @Override public boolean getIsTrans ()  { return isTrans; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public BibAuthor clone()
-  { try { return (BibAuthor) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
+  @Override public AuthorStandalone clone()
+  { try { return (AuthorStandalone) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -156,6 +129,7 @@ public final class BibAuthor implements Cloneable
     result = prime * result + (person == null ? 0 : person.hashCode());
     result = prime * result + (isEditor ? 1231 : 1237);
     result = prime * result + (isTrans ? 1231 : 1237);
+
     return result;
   }
 
@@ -168,32 +142,32 @@ public final class BibAuthor implements Cloneable
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
 
-    return areEqual(this, (BibAuthor) obj, false, false);
+    return areEqual(this, (AuthorStandalone) obj, false, false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static boolean areEqual(BibAuthor bibAuthor1, BibAuthor bibAuthor2, boolean ignorePersonRecords, boolean ignoreParenthetical)
+  public static boolean areEqual(Author author1, Author author2, boolean ignorePersonRecords, boolean ignoreParenthetical)
   {
-    if (bibAuthor1 == bibAuthor2) return true;
-    if ((bibAuthor1 == null) != (bibAuthor2 == null)) return false;
+    if (author1 == author2) return true;
+    if ((author1 == null) != (author2 == null)) return false;
 
-    if (bibAuthor1.isEditor != bibAuthor2.isEditor) return false;
-    if (bibAuthor1.isTrans  != bibAuthor2.isTrans ) return false;
+    if (author1.getIsEditor() != author2.getIsEditor()) return false;
+    if (author1.getIsTrans () != author2.getIsTrans ()) return false;
 
-    if ((ignorePersonRecords == false) && (bibAuthor1.person != bibAuthor2.person)) return false;
+    if ((ignorePersonRecords == false) && (author1.getPerson() != author2.getPerson())) return false;
 
-    PersonName name1 = nullSwitch(bibAuthor1.getName(), PersonName.EMPTY),
-               name2 = nullSwitch(bibAuthor2.getName(), PersonName.EMPTY);
+    PersonName name1 = nullSwitch(author1.getName(), PersonName.EMPTY),
+               name2 = nullSwitch(author2.getName(), PersonName.EMPTY);
 
     if (ignoreParenthetical)
       return name1.equalsExceptParenthetical(name2);
 
-    String first1 = bibAuthor1.getName().getFirst(),
-           last1  = bibAuthor1.getName().getLast (),
-           first2 = bibAuthor2.getName().getFirst(),
-           last2  = bibAuthor2.getName().getLast ();
+    String first1 = author1.getName().getFirst(),
+           last1  = author1.getName().getLast (),
+           first2 = author2.getName().getFirst(),
+           last2  = author2.getName().getLast ();
 
     return (safeStr(first1).equals(safeStr(first2)) &&
             safeStr(last1 ).equals(safeStr(last2 )));

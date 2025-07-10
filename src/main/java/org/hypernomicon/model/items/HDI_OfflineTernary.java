@@ -56,6 +56,13 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
 
 //---------------------------------------------------------------------------
 
+  public HDI_OfflineTernary(HDI_Schema schema, RecordState recordState, Ternary newValue)
+  {
+    this(schema, recordState);
+
+    value = newValue;
+  }
+
   public HDI_OfflineTernary(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);

@@ -31,8 +31,8 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import org.hypernomicon.dialogs.ObjectOrderDlgCtrlr;
 import org.hypernomicon.dialogs.base.DialogBase;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
@@ -910,7 +910,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
             {
               if (tag == tagInFileName)
               {
-                Author author = ((HDT_Work) subj).getAuthors().getAuthor(new PersonName(group.getPrimaryStr()));
+                RecordAuthor author = ((HDT_Work) subj).getAuthors().getAuthor(new PersonName(group.getPrimaryStr()));
                 if (author != null)
                   val.ternary = author.getInFileName();
               }

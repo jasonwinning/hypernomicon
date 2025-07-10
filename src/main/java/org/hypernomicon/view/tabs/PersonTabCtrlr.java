@@ -36,6 +36,8 @@ import static org.hypernomicon.model.records.RecordType.*;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
+import org.hypernomicon.model.authors.RecordAuthors;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -462,10 +464,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         if (work.getAuthors().size() > 1)
         {
-          List<Author> authors = new ArrayList<>();
+          List<RecordAuthor> authors = new ArrayList<>();
           int authorID = -1;
 
-          for (Author author : work.getAuthors())
+          for (RecordAuthor author : work.getAuthors())
             if (curPerson != author.getPerson())
             {
               authors.add(author);
@@ -474,7 +476,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
                 authorID = author.getPerson().getID();
             }
 
-          row.setCellValue(5, authorID, Authors.getShortAuthorsStr(authors.stream(), false, true, true), hdtPerson);
+          row.setCellValue(5, authorID, RecordAuthors.getShortAuthorsStr(authors.stream(), false, true, true), hdtPerson);
         }
       }
     });
@@ -589,7 +591,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addMentioners(HDT_RecordWithAuthors<? extends Authors> mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
+  private static void addMentioners(HDT_RecordWithAuthors<? extends RecordAuthors> mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
   {
     Consumer<HDT_WorkLabel> consumer = label ->
     {
@@ -845,7 +847,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       return true;
     }
 
-    PersonForDupCheck personForDupCheck = new PersonForDupCheck(new Author(curPerson), personName);
+    PersonForDupCheck personForDupCheck = new PersonForDupCheck(new RecordAuthor(curPerson), personName);
 
     PersonMatcher matcher = new PersonMatcher();
 
@@ -853,10 +855,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
 
-    List<Author> matchedAuthors = matcher.getMatches(personForDupCheck);
+    List<RecordAuthor> matchedAuthors = matcher.getMatches(personForDupCheck);
 
     if (matchedAuthors.size() > 0)
-      return new NewPersonDlgCtrlr(personName, tfSearchKey.getText(), new Author(null, curPerson), matchedAuthors).showModal();
+      return new NewPersonDlgCtrlr(personName, tfSearchKey.getText(), new RecordAuthor(null, curPerson), matchedAuthors).showModal();
 
     curPerson.setName(personName);
     return true;

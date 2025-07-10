@@ -29,7 +29,7 @@ import java.util.*;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.query.personMatch.PersonForDupCheck;
 import org.hypernomicon.query.personMatch.PersonMatcher;
@@ -52,7 +52,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 
   private final List<HyperTableRow> rows = new ArrayList<>();
-  private final Map<HyperTableRow, ImmutableSet<Author>> rowToMatch = new HashMap<>();
+  private final Map<HyperTableRow, ImmutableSet<RecordAuthor>> rowToMatch = new HashMap<>();
   private HyperTable ht;
 
 //---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ public class DupAuthorsReportEngine extends ReportEngine
     {
       ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(GenericNonRecordHTC.blankCell);
 
-      Author author = personForDupCheck.getAuthor();
+      RecordAuthor author = personForDupCheck.getAuthor();
 
       cells.add(author.getPerson() == null ?
         new GenericNonRecordHTC(author.nameLastFirst(false), hdtNone)
@@ -112,7 +112,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HyperTableCell getWorkCell(Author author)
+  private static HyperTableCell getWorkCell(RecordAuthor author)
   {
     return nullSwitch(author.getWork(), new GenericNonRecordHTC("", hdtWork), work -> new RecordHTC(work, work.getCBText()));
   }
@@ -135,9 +135,9 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     ht.addCustomActionCol(-1, "Merge", (row, colNdx) ->
     {
-      ImmutableList<Author> pair = rowToMatch.get(row).asList();
+      ImmutableList<RecordAuthor> pair = rowToMatch.get(row).asList();
 
-      Author author1, author2;
+      RecordAuthor author1, author2;
 
       if ((pair.get(0).getPerson() == null) && (pair.get(1).getPerson() != null))
       {
@@ -164,7 +164,7 @@ public class DupAuthorsReportEngine extends ReportEngine
       {
         HDT_Work work = author1.getWork();
 
-        work.getAuthors().update(author1, new Author(work, npdc.getName(), author1.getIsEditor(), author1.getIsTrans(), author1.getInFileName()));
+        work.getAuthors().update(author1, new RecordAuthor(work, npdc.getName(), author1.getIsEditor(), author1.getIsTrans(), author1.getInFileName()));
       }
 
       ui.queryHyperTab().btnExecuteClick();

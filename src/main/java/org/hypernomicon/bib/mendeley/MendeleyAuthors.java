@@ -19,16 +19,18 @@ package org.hypernomicon.bib.mendeley;
 
 import java.util.*;
 
-import org.hypernomicon.bib.authors.BibAuthor;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
 import com.google.common.collect.Iterators;
 
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -51,7 +53,7 @@ class MendeleyAuthors extends BibAuthors
     this.entryType = entryType;
   }
 
-  MendeleyAuthors(Iterable<BibAuthor> otherAuthors, EntryType entryType)
+  MendeleyAuthors(Iterable<Author> otherAuthors, EntryType entryType)
   {
     jsonObj = new JsonObj();
     this.entryType = entryType;
@@ -85,11 +87,11 @@ class MendeleyAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private List<BibAuthor> getList(JsonArray arr, AuthorType authorType)
+  private List<Author> getList(JsonArray arr, AuthorType authorType)
   {
-    List<BibAuthor> list = new ArrayList<>();
+    List<Author> list = new ArrayList<>();
 
-    if ((arr == null) || (ignoreEditors() && (authorType == AuthorType.editor))) return list;
+    if ((arr == null) || (ignoreEditors() && (authorType == editor))) return list;
 
     arr.getObjs().forEach(jObj ->
     {
@@ -97,7 +99,7 @@ class MendeleyAuthors extends BibAuthors
              lastName  = jObj.getStrSafe("last_name");
 
       if (strNotNullOrEmpty(firstName) || strNotNullOrEmpty(lastName))
-        list.add(new BibAuthor(authorType, new PersonName(firstName, lastName)));
+        list.add(new AuthorStandalone(authorType, new PersonName(firstName, lastName)));
     });
 
     return list;
@@ -106,17 +108,17 @@ class MendeleyAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public Iterator<BibAuthor> iterator()
+  @Override public Iterator<Author> iterator()
   {
-    return Iterators.unmodifiableIterator(Iterators.concat(getList(jsonObj.getArray("authors"    ), AuthorType.author    ).iterator(),
-                                                           getList(jsonObj.getArray("editors"    ), AuthorType.editor    ).iterator(),
-                                                           getList(jsonObj.getArray("translators"), AuthorType.translator).iterator()));
+    return Iterators.unmodifiableIterator(Iterators.concat(getList(jsonObj.getArray("authors"    ), author    ).iterator(),
+                                                           getList(jsonObj.getArray("editors"    ), editor    ).iterator(),
+                                                           getList(jsonObj.getArray("translators"), translator).iterator()));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setAll(Iterable<BibAuthor> otherAuthors)
+  void setAll(Iterable<Author> otherAuthors)
   {
     int nextAuthorInsertNdx = 0,
         nextEditorInsertNdx = 0,
@@ -128,16 +130,16 @@ class MendeleyAuthors extends BibAuthors
     if (ignoreEditors() == false)
       jsonObj.remove("editors");
 
-    for (BibAuthor otherAuthor : otherAuthors)
+    for (Author otherAuthor : otherAuthors)
     {
       if (otherAuthor.getIsAuthor())
         nextAuthorInsertNdx = add(otherAuthor, nextAuthorInsertNdx);
 
       if (otherAuthor.getIsEditor())
-        nextEditorInsertNdx = add(new BibAuthor(otherAuthor.getName(), otherAuthor.getPerson(), true, false), nextEditorInsertNdx);
+        nextEditorInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), true, false), nextEditorInsertNdx);
 
       if (otherAuthor.getIsTrans())
-        nextTransInsertNdx = add(new BibAuthor(otherAuthor.getName(), otherAuthor.getPerson(), false, true), nextTransInsertNdx);
+        nextTransInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), false, true), nextTransInsertNdx);
     }
 
     // No need to remove anything here since we cleared the author types that are
@@ -147,7 +149,7 @@ class MendeleyAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int add(BibAuthor bibAuthor, int nextInsertNdx)
+  private int add(Author bibAuthor, int nextInsertNdx)
   {
     String authorTypeStr;
 

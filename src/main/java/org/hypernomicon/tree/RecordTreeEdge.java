@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 
 import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.HyperDB;
-import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_MiscFile;
@@ -145,7 +145,7 @@ class RecordTreeEdge
       else if (relType == rtKeyWork)
       {
         @SuppressWarnings("unchecked")
-        HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
+        HDT_RecordWithAuthors<? extends RecordAuthors> kwRecord = (HDT_RecordWithAuthors<? extends RecordAuthors>) subj;
 
         Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream(kwRecord, obj.getType()).collect(Collectors.toSet());
         mentioners.add((HDT_RecordWithMainText) obj);
@@ -189,7 +189,7 @@ class RecordTreeEdge
     if (relType == rtKeyWork)
     {
       @SuppressWarnings("unchecked")
-      HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
+      HDT_RecordWithAuthors<? extends RecordAuthors> kwRecord = (HDT_RecordWithAuthors<? extends RecordAuthors>) subj;
 
       if (db.keyWorkMentionerStream(kwRecord, false).anyMatch(mentioner -> mentioner == obj))
         return falseWithErrorPopup("Unable to associate the records as requested: They are already associated in the requested way.");
@@ -216,7 +216,7 @@ class RecordTreeEdge
     if (relType == rtKeyWork)
     {
       @SuppressWarnings("unchecked")
-      HDT_RecordWithAuthors<? extends Authors> kwRecord = (HDT_RecordWithAuthors<? extends Authors>) subj;
+      HDT_RecordWithAuthors<? extends RecordAuthors> kwRecord = (HDT_RecordWithAuthors<? extends RecordAuthors>) subj;
 
       Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream(kwRecord, obj.getType()).collect(Collectors.toSet());
       mentioners.remove(obj);

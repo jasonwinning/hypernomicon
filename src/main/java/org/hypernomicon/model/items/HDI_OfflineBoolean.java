@@ -36,6 +36,13 @@ public class HDI_OfflineBoolean extends HDI_OfflineBase
 
 //---------------------------------------------------------------------------
 
+  public HDI_OfflineBoolean(HDI_Schema schema, RecordState recordState, boolean newValue)
+  {
+    this(schema, recordState);
+
+    boolValue = newValue;
+  }
+
   public HDI_OfflineBoolean(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);

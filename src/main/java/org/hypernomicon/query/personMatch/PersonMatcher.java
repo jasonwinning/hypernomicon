@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 
@@ -41,7 +41,7 @@ public final class PersonMatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final LinkedListMultimap<PersonForDupCheck, Author> matches;
+  private final LinkedListMultimap<PersonForDupCheck, RecordAuthor> matches;
 
 //---------------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ public final class PersonMatcher
     matches = LinkedListMultimap.create();
   }
 
-  public PersonMatcher(PersonForDupCheck personForDupCheck, Iterable<Author> origMatches)
+  public PersonMatcher(PersonForDupCheck personForDupCheck, Iterable<RecordAuthor> origMatches)
   {
     this();
 
@@ -59,13 +59,13 @@ public final class PersonMatcher
 
 //---------------------------------------------------------------------------
 
-  public boolean hasMatchesFor(PersonForDupCheck person)                 { return matches.containsKey(person); }
-  public List<Author> getMatches(PersonForDupCheck person)               { return matches.get(person); }
-  public void forEachMatch(BiConsumer<PersonForDupCheck, Author> action) { matches.forEach(action); }
-  public int numMatches()                                                { return matches.size(); }
-  public boolean isEmpty()                                               { return matches.isEmpty(); }
-  public void clear()                                                    { matches.clear(); }
-  public Author getMatchedAuthor(int ndx)                                { return matches.values().get(ndx); }
+  public boolean hasMatchesFor(PersonForDupCheck person)                       { return matches.containsKey(person); }
+  public List<RecordAuthor> getMatches(PersonForDupCheck person)               { return matches.get(person); }
+  public void forEachMatch(BiConsumer<PersonForDupCheck, RecordAuthor> action) { matches.forEach(action); }
+  public int numMatches()                                                      { return matches.size(); }
+  public boolean isEmpty()                                                     { return matches.isEmpty(); }
+  public void clear()                                                          { matches.clear(); }
+  public RecordAuthor getMatchedAuthor(int ndx)                                { return matches.values().get(ndx); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

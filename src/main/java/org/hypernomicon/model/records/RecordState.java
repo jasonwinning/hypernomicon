@@ -33,6 +33,7 @@ import org.hypernomicon.model.HDX_Element;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
+import org.hypernomicon.model.authors.HDI_OfflineAuthors;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.unities.HDI_OfflineMainTextAndHub;
 import org.hypernomicon.model.unities.HDI_OfflineHubSpokes;

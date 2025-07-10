@@ -19,6 +19,7 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
@@ -37,7 +38,6 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.text.PDFTextStripper;
 
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.items.PersonName;
@@ -262,7 +262,7 @@ public class PDFBibData extends BibDataStandalone
             case "creator":
 
               authors.clear();
-              elements.forEach(child -> authors.add(AuthorType.author, new PersonName(child.value)));
+              elements.forEach(child -> authors.add(author, new PersonName(child.value)));
               break;
 
             case "title":

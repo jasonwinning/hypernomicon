@@ -54,6 +54,10 @@ public abstract class HDI_OfflineBase extends HDI_Base
   public abstract void writeToXml(Tag tag, StringBuilder xml);
 
 //---------------------------------------------------------------------------
+
+  public RecordState getRecordState() { return recordState; }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map)
@@ -61,7 +65,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
     writePointerTagWithNestedPointers(xml, tag, objID, value, map, false);
   }
 
-  static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map, boolean noIDOk)
+  protected static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map, boolean noIDOk)
   {
     if ((objID < 1) && (noIDOk == false)) return;
 

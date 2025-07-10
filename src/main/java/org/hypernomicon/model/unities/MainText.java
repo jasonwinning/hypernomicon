@@ -27,7 +27,7 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.records.*;
 
 //---------------------------------------------------------------------------
@@ -398,7 +398,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void runKeyWorkHandler(HDT_RecordWithAuthors<? extends Authors> keyWorkRecord, boolean affirm)
+  private void runKeyWorkHandler(HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord, boolean affirm)
   {
     if (recordWMT == null) return;
 
@@ -459,12 +459,12 @@ public class MainText
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithAuthors<? extends Authors> kwRecord, Collection<HDT_MT> newCol, RecordType mentionerType)
+  public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithAuthors<? extends RecordAuthors> kwRecord, Collection<HDT_MT> newCol, RecordType mentionerType)
   {
     setKeyWorkMentioners(kwRecord, newCol, (Class<HDT_MT>) mentionerType.getRecordClass());
   }
 
-  public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithAuthors<? extends Authors> kwRecord, Collection<HDT_MT> newCol, Class<HDT_MT> klazz)
+  public static <HDT_MT extends HDT_RecordWithMainText> void setKeyWorkMentioners(HDT_RecordWithAuthors<? extends RecordAuthors> kwRecord, Collection<HDT_MT> newCol, Class<HDT_MT> klazz)
   {
     Collection<HDT_MT> oldCol = db.keyWorkMentionerStream(kwRecord, klazz).collect(Collectors.toSet());
 

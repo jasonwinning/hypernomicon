@@ -19,6 +19,7 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -28,7 +29,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
 
@@ -128,32 +128,32 @@ public final class RISBibData extends BibDataStandalone
 
         case "A1" : case "AU" :
 
-          authors.add(AuthorType.author, new PersonName(val)); break;
+          authors.add(author, new PersonName(val)); break;
 
         case "A2" :
 
           if (getEntryType().isChild())
-            authors.add(AuthorType.editor, new PersonName(val));
+            authors.add(editor, new PersonName(val));
 
           break;
 
         case "A3" :
 
           if ((tagsAndValues.containsKey("ED") == false) && (tagsAndValues.containsKey("A2") == false))
-            authors.add(AuthorType.editor, new PersonName(val));
+            authors.add(editor, new PersonName(val));
 
           break;
 
         case "A4" :
 
           if (getEntryType().isParent())
-            authors.add(AuthorType.translator, new PersonName(val));
+            authors.add(translator, new PersonName(val));
 
           break;
 
         case "ED" :
 
-          authors.add(AuthorType.editor, new PersonName(val)); break;
+          authors.add(editor, new PersonName(val)); break;
 
         case "CY" : case "PP" :
 

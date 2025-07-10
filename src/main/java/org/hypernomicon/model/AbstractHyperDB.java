@@ -72,6 +72,7 @@ import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.data.HyperDataset;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
@@ -183,7 +184,7 @@ public abstract class AbstractHyperDB
 
   private final SearchKeys searchKeys = new SearchKeys();
   private final MentionsIndex mentionsIndex = createMentionsIndex(dbMentionsNdxCompleteHandlers);
-  private final Map<HDT_RecordWithAuthors<? extends Authors>, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
+  private final Map<HDT_RecordWithAuthors<? extends RecordAuthors>, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
   private final BidiOneToManyMap<MainText> displayedAtIndex = new BidiOneToManyMap<>();
   private final Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
   private final List<HDT_Record> initialNavList = new ArrayList<>();
@@ -2507,7 +2508,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithAuthors<? extends Authors> keyWorkRecord, boolean affirm)
+  public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord, boolean affirm)
   {
     if (affirm)
       keyWorkIndex.computeIfAbsent(keyWorkRecord, _keyWorkRecord -> new HashSet<>()).add(record);
@@ -2551,7 +2552,7 @@ public abstract class AbstractHyperDB
    * @param mainSpokes a boolean flag indicating whether to return all key work mentioners or just main spokes
    * @return a stream of {@link HDT_RecordWithMainText} objects; an empty stream if the input record is not found in the keyWorkIndex
    */
-  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends Authors> record, boolean mainSpokes)
+  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends RecordAuthors> record, boolean mainSpokes)
   {
     Set<HDT_RecordWithMainText> set = keyWorkIndex.get(record);
 
@@ -2568,7 +2569,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public <HDT_MT extends HDT_RecordWithMainText> Stream<HDT_MT> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends Authors> record, Class<HDT_MT> klazz)
+  public <HDT_MT extends HDT_RecordWithMainText> Stream<HDT_MT> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends RecordAuthors> record, Class<HDT_MT> klazz)
   {
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),
@@ -2578,7 +2579,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends Authors> record, RecordType mentionerType)
+  public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends RecordAuthors> record, RecordType mentionerType)
   {
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),

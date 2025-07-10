@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import org.hypernomicon.model.*;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.authors.HDI_OnlineAuthors;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.relations.*;

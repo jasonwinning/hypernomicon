@@ -25,10 +25,10 @@ import static org.hypernomicon.util.Util.*;
 import java.util.*;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
@@ -159,14 +159,14 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
   public static final class ArgumentAuthor
   {
-    private ArgumentAuthor(Author author)
+    private ArgumentAuthor(RecordAuthor author)
     {
       person = author.getPerson();
       name = person == null ? author.getName() : null;
       this.author = author;
     }
 
-    public Author getAuthObj() { return author; }
+    public RecordAuthor getAuthObj() { return author; }
 
   //---------------------------------------------------------------------------
 
@@ -196,7 +196,7 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
     private final HDT_Person person;
     private final PersonName name;
-    private final Author author;
+    private final RecordAuthor author;
   }
 
 //---------------------------------------------------------------------------

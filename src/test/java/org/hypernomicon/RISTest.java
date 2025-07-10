@@ -26,9 +26,9 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.StringUtil.*;
 
-import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.RISBibData;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicYear;
 
@@ -42,7 +42,7 @@ class RISTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void getLists(BibAuthors authors, List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
+  private static void getLists(BibAuthors authors, List<Author> authorList, List<Author> editorList, List<Author> translatorList)
   {
     authorList    .clear();
     editorList    .clear();
@@ -69,9 +69,9 @@ class RISTest
   @Test
   void testRISImport()
   {
-    List<BibAuthor> authorList     = new ArrayList<>(),
-                    editorList     = new ArrayList<>(),
-                    translatorList = new ArrayList<>();
+    List<Author> authorList     = new ArrayList<>(),
+                 editorList     = new ArrayList<>(),
+                 translatorList = new ArrayList<>();
 
     String risExample = """
 

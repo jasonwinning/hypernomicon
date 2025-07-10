@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.authors;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.items.HDI_OfflineBase;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Person;
@@ -31,7 +32,7 @@ import org.hypernomicon.model.relations.HyperObjList;
 
 //---------------------------------------------------------------------------
 
-public class FileAuthors extends Authors
+public class FileAuthors extends RecordAuthors
 {
 
 //---------------------------------------------------------------------------
@@ -55,7 +56,7 @@ public class FileAuthors extends Authors
   @Override public int size()                                { return objList.size(); }
   @Override public boolean containsPerson(HDT_Person person) { return objListNoMod.contains(person); }
   @Override void resolvePointers() throws HDB_InternalError  { db.resolvePointersByRelation(rtAuthorOfFile, miscFile); }
-  @Override public Author get(int ndx)                       { return new Author(objList.get(ndx)); }
+  @Override public RecordAuthor get(int ndx)                 { return new RecordAuthor(objList.get(ndx)); }
   @Override void clearNoMod()                                { objListNoMod.clear(); }
   @Override void clear()                                     { objList.clear(); }
 

@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
+import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.relations.HyperObjPointer;
@@ -34,7 +35,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 //---------------------------------------------------------------------------
 
-public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<Authors>
+public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<RecordAuthors>
 {
 
 //---------------------------------------------------------------------------
@@ -57,7 +58,8 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
     path = new HyperPath(getObjPointer(rtFolderOfMiscFile), this);
   }
 
-//---------------------------------------------------------------------------//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean setAuthors(List<HDT_Person> list) { return updateObjectsFromList(rtAuthorOfFile, list); }
 
@@ -66,7 +68,7 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
   public Stream<HDT_WorkLabel> labelStream()     { return db.keyWorkMentionerStream(this, HDT_WorkLabel.class); }
 
   @Override public HyperPath getPath()           { return path; }
-  @Override public Authors getAuthors()          { return nullSwitch(work.get(), new FileAuthors(getObjList(rtAuthorOfFile), this), HDT_Work::getAuthors); }
+  @Override public RecordAuthors getAuthors()    { return nullSwitch(work.get(), new FileAuthors(getObjList(rtAuthorOfFile), this), HDT_Work::getAuthors); }
   @Override public String listName()             { return name(); }
   @Override public String makeKeyWorkSearchKey() { return name().strip(); }
 

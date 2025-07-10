@@ -25,9 +25,9 @@ import java.util.stream.*;
 import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.*;
+import org.hypernomicon.model.authors.Author.AuthorType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
@@ -40,26 +40,26 @@ import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
-public abstract class BibAuthors implements Iterable<BibAuthor>
+public abstract class BibAuthors implements Iterable<Author>
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public boolean isEmpty()                { return iterator().hasNext() == false; }
-  public Stream<BibAuthor> stream()       { return iterableToStream(this); }
+  public Stream<Author> stream()          { return iterableToStream(this); }
   public boolean notAllEngCharLastNames() { return stream().allMatch(author -> author.getName().toEngChar().getLast().equals(author.getName().getLast())); }
 
   public static boolean isEmpty(BibAuthors bibAuthors) { return (bibAuthors == null) || bibAuthors.isEmpty(); }
 
-  public List<BibAuthor> normalizedList(boolean doLookup) { return normalizeAuthors(this, doLookup); }
+  public List<Author> normalizedList(boolean doLookup) { return normalizeAuthors(this, doLookup); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public String getStr()
   {
-    Function<? super BibAuthor, String> mapper = bibAuthor ->
+    Function<? super Author, String> mapper = bibAuthor ->
       bibAuthor.getName().getLastFirst() + (bibAuthor.getIsEditor() ?
         (bibAuthor.getIsTrans() ? "(ed, tr)" : "(ed)")
       :
@@ -73,7 +73,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   public String getStr(AuthorType authorType)
   {
-    Predicate<BibAuthor> predicate = bibAuthor -> switch (authorType)
+    Predicate<Author> predicate = bibAuthor -> switch (authorType)
     {
       case author     -> bibAuthor.getIsAuthor();
       case editor     -> bibAuthor.getIsEditor();
@@ -88,7 +88,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static BibAuthor mergeBibAuthors(BibAuthor bibAuthor1, BibAuthor bibAuthor2)
+  private static Author mergeBibAuthors(Author bibAuthor1, Author bibAuthor2)
   {
     HDT_Person person = nullSwitch(bibAuthor1.getPerson(), bibAuthor2.getPerson());
 
@@ -97,7 +97,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
             ed = notAuthor && (bibAuthor1.getIsEditor() || bibAuthor2.getIsEditor()),
             tr = notAuthor && (bibAuthor1.getIsTrans () || bibAuthor2.getIsTrans ());
 
-    return new BibAuthor(bibAuthor1.getName(), person, ed, tr);
+    return new AuthorStandalone(bibAuthor1.getName(), person, ed, tr);
   }
 
 //---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   //---------------------------------------------------------------------------
 
-    private BibAuthorKey(BibAuthor bibAuthor)
+    private BibAuthorKey(Author bibAuthor)
     {
       person = bibAuthor.getPerson();
 
@@ -153,16 +153,16 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
    * @param doLookup Whether to lookup person records by name
    * @return The consolidated list
    */
-  public static List<BibAuthor> normalizeAuthors(Iterable<BibAuthor> origAuthors, boolean doLookup)
+  public static List<Author> normalizeAuthors(Iterable<Author> origAuthors, boolean doLookup)
   {
-    List<BibAuthor> outputList = new ArrayList<>();
+    List<Author> outputList = new ArrayList<>();
 
     if ((origAuthors == null) || (origAuthors.iterator().hasNext() == false)) return outputList;
 
     Set<PersonName> existingNames   = new HashSet<>();  // These allow us to avoid the sequential search in
     Set<HDT_Person> existingPersons = new HashSet<>();  // the vast majority of cases
 
-    for (BibAuthor bibAuthor : origAuthors)
+    for (Author bibAuthor : origAuthors)
     {
       HDT_Person person = bibAuthor.getPerson();
       PersonName name = bibAuthor.getName();
@@ -170,7 +170,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         continue;
 
       if (doLookup && (person == null))
-        bibAuthor = new BibAuthor(name, HDT_Person.lookUpByName(name), bibAuthor.getIsEditor(), bibAuthor.getIsTrans());
+        bibAuthor = new AuthorStandalone(name, HDT_Person.lookUpByName(name), bibAuthor.getIsEditor(), bibAuthor.getIsTrans());
 
       BibAuthorKey newKey = new BibAuthorKey(bibAuthor);
 
@@ -223,9 +223,9 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
    * @param destWork The work record data will be merged into
    * @return The consolidated list
    */
-  public List<BibAuthor> getListForWorkMerge(HDT_Work destWork)
+  public List<Author> getListForWorkMerge(HDT_Work destWork)
   {
-    List<BibAuthor> outputList = normalizeAuthors(this, true);
+    List<Author> outputList = normalizeAuthors(this, true);
 
     // At this point, the output list represents a consolidated version of this BibAuthors so that
     // there are no authors that are duplicates in terms of associated person record or exact name
@@ -236,11 +236,11 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
     for (int ndx = 0; ndx < outputList.size(); ndx++)
     {
-      BibAuthor bibAuthor = outputList.get(ndx);
+      Author bibAuthor = outputList.get(ndx);
 
       if (bibAuthor.getPerson() == null)
       {
-        nonRecordAuthors.add(new PersonForDupCheck(new Author(destWork, bibAuthor, Ternary.Unset)));
+        nonRecordAuthors.add(new PersonForDupCheck(new RecordAuthor(destWork, bibAuthor, Ternary.Unset)));
         outputIndices.add(ndx);
       }
     }
@@ -266,11 +266,11 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         int outputListNdx = outputIndices.get(ndx);
         Author origAuthor = person.getAuthor();
 
-        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, new Author(null, origAuthor.getName(), origAuthor.getIsEditor(), origAuthor.getIsTrans(), Ternary.Unset), matcher.getMatches(person));
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, new RecordAuthor(null, origAuthor.getName(), origAuthor.getIsEditor(), origAuthor.getIsTrans(), Ternary.Unset), matcher.getMatches(person));
 
         if (npdc.showModal() == false) continue;
 
-        outputList.set(outputListNdx, new BibAuthor(npdc.getName(), npdc.getPerson(), origAuthor.getIsEditor(), origAuthor.getIsTrans()));
+        outputList.set(outputListNdx, new AuthorStandalone(npdc.getName(), npdc.getPerson(), origAuthor.getIsEditor(), origAuthor.getIsTrans()));
 
         startNdx = ndx + 1;
         break;
@@ -288,13 +288,13 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean authorListsAreEqual(List<BibAuthor> list1, List<BibAuthor> list2, boolean ignorePersonRecords, boolean ignoreParenthetical)
+  public static boolean authorListsAreEqual(List<Author> list1, List<Author> list2, boolean ignorePersonRecords, boolean ignoreParenthetical)
   {
     if (list1 == list2) return true;
     if ((list1 == null) != (list2 == null)) return false;
     if (list1.size() != list2.size()) return false;
 
-    return IntStream.range(0, list1.size()).allMatch(ndx -> BibAuthor.areEqual(list1.get(ndx), list2.get(ndx), ignorePersonRecords, ignoreParenthetical));
+    return IntStream.range(0, list1.size()).allMatch(ndx -> AuthorStandalone.areEqual(list1.get(ndx), list2.get(ndx), ignorePersonRecords, ignoreParenthetical));
   }
 
 //---------------------------------------------------------------------------

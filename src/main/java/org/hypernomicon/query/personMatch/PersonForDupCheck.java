@@ -24,7 +24,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -39,7 +40,7 @@ public class PersonForDupCheck
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final Author author;
+  final RecordAuthor author;
   final String fullLCNameEngChar;
 
   private final PersonName name, nameEngChar;
@@ -47,19 +48,19 @@ public class PersonForDupCheck
   private final TrieNode trieRoot = new TrieNode();
   private final String normalizedLastName;
 
-  public PersonForDupCheck(PersonName name)                { this(new Author(name)); }
-  public PersonForDupCheck(HDT_Person person)              { this(new Author(person)); }
-  public PersonForDupCheck(Author author)                  { this(author, author.getName(), author.fullName(true)); }
-  public PersonForDupCheck(Author author, PersonName name) { this(author, name, convertToEnglishChars(name.getFull())); }
+  public PersonForDupCheck(PersonName name)                      { this(new RecordAuthor(name)); }
+  public PersonForDupCheck(HDT_Person person)                    { this(new RecordAuthor(person)); }
+  public PersonForDupCheck(RecordAuthor author)                  { this(author, author.getName(), author.fullName(true)); }
+  public PersonForDupCheck(RecordAuthor author, PersonName name) { this(author, name, convertToEnglishChars(name.getFull())); }
 
   private static final Pattern FIRST_PARENTHETICAL_PATTERN = Pattern.compile("\\(([^)]*)\\)"),
                                NAME_PUNCTUATION_PATTERN    = Pattern.compile("[.,;]");
 
 //---------------------------------------------------------------------------
 
-  private PersonForDupCheck(Author author, PersonName name, String newFullNameEngChar)
+  private PersonForDupCheck(RecordAuthor author, PersonName name, String newFullNameEngChar)
   {
-    this.author = author == null ? new Author(name) : author;
+    this.author = author == null ? new RecordAuthor(name) : author;
     this.name = name;
     this.nameEngChar = name.toEngChar();
 
@@ -81,8 +82,8 @@ public class PersonForDupCheck
 //---------------------------------------------------------------------------
 
   public HDT_Person getPerson()         { return nullSwitch(author, null, Author::getPerson); }
-  public HDT_Work getWork()             { return nullSwitch(author, null, Author::getWork); }
-  public Author getAuthor()             { return author; }
+  public HDT_Work getWork()             { return nullSwitch(author, null, RecordAuthor::getWork); }
+  public RecordAuthor getAuthor()       { return author; }
   public PersonName getName()           { return name; }
   public PersonName getNameEngChar()    { return nameEngChar; }
 

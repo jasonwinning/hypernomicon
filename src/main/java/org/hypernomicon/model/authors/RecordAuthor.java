@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model.items;
+package org.hypernomicon.model.authors;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
@@ -23,7 +23,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Objects;
 
-import org.hypernomicon.bib.authors.BibAuthor;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -31,7 +31,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 
 //---------------------------------------------------------------------------
 
-public final class Author implements Cloneable, Comparable<Author>
+public final class RecordAuthor extends Author implements Cloneable, Comparable<RecordAuthor>
 {
 
 //---------------------------------------------------------------------------
@@ -39,39 +39,38 @@ public final class Author implements Cloneable, Comparable<Author>
 
   private final HDT_Person person;
   private final HDT_Work work;
-  private final PersonName name, nameEngChar;
+  private final PersonName name;
   private final boolean isEditor, isTrans;
   private final Ternary inFileName;
 
 //---------------------------------------------------------------------------
 
-  public Author(PersonName name)
+  public RecordAuthor(PersonName name)
   { this(null, null, Objects.requireNonNull(name), false, false, Ternary.Unset); }
 
-  public Author(HDT_Person person)
+  public RecordAuthor(HDT_Person person)
   { this(person.works.isEmpty() ? null : person.works.get(0), person); }
 
-  public Author(HDT_Work work, HDT_Person person)
+  public RecordAuthor(HDT_Work work, HDT_Person person)
   { this(work, person, null, false, false, Ternary.Unset); }
 
-  public Author(HDT_Work work, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
+  public RecordAuthor(HDT_Work work, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
   { this(work, null, name, isEditor, isTrans, inFileName); }
 
 //---------------------------------------------------------------------------
 
-  public Author(HDT_Work work, BibAuthor bibAuthor, Ternary inFileName)
+  public RecordAuthor(HDT_Work work, Author srcAuthor, Ternary inFileName)
   {
-    this(work, bibAuthor.getPerson(), bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), inFileName);
+    this(work, srcAuthor.getPerson(), srcAuthor.getName(), srcAuthor.getIsEditor(), srcAuthor.getIsTrans(), inFileName);
   }
 
 //---------------------------------------------------------------------------
 
-  private Author(HDT_Work work, HDT_Person person, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
+  private RecordAuthor(HDT_Work work, HDT_Person person, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
   {
     this.work = work;
     this.person = person;
     this.name = name;
-    nameEngChar = name == null ? null : name.toEngChar();
     this.isEditor = isEditor;
     this.isTrans = isTrans;
     this.inFileName = inFileName;
@@ -79,30 +78,20 @@ public final class Author implements Cloneable, Comparable<Author>
 
 //---------------------------------------------------------------------------
 
-  public PersonName getName()                  { return getName(false); }
-  public String lastName()                     { return lastName(false); }
-  public String lastName(boolean engChar)      { return getName(engChar).getLast(); }
-  public String firstName()                    { return firstName(false); }
-  public String firstName(boolean engChar)     { return getName(engChar).getFirst(); }
-  public String nameLastFirst(boolean engChar) { return getName(engChar).getLastFirst(); }
-  public String fullName(boolean engChar)      { return getName(engChar).getFull(); }
-  public String singleName()                   { return singleName(false); }
-  public String singleName(boolean engChar)    { return getName(engChar).getSingle(); }
-  public String nameLastFirst()                { return nameLastFirst(false); }
-  public HDT_Person getPerson()                { return person; }
   public HDT_Work getWork()                    { return work; }
   public boolean outOfDate()                   { return (work != null) && work.getAuthors().stream().noneMatch(this::equals); }
-  String getBibName()                          { return getName().getBibName(); }
-  private PersonName getName(boolean engChar)  { return person == null ? (engChar ? nameEngChar : name) : person.getName(engChar); }
-  private String getSortKey()                  { return person == null ? nameEngChar.getSortKey() : person.getSortKey(); }
 
-  @Override public int compareTo(Author o)     { return getSortKey().compareTo(o.getSortKey()); }
+  @Override public int compareTo(RecordAuthor o) { return getSortKey().compareTo(o.getSortKey()); }
 
-  @Override public Author clone()
-  { try { return (Author) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
+  @Override public RecordAuthor clone()
+  { try { return (RecordAuthor) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}
 
-  public boolean getIsEditor()   { return person == null ? isEditor   : (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
-  public boolean getIsTrans()    { return person == null ? isTrans    : (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
+  @Override public PersonName getName()    { return person == null ? name : person.getName(); }
+  @Override public HDT_Person getPerson()  { return person; }
+
+  @Override public boolean getIsEditor()   { return person == null ? isEditor   : (work == null ? false : db.getNestedBoolean(work, person, tagEditor)); }
+  @Override public boolean getIsTrans()    { return person == null ? isTrans    : (work == null ? false : db.getNestedBoolean(work, person, tagTranslator)); }
+
   public Ternary getInFileName() { return person == null ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
 
 //---------------------------------------------------------------------------
@@ -126,9 +115,9 @@ public final class Author implements Cloneable, Comparable<Author>
 
   @Override public boolean equals(Object obj)
   {
-    if ((obj instanceof Author) == false) return false;
+    if ((obj instanceof RecordAuthor) == false) return false;
 
-    Author other = (Author)obj;
+    RecordAuthor other = (RecordAuthor)obj;
 
     if ((person != other.person) || (work != other.work)) return false;
 

@@ -19,6 +19,7 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.StringUtil.*;
@@ -34,13 +35,12 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 
-import org.hypernomicon.bib.authors.BibAuthor;
-import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
-import org.hypernomicon.model.items.BibliographicDate;
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.AuthorStandalone;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
-import org.hypernomicon.model.items.BibliographicYear;
-import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
@@ -185,9 +185,9 @@ public final class CrossrefBibData extends BibDataStandalone
     setMultiStr(bfISBNs         , JsonArray.toStrArrayList(jsonObj.getArray("ISBN")));
     setMultiStr(bfISSNs         , JsonArray.toStrArrayList(jsonObj.getArray("ISSN")));
 
-    addAuthorsFromJson(jsonObj.getArray("author"    ), AuthorType.author);
-    addAuthorsFromJson(jsonObj.getArray("editor"    ), AuthorType.editor);
-    addAuthorsFromJson(jsonObj.getArray("translator"), AuthorType.translator);
+    addAuthorsFromJson(jsonObj.getArray("author"    ), author);
+    addAuthorsFromJson(jsonObj.getArray("editor"    ), editor);
+    addAuthorsFromJson(jsonObj.getArray("translator"), translator);
 
     if (fieldNotEmpty(bfDOI) == false)
       setDOI(queryDoi);
@@ -224,7 +224,7 @@ public final class CrossrefBibData extends BibDataStandalone
       if ((first + last).isBlank())
         last = author.getStrSafe("name");
 
-      authors.add(new BibAuthor(authorType, new PersonName(first, last)));
+      authors.add(new AuthorStandalone(authorType, new PersonName(first, last)));
     });
   }
 
@@ -272,7 +272,7 @@ public final class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, String yearStr, Iterable<BibAuthor> authors, boolean engCharForAuthors, String doi)
+  private static String getQueryUrl(String title, String yearStr, Iterable<Author> authors, boolean engCharForAuthors, String doi)
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
@@ -285,7 +285,7 @@ public final class CrossrefBibData extends BibDataStandalone
 
     if (authors != null)
     {
-      for (BibAuthor author : authors)
+      for (Author author : authors)
       {
         boolean ed = author.getIsEditor(),
                 tr = author.getIsTrans();

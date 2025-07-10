@@ -17,11 +17,11 @@
 
 package org.hypernomicon.model.records;
 
-import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.authors.RecordAuthors;
 
 //---------------------------------------------------------------------------
 
-public interface HDT_RecordWithAuthors<AuthorsType extends Authors> extends HDT_Record
+public interface HDT_RecordWithAuthors<AuthorsType extends RecordAuthors> extends HDT_Record
 {
 
 //---------------------------------------------------------------------------
@@ -40,8 +40,8 @@ public interface HDT_RecordWithAuthors<AuthorsType extends Authors> extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  default String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
-  default String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
+  default String getShortAuthorsStr(boolean fnis) { return RecordAuthors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
+  default String getLongAuthorsStr (boolean fnis) { return RecordAuthors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
