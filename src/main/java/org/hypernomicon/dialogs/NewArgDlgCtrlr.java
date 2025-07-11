@@ -315,7 +315,7 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     if (work.getAuthors().isEmpty()) return "";
 
-    return settings.format(work.getAuthors().stream().map(Author::singleName).toList()) + "'s ";
+    return settings.format(work.getAuthors().stream().filter(Author::getIsAuthor).map(Author::singleName).toList()) + "'s ";
   }
 
 //---------------------------------------------------------------------------

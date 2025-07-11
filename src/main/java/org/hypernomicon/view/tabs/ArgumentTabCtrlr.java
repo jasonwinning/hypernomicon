@@ -131,7 +131,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       hsPop.setObj(row, obj);
       row.setCellValue(nextColNdx, "", hsPop.getRecordType(row));
 
-    }).setTextHndlr(row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), work -> work.getLongAuthorsStr(true)));
+    }).setTextHndlr(row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), HDT_RecordWithAuthors::getLongAuthorsStr));
 
     htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctEditableLimitedDropDown, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -208,9 +208,9 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade.buildRows(curArgument.works, (row, work) ->
     {
       if (work.authorRecords.size() > 0)
-        row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr(true));
+        row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr());
       else
-        row.setCellValue(1, work.getLongAuthorsStr(true), hdtPerson);
+        row.setCellValue(1, work.getLongAuthorsStr(), hdtPerson);
 
       row.setCellValue(2, work, work.getCBText());
       row.setCellValue(3, new PageRangeHTC(work, curArgument.pagesInWork(work)));
@@ -227,9 +227,9 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
         HDT_Work work = responseArg.works.get(0);
 
         if (work.authorRecords.size() > 0)
-          row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr(true));
+          row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr());
         else
-          row.setCellValue(1, responseArg, work.getLongAuthorsStr(true));
+          row.setCellValue(1, responseArg, work.getLongAuthorsStr());
       }
 
       nullSwitch(responseArg.getArgVerdict(curArgument), verdict -> row.setCellValue(2, responseArg, verdict.listName()));

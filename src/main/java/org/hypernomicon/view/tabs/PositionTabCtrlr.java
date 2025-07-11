@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
-import org.hypernomicon.model.authors.RecordAuthors;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
@@ -209,7 +209,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
       row.setCellValue(1, subPos, "");
       row.setCellValue(2, subPos, subPos.getCBText());
 
-      String authStr = RecordAuthors.getShortAuthorsStr(subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true, false);
+      String authStr = Author.getShortAuthorsStr(subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true);
       PositionSource ps = subPos.getWorkWithAuthor();
       if (ps != null)
         row.setCellValue(3, ps.author, authStr);

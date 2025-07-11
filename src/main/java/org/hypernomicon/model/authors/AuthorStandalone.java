@@ -18,12 +18,16 @@
 package org.hypernomicon.model.authors;
 
 import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.relations.ObjectGroup;
 
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 //---------------------------------------------------------------------------
 
@@ -36,6 +40,7 @@ public final class AuthorStandalone extends Author implements Cloneable
   private final PersonName name;
   private final HDT_Person person;
   private final boolean isEditor, isTrans;
+  private final Ternary inFileName;
 
 //---------------------------------------------------------------------------
 
@@ -45,6 +50,8 @@ public final class AuthorStandalone extends Author implements Cloneable
 
     this.person = person;
     this.name = name;
+
+    inFileName = Ternary.Unset;
 
     switch (type)
     {
@@ -74,7 +81,6 @@ public final class AuthorStandalone extends Author implements Cloneable
 
 //---------------------------------------------------------------------------
 
-  public AuthorStandalone(AuthorType type, HDT_Person person) { this(type, person, null); }
   public AuthorStandalone(AuthorType type, PersonName name)   { this(type, null, name);   }
 
 //---------------------------------------------------------------------------
@@ -88,19 +94,28 @@ public final class AuthorStandalone extends Author implements Cloneable
 
   public AuthorStandalone(PersonName name, HDT_Person person, boolean isEditor, boolean isTrans)
   {
-    this.person = person;
-    this.name = person != null ? null : name;
-
-    this.isEditor = isEditor;
-    this.isTrans = isTrans;
+    this(name, person, isEditor, isTrans, Ternary.Unset);
   }
 
 //---------------------------------------------------------------------------
 
-  @Override public PersonName getName()   { return person == null ? name : person.getName(); }
-  @Override public HDT_Person getPerson() { return person; }
-  @Override public boolean getIsEditor()  { return isEditor; }
-  @Override public boolean getIsTrans ()  { return isTrans; }
+  private AuthorStandalone(PersonName name, HDT_Person person, boolean isEditor, boolean isTrans, Ternary inFileName)
+  {
+    this.person = person;
+    this.name = person != null ? null : name;
+
+    this.isEditor   = isEditor;
+    this.isTrans    = isTrans;
+    this.inFileName = inFileName;
+  }
+
+//---------------------------------------------------------------------------
+
+  @Override public PersonName getName   () { return person == null ? name : person.getName(); }
+  @Override public HDT_Person getPerson () { return person; }
+  @Override public boolean getIsEditor  () { return isEditor; }
+  @Override public boolean getIsTrans   () { return isTrans; }
+  @Override public Ternary getInFileName() { return inFileName; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -140,9 +155,9 @@ public final class AuthorStandalone extends Author implements Cloneable
   {
     if (this == obj) return true;
     if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (Author.class.isAssignableFrom(obj.getClass()) == false) return false;
 
-    return areEqual(this, (AuthorStandalone) obj, false, false);
+    return areEqual(this, (Author) obj, false, false);
   }
 
 //---------------------------------------------------------------------------
@@ -171,6 +186,21 @@ public final class AuthorStandalone extends Author implements Cloneable
 
     return (safeStr(first1).equals(safeStr(first2)) &&
             safeStr(last1 ).equals(safeStr(last2 )));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Stream<Author> getAuthorsFromObjectGroups(Iterable<ObjectGroup> objGroups)
+  {
+    return iterableToStream(objGroups).map(objGroup -> new AuthorStandalone
+    (
+      new PersonName(objGroup.getPrimaryStr()),
+      objGroup.getPrimary(),
+      objGroup.getValue(tagEditor    ).bool,
+      objGroup.getValue(tagTranslator).bool,
+      objGroup.getValue(tagInFileName).ternary)
+    );
   }
 
 //---------------------------------------------------------------------------

@@ -36,8 +36,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
-import org.hypernomicon.model.authors.RecordAuthors;
-import org.hypernomicon.model.authors.RecordAuthor;
+import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -476,7 +475,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
                 authorID = author.getPerson().getID();
             }
 
-          row.setCellValue(5, authorID, RecordAuthors.getShortAuthorsStr(authors.stream(), false, true, true), hdtPerson);
+          row.setCellValue(5, authorID, Author.getShortAuthorsStr(authors.stream(), false, true), hdtPerson);
         }
       }
     });

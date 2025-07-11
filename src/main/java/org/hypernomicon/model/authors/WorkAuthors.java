@@ -27,6 +27,7 @@ import static java.util.Objects.*;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
@@ -191,7 +192,7 @@ public class WorkAuthors extends RecordAuthors
     authorList.clear();
 
     if (allRecords == false)
-      setListFromObjectGroups(authorList, objGroups, work);
+      getAuthorsFromObjectGroups(objGroups, work).forEach(authorList::add);
   }
 
 //---------------------------------------------------------------------------
@@ -217,32 +218,24 @@ public class WorkAuthors extends RecordAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void setListFromObjectGroups(List<RecordAuthor> authorList, Iterable<ObjectGroup> objGroups, HDT_Work work)
+  private static Stream<RecordAuthor> getAuthorsFromObjectGroups(Iterable<ObjectGroup> objGroups, HDT_Work work)
   {
-    authorList.clear();
-
-    objGroups.forEach(objGroup ->
-    {
-      if (objGroup.getPrimary() != null)
-        authorList.add(new RecordAuthor(work, objGroup.getPrimary()));
-      else
-        authorList.add(new RecordAuthor(work, new PersonName(objGroup.getPrimaryStr()),
-                                              objGroup.getValue(tagEditor).bool,
-                                              objGroup.getValue(tagTranslator).bool,
-                                              objGroup.getValue(tagInFileName).ternary));
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static List<RecordAuthor> getListFromObjectGroups(List<ObjectGroup> objGroups, HDT_Work work)
-  {
-    List<RecordAuthor> authorList = new ArrayList<>();
-
-    setListFromObjectGroups(authorList, objGroups, work);
-
-    return authorList;
+    return iterableToStream(objGroups).map(objGroup ->
+      objGroup.getPrimary() != null ?
+        new RecordAuthor
+        (
+          work,
+          objGroup.getPrimary()
+        )
+      :
+        new RecordAuthor
+        (
+          work,
+          new PersonName(objGroup.getPrimaryStr()),
+          objGroup.getValue(tagEditor).bool,
+          objGroup.getValue(tagTranslator).bool,
+          objGroup.getValue(tagInFileName).ternary
+        ));
   }
 
 //---------------------------------------------------------------------------

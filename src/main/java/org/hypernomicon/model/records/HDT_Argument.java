@@ -23,6 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.items.PersonName;
@@ -204,8 +205,23 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
   public Stream<ArgumentAuthor> getPeople()
   {
-    return works.stream().map(work -> work.getAuthors().stream().map(ArgumentAuthor::new))
-                         .reduce(Stream::concat).orElse(Stream.empty());
+    Function<? super HDT_Work, ? extends Stream<ArgumentAuthor>> mapFunction = work ->
+    {
+      Stream<RecordAuthor> stream = work.getAuthors().stream();
+
+      for (RecordAuthor author : work.getAuthors())
+      {
+        if (author.getIsAuthor())
+          return stream.filter(RecordAuthor::getIsAuthor).map(ArgumentAuthor::new);
+
+        if (author.getIsEditor())
+          return stream.filter(RecordAuthor::getIsEditor).map(ArgumentAuthor::new);
+      }
+
+      return stream.map(ArgumentAuthor::new);
+    };
+
+    return works.stream().flatMap(mapFunction);
   }
 
 //---------------------------------------------------------------------------

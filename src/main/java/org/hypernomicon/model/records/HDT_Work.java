@@ -595,14 +595,14 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static RecordAuthor getSingleAuthorForSearchKey(List<RecordAuthor> authors)
+  private static Author getSingleAuthorForSearchKey(List<? extends Author> authors)
   {
-    for (RecordAuthor author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
-    for (RecordAuthor author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
-    for (RecordAuthor author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
-    for (RecordAuthor author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
-    for (RecordAuthor author : authors) if                                                                       (author.getPerson() != null)  return author;
-    for (RecordAuthor author : authors) if                                                                       (author.getPerson() == null)  return author;
+    for (Author author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
+    for (Author author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
+    for (Author author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
+    for (Author author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
+    for (Author author : authors) if                                                                       (author.getPerson() != null)  return author;
+    for (Author author : authors) if                                                                       (author.getPerson() == null)  return author;
 
     return null;
   }
@@ -612,18 +612,25 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   public String makeWorkSearchKey(boolean addLetter, boolean keyWorkLink)
   {
-    return makeWorkSearchKey(getAuthors().asList(), getYearStr(), addLetter, keyWorkLink);
+    return makeWorkSearchKey(getAuthors().stream(), getYearStr(), addLetter, keyWorkLink);
   }
 
-  public String makeWorkSearchKey(List<RecordAuthor> authorsToUse, String yearToUse, boolean addLetter, boolean keyWorkLink)
+  public String makeWorkSearchKey(Stream<? extends Author> authorsToUse, String yearToUse, boolean addLetter, boolean keyWorkLink)
   {
-    if (collEmpty(authorsToUse) || strNullOrBlank(yearToUse))
+    List<? extends Author> list = authorsToUse.toList();
+
+    if (collEmpty(list) || strNullOrBlank(yearToUse))
       return "";
 
-    WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
-    String singleAuthorName = getSingleAuthorForSearchKey(authorsToUse).singleName();
+    if (list.stream().anyMatch(Author::getIsAuthor))
+      list = list.stream().filter(Author::getIsAuthor).toList();
+    else if (list.stream().anyMatch(Author::getIsEditor))
+      list = list.stream().filter(Author::getIsEditor).toList();
 
-    return settings.format(authorsToUse.stream().map(Author::singleName).toList(), singleAuthorName, yearToUse, addLetter, this, keyWorkLink);
+    WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
+    String singleAuthorName = getSingleAuthorForSearchKey(list).singleName();
+
+    return settings.format(list.stream().map(Author::singleName).toList(), singleAuthorName, yearToUse, addLetter, this, keyWorkLink);
   }
 
 //---------------------------------------------------------------------------

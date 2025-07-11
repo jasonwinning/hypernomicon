@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model.records;
 
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.RecordAuthors;
 
 //---------------------------------------------------------------------------
@@ -40,8 +41,8 @@ public interface HDT_RecordWithAuthors<AuthorsType extends RecordAuthors> extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  default String getShortAuthorsStr(boolean fnis) { return RecordAuthors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
-  default String getLongAuthorsStr (boolean fnis) { return RecordAuthors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
+  default String getShortAuthorsStr(boolean fnis) { return Author.getShortAuthorsStr(getAuthors().stream(), false, fnis); }
+  default String getLongAuthorsStr ()             { return Author.getLongAuthorsStr (getAuthors().stream()             ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

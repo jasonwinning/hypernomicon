@@ -18,7 +18,6 @@
 package org.hypernomicon.bib.authors;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.*;
 
@@ -48,25 +47,12 @@ public abstract class BibAuthors implements Iterable<Author>
 
   public boolean isEmpty()                { return iterator().hasNext() == false; }
   public Stream<Author> stream()          { return iterableToStream(this); }
+  public String getStr()                  { return Author.getLongAuthorsStr(stream()); }
   public boolean notAllEngCharLastNames() { return stream().allMatch(author -> author.getName().toEngChar().getLast().equals(author.getName().getLast())); }
 
   public static boolean isEmpty(BibAuthors bibAuthors) { return (bibAuthors == null) || bibAuthors.isEmpty(); }
 
   public List<Author> normalizedList(boolean doLookup) { return normalizeAuthors(this, doLookup); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getStr()
-  {
-    Function<? super Author, String> mapper = bibAuthor ->
-      bibAuthor.getName().getLastFirst() + (bibAuthor.getIsEditor() ?
-        (bibAuthor.getIsTrans() ? "(ed, tr)" : "(ed)")
-      :
-        (bibAuthor.getIsTrans() ? "(tr)" : ""));
-
-    return stream().map(mapper).collect(Collectors.joining("; "));
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -89,10 +89,9 @@ public final class RecordAuthor extends Author implements Cloneable, Comparable<
   @Override public PersonName getName()    { return person == null ? name : person.getName(); }
   @Override public HDT_Person getPerson()  { return person; }
 
-  @Override public boolean getIsEditor()   { return person == null ? isEditor   : (work == null ? false : db.getNestedBoolean(work, person, tagEditor)); }
-  @Override public boolean getIsTrans()    { return person == null ? isTrans    : (work == null ? false : db.getNestedBoolean(work, person, tagTranslator)); }
-
-  public Ternary getInFileName() { return person == null ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
+  @Override public boolean getIsEditor()   { return person == null ? isEditor   : (work == null ? false         : db.getNestedBoolean(work, person, tagEditor    )); }
+  @Override public boolean getIsTrans()    { return person == null ? isTrans    : (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
+  @Override public Ternary getInFileName() { return person == null ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

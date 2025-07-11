@@ -492,7 +492,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
       {
         WorkAuthors authors = origAuthor.getWork().getAuthors();
 
-        if (authors.asCollection().contains(origAuthor))
+        if (authors.contains(origAuthor))
           authors.setAuthorRecord(origAuthor, person);
       }
     }
