@@ -228,7 +228,7 @@ public abstract class AbstractHyperDB
   public boolean relationIsMulti(RelationType relType)              { return relTypeToIsMulti.get(relType); }
   public List<HDT_Record> initialNavHistory()                       { return Collections.unmodifiableList(initialNavList); }
   public String getSearchKey(HDT_Record record)                     { return searchKeys.getStringForRecord(record); }
-  public SearchKeyword getKeyByKeyword(String keyword)              { return searchKeys.getKeywordObjByKeywordStr(keyword); }
+  public SearchKeyword getKeyByKeyword(CharSequence keyword)        { return searchKeys.getKeywordObjByKeywordStr(keyword); }
   public String firstActiveKeyWord(HDT_Record record)               { return searchKeys.firstActiveKeyword(record); }
   public Iterable<SearchKeyword> getKeysByPrefix(String prefix)     { return searchKeys.getKeywordsByPrefix(prefix); }
   public Iterable<SearchKeyword> getKeysByRecord(HDT_Record record) { return searchKeys.getKeysByRecord(record); }
@@ -261,7 +261,8 @@ public abstract class AbstractHyperDB
    */
   public void replaceMainText(MainText oldMT, MainText newMT) { displayedAtIndex.replaceItem(oldMT, newMT); }
 
-  public void rebuildMentions()                               { if (loaded && !recordDeletionTestInProgress) mentionsIndex.startRebuild(); }
+  public void rebuildMentions()                               { rebuildMentions(""); }
+  public void rebuildMentions(String logFileName)             { if (loaded && !recordDeletionTestInProgress) mentionsIndex.startRebuild(logFileName); }
   public void updateMentioner(HDT_Record record)              { if (loaded) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                     { return mentionsIndex.waitUntilRebuildIsDone(); }
 
@@ -1101,7 +1102,7 @@ public abstract class AbstractHyperDB
   {
     int oldID = record.getID();
 
-    if (isProtectedRecord(oldID, record.getType(), false))
+    if (isProtectedRecord(record, false))
       throw new HyperDataException("That record's ID cannot be changed.");
 
     if (idAvailable(record.getType(), newID) == false)
@@ -1230,11 +1231,9 @@ public abstract class AbstractHyperDB
 
   public boolean isProtectedRecord(HDT_Record record, boolean checkSubfolders)
   {
-    return isProtectedRecord(record.getID(), record.getType(), checkSubfolders);
-  }
+    int id = record.getID();
+    RecordType type = record.getType();
 
-  public boolean isProtectedRecord(int id, RecordType type, boolean checkSubfolders)
-  {
     return isUnstoredRecord(id, type) || ((type == hdtFolder) && isSpecialFolder(id, checkSubfolders));
   }
 

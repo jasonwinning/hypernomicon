@@ -57,9 +57,10 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private TextField tfParent, tfFolderName, tfRefMgrUserID;
+  @FXML private Tab tabLinkGen;
+  @FXML private TextField tfParent, tfLinkGenParent, tfFolderName, tfRefMgrUserID;
   @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
-                       btnZoteroItemTemplates, btnZoteroCreatorTypes;
+                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter;
   @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private ToggleGroup tgLink;
 
@@ -72,8 +73,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   {
     super("TestConsoleDlg", appTitle + " Test Console", true);
 
-    initTextField(app.prefs, tfParent    , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
-    initTextField(app.prefs, tfFolderName, PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
+    initTextField(app.prefs, tfParent       , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
+    initTextField(app.prefs, tfFolderName   , PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
+    initTextField(app.prefs, tfLinkGenParent, PrefKey.LINK_GENERATION_LOG_FOLDER, "", null);
 
     enableAllIff(db.isLoaded(), btnFromExisting, btnCloseDB);
 
@@ -81,10 +83,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     setToolTip(btnClose, "Close this window");
 
-    btnZoteroItemTemplates.setDisable(db.isLoaded() == false);
-    btnZoteroCreatorTypes .setDisable(db.isLoaded() == false);
-
     btnNukeTest           .setDisable (db.isLoaded() == false);
+    tabLinkGen            .setDisable (db.isLoaded() == false);
     btnSaveRefMgrSecrets  .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
     btnRemoveRefMgrSecrets.setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
     btnUseMendeleyID      .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false) || (db.getBibLibrary().type() != ltMendeley));
@@ -96,6 +96,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     btnZoteroItemTemplates.setOnAction(event -> ZoteroWrapper.retrieveMetadataAndSaveToFile(false));
     btnZoteroCreatorTypes .setOnAction(event -> ZoteroWrapper.retrieveMetadataAndSaveToFile(true ));
+
+    btnLinkGenBefore      .setOnAction(event -> generateLinksWithLogging("Before.csv"));
+    btnLinkGenAfter       .setOnAction(event -> generateLinksWithLogging("After.csv"));
 
     if (db.bibLibraryIsLinked())
       tfRefMgrUserID.setText(db.getBibLibrary().getUserID());
@@ -198,6 +201,18 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     if (FilePath.isEmpty(transientDBFilePath)) return;
 
     launchFile(transientDBFilePath.exists() ? transientDBFilePath : transientDBFilePath.getParent());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnLinkGenLaunchClick()
+  {
+    FilePath filePath = new FilePath(tfLinkGenParent.getText());
+
+    if (FilePath.isEmpty(filePath)) return;
+
+    launchFile(filePath);
   }
 
 //---------------------------------------------------------------------------
@@ -629,6 +644,44 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   @FXML private void btnLogMessageClick()
   {
     System.out.println("Test button clicked on instance " + InterProcClient.getInstanceID() + " at " + timeToUserReadableStr(LocalDateTime.now()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnLinkGenBrowseClick()
+  {
+    DirectoryChooser dirChooser = new DirectoryChooser();
+
+    FilePath folderPath = new FilePath(tfLinkGenParent.getText());
+
+    if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
+    {
+      if (db.isLoaded())
+        folderPath = db.getRootPath().getParent();
+
+      if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
+        folderPath = new FilePath(userWorkingDir());
+    }
+
+    dirChooser.setInitialDirectory(folderPath.toFile());
+
+    dirChooser.setTitle("Select folder where log files will be saved");
+
+    FilePath filePath = showDirDialog(dirChooser);
+
+    if (FilePath.isEmpty(filePath))
+      return;
+
+    tfLinkGenParent.setText(filePath.toString());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void generateLinksWithLogging(String logFileName)
+  {
+    db.rebuildMentions(logFileName);
   }
 
 //---------------------------------------------------------------------------

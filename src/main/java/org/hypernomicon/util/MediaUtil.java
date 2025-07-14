@@ -27,7 +27,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -236,9 +236,9 @@ public final class MediaUtil
       imageName = "document-code";
     else if (mimetype == MediaType.APPLICATION_ZIP)
       imageName = "vise-drawer";
-    else if (StringUtils.containsAny(typeStr, "pdf", "postscript", "framemaker"))
+    else if (Strings.CI.containsAny(typeStr, "pdf", "postscript", "framemaker"))
       imageName = "document-pdf";
-    else if (StringUtils.containsAny(typeStr, "djv", "book", "epub"))
+    else if (Strings.CI.containsAny(typeStr, "djv", "book", "epub"))
       imageName = "book";
     else if ("image".equals(mimetype.getType()))
       imageName = "image";
@@ -250,32 +250,32 @@ public final class MediaUtil
       imageName = "json";
     else if (typeStr.endsWith("tex"))
       imageName = "document-tex";
-    else if (StringUtils.containsAny(typeStr, "word", "rtf", "publisher", "mswrite", "writer", "msword", "xps"))
+    else if (Strings.CI.containsAny(typeStr, "word", "rtf", "publisher", "mswrite", "writer", "msword", "xps"))
       imageName = "paper";
-    else if (StringUtils.containsAny(typeStr, "excel", "spread", "calc"))
+    else if (Strings.CI.containsAny(typeStr, "excel", "spread", "calc"))
       imageName = "table-sheet";
-    else if (StringUtils.containsAny(typeStr, "power", "presen", "impress"))
+    else if (Strings.CI.containsAny(typeStr, "power", "presen", "impress"))
       imageName = "from_current_slide";
-    else if (StringUtils.containsAny(typeStr, "archi", "packa", "install", "diskimage"))
+    else if (Strings.CI.containsAny(typeStr, "archi", "packa", "install", "diskimage"))
       imageName = "vise-drawer";
-    else if (StringUtils.containsAny(typeStr, "compress", "stuffit", "x-tar", "zip", "x-gtar", "lzma", "lzop", "x-xz"))
+    else if (Strings.CI.containsAny(typeStr, "compress", "stuffit", "x-tar", "zip", "x-gtar", "lzma", "lzop", "x-xz"))
       imageName = "vise-drawer";
     else if (typeStr.contains("note"))
       imageName = "notebook-pencil";
-    else if (StringUtils.containsAny(typeStr, "chart", "ivio"))
+    else if (Strings.CI.containsAny(typeStr, "chart", "ivio"))
       imageName = "chart";
-    else if (typeStr.endsWith("eps") || StringUtils.containsAny(typeStr, "emf", "wmf", "cgm", "corel", "kontour", "freehand", "msmetafile",
+    else if (typeStr.endsWith("eps") || Strings.CI.containsAny(typeStr, "emf", "wmf", "cgm", "corel", "kontour", "freehand", "msmetafile",
                                                                          "dwg", "cmx", "cdr", "draw" , "karbon" , "vector"  , "illustr"))
       imageName = "page_white_vector";
-    else if (StringUtils.containsAny(typeStr, "formul", "math"))
+    else if (Strings.CI.containsAny(typeStr, "formul", "math"))
       imageName = "edit_mathematics";
-    else if (StringUtils.containsAny(typeStr, "graphic", "image"))
+    else if (Strings.CI.containsAny(typeStr, "graphic", "image"))
       imageName = "image";
     else if ("audio".equals(mimetype.getType()))
       imageName = "sound_wave";
-    else if ("video".equals(mimetype.getType()) || StringUtils.containsAny(typeStr, "flash", "mp4"))
+    else if ("video".equals(mimetype.getType()) || Strings.CI.containsAny(typeStr, "flash", "mp4"))
       imageName = "recording";
-    else if (StringUtils.containsAny(typeStr, "text", "docu"))
+    else if (Strings.CI.containsAny(typeStr, "text", "docu"))
       imageName = "document-text";
     else
       imageName = "document";

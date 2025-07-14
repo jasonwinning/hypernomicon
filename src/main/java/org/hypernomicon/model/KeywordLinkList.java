@@ -17,9 +17,9 @@
 
 package org.hypernomicon.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
@@ -42,6 +42,10 @@ public final class KeywordLinkList
 
 //---------------------------------------------------------------------------
 
+  private static final Pattern INITIALS_PATTERN = Pattern.compile("[a-zA-Z]\\.[a-zA-Z]"),
+                               MIDDLE_INITIALS_RULE  = Pattern.compile(".*[^a-zA-Z][a-zA-Z]\\.[a-zA-Z].*"),
+                               START_INITIALS_RULE   = Pattern.compile("^[a-zA-Z]\\.[a-zA-Z].*");
+
   public static List<KeywordLink> generate(String text)
   {
     return generate(text, db::getKeysByPrefix);
@@ -58,29 +62,30 @@ public final class KeywordLinkList
 
     boolean checkPeriods = false;
 
-    if (text.matches(".*[a-zA-Z][.][a-zA-Z].*"))
-    {
-      if (text.matches(".*[^a-zA-Z][a-zA-Z][.][a-zA-Z].*") ||
-          text.matches(".*^[a-zA-Z][.][a-zA-Z].*"))
+    if (INITIALS_PATTERN.matcher(text).find())
+      if (MIDDLE_INITIALS_RULE.matcher(text).matches()  ||
+          START_INITIALS_RULE .matcher(text).matches())
         checkPeriods = true;
-    }
 
     int ndx = 0;
 
     while (ndx < text.length())
     {
-      String fourChars = safeSubstring(text, ndx, ndx + 4).toLowerCase();
-
-      if ("http".equals(fourChars))
+      if (toLowerAscii(text.charAt(ndx)) == 'h')
       {
-        for (; (ndx < text.length()) && charIsPartOfWebLink(text, ndx); ndx++);
-        continue;
-      }
+        String fourChars = safeSubstring(text, ndx, ndx + 4);
 
-      if ("href".equals(fourChars)) // don't convert anything in an anchor tag to a link
-      {
-        for (; (ndx < text.length()) && (text.charAt(ndx) != '>'); ndx++);
-        continue;
+        if ("http".equalsIgnoreCase(fourChars))
+        {
+          for (; (ndx < text.length()) && charIsPartOfWebLink(text, ndx); ndx++);
+          continue;
+        }
+
+        if ("href".equalsIgnoreCase(fourChars)) // don't convert anything in an anchor tag to a link
+        {
+          for (; (ndx < text.length()) && (text.charAt(ndx) != '>'); ndx++);
+          continue;
+        }
       }
 
       String prefix = safeSubstring(text, ndx, ndx + 3);
@@ -99,22 +104,15 @@ public final class KeywordLinkList
       for (SearchKeyword key : prefixToKeys.apply(prefix))
       {
         int matchLen;
-        String focusStr = safeSubstring(text, ndx, ndx + key.text.length());
 
-        if (checkPeriods) // This happens less than 1 percent of the time
-        {
-          matchLen = focusStr.length();
-          focusStr = focusStr.replace(".", ". ");
-
-          focusStr = collapseSpaces(focusStr);
-
-          matchLen = key.text.length() - (focusStr.length() - matchLen);
-          focusStr = safeSubstring(focusStr, 0, key.text.length());
-        }
+        if (checkPeriods)
+          matchLen = matchNormalizedLength(text, ndx, key.text);
+        else if ((text.length() - ndx) >= key.text.length())
+          matchLen = text.regionMatches(true, ndx, key.text, 0, key.text.length()) ? key.text.length() : -1;
         else
-          matchLen = key.text.length();
+          matchLen = -1;
 
-        if (focusStr.equalsIgnoreCase(key.text))
+        if (matchLen > 0)
         {
           boolean addOK = true;
 
@@ -152,7 +150,89 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean charIsPartOfWebLink(String text, int ndx)
+  /**
+   * Try to match keyword pattern against input text starting at offset,
+   * treating:
+   *   '.' + any # of spaces as ". "
+   *   runs of >=2 spaces as one space
+   *
+   * @param text             the full source string
+   * @param textStartOffset  where in <code>input</code> to start matching
+   * @param keyword          the keyword text to match (exact chars + single spaces)
+   * @return                 the number of input chars consumed on success, or –1 if no match
+   */
+  private static int matchNormalizedLength(CharSequence text, int textStartOffset, CharSequence keyword)
+  {
+    int textOffset = textStartOffset,
+        textLength = text.length(),
+        keywordOffset = 0,
+        keywordLength = keyword.length();
+
+    while ((textOffset < textLength) && (keywordOffset < keywordLength))
+    {
+      char textChar = text.charAt(textOffset),
+           keywordChar = keyword.charAt(keywordOffset);
+
+      // 1) Dot + spaces normalization
+
+      if ((textChar == '.') && (keywordChar == '.'))
+      {
+        textOffset++;
+        keywordOffset++;
+
+        // Skip ALL spaces in input text
+
+        while ((textOffset < textLength) && (text.charAt(textOffset) == ' '))
+          textOffset++;
+
+        // Skip *one* space in the keyword; it is already normalized
+
+        if (keywordOffset < keywordLength)
+          keywordOffset++;
+
+        continue;
+      }
+
+      // 2) Multi-space collapse
+
+      if ((textChar == ' ') && (keywordChar == ' '))
+      {
+        textOffset++;
+        keywordOffset++;
+
+        // Skip extra spaces in input
+        while ((textOffset < textLength) && (text.charAt(textOffset) == ' '))
+          textOffset++;
+
+        // Keyword should not have extra spaces
+
+        continue;
+      }
+
+      if (toLowerAscii(textChar) != toLowerAscii(keywordChar))
+        return -1;
+
+      textOffset++;
+      keywordOffset++;
+    }
+
+    // Success only if we've consumed the entire keyword pattern
+
+    return keywordOffset == keywordLength ? (textOffset - textStartOffset) : -1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static char toLowerAscii(char c)
+  {
+    return (c >= 'A') && (c <= 'Z') ? (char)(c + 32) : c;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean charIsPartOfWebLink(CharSequence text, int ndx)
   {
     char c = text.charAt(ndx);
 
@@ -162,7 +242,7 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean charIsPartOfKeywordLink(String text, int ndx)
+  private static boolean charIsPartOfKeywordLink(CharSequence text, int ndx)
   {
     char c = text.charAt(ndx);
 
@@ -179,7 +259,7 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static int add(List<KeywordLink> keywordLinks, String text, int ndx, int matchLen, SearchKeyword key, List<Integer> posMap)
+  private static int add(Collection<KeywordLink> keywordLinks, CharSequence text, int ndx, int matchLen, SearchKeyword key, List<Integer> posMap)
   {
     int right = ndx + matchLen;
 
@@ -191,6 +271,7 @@ public final class KeywordLinkList
     int replaceLen = right - ndx;
 
     // The next two lines are for cases where a special character exists in the original html that translates to multiple plain-text characters, e.g., ellipsis
+
     int realNdx = posMap.get(ndx),
         realLen = (posMap.get(ndx + replaceLen - 1) - realNdx) + 1;
 

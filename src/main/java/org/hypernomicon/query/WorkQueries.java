@@ -33,8 +33,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -111,7 +109,7 @@ public final class WorkQueries
 
     if (app.debugging) allQueries.add(new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
     {
-      private List<String> csvFile;
+      private List<List<String>> csvFile;
 
       @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
@@ -156,7 +154,7 @@ public final class WorkQueries
 
         try
         {
-          FileUtils.writeLines(filePath.toFile(), csvFile);
+          writeCsvFile(filePath, csvFile.stream().distinct());
         }
         catch (IOException e)
         {

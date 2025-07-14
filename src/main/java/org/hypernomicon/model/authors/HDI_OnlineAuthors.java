@@ -24,8 +24,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
@@ -73,11 +71,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)
   {
-    Stream<RecordAuthor> stream = limitTo20Items ? getAuthors().stream().limit(20) : getAuthors().stream();
-
-    return stream.map(Author::nameLastFirst)
-                 .filter(name -> name.length() > 0)
-                 .collect(Collectors.joining("; "));
+    return Author.getLongAuthorsStr(getAuthors().stream(), limitTo20Items ? 20 : -1);
   }
 
 //---------------------------------------------------------------------------
@@ -133,17 +127,15 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
       if (person == null)
       {
-        boolean editor = author.getIsEditor();
-        if (NestedValue.isEmpty(editor) == false)
+        if (author.getIsEditor())
         {
-          HDI_OfflineBoolean editorItem = new HDI_OfflineBoolean(db.getNestedSchema(rtAuthorOfWork, tagEditor), val.getRecordState(), editor);
+          HDI_OfflineBoolean editorItem = new HDI_OfflineBoolean(db.getNestedSchema(rtAuthorOfWork, tagEditor), val.getRecordState(), true);
           offlineAuthor.nestedItems.put(tagEditor, editorItem);
         }
 
-        boolean trans = author.getIsTrans();
-        if (NestedValue.isEmpty(trans) == false)
+        if (author.getIsTrans())
         {
-          HDI_OfflineBoolean transItem = new HDI_OfflineBoolean(db.getNestedSchema(rtAuthorOfWork, tagTranslator), val.getRecordState(), trans);
+          HDI_OfflineBoolean transItem = new HDI_OfflineBoolean(db.getNestedSchema(rtAuthorOfWork, tagTranslator), val.getRecordState(), true);
           offlineAuthor.nestedItems.put(tagTranslator, transItem);
         }
 

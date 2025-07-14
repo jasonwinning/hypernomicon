@@ -400,7 +400,7 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String camelToTitle(String in)
+  public static String camelToTitle(CharSequence in)
   {
     String out = "";
     int len = in.length();
@@ -554,7 +554,7 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean isCorrectlyCapitalized(String word, String prefix)
+  private static boolean isCorrectlyCapitalized(String word, CharSequence prefix)
   {
     int prefixLength = prefix.length();
     if (word.length() <= (prefixLength + 1))
@@ -629,7 +629,7 @@ public final class StringUtil
    * @param s Input string
    * @return boolean result
    */
-  public static boolean strNotNullOrEmpty(String s)   { return strNullOrEmpty(s) == false; }
+  public static boolean strNotNullOrEmpty(CharSequence s)   { return strNullOrEmpty(s) == false; }
 
   /**
    * Returns true if the input is null, zero-length, or only contains horizontal or vertical whitespace.
@@ -644,7 +644,7 @@ public final class StringUtil
    * @param s Input string
    * @return boolean result
    */
-  public static boolean strNullOrEmpty(String s)   { return (s == null) || s.isEmpty(); }
+  public static boolean strNullOrEmpty(CharSequence s)   { return (s == null) || s.isEmpty(); }
 
   /**
    * Safely trims leading and trailing whitespace from a string.
@@ -676,41 +676,60 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final String NORMALIZE_ID = "NFD; [:Nonspacing Mark:] Remove; NFC";
-  private static final Transliterator transliterator1 = Transliterator.getInstance("NFD; Any-Latin; NFC; "   + NORMALIZE_ID),
-                                      transliterator2 = Transliterator.getInstance("NFD; Latin-ASCII; NFC; " + NORMALIZE_ID);
-  private static final Map<Character, String> charMap = new HashMap<>();
+  private static final Transliterator TRANS = Transliterator.createFromRules
+  (
+    "CustomSupplementary",
+    "::NFKC;"                         // Normalize to compatibility form (e.g. 𝒜 → A, ligatures → separate letters)
+    + "[\\U00010000-\\U0001FFFF] > ;" // Remove remaining supplementary characters (U+10000 to U+1FFFF) after normalization
+    + "::Any-Latin;"                  // Transliterate non-Latin scripts (e.g. Hanzi, Cyrillic, Greek) to Latin equivalents
+    + "::Latin-ASCII;"                // Convert Latin letters with diacritics to plain ASCII (e.g. é → e)
+    + "::NFD;"                        // Decompose characters (e.g. é → e + ́) to expose diacritics
+    + "[:Nonspacing Mark:] > ;"       // Remove combining marks (e.g. ́) to strip diacritics
+    + "::NFC;",                       // Recompose characters to canonical form (e.g. e + ́ → é if not removed)
+    Transliterator.FORWARD
+  );
 
-  public static String convertToEnglishChars(String input)
+  private static final Map<Integer, String> codePointCache = new HashMap<>();
+
+//---------------------------------------------------------------------------
+
+  public static String convertToEnglishChars(CharSequence input)
   {
     return convertToEnglishCharsWithMap(input, null);
   }
 
-  public static String convertToEnglishCharsWithMap(String input, List<Integer> posMap)
+//---------------------------------------------------------------------------
+
+  public static String convertToEnglishCharsWithMap(CharSequence input, List<Integer> posMap)
   {
-    StringBuilder output = new StringBuilder();
+    if (posMap == null) posMap = new ArrayList<>(input.length());
 
-    if (posMap == null) posMap = new ArrayList<>();
+    StringBuilder output = new StringBuilder(input.length());
 
-    for (int inPos = 0; inPos < input.length(); inPos++)
+    List<Integer> codePoints = input.codePoints().boxed().toList(),
+                  codePointOffsets = new ArrayList<>(codePoints.size());
+
+    // Track original offsets of each code point
+    for (int i = 0, offset = 0; i < codePoints.size(); i++)
     {
-      char c = input.charAt(inPos);
-      String s;
+      codePointOffsets.add(offset);
+      offset += Character.charCount(codePoints.get(i));
+    }
 
-      if (c == '\u2014')
-        s = String.valueOf(c);
-      else
-      {
-        s = charMap.get(c);
+    for (int i = 0; i < codePoints.size(); i++)
+    {
+      int cp = codePoints.get(i),
+          offset = codePointOffsets.get(i);
 
-        if (s == null)
-          charMap.put(c, s = transliterator2.transliterate(transliterator1.transliterate(String.valueOf(c))));
-      }
+      String s = cp == 0x2014 ?            // Preserve em dash
+        new String(Character.toChars(cp))
+      :
+        codePointCache.computeIfAbsent(cp, cp_ -> TRANS.transliterate(new String(Character.toChars(cp_))));
 
       output.append(s);
 
-      for (int ndx = 0; ndx < s.length(); ndx++)
-        posMap.add(inPos);
+      for (int j = 0; j < s.length(); j++)
+        posMap.add(offset); // map each output char to original code point offset
     }
 
     return output.toString();
@@ -833,7 +852,7 @@ public final class StringUtil
    * @return A string where Unicode numerals are replaced with their ASCII equivalents.
    * @throws NullPointerException if {@code input} is {@code null}.
    */
-  public static String convertUnicodeNumeralsToAscii(String input)
+  public static String convertUnicodeNumeralsToAscii(CharSequence input)
   {
     Matcher matcher = UNICODE_NUMERALS_PATTERN.matcher(input);
     StringBuilder result = new StringBuilder();

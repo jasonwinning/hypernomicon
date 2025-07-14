@@ -71,7 +71,7 @@ public interface HDT_Record
   boolean isDummy();
   boolean updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags);
 
-  void getAllStrings(List<String> list, boolean searchLinkedRecords);
+  void getAllStrings(List<String> list, boolean searchLinkedRecords, boolean includeMainText);
   String name();
   void setName(String str);
   String listName();

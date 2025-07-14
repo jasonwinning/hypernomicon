@@ -123,7 +123,7 @@ public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
     MutableInt result = new MutableInt();
 
     return compareNumberStrings(cell1.getText(), cell2.getText(), result) ?
-      result.getValue()
+      result.intValue()
     :
       compareSimpleTextCells(cell1, cell2);
   }

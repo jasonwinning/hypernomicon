@@ -47,7 +47,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -630,7 +630,7 @@ public class PictureDlgCtrlr extends ModalDialog
     tfName.setText(oldExt.isEmpty() ?
       (fileName.toString().strip() + FilenameUtils.EXTENSION_SEPARATOR + newExt)
     :
-      (StringUtils.removeEnd(fileName.toString(), oldExt) + newExt));
+      (Strings.CS.removeEnd(fileName.toString(), oldExt) + newExt));
   }
 
 //---------------------------------------------------------------------------

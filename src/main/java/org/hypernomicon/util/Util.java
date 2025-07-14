@@ -35,6 +35,7 @@ import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -53,6 +54,7 @@ import javafx.util.Duration;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.client.HttpResponseException;
@@ -203,8 +205,6 @@ public final class Util
     return list;
   }
 
-
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -280,17 +280,17 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String dateTimeToIso8601(TemporalAccessor t) { return iso8601Format.format(t); }
-  public static Instant parseIso8601(String s)               { return Instant.from(iso8601Format.parse(s)); }
+  public static String dateTimeToIso8601(TemporalAccessor t)         { return iso8601Format.format(t); }
+  public static Instant parseIso8601(CharSequence s)                 { return Instant.from(iso8601Format.parse(s)); }
 
   public static String timeToUserReadableStr(TemporalAccessor t)     { return userReadableTimeFormatter.format(t); }
   public static String dateTimeToUserReadableStr(TemporalAccessor t) { return userReadableDateTimeFormatter.format(t); }
 
-  public static String dateTimeToIso8601offset(TemporalAccessor t) { return iso8601FormatOffset.format(t); }
-  public static Instant parseIso8601offset(String s)               { return Instant.from(iso8601FormatOffset.parse(s)); }
+  public static String dateTimeToIso8601offset(TemporalAccessor t)   { return iso8601FormatOffset.format(t); }
+  public static Instant parseIso8601offset(CharSequence s)           { return Instant.from(iso8601FormatOffset.parse(s)); }
 
-  public static String dateTimeToHttpDate(TemporalAccessor t) { return httpDate.format(t); }
-  public static Instant parseHttpDate(String s)               { return Instant.from(httpDate.parse(s)); }
+  public static String dateTimeToHttpDate(TemporalAccessor t)        { return httpDate.format(t); }
+  public static Instant parseHttpDate(CharSequence s)                { return Instant.from(httpDate.parse(s)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -582,7 +582,7 @@ public final class Util
    * @param instant2 the second Instant object
    * @return the positive difference in milliseconds between instant1 and instant2
    */
-  public static long milliDiff(Instant instant1, Instant instant2)
+  public static long milliDiff(Temporal instant1, Temporal instant2)
   {
     return Math.abs(java.time.Duration.between(instant1, instant2).toMillis());
   }
@@ -887,7 +887,7 @@ public final class Util
     MutableInt result = new MutableInt();
 
     if (compareNumberStrings(str1, str2, result))
-      return result.getValue();
+      return result.intValue();
 
     return str1.compareToIgnoreCase(str2);
   }
@@ -1026,7 +1026,7 @@ public final class Util
 
     doi = doi.replaceAll("[\\p{Punct}&&[^/]]+$", ""); // Removes trailing punctuation except slash
 
-    return StringUtils.removeEndIgnoreCase(doi, ".pdf");
+    return Strings.CI.removeEnd(doi, ".pdf");
   }
 
   private static final Pattern doiPattern1 = Pattern.compile("(\\A|\\D)(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)"),
@@ -1457,7 +1457,7 @@ public final class Util
    */
   public static String userFriendlyThrowableName(Throwable e)
   {
-    return StringUtils.removeEnd(userFriendlyClassName(e.getClass()), "Exception").strip();
+    return Strings.CS.removeEnd(userFriendlyClassName(e.getClass()), "Exception").strip();
   }
 
 //---------------------------------------------------------------------------
@@ -1538,6 +1538,33 @@ public final class Util
   public static <T> Stream<T> iterableToStream(Iterable<T> iterable)
   {
     return StreamSupport.stream(iterable.spliterator(), false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void writeCsvFile(FilePath filePath, Stream<List<String>> rows) throws IOException
+  {
+    try (FileWriter writer = new FileWriter(filePath.toFile()))
+    {
+      for (List<String> row : streamToIterable(rows))
+        writer.write(String.join(",", escapeCsv(row)) + System.lineSeparator());
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static List<String> escapeCsv(List<String> fields)
+  {
+    return fields.stream().map(field ->
+    {
+      return field.contains(",") || field.contains("\"") || field.contains("\n") ?
+        '"' + field.replace("\"", "\"\"") + '"'
+      :
+        field;
+
+    }).toList();
   }
 
 //---------------------------------------------------------------------------

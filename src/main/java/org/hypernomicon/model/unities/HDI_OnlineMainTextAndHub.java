@@ -245,7 +245,13 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    list.add(getMainText().getPlainForDisplay());  // Important: this needs to call the function, not access the member directly
+    switch (tag)
+    {
+      case tagDisplayRecord : case tagKeyWork : case tagHub :
+        return;
+      default:
+        list.add(getMainText().getPlainForDisplay());  // Important: this needs to call the function, not access the member directly
+    }
   }
 
 //---------------------------------------------------------------------------

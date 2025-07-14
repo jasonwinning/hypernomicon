@@ -20,6 +20,7 @@ package org.hypernomicon.model;
 import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.model.Exceptions.DuplicateSearchKeyException;
@@ -99,8 +100,8 @@ public final class SearchKeys
 
   public SearchKeys()
   {
-    prefixStrToKeywordStrToKeywordObj = Collections.synchronizedMap(new LinkedHashMap<>());
-    recordToKeywordStrToKeywordObj    = Collections.synchronizedMap(new LinkedHashMap<>());
+    prefixStrToKeywordStrToKeywordObj = new ConcurrentHashMap<>();
+    recordToKeywordStrToKeywordObj    = new ConcurrentHashMap<>();
   }
 
 //---------------------------------------------------------------------------
@@ -117,7 +118,7 @@ public final class SearchKeys
 
   public Iterable<SearchKeyword> getKeywordsByPrefix(String prefix)
   {
-    return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), Collections.emptyList(), map -> List.copyOf(map.values()));
+    return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), Collections.emptyList(), map -> Collections.unmodifiableCollection(map.values()));
   }
 
 //---------------------------------------------------------------------------
@@ -125,7 +126,7 @@ public final class SearchKeys
 
   Iterable<SearchKeyword> getKeysByRecord(HDT_Record record)
   {
-    return nullSwitch(recordToKeywordStrToKeywordObj.get(record), Collections.emptyList(), map -> List.copyOf(map.values()));
+    return nullSwitch(recordToKeywordStrToKeywordObj.get(record), Collections.emptyList(), map -> Collections.unmodifiableCollection(map.values()));
   }
 
 //---------------------------------------------------------------------------
@@ -193,7 +194,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  SearchKeyword getKeywordObjByKeywordStr(String str)
+  SearchKeyword getKeywordObjByKeywordStr(CharSequence str)
   {
     String keywordStr = convertToEnglishChars(str).toLowerCase();
 

@@ -17,12 +17,8 @@
 
 package org.hypernomicon.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,13 +32,14 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.authors.RecordAuthors;
+import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
+import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.jsoup.nodes.Element;
 
@@ -67,9 +64,11 @@ class MentionsIndex
   private final List<Runnable> ndxCompleteHandlers;
   private final EnumSet<RecordType> types;
   private final List<String> strList = new ArrayList<>();
+  private final List<List<String>> logRows = new ArrayList<>();
   private final boolean asynchronous;
 
   private HyperTask task = null;
+  private String logFileName;
 
 //---------------------------------------------------------------------------
 
@@ -105,7 +104,7 @@ class MentionsIndex
   {
     if (isRebuilding())
     {
-      startRebuild();
+      startRebuild("");
       return;
     }
 
@@ -124,7 +123,7 @@ class MentionsIndex
 
     if (isRebuilding())
     {
-      startRebuild();
+      startRebuild("");
       return;
     }
 
@@ -150,26 +149,33 @@ class MentionsIndex
 
     strList.clear();
 
-    record.getAllStrings(strList, true);
+    record.getAllStrings(strList, true, false);
 
     mentionedAnywhereToMentioners.removeReverseKey(record);
     mentionedInDescToMentioners  .removeReverseKey(record);
 
-    strList.forEach(str -> KeywordLinkList.generate(str.toLowerCase()).forEach(link ->
+    strList.forEach(str ->
     {
-      HDT_Record otherRecord = link.key().record;
+      List<KeywordLink> linkList = KeywordLinkList.generate(str.toLowerCase());
 
-      // A record should not be considered as "mentioning" itself, and a term should not
-      // be considered as "mentioning" its concepts or vice versa. This happens because
-      // getAllStrings for concepts includes the term's search key.
+      logLinkList(record, linkList);
 
-      if ((record == otherRecord) ||
-          ((record.getType() == hdtTerm) && ((HDT_Term)record).concepts.contains(otherRecord)) ||
-          ((record.getType() == hdtConcept) && (((HDT_Concept)record).term.get() == otherRecord)))
-        return;
+      linkList.forEach(link ->
+      {
+        HDT_Record otherRecord = link.key().record;
 
-      mentionedAnywhereToMentioners.addForward(link.key().record, record);
-    }));
+        // A record should not be considered as "mentioning" itself, and a term should not
+        // be considered as "mentioning" its concepts or vice versa. This happens because
+        // getAllStrings for concepts includes the term's search key.
+
+        if ((record == otherRecord) ||
+            ((record.getType() == hdtTerm) && ((HDT_Term)record).concepts.contains(otherRecord)) ||
+            ((record.getType() == hdtConcept) && (((HDT_Concept)record).term.get() == otherRecord)))
+          return;
+
+        mentionedAnywhereToMentioners.addForward(link.key().record, record);
+      });
+    });
 
     if (record.hasMainText())
     {
@@ -197,7 +203,17 @@ class MentionsIndex
       String plainText = mainText.getPlain();
 
       if (strNotNullOrBlank(plainText))
-        KeywordLinkList.generate(plainText).forEach(link -> mentionedInDescToMentioners.addForward(link.key().record, record));
+      {
+        List<KeywordLink> linkList = KeywordLinkList.generate(plainText);
+
+        logLinkList(record, linkList);
+
+        linkList.forEach(link ->
+        {
+          mentionedAnywhereToMentioners.addForward(link.key().record, record);
+          mentionedInDescToMentioners  .addForward(link.key().record, record);
+        });
+      }
 
       mainText.getDisplayItemsUnmod().forEach(displayItem ->
       {
@@ -208,16 +224,36 @@ class MentionsIndex
         }
         else if (displayItem.type == diKeyWorks)
         {
-          mainText.getKeyWorksUnmod().forEach(keyWork ->
+          mainText.getKeyWorksUnmod().stream().map(KeyWork::getRecord).forEach(keyWorkRecord ->
           {
-            HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord = keyWork.getRecord();
-
             mentionedAnywhereToMentioners.addForward(keyWorkRecord, record);
             mentionedInDescToMentioners  .addForward(keyWorkRecord, record);
           });
         }
       });
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void logLinkList(HDT_Record record, List<KeywordLink> linkList)
+  {
+    if (strNullOrBlank(logFileName)) return;
+
+    if (logRows.isEmpty())
+      logRows.add(List.of("Mentioner Type","Mentioner ID","Offset","Length","Search Key","Mentioned Type","Mentioned ID"));
+
+    linkList.forEach(link -> logRows.add(List.of
+    (
+      Tag.getTypeTagStr(record.getType()),
+      String.valueOf(record.getID()),
+      String.valueOf(link.offset()),
+      String.valueOf(link.length()),
+      link.key().toString(),
+      Tag.getTypeTagStr(link.key().record.getType()),
+      String.valueOf(link.key().record.getID())
+    )));
   }
 
 //---------------------------------------------------------------------------
@@ -238,14 +274,22 @@ class MentionsIndex
   /**
    * If asynchronous is true, the rebuild task will be started in its own thread. Otherwise,
    * the mentionsIndex is completely rebuilt in this thread before this function returns.
+   * @param logFileName Name of file to log link generation to
    */
-  void startRebuild()
+  void startRebuild(String logFileName)
   {
+    if ((asynchronous == false) && strNotNullOrBlank(logFileName))
+      throw new IllegalArgumentException("Test DB cannot log to a file.");
+
+    logRows.clear();
+
     if (asynchronous)
     {
-      startRebuildTask();
+      startRebuildTask(logFileName);
       return;
     }
+
+    clear();
 
     for (RecordType type : types)
       for (HDT_Record record : db.records(type))
@@ -257,7 +301,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void startRebuildTask()
+  private void startRebuildTask(String logFileName)
   {
     stopRebuild();
 
@@ -269,13 +313,25 @@ class MentionsIndex
 
         totalCount = types.stream().map(db::records).mapToLong(Collection::size).sum();
 
-        for (RecordType type : types)
-          for (HDT_Record record : db.records(type))
-          {
-            incrementAndUpdateProgress(50);
+        MentionsIndex.this.logFileName = logFileName;
 
-            reindexMentioner(record);
-          }
+        try
+        {
+          for (RecordType type : types)
+            for (HDT_Record record : db.records(type))
+            {
+              incrementAndUpdateProgress(50);
+
+              reindexMentioner(record);
+            }
+        }
+        finally
+        {
+          MentionsIndex.this.logFileName = null;
+        }
+
+        if (strNotNullOrBlank(logFileName))
+          writeLogFile(logFileName);
       }
     };
 
@@ -337,6 +393,37 @@ class MentionsIndex
   boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait)
   {
     return nullSwitch(getMentionerSet(target, descOnly, choseNotToWait), false, set -> set.contains(mentioner));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void writeLogFile(String logFileName)
+  {
+    String parentPathStr = app.prefs.get(PrefKey.LINK_GENERATION_LOG_FOLDER, "");
+
+    if (strNullOrBlank(parentPathStr))
+    {
+      System.out.println("Unable to write log file: Log folder path not set.");
+      return;
+    }
+
+    FilePath filePath = new FilePath(parentPathStr);
+
+    if (filePath.exists() == false)
+    {
+      System.out.println("Unable to write log file: Log folder path does not exist.");
+      return;
+    }
+
+    try
+    {
+      writeCsvFile(filePath.resolve(logFileName), logRows.stream().distinct());
+    }
+    catch (IOException e)
+    {
+      System.out.println("Unable to write log file: " + getThrowableMessage(e));
+    }
   }
 
 //---------------------------------------------------------------------------

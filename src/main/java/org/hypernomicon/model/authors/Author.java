@@ -127,6 +127,8 @@ public abstract class Author
     ALWAYS_FULL
   }
 
+  private static final int DEFAULT_AUTHORS_TO_SHOW = 6;
+
 //---------------------------------------------------------------------------
 
   /**
@@ -148,7 +150,7 @@ public abstract class Author
   {
     NameDisplayMode mode = fullNameIfSingleton ? NameDisplayMode.INITIALS_MULTIPLE_ONLY : NameDisplayMode.ALWAYS_INITIALS;
 
-    return getAuthorsStr(authors, ',', true, sort, mode);
+    return getAuthorsStr(authors, ',', true, sort, mode, DEFAULT_AUTHORS_TO_SHOW);
   }
 
 //---------------------------------------------------------------------------
@@ -167,7 +169,24 @@ public abstract class Author
    */
   public static String getLongAuthorsStr(Stream<? extends Author> authors)
   {
-    return getAuthorsStr(authors, ';', false, false, NameDisplayMode.ALWAYS_FULL);
+    return getLongAuthorsStr(authors, DEFAULT_AUTHORS_TO_SHOW);
+  }
+
+  /**
+   * Returns a semicolon-separated list of author names in long form.
+   *
+   * <p>Always uses last-name-first format (no initials) and does not sort.
+   * No ampersand is inserted, and the delimiter is a semicolon.
+   * Optionally appends editor notation when all authors are editors.
+   *
+   * @param authors             stream of authors to format
+   * @param limit               maximum number of authors to show
+   * @return                    formatted, semicolon-separated author string,
+   *                            or empty string if no authors
+   */
+  public static String getLongAuthorsStr(Stream<? extends Author> authors, int limit)
+  {
+    return getAuthorsStr(authors, ';', false, false, NameDisplayMode.ALWAYS_FULL, limit);
   }
 
 //---------------------------------------------------------------------------
@@ -178,7 +197,7 @@ public abstract class Author
    * <p>
    * The output may include author names (in full or initials), optional sorting, role suffixes
    * such as "(Eds.)", "(Trs.)", or "(Eds., Trs.)", and will delimit entries with the specified character.
-   * Supports up to 6 authors; additional authors are represented by "et al." if present.
+   * If limit > 0, shows a maximum number of authors; additional authors are represented by "et al." if present.
    * When only one author is present, formatting respects {@code nameMode} preferences and includes role suffixes if applicable.
    * </p>
    *
@@ -187,14 +206,18 @@ public abstract class Author
    * @param amp              whether to insert an ampersand (" & ") before the final author in a multi-author list
    * @param sort             if true, sorts authors using their natural ordering
    * @param nameMode         controls whether first names are spelled out or initialized
+   * @param limit            maximum number of authors to show; < 1 means show all
    * @return a formatted string representation of the author list, including role suffixes and optional "et al." if applicable
    */
-  private static String getAuthorsStr(Stream<? extends Author> authorStream, char delimiter, boolean amp, boolean sort, NameDisplayMode nameMode)
+  private static String getAuthorsStr(Stream<? extends Author> authorStream, char delimiter, boolean amp, boolean sort, NameDisplayMode nameMode, int limit)
   {
     List<Author> authors = authorStream.collect(Collectors.toCollection(ArrayList::new));
 
     if (authors.isEmpty())
       return "";
+
+    if (limit < 1)
+      limit = Integer.MAX_VALUE;
 
     boolean includeRoleSuffixes = (sort == false);
 
@@ -238,7 +261,7 @@ public abstract class Author
     if (sort)
       authors.sort(null);
 
-    int num = Math.min(6, authors.size());
+    int num = Math.min(limit, authors.size());
     String peopleStr = "";
 
     for (int ndx = 0; ndx < num; ndx++)

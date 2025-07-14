@@ -131,6 +131,7 @@ public final class Const
       SOURCE_FILENAME = "sourceFile",
       TRANSIENT_TEST_PARENT_PATH = "transientTestParentPath",
       TRANSIENT_TEST_FOLDER_NAME = "transientTestFolderName",
+      LINK_GENERATION_LOG_FOLDER = "linkGenLogFolderPath",
       LOG_PATH = "logPath",
       HDB_MRU = "hbdMru",
       AUTO_IMPORT = "autoImport",

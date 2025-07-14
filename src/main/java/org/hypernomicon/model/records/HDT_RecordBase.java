@@ -28,6 +28,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.authors.HDI_OnlineAuthors;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.relations.RelationSet.*;
 import org.hypernomicon.model.unities.*;
@@ -583,12 +584,26 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getAllStrings(List<String> list, boolean searchLinkedRecords)
+  @Override public void getAllStrings(List<String> list, boolean searchLinkedRecords, boolean includeMainText)
   {
     getSearchKeys().forEach(key -> list.add(key.text));
 
     items.forEach((tag, item) ->
     {
+      if (tag == tagMainText)  // There is always a different tag that is the main text tag for this record type
+        return;
+
+      if ((includeMainText == false) && (item.category() == HyperDataCategory.hdcMainTextAndHub))
+      {
+        switch (tag)
+        {
+          case tagDisplayRecord : case tagKeyWork : case tagHub :
+            break;
+          default:
+            return;
+        }
+      }
+
       if (tag == type.getNameTag())
         list.add(name());
       else

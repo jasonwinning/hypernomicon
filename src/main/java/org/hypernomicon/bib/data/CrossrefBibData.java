@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
@@ -272,7 +273,7 @@ public final class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, String yearStr, Iterable<Author> authors, boolean engCharForAuthors, String doi)
+  private static String getQueryUrl(String title, String yearStr, Iterable<Author> authors, boolean engCharForAuthors, CharSequence doi)
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
@@ -377,7 +378,7 @@ public final class CrossrefBibData extends BibDataStandalone
         if (doi.endsWith("."))
         {
           String newDoi = doi;
-          do { newDoi = StringUtils.removeEnd(newDoi, "."); } while (newDoi.endsWith("."));
+          do { newDoi = Strings.CS.removeEnd(newDoi, "."); } while (newDoi.endsWith("."));
 
           doHttpRequest(httpClient, newDoi, alreadyCheckedIDs, successHndlr, failHndlr);
           return;

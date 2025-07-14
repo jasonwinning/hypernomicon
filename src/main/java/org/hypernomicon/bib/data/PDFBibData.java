@@ -31,7 +31,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -186,22 +186,22 @@ public class PDFBibData extends BibDataStandalone
 
   //---------------------------------------------------------------------------
 
-    private void addCsvLines(List<String> csvFile)
+    private void addCsvLines(List<List<String>> csvFile)
     {
-      String line = "";
+      List<String> line = new ArrayList<>();
 
       if (strNotNullOrBlank(value))
       {
+        String str = "";
+
         if (arrayNdx >= 0)
-          line = "[" + (arrayNdx + 1) + ']';
+          str = "[" + (arrayNdx + 1) + "] ";
 
-        line = line + escape(value) + ',' + getCsvPath();
-      }
+        line.add(str + value);
+        line.addAll(getCsvPath());
 
-      line = convertToSingleLine(line).replace("\"", "");
-
-      if ((line.length() > 0) && (csvFile.contains(line) == false))
         csvFile.add(line);
+      }
 
       prefixToNameToChild.values().forEach(nameToChild ->
         nameToChild.values().forEach(child ->
@@ -212,16 +212,15 @@ public class PDFBibData extends BibDataStandalone
 
     //---------------------------------------------------------------------------
 
-    private static String escape(String str) { return str.replace(",", "@&$"); }
-
-    //---------------------------------------------------------------------------
-
-    private String getCsvPath()
+    private List<String> getCsvPath()
     {
-      String line = parent == null ? "" : parent.getCsvPath();
+      List<String> line = parent == null ? new ArrayList<>() : parent.getCsvPath();
 
       if (strNotNullOrEmpty(name))
-        line = (strNullOrEmpty(line) ? "" : (line + ',')) + escape(prefix) + ',' + escape(name);
+      {
+        line.add(prefix);
+        line.add(name);
+      }
 
       return line;
     }
@@ -230,7 +229,7 @@ public class PDFBibData extends BibDataStandalone
 
     private static boolean nameIsNotExcluded(String nameStr)
     {
-      return StringUtils.containsAny(safeStr(nameStr).toLowerCase(), "journaldoi", "instanceid", "documentid") == false;
+      return Strings.CI.containsAny(safeStr(nameStr), "journaldoi", "instanceid", "documentid") == false;
     }
 
   //---------------------------------------------------------------------------
@@ -484,7 +483,7 @@ public class PDFBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addCsvLines(List<String> csvFile)
+  public void addCsvLines(List<List<String>> csvFile)
   {
     if (xmpRoot != null) xmpRoot.addCsvLines(csvFile);
   }

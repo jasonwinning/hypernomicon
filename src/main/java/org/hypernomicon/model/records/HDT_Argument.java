@@ -209,16 +209,21 @@ public class HDT_Argument extends HDT_RecordWithMainText
     {
       Stream<RecordAuthor> stream = work.getAuthors().stream();
 
+      boolean hasEditor = false;
+
       for (RecordAuthor author : work.getAuthors())
       {
         if (author.getIsAuthor())
           return stream.filter(RecordAuthor::getIsAuthor).map(ArgumentAuthor::new);
 
         if (author.getIsEditor())
-          return stream.filter(RecordAuthor::getIsEditor).map(ArgumentAuthor::new);
+          hasEditor = true;
       }
 
-      return stream.map(ArgumentAuthor::new);
+      return hasEditor ?
+        stream.filter(RecordAuthor::getIsEditor).map(ArgumentAuthor::new)
+      :
+        stream.map(ArgumentAuthor::new);
     };
 
     return works.stream().flatMap(mapFunction);

@@ -123,7 +123,7 @@ public final class GeneralQueries
           return false;
 
         List<String> list = new ArrayList<>();
-        record.getAllStrings(list, ui.queryHyperTab().getCurQueryCtrlr().getSearchLinkedRecords());
+        record.getAllStrings(list, ui.queryHyperTab().getCurQueryCtrlr().getSearchLinkedRecords(), true);
 
         String val1LC = val1.toLowerCase();
         return list.stream().anyMatch(str -> str.toLowerCase().contains(val1LC));
@@ -359,19 +359,14 @@ public final class GeneralQueries
         dummySearchKeys.setSearchKey(searchDummy, getCellText(op1), true, false);
       }
 
-      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
         if (searchDummy == null) return false;
 
         List<String> list = new ArrayList<>();
-        record.getAllStrings(list, true);
-        boolean add = false;
+        record.getAllStrings(list, true, true);
 
-        for (String str : list)
-          if (KeywordLinkList.generate(str.toLowerCase(), dummySearchKeys::getKeywordsByPrefix).size() > 0)
-            add = true;
-
-        return add;
+        return list.stream().anyMatch(str -> KeywordLinkList.generate(str.toLowerCase(), dummySearchKeys::getKeywordsByPrefix).size() > 0);
       }
 
       @Override public void cleanup(State state)

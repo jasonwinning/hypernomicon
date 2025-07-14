@@ -325,7 +325,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static int getWebLinkLen(int startNdx, String text)
+  private static int getWebLinkLen(int startNdx, CharSequence text)
   {
     int ndx = startNdx;
 
@@ -804,17 +804,17 @@ public final class MainTextUtil
    */
   public static Optional<HDT_MiscFile> nextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, Property<Element> elementProp)
   {
-    startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.getValue()));
+    startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.intValue()));
     elementProp.setValue(null);
 
-    while (startNdx.getValue() >= 0)
+    while (startNdx.intValue() >= 0)
     {
-      endNdx.setValue(str.indexOf("&gt;", startNdx.getValue()));
+      endNdx.setValue(str.indexOf("&gt;", startNdx.intValue()));
 
-      if (endNdx.getValue() >= 0)
+      if (endNdx.intValue() >= 0)
       {
         endNdx.add(4);
-        String tag = Parser.unescapeEntities(str.substring(startNdx.getValue(), endNdx.getValue()), true);
+        String tag = Parser.unescapeEntities(str.substring(startNdx.intValue(), endNdx.intValue()), true);
 
         Document doc = jsoupParse(tag);
 
@@ -829,7 +829,7 @@ public final class MainTextUtil
         }
       }
 
-      startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.getValue() + 1));
+      startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.intValue() + 1));
     }
 
     return null;
@@ -889,7 +889,7 @@ public final class MainTextUtil
         String tag = "<img src=\"" + url + "\" alt=\"\"" + heightAttr + widthAttr + "/><br>" +
               "<a hypncon=\"true\" href=\"\" title=\"Go to this misc. file record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + miscFile.name() + "</a>";
 
-        str = str.substring(0, startNdx.getValue()) + tag + safeSubstring(str, endNdx.getValue(), str.length());
+        str = str.substring(0, startNdx.intValue()) + tag + safeSubstring(str, endNdx.intValue(), str.length());
       }
 
       startNdx.add(1);
