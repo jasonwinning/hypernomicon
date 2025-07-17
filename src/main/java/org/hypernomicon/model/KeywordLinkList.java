@@ -42,9 +42,9 @@ public final class KeywordLinkList
 
 //---------------------------------------------------------------------------
 
-  private static final Pattern INITIALS_PATTERN = Pattern.compile("[a-zA-Z]\\.[a-zA-Z]"),
-                               MIDDLE_INITIALS_RULE  = Pattern.compile(".*[^a-zA-Z][a-zA-Z]\\.[a-zA-Z].*"),
-                               START_INITIALS_RULE   = Pattern.compile("^[a-zA-Z]\\.[a-zA-Z].*");
+  private static final Pattern INITIALS_PATTERN     = Pattern.compile("[a-zA-Z]\\.[a-zA-Z]"),
+                               MIDDLE_INITIALS_RULE = Pattern.compile(".*[^a-zA-Z][a-zA-Z]\\.[a-zA-Z].*"),
+                               START_INITIALS_RULE  = Pattern.compile("^[a-zA-Z]\\.[a-zA-Z].*");
 
   public static List<KeywordLink> generate(String text)
   {
@@ -219,24 +219,6 @@ public final class KeywordLinkList
     // Success only if we've consumed the entire keyword pattern
 
     return keywordOffset == keywordLength ? (textOffset - textStartOffset) : -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static char toLowerAscii(char c)
-  {
-    return (c >= 'A') && (c <= 'Z') ? (char)(c + 32) : c;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean charIsPartOfWebLink(CharSequence text, int ndx)
-  {
-    char c = text.charAt(ndx);
-
-    return (c != '\n') && (c != ' ') && (c != ',') && (c != ';');
   }
 
 //---------------------------------------------------------------------------

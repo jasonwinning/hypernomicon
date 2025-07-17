@@ -70,7 +70,7 @@ public final class StringUtil
 
   /**
    * Collapse runs of two-or-more spaces into one. If no runs found, returns
-   * the original String (no GC pressure); Otherwise reuses a ThreadLocal
+   * the original String (no GC pressure); otherwise reuses a ThreadLocal
    * char[] and emits exactly one new String
    */
   public static String collapseSpaces(CharSequence cs)
@@ -118,6 +118,7 @@ public final class StringUtil
     for (int i = 1; i < len; i++)
     {
       char c = cs.charAt(i);
+
       if ((c == ' ') && (prev == ' '))
       {
         // skip this space
@@ -395,6 +396,50 @@ public final class StringUtil
     if ((end < start) || (str == null) || (start >= str.length())) return "";
 
     return end > str.length() ? str.substring(start) : str.substring(start, end);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static char toLowerAscii(char c)
+  {
+    return (c >= 'A') && (c <= 'Z') ? (char)(c + 32) : c;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns true if the string is entirely composed of either all uppercase or
+   * all lowercase letters, determined by the case of the first character.
+   * If the first character is not a letter, returns false.
+   *
+   * @param s The input string to evaluate.
+   * @return true if all characters are letters and share the same case as the first letter.
+   */
+  public static boolean isUniformLetterCase(String s)
+  {
+    if (s.isEmpty()) return false;
+
+    char first = s.charAt(0);
+    if (Character.isLetter(first) == false) return false;
+
+    boolean upper = Character.isUpperCase(first);
+
+    for (char c : s.toCharArray())
+      if ((Character.isLetter(c) == false) || (Character.isUpperCase(c) != upper))
+        return false;
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean lacksMixedCase(String s)
+  {
+    return s.chars().noneMatch(Character::isUpperCase)  ||
+           s.chars().noneMatch(Character::isLowerCase);
   }
 
 //---------------------------------------------------------------------------
@@ -738,6 +783,73 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Pattern UNICODE_NUMERALS_PATTERN = Pattern.compile
+  (
+    "[\\u2070\\u2080\\uFF10\\u24EA\\u2460\\u00B9\\u2081\\uFF11\\u00B2\\u2082\\u2072\\uFF12\\u00B3\\u2083\\u2073\\uFF13" +
+    "\\u2074\\u2084\\uFF14\\u2075\\u2085\\uFF15\\u2076\\u2086\\uFF16\\u2077\\u2087\\uFF17\\u2078\\u2088\\uFF18\\u2079" +
+    "\\u2089\\uFF19]"
+  );
+
+  /**
+   * Converts Unicode numerals to their ASCII equivalents.
+   *
+   * <p>This method scans the input string for Unicode numerals, including superscript,
+   * subscript, full-width, and circled numerals, and replaces them with their ASCII
+   * counterparts using {@link #unicodeToAsciiNumeral(char)}.</p>
+   *
+   * @param input The string potentially containing Unicode numerals. Must not be {@code null}.
+   * @return A string where Unicode numerals are replaced with their ASCII equivalents.
+   * @throws NullPointerException if {@code input} is {@code null}.
+   */
+  public static String convertUnicodeNumeralsToAscii(CharSequence input)
+  {
+    Matcher matcher = UNICODE_NUMERALS_PATTERN.matcher(input);
+    StringBuilder result = new StringBuilder();
+
+    while (matcher.find())
+    {
+      char unicodeChar = matcher.group().charAt(0);
+      char asciiChar = unicodeToAsciiNumeral(unicodeChar);
+      matcher.appendReplacement(result, String.valueOf(asciiChar));
+    }
+
+    matcher.appendTail(result);
+    return result.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static char unicodeToAsciiNumeral(char unicodeChar)
+  {
+    return switch (unicodeChar)
+    {
+      case '\u2070', '\u2080', '\uFF10', '\u24EA' -> '0';  // Superscript, subscript, fullwidth, circled zero
+      case '\u00B9', '\u2081', '\uFF11', '\u2460' -> '1';  // Superscript, subscript, fullwidth, circled one
+      case '\u00B2', '\u2082', '\uFF12', '\u2461' -> '2';  // Superscript, subscript, fullwidth, circled two
+      case '\u00B3', '\u2083', '\uFF13', '\u2462' -> '3';  // Superscript, subscript, fullwidth, circled three
+      case '\u2074', '\u2084', '\uFF14', '\u2463' -> '4';  // Superscript, subscript, fullwidth, circled four
+      case '\u2075', '\u2085', '\uFF15', '\u2464' -> '5';  // Superscript, subscript, fullwidth, circled five
+      case '\u2076', '\u2086', '\uFF16', '\u2465' -> '6';  // Superscript, subscript, fullwidth, circled six
+      case '\u2077', '\u2087', '\uFF17', '\u2466' -> '7';  // Superscript, subscript, fullwidth, circled seven
+      case '\u2078', '\u2088', '\uFF18', '\u2467' -> '8';  // Superscript, subscript, fullwidth, circled eight
+      case '\u2079', '\u2089', '\uFF19', '\u2468' -> '9';  // Superscript, subscript, fullwidth, circled nine
+
+      default -> unicodeChar;
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String fromCodePoint(int cp)
+  {
+    return new String(Character.toChars(cp));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final Pattern domainPattern = Pattern.compile("^[A-Za-z\\-]+(\\.[A-Za-z\\-]+)+/?$"),
                                pathPattern = Pattern.compile(".*/\\w.*"),
                                fileExtensionPattern = Pattern.compile(".*\\.[a-zA-Z].*"),
@@ -760,6 +872,16 @@ public final class StringUtil
            domainPattern.matcher(selText).matches() ||
 
            (pathPattern.matcher(selText).matches() && fileExtensionPattern.matcher(selText).matches() && !whitespaceExtensionPattern.matcher(selText).matches());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean charIsPartOfWebLink(CharSequence text, int ndx)
+  {
+    char c = text.charAt(ndx);
+
+    return (c != '\n') && (c != ' ') && (c != ',') && (c != ';');
   }
 
 //---------------------------------------------------------------------------
@@ -834,60 +956,19 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Pattern UNICODE_NUMERALS_PATTERN = Pattern.compile
-  (
-    "[\\u2070\\u2080\\uFF10\\u24EA\\u2460\\u00B9\\u2081\\uFF11\\u00B2\\u2082\\u2072\\uFF12\\u00B3\\u2083\\u2073\\uFF13" +
-    "\\u2074\\u2084\\uFF14\\u2075\\u2085\\uFF15\\u2076\\u2086\\uFF16\\u2077\\u2087\\uFF17\\u2078\\u2088\\uFF18\\u2079" +
-    "\\u2089\\uFF19]"
-  );
-
-  /**
-   * Converts Unicode numerals to their ASCII equivalents.
-   *
-   * <p>This method scans the input string for Unicode numerals, including superscript,
-   * subscript, full-width, and circled numerals, and replaces them with their ASCII
-   * counterparts using {@link #unicodeToAsciiNumeral(char)}.</p>
-   *
-   * @param input The string potentially containing Unicode numerals. Must not be {@code null}.
-   * @return A string where Unicode numerals are replaced with their ASCII equivalents.
-   * @throws NullPointerException if {@code input} is {@code null}.
-   */
-  public static String convertUnicodeNumeralsToAscii(CharSequence input)
+  public static boolean containsNoLetters(String input)
   {
-    Matcher matcher = UNICODE_NUMERALS_PATTERN.matcher(input);
-    StringBuilder result = new StringBuilder();
+    if (input == null) return true;
 
-    while (matcher.find())
+    for (int i = 0; i < input.length(); i++)
     {
-      char unicodeChar = matcher.group().charAt(0);
-      char asciiChar = unicodeToAsciiNumeral(unicodeChar);
-      matcher.appendReplacement(result, String.valueOf(asciiChar));
+      char c = input.charAt(i);
+
+      if (((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z')))
+        return false;
     }
 
-    matcher.appendTail(result);
-    return result.toString();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static char unicodeToAsciiNumeral(char unicodeChar)
-  {
-    return switch (unicodeChar)
-    {
-      case '\u2070', '\u2080', '\uFF10', '\u24EA' -> '0';  // Superscript, subscript, fullwidth, circled zero
-      case '\u00B9', '\u2081', '\uFF11', '\u2460' -> '1';  // Superscript, subscript, fullwidth, circled one
-      case '\u00B2', '\u2082', '\uFF12', '\u2461' -> '2';  // Superscript, subscript, fullwidth, circled two
-      case '\u00B3', '\u2083', '\uFF13', '\u2462' -> '3';  // Superscript, subscript, fullwidth, circled three
-      case '\u2074', '\u2084', '\uFF14', '\u2463' -> '4';  // Superscript, subscript, fullwidth, circled four
-      case '\u2075', '\u2085', '\uFF15', '\u2464' -> '5';  // Superscript, subscript, fullwidth, circled five
-      case '\u2076', '\u2086', '\uFF16', '\u2465' -> '6';  // Superscript, subscript, fullwidth, circled six
-      case '\u2077', '\u2087', '\uFF17', '\u2466' -> '7';  // Superscript, subscript, fullwidth, circled seven
-      case '\u2078', '\u2088', '\uFF18', '\u2467' -> '8';  // Superscript, subscript, fullwidth, circled eight
-      case '\u2079', '\u2089', '\uFF19', '\u2468' -> '9';  // Superscript, subscript, fullwidth, circled nine
-
-      default -> unicodeChar;
-    };
+    return true;
   }
 
 //---------------------------------------------------------------------------

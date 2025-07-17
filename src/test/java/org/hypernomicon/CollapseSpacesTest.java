@@ -35,8 +35,7 @@ class CollapseSpacesTest
   @BeforeEach
   void clearThreadLocalBuffer()
   {
-    // ensure each test starts with a fresh buffer if your impl stores it in a
-    // ThreadLocal
+    // ensure each test starts with a fresh buffer
     clearCollapseBufferForTest();
   }
 

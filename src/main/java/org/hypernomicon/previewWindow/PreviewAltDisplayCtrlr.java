@@ -38,7 +38,11 @@ public class PreviewAltDisplayCtrlr
 
   void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
   {
-    String msg = "Generating preview for file: " + filePath.toString();
+    String msg = OfficePreviewer.getFirstConversion() ?
+      "Starting office document previewer and generating preview for file: " + filePath.toString()
+    :
+      "Generating preview for file: " + filePath.toString();
+
     if (dontRestartProgressIfSamePreview && lblMessage.getText().equals(msg))
       return;
 

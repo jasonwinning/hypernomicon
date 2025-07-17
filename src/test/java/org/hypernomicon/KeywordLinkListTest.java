@@ -76,9 +76,7 @@ class KeywordLinkListTest
     if (endOnly)
       text = text + '$';
 
-    SearchKeyword kw = new SearchKeyword(text, db.createNewBlankRecord(hdtWork));
-
-    return kw;
+    return new SearchKeyword(text, db.createNewBlankRecord(hdtWork));
   }
 
 //---------------------------------------------------------------------------
@@ -293,13 +291,6 @@ class KeywordLinkListTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String fromCodePoint(int cp)
-  {
-    return new String(Character.toChars(cp));
-  }
-
-//---------------------------------------------------------------------------
-
   @Test
   public void testSupplementaryCodePointTransliteration()
   {
@@ -325,7 +316,7 @@ class KeywordLinkListTest
     String input =
       new String(Character.toChars(0x1D49C)) + // 𝒜 (U+1D49C)
       " " +
-      "\u00E9" + "l" + "\u00E8" + "v" + "e" +   // élève
+      ELEVE_NFD +   // élève
       " " +
       "\u5317" + "\u4EAC" +                    // 北京
       " " +

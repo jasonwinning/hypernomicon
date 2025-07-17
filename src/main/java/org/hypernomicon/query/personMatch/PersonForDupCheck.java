@@ -172,33 +172,6 @@ public class PersonForDupCheck
 //---------------------------------------------------------------------------
 
   /**
-   * Returns true if the string is entirely composed of either all uppercase or
-   * all lowercase letters, determined by the case of the first character.
-   * If the first character is not a letter, returns false.
-   *
-   * @param s The input string to evaluate.
-   * @return true if all characters are letters and share the same case as the first letter.
-   */
-  private static boolean isUniformLetterCase(String s)
-  {
-    if (s.isEmpty()) return false;
-
-    char first = s.charAt(0);
-    if (Character.isLetter(first) == false) return false;
-
-    boolean upper = Character.isUpperCase(first);
-
-    for (char c : s.toCharArray())
-      if ((Character.isLetter(c) == false) || (Character.isUpperCase(c) != upper))
-        return false;
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
    * Returns true if the normalized queryStr is a prefix of any of the
    * precomputed variant+lastName combinations.
    */

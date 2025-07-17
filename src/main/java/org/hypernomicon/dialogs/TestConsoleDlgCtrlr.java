@@ -83,6 +83,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     setToolTip(btnClose, "Close this window");
 
+    btnZoteroItemTemplates.setDisable (db.isLoaded() == false);
+    btnZoteroCreatorTypes .setDisable (db.isLoaded() == false);
+
     btnNukeTest           .setDisable (db.isLoaded() == false);
     tabLinkGen            .setDisable (db.isLoaded() == false);
     btnSaveRefMgrSecrets  .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
@@ -97,8 +100,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     btnZoteroItemTemplates.setOnAction(event -> ZoteroWrapper.retrieveMetadataAndSaveToFile(false));
     btnZoteroCreatorTypes .setOnAction(event -> ZoteroWrapper.retrieveMetadataAndSaveToFile(true ));
 
-    btnLinkGenBefore      .setOnAction(event -> generateLinksWithLogging("Before.csv"));
-    btnLinkGenAfter       .setOnAction(event -> generateLinksWithLogging("After.csv"));
+    btnLinkGenBefore      .setOnAction(event -> db.rebuildMentions("Before.csv"));
+    btnLinkGenAfter       .setOnAction(event -> db.rebuildMentions("After.csv" ));
 
     if (db.bibLibraryIsLinked())
       tfRefMgrUserID.setText(db.getBibLibrary().getUserID());
@@ -674,14 +677,6 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return;
 
     tfLinkGenParent.setText(filePath.toString());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void generateLinksWithLogging(String logFileName)
-  {
-    db.rebuildMentions(logFileName);
   }
 
 //---------------------------------------------------------------------------

@@ -31,6 +31,8 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,21 +45,15 @@ import org.w3c.dom.html.HTMLAnchorElement;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.text.StringEscapeUtils;
+
 import org.hypernomicon.App;
-import org.hypernomicon.dialogs.InsertPictureDlgCtrlr;
-import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
-import org.hypernomicon.dialogs.SearchKeySelectDlgCtrlr;
+import org.hypernomicon.dialogs.*;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithAuthors;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
-import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.model.unities.KeyWork;
-import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.unities.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -79,34 +75,22 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToolBar;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.robot.Robot;
-import javafx.scene.web.HTMLEditor;
-import javafx.scene.web.HTMLEditorSkin;
+import javafx.scene.web.*;
 import javafx.scene.web.HTMLEditorSkin.Command;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
+
+//---------------------------------------------------------------------------
 
 public class MainTextCtrlr
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private BorderPane borderPane;
   @FXML private Button btnAdd, btnInsert, btnMoveDown, btnMoveUp, btnNew, btnRemove;
   @FXML private ComboBox<HyperTableCell> cbKeyName, cbKeyType, cbName, cbType;
@@ -125,7 +109,6 @@ public class MainTextCtrlr
   private HDT_RecordWithMainText curRecord;
   private boolean ignoreKeyEvent = false;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
@@ -147,7 +130,7 @@ public class MainTextCtrlr
 
     loader.load();
 
-    webView = (WebView) he.lookup("WebView");
+    webView = (WebView) he.lookup(".web-view");
     engine = webView.getEngine();
     webViewAddZoom(webView, ZoomPrefKey.MAINTEXT);
     highlighter = new Highlighter(engine);
@@ -260,6 +243,7 @@ public class MainTextCtrlr
     btnNew     .setOnAction(event -> btnNewClick     ());
 
     String shortcutKey, pasteNoLineBreaksKey;
+
     if (SystemUtils.IS_OS_MAC)
     {
       shortcutKey = "Command";
@@ -300,45 +284,9 @@ public class MainTextCtrlr
     he.setOnMousePressed (Event::consume);
     he.setOnMouseReleased(Event::consume);
 
-    // The next 2 event filters address buggy HTMLEditor handling of ctrl-B, ctrl-I, and ctrl-U
+    // The next 2 event filters address buggy HTMLEditor handling of ctrl-B, ctrl-I, and ctrl-U, and other bugginess
 
-    he.addEventFilter(KeyEvent.KEY_PRESSED, event ->
-    {
-      highlighter.clear();
-
-      if (shortcutKeyIsDown(event))
-      {
-        if (event.getCode() == KeyCode.V)
-        {
-          // On Mac, if you press V while alt is down, it will always insert a checkmark character
-
-          if ((SystemUtils.IS_OS_MAC && event.isControlDown()) || ((SystemUtils.IS_OS_MAC == false) && event.isAltDown()))
-          {
-            pastePlainText(true);
-            event.consume();
-          }
-        }
-        else if ((event.getCode() == KeyCode.B) ||
-                 (event.getCode() == KeyCode.I) ||
-                 (event.getCode() == KeyCode.U))
-        {
-          if (ignoreKeyEvent)
-            event.consume();
-          else if (event.getCode() == KeyCode.B)
-          {
-            String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
-
-            if (selText.isEmpty())
-            {
-              ((HTMLEditorSkin)he.getSkin()).performCommand(Command.BOLD);
-              event.consume();
-            }
-          }
-
-          ignoreKeyEvent = true;
-        }
-      }
-    });
+    he.addEventFilter(KeyEvent.KEY_PRESSED, this::keyPressFilter);
 
     he.addEventFilter(KeyEvent.KEY_RELEASED, event ->
     {
@@ -364,6 +312,7 @@ public class MainTextCtrlr
 
     Button btnWebLink = new Button("", imgViewFromRelPath("resources/images/world_link.png"));
     setToolTip(btnWebLink, "Insert/edit web link");
+
     btnWebLink.setOnAction(event ->
     {
       HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
@@ -446,6 +395,146 @@ public class MainTextCtrlr
     });
 
     he.setFocusTraversable(false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Determines whether the given {@link KeyEvent} represents a non-printing key or key combination.
+   * <p>
+   * A non-printing key or key combination is one that does not directly change the text that is
+   * selected by overwriting it. This includes modifier keys (e.g. Ctrl, Alt), navigation keys
+   * (e.g. arrows, Home, End), function keys (e.g. F1–F12), media keys, and special keys
+   * such as Escape, Insert, and PrintScreen.
+   * <p>
+   * The method also accounts for platform-specific modifier keys (e.g. Meta, Command, Alt),
+   * dead keys used in international input, and cases where Shift is pressed but no printable
+   * character is produced (e.g. Shift+Delete).
+   *
+   * @param event the {@link KeyEvent} to evaluate
+   * @return {@code true} if the event corresponds to a non-printing key; {@code false} otherwise
+   */
+  private static boolean keyEventIsNonPrinting(KeyEvent event)
+  {
+    KeyCode code = event.getCode();
+
+    boolean hasModifier = event.isAltDown() || event.isControlDown() || event.isMetaDown();
+
+    boolean isSpecialKey = code.isModifierKey  () || code.isNavigationKey() ||
+                           code.isFunctionKey  () || code.isMediaKey     () ||
+                           code.getName().startsWith("Dead");
+
+    boolean isExplicitNonPrinting = switch (code)
+    {
+      case INSERT, ESCAPE, CAPS, NUM_LOCK, SCROLL_LOCK, PRINTSCREEN,
+           PAUSE, CONTEXT_MENU, HELP, WINDOWS, COMMAND, SHORTCUT, UNDEFINED -> true;
+
+      default -> false;
+    };
+
+    // Covers cases where Shift is pressed but no printable character is produced (e.g. Shift+Delete)
+    boolean noTextWithShift = (event.getText().isEmpty() || (code == KeyCode.TAB)) && event.isShiftDown();
+
+    return hasModifier || isSpecialKey || isExplicitNonPrinting || noTextWithShift;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Pattern LI_PATTERN = Pattern.compile("<li\\b", Pattern.CASE_INSENSITIVE);
+
+  private static final String selectionScript =
+      "(() => {"
+    + "  const sel = window.getSelection();"
+    + "  if (!sel.rangeCount) return '';"
+    + "  const frag = document.createElement('div');"
+    + "  frag.appendChild(sel.getRangeAt(0).cloneContents());"
+    + "  return frag.innerHTML;"
+    + "})()";
+
+  private void keyPressFilter(KeyEvent event)
+  {
+    // Check for non-printing keys or key combinations
+
+    if (keyEventIsNonPrinting(event))
+    {
+      String selectedHtml = (String) engine.executeScript(selectionScript),
+             selectedText = jsoupParse(selectedHtml).wholeText();
+
+      // Check for a leading blank line
+
+      if (selectedText.startsWith("\n"))
+      {
+        // Count <li> occurrences
+
+        Matcher liMatcher = LI_PATTERN.matcher(selectedHtml);
+        int liCount = 0;
+
+        while (liMatcher.find())
+        {
+          liCount++;
+          if (liCount == 2) break;
+        }
+
+        // Consume if blank line + 2 or more list items
+
+        if (liCount == 2)
+        {
+          // Fix for https://sourceforge.net/p/hypernomicon/tickets/82/
+
+          // This is a workaround for a bug in HTMLEditorSkin. There is an event handler for
+          // key press events that begins as follows:
+          //
+          //   webView.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+          //     applyTextFormatting();
+          //
+          // applyTextFormatting takes what is entered in the Format dropdown, which usually
+          // has "Paragraph" selected, and applies that formatting to the selected text. This
+          // causes the selected list items to get all messed up if (a) the selection starts
+          // with a blank line, and (b) the selection contains 2 or more list items. So we just
+          // consume the event if the event is not going to overwrite the selection.
+
+          event.consume();
+          return;
+        }
+      }
+    }
+
+    highlighter.clear();
+
+    if (shortcutKeyIsDown(event))
+    {
+      if (event.getCode() == KeyCode.V)
+      {
+        // On Mac, if you press V while alt is down, it will always insert a checkmark character
+
+        if ((SystemUtils.IS_OS_MAC && event.isControlDown()) || ((SystemUtils.IS_OS_MAC == false) && event.isAltDown()))
+        {
+          pastePlainText(true);
+          event.consume();
+        }
+      }
+      else if ((event.getCode() == KeyCode.B) ||
+               (event.getCode() == KeyCode.I) ||
+               (event.getCode() == KeyCode.U))
+      {
+        if (ignoreKeyEvent)
+          event.consume();
+        else if (event.getCode() == KeyCode.B)
+        {
+          String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
+
+          if (selText.isEmpty())
+          {
+            ((HTMLEditorSkin)he.getSkin()).performCommand(Command.BOLD);
+            event.consume();
+          }
+        }
+
+        ignoreKeyEvent = true;
+      }
+    }
   }
 
 //---------------------------------------------------------------------------

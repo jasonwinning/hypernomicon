@@ -57,6 +57,8 @@ final class OfficePreviewer
 
   private OfficePreviewer() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
+  static boolean getFirstConversion() { return OfficePreviewThread.firstConversion; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -126,6 +128,8 @@ final class OfficePreviewer
 
     private static volatile boolean shutDown;
 
+    private static volatile boolean firstConversion = true;
+
 //---------------------------------------------------------------------------
 
     private OfficePreviewThread()
@@ -189,6 +193,8 @@ final class OfficePreviewer
         try
         {
           officeConverter.convert(previewFilePath).to(tempPath).execute();
+
+          firstConversion = false;
         }
         catch (OfficeException e)
         {
@@ -269,6 +275,8 @@ final class OfficePreviewer
           officeManager.start();
 
           officeConverter = LocalConverter.make(officeManager);
+
+          firstConversion = true;
         }
         catch (OfficeException | IllegalStateException | IOException e)
         {

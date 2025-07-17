@@ -23,10 +23,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.SystemUtils;
@@ -35,11 +32,9 @@ import org.hypernomicon.util.filePath.FilePath;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
+import javafx.stage.*;
+
+//---------------------------------------------------------------------------
 
 public final class WindowStack
 {
@@ -317,6 +312,7 @@ public final class WindowStack
 
     } while (tmpOutermostModality != Modality.NONE);
   }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

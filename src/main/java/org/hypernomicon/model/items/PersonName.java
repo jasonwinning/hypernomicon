@@ -173,15 +173,6 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean lacksMixedCase(String s)
-  {
-    return s.chars().noneMatch(Character::isUpperCase)  ||
-           s.chars().noneMatch(Character::isLowerCase);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public int hashCode()
   {
     final int prime = 31;
