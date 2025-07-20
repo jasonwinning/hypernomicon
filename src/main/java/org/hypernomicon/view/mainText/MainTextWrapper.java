@@ -157,12 +157,12 @@ public final class MainTextWrapper
     setReadOnlyHTML(htmlToUse, weToUse, scrollPos, null, false);
   }
 
-  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, int scrollPos, HDT_Record recordToHilite)
+  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, int scrollPos, Set<HDT_Record> recordsToHilite)
   {
-    setReadOnlyHTML(htmlToUse, weToUse, scrollPos, recordToHilite, false);
+    setReadOnlyHTML(htmlToUse, weToUse, scrollPos, recordsToHilite, false);
   }
 
-  private static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, int scrollPos, HDT_Record recordToHilite, boolean alreadyPrepped)
+  private static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, int scrollPos, Set<HDT_Record> recordsToHilite, boolean alreadyPrepped)
   {
     if (alreadyPrepped == false)
       htmlToUse = prepHtmlForDisplay(htmlToUse);
@@ -172,7 +172,7 @@ public final class MainTextWrapper
 
     Document doc = makeDocLinksExternal(jsoupParse(htmlToUse.replace("contenteditable=\"true\"", "contenteditable=\"false\"")));
 
-    addLinks(new HtmlTextNodeList(doc.body()), recordToHilite);
+    addLinks(new HtmlTextNodeList(doc.body()), recordsToHilite);
 
     weToUse.loadContent(doc.html().replace("</head>", headContent));
   }

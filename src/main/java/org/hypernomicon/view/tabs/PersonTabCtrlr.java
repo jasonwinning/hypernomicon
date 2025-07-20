@@ -897,17 +897,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     htWorks.addDefaultMenuItems();
 
-    htWorks.addContextMenuItem("Go to work record", HDT_Work.class,
-      work -> ui.goToRecord(work, true));
+    htWorks.addContextMenuItem("Go to work record", HDT_Work    .class, work     -> ui.goToRecord(work    , true));
+    htWorks.addContextMenuItem("Go to file record", HDT_MiscFile.class, miscFile -> ui.goToRecord(miscFile, true));
 
-    htWorks.addContextMenuItem("Go to file record", HDT_MiscFile.class,
-      miscFile -> ui.goToRecord(miscFile, true));
-
-    htWorks.addContextMenuItem("Assign investigations", HDT_Work.class,
-      work -> showInvSelectDialog(htWorks.getRowByRecord(work)));
-
-    htWorks.addContextMenuItem("Assign investigations", HDT_MiscFile.class,
-      miscFile -> showInvSelectDialog(htWorks.getRowByRecord(miscFile)));
+    htWorks.addContextMenuItem("Assign investigations", HDT_Work    .class, work     -> showInvSelectDialog(htWorks.getRowByRecord(work    )));
+    htWorks.addContextMenuItem("Assign investigations", HDT_MiscFile.class, miscFile -> showInvSelectDialog(htWorks.getRowByRecord(miscFile)));
   }
 
 //---------------------------------------------------------------------------

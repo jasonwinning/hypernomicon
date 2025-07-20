@@ -20,10 +20,7 @@ package org.hypernomicon.query;
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.db;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.query.Query.FilteredFolderQuery;

@@ -20,6 +20,8 @@ package org.hypernomicon;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
+//---------------------------------------------------------------------------
+
 public final class Main
 {
 
@@ -28,7 +30,6 @@ public final class Main
 
   private Main() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static void main(String[] args)

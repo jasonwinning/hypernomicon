@@ -26,31 +26,27 @@ import java.util.LinkedHashSet;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.query.sources.AllQuerySource;
-import org.hypernomicon.query.sources.DatasetQuerySource;
-import org.hypernomicon.query.sources.FilteredQuerySource;
-import org.hypernomicon.query.sources.QuerySource;
+import org.hypernomicon.query.sources.*;
 import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.populators.Populator;
-import org.hypernomicon.view.populators.RecordByTypePopulator;
-import org.hypernomicon.view.populators.RecordTypePopulator;
-import org.hypernomicon.view.populators.VariablePopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.concurrent.Worker.State;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 public abstract class Query<HDT_T extends HDT_Record>
 {
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final int queryID;
   private final String description;
+
+//---------------------------------------------------------------------------
 
   private Query(int queryID, String description)
   {
@@ -58,9 +54,14 @@ public abstract class Query<HDT_T extends HDT_Record>
     this.description = description;
   }
 
+//---------------------------------------------------------------------------
+
   public int getID() { return queryID; }
 
   public String getDescription() { return description; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public final QuerySource getSource(QueryType queryType, HyperTableRow row)
   {
@@ -70,6 +71,9 @@ public abstract class Query<HDT_T extends HDT_Record>
 
     return getSource(origSource, row.getCell(QueryCtrlr.OPERAND_1_COL_NDX), row.getCell(QueryCtrlr.OPERAND_2_COL_NDX), row.getCell(QueryCtrlr.OPERAND_3_COL_NDX));
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   /**
    * Override this function to return whether this query should be shown as an

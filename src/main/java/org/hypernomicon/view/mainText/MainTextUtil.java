@@ -265,7 +265,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void addLinks(HtmlTextNodeList nodes, HDT_Record recordToHilite)
+  static void addLinks(HtmlTextNodeList nodes, Set<HDT_Record> recordsToHilite)
   {
     String entirePlainText = nodes.toString();
     Iterator<KeywordLink> keywordLinkIterator = KeywordLinkList.generate(entirePlainText).iterator();
@@ -300,7 +300,7 @@ public final class MainTextUtil
           }
           else
           {
-            String klass = keywordLink.key().record.equals(recordToHilite) ? "hypernomiconHilite" : "";
+            String klass = (recordsToHilite != null) && recordsToHilite.contains(keywordLink.key().record) ? "hypernomiconHilite" : "";
 
             textNode.before(getKeywordLink(displayText, keywordLink, "", klass));  // 4. Insert anchor
           }

@@ -24,28 +24,17 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static java.nio.file.StandardWatchEventKinds.*;
 import static org.hypernomicon.FolderTreeWatcher.WatcherEvent.WatcherEventKind.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static java.nio.file.StandardWatchEventKinds.*;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.HyperPath;
@@ -64,6 +53,10 @@ import javafx.stage.Modality;
 
 public class FolderTreeWatcher
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   static final class WatcherEvent
   {
     enum WatcherEventKind { wekRename, wekDelete, wekCreate, wekModify }
@@ -578,6 +571,9 @@ public class FolderTreeWatcher
       }
     }
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private WatchService watcher;
   private WatcherThread watcherThread;

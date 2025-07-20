@@ -57,9 +57,7 @@ import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.populators.QueryPopulator.QueryCell;
-import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper;
+import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper.CollapsedState;
 import org.hypernomicon.util.boolEvaluator.BoolEvaluator;
 import org.hypernomicon.util.boolEvaluator.BoolExpression;
@@ -418,7 +416,7 @@ public final class QueryCtrlr
     {
       int scrollPos = queriesTabCtrlr.getUseTextViewInfo() ? queriesTabCtrlr.getView().getTextInfo().scrollPos : (activatingTab ? scrollPosPriorToBeingDeactivated : 0);
 
-      MainTextWrapper.setReadOnlyHTML(HDT_Record.getDescHtml(curResult), webView.getEngine(), scrollPos, ui.currentFindInDescriptionText().isBlank() ? getRecordToHilite() : null);
+      MainTextWrapper.setReadOnlyHTML(HDT_Record.getDescHtml(curResult), webView.getEngine(), scrollPos, ui.currentFindInDescriptionText().isBlank() ? getRecordsToHilite() : null);
     }
 
     setPreview();
@@ -940,7 +938,7 @@ public final class QueryCtrlr
 
     if (resultsBackingList.isEmpty() == false)
     {
-      if (getRecordToHilite() != null)
+      if (collEmpty(getRecordsToHilite()) == false)
       {
         ui.switchToRecordSearch();
 
@@ -1011,47 +1009,64 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 
   /**
-   * Determines the record to highlight based on the query rows in the table.
+   * Determines the record(s) to highlight based on the query rows in the table.
    * <p>
    * This method iterates through all data rows in the table and examines their query type.
-   * It prioritizes finding a record associated with the <code>qtAllRecords</code> query type, and if no such
-   * record is found, it returns the first matching record for a non-report query type.
+   * It prioritizes finding records associated with the <code>qtAllRecords</code> query type, and if no such
+   * records are found, it returns the first matching set of records for a non-report query type.
    *
-   * @return The record to highlight. Returns the first matching record for an all-records query
-   *         if available. Otherwise, returns the first matching record.
+   * @return The record(s) to highlight. Returns the first matching set of records for an all-records query
+   *         if available. Otherwise, returns the first matching set of records.
    */
-  HDT_Record getRecordToHilite()
+  Set<HDT_Record> getRecordsToHilite()
   {
-    HDT_Record altRecord = null;
+    Set<HDT_Record> altSet = null;
 
     for (HyperTableRow row : htFields.dataRows())
     {
       int queryTypeID = row.getID(QUERY_TYPE_COL_NDX);
-      HDT_Record record = getRecordToHiliteForQueryRow(row);
+      Set<HDT_Record> set = getRecordsToHiliteForQueryRow(row);
 
-      if ((queryTypeID == qtAllRecords.getCode()) && (record != null))
-        return record;
+      if ((queryTypeID == qtAllRecords.getCode()) && (collEmpty(set) == false))
+        return set;
 
-      if ((altRecord == null) && (queryTypeID != qtReport.getCode()))
-        altRecord = record;
+      if ((altSet == null) && (queryTypeID != qtReport.getCode()))
+        altSet = set;
     }
 
-    return altRecord;
+    return altSet;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HDT_Record getRecordToHiliteForQueryRow(HyperTableRow row)
+  private static Set<HDT_Record> getRecordsToHiliteForQueryRow(HyperTableRow row)
   {
     switch (row.getID(QUERY_COL_NDX))
     {
       case QUERY_LINKING_TO_RECORD : case QUERY_MATCHING_RECORD :
-
+      {
         HDT_Record record = HyperTableCell.getRecord(row.getCell(OPERAND_2_COL_NDX));
-        if (record instanceof HDT_Concept concept) return concept.term.get();
-        return record;
+        if (record instanceof HDT_Concept concept) return Set.of(concept.term.get());
+        return Set.of(record);
+      }
+      case QUERY_MATCHING_WORK_OR_SUBWORKS :
+      {
+        HDT_Work rootWork = HyperTableCell.getRecord(row.getCell(OPERAND_1_COL_NDX));
+        Set<HDT_Record> set = new HashSet<>();
+        Deque<HDT_Work> queue = new ArrayDeque<>();
+        queue.add(rootWork);
 
+        while (queue.isEmpty() == false)
+        {
+          HDT_Work curWork = queue.poll();
+
+          if (set.add(curWork))
+            queue.addAll(curWork.subWorks);
+        }
+
+        return set;
+      }
       default :
         break;
     }

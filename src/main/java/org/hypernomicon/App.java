@@ -111,7 +111,6 @@ public final class App extends Application
   public static final String appTitle = "Hypernomicon";
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   // Runs in FX application thread before init and before start
 

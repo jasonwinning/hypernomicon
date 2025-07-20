@@ -496,7 +496,7 @@ public class MainTextCtrlr
 
           event.consume();
 
-          if (event.isShortcutDown() && (event.getCode() == KeyCode.C) || (event.getCode() == KeyCode.INSERT))
+          if (event.isShortcutDown() && ((event.getCode() == KeyCode.C) || (event.getCode() == KeyCode.INSERT)))
             Accessor.getPageFor(engine).executeCommand(Command.COPY.getCommand(), null);
 
           return;

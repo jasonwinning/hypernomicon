@@ -31,6 +31,8 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
+//---------------------------------------------------------------------------
+
 public class InterComputerMsg
 {
 
@@ -41,6 +43,8 @@ public class InterComputerMsg
   private final HDB_MessageType type;
   private final long sentTime;
 
+//---------------------------------------------------------------------------
+
   public InterComputerMsg(String source, String dest, HDB_MessageType type)
   {
     this.source = source;
@@ -49,6 +53,8 @@ public class InterComputerMsg
 
     sentTime = Instant.now().getEpochSecond();
   }
+
+//---------------------------------------------------------------------------
 
   public String getSource()        { return source; }
   public String getDest()          { return dest; }

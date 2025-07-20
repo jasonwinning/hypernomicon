@@ -59,12 +59,12 @@ class MentionsAndDisplayIndexTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final MutableBoolean choseNotToWait1 = new MutableBoolean();
+  private static final MutableBoolean choseNotToWait = new MutableBoolean();
 
   private static boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly)
   {
-    boolean rv = db.firstMentionsSecond(mentioner, target, descOnly, choseNotToWait1);
-    assertFalse(choseNotToWait1.booleanValue());
+    boolean rv = db.firstMentionsSecond(mentioner, target, descOnly, choseNotToWait);
+    assertFalse(choseNotToWait.booleanValue());
 
     return rv;
   }
@@ -283,8 +283,7 @@ class MentionsAndDisplayIndexTest
     assertSame(inv, work.investigationSet().iterator().next());
 
     assertTrue(firstMentionsSecond(inv, work, false));
-
-    assertTrue(firstMentionsSecond(inv, work, true));
+    assertTrue(firstMentionsSecond(inv, work, true ));
 
     List<HDT_RecordWithAuthors<? extends RecordAuthors>> list = inv.worksAndMiscFilesStream().toList();
 

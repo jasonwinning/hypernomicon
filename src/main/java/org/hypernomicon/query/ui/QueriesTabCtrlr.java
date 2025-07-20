@@ -178,7 +178,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (newState == Worker.State.SUCCEEDED)
       {
-        if ((curQueryCtrlr.getRecordToHilite() != null) && ui.currentFindInDescriptionText().isBlank())
+        if ((collEmpty(curQueryCtrlr.getRecordsToHilite()) == false) && ui.currentFindInDescriptionText().isBlank())
           highlighter.hiliteAlreadyTagged();
         else
           highlighter.hilite(true);

@@ -40,6 +40,7 @@ import org.hypernomicon.query.Query.FilteredRecordQuery;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextUtil;
+import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -61,21 +62,22 @@ public final class GeneralQueries
 
   // Numeric IDs associated with queries should never be changed. Changing them could break user query favorite settings.
 
-  public static final int  QUERY_WITH_NAME_CONTAINING    =  1,  // "with name containing"
-                           QUERY_ANY_FIELD_CONTAINS      =  2,  // "where any field contains"
-                           QUERY_LIST_ALL                =  3;  // "list all records"
-  private static final int QUERY_WHERE_FIELD             =  4,  // "where field"
-                           QUERY_WHERE_RELATIVE          =  5,  // "where set of records related by being"
-                           QUERY_WHERE_KEY_WORKS         =  6,  // "where key works"
-                           QUERY_RECORD_TYPE             =  7,  // "record type equals"
-                           QUERY_RECORD_EQUALS           =  8,  // "show specified record"
-                           QUERY_ASSOCIATED_WITH_PHRASE  =  9;  // "show the record this phrase would link to"
-  public static final int  QUERY_LINKING_TO_RECORD       = 10,  // "with description linking to record"
-                           QUERY_MATCHING_RECORD         = 11,  // "with any text that would link to this record"
-                           QUERY_MATCHING_STRING         = 12;  // "with any text that would link to a record having this search key"
-  private static final int QUERY_MENTIONED_BY            = 13,  // "that are mentioned by record"
-                           QUERY_WHERE_DISPLAYED_RECORDS = 14,  // "where displayed records"
-                           QUERY_WITH_ORPHANED_IMG_REFS  = 15;  // "with img tag pointing to non-existing Misc. File record"
+  public static final int  QUERY_WITH_NAME_CONTAINING      =  1,  // "with name containing"
+                           QUERY_ANY_FIELD_CONTAINS        =  2,  // "where any field contains"
+                           QUERY_LIST_ALL                  =  3;  // "list all records"
+  private static final int QUERY_WHERE_FIELD               =  4,  // "where field"
+                           QUERY_WHERE_RELATIVE            =  5,  // "where set of records related by being"
+                           QUERY_WHERE_KEY_WORKS           =  6,  // "where key works"
+                           QUERY_RECORD_TYPE               =  7,  // "record type equals"
+                           QUERY_RECORD_EQUALS             =  8,  // "show specified record"
+                           QUERY_ASSOCIATED_WITH_PHRASE    =  9;  // "show the record this phrase would link to"
+  public static final int  QUERY_LINKING_TO_RECORD         = 10,  // "with description linking to record"
+                           QUERY_MATCHING_RECORD           = 11,  // "with any text that would link to this record"
+                           QUERY_MATCHING_STRING           = 12;  // "with any text that would link to a record having this search key"
+  private static final int QUERY_MENTIONED_BY              = 13,  // "that are mentioned by record"
+                           QUERY_WHERE_DISPLAYED_RECORDS   = 14,  // "where displayed records"
+                           QUERY_WITH_ORPHANED_IMG_REFS    = 15;  // "with img tag pointing to non-existing Misc. File record"
+  public static final int  QUERY_MATCHING_WORK_OR_SUBWORKS = 16;  // "with any text that would link to this work or its child works"
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -332,6 +334,69 @@ public final class GeneralQueries
       @Override public boolean autoShowDescription() { return true; }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum < 3; }
+
+      @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
+    });
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    allQueries.add(new FilteredRecordQuery(QUERY_MATCHING_WORK_OR_SUBWORKS, "with any text that would link to this work or its child works")
+    {
+      @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+      {
+        RecordByTypePopulator rtp = new RecordByTypePopulator();
+
+        vp1.setPopulator(row, rtp);
+
+        rtp.setRecordType(row, hdtWork);
+        rtp.populate(row, false);
+
+        return true;
+      }
+
+    //---------------------------------------------------------------------------
+
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        return true;
+      }
+
+    //---------------------------------------------------------------------------
+
+      private final MutableBoolean choseNotToWait = new MutableBoolean();
+
+      @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
+      {
+        HDT_Work specifiedRecord = getRecord(op1);
+
+        addWorkAndSubworks(records, specifiedRecord);
+
+        if (choseNotToWait.isTrue())
+          throw new HDB_InternalError(61187); // Mentions index rebuild should never be running here
+      }
+
+    //---------------------------------------------------------------------------
+
+      private void addWorkAndSubworks(LinkedHashSet<HDT_Record> records, HDT_Work curWork)
+      {
+        if (HDT_Record.isEmpty(curWork, false)) return;
+
+        records.addAll(db.getMentionerSet(curWork, false, choseNotToWait));
+
+        records.remove(curWork);
+        curWork.workFiles.forEach(records::remove);
+
+        curWork.subWorks.forEach(subWork -> addWorkAndSubworks(records, subWork));
+      }
+
+    //---------------------------------------------------------------------------
+
+      @Override public boolean needsMentionsIndex() { return true; }
+
+      @Override public boolean autoShowDescription() { return true; }
+
+      @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum < 2; }
 
       @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
     });
