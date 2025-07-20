@@ -17,6 +17,12 @@
 
 package org.hypernomicon.model.records;
 
+import static org.hypernomicon.model.HyperDB.db;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.RecordAuthors;
 
@@ -41,8 +47,13 @@ public interface HDT_RecordWithAuthors<AuthorsType extends RecordAuthors> extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  default String getShortAuthorsStr(boolean fnis) { return Author.getShortAuthorsStr(getAuthors().stream(), false, fnis); }
-  default String getLongAuthorsStr ()             { return Author.getLongAuthorsStr (getAuthors().stream()             ); }
+  default String getShortAuthorsStr(boolean fnis)         { return Author.getShortAuthorsStr(getAuthors().stream(), false, fnis); }
+  default String getLongAuthorsStr ()                     { return Author.getLongAuthorsStr (getAuthors().stream()             ); }
+
+  default Set<HDT_Investigation> investigationSet()       { return investigationStream().collect(Collectors.toSet()); }
+
+  default Stream<HDT_Investigation> investigationStream() { return db.keyWorkMentionerStream(this, HDT_Investigation.class); }
+  default Stream<HDT_WorkLabel    > labelStream        () { return db.keyWorkMentionerStream(this, HDT_WorkLabel    .class); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

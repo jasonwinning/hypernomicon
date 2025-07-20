@@ -18,14 +18,17 @@
 package org.hypernomicon;
 
 import org.hypernomicon.model.TestHyperDB;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
+
 import org.junit.jupiter.api.*;
 
 import static org.hypernomicon.model.records.RecordType.*;
-
+import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
@@ -54,47 +57,98 @@ class MentionsAndDisplayIndexTest
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final MutableBoolean choseNotToWait1 = new MutableBoolean();
+
+  private static boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly)
+  {
+    boolean rv = db.firstMentionsSecond(mentioner, target, descOnly, choseNotToWait1);
+    assertFalse(choseNotToWait1.booleanValue());
+
+    return rv;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean firstDisplaysSecond(HDT_RecordWithMainText displayer, HDT_RecordWithMainText displayed)
+  {
+    boolean rv1 = displayer.getMainText().getDisplayItemsUnmod().stream().filter(item -> item.type == DisplayItemType.diRecord)
+                                                                         .anyMatch(item -> item.record == displayed);
+
+    HDT_RecordWithMainText mainSpoke = displayer.mainSpoke();
+
+    boolean rv2 = db.displayerStream(displayed).anyMatch(mainSpoke::equals);
+
+    assertEquals(rv1, rv2);
+
+    return rv1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean displaysNoRecords(HDT_RecordWithMainText displayer)
+  {
+    return db.displayerStream(displayer).findAny().isEmpty();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Test
   void testFirstMentionsSecond()
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
+    assertDoesNotThrow(() -> person.setSearchKey("abcde"));
+
+    assertFalse(firstMentionsSecond(person, person, false), "A record should not automatically be considered as \"mentioning\" itself.");
+    assertFalse(firstMentionsSecond(person, person, true ), "A record should not automatically be considered as \"mentioning\" itself.");
+
+    assertDoesNotThrow(() -> person.setSearchKey(""));
+
     person.getMainText().setHtml("abcdefg");
 
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
     assertDoesNotThrow(() -> term.setSearchKey("abcde"));
 
-    MutableBoolean choseNotToWait = new MutableBoolean();
-    assertTrue(db.firstMentionsSecond(person, term, false, choseNotToWait));
-    assertFalse(choseNotToWait.booleanValue());
+    HDT_Concept concept = term.concepts.get(0);
+
+    assertTrue(firstMentionsSecond(person, term, false));
+
+    assertFalse(firstMentionsSecond(term, concept, false), "A term should not be considered as \"mentioning\" its concepts or vice versa");
+    assertFalse(firstMentionsSecond(term, concept, true ), "A term should not be considered as \"mentioning\" its concepts or vice versa");
+    assertFalse(firstMentionsSecond(concept, term, false), "A term should not be considered as \"mentioning\" its concepts or vice versa");
+    assertFalse(firstMentionsSecond(concept, term, true ), "A term should not be considered as \"mentioning\" its concepts or vice versa");
 
     assertTrue(db.getMentionerSet(term, false).contains(person));
 
     person.getMainText().setHtml("abcd");
-    assertFalse(db.firstMentionsSecond(person, term, false, choseNotToWait));
-    assertFalse(choseNotToWait.booleanValue());
+    assertFalse(firstMentionsSecond(person, term, false));
 
     assertFalse(db.getMentionerSet(term, false).contains(person));
 
     person.getMainText().setHtml("abcde");
-    assertTrue(db.firstMentionsSecond(person, term, false, choseNotToWait));
-    assertFalse(choseNotToWait.booleanValue());
+    assertTrue(firstMentionsSecond(person, term, false));
 
     assertTrue(db.getMentionerSet(term, false).contains(person));
 
     assertDoesNotThrow(() -> term.setSearchKey("abcdef"));
-    assertFalse(db.firstMentionsSecond(person, term, false, choseNotToWait));
-    assertFalse(choseNotToWait.booleanValue());
+    assertFalse(firstMentionsSecond(person, term, false));
 
     assertFalse(db.getMentionerSet(term, false).contains(person));
 
+    // Cleanup
+
     assertDoesNotThrow(() -> term.setSearchKey(""));
+    person.getMainText().setHtml("");
   }
 
 //---------------------------------------------------------------------------
 
   @Test
-  void testDisplayedAt()
+  void testDisplayedAtAndTermMentionLogic()
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
@@ -109,12 +163,60 @@ class MentionsAndDisplayIndexTest
 
     Set<HDT_Record> set = db.getMentionerSet(concept, false);
     assertTrue(set.contains(person));
+
+    set = db.getMentionerSet(term, false);
+    assertTrue(set.contains(person), "A term's mentioners should include mentioners of its concepts.");
+
+    person.getMainText().setDisplayItemsFromList(List.of());
+
+    assertFalse(firstDisplaysSecond(person, concept));
+    set = db.getMentionerSet(concept, false);
+    assertFalse(set.contains(person));
+
+    person.getMainText().setHtml("abcdefg");
+
+    assertDoesNotThrow(() -> term.setSearchKey("abcde"));
+
+    assertTrue(firstMentionsSecond(person, term, false));
+
+    assertTrue(firstMentionsSecond(person, concept, false), "A concept's mentioners should include mentioners of its term");
+
+    // Cleanup
+
+    assertDoesNotThrow(() -> term.setSearchKey(""));
+    person.getMainText().setHtml("");
   }
 
 //---------------------------------------------------------------------------
 
   @Test
-  void testKeyWorkIndex()
+  void testEmbeddedMiscFiles()
+  {
+    HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+
+    String imageTag = '<' + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
+
+    assertFalse(firstMentionsSecond(note, miscFile, false));
+    assertFalse(firstMentionsSecond(note, miscFile, true ));
+
+    note.getMainText().setHtml("<html><body><div> " + htmlEscaper.escape(imageTag) + "<br></div></body></html>");
+
+    assertTrue(firstMentionsSecond(note, miscFile, false));
+    assertTrue(firstMentionsSecond(note, miscFile, true ));
+
+    // Cleanup
+
+    note.getMainText().setHtml("");
+
+    assertFalse(firstMentionsSecond(note, miscFile, false));
+    assertFalse(firstMentionsSecond(note, miscFile, true ));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void testKeyWorkIndexUniting()
   {
     HDT_Work work = db.createNewBlankRecord(hdtWork);
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
@@ -166,6 +268,110 @@ class MentionsAndDisplayIndexTest
 //---------------------------------------------------------------------------
 
   @Test
+  void testInvestigationMentionLogic()
+  {
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+    HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
+    HDT_Person person = db.createNewBlankRecord(hdtPerson);
+
+    HDT_Investigation inv = db.createNewBlankRecord(hdtInvestigation);
+    inv.person.set(person);
+
+    inv.getMainText().setKeyWorksFromList(List.of(new KeyWork(work)));
+
+    assertEquals(1, work.investigationSet().size());
+    assertSame(inv, work.investigationSet().iterator().next());
+
+    assertTrue(firstMentionsSecond(inv, work, false));
+
+    assertTrue(firstMentionsSecond(inv, work, true));
+
+    List<HDT_RecordWithAuthors<? extends RecordAuthors>> list = inv.worksAndMiscFilesStream().toList();
+
+    assertEquals(1, list.size());
+    assertSame(work, list.get(0));
+
+    inv.getMainText().setKeyWorksFromList(List.of(new KeyWork(miscFile)));
+
+    assertTrue (firstMentionsSecond(inv, miscFile, false));
+    assertFalse(firstMentionsSecond(inv, work    , false));
+
+    assertTrue (firstMentionsSecond(inv, miscFile, true));
+    assertFalse(firstMentionsSecond(inv, work    , true));
+
+    list = inv.worksAndMiscFilesStream().toList();
+    assertEquals(1, list.size());
+    assertSame(miscFile, list.get(0));
+
+    assertEquals(0, work.investigationSet().size());
+    assertEquals(1, miscFile.investigationSet().size());
+    assertSame(inv, miscFile.investigationSet().iterator().next());
+
+    assertDoesNotThrow(() -> person.setSearchKey("abcde"));
+
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+
+    note.getMainText().setHtml("abcdefg");
+
+    assertFalse(firstMentionsSecond(note, inv, true ), "An investigation's mentioners should not include mentioners of its person.");
+    assertFalse(firstMentionsSecond(note, inv, false), "An investigation's mentioners should not include mentioners of its person.");
+
+    assertDoesNotThrow(() -> person.setSearchKey(""));
+    assertDoesNotThrow(() -> inv.setSearchKey("abcde"));
+
+    assertTrue(firstMentionsSecond(note, person, true ), "An persons's mentioners should include mentioners of its investigations.");
+    assertTrue(firstMentionsSecond(note, person, false), "An persons's mentioners should include mentioners of its investigations.");
+
+    // Cleanup
+
+    note.getMainText().setHtml("");
+    assertDoesNotThrow(() -> inv.setSearchKey(""));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void testLabelMentionLogic()
+  {
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+    HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
+
+    HDT_WorkLabel label  = db.createNewBlankRecord(hdtWorkLabel);
+
+    label.getMainText().setKeyWorksFromList(List.of(new KeyWork(work)));
+
+    assertEquals(1, work.labelStream().count());
+    assertSame(label, work.labelStream().findFirst().orElse(null));
+
+    assertTrue(firstMentionsSecond(label, work, false));
+
+    assertTrue(firstMentionsSecond(label, work, true));
+
+    List<HDT_RecordWithAuthors<? extends RecordAuthors>> list = label.worksAndMiscFilesStream().toList();
+
+    assertEquals(1, list.size());
+    assertSame(work, list.get(0));
+
+    label.getMainText().setKeyWorksFromList(List.of(new KeyWork(miscFile)));
+
+    assertTrue (firstMentionsSecond(label, miscFile, false));
+    assertFalse(firstMentionsSecond(label, work    , false));
+
+    assertTrue (firstMentionsSecond(label, miscFile, true));
+    assertFalse(firstMentionsSecond(label, work    , true));
+
+    list = label.worksAndMiscFilesStream().toList();
+    assertEquals(1, list.size());
+    assertSame(miscFile, list.get(0));
+
+    assertEquals(0, work.labelStream().count());
+    assertEquals(1, miscFile.labelStream().count());
+    assertSame(label, miscFile.labelStream().findFirst().orElse(null));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
   void testDeleteMentioner()
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
@@ -174,14 +380,16 @@ class MentionsAndDisplayIndexTest
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
     assertDoesNotThrow(() -> term.setSearchKey("abcde"));
 
-    MutableBoolean choseNotToWait = new MutableBoolean();
-    assertTrue(db.firstMentionsSecond(person, term, false, choseNotToWait));
+    assertTrue(firstMentionsSecond(person, term, false));
 
     db.deleteRecord(person);
 
     Set<HDT_Record> set = db.getMentionerSet(term, false);
     assertTrue(set.isEmpty());
 
+    // Cleanup
+
+    person.getMainText().setHtml("");
     assertDoesNotThrow(() -> term.setSearchKey(""));
   }
 
@@ -248,6 +456,9 @@ class MentionsAndDisplayIndexTest
 
     db.deleteRecord(note);
     db.deleteRecord(debate);
+
+    // Cleanup
+
     assertDoesNotThrow(() -> term.setSearchKey(""));
   }
 
@@ -274,31 +485,6 @@ class MentionsAndDisplayIndexTest
 
     assertTrue(firstDisplaysSecond(debate, concept));
     assertTrue(firstDisplaysSecond(note  , concept));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static boolean firstDisplaysSecond(HDT_RecordWithMainText displayer, HDT_RecordWithMainText displayed)
-  {
-    boolean rv1 = displayer.getMainText().getDisplayItemsUnmod().stream().filter(item -> item.type == DisplayItemType.diRecord)
-                                                                         .anyMatch(item -> item.record == displayed);
-
-    HDT_RecordWithMainText mainSpoke = displayer.mainSpoke();
-
-    boolean rv2 = db.displayerStream(displayed).anyMatch(mainSpoke::equals);
-
-    assertEquals(rv1, rv2);
-
-    return rv1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static boolean displaysNoRecords(HDT_RecordWithMainText displayer)
-  {
-    return db.displayerStream(displayer).findAny().isEmpty();
   }
 
 //---------------------------------------------------------------------------

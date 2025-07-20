@@ -122,7 +122,6 @@ public class MainTextCtrlr
   public void updateZoom()            { updateZoomFromPref(webView, ZoomPrefKey.MAINTEXT); }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   MainTextCtrlr() throws IOException
   {
@@ -421,8 +420,8 @@ public class MainTextCtrlr
 
     boolean hasModifier = event.isAltDown() || event.isControlDown() || event.isMetaDown();
 
-    boolean isSpecialKey = code.isModifierKey  () || code.isNavigationKey() ||
-                           code.isFunctionKey  () || code.isMediaKey     () ||
+    boolean isSpecialKey = code.isModifierKey() || code.isNavigationKey() ||
+                           code.isFunctionKey() || code.isMediaKey     () ||
                            code.getName().startsWith("Dead");
 
     boolean isExplicitNonPrinting = switch (code)
@@ -496,6 +495,10 @@ public class MainTextCtrlr
           // consume the event if the event is not going to overwrite the selection.
 
           event.consume();
+
+          if (event.isShortcutDown() && (event.getCode() == KeyCode.C) || (event.getCode() == KeyCode.INSERT))
+            Accessor.getPageFor(engine).executeCommand(Command.COPY.getCommand(), null);
+
           return;
         }
       }

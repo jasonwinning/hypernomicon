@@ -24,15 +24,14 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.model.unities.KeyWork;
-import org.hypernomicon.model.unities.MainText;
+import org.hypernomicon.model.unities.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -61,12 +60,18 @@ import netscape.javascript.JSObject;
 
 public final class MainTextWrapper
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public enum MTW_State
   {
     showingReadOnly,
     editing,
     hidden
   }
+
+//---------------------------------------------------------------------------
 
   private static BorderPane bpEditorRoot;
   private static MainTextCtrlr editCtrlr;
@@ -92,7 +97,6 @@ public final class MainTextWrapper
     this.parentPane = parentPane;
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   boolean isEditing()                 { return state == editing; }

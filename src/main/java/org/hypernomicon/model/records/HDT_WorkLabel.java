@@ -20,9 +20,13 @@ package org.hypernomicon.model.records;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.model.unities.KeyWork;
 
 //---------------------------------------------------------------------------
 
@@ -49,6 +53,22 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
   @Override public String listName()          { return name(); }
   @Override public String getCBText()         { return extendedText(); }
   @Override public final boolean isUnitable() { return true; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns a stream of the works and misc. files having this label.
+   * <p>
+   * Note: the stream only includes the works/files for the current label, not its sub-labels.
+   * @return The stream
+   */
+  public Stream<HDT_RecordWithAuthors<? extends RecordAuthors>> worksAndMiscFilesStream()
+  {
+    return getMainText().getKeyWorksUnmod().stream().map(KeyWork::getRecord)
+                                                    .filter(Objects::nonNull)
+                                                    .map(record -> (HDT_RecordWithAuthors<? extends RecordAuthors>) record);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

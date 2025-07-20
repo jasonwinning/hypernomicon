@@ -72,7 +72,6 @@ class HtmlTextNodeList
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   private final List<HtmlTextNode> nodes = new ArrayList<>();
   private final StringBuilder plainText;

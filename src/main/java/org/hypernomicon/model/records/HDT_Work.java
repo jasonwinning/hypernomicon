@@ -29,7 +29,6 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.BibData;
@@ -111,13 +110,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   @Override public String listName()                { return name(); }
   @Override public HyperPath getPath()              { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.get(0).getPath(); }
   @Override public WorkAuthors getAuthors()         { return authors; }
-
-//---------------------------------------------------------------------------
-
-  public Set<HDT_Investigation> investigationSet()       { return investigationStream().collect(Collectors.toSet()); }
-
-  public Stream<HDT_Investigation> investigationStream() { return db.keyWorkMentionerStream(this, HDT_Investigation.class); }
-  public Stream<HDT_WorkLabel    > labelStream        () { return db.keyWorkMentionerStream(this, HDT_WorkLabel    .class); }
 
 //---------------------------------------------------------------------------
 

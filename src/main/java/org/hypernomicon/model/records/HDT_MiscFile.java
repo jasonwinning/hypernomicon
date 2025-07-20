@@ -24,7 +24,6 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.authors.*;
@@ -65,7 +64,6 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
 
   public boolean getAnnotated()                  { return getTagBoolean(tagAnnotated); }
   public void setAnnotated(boolean val)          { updateTagBoolean(tagAnnotated, val); }
-  public Stream<HDT_WorkLabel> labelStream()     { return db.keyWorkMentionerStream(this, HDT_WorkLabel.class); }
 
   @Override public HyperPath getPath()           { return path; }
   @Override public RecordAuthors getAuthors()    { return nullSwitch(work.get(), new FileAuthors(getObjList(rtAuthorOfFile), this), HDT_Work::getAuthors); }

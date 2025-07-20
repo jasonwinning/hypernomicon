@@ -65,7 +65,6 @@ import static java.util.Collections.*;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -490,7 +489,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       row.setCellValue(1, file, "File" + (file.fileType.isNull() ? "" : " (" + file.fileType.get().name() + ')'));
 
       row.setCellValue(2, file, "");
-      row.setCellValue(3, file, "");
+
+      updateInvInWorkRow(row, file);
+
       row.setCellValue(4, file, file.name());
     });
 
@@ -592,14 +593,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private static void addMentioners(HDT_RecordWithAuthors<? extends RecordAuthors> mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
   {
-    Consumer<HDT_WorkLabel> consumer = label ->
+    mentioned.labelStream().forEach(label ->
     {
       if ((label.hasHub() == false) && (topicRecordsAdded.contains(label) == false))
         otherToAdd.add(label);
-    };
-
-    if      (mentioned.getType() == hdtWork    ) ((HDT_Work    ) mentioned).labelStream().forEach(consumer);
-    else if (mentioned.getType() == hdtMiscFile) ((HDT_MiscFile) mentioned).labelStream().forEach(consumer);
+    });
 
     db.keyWorkMentionerStream(mentioned, true).forEachOrdered(mentioner ->
     {
@@ -907,6 +905,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htWorks.addContextMenuItem("Assign investigations", HDT_Work.class,
       work -> showInvSelectDialog(htWorks.getRowByRecord(work)));
+
+    htWorks.addContextMenuItem("Assign investigations", HDT_MiscFile.class,
+      miscFile -> showInvSelectDialog(htWorks.getRowByRecord(miscFile)));
   }
 
 //---------------------------------------------------------------------------
@@ -1142,9 +1143,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htWorks.setFilter(row ->
     {
       HDT_Record record = row.getRecord();
-      if ((record == null) || (record.getType() != hdtWork)) return false;
+      if ((record == null) || ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile))) return false;
 
-      return ((HDT_Work) record).investigationSet().contains(curInvestigation);
+      return curInvestigation.worksAndMiscFilesStream().anyMatch(record_ -> record == record_);
     });
 
     curInvestigation.viewNow();
@@ -1250,7 +1251,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     htWorks.dataRows().forEach(row ->
     {
-      if (row.getRecordType() != hdtWork) return;
+      if ((row.getRecordType() != hdtWork) && (row.getRecordType() != hdtMiscFile)) return;
 
       updateInvInWorkRow(row, row.getRecord());
     });
@@ -1259,20 +1260,20 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateInvInWorkRow(HyperTableRow row, HDT_Work work)
+  private void updateInvInWorkRow(HyperTableRow row, HDT_RecordWithAuthors<? extends RecordAuthors> workOrMiscFile)
   {
-    HDT_Investigation inv = work.investigationStream().findFirst().orElse(null);
-    row.setCellValue(3, inv == null ? -1 : inv.getID(), getInvText(work, curPerson), hdtInvestigation);
+    HDT_Investigation inv = workOrMiscFile.investigationStream().findFirst().orElse(null);
+    row.setCellValue(3, inv == null ? -1 : inv.getID(), getInvText(workOrMiscFile, curPerson), hdtInvestigation);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String getInvText(HDT_Work work, HDT_Person person)
+  private String getInvText(HDT_RecordWithAuthors<? extends RecordAuthors> workOrMiscFile, HDT_Person person)
   {
-    return work.investigationStream().filter(inv -> inv.person.get() == person)
-                                     .map(this::invName)
-                                     .collect(Collectors.joining(", "));
+    return workOrMiscFile.investigationStream().filter(inv -> inv.person.get() == person)
+                                               .map(this::invName)
+                                               .collect(Collectors.joining(", "));
   }
 
 //---------------------------------------------------------------------------
@@ -1289,16 +1290,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   public void showInvSelectDialog(HyperTableRow row)
   {
-    if (row.getRecordType() != hdtWork) return;
+    HDT_RecordWithAuthors<? extends RecordAuthors> workOrMiscFile = row.getRecord();
 
-    HDT_Work work = row.getRecord();
-
-    InvestigationsDlgCtrlr dlg = new InvestigationsDlgCtrlr(work, invViews, curPerson);
+    InvestigationsDlgCtrlr dlg = new InvestigationsDlgCtrlr(workOrMiscFile, invViews, curPerson);
 
     if (dlg.showModal() == false)
       return;
 
-    List<HDT_Investigation> investigations = work.investigationStream().collect(Collectors.toCollection(ArrayList::new));
+    List<HDT_Investigation> investigations = workOrMiscFile.investigationStream().collect(Collectors.toCollection(ArrayList::new));
 
     for (InvestigationSetting is : dlg.listView.getItems())
       if (is.getSelected())
@@ -1318,7 +1317,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       addInvView(inv, false);
     }
 
-    MainText.setKeyWorkMentioners(work, investigations, HDT_Investigation.class);
+    MainText.setKeyWorkMentioners(workOrMiscFile, investigations, HDT_Investigation.class);
 
     updateInvInWorkTable();
   }

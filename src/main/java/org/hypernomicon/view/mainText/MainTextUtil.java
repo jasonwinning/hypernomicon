@@ -159,6 +159,7 @@ public final class MainTextUtil
     double jsEventID = (Double)jsToJava.getMember("eventID");
 
     if (jsEventID == lastEventID) return;
+
     lastEventID = jsEventID;
 
     if (jsEvent == JS_EVENT_OPEN_FILE)

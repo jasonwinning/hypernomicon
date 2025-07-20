@@ -20,9 +20,8 @@ package org.hypernomicon.dialogs;
 import java.util.Set;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
-import org.hypernomicon.model.records.HDT_Investigation;
-import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.authors.RecordAuthors;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.tabs.InvestigationView;
 
 import static org.hypernomicon.util.StringUtil.*;
@@ -33,9 +32,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxListCell;
 
 //---------------------------------------------------------------------------
@@ -79,12 +76,12 @@ public class InvestigationsDlgCtrlr extends ModalDialog
 
 //---------------------------------------------------------------------------
 
-  public InvestigationsDlgCtrlr(HDT_Work work, Iterable<InvestigationView> invViews, HDT_Person curPerson)
+  public InvestigationsDlgCtrlr(HDT_RecordWithAuthors<? extends RecordAuthors> workOrMiscFile, Iterable<InvestigationView> invViews, HDT_Person curPerson)
   {
-    super("InvestigationsDlg", "Assign Investigations - " + work.name(), true);
+    super("InvestigationsDlg", "Assign Investigations - " + workOrMiscFile.name(), true);
 
     final ObservableList<InvestigationSetting> data = FXCollections.observableArrayList();
-    Set<HDT_Investigation> investigations = work.investigationSet();
+    Set<HDT_Investigation> investigations = workOrMiscFile.investigationSet();
 
     curPerson.investigations.forEach(inv ->
     {
