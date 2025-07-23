@@ -28,9 +28,12 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+//---------------------------------------------------------------------------
+
 public final class FolderQueries
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private FolderQueries() { throw new UnsupportedOperationException("Instantiation is not allowed."); }

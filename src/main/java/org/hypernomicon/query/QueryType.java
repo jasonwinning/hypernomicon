@@ -19,15 +19,18 @@ package org.hypernomicon.query;
 
 import static org.hypernomicon.model.records.RecordType.*;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.hypernomicon.model.records.RecordType;
 
+//---------------------------------------------------------------------------
+
 public enum QueryType
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   qtAllRecords    (1,  "Any records"           , hdtNone         ),
   qtReport        (12, "Report"                , hdtNone         ),
   qtPersons       (2,  "Person records"        , hdtPerson       ),
@@ -43,13 +46,14 @@ public enum QueryType
   qtFolders       (13, "Folders"               , hdtFolder       );
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   private final int code;
   private final String caption;
   private final RecordType recordType;
   private static final Map<Integer, QueryType> codeToValMap = new HashMap<>();
   private static final EnumMap<RecordType, QueryType> recordTypeToQueryType;
+
+//---------------------------------------------------------------------------
 
   QueryType(int code, String caption, RecordType recordType)
   {

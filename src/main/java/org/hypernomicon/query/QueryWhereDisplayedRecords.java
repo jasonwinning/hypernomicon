@@ -29,6 +29,8 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+//---------------------------------------------------------------------------
+
 public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks
 {
 

@@ -40,10 +40,9 @@ import org.hypernomicon.query.Query.FilteredRecordQuery;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextUtil;
-import org.hypernomicon.view.populators.RecordByTypePopulator;
-import org.hypernomicon.view.populators.RecordTypePopulator;
-import org.hypernomicon.view.populators.VariablePopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import org.jsoup.nodes.Element;
 
 import javafx.beans.property.Property;
@@ -370,7 +369,7 @@ public final class GeneralQueries
       {
         HDT_Work specifiedRecord = getRecord(op1);
 
-        addWorkAndSubworks(records, specifiedRecord);
+        addMentionersOfWorkAndSubworks(records, specifiedRecord);
 
         if (choseNotToWait.isTrue())
           throw new HDB_InternalError(61187); // Mentions index rebuild should never be running here
@@ -378,7 +377,7 @@ public final class GeneralQueries
 
     //---------------------------------------------------------------------------
 
-      private void addWorkAndSubworks(LinkedHashSet<HDT_Record> records, HDT_Work curWork)
+      private void addMentionersOfWorkAndSubworks(LinkedHashSet<HDT_Record> records, HDT_Work curWork)
       {
         if (HDT_Record.isEmpty(curWork, false)) return;
 
@@ -387,7 +386,7 @@ public final class GeneralQueries
         records.remove(curWork);
         curWork.workFiles.forEach(records::remove);
 
-        curWork.subWorks.forEach(subWork -> addWorkAndSubworks(records, subWork));
+        curWork.subWorks.forEach(subWork -> addMentionersOfWorkAndSubworks(records, subWork));
       }
 
     //---------------------------------------------------------------------------

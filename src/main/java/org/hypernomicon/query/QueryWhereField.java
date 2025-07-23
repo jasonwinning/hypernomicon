@@ -34,12 +34,11 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.query.ui.QueryCtrlr;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.populators.Populator.CellValueType;
-import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.populators.TagItemPopulator;
-import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
+//---------------------------------------------------------------------------
 
 public class QueryWhereField extends RecordQuery
 {

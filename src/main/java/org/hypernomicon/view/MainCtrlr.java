@@ -1406,6 +1406,7 @@ public final class MainCtrlr
     cbResultGoTo = new ComboBox<>();
     cbResultGoTo.setEditable(true);
 
+    limitRowsToMeasureWidthInCB(cbResultGoTo);
     copyRegionLayout(cbGoTo, cbResultGoTo);
 
     noOp(new AutoCompleteCBHelper(cbResultGoTo, true, ResultRow::new));
@@ -2773,7 +2774,9 @@ public final class MainCtrlr
         {
           setAllVisible(true, mnuFindNextAll, mnuFindPreviousAll, mnuFindPreviousInName, mnuFindNextInName);
 
+          limitRowsToMeasureWidthInCB(cbTreeGoTo);
           copyRegionLayout(cbGoTo, cbTreeGoTo);
+
           apListGoTo.getChildren().setAll(cbTreeGoTo);
           tfSelector = cbTreeGoTo.getEditor();
         }

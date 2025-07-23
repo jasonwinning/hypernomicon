@@ -77,7 +77,7 @@ public class PersonForDupCheck
     normalizedLastName = normalizeStrForTrie(nameEngChar.getLast());
 
     buildOmniSearchTrie();
-}
+  }
 
 //---------------------------------------------------------------------------
 
@@ -203,6 +203,8 @@ public class PersonForDupCheck
     for (List<String> nameVariant : variants)
     {
       if ((nameVariant == null) || (nameVariant.isEmpty())) continue;
+
+      if (nameVariant.size() > 8) continue;  // Prevent running out of memory
 
       // Step 1: build variants per name piece
 

@@ -332,6 +332,33 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Optimizes the rendering performance of a {@link ComboBox} with a large number of items
+   * by limiting the number of rows measured when calculating the preferred dropdown ListView
+   * width.
+   * <p>
+   * By default, JavaFX attempts to measure the width of all items in the combo box
+   * to determine the appropriate size for the dropdown ListView. This can be extremely slow
+   * when the item list is large (e.g., thousands of entries). Setting the
+   * {@code "comboBoxRowsToMeasureWidth"} property to a fixed number (e.g., 50)
+   * instructs the skin to measure only the first N rows, significantly improving
+   * responsiveness.
+   * <p>
+   * This workaround is based on internal behavior observed in {@code ComboBoxListViewSkin}
+   * and is not part of the public JavaFX API. It is referenced in
+   * <a href="https://bugs.openjdk.org/browse/JDK-8222326">JDK-8222326</a>.
+   *
+   * @param cb the {@code ComboBox} to optimize
+   * @param <T> the type of items contained in the combo box
+   */
+  public static <T> void limitRowsToMeasureWidthInCB(ComboBox<T> cb)
+  {
+    cb.getProperties().put("comboBoxRowsToMeasureWidth", 50);  // This line causes the dropdown list to display much more quickly when there
+  }                                                            // are thousands of items. See https://bugs.openjdk.org/browse/JDK-8222326
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static List<Node> getChildren(Parent parent)
   {
     if (parent instanceof Pane pane      ) return pane.getChildren();

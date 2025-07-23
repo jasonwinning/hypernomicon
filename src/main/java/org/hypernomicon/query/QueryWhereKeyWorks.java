@@ -29,11 +29,10 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.query.Query.RecordQuery;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.populators.Populator;
-import org.hypernomicon.view.populators.RecordByTypePopulator;
-import org.hypernomicon.view.populators.RecordTypePopulator;
-import org.hypernomicon.view.populators.VariablePopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
+//---------------------------------------------------------------------------
 
 public class QueryWhereKeyWorks extends RecordQuery
 {

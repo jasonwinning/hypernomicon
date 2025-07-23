@@ -136,6 +136,8 @@ public class HyperCB implements CommitableWrapper
     this.table = table;
     this.row = nullSwitch(row, Populator.dummyRow);
 
+    limitRowsToMeasureWidthInCB(cb);
+
     if ((ctrlType != ctNoneditableDropDown) && (ctrlType != ctEditableUnlimitedDropDown) && (ctrlType != ctEditableLimitedDropDown))
     {
       internalErrorPopup(42852);

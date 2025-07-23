@@ -25,9 +25,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -40,6 +38,8 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
+//---------------------------------------------------------------------------
 
 public class QueryWhereBibField extends WorkQuery
 {
