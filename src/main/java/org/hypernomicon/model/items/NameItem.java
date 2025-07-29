@@ -20,11 +20,10 @@ package org.hypernomicon.model.items;
 import static org.hypernomicon.util.StringUtil.*;
 
 //---------------------------------------------------------------------------
-//
-//   All HDT_RecordBase objects hold a reference to an object of this kind
-//
-//---------------------------------------------------------------------------
 
+/**
+ * All HDT_RecordBase objects hold a reference to an object of this kind.
+ */
 public class NameItem
 {
 

@@ -77,9 +77,7 @@ import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.tabs.*;
 import org.hypernomicon.view.wrappers.*;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -124,6 +122,10 @@ import javafx.util.StringConverter;
 
 public final class MainCtrlr
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML Tab tabOmniSelector;
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
@@ -202,7 +204,6 @@ public final class MainCtrlr
 
   private final Property<OmniSearchMode> omniSearchMode = new SimpleObjectProperty<>(OmniSearchMode.asYouType);
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   MenuBar getMenuBar()                        { return menuBar; }

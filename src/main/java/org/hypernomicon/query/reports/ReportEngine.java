@@ -25,13 +25,20 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import static org.hypernomicon.util.UIUtil.*;
 
+//---------------------------------------------------------------------------
+
 public abstract class ReportEngine
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final int QUERY_DUPLICATE_AUTHORS  = 10001;
   public  static final int QUERY_LICENSE_AND_NOTICE = 10002;
   private static final int QUERY_DANGLING_LABELS    = 10003;

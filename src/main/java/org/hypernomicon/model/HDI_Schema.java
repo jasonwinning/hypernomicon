@@ -31,9 +31,12 @@ import static org.hypernomicon.model.Tag.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
+//---------------------------------------------------------------------------
+
 public record HDI_Schema(HyperDataCategory category, RelationType relType, RecordType nestedTargetType, List<Tag> tags)
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public enum HyperDataCategory

@@ -20,9 +20,7 @@ package org.hypernomicon.view.populators;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -31,8 +29,14 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+//---------------------------------------------------------------------------
+
 public class HybridSubjectPopulator extends Populator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final StandardPopulator standardPop;
   private final SubjectPopulator subjPop;
   private final Map<HyperTableRow, Populator> rowToPop;
@@ -45,7 +49,6 @@ public class HybridSubjectPopulator extends Populator
   @Override public RecordType getRecordType(HyperTableRow row)                  { return db.getSubjType(relType); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return matchFromList(row, cell); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HybridSubjectPopulator(RelationType relType)

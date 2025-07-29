@@ -20,9 +20,7 @@ package org.hypernomicon.settings;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
@@ -34,8 +32,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 
+//---------------------------------------------------------------------------
+
 public class EditWebButtonsDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private GridPane gpMain;
   @FXML private Button btnAdd;
 

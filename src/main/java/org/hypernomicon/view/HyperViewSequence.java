@@ -31,9 +31,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static org.hypernomicon.view.tabs.HyperTab.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -62,7 +60,6 @@ public class HyperViewSequence
   private boolean alreadyChangingTab = false;
   private final ClickHoldButton chbBack, chbForward;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   HyperViewSequence(TabPane tabPane, ClickHoldButton chbForward, ClickHoldButton chbBack)
@@ -102,7 +99,6 @@ public class HyperViewSequence
     });
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   HyperView<? extends HDT_Record> getViewInCurrentSlot()                        { return slots.get(cursorNdx); }

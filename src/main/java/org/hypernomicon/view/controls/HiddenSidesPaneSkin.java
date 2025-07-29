@@ -56,9 +56,7 @@
 package org.hypernomicon.view.controls;
 
 import javafx.animation.Animation.Status;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -73,7 +71,13 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
+//---------------------------------------------------------------------------
+
+public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane>
+{
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
     private static final String SHOW = "showPane";
 

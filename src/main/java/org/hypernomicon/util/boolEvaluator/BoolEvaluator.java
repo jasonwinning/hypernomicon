@@ -23,13 +23,18 @@ import java.util.Map;
 
 import org.hypernomicon.util.boolEvaluator.BoolExpressionToken.TokenType;
 
+//---------------------------------------------------------------------------
+
 public final class BoolEvaluator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Map<Integer, Boolean> varVals;
   private final Iterator<BoolExpressionToken> it;
   private final boolean result;
   private BoolExpressionToken tokenAtCursor;
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -17,12 +17,7 @@
 
 package org.hypernomicon.util;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;

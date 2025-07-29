@@ -28,9 +28,12 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+//---------------------------------------------------------------------------
+
 public class CustomPopulator extends RecordPopulator
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @FunctionalInterface public interface PopulateHandler { Stream<HyperTableCell> handle(HyperTableRow row, boolean force); }

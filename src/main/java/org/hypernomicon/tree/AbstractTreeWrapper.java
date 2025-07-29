@@ -29,8 +29,14 @@ import javafx.scene.control.TreeItem;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
+//---------------------------------------------------------------------------
+
 public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>> extends DragNDropContainer<RowType>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   boolean selectingFromCB = false;
 
   protected abstract RowType newRow(HDT_Record rootRecord, TreeModel<RowType> treeModel);
@@ -40,7 +46,6 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
   protected abstract List<RowType> getRowsForRecord(HDT_Record record); // should never return null
   protected abstract void expandMainBranches();
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public final TreeItem<RowType> selectedItem() { return getSelectionModel().getSelectedItem(); }

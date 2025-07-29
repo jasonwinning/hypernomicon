@@ -19,15 +19,10 @@ package org.hypernomicon;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import org.junit.jupiter.api.*;
+
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjSubList;

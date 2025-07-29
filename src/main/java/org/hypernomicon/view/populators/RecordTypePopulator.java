@@ -17,13 +17,7 @@
 
 package org.hypernomicon.view.populators;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,17 +31,27 @@ import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+//---------------------------------------------------------------------------
+
 public class RecordTypePopulator extends Populator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private Set<RecordType> types;
   private boolean changed = true;
   private final List<HyperTableCell> choices = new ArrayList<>();
+
+//---------------------------------------------------------------------------
 
   public RecordTypePopulator(boolean noHubs)
   {
     types = EnumSet.allOf(RecordType.class);
     types.removeAll(noHubs ? EnumSet.of(hdtNone, hdtAuxiliary, hdtHub) : EnumSet.of(hdtNone, hdtAuxiliary));
   }
+
+//---------------------------------------------------------------------------
 
   public RecordTypePopulator(Stream<RecordType> stream)     { setTypes(stream); }
 

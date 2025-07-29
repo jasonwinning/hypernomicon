@@ -21,10 +21,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 import org.hypernomicon.model.records.RecordType;
@@ -35,6 +32,10 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class VariablePopulator extends Populator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Map<HyperTableRow, Populator> rowToPop = new HashMap<>();
   private final Map<HyperTableRow, Boolean> rowToRestricted = new HashMap<>();
   private final Supplier<Populator> defaultPop;

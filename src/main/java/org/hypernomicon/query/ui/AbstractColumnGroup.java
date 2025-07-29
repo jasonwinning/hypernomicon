@@ -35,6 +35,10 @@ import com.google.common.collect.ForwardingCollection;
  */
 abstract class AbstractColumnGroup<GroupItemType extends ColumnGroupItem> extends ForwardingCollection<GroupItemType>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   final ResultsTable resultsTable;
   final String caption;
 

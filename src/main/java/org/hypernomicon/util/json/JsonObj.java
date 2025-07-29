@@ -30,11 +30,11 @@ import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public final class JsonObj implements Cloneable
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static final class CondJsonObj

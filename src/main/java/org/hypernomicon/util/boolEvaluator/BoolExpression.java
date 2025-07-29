@@ -18,11 +18,11 @@
 package org.hypernomicon.util.boolEvaluator;
 
 import java.text.ParseException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 import static org.hypernomicon.util.boolEvaluator.BoolExpressionToken.TokenType.*;
+
+//---------------------------------------------------------------------------
 
 public final class BoolExpression
 {
@@ -38,7 +38,6 @@ public final class BoolExpression
 
   public static BoolExpression create(String string) throws ParseException  { return new BoolExpression(string); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private BoolExpression(String input) throws ParseException

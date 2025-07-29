@@ -24,14 +24,15 @@ import java.util.stream.Collectors;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.view.cellValues.BibEntryHTC;
-import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
-import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
+//---------------------------------------------------------------------------
 
 public class BibEntryPopulator extends Populator
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @FunctionalInterface public interface PopulateHandler { List<? extends BibEntry<?, ?>> handle(HyperTableRow row, boolean force); }

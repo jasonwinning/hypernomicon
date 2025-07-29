@@ -24,15 +24,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.RecordState;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
 
 //---------------------------------------------------------------------------
 
 @SuppressWarnings("serial")
 public final class Exceptions
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private Exceptions() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
 //---------------------------------------------------------------------------

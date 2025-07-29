@@ -37,6 +37,10 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 public class SubjectPopulator extends RecordPopulator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Map<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
   private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
   private final Map<HyperTableRow, HDT_Record> rowToObj;
@@ -45,7 +49,6 @@ public class SubjectPopulator extends RecordPopulator
 
   private HDT_Record obj;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow, DisplayKind displayKind)

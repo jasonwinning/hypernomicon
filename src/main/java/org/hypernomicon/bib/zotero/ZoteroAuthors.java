@@ -36,7 +36,6 @@ import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-
 //---------------------------------------------------------------------------
 
 public class ZoteroAuthors extends BibAuthors

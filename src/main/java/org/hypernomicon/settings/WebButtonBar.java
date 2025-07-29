@@ -28,10 +28,10 @@ import java.util.prefs.Preferences;
 import org.hypernomicon.util.WebButton;
 
 import javafx.collections.FXCollections;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.util.StringConverter;
+
+//---------------------------------------------------------------------------
 
 class WebButtonBar extends WebButtonCtrl
 {
@@ -42,7 +42,6 @@ class WebButtonBar extends WebButtonCtrl
   private final TextField tfCaption;
   private final ComboBox<WebButton> cbPreset;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   WebButtonBar(String prefKey, List<WebButton> webBtnList, TextField tfCaption, ComboBox<WebButton> cbPreset, Button btnAdvanced)

@@ -17,21 +17,13 @@
 
 package org.hypernomicon.tree;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.*;
 
 import javafx.scene.control.TreeItem;
 
@@ -40,8 +32,14 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
+//---------------------------------------------------------------------------
+
 public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final BidiOneToManyRecordMap parentToChildren;
   private final MappingFromRecordToRows recordToRows;
   private final AbstractTreeWrapper<RowType> treeWrapper;
@@ -93,9 +91,6 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
         tcb.checkIfShouldBeRemoved(record);
     }
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

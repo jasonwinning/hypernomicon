@@ -29,21 +29,21 @@ import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsControl;
 import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 public class FolderSettingsCtrlr implements SettingsControl
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopical, tfMiscFiles, tfResults;
   @FXML private Button btnPapers, btnBooks, btnUnentered, btnPictures, btnTopical, btnMiscFiles, btnResults;
   @FXML private RadioButton rbPapers, rbBooks;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void save(boolean noDB) { }

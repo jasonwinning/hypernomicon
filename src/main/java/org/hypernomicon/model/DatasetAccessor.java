@@ -17,9 +17,7 @@
 
 package org.hypernomicon.model;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 

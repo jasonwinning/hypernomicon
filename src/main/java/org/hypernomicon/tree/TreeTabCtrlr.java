@@ -18,26 +18,20 @@
 package org.hypernomicon.tree;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import org.controlsfx.control.BreadCrumbBar;
+
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.mainText.Highlighter;
-import org.hypernomicon.view.mainText.MainTextUtil;
-import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.mainText.*;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.PositionTabCtrlr;
-import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.MenuItemSchema;
-import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper;
+import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.OneTouchExpandableWrapper.CollapsedState;
 
 import com.google.common.collect.LinkedHashMultimap;
@@ -60,12 +54,7 @@ import javafx.concurrent.Worker;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableView;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
@@ -74,6 +63,10 @@ import javafx.scene.web.WebView;
 
 public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private AnchorPane apSelecting;
   @FXML private BorderPane borderPane;
   @FXML private BreadCrumbBar<TreeRow> bcbPath;
@@ -89,7 +82,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private boolean loaded = false;
   private String lastTextHilited = "";
   String textToHilite = "";
-
 
 //---------------------------------------------------------------------------
 
@@ -267,7 +259,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     db.addDBLoadedHandler(() -> loaded = true);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override protected RecordType type()        { return hdtNone; }

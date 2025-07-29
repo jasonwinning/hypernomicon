@@ -32,10 +32,13 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class StandardPopulator extends Populator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final RecordByTypePopulator rtp;
   private final RecordType objType;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public StandardPopulator(RecordType objType)

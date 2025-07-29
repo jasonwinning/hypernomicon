@@ -33,25 +33,26 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+
+//---------------------------------------------------------------------------
 
 public class EditWebButtonCtrlr
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private HBox hBox;
   @FXML private Button btnUp, btnDown, btnDelete;
   @FXML private TextField tfPattern;
 
   private final EnumMap<WebButtonField, CheckBox> fieldToChk = new EnumMap<>(WebButtonField.class);
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private int caretPos = 0;
+
+//---------------------------------------------------------------------------
 
   EditWebButtonCtrlr(UrlPattern urlPattern, String prefKey, EditWebButtonsDlgCtrlr dlg, int rowNdx, GridPane gpMain) throws IOException
   {

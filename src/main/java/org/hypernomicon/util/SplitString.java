@@ -25,8 +25,9 @@ import java.util.stream.Stream;
 
 //---------------------------------------------------------------------------
 
-// Splits strings lazily
-
+/**
+ * Splits strings lazily
+ */
 public class SplitString implements Iterable<String>, Iterator<String>
 {
 

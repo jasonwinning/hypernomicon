@@ -29,6 +29,7 @@ public class PreviewAltDisplayCtrlr
 {
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private @FXML Label lblMessage;
   private @FXML ProgressBar progressBar;

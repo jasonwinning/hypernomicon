@@ -38,6 +38,8 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.scene.control.TableView;
 
+//---------------------------------------------------------------------------
+
 class WebButtonTable extends WebButtonCtrl
 {
 

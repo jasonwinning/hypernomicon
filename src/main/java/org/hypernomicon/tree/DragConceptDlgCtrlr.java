@@ -25,16 +25,20 @@ import java.util.List;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_Glossary;
-import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
+//---------------------------------------------------------------------------
+
 public class DragConceptDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private Label lblMove, lblMoveInfo, lblAdd, lblAddInfo;
 
   private final HDT_Glossary newGlossary;
@@ -42,7 +46,6 @@ public class DragConceptDlgCtrlr extends ModalDialog
 
   @Override protected boolean isValid() { return true; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   DragConceptDlgCtrlr(HDT_Concept childConcept, HDT_Record newParent)

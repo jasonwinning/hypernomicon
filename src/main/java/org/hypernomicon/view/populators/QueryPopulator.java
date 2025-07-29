@@ -20,10 +20,7 @@ package org.hypernomicon.view.populators;
 import static org.hypernomicon.query.ui.QueriesTabCtrlr.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.Query;
@@ -32,14 +29,19 @@ import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+//---------------------------------------------------------------------------
+
 public class QueryPopulator extends Populator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Map<HyperTableRow, QueryType> rowToQueryType;
   private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices;
 
   @Override public CellValueType getValueType() { return cvtQuery; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public QueryPopulator()

@@ -19,10 +19,7 @@ package org.hypernomicon.util.filePath;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Iterator;
-
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
@@ -32,13 +29,18 @@ import org.hypernomicon.util.FilenameMap;
 
 public class FilePathSet implements Set<FilePath>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final FilenameMap<Set<FilePath>> nameToPaths = new FilenameMap<>();
+
+//---------------------------------------------------------------------------
 
   public FilePathSet() { }
 
   public FilePathSet(Collection<? extends FilePath> c) { addAll(c); }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void clear()                         { nameToPaths.clear(); }

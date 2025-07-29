@@ -17,6 +17,8 @@
 
 package org.hypernomicon.util.boolEvaluator;
 
+//---------------------------------------------------------------------------
+
 class BoolExpressionToken
 {
 

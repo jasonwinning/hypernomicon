@@ -36,11 +36,14 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class RecordByTypePopulator extends RecordPopulator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Map<HyperTableRow, RecordType> rowToRecordType = new HashMap<>();
   private final Map<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
   private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public RecordByTypePopulator()

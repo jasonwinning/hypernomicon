@@ -22,8 +22,14 @@ import org.hypernomicon.model.records.HDT_Work;
 
 import static org.hypernomicon.model.records.RecordType.*;
 
+//---------------------------------------------------------------------------
+
 class TreeCellValue implements Comparable<TreeCellValue>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final TreeRow row;
   private final String key;
 

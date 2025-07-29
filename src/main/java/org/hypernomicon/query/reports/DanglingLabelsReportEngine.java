@@ -25,9 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.records.HDT_Debate;
-import org.hypernomicon.model.records.HDT_Position;
-import org.hypernomicon.model.records.HDT_WorkLabel;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
@@ -41,18 +39,17 @@ import javafx.collections.FXCollections;
 import javafx.scene.control.TableView;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
 public class DanglingLabelsReportEngine extends ReportEngine
 {
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private final SetMultimap<HDT_WorkLabel, HDT_WorkLabel> matches = LinkedHashMultimap.create();
   private final List<HyperTableRow> rows = new ArrayList<>();
   private HyperTable ht;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public List<HyperTableRow> getRows()     { return rows; }

@@ -38,12 +38,16 @@ import javafx.scene.input.MouseButton;
 
 public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final HyperTable table;
   private final HyperTableColumn col;
   private final Function<HyperTableRow, Node> graphicProvider;
+
   public static final int INCREMENTAL_ROWS = 20;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   ReadOnlyCell(HyperTable table, HyperTableColumn col, Function<HyperTableRow, Node> graphicProvider)

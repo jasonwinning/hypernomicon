@@ -23,10 +23,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;

@@ -28,9 +28,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 import javafx.scene.Cursor;
-import javafx.scene.control.Label;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableCell;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
@@ -41,6 +39,10 @@ import javafx.scene.layout.HBox;
 
 public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final String text;
   private final HDT_Record record;
 

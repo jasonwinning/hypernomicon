@@ -17,18 +17,21 @@
 
 package org.hypernomicon.util.filePath;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 import org.hypernomicon.util.FilenameMap;
 
+//---------------------------------------------------------------------------
+
 class FilePathIterator implements Iterator<FilePath>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final Iterator<Set<FilePath>> nameIterator;
   private Iterator<FilePath> pathIterator;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public FilePathIterator(FilenameMap<Set<FilePath>> nameToPaths)

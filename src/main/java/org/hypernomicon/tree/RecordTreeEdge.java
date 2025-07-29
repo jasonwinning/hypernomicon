@@ -30,15 +30,12 @@ import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.HyperDB;
-import org.hypernomicon.model.records.HDT_Argument;
-import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_Position;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithAuthors;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText;
+
+//---------------------------------------------------------------------------
 
 class RecordTreeEdge
 {
@@ -50,7 +47,6 @@ class RecordTreeEdge
   private final HDT_Record subj, obj;
   final RelationType relType;
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   RecordTreeEdge(HDT_Record parent, HDT_Record child)

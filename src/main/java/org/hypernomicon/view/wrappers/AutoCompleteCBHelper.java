@@ -32,19 +32,18 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.App.ui;
 import static org.hypernomicon.model.records.RecordType.*;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Work;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.ValueSelectDlgCtrlr;
-import org.hypernomicon.model.KeywordLinkList;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.KeywordLinkList;
+import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 
 //---------------------------------------------------------------------------
 

@@ -23,12 +23,16 @@ import static org.hypernomicon.util.UIUtil.*;
 import org.hypernomicon.dialogs.base.ModalDialog;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+
+//---------------------------------------------------------------------------
 
 public class ChangeParentDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private CheckBox chkDetach1, chkDetach2;
   @FXML private Label label1, label2, label3;
   @FXML private TextField tfChild, tfNewParent, tfOldParent1, tfOldParent2;
@@ -37,7 +41,6 @@ public class ChangeParentDlgCtrlr extends ModalDialog
 
   @Override protected boolean isValid() { return true; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   ChangeParentDlgCtrlr(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)

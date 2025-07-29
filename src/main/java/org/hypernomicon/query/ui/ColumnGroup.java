@@ -23,12 +23,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.query.ui.ResultColumn.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.Tag;
@@ -38,6 +33,8 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.ui.ColumnGroupItem.NonGeneralColumnGroupItem;
 
 import com.google.common.collect.Multimap;
+
+//---------------------------------------------------------------------------
 
 /**
  * <p>A column group is a collection of result columns that can be made visible or invisible all

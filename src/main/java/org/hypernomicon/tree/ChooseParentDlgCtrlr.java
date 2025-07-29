@@ -32,13 +32,16 @@ import org.hypernomicon.model.records.*;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableView;
+import javafx.scene.control.*;
+
+//---------------------------------------------------------------------------
 
 public class ChooseParentDlgCtrlr extends ModalDialog
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private BreadCrumbBar<TreeRow> bcbPath;
   @FXML private TreeTableView<TreeRow> ttv;
   @FXML private TreeTableColumn<TreeRow, TreeCellValue> tcName;
@@ -53,7 +56,6 @@ public class ChooseParentDlgCtrlr extends ModalDialog
 
   HDT_Record getParent() { return parent; }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   ChooseParentDlgCtrlr(HDT_Record child)
