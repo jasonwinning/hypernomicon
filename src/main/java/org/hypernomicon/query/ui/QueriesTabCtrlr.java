@@ -50,7 +50,6 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.controls.CheckBoxMenuItem;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.Highlighter;
-import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.*;
@@ -65,6 +64,7 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 //---------------------------------------------------------------------------
 
@@ -128,7 +128,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML private void mnuCopyToFolderClick()          { copyFilesToFolder(true); }
 
   @Override public boolean saveToRecord(boolean saveNameIfBlank) { return false; }
-  @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
+  @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, webEngineScrollPos(webView.getEngine())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -162,14 +162,14 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (curQueryCtrlr.inReportMode())
       {
-        MainTextUtil.handleJSEvent("", webView.getEngine());
+        handleJSEvent("", webView.getEngine());
         return;
       }
 
       HDT_Record record = activeRecord();
       if (record == null) return;
 
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
+      handleJSEvent(prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
@@ -188,7 +188,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
-    MainTextUtil.webViewAddZoom(webView, ZoomPrefKey.QUERYTAB);
+    webViewAddZoom(webView, ZoomPrefKey.QUERYTAB);
+
+    webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
 
     tfFavName.textProperty().addListener((ob, oldValue, newValue) ->
     {

@@ -635,6 +635,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("deprecation")
   private void addCustomProtocolHandler(String protocol)
   {
     ProtocolService protocolService = browser.getContext().getProtocolService();

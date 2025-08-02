@@ -30,6 +30,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,7 +87,17 @@ public final class MainTextUtil
   /*                                                           */
   /*************************************************************/
 
-  public static final String  EMBEDDED_FILE_TAG = "misc-file";
+  public static final String  EMBEDDED_FILE_TAG = "misc-file",
+
+                              /**
+                               * EMPTY_FONT_CSS is needed because before JavaFX 24, font-family: "" had no effect. Starting
+                               * with JavaFX 24, it sets the font to Times New Roman. Setting it to inherit reverts to the
+                               * previous behavior.
+                               */
+                              EMPTY_FONT_CSS = """
+                                span[style*='font-family: ""'],
+                                span[style*='font-family: &quot;&quot;'] { font-family: inherit !important; }
+                                """;
 
   static final String         NO_LINKS_ATTR              = "hypncon-no-links",
                               ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ",
@@ -996,6 +1007,16 @@ public final class MainTextUtil
   public static Document jsoupParse(String html)
   {
     return Jsoup.parse(html);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String cssStrToDataURI(String css)
+  {
+    String base64 = Base64.getEncoder().encodeToString(css.getBytes(StandardCharsets.UTF_8));
+
+    return "data:text/css;base64," + base64;
   }
 
 //---------------------------------------------------------------------------

@@ -126,7 +126,7 @@ public final class App extends Application
       app = this;
     }
 
-    try (LoggerContext lc = Configurator.initialize(new DefaultConfiguration())) { Configurator.setRootLevel(Level.WARN); }
+    try (LoggerContext _ = Configurator.initialize(new DefaultConfiguration())) { Configurator.setRootLevel(Level.WARN); }
 
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     debugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");

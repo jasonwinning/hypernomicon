@@ -28,6 +28,7 @@ import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
@@ -50,7 +51,6 @@ import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.*;
 
@@ -340,12 +340,15 @@ public final class FileManager extends NonmodalWindow
       HDT_Record record = recordTable.selectedRecord();
       if (record == null) return;
 
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
+      handleJSEvent(prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    MainTextUtil.webViewAddZoom(webView, ZoomPrefKey.FILEMGR);
+    webViewAddZoom(webView, ZoomPrefKey.FILEMGR);
+
+    webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
+
   }
 
 //---------------------------------------------------------------------------

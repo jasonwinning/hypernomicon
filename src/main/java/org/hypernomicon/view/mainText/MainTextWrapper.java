@@ -133,6 +133,8 @@ public final class MainTextWrapper
     view.setOnDragDropped(Event::consume);
 
     we.titleProperty().addListener((ob, oldTitle, newTitle) -> handleJSEvent(curWrapper.completeHtml, we, curWrapper.textViewInfo));
+
+    we.setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
   }
 
 //---------------------------------------------------------------------------

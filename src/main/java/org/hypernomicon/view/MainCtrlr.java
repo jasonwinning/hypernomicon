@@ -1477,7 +1477,7 @@ public final class MainCtrlr
       if (confirmRefMgrSecretsSaved && db.bibLibraryIsLinked() && db.getBibLibrary().secretsStillNeedToBeSavedToKeyring())
       {
         // This will probably only be relevant for Linux because the Windows and Mac KeyringProviders
-        // don't have a programmatic way of signalling whether a failure occured besides logging a
+        // don't have a programmatic way of signaling whether a failure occurred besides logging a
         // warning message.
 
         DialogResult result = mrRetry;

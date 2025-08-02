@@ -131,8 +131,12 @@ public class MainTextCtrlr
 
     webView = (WebView) he.lookup(".web-view");
     engine = webView.getEngine();
+
     webViewAddZoom(webView, ZoomPrefKey.MAINTEXT);
+
     highlighter = new Highlighter(engine);
+
+    engine.setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
 
     GridPane.setHgrow(webView, Priority.ALWAYS);
     GridPane.setVgrow(webView, Priority.ALWAYS);

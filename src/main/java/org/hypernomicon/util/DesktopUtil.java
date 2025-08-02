@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -125,6 +126,7 @@ public final class DesktopUtil
       {
         try
         {
+          @SuppressWarnings("deprecation")
           URL urlObj = new URL(url);
           return new URI(urlObj.getProtocol(), urlObj.getUserInfo(), urlObj.getHost(), urlObj.getPort(), urlObj.getPath(), urlObj.getQuery(), urlObj.getRef());
         }
@@ -216,13 +218,11 @@ public final class DesktopUtil
 
   public static boolean exec(boolean showErrMsg, boolean wait, StringBuilder errorSB, List<String> command)
   {
-    if (SystemUtils.IS_OS_MAC)
-    {
-      command.set(0, "-a");
-      command.set(0, "open");
-    }
+    ProcessBuilder pb = new ProcessBuilder(SystemUtils.IS_OS_MAC ?
+      Stream.concat(Stream.of("open", "-a"), command.stream()).toList()
+    :
+      command);
 
-    ProcessBuilder pb = new ProcessBuilder(command);
     int exitValue = 0;
 
     try
@@ -387,13 +387,7 @@ public final class DesktopUtil
     try
     {
       if (SystemUtils.IS_OS_WINDOWS)
-      {
-        // The deprecated method has to be used because otherwise, if any of the array elements contain a space
-        // (which they will if any path components contain a space), the command will not work right. The
-        // deprecated method uses spaces to separate the string into array elements.
-
-        Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + '"').waitFor();
-      }
+        highlightInWindowsExplorer(filePath);
 
       else if (SystemUtils.IS_OS_MAC)
         Runtime.getRuntime().exec(new String[] {"open", "-R", filePath.toString()}).waitFor();
@@ -413,6 +407,19 @@ public final class DesktopUtil
     {
       errorPopup("An error occurred while trying to show the file: " + filePath + ". " + getThrowableMessage(e));
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("deprecation")
+  private static void highlightInWindowsExplorer(FilePath filePath) throws InterruptedException, IOException
+  {
+    // The deprecated method has to be used because otherwise, if any of the array elements contain a space
+    // (which they will if any path components contain a space), the command will not work right. The
+    // deprecated method uses spaces to separate the string into array elements.
+
+    Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + '"').waitFor();
   }
 
 //---------------------------------------------------------------------------

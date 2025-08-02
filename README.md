@@ -50,7 +50,7 @@ Contributions can be submitted via [Pull requests](https://github.com/jasonwinni
 
 ### Prerequisites
 
-* [JDK 17](https://adoptium.net/temurin/releases/?version=17) or later for building 'master' branch
+* [JDK 22](https://adoptium.net/temurin/releases/?version=22) or later for building 'master' branch
 * A recent version of [Git](https://git-scm.com/downloads)
 * [Maven](https://maven.apache.org/download.cgi) version 3.6.3 or greater
 

@@ -28,7 +28,8 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.mainText.*;
+import org.hypernomicon.view.mainText.Highlighter;
+import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.PositionTabCtrlr;
 import org.hypernomicon.view.wrappers.*;
@@ -46,6 +47,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -176,7 +178,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       HDT_Record record = activeRecord();
       if (HDT_Record.isEmpty(record, false)) return;
 
-      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
+      handleJSEvent(prepHtmlForDisplay(HDT_Record.getDescHtml(record)), webView.getEngine());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
@@ -202,7 +204,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
-    MainTextUtil.webViewAddZoom(webView, ZoomPrefKey.TREETAB);
+    webViewAddZoom(webView, ZoomPrefKey.TREETAB);
+
+    webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
 
   //---------------------------------------------------------------------------
   //
@@ -271,7 +275,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void getDividerPositions()  { }
 
   @Override public boolean saveToRecord(boolean saveNameIfBlank) { return true; }
-  @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, MainTextUtil.webEngineScrollPos(webView.getEngine())); }
+  @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, webEngineScrollPos(webView.getEngine())); }
 
   public TreeWrapper getTree()                 { return tree; }
 

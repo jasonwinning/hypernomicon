@@ -76,10 +76,14 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
 
   private final RecordType type;
 
+//---------------------------------------------------------------------------
+
   HyperCore(RecordType type)
   {
     this.type = type;
   }
+
+//---------------------------------------------------------------------------
 
   private int getIDbyIDNdx(int ndx)    { return sortedIDs.get(ndx); }
   private int getIDbyKeyNdx(int ndx)   { return sortedKeys.get(ndx).id(); }

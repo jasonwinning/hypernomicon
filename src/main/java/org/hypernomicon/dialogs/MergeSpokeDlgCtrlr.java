@@ -27,8 +27,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
-import javafx.scene.web.HTMLEditor;
-import javafx.scene.web.WebView;
+import javafx.scene.web.*;
 
 //---------------------------------------------------------------------------
 
@@ -71,6 +70,9 @@ public class MergeSpokeDlgCtrlr extends ModalDialog
 
     if (strNullOrBlank(extractTextFromHTML(mainText1)) && strNotNullOrBlank(extractTextFromHTML(mainText2)))
       rbDesc2.setSelected(true);
+
+    WebEngine we = ((WebView) he3.lookup(".web-view")).getEngine();
+    we.setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
 
     he3.setHtmlText(prepHtmlForEditing(""));
   }

@@ -28,6 +28,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import static java.util.Objects.*;
@@ -61,7 +62,6 @@ import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.controls.WebTooltip;
-import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.*;
 
 import javafx.animation.*;
@@ -237,14 +237,14 @@ public final class BibManager extends NonmodalWindow
 
     htRelatives.addDefaultMenuItems();
 
-    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) -> MainTextUtil.handleJSEvent("", webView.getEngine()));
+    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) -> handleJSEvent("", webView.getEngine()));
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
     webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
-    MainTextUtil.webViewAddZoom(webView, ZoomPrefKey.BIBMGR);
+    webViewAddZoom(webView, ZoomPrefKey.BIBMGR);
 
 //---------------------------------------------------------------------------
 

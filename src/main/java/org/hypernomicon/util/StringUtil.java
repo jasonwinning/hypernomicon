@@ -221,14 +221,11 @@ public final class StringUtil
    */
   public static List<String> convertMultiLineStrToStrList(String str, boolean preserveIntermediateEmpties)
   {
-    //List<String> list = Lists.newArrayList(str.split("\\r?\\n"));
-
     // Normalize newlines to ensure \r\n is treated as a single newline
     str = str.replace("\r\n", "\n").replace("\r", "\n");
 
     // Split the input string by newline and vertical tab characters
     List<String> list = Lists.newArrayList(str.split("[\\n\\v]"));
-
 
     if (list.isEmpty()) return list;
 
