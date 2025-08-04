@@ -253,7 +253,7 @@ public abstract class Author
 
     if (authors.size() == 1)
     {
-      Author author = authors.get(0);
+      Author author = authors.getFirst();
 
       return (firstInitials && (fullForSingleton == false) ? author.getBibName() : author.nameLastFirst()) + (includeRoleSuffixes ? author.getRoleSuffix(true) : "");
     }

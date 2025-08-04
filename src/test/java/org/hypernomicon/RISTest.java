@@ -194,7 +194,7 @@ class RISTest
     getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
-    assertEquals("Kaufman, Frederik" , authorList.get(0).getName().getLastFirst());
+    assertEquals("Kaufman, Frederik" , authorList.getFirst().getName().getLastFirst());
 
     assertEquals(2, editorList.size());
     assertEquals("Humber, James M."  , editorList.get(0).getName().getLastFirst());
@@ -237,7 +237,7 @@ class RISTest
     getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
-    assertEquals("van Hooft, Stan" , authorList.get(0).getName().getLastFirst());
+    assertEquals("van Hooft, Stan" , authorList.getFirst().getName().getLastFirst());
 
     assertEquals(2, editorList.size());
     assertEquals("Humber, James M."  , editorList.get(0).getName().getLastFirst());
@@ -279,7 +279,7 @@ class RISTest
     getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
-    assertEquals("Boorse, Christopher" , authorList.get(0).getName().getLastFirst());
+    assertEquals("Boorse, Christopher" , authorList.getFirst().getName().getLastFirst());
 
     assertEquals(2, editorList.size());
     assertEquals("Humber, James M."  , editorList.get(0).getName().getLastFirst());
@@ -401,7 +401,7 @@ class RISTest
     getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
-    assertEquals("Keizer, Fred", authorList.get(0).getName().getLastFirst());
+    assertEquals("Keizer, Fred", authorList.getFirst().getName().getLastFirst());
 
     assertEquals(0, editorList.size());
     assertEquals(0, translatorList.size());
@@ -442,7 +442,7 @@ class RISTest
     getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
-    assertEquals("Adams, Fred", authorList.get(0).getName().getLastFirst());
+    assertEquals("Adams, Fred", authorList.getFirst().getName().getLastFirst());
 
     assertEquals(0, editorList.size());
     assertEquals(0, translatorList.size());
@@ -575,7 +575,7 @@ class RISTest
     getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
-    assertEquals("Steward, Helen", authorList.get(0).getName().getLastFirst());
+    assertEquals("Steward, Helen", authorList.getFirst().getName().getLastFirst());
 
     assertEquals(0, editorList.size());
     assertEquals(0, translatorList.size());
@@ -674,7 +674,7 @@ class RISTest
     getLists(risBibData.getAuthors(), authorList, editorList, translatorList);
 
     assertEquals(1, authorList.size());
-    assertEquals("Branswell, Helen", authorList.get(0).getName().getLastFirst());
+    assertEquals("Branswell, Helen", authorList.getFirst().getName().getLastFirst());
 
     assertEquals(0, editorList.size());
     assertEquals(0, translatorList.size());

@@ -34,7 +34,7 @@ class FilePathIterator implements Iterator<FilePath>
 
 //---------------------------------------------------------------------------
 
-  public FilePathIterator(FilenameMap<Set<FilePath>> nameToPaths)
+  FilePathIterator(FilenameMap<Set<FilePath>> nameToPaths)
   {
     nameIterator = nameToPaths.values().iterator();
     pathIterator = nameIterator.hasNext() ? nameIterator.next().iterator() : null;

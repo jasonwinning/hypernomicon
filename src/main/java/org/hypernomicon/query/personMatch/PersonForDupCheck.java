@@ -246,7 +246,7 @@ public class PersonForDupCheck
 
         for (List<String> tokenVariant : tokenVariants)
         {
-          char c = tokenVariant.get(0).charAt(0);
+          char c = tokenVariant.getFirst().charAt(0);
 
           trieNode = trieNode.insertChar(c);
         }
@@ -294,7 +294,7 @@ public class PersonForDupCheck
     {
       selectedVariantForAllNames.add(token);
       buildNameVariantAndInsert(tokenVariantsForAllNames, selectedVariantForAllNames);
-      selectedVariantForAllNames.remove(selectedVariantForAllNames.size() - 1);
+      selectedVariantForAllNames.removeLast();
     }
   }
 

@@ -274,7 +274,7 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
 
   public String format(List<String> authors, String year)
   {
-    return format(authors, authors.get(0), year, false, null, false);
+    return format(authors, authors.getFirst(), year, false, null, false);
   }
 
   public String format(List<String> authors, String singleAuthorName, String year, boolean addLetter, HDT_Work work, boolean keyWorkLink)

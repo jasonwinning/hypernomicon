@@ -275,7 +275,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   @SuppressWarnings("unchecked") void sort()
   {
-    TreeTableColumn<TreeRow, ?> column = ttv.getColumns().get(0);
+    TreeTableColumn<TreeRow, ?> column = ttv.getColumns().getFirst();
 
     column.setSortable(true);
     column.sortTypeProperty().set(SortType.ASCENDING);
@@ -283,7 +283,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     ObservableList<TreeTableColumn<TreeRow, ?>> list = ttv.getSortOrder();
 
-    if ((list.size() != 1) || (list.get(0) != column))
+    if ((list.size() != 1) || (list.getFirst() != column))
       list.setAll(column);
     else
       ttv.sort();
@@ -382,7 +382,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   private static TreeItem<TreeRow> lastDescendant(TreeItem<TreeRow> treeItem)
   {
     return treeItem.getChildren().size() > 0 ?
-      lastDescendant(treeItem.getChildren().get(treeItem.getChildren().size() - 1))
+      lastDescendant(treeItem.getChildren().getLast())
     :
       treeItem;
   }
@@ -393,7 +393,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   private static TreeItem<TreeRow> getNext(TreeItem<TreeRow> item, boolean fromChild)
   {
     return (fromChild == false) && (item.getChildren().size() > 0) ?
-      item.getChildren().get(0)
+      item.getChildren().getFirst()
     :
       nullSwitch(item.nextSibling(), nullSwitch(item.getParent(), null, parent -> getNext(parent, true)), UnaryOperator.identity());
   }

@@ -273,7 +273,7 @@ public class HyperPath
       {
         HDT_WorkFile workFile = (HDT_WorkFile) existingRecord;
         yield workFile.works.size() > 0 ?
-          "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.get(0).getID()
+          "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.getFirst().getID()
         :
           "The file: " + filePath + " is already in use as a work file, ID: " + workFile.getID();
       }

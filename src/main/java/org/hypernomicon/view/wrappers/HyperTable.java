@@ -696,7 +696,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         HDT_Record record = null;
 
         if (collEmpty(choices) == false)
-          record = HyperTableCell.getRecord(choices.get(0));
+          record = HyperTableCell.getRecord(choices.getFirst());
 
         startID = record == null ? 1 : record.getID();
         startType = hdtWorkLabel;
@@ -774,7 +774,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     if (ui.windows.getOutermostModality() == Modality.NONE)
       ui.update();
     else if (couldAddRows)
-      rows.remove(rows.size() - 1);
+      rows.removeLast();
 
     new ObjectOrderDlgCtrlr(this, rows).showModal();
 
@@ -981,13 +981,13 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
    */
   public void initConstrainedResize()
   {
-    boolean colZeroVisible = tv.getColumns().get(0).isVisible();
+    boolean colZeroVisible = tv.getColumns().getFirst().isVisible();
 
     Platform.runLater(() ->  // This has to be done because of bugginess of constrained resize policies. The column widths may not be correctly initialized until you force it to be redrawn.
     {
-      tv.getColumns().get(0).setVisible(!colZeroVisible);
+      tv.getColumns().getFirst().setVisible(!colZeroVisible);
 
-      Platform.runLater(() -> tv.getColumns().get(0).setVisible(colZeroVisible));
+      Platform.runLater(() -> tv.getColumns().getFirst().setVisible(colZeroVisible));
     });
   }
 

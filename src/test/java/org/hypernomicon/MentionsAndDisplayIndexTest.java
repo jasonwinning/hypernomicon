@@ -113,7 +113,7 @@ class MentionsAndDisplayIndexTest
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
     assertDoesNotThrow(() -> term.setSearchKey("abcde"));
 
-    HDT_Concept concept = term.concepts.get(0);
+    HDT_Concept concept = term.concepts.getFirst();
 
     assertTrue(firstMentionsSecond(person, term, false));
 
@@ -152,7 +152,7 @@ class MentionsAndDisplayIndexTest
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
-    HDT_Concept concept = term.concepts.get(0);
+    HDT_Concept concept = term.concepts.getFirst();
 
     assertNotNull(concept);
     assertFalse(firstDisplaysSecond(concept, person));
@@ -288,7 +288,7 @@ class MentionsAndDisplayIndexTest
     List<HDT_RecordWithAuthors<? extends RecordAuthors>> list = inv.worksAndMiscFilesStream().toList();
 
     assertEquals(1, list.size());
-    assertSame(work, list.get(0));
+    assertSame(work, list.getFirst());
 
     inv.getMainText().setKeyWorksFromList(List.of(new KeyWork(miscFile)));
 
@@ -300,7 +300,7 @@ class MentionsAndDisplayIndexTest
 
     list = inv.worksAndMiscFilesStream().toList();
     assertEquals(1, list.size());
-    assertSame(miscFile, list.get(0));
+    assertSame(miscFile, list.getFirst());
 
     assertEquals(0, work.investigationSet().size());
     assertEquals(1, miscFile.investigationSet().size());
@@ -349,7 +349,7 @@ class MentionsAndDisplayIndexTest
     List<HDT_RecordWithAuthors<? extends RecordAuthors>> list = label.worksAndMiscFilesStream().toList();
 
     assertEquals(1, list.size());
-    assertSame(work, list.get(0));
+    assertSame(work, list.getFirst());
 
     label.getMainText().setKeyWorksFromList(List.of(new KeyWork(miscFile)));
 
@@ -361,7 +361,7 @@ class MentionsAndDisplayIndexTest
 
     list = label.worksAndMiscFilesStream().toList();
     assertEquals(1, list.size());
-    assertSame(miscFile, list.get(0));
+    assertSame(miscFile, list.getFirst());
 
     assertEquals(0, work.labelStream().count());
     assertEquals(1, miscFile.labelStream().count());
@@ -399,7 +399,7 @@ class MentionsAndDisplayIndexTest
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
-    HDT_Concept concept = term.concepts.get(0);
+    HDT_Concept concept = term.concepts.getFirst();
 
     person.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(concept)));
 
@@ -417,7 +417,7 @@ class MentionsAndDisplayIndexTest
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
-    HDT_Concept concept = term.concepts.get(0);
+    HDT_Concept concept = term.concepts.getFirst();
 
     person.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(concept)));
 
@@ -468,7 +468,7 @@ class MentionsAndDisplayIndexTest
   {
     HDT_Note note = db.createNewBlankRecord(hdtNote);
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
-    HDT_Concept concept = term.concepts.get(0);
+    HDT_Concept concept = term.concepts.getFirst();
 
     note.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(concept)));
 

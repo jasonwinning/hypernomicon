@@ -221,7 +221,7 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
         }
       }
 
-      ctrlrList.get(0).getToggle().setSelected(true);
+      ctrlrList.getFirst().getToggle().setSelected(true);
     }
 
     @Override protected void mergeInto(BibData mergedBD) { selectedCtrlr().mergeInto(mergedBD); }
@@ -290,7 +290,7 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 
     public void focus()
     {
-      safeFocus(ctrlrList.get(0).getToggle());
+      safeFocus(ctrlrList.getFirst().getToggle());
     }
   }
 

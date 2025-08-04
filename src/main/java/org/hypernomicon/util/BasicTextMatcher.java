@@ -76,7 +76,7 @@ public class BasicTextMatcher
 
 //---------------------------------------------------------------------------
 
-  public BasicTextMatcher(String query, boolean caseSensitive, boolean requireByDefault)
+  public BasicTextMatcher(CharSequence query, boolean caseSensitive, boolean requireByDefault)
   {
     this.caseSensitive = caseSensitive;
 

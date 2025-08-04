@@ -74,7 +74,7 @@ import static org.hypernomicon.util.StringUtil.*;
  *   <li>"James Stacey" =/= "James Garden" (incompatible additions)</li>
  * </ul>
  */
-public final class NameMatcher
+final class NameMatcher
 {
 
 //---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ public final class NameMatcher
   /**
    * Determines whether two personal names (first and last) are plausibly equivalent
    * based on flexible first-name token matching and strict last-name equality.
-   *
+   * <p>
    * This does not do English character transliteration; that must be done by the caller.
    *
    * <p>Last names must match exactly (case-insensitive).
@@ -109,11 +109,11 @@ public final class NameMatcher
    * <p>The result is a matcher that permits flexible name variants including initials and omitted tokens
    * while defending against false positives due to token reuse or conflicting full names.
    *
-   * @param name1 The name of the first person
-   * @param name2 The name of the second person
+   * @param person1 first person
+   * @param person2 second person
    * @return true if the names are considered a match under the defined logic, false otherwise.
    */
-  public static boolean namesMatch(PersonForDupCheck person1, PersonForDupCheck person2)
+  static boolean namesMatch(PersonForDupCheck person1, PersonForDupCheck person2)
   {
     String firstName1 = person1.getNameEngChar().getFirst(),
            lastName1  = person1.getNameEngChar().getLast(),
@@ -123,7 +123,7 @@ public final class NameMatcher
     if (containsNoLetters(lastName1))
     {
       if (containsNoLetters(firstName1))
-        return false;
+        return (firstName1 + " " + lastName1).strip().equalsIgnoreCase((firstName2 + " " + lastName2).strip());
 
       lastName1 = firstName1;
       firstName1 = "";
@@ -132,16 +132,17 @@ public final class NameMatcher
     if (containsNoLetters(lastName2))
     {
       if (containsNoLetters(firstName2))
-        return false;
+        return (firstName1 + " " + lastName1).strip().equalsIgnoreCase((firstName2 + " " + lastName2).strip());
 
       lastName2 = firstName2;
       firstName2 = "";
     }
 
-    if (lastName1.equalsIgnoreCase(lastName2) == false) return false;
+    if (lastName1 .equalsIgnoreCase(lastName2 ) == false) return false;
+    if (firstName1.equalsIgnoreCase(firstName2)         ) return true;
 
-    List<List<String>> variants1 = person1.getTokenizations(),
-                       variants2 = person2.getTokenizations();
+    List<List<String>> variants1 = firstName1.isBlank() ? List.of() : person1.getTokenizations(),
+                       variants2 = firstName2.isBlank() ? List.of() : person2.getTokenizations();
 
     if (variants1.isEmpty() && variants2.isEmpty()) return true;
 

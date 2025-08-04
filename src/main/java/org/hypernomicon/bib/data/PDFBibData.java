@@ -283,7 +283,7 @@ public class PDFBibData extends BibDataStandalone
 
             case "publisher":
 
-              bd.setStr(bfPublisher, elements.get(0).value);
+              bd.setStr(bfPublisher, elements.getFirst().value);
               break;
           }
         }
@@ -292,7 +292,7 @@ public class PDFBibData extends BibDataStandalone
           DateType dt = getByDesc(name);
 
           if (dt != dtUnknown)
-            bd.setDate(BibliographicDate.fromUserStr(elements.get(0).value), dt, false);
+            bd.setDate(BibliographicDate.fromUserStr(elements.getFirst().value), dt, false);
         }
       }
 

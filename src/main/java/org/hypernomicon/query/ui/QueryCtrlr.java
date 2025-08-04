@@ -334,7 +334,7 @@ public final class QueryCtrlr
 
     htFields.addRefreshHandler(tabPane::requestLayout);
 
-    htFields.addRemoveMenuItem(row -> row != htFields.getRows().get(htFields.getRows().size() - 1));
+    htFields.addRemoveMenuItem(row -> row != htFields.getRows().getLast());
 
     resultsTable = new ResultsTable(tvResults, this);
     tvResults.setItems(FXCollections.observableList(resultsBackingList));

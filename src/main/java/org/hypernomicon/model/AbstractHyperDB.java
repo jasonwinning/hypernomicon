@@ -754,7 +754,7 @@ public abstract class AbstractHyperDB
 
   private static void finalizeXMLFile(List<StringBuilder> xmlList, List<String> filenameList, String fileName)
   {
-    xmlList.get(xmlList.size() - 1).append(System.lineSeparator()).append("</records>");
+    xmlList.getLast().append(System.lineSeparator()).append("</records>");
     filenameList.add(fileName);
     xmlList.add(new StringBuilder());
   }
@@ -764,7 +764,7 @@ public abstract class AbstractHyperDB
 
   private void writeDatasetToXML(List<StringBuilder> xmlList, HyperTask task, RecordType type) throws HDB_InternalError, CancelledTaskException
   {
-    StringBuilder xml = xmlList.get(xmlList.size() - 1);
+    StringBuilder xml = xmlList.getLast();
 
     if (xml.isEmpty())
     {
@@ -2089,7 +2089,7 @@ public abstract class AbstractHyperDB
           removePersonIfAdjacentToInvestigation(record, ndx, ndx + 1);
 
     while (initialNavList.size() > INITIAL_NAV_LIST_SIZE)
-      initialNavList.remove(0);
+      initialNavList.removeFirst();
   }
 
 //---------------------------------------------------------------------------

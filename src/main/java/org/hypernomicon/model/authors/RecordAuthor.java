@@ -49,7 +49,7 @@ public final class RecordAuthor extends Author implements Cloneable, Comparable<
   { this(null, null, Objects.requireNonNull(name), false, false, Ternary.Unset); }
 
   public RecordAuthor(HDT_Person person)
-  { this(person.works.isEmpty() ? null : person.works.get(0), person); }
+  { this(person.works.isEmpty() ? null : person.works.getFirst(), person); }
 
   public RecordAuthor(HDT_Work work, HDT_Person person)
   { this(work, person, null, false, false, Ternary.Unset); }

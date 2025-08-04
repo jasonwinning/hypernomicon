@@ -374,7 +374,7 @@ public final class MainCtrlr
       default           -> null;
     }));
 
-    setSelectorTab(selectorTabPane.getTabs().get(selectorTabPane.getTabs().size() - 1));
+    setSelectorTab(selectorTabPane.getTabs().getLast());
 
     ctfOmniGoTo = (CustomTextField) TextFields.createClearableTextField();
     copyRegionLayout(tfOmniGoTo, ctfOmniGoTo);
@@ -1220,7 +1220,7 @@ public final class MainCtrlr
       int num = resultList.size();
 
       if (num == 1)
-        goToRecord(resultList.get(0).getRecord(), false);
+        goToRecord(resultList.getFirst().getRecord(), false);
       else if (num == 0)
       {
         discardLastQuery(backClick);
@@ -1750,7 +1750,7 @@ public final class MainCtrlr
   @FXML private void btnCreateClick()
   {
     if (activeTabEnum() == treeTabEnum)
-      treeHyperTab().getCreateMenuItems().get(0).fire();
+      treeHyperTab().getCreateMenuItems().getFirst().fire();
     else
       createNew(activeType());
   }
@@ -1931,14 +1931,14 @@ public final class MainCtrlr
 
     // Each of these needs to be added at index=0 to prevent IndexOutOfBoundsException on Mac
 
-    items.add(0, makeTopicalMenu("Database root folder" , db.getRootPath  ()));
-    items.add(0, makeTopicalMenu("Search results"       , db.resultsPath  ()));
-    items.add(0, makeTopicalMenu("Misc. files"          , db.miscFilesPath()));
-    items.add(0, makeTopicalMenu("Pictures"             , db.picturesPath ()));
-    items.add(0, makeTopicalMenu("Topical"              , db.topicalPath  ()));
-    items.add(0, makeTopicalMenu("Works not entered yet", db.unenteredPath()));
-    items.add(0, makeTopicalMenu("Books"                , db.booksPath    ()));
-    items.add(0, makeTopicalMenu("Papers"               , db.papersPath   ()));
+    items.addFirst(makeTopicalMenu("Database root folder" , db.getRootPath  ()));
+    items.addFirst(makeTopicalMenu("Search results"       , db.resultsPath  ()));
+    items.addFirst(makeTopicalMenu("Misc. files"          , db.miscFilesPath()));
+    items.addFirst(makeTopicalMenu("Pictures"             , db.picturesPath ()));
+    items.addFirst(makeTopicalMenu("Topical"              , db.topicalPath  ()));
+    items.addFirst(makeTopicalMenu("Works not entered yet", db.unenteredPath()));
+    items.addFirst(makeTopicalMenu("Books"                , db.booksPath    ()));
+    items.addFirst(makeTopicalMenu("Papers"               , db.papersPath   ()));
 
     int separatorPos = items.size();
     FilePath topicalPath = db.topicalPath();
@@ -2129,7 +2129,7 @@ public final class MainCtrlr
     {
       List<ResultRow> resultRows = queryHyperTab().results();
 
-      if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.get(0).getRecord() != record)))
+      if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.getFirst().getRecord() != record)))
         return;
 
       lblStatus.setText("No mentioners: " + getTypeName(type).toLowerCase() + " \"" + record.listName() + '"');
@@ -2318,7 +2318,7 @@ public final class MainCtrlr
     saveViewToViewsTab(new HyperView<>(argumentTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtArgument   , RecordIDPrefKey.ARGUMENT   )));
     saveViewToViewsTab(new HyperView<>(workTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtWork       , RecordIDPrefKey.WORK       )));
 
-    HDT_Concept concept = nullSwitch((HDT_Term)getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtTerm, RecordIDPrefKey.TERM), null, term -> term.concepts.get(0));
+    HDT_Concept concept = nullSwitch((HDT_Term)getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtTerm, RecordIDPrefKey.TERM), null, term -> term.concepts.getFirst());
 
     saveViewToViewsTab(new HyperView<>(termTabEnum,     concept));
 
@@ -2422,7 +2422,7 @@ public final class MainCtrlr
     if (success)
     {
       List<String> mruList = getHdbMRUs();
-      mruList.add(0, hdbPath.toString());
+      mruList.addFirst(hdbPath.toString());
       saveHdbMRUs(mruList);
 
       success = folderTreeWatcher.createNewWatcherAndStart();
@@ -2579,7 +2579,7 @@ public final class MainCtrlr
 
         workFile = (HDT_WorkFile)record;
         if (workFile.works.size() > 0)
-          record = workFile.works.get(0);
+          record = workFile.works.getFirst();
         else
         {
           FileManager.show(workFile.filePath());
@@ -2590,7 +2590,7 @@ public final class MainCtrlr
 
       case hdtTerm :
 
-        record = ((HDT_Term)record).concepts.get(0);
+        record = ((HDT_Term)record).concepts.getFirst();
         break;
 
       default : break;
@@ -2699,7 +2699,7 @@ public final class MainCtrlr
         record = db.records(activeType()).getByKeyNdx(ndx);
 
         viewSequence.saveViewToCurrentSlotAndTab(tabEnum == termTabEnum ?
-          new HyperView<>(termTabEnum, ((HDT_Term)record).concepts.get(0))
+          new HyperView<>(termTabEnum, ((HDT_Term)record).concepts.getFirst())
         :
           new HyperView<>(tabEnum, record));
       }
@@ -2902,7 +2902,7 @@ public final class MainCtrlr
 
       if (menuItems.size() > 0)
       {
-        setToolTip(btnCreateNew, menuItems.get(0).getText());
+        setToolTip(btnCreateNew, menuItems.getFirst().getText());
 
         createMenuItems.addSeparator();
         menuItems.forEach(createMenuItems::add);
@@ -3259,7 +3259,7 @@ public final class MainCtrlr
   {
     if ((db.isLoaded() == false) || collEmpty(args) || (windows.getOutermostModality() != Modality.NONE)) return;
 
-    FilePath filePath = new FilePath(args.get(0));
+    FilePath filePath = new FilePath(args.getFirst());
 
     String mediaTypeStr = getMediaType(filePath).toString();
 

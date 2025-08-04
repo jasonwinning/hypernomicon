@@ -93,8 +93,8 @@ public class PreviewWrapper
   FilePath getFilePathShowing()    { return filePathShowing; }
   void prepareToHide()             { if (initialized) jsWrapper.prepareToHide(); }
   void prepareToShow()             { if (initialized) jsWrapper.prepareToShow(); }
-  int lowestHilitePage()           { return collEmpty(hilitePages) ? -1 : hilitePages.get(0); }
-  int highestHilitePage()          { return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1); }
+  int lowestHilitePage()           { return collEmpty(hilitePages) ? -1 : hilitePages.getFirst(); }
+  int highestHilitePage()          { return collEmpty(hilitePages) ? -1 : hilitePages.getLast(); }
   int getPageByLabel(String label) { return collEmpty(labelToPage) ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
   String getLabelByPage(int page)  { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
   boolean zoom(boolean zoomingIn)  { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }

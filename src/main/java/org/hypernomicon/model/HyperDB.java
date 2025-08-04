@@ -202,7 +202,7 @@ public final class HyperDB extends AbstractHyperDB
       catch (IOException e) { return "[Unknown]"; }
 
       if (collEmpty(s) == false)
-        return s.get(0);
+        return s.getFirst();
     }
 
     return null;

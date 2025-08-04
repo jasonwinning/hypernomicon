@@ -410,7 +410,7 @@ public class HyperViewSequence
       showCurrentViewInUI();
     });
 
-    menu.add(0, item);
+    menu.addFirst(item);
     return menu.size() == 20;
   }
 

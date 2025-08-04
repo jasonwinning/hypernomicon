@@ -78,7 +78,7 @@ class PersonDupTest
 
     assertEquals(name2, matcher.getMatchedAuthor(0).getName());
 
-    return tryOtherWayAround ? checkMatch(name2, name1, false) : true;  // Make sure dup check is always symmetrical
+    return (tryOtherWayAround == false) || checkMatch(name2, name1, false);  // Make sure dup check is always symmetrical
   }
 
 //---------------------------------------------------------------------------
@@ -325,7 +325,7 @@ class PersonDupTest
     assertFalse(checkMatch(new PersonName("", ""), new PersonName("", "")));
     assertFalse(checkMatch(new PersonName(" ", " "), new PersonName(" ", " ")));
     assertFalse(checkMatch(new PersonName(".", ","), new PersonName(";", ";")));
-    assertFalse(checkMatch(new PersonName(" ;., ", " ;., "), new PersonName(" ;., ", " ;., ")));
+    assertTrue(checkMatch(new PersonName(" ;., ", " ;., "), new PersonName(" ;., ", " ;., ")));
     assertTrue(checkMatch(new PersonName("", "Smith"), new PersonName(" ", "Smith")));
 
     assertTrue(checkMatch(new PersonName("J, Q;", "Smith"), new PersonName("John Q.", "Smith")));
@@ -339,7 +339,20 @@ class PersonDupTest
     assertTrue(checkMatch(new PersonName("Jason", ""), new PersonName("Jason", "")));
     assertFalse(checkMatch(new PersonName("Jason R.", ""), new PersonName("Jason", "")));
     assertTrue(checkMatch(new PersonName("J. Q.", ""), new PersonName("J. Q.", " ")));
-    assertFalse(checkMatch(new PersonName("J. Q.", ""), new PersonName("John Q.", " ")));
+    assertTrue(checkMatch(new PersonName("J. Q.", ""), new PersonName("John Q.", " ")));
+
+    assertTrue(checkMatch(new PersonName("John Stuart Mill", ""), new PersonName("", "John Stuart Mill")));
+    assertTrue(checkMatch(new PersonName("### &&& ***", ""), new PersonName("", "### &&& ***")));
+    assertTrue(checkMatch(new PersonName("### &&&", "***"), new PersonName("", "### &&& ***")));
+    assertTrue(checkMatch(new PersonName("### &&&", "***"), new PersonName("### &&& ***", "")));
+    assertTrue(checkMatch(new PersonName("###", "&&& ***"), new PersonName("### &&&", "***")));
+
+    assertTrue(checkMatch(new PersonName("John Stuart", "Mill"), new PersonName("John Stuart Mill", "")));
+    assertTrue(checkMatch(new PersonName("John Stuart", "Mill"), new PersonName("", "John Stuart Mill")));
+    assertTrue(checkMatch(new PersonName("J. Stuart", "Mill"), new PersonName("", "John Stuart Mill")));
+    assertTrue(checkMatch(new PersonName("John Stuart", "Mill"), new PersonName("", "J. Stuart Mill")));
+    assertTrue(checkMatch(new PersonName("J. Stuart", "Mill"), new PersonName("John Stuart Mill", "")));
+    assertTrue(checkMatch(new PersonName("John Stuart", "Mill"), new PersonName("J. Stuart Mill", "")));
   }
 
 //---------------------------------------------------------------------------

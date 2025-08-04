@@ -121,9 +121,9 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
         HDT_Position position = (HDT_Position) this;
 
         if (position.largerDebates.isEmpty() == false)
-          parent = position.largerDebates.get(0);
+          parent = position.largerDebates.getFirst();
         else if (position.largerPositions.isEmpty() == false)
-          parent = position.largerPositions.get(0);
+          parent = position.largerPositions.getFirst();
 
         break;
 
@@ -132,9 +132,9 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
         HDT_Argument argument = (HDT_Argument) this;
 
         if (argument.positions.isEmpty() == false)
-          parent = argument.positions.get(0);
+          parent = argument.positions.getFirst();
         else if (argument.targetArgs.isEmpty() == false)
-          parent = argument.targetArgs.get(0);
+          parent = argument.targetArgs.getFirst();
 
         break;
 
@@ -143,7 +143,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
         HDT_Debate debate = (HDT_Debate) this;
 
         if (debate.largerDebates.isEmpty() == false)
-          parent = debate.largerDebates.get(0);
+          parent = debate.largerDebates.getFirst();
 
         break;
 

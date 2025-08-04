@@ -148,7 +148,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     for (HDI_Schema nestedSchema : nestedSchemas)
     {
-      Tag tag = nestedSchema.tags().get(0);
+      Tag tag = nestedSchema.tags().getFirst();
 
       assert(tagToSchema.containsKey(tag) == false);
 

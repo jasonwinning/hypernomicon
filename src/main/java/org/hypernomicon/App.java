@@ -312,14 +312,14 @@ public final class App extends Application
 
     if (args.size() > 0)
     {
-      FilePath filePath = new FilePath(args.get(0));
+      FilePath filePath = new FilePath(args.getFirst());
 
       if ("hdb".equalsIgnoreCase(filePath.getExtensionOnly()))
       {
         prefs.put(PrefKey.SOURCE_FILENAME, filePath.getNameOnly().toString());
         prefs.put(PrefKey.SOURCE_PATH    , filePath.getDirOnly ().toString());
         hdbExists = true;
-        args.remove(0);
+        args.removeFirst();
       }
     }
 

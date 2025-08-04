@@ -60,7 +60,7 @@ public class WorkSearchKeysCtrlr implements SettingsControl
     WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
 
     while (tpWorkSearchKeys.getTabs().size() > 1)
-      tpWorkSearchKeys.getTabs().remove(0);
+      tpWorkSearchKeys.getTabs().removeFirst();
 
     tpWorkSearchKeys.getTabs().addListener((Change<?> change) ->
     {

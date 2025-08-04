@@ -262,7 +262,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
     // Done disconnecting, now need to disconnect other spoke if only one left
 
     if (spokes.size() == 1)
-      return disuniteRecord(List.copyOf(spokes.keySet()).get(0));
+      return disuniteRecord(List.copyOf(spokes.keySet()).getFirst());
 
     if (spokes.isEmpty())
       db.deleteRecord(this);  // Hub now has no more spokes, must be sacrificed

@@ -69,7 +69,7 @@ public class RecordSelectDlgCtrlr extends ModalDialog
       return;
     }
 
-    RecordType objType = HyperTableCell.getCellType(list.get(0));
+    RecordType objType = HyperTableCell.getCellType(list.getFirst());
 
     htFind = new HyperTable(tvFind, 1, false, ""); htFind.disableRefreshAfterCellUpdate = true;
 

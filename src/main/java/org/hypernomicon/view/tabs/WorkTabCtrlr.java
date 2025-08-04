@@ -518,8 +518,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       changeToUnenteredSetMode();
     });
 
-    Divider div1 = spHoriz1.getDividers().get(0),
-            div2 = spHoriz2.getDividers().get(0);
+    Divider div1 = spHoriz1.getDividers().getFirst(),
+            div2 = spHoriz2.getDividers().getFirst();
 
     div1.positionProperty().bindBidirectional(div2.positionProperty());
 
@@ -645,7 +645,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if ((curWork == null) || (curWork != work) || curWork.workFiles.isEmpty()) return -1;
 
     if (workFile == null)
-      workFile = curWork.workFiles.get(0);
+      workFile = curWork.workFiles.getFirst();
 
     for (HyperTableRow row : htWorkFiles.dataRows())
       if (workFile == row.getRecord())
@@ -695,7 +695,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (curWork.getBibEntryKey().isBlank() == false)
     {
       tabEntry.setText(db.bibLibraryUserFriendlyName() + " entry");
-      tpBib.getTabs().add(0, tabEntry);
+      tpBib.getTabs().addFirst(tabEntry);
       tpBib.getSelectionModel().select(tabEntry);
       taEntry.appendText(curWork.getBibData().createReport());
     }
@@ -750,7 +750,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htSubworks.buildRows(curWork.subWorks, (row, subWork) ->
     {
       if (subWork.authorRecords.size() > 0)
-        row.setCellValue(0, subWork.authorRecords.get(0), subWork.getLongAuthorsStr());
+        row.setCellValue(0, subWork.authorRecords.getFirst(), subWork.getLongAuthorsStr());
       else
         row.setCellValue(0, subWork, subWork.getLongAuthorsStr());
 
@@ -765,7 +765,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       if (arg.positions.size() > 0)
       {
-        HDT_Position target = arg.positions.get(0);
+        HDT_Position target = arg.positions.getFirst();
         row.setCellValue(0, target, "");
         row.setCellValue(1, target, target.listName());
 
@@ -773,7 +773,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
       else if (arg.targetArgs.size() > 0)
       {
-        HDT_Argument target = arg.targetArgs.get(0);
+        HDT_Argument target = arg.targetArgs.getFirst();
         row.setCellValue(0, target, "");
         row.setCellValue(1, target, target.listName());
 
@@ -814,7 +814,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (tfSearchKey.getText().isEmpty())
       if (strNotNullOrEmpty(curWork.getYearStr()))
         if (curWork.authorRecords.size() > 0)
-          if (curWork.authorRecords.get(0).getName().getSingle().isBlank() == false)
+          if (curWork.authorRecords.getFirst().getName().getSingle().isBlank() == false)
             tfSearchKey.setText(curWork.makeWorkSearchKey(true, false));
 
     FilePath filePath = curWork.filePathIncludeExt();
@@ -1025,11 +1025,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htArguments.addContextMenuItem("Position Record...", HDT_Argument.class,
       arg -> arg.positions.size() > 0,
-      arg -> ui.goToRecord(arg.positions.get(0), true));
+      arg -> ui.goToRecord(arg.positions.getFirst(), true));
 
     htArguments.addContextMenuItem("Debate Record...", HDT_Argument.class,
-      arg -> (arg.positions.isEmpty() == false) && (arg.positions.get(0).getLargerDebate() != null),
-      arg -> ui.goToRecord(arg.positions.get(0).getLargerDebate(), true));
+      arg -> (arg.positions.isEmpty() == false) && (arg.positions.getFirst().getLargerDebate() != null),
+      arg -> ui.goToRecord(arg.positions.getFirst().getLargerDebate(), true));
   }
 
 //---------------------------------------------------------------------------
@@ -1042,7 +1042,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     HDT_Work.sourceUnenteredWork = curWork;
 
-    if (ui.importWorkFile(curWork.authorRecords.isEmpty() ? null : curWork.authorRecords.get(0), workFile.filePath(), true))
+    if (ui.importWorkFile(curWork.authorRecords.isEmpty() ? null : curWork.authorRecords.getFirst(), workFile.filePath(), true))
     {
       curWork.setStartPageNum(workFile, startPage);
       curWork.setEndPageNum(workFile, endPage);
@@ -1919,7 +1919,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (collEmpty(files))
       return false;
 
-    FilePath filePath = new FilePath(files.get(0));
+    FilePath filePath = new FilePath(files.getFirst());
     if (db.getRootPath().isSubpath(filePath))
       return false;
 

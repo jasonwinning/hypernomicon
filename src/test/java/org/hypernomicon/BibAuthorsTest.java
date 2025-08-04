@@ -79,9 +79,9 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(1, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
-    assertFalse(outputList.get(0).getIsEditor());
-    assertTrue (outputList.get(0).getIsTrans ());
+    assertEquals("First1", outputList.getFirst().firstName());
+    assertFalse(outputList.getFirst().getIsEditor());
+    assertTrue (outputList.getFirst().getIsTrans ());
 
   //---------------------------------------------------------------------------
 
@@ -92,9 +92,9 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(1, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
-    assertTrue(outputList.get(0).getIsEditor());
-    assertTrue(outputList.get(0).getIsTrans ());
+    assertEquals("First1", outputList.getFirst().firstName());
+    assertTrue(outputList.getFirst().getIsEditor());
+    assertTrue(outputList.getFirst().getIsTrans ());
 
   //---------------------------------------------------------------------------
 
@@ -105,8 +105,8 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(1, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
-    assertTrue(outputList.get(0).getIsAuthor());
+    assertEquals("First1", outputList.getFirst().firstName());
+    assertTrue(outputList.getFirst().getIsAuthor());
 
   //---------------------------------------------------------------------------
 
@@ -117,8 +117,8 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(1, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
-    assertTrue(outputList.get(0).getIsAuthor());
+    assertEquals("First1", outputList.getFirst().firstName());
+    assertTrue(outputList.getFirst().getIsAuthor());
 
   //---------------------------------------------------------------------------
 
@@ -129,9 +129,9 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(1, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
-    assertTrue(outputList.get(0).getIsEditor());
-    assertTrue(outputList.get(0).getIsTrans ());
+    assertEquals("First1", outputList.getFirst().firstName());
+    assertTrue(outputList.getFirst().getIsEditor());
+    assertTrue(outputList.getFirst().getIsTrans ());
 
   //---------------------------------------------------------------------------
 
@@ -144,7 +144,7 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(2, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
+    assertEquals("First1", outputList.getFirst().firstName());
     assertTrue(outputList.get(0).getIsEditor());
     assertTrue(outputList.get(0).getIsTrans ());
     assertEquals("First2", outputList.get(1).firstName());
@@ -272,10 +272,10 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(1, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
-    assertSame(outputList.get(0).getPerson(), person1);
-    assertTrue (outputList.get(0).getIsEditor());
-    assertFalse(outputList.get(0).getIsTrans ());
+    assertEquals("First1", outputList.getFirst().firstName());
+    assertSame(outputList.getFirst().getPerson(), person1);
+    assertTrue (outputList.getFirst().getIsEditor());
+    assertFalse(outputList.getFirst().getIsTrans ());
 
   //---------------------------------------------------------------------------
 
@@ -286,8 +286,8 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(2, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
-    assertNull(outputList.get(0).getPerson());
+    assertEquals("First1", outputList.getFirst().firstName());
+    assertNull(outputList.getFirst().getPerson());
     assertTrue (outputList.get(0).getIsEditor());
     assertFalse(outputList.get(0).getIsTrans ());
     assertEquals("First2", outputList.get(1).firstName());
@@ -304,8 +304,8 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(2, outputList.size());
-    assertEquals("First1", outputList.get(0).firstName());
-    assertNull(outputList.get(0).getPerson());
+    assertEquals("First1", outputList.getFirst().firstName());
+    assertNull(outputList.getFirst().getPerson());
     assertTrue (outputList.get(0).getIsEditor());
     assertFalse(outputList.get(0).getIsTrans ());
     assertEquals("First2", outputList.get(1).firstName());
@@ -322,10 +322,10 @@ class BibAuthorsTest
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     assertEquals(1, outputList.size());
-    assertEquals("First2", outputList.get(0).firstName());
-    assertSame(outputList.get(0).getPerson(), person2);
-    assertTrue(outputList.get(0).getIsEditor());
-    assertTrue(outputList.get(0).getIsTrans ());
+    assertEquals("First2", outputList.getFirst().firstName());
+    assertSame(outputList.getFirst().getPerson(), person2);
+    assertTrue(outputList.getFirst().getIsEditor());
+    assertTrue(outputList.getFirst().getIsTrans ());
 
   //---------------------------------------------------------------------------
 

@@ -229,7 +229,7 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
     Platform.runLater(() ->
     {
       final ObservableList<String> fonts = FXCollections.observableArrayList(Font.getFamilies());
-      fonts.add(0, "");
+      fonts.addFirst("");
       programmaticFontChange = true;
 
       cbFont.setValue("");

@@ -345,7 +345,7 @@ public class SelectWorkDlgCtrlr extends ModalDialog
         List<String> titleList = bdToUse.getMultiStr(BibFieldEnum.bfTitle);
         if (titleList.isEmpty() == false)
         {
-          String title = convertToEnglishChars(titleList.get(0).toLowerCase());
+          String title = convertToEnglishChars(titleList.getFirst().toLowerCase());
 
           if (title.length() > 0)
           {
@@ -494,7 +494,7 @@ public class SelectWorkDlgCtrlr extends ModalDialog
   private static void accommodatePreview(Stage stage, AnchorPane apMain)
   {
     List<Screen> screens = Screen.getScreensForRectangle(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
-    double minHeight = screens.size() == 1 ? screens.get(0).getVisualBounds().getHeight() - 60.0 : 900.0;
+    double minHeight = screens.size() == 1 ? screens.getFirst().getVisualBounds().getHeight() - 60.0 : 900.0;
 
     if (stage.getHeight() < minHeight)
     {

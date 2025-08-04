@@ -530,7 +530,7 @@ public class MainTextCtrlr
           event.consume();
         else if (event.getCode() == KeyCode.B)
         {
-          String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
+          CharSequence selText = (CharSequence) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
 
           if (selText.isEmpty())
           {

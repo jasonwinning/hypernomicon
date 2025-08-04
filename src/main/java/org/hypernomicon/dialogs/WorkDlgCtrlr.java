@@ -354,7 +354,7 @@ public class WorkDlgCtrlr extends ModalDialog
       {
         List<String> list = matchISBN(row.getText(0));
         if (collEmpty(list) == false)
-          industryIdClick(false, null, list.get(0));
+          industryIdClick(false, null, list.getFirst());
       });
 
     return hyperTable;
@@ -648,7 +648,7 @@ public class WorkDlgCtrlr extends ModalDialog
   public static void accommodatePreview(Stage stage, AnchorPane apMain, MasterDetailPane mdp)
   {
     List<Screen> screens = Screen.getScreensForRectangle(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
-    double minWidth = screens.size() == 1 ? screens.get(0).getVisualBounds().getWidth() - 60.0 : 1600.0;
+    double minWidth = screens.size() == 1 ? screens.getFirst().getVisualBounds().getWidth() - 60.0 : 1600.0;
 
     if (stage.getWidth() < minWidth)
     {

@@ -551,7 +551,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htWorks.getTV().getSortOrder().setAll(curPerson == lastPerson ?
       List.copyOf(htWorks.getTV().getSortOrder())
     :
-      List.of(htWorks.getTV().getColumns().get(0)));
+      List.of(htWorks.getTV().getColumns().getFirst()));
 
     setDefaultWorkPreview();
 
@@ -585,7 +585,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
         return;
       }
 
-    PreviewWindow.setPreview(pvsPersonTab, curPerson.works.get(0));
+    PreviewWindow.setPreview(pvsPersonTab, curPerson.works.getFirst());
   }
 
 //---------------------------------------------------------------------------

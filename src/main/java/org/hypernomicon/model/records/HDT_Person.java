@@ -155,7 +155,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   @Override public void expire()
   {
     while (investigations.isEmpty() == false)
-      db.deleteRecord(investigations.get(0));
+      db.deleteRecord(investigations.getFirst());
 
     nullSwitch(subfield.get(), oldSubfield ->
     {
@@ -340,7 +340,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     if (nameList.size() > 0)
     {
-      String name1 = nameList.get(0);
+      String name1 = nameList.getFirst();
 
       if (name1.length() > 0)
       {
@@ -348,7 +348,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
       }
       else
       {
-        keySet.add(initialList.get(0) + ". " + last, false);
+        keySet.add(initialList.getFirst() + ". " + last, false);
 
         for (int ndx = 1; ndx < nameList.size(); ndx++)
           if (nameList.get(ndx).length() > 0)
@@ -366,9 +366,9 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
         keySet.add(name + last, false);
 
-        if (nameList.get(0).length() > 0)
+        if (nameList.getFirst().length() > 0)
         {
-          name = nameList.get(0) + ' ';
+          name = nameList.getFirst() + ' ';
           for (int ndx = 1; ndx < initialList.size(); ndx++)
             name = name + initialList.get(ndx) + ". ";
 
@@ -396,7 +396,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static List<String> parseNickNames(StringBuilder nickNames)
+  private static List<String> parseNickNames(CharSequence nickNames)
   {
     String nickName = "";
     List<String> nickNameList = new ArrayList<>();

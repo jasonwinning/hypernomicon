@@ -233,7 +233,7 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String resolve(String commands, String appPath, FilePath filePath, int pageNum)
+  private static String resolve(String commands, CharSequence appPath, FilePath filePath, int pageNum)
   {
     while (commands.contains(appPathVar))
       commands = commands.replace(appPathVar, appPath);

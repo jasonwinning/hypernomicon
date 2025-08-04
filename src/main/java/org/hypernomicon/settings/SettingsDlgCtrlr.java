@@ -340,7 +340,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     }
     else
     {
-      vbRefMgr.getChildren().remove(0);
+      vbRefMgr.getChildren().removeFirst();
     }
   }
 

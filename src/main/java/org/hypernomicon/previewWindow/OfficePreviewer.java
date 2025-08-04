@@ -268,7 +268,7 @@ final class OfficePreviewer
           if (SystemUtils.IS_OS_MAC && officePath.toLowerCase().endsWith(".app"))  // Allow user to just select the app file
             officePath = officePath + "/Contents";
 
-          officeManager = LocalOfficeManager.builder().portNumbers(ports.get(0))
+          officeManager = LocalOfficeManager.builder().portNumbers(ports.getFirst())
                                                       .officeHome(officePath)
                                                       .build();
 

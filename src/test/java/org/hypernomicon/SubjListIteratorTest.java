@@ -264,8 +264,8 @@ class SubjListIteratorTest
 
     db.closeAndOpen();
 
-    assertThrows(NoSuchElementException.class, () -> srcList.get(0).largerDebates.add(debate));
-    assertThrows(NoSuchElementException.class, () -> srcList.get(0).largerDebates.add(db.createNewBlankRecord(hdtDebate)));
+    assertThrows(NoSuchElementException.class, () -> srcList.getFirst().largerDebates.add(debate));
+    assertThrows(NoSuchElementException.class, () -> srcList.getFirst().largerDebates.add(db.createNewBlankRecord(hdtDebate)));
 
     HDT_Position newPosition = db.createNewBlankRecord(hdtPosition);
 
@@ -416,7 +416,7 @@ class SubjListIteratorTest
     subjSubList = (HyperSubjSubList<HDT_Position, HDT_Debate>) debate.subPositions.subList(0, 5); // Full range
     assertFalse(subjSubList.isEmpty());
     assertEquals(5, subjSubList.size());
-    assertEquals(subjList.get(0), subjSubList.get(0));
+    assertEquals(subjList.getFirst(), subjSubList.getFirst());
   }
 
 //---------------------------------------------------------------------------

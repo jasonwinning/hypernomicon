@@ -107,7 +107,7 @@ public class ImportBibEntryDlgCtrlr extends ModalDialog
     // Select most recently viewed work if no work was detected
 
     if ((hcbWork.selectedRecord() == null) && (cbWork.getItems().size() > 0))
-      hcbWork.select(cbWork.getItems().get(0));
+      hcbWork.select(cbWork.getItems().getFirst());
   }
 
 //---------------------------------------------------------------------------

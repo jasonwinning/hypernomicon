@@ -243,7 +243,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     spMain.getItems().remove(1);
     tpConcepts = new TabPane(new ConceptTab("General", apDescription));
     spMain.getItems().add(1, tpConcepts);
-    tpConcepts.getTabs().get(0).setClosable(false);
+    tpConcepts.getTabs().getFirst().setClosable(false);
 
     tvRightChildren.getColumns().get(0).setText("Type");
     tvRightChildren.getColumns().get(1).setText("Name of record showing this definition");
@@ -432,7 +432,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       if (first)
       {
-        ((ConceptTab) tpConcepts.getTabs().get(0)).setConcept(concept);
+        ((ConceptTab) tpConcepts.getTabs().getFirst()).setConcept(concept);
         first = false;
       }
       else
@@ -443,7 +443,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     tpConcepts.getSelectionModel().select(getConceptTab(curConcept));
     alreadyChangingTab = false;
 
-    tpConcepts.getTabs().get(0).setContent(null);
+    tpConcepts.getTabs().getFirst().setContent(null);
     getConceptTab(curConcept).setContent(apDescription);
 
     super.updateFromRecord();
@@ -568,7 +568,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       oldGlossaryRow.populateTableRow(editedRow);
 
       HDT_Glossary glossary = curTerm.concepts.stream().noneMatch(koncept -> koncept.glossary.get().getID() == 1) ?
-        curTerm.concepts.get(0).glossary.get()
+        curTerm.concepts.getFirst().glossary.get()
       :
         db.glossaries.getByID(1);
 
@@ -883,7 +883,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       tpConcepts.getTabs().remove(1);
     alreadyChangingTab = false;
 
-    tpConcepts.getTabs().get(0).setContent(apDescription);
+    tpConcepts.getTabs().getFirst().setContent(apDescription);
 
     curTerm    = resetRecord ? null : HDT_Record.getCurrentInstance(curTerm);
     curConcept = resetRecord ? null : HDT_Record.getCurrentInstance(curConcept);

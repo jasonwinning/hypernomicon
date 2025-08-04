@@ -97,7 +97,7 @@ public class HDT_Institution extends HDT_RecordBase
   @Override public void expire()
   {
     while (subInstitutions.isEmpty() == false)
-      db.deleteRecord(subInstitutions.get(0));
+      db.deleteRecord(subInstitutions.getFirst());
 
     super.expire();
   }

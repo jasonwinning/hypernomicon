@@ -247,7 +247,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public HDT_Note closestAncestorNote()
   {
-    return notes.isEmpty() ? nullSwitch(parentFolder(), db.notes.getByID(1), HDT_Folder::closestAncestorNote) : notes.get(0);
+    return notes.isEmpty() ? nullSwitch(parentFolder(), db.notes.getByID(1), HDT_Folder::closestAncestorNote) : notes.getFirst();
   }
 
 //---------------------------------------------------------------------------

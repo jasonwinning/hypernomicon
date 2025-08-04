@@ -340,13 +340,13 @@ public class OmniFinder
         case tierKeyword          -> linkList.stream().anyMatch(keyLink -> keyLink.key().record == record);
         case tierKeywordContains  -> record.getSearchKey().toLowerCase().contains(queryLC);
         case tierPersonMatch,
-             tierPersonMatchStart -> authorMatch(getPersonList(record).get(0), "", curTier);
+             tierPersonMatchStart -> authorMatch(getPersonList(record).getFirst(), "", curTier);
 
         case tierNameContains ->
 
           switch (record.getType())
           {
-            case hdtPerson -> authorMatch(getPersonList(record).get(0), "", tierAuthorContains);
+            case hdtPerson -> authorMatch(getPersonList(record).getFirst(), "", tierAuthorContains);
             default        -> record.getNameEngChar().toLowerCase().contains(queryLC);
           };
 
@@ -414,11 +414,11 @@ public class OmniFinder
               cells.set(3, new RecordHTC(work, work.getShortAuthorsStr(true)));
             else if ((work.getAuthors().size() == 1) && (work.authorRecords.size() == 1))
             {
-              HDT_Person author = work.authorRecords.get(0);
+              HDT_Person author = work.authorRecords.getFirst();
               cells.set(3, new RecordHTC(author, author.getCBText()));
             }
             else
-              cells.set(3, new RecordHTC(work.authorRecords.get(0), work.getShortAuthorsStr(true)));
+              cells.set(3, new RecordHTC(work.authorRecords.getFirst(), work.getShortAuthorsStr(true)));
 
             break;
 
@@ -437,11 +437,11 @@ public class OmniFinder
               cells.set(3, new GenericNonRecordHTC("", hdtPerson));
             else if (authorRecords.size() == 1)
             {
-              HDT_Person author = authorRecords.get(0);
+              HDT_Person author = authorRecords.getFirst();
               cells.set(3, new RecordHTC(author, author.getCBText()));
             }
             else
-              cells.set(3, new RecordHTC(authorRecords.get(0), miscFile.getShortAuthorsStr(true)));
+              cells.set(3, new RecordHTC(authorRecords.getFirst(), miscFile.getShortAuthorsStr(true)));
 
             break;
 

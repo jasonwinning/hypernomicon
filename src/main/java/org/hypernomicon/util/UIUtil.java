@@ -190,12 +190,14 @@ public final class UIUtil
 
   public static void disableAllIff(boolean disable, EventTarget... targets)
   {
-    List.of(targets).forEach(target ->
+    List.of(targets).forEach(target -> { switch (target)
     {
-      if      (target instanceof Node node        ) node    .setDisable(disable);
-      else if (target instanceof Tab tab          ) tab     .setDisable(disable);
-      else if (target instanceof MenuItem menuItem) menuItem.setDisable(disable);
-    });
+      case Node     node     -> node    .setDisable(disable);
+      case Tab      tab      -> tab     .setDisable(disable);
+      case MenuItem menuItem -> menuItem.setDisable(disable);
+
+      default -> { }
+    }});
   }
 
 //---------------------------------------------------------------------------
@@ -203,11 +205,13 @@ public final class UIUtil
 
   public static void setAllVisible(boolean visible, EventTarget... targets)
   {
-    List.of(targets).forEach(target ->
+    List.of(targets).forEach(target -> { switch (target)
     {
-      if      (target instanceof Node node)         node    .setVisible(visible);
-      else if (target instanceof MenuItem menuItem) menuItem.setVisible(visible);
-    });
+      case Node     node     -> node    .setVisible(visible);
+      case MenuItem menuItem -> menuItem.setVisible(visible);
+
+      default -> { }
+    }});
   }
 
 //---------------------------------------------------------------------------
@@ -409,8 +413,8 @@ public final class UIUtil
     List<Node> rootChildren = parent.getChildrenUnmodifiable();
     if (rootChildren.isEmpty()) return;
 
-    Node contextMenuContent = nullSwitch(rootChildren.get(0).lookup(".context-menu"), null,
-                                         bridge -> ((Parent)bridge).getChildrenUnmodifiable().get(0));
+    Node contextMenuContent = nullSwitch(rootChildren.getFirst().lookup(".context-menu"), null,
+                                         bridge -> ((Parent)bridge).getChildrenUnmodifiable().getFirst());
 
     if (contextMenuContent == null) return;
 

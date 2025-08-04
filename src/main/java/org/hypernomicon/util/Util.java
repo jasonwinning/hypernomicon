@@ -1399,24 +1399,33 @@ public final class Util
     if (strNullOrBlank(msg) || "null".equals(msg))
       msg = "";
 
-    if (e instanceof UnknownHostException)
-      return "Unable to connect to host" + (msg.isEmpty() ? "" :  ": ") + msg;
-
-    if (e instanceof HttpResponseException httpResponseException)
-      return httpResponseException.getStatusCode() + (msg.isEmpty() ? "" : " ") + msg;
-
-    if (e instanceof AccessDeniedException)
-      return "Access denied" + (msg.isEmpty() ? "" : ". ") + msg;
-
-    if (e instanceof IOException)
+    switch (e)
     {
-      if (e.getClass().equals(FileSystemException.class))
-        return msg.isEmpty() ? "File system error" : msg;
+      case UnknownHostException _ ->
+      {
+        return "Unable to connect to host" + (msg.isEmpty() ? "" : ": ") + msg;
+      }
 
-      return userFriendlyThrowableName(e) + (msg.isEmpty() ? "" :  ": ") + msg;
+      case HttpResponseException httpResponseException ->
+      {
+        return httpResponseException.getStatusCode() + (msg.isEmpty() ? "" : " ") + msg;
+      }
+
+      case AccessDeniedException _ ->
+      {
+        return "Access denied" + (msg.isEmpty() ? "" : ". ") + msg;
+      }
+
+      case IOException ioException ->
+      {
+        if (ioException.getClass().equals(FileSystemException.class))
+          return msg.isEmpty() ? "File system error" : msg;
+
+        return userFriendlyThrowableName(ioException) + (msg.isEmpty() ? "" : ": ") + msg;
+      }
+
+      default -> { return msg.isEmpty() ? userFriendlyThrowableName(e) : msg; }
     }
-
-    return msg.isEmpty() ? userFriendlyThrowableName(e) : msg;
   }
 
 //---------------------------------------------------------------------------
@@ -1556,13 +1565,10 @@ public final class Util
   private static List<String> escapeCsv(List<String> fields)
   {
     return fields.stream().map(field ->
-    {
-      return field.contains(",") || field.contains("\"") || field.contains("\n") ?
+      field.contains(",") || field.contains("\"") || field.contains("\n") ?
         '"' + field.replace("\"", "\"\"") + '"'
       :
-        field;
-
-    }).toList();
+        field).toList();
   }
 
 //---------------------------------------------------------------------------

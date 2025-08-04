@@ -924,7 +924,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
     // Make sure the set of item types in the templates is the same as the ones in the type map
 
-    if ((entryTypeMap.keySet().size() != templates.keySet().size()) ||
+    if ((entryTypeMap.size() != templates.size()) ||
         (entryTypeMap.keySet().containsAll(templates.keySet()) == false))
     {
       throw new HDB_InternalError(77655);

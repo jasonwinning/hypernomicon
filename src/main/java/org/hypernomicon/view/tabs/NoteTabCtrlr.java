@@ -120,7 +120,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     tfFolder.setEditable(false);
 
     GridPane.setColumnIndex(bp, 1);
-    gpToolBar.getColumnConstraints().get(0).setMinWidth(560.0);
+    gpToolBar.getColumnConstraints().getFirst().setMinWidth(560.0);
     gpToolBar.getColumnConstraints().get(0).setMaxWidth(560.0);
     gpToolBar.getColumnConstraints().get(0).setHgrow(javafx.scene.layout.Priority.NEVER);
 

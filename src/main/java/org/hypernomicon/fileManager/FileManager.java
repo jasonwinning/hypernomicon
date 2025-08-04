@@ -100,7 +100,7 @@ public final class FileManager extends NonmodalWindow
 
 //---------------------------------------------------------------------------
 
-  FileRow getFolderRow()                { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
+  FileRow getFolderRow()                { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).getFirst()); }
   public static void clearHistory()     { instance.history.clear(); }
 
   public static void setNeedRefresh()   { if ((instance != null) && (instance.suppressNeedRefresh == false)) instance.needRefresh = true; }
@@ -317,7 +317,7 @@ public final class FileManager extends NonmodalWindow
           {
             HDT_WorkFile workFile = (HDT_WorkFile) record;
             if (workFile.works.isEmpty() == false)
-              record = workFile.works.get(0);
+              record = workFile.works.getFirst();
           }
 
           showRecordDesc(record);
@@ -472,7 +472,7 @@ public final class FileManager extends NonmodalWindow
 
     if (new HyperTask("PasteChecks", "Performing checks...", srcSet.size() * 2L) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
-      FilePath baseDir = getSrcPaths(dragging).get(0).getFilePath().getParent();
+      FilePath baseDir = getSrcPaths(dragging).getFirst().getFilePath().getParent();
 
       for (FilePath srcFilePath : srcSet)
       {
@@ -851,7 +851,7 @@ public final class FileManager extends NonmodalWindow
 
     if (rowInfoList.size() == 1)
     {
-      AbstractEntityWithPath item = rowInfoList.get(0);
+      AbstractEntityWithPath item = rowInfoList.getFirst();
       HyperPath hyperPath = item.getHyperPath();
 
       if (item.isRelated())
@@ -1308,7 +1308,7 @@ public final class FileManager extends NonmodalWindow
           HDT_WorkFile workFile = (HDT_WorkFile)record;
           if (workFile.works.size() > 0)
           {
-            PreviewWindow.setPreview(pvsManager, workFile, workFile.works.get(0));
+            PreviewWindow.setPreview(pvsManager, workFile, workFile.works.getFirst());
             return;
           }
 

@@ -173,7 +173,7 @@ public abstract class Populator
 
   protected static HyperTableCell addEntryToList(List<HyperTableCell> list, HyperTableCell cell)
   {
-    if ((GenericNonRecordHTC.blankCell.equals(cell) == false) && (list.size() > 0) && GenericNonRecordHTC.blankCell.equals(list.get(list.size() - 1)))
+    if ((GenericNonRecordHTC.blankCell.equals(cell) == false) && (list.size() > 0) && GenericNonRecordHTC.blankCell.equals(list.getLast()))
       list.add(list.size() - 1, cell);
     else
       list.add(cell);

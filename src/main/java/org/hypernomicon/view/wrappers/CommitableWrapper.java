@@ -38,23 +38,31 @@ import static org.hypernomicon.util.UIUtil.*;
 
   static void commitWrapper(Node node)
   {
-    if (node == null) return;
-
-    if (node instanceof CommitableWrapper commitableWrapper)
+    switch (node)
     {
-      commitableWrapper.commit();
-      return;
-    }
-
-    if (node instanceof ComboBox)
-    {
-      HyperCB hcb = (HyperCB) getNodeUserObj(node, NodeUserDataType.HypercCB);
-
-      if ((hcb != null) && hcb.autoCommitBeforeRecordSave)
+      case null ->
       {
-        hcb.commit();
         return;
       }
+
+      case CommitableWrapper commitableWrapper ->
+      {
+        commitableWrapper.commit();
+        return;
+      }
+
+      case ComboBox<?> comboBox ->
+      {
+        HyperCB hcb = (HyperCB) getNodeUserObj(comboBox, NodeUserDataType.HypercCB);
+
+        if ((hcb != null) && hcb.autoCommitBeforeRecordSave)
+        {
+          hcb.commit();
+          return;
+        }
+      }
+
+      default -> { }
     }
 
     nullSwitch(node.getParent(), CommitableWrapper::commitWrapper);

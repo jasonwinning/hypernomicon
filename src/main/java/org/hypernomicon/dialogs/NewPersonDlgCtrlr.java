@@ -317,11 +317,11 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
     noTabUpdate = false;
 
-    tabPane.getTabs().get(0).setContent(apDup);
+    tabPane.getTabs().getFirst().setContent(apDup);
 
     if (matcher.isEmpty() == false)
     {
-      tabPane.getTabs().get(0).setText("Potential dup. #1");
+      tabPane.getTabs().getFirst().setText("Potential dup. #1");
 
       int numTabs = Math.min(20, matcher.numMatches()); // prevent large number of tabs from being created
 
@@ -346,7 +346,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
       }
     }
     else
-      tabPane.getTabs().get(0).setText("No potential duplicates found.");
+      tabPane.getTabs().getFirst().setText("No potential duplicates found.");
 
     updateCurrentTab();
   }

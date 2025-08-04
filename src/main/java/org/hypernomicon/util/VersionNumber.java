@@ -89,8 +89,8 @@ public class VersionNumber implements Comparable<VersionNumber>
     List<Integer> relevantParts = new ArrayList<>(parts);
 
     // Remove trailing zeros
-    while ((relevantParts.isEmpty() == false) && (relevantParts.get(relevantParts.size() - 1) == 0))
-      relevantParts.remove(relevantParts.size() - 1);
+    while ((relevantParts.isEmpty() == false) && (relevantParts.getLast() == 0))
+      relevantParts.removeLast();
 
     return relevantParts.hashCode();
   }

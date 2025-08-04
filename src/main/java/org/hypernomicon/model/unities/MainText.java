@@ -247,7 +247,7 @@ public class MainText
       if (displayItems.contains(displayItem) == false)
       {
         if (ndx == 0)
-          displayItems.add(0, displayItem);
+          displayItems.addFirst(displayItem);
         else
           displayItems.add(displayItem);
       }

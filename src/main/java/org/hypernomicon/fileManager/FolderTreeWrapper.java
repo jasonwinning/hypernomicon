@@ -258,7 +258,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
     if (fileTable.draggingItems.size() == 1)
     {
-      FilePath srcPath = fileTable.draggingItems.get(0).getFilePath();
+      FilePath srcPath = fileTable.draggingItems.getFirst().getFilePath();
       if (srcPath.equals(targetRow.getFilePath()) || srcPath.getDirOnly().equals(targetRow.getFilePath()))
         return false;
     }

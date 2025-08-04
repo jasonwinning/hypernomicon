@@ -82,9 +82,9 @@ public class HDT_Position extends HDT_RecordWithMainText
     while (currentPosition != null)
     {
       if (currentPosition.largerDebates.isEmpty() == false)
-        return currentPosition.largerDebates.get(0);
+        return currentPosition.largerDebates.getFirst();
 
-      currentPosition = currentPosition.largerPositions.isEmpty() ? null : currentPosition.largerPositions.get(0);
+      currentPosition = currentPosition.largerPositions.isEmpty() ? null : currentPosition.largerPositions.getFirst();
     }
 
     return null; // Reached only if no larger debate exists
@@ -141,7 +141,7 @@ public class HDT_Position extends HDT_RecordWithMainText
             if (work.authorRecords.size() > 0)
             {
               ps.work = work;
-              ps.author = work.authorRecords.get(0);
+              ps.author = work.authorRecords.getFirst();
               return ps;
             }
 
@@ -158,7 +158,7 @@ public class HDT_Position extends HDT_RecordWithMainText
             {
               webPs = new PositionSource();
               webPs.work = work;
-              webPs.author = work.authorRecords.get(0);
+              webPs.author = work.authorRecords.getFirst();
             }
             else if (noAuthorOK)
             {
@@ -172,7 +172,7 @@ public class HDT_Position extends HDT_RecordWithMainText
             if (notLaunchableOK)
             {
               ps.work = work;
-              ps.author = work.authorRecords.get(0);
+              ps.author = work.authorRecords.getFirst();
               return ps;
             }
           }

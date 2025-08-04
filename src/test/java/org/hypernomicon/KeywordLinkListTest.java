@@ -68,7 +68,7 @@ class KeywordLinkListTest
   /**
    * Helper to create a Keyword with a dummy Record.
    */
-  private SearchKeyword createKeyword(String text, boolean startOnly, boolean endOnly)
+  private static SearchKeyword createKeyword(String text, boolean startOnly, boolean endOnly)
   {
     if (startOnly)
       text = '^' + text;
@@ -85,7 +85,7 @@ class KeywordLinkListTest
   /**
    * Helper to build a prefix Multimap from Keywords using their first 3 letters.
    */
-  private Function<String, Iterable<SearchKeyword>> mapOf(SearchKeyword... keywords)
+  private static Function<String, Iterable<SearchKeyword>> mapOf(SearchKeyword... keywords)
   {
     Multimap<String, SearchKeyword> map = ArrayListMultimap.create();
 
@@ -111,7 +111,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should find one link");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf("test"), link.offset(), "Offset should point to the start of 'test'");
     assertEquals("test".length(), link.length(), "Length should match keyword length");
@@ -131,7 +131,7 @@ class KeywordLinkListTest
     List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
 
     assertEquals(1, links.size());
-    assertEquals(text.toLowerCase().indexOf("test"), links.get(0).offset());
+    assertEquals(text.toLowerCase().indexOf("test"), links.getFirst().offset());
   }
 
 //---------------------------------------------------------------------------
@@ -147,7 +147,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should match keyword at very start");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(0, link.offset());
     assertEquals("test-case".length(), link.length());
@@ -166,7 +166,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should match keyword at end of input");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.lastIndexOf("test"), link.offset());
     assertEquals("test".length(), link.length());
@@ -185,7 +185,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should match 'test' at the end of 'protest' when endOnly=true");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf("test"), link.offset());
     assertEquals("test".length(), link.length());
@@ -204,7 +204,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size());
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf("test-case"), link.offset());
     assertEquals("test-case".length(), link.length());
@@ -237,7 +237,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size());
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf('你'), link.offset(), "Offset should use original unicode index");
     assertEquals(2, link.length(), "Length should match original unicode length");
@@ -269,7 +269,7 @@ class KeywordLinkListTest
 
     assertEquals(3, links.size());
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(6, link.offset());
     assertEquals(8, link.length());
@@ -292,7 +292,7 @@ class KeywordLinkListTest
 //---------------------------------------------------------------------------
 
   @Test
-  public void testSupplementaryCodePointTransliteration()
+  void testSupplementaryCodePointTransliteration()
   {
     // Mathematical script capital A (U+1D49C) → "A"
     assertEquals("A", convertToEnglishChars(fromCodePoint(0x1D49C)));
@@ -315,11 +315,11 @@ class KeywordLinkListTest
 
     String input =
       new String(Character.toChars(0x1D49C)) + // 𝒜 (U+1D49C)
-      " " +
+      ' ' +
       ELEVE_NFD +   // élève
-      " " +
+      ' ' +
       "\u5317" + "\u4EAC" +                    // 北京
-      " " +
+      ' ' +
       new String(Character.toChars(0x1F604)); // 😄 (U+1F604)
 
     String expected = "A eleve beijing ";
@@ -339,7 +339,7 @@ class KeywordLinkListTest
     List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should only find link outside existing anchor");
-    assertEquals(text.lastIndexOf("test"), links.get(0).offset());
+    assertEquals(text.lastIndexOf("test"), links.getFirst().offset());
   }
 
 //---------------------------------------------------------------------------
@@ -355,7 +355,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should link word immediately before an anchor");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf("test"), link.offset());
   }
@@ -373,7 +373,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should link word immediately after an anchor");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf("test-end"), link.offset());
     assertEquals("test-end".length(), link.length());
@@ -392,7 +392,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size());
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf("test"), link.offset());
   }
@@ -410,7 +410,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size());
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf("test"), link.offset());
     assertEquals("test".length(), link.length());
@@ -429,7 +429,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size());
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertEquals(text.indexOf("test"), link.offset());
     assertEquals("test你好".length(), link.length());
@@ -450,7 +450,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should pick the longest matching keyword 'testing'");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertSame(kwLong, link.key());
     assertEquals(text.indexOf("testing"), link.offset());
@@ -472,7 +472,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should pick 'test' when only exact match fits");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     assertSame(kwShort, link.key());
     assertEquals(text.indexOf("test"), link.offset());
@@ -494,10 +494,10 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should pick one non-overlapping link");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
-    assertTrue(link.offset() == 0);
-    assertTrue(link.length() == 4);
+    assertEquals(0, link.offset());
+    assertEquals(4, link.length());
   }
 
 //---------------------------------------------------------------------------
@@ -513,7 +513,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should link 'testers' when keyword in middle of word");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     int start = text.indexOf("testers");
 
@@ -535,7 +535,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should one link for 'foofoo'");
 
-    KeywordLink first = links.get(0);
+    KeywordLink first = links.getFirst();
 
     assertEquals(0, first.offset());
     assertEquals("foofoo".length(), first.length());
@@ -553,7 +553,7 @@ class KeywordLinkListTest
     List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should link 'ré-éntéréd' when keyword 'Re-enter' appears in accented form");
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     int start = text.indexOf("ré-éntéréd");
 
@@ -575,7 +575,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should link 'Test' when no space after period");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     int start = text.toLowerCase().indexOf("test");
 
@@ -597,7 +597,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should link 'Test' when multiple spaces after period");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     int start = text.toLowerCase().indexOf("test");
 
@@ -619,7 +619,7 @@ class KeywordLinkListTest
 
     assertEquals(1, links.size(), "Should link 'J.R. Tolkien' without space between initials");
 
-    KeywordLink link = links.get(0);
+    KeywordLink link = links.getFirst();
 
     int start = text.indexOf("J.R. Tolkien");
 

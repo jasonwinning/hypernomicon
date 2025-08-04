@@ -210,7 +210,7 @@ public final class SelectTermDlgCtrlr extends ModalDialog
         }
 
         if (selectedGlossary == false)
-          hcbGlossary.select(glossaryCells.isEmpty() ? null : glossaryCells.get(0));
+          hcbGlossary.select(glossaryCells.isEmpty() ? null : glossaryCells.getFirst());
       }
       else
         hcbGlossary.select(null);

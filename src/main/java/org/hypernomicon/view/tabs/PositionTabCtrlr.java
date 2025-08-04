@@ -179,9 +179,9 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
       if (argument.works.size() > 0)
       {
-        work = argument.works.get(0);
+        work = argument.works.getFirst();
         if (work.authorRecords.size() > 0)
-          row.setCellValue(1, work.authorRecords.get(0), work.getShortAuthorsStr(true));
+          row.setCellValue(1, work.authorRecords.getFirst(), work.getShortAuthorsStr(true));
         else
           row.setCellValue(1, work, work.getShortAuthorsStr(true));
       }

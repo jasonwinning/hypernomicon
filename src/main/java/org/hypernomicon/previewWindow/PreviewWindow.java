@@ -604,7 +604,7 @@ public final class PreviewWindow extends NonmodalWindow
       {
         HDT_WorkFile workFile = (HDT_WorkFile)record;
         if (workFile.works.size() > 0)
-          record = workFile.works.get(0);
+          record = workFile.works.getFirst();
       }
 
       ImageView iv = imgViewForRecord(record);

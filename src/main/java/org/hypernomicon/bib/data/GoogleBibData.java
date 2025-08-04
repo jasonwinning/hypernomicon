@@ -157,7 +157,7 @@ public final class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, BibAuthors authors, List<String> authKeywords, String isbn)
+  private static String getQueryUrl(String title, BibAuthors authors, List<String> authKeywords, CharSequence isbn)
   {
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
 

@@ -187,7 +187,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static String extractYear(String text)
+  protected static String extractYear(CharSequence text)
   {
     Matcher m = Pattern.compile("(\\A|\\D)([12]\\d\\d\\d)(\\z|\\D)").matcher(text);
     return m.find() ? m.group(2) : "";

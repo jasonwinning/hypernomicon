@@ -243,7 +243,7 @@ public final class GeneralQueries
       {
         List<KeywordLink> linkList = KeywordLinkList.generate(getCellText(op1));
         if (linkList.size() > 0)
-          records.add(linkList.get(0).key().record);
+          records.add(linkList.getFirst().key().record);
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }

@@ -284,7 +284,7 @@ class FileTable extends DragNDropContainer<FileRow>
 
     if ((draggingItems == null) || (draggingItems.size() != 1)) return true;
 
-    FilePath srcPath = draggingItems.get(0).getFilePath();
+    FilePath srcPath = draggingItems.getFirst().getFilePath();
 
     return (srcPath             .equals(targetRow.getFilePath()) == false) &&
            (srcPath.getDirOnly().equals(targetRow.getFilePath()) == false);

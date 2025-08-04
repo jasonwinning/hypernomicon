@@ -52,7 +52,7 @@ public class ValueSelectDlgCtrlr extends ModalDialog
 
     if (collEmpty(list)) return;
 
-    RecordType objType = HyperTableCell.getCellType(list.get(0));
+    RecordType objType = HyperTableCell.getCellType(list.getFirst());
 
     listView.setItems(FXCollections.observableArrayList(list));
 
@@ -76,7 +76,7 @@ public class ValueSelectDlgCtrlr extends ModalDialog
 
   private static String getTitle(List<HyperTableCell> list)
   {
-    return (collEmpty(list) == false) && (HyperTableCell.getRecord(list.get(0)) != null) ?
+    return (collEmpty(list) == false) && (HyperTableCell.getRecord(list.getFirst()) != null) ?
       "Choose a Record"
     :
       "Choose a Value";

@@ -72,7 +72,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final String getSortKeyAttr()           { return sortKeyAttr; }
   @Override public final String getSortKey()               { return safeStr(dataset.getKeyByID(id)); }
   @Override public final boolean isExpired()               { return expired; }
-  @Override public final Set<Tag> getAllTags()             { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
+  @Override public final Set<Tag> getAllTags()             { return items.isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
   @Override public final boolean getTagBoolean(Tag tag)    { return ((HDI_OnlineBoolean)items.get(tag)).get(); }
   @Override public final boolean hasStoredState()          { return xmlState.stored; }
   @Override public final void updateSortKey()              { dataset.setKey(getID(), makeSortKey()); }
@@ -406,7 +406,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final void updateBibEntryKey(String val) // No need to change modified date for record
   {
-    ((HDI_OnlineBibEntryKey)items.get(tagBibEntryKey)).set(val);
+    ((HDI_OnlineBibEntryKey) items.get(tagBibEntryKey)).set(val);
   }
 
 //---------------------------------------------------------------------------
@@ -417,7 +417,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     if (tag == type.getNameTag())
       setNameInternal(val, true);
     else
-      ((HDI_OnlineString)items.get(tag)).set(updateString(getTagString(tag), val));
+      ((HDI_OnlineString) items.get(tag)).set(updateString(getTagString(tag), val));
   }
 
 //---------------------------------------------------------------------------
@@ -425,7 +425,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final String getBibEntryKeyInternal()
   {
-    return ((HDI_OnlineBibEntryKey)items.get(tagBibEntryKey)).get();
+    return ((HDI_OnlineBibEntryKey) items.get(tagBibEntryKey)).get();
   }
 
 //---------------------------------------------------------------------------

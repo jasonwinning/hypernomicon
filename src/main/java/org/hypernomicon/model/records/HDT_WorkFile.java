@@ -86,12 +86,12 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
 //---------------------------------------------------------------------------
 
-  public static String makeFileName(List<FileNameAuthor> authors, HDT_WorkType workType, String year, String title, String container, String publisher, String ext)
+  public static String makeFileName(List<FileNameAuthor> authors, HDT_WorkType workType, String year, String title, String container, String publisher, CharSequence ext)
   {
     return makeFileName(authors, workType, year, title, container, publisher, ext, null);
   }
 
-  public static String makeFileName(List<FileNameAuthor> authors, HDT_WorkType workType, String year, String title, String container, String publisher, String ext, List<WorkFileNameComponent> components)
+  public static String makeFileName(List<FileNameAuthor> authors, HDT_WorkType workType, String year, String title, String container, String publisher, CharSequence ext, List<WorkFileNameComponent> components)
   {
     if (components == null)
       components = WorkFileNameComponent.loadFromPrefs();

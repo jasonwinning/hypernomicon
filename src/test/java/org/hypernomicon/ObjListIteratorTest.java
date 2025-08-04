@@ -187,7 +187,7 @@ class ObjListIteratorTest
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
     objListIterator.next();
     objListIterator.set(debate);
-    assertEquals(debate, position.largerDebates.get(0));
+    assertEquals(debate, position.largerDebates.getFirst());
   }
 
 //---------------------------------------------------------------------------
@@ -198,7 +198,7 @@ class ObjListIteratorTest
   {
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
     objListIterator.add(debate);
-    assertEquals(debate, position.largerDebates.get(0));
+    assertEquals(debate, position.largerDebates.getFirst());
   }
 
 //---------------------------------------------------------------------------
@@ -422,7 +422,7 @@ class ObjListIteratorTest
     oListIterator.next();
     HDT_Debate anotherDebate = db.createNewBlankRecord(hdtDebate);
     oListIterator.set(anotherDebate);
-    assertEquals(anotherDebate, newPosition.largerDebates.get(0), "Element should be anotherDebate after set");
+    assertEquals(anotherDebate, newPosition.largerDebates.getFirst(), "Element should be anotherDebate after set");
 
     // Test add at the boundary
     HDT_Debate yetAnotherDebate = db.createNewBlankRecord(hdtDebate);
@@ -450,7 +450,7 @@ class ObjListIteratorTest
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
 
     objListIterator.add(debate);
-    assertEquals(debate, position.largerDebates.get(0));
+    assertEquals(debate, position.largerDebates.getFirst());
 
     HDT_Debate debate2 = db.createNewBlankRecord(hdtDebate);
 
@@ -502,7 +502,7 @@ class ObjListIteratorTest
     HDT_Debate anotherDebate = db.createNewBlankRecord(hdtDebate);
     oListIterator.next();
     oListIterator.set(anotherDebate);
-    assertEquals(anotherDebate, newPosition.largerDebates.get(0), "Element should be anotherDebate after set");
+    assertEquals(anotherDebate, newPosition.largerDebates.getFirst(), "Element should be anotherDebate after set");
 
     // Test add
     HDT_Debate yetAnotherDebate = db.createNewBlankRecord(hdtDebate);
@@ -526,7 +526,7 @@ class ObjListIteratorTest
 
     db.closeAndOpen();
 
-    assertThrows(NoSuchElementException.class, () -> position.largerDebates.add(list.get(0)));
+    assertThrows(NoSuchElementException.class, () -> position.largerDebates.add(list.getFirst()));
     assertThrows(NoSuchElementException.class, () -> position.largerDebates.add(db.createNewBlankRecord(hdtDebate)));
 
     assertThrows(NoSuchElementException         .class, objIterator    ::next    );
@@ -779,7 +779,7 @@ class ObjListIteratorTest
     subList = (HyperObjSubList<HDT_Position, HDT_Debate>) position.largerDebates.subList(0, 5); // Full range
     assertFalse(subList.isEmpty());
     assertEquals(5, subList.size());
-    assertEquals(list.get(0), subList.get(0));
+    assertEquals(list.getFirst(), subList.getFirst());
   }
 
 //---------------------------------------------------------------------------

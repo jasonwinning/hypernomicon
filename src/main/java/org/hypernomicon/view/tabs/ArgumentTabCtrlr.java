@@ -208,7 +208,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade.buildRows(curArgument.works, (row, work) ->
     {
       if (work.authorRecords.size() > 0)
-        row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr());
+        row.setCellValue(1, work.authorRecords.getFirst(), work.getLongAuthorsStr());
       else
         row.setCellValue(1, work.getLongAuthorsStr(), hdtPerson);
 
@@ -224,10 +224,10 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     {
       if (responseArg.works.size() > 0)
       {
-        HDT_Work work = responseArg.works.get(0);
+        HDT_Work work = responseArg.works.getFirst();
 
         if (work.authorRecords.size() > 0)
-          row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr());
+          row.setCellValue(1, work.authorRecords.getFirst(), work.getLongAuthorsStr());
         else
           row.setCellValue(1, responseArg, work.getLongAuthorsStr());
       }
@@ -292,7 +292,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     htResponses.addContextMenuItem("Go to work record", HDT_Argument.class,
       arg -> arg.works.size() > 0,
-      arg -> ui.goToRecord(nullSwitch(HDT_Work.getLaunchableWork(arg.works), arg.works.get(0)), true));
+      arg -> ui.goToRecord(nullSwitch(HDT_Work.getLaunchableWork(arg.works), arg.works.getFirst()), true));
 
     htResponses.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));

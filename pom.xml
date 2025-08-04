@@ -81,6 +81,9 @@
         <version>3.14.0</version>
         <configuration>
           <release>${maven.compiler.release}</release>
+          <compilerArgs>
+            <arg>-proc:full</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
 

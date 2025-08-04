@@ -360,7 +360,7 @@ public final class OneTouchExpandableWrapper
    */
   private void setDividerPosition(SplitPane splitPane, double endPos)
   {
-    double expandedPos = splitPane.getDividers().get(0).getPosition();
+    double expandedPos = splitPane.getDividers().getFirst().getPosition();
 
     Button otherButton = endPos == 0 ? button2 : button1;
 

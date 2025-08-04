@@ -59,7 +59,7 @@ class DeleteTest
     HDT_Debate rootDebate = position.getLargerDebate();  // Root debate is assigned automatically to new position
 
     assertNotNull(rootDebate);
-    assertEquals(rootDebate.getID(), 1);
+    assertEquals(1, rootDebate.getID());
 
     HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
 

@@ -239,7 +239,7 @@ public class FilePath implements Comparable<FilePath>
 
   private static final Pattern invalidCharsPattern = Pattern.compile("[\\\\/:*?\\\"<>|']");
 
-  public static String removeInvalidFileNameChars(String fileTitle)
+  public static String removeInvalidFileNameChars(CharSequence fileTitle)
   {
     return convertToEnglishChars(fileTitle).replaceAll(invalidCharsPattern.pattern(), "");
   }

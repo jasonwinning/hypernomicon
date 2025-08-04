@@ -116,7 +116,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 
     if (objList.isEmpty()) return "";
 
-    return db.getObjType(relType) == RecordType.hdtWork ? objList.get(0).getCBText() : objList.get(0).listName();
+    return db.getObjType(relType) == RecordType.hdtWork ? objList.getFirst().getCBText() : objList.getFirst().listName();
   }
 
 //---------------------------------------------------------------------------
@@ -141,7 +141,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
       return;
     }
 
-    HDT_Record obj = objList.get(0);
+    HDT_Record obj = objList.getFirst();
     val.objID = obj.getID();
     val.ord = db.getSubjectList(relType, obj).getOrd(record);
 
@@ -150,7 +150,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
     if (val.tagToNestedItem == null)
       val.tagToNestedItem = new LinkedHashMap<>();
 
-    db.saveNestedValuesToOfflineMap(record, objList.get(0), val.tagToNestedItem, val.recordState);
+    db.saveNestedValuesToOfflineMap(record, objList.getFirst(), val.tagToNestedItem, val.recordState);
   }
 
 //---------------------------------------------------------------------------

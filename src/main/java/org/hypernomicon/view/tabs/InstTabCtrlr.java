@@ -246,7 +246,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       List<HDT_Institution> instList = Ordering.from(Comparator.comparing(HDT_Record::name)).immutableSortedCopy(peopleMap.get(person));
 
       String instStr = instList.stream().map(HDT_Institution::name).collect(Collectors.joining(", "));
-      int instID = instList.isEmpty() ? -1 : instList.get(0).getID();
+      int instID = instList.isEmpty() ? -1 : instList.getFirst().getID();
 
       row.setCellValue(3, instID, instStr, hdtInstitution);
 

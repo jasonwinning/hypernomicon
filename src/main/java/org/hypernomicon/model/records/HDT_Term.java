@@ -62,7 +62,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 
   @Override public String listName()       { return name(); }
   @Override public final boolean hasDesc() { return true; }
-  @Override public MainText getDesc()      { return concepts.get(0).getMainText(); }
+  @Override public MainText getDesc()      { return concepts.getFirst().getMainText(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

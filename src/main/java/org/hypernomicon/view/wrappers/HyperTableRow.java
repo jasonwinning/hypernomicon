@@ -150,7 +150,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
     cells.set(colNdx, newCell);
 
-    if (table.getCanAddRows() && (table.getTV().getItems().get(table.getTV().getItems().size() - 1) == this))
+    if (table.getCanAddRows() && (table.getTV().getItems().getLast() == this))
       table.newRow(false);
 
     if ((table.disableRefreshAfterCellUpdate == false) && isNotCheckBox)

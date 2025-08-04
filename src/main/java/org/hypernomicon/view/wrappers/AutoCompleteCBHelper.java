@@ -222,7 +222,7 @@ public class AutoCompleteCBHelper
 
       if (cells.size() == 1)
       {
-        selection = cells.get(0);
+        selection = cells.getFirst();
 
         if (HyperTableCell.getCellID(selection) > 0)
           return selection;
@@ -345,7 +345,7 @@ public class AutoCompleteCBHelper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HyperTableCell findMatch(List<? extends HyperTableCell> items, TextField editor, String typed, String typedLC)
+  private static HyperTableCell findMatch(List<? extends HyperTableCell> items, TextField editor, CharSequence typed, String typedLC)
   {
     if (typed.isEmpty())
       return null;
@@ -389,7 +389,7 @@ public class AutoCompleteCBHelper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void updateEditorText(TextField editor, String typed, String matchText)
+  private static void updateEditorText(TextField editor, CharSequence typed, String matchText)
   {
     editor.setText(typed + matchText.substring(typed.length()));
     editor.positionCaret(typed.length());

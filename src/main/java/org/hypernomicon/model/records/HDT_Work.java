@@ -108,7 +108,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public void setURL(String str)                    { updateTagString(tagWebURL, str); }
 
   @Override public String listName()                { return name(); }
-  @Override public HyperPath getPath()              { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.get(0).getPath(); }
+  @Override public HyperPath getPath()              { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.getFirst().getPath(); }
   @Override public WorkAuthors getAuthors()         { return authors; }
 
 //---------------------------------------------------------------------------
@@ -165,7 +165,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   private String getStartPageNumStr()
   {
     if (workFiles.isEmpty() == false)
-      return getStartPageNumStr(workFiles.get(0));
+      return getStartPageNumStr(workFiles.getFirst());
 
     if (getURL().startsWith(EXT_1))
       return getTagString(tagStartPageNum);
@@ -179,7 +179,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   private String getEndPageNumStr()
   {
     if (workFiles.isEmpty() == false)
-      return getEndPageNumStr(workFiles.get(0));
+      return getEndPageNumStr(workFiles.getFirst());
 
     if (getURL().startsWith(EXT_1))
       return getTagString(tagEndPageNum);
@@ -671,7 +671,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
       return title;
 
     WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
-    WorkSearchKeyConfig configToUse = settings.stream().filter(keyConfig -> keyConfig.multipleAuthors == false).findFirst().orElse(settings.get(0));
+    WorkSearchKeyConfig configToUse = settings.stream().filter(keyConfig -> keyConfig.multipleAuthors == false).findFirst().orElse(settings.getFirst());
 
     return switch (configToUse.parentheses)
     {

@@ -131,8 +131,8 @@ class PageRangeTest
   @Test
   void testRomanNumeralCaseInsensitive()
   {
-    PageRange pr1 = new PageRange("xiv");
-    PageRange pr2 = new PageRange("III");
+    PageRange pr1 = new PageRange("xiv"),
+              pr2 = new PageRange("III");
 
     assertTrue(pr2.compareTo(pr1) < 0);
   }

@@ -229,15 +229,15 @@ public final class StringUtil
 
     if (list.isEmpty()) return list;
 
-    while (list.get(0).isBlank())
+    while (list.getFirst().isBlank())
     {
-      list.remove(0);
+      list.removeFirst();
       if (list.isEmpty()) return list;
     }
 
-    while (list.get(list.size() - 1).isBlank())
+    while (list.getLast().isBlank())
     {
-      list.remove(list.size() - 1);
+      list.removeLast();
       if (list.isEmpty()) return list;
     }
 
@@ -433,7 +433,7 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean lacksMixedCase(String s)
+  public static boolean lacksMixedCase(CharSequence s)
   {
     return s.chars().noneMatch(Character::isUpperCase)  ||
            s.chars().noneMatch(Character::isLowerCase);
@@ -953,7 +953,7 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean containsNoLetters(String input)
+  public static boolean containsNoLetters(CharSequence input)
   {
     if (input == null) return true;
 
