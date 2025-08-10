@@ -57,23 +57,13 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
 //---------------------------------------------------------------------------
 
-  public PersonName(String name)
+  public PersonName(String first, String last)
   {
-    this("", name);
+    this.first = stripSafe(first); this.last = stripSafe(last);
   }
 
-  public PersonName(String origFirst, String origLast)
+  public PersonName(String name)
   {
-    boolean firstEmpty = strNullOrBlank(origFirst),
-            lastEmpty  = strNullOrBlank(origLast);
-
-    if (firstEmpty == lastEmpty)
-    {
-      this.first = stripSafe(origFirst); this.last = stripSafe(origLast);
-      return;
-    }
-
-    String name = firstEmpty ? origLast : origFirst;
     name = convertToSingleLine(safeStr(name)).strip();
 
     name = NORMALIZE_WHITESPACE_PATTERN.matcher(name).replaceAll(" ");

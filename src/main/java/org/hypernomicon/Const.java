@@ -211,7 +211,19 @@ public final class Const
       KEY_WORK_SORT_BY_NAME = "keyWorkSortByName",
       RIGHT_CLICK_TO_LAUNCH = "rtClkToLaunch",
 
-      WEB_BUTTONS = "webButtons";
+      WEB_BUTTONS = "webButtons",
+
+      XML_DIFF_BACKUP_PATH = "xmlDiffBackupPath",
+      XML_DIFF_TEST_PATH   = "xmlDiffTestPath",
+      XML_DIFF_BACKUP_TEMP_PATH = "xmlDiffBackupTempPath",
+      XML_DIFF_TEST_TEMP_PATH = "xmlDiffTestTempPath",
+
+      XML_DIFF_EXECUTABLE_1 = "xmlDiffExecutable1",
+      XML_DIFF_EXECUTABLE_2 = "xmlDiffExecutable2",
+      XML_DIFF_EXECUTABLE_3 = "xmlDiffExecutable3",
+      XML_DIFF_EXECUTABLE_4 = "xmlDiffExecutable4",
+
+      XML_DIFF_SELECTED_EXE_NUM = "xmlDiffSelectedExeNum";
 
     private PrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }

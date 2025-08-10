@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.dialogs;
+package org.hypernomicon.testTools;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -71,7 +71,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   @SuppressWarnings("deprecation")
   public TestConsoleDlgCtrlr()
   {
-    super("TestConsoleDlg", appTitle + " Test Console", true);
+    super("testTools/TestConsoleDlg", appTitle + " Test Console", true, true);
 
     initTextField(app.prefs, tfParent       , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
     initTextField(app.prefs, tfFolderName   , PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);

@@ -61,6 +61,7 @@ import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.ui.*;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
+import org.hypernomicon.testTools.TestConsoleDlgCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
 import org.hypernomicon.tree.*;
 import org.hypernomicon.util.PopupDialog;

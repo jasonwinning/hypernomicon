@@ -8,6 +8,7 @@ sh.exe.stackdump
 target
 bin
 pom2*.xml
+*.py
 *.bak
 *.log
 *.patch

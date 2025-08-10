@@ -1000,15 +1000,15 @@ public class WorkDlgCtrlr extends ModalDialog
       chkCreateBibEntry.setSelected(newEntryChoice.isTrue());
       origBDtoUse = new GUIBibData(curBD);
 
-      if (hcbType.selectedRecord() == null)
+      if ((hcbType.selectedRecord() == null) && (mwd.getEntryType() != null))
       {
         switch (mwd.getEntryType())
         {
-          case etBook : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtBook)); break;
-
-          case etJournalArticle : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtPaper)); break;
-
-          case etThesis : case etMastersThesis : case etDoctoralThesis : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtThesis)); break;
+          case etThesis         :
+          case etMastersThesis  :
+          case etDoctoralThesis : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtThesis)); break;
+          case etBook           : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtBook  )); break;
+          case etJournalArticle : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtPaper )); break;
 
           default : break;
         }

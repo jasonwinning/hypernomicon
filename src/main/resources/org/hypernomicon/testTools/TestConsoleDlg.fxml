@@ -28,126 +28,78 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane prefHeight="561.0" prefWidth="689.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.hypernomicon.dialogs.TestConsoleDlgCtrlr">
-  <TabPane AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-           AnchorPane.topAnchor="0.0">
+<AnchorPane prefHeight="561.0" prefWidth="689.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.testTools.TestConsoleDlgCtrlr">
+  <TabPane AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <Tab closable="false" text="DB Creation">
       <AnchorPane>
-        <TextField fx:id="tfParent" layoutX="52.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0"
-                   prefHeight="25.0" prefWidth="542.0" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="95.0"
-                   AnchorPane.topAnchor="60.0"/>
-        <Label layoutX="52.0" layoutY="37.0" text="Parent folder of transient test database folder"
-               AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0"/>
-        <Button layoutX="602.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                onAction="#btnBrowseClick" prefHeight="25.0" text="..." AnchorPane.rightAnchor="63.0"
-                AnchorPane.topAnchor="60.0"/>
-        <RadioButton fx:id="rbZotero" layoutX="391.0" layoutY="146.0" mnemonicParsing="false" selected="true"
-                     text="Zotero" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="146.0">
+        <TextField fx:id="tfParent" layoutX="52.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="542.0" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="95.0" AnchorPane.topAnchor="60.0" />
+        <Label layoutX="52.0" layoutY="37.0" text="Parent folder of transient test database folder" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0" />
+        <Button layoutX="602.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnBrowseClick" prefHeight="25.0" text="..." AnchorPane.rightAnchor="63.0" AnchorPane.topAnchor="60.0" />
+        <RadioButton fx:id="rbZotero" layoutX="391.0" layoutY="146.0" mnemonicParsing="false" selected="true" text="Zotero" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="146.0">
           <toggleGroup>
-            <ToggleGroup fx:id="tgLink"/>
+            <ToggleGroup fx:id="tgLink" />
           </toggleGroup>
         </RadioButton>
-        <RadioButton fx:id="rbMendeley" layoutX="391.0" layoutY="176.0" mnemonicParsing="false" text="Mendeley"
-                     toggleGroup="$tgLink" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="176.0"/>
-        <Label layoutX="391.0" layoutY="117.0" text="Link new database to:" AnchorPane.leftAnchor="391.0"
-               AnchorPane.topAnchor="117.0"/>
-        <RadioButton layoutX="391.0" layoutY="206.0" mnemonicParsing="false" text="None" toggleGroup="$tgLink"
-                     AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="206.0"/>
+        <RadioButton fx:id="rbMendeley" layoutX="391.0" layoutY="176.0" mnemonicParsing="false" text="Mendeley" toggleGroup="$tgLink" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="176.0" />
+        <Label layoutX="391.0" layoutY="117.0" text="Link new database to:" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="117.0" />
+        <RadioButton layoutX="391.0" layoutY="206.0" mnemonicParsing="false" text="None" toggleGroup="$tgLink" AnchorPane.leftAnchor="391.0" AnchorPane.topAnchor="206.0" />
         <AnchorPane layoutX="52.0" layoutY="96.0" prefHeight="162.0" prefWidth="274.0">
-          <TextField fx:id="tfFolderName" layoutX="2.0" layoutY="25.0" maxHeight="25.0" minHeight="25.0"
-                     prefHeight="25.0" prefWidth="190.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="84.0"
-                     AnchorPane.topAnchor="25.0"/>
-          <Label layoutX="2.0" layoutY="4.0" text="Transient test database folder name" AnchorPane.leftAnchor="0.0"
-                 AnchorPane.topAnchor="4.0"/>
-          <Button layoutX="2.0" layoutY="73.0" mnemonicParsing="false" onAction="#btnFromScratchClick"
-                  prefHeight="25.0" prefWidth="259.0" text="Test creating database from scratch"
-                  AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="73.0"/>
-          <Button fx:id="btnFromExisting" layoutY="102.0" mnemonicParsing="false" onAction="#btnFromExistingClick"
-                  prefHeight="25.0" prefWidth="259.0" text="Test creating database based on this one"
-                  AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="102.0"/>
-          <Button layoutY="132.0" mnemonicParsing="false" onAction="#btnDeleteClick" prefHeight="25.0"
-                  prefWidth="134.0" text="Delete folder" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="132.0"/>
-          <Button layoutX="234.0" layoutY="25.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                  onAction="#btnLaunchClick" prefHeight="25.0" prefWidth="25.0" AnchorPane.rightAnchor="0.0"
-                  AnchorPane.topAnchor="25.0">
+          <TextField fx:id="tfFolderName" layoutX="2.0" layoutY="25.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="190.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="84.0" AnchorPane.topAnchor="25.0" />
+          <Label layoutX="2.0" layoutY="4.0" text="Transient test database folder name" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
+          <Button layoutX="2.0" layoutY="73.0" mnemonicParsing="false" onAction="#btnFromScratchClick" prefHeight="25.0" prefWidth="259.0" text="Test creating database from scratch" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="73.0" />
+          <Button fx:id="btnFromExisting" layoutY="102.0" mnemonicParsing="false" onAction="#btnFromExistingClick" prefHeight="25.0" prefWidth="259.0" text="Test creating database based on this one" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="102.0" />
+          <Button layoutY="132.0" mnemonicParsing="false" onAction="#btnDeleteClick" prefHeight="25.0" prefWidth="134.0" text="Delete folder" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="132.0" />
+          <Button layoutX="234.0" layoutY="25.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnLaunchClick" prefHeight="25.0" prefWidth="25.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
             <graphic>
               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                <Image url="@../resources/images/rocket-fly.png"/>
+                <Image url="@../resources/images/rocket-fly.png" />
               </ImageView>
             </graphic>
           </Button>
-          <Button fx:id="btnCloseDB" layoutX="140.0" layoutY="132.0" mnemonicParsing="false" onAction="#btnCloseDB"
-                  prefHeight="25.0" prefWidth="134.0" text="Close Database" AnchorPane.rightAnchor="0.0"/>
-          <Button layoutX="195.0" layoutY="25.0" mnemonicParsing="false" onAction="#btnLoadClick" text="Load"/>
+          <Button fx:id="btnCloseDB" layoutX="140.0" layoutY="132.0" mnemonicParsing="false" onAction="#btnCloseDB" prefHeight="25.0" prefWidth="134.0" text="Close Database" AnchorPane.rightAnchor="0.0" />
+          <Button layoutX="195.0" layoutY="25.0" mnemonicParsing="false" onAction="#btnLoadClick" text="Load" />
         </AnchorPane>
-        <Button layoutX="391.0" layoutY="243.0" mnemonicParsing="false" onAction="#btnWelcomeWindowClick"
-                prefHeight="25.0" prefWidth="190.0" text="Open Welcome window"/>
-        <Button layoutX="391.0" layoutY="274.0" mnemonicParsing="false" onAction="#btnLogMessageClick"
-                prefHeight="25.0" prefWidth="190.0" text="Write message to log"/>
+        <Button layoutX="391.0" layoutY="243.0" mnemonicParsing="false" onAction="#btnWelcomeWindowClick" prefHeight="25.0" prefWidth="190.0" text="Open Welcome window" />
+        <Button layoutX="391.0" layoutY="274.0" mnemonicParsing="false" onAction="#btnLogMessageClick" prefHeight="25.0" prefWidth="190.0" text="Write message to log" />
       </AnchorPane>
     </Tab>
     <Tab closable="false" text="Deletion">
       <AnchorPane>
-        <Button fx:id="btnNukeTest" layoutX="52.0" layoutY="68.0" mnemonicParsing="false" onAction="#nukeTest"
-                text="Test Mass Record Deletion" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="68.0"/>
-        <Button layoutX="52.0" layoutY="37.0" mnemonicParsing="false" onAction="#copyForNukeTest"
-                text="Copy current DB without user files to transient folder" AnchorPane.leftAnchor="52.0"
-                AnchorPane.topAnchor="37.0"/>
+        <Button fx:id="btnNukeTest" layoutX="52.0" layoutY="68.0" mnemonicParsing="false" onAction="#nukeTest" text="Test Mass Record Deletion" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="68.0" />
+        <Button layoutX="52.0" layoutY="37.0" mnemonicParsing="false" onAction="#copyForNukeTest" text="Copy current DB without user files to transient folder" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0" />
       </AnchorPane>
     </Tab>
     <Tab closable="false" text="Reference Mgr">
       <AnchorPane>
-        <Button fx:id="btnSaveRefMgrSecrets" layoutX="52.0" layoutY="37.0" mnemonicParsing="false"
-                text="Save reference manager secret(s) to database settings" AnchorPane.leftAnchor="52.0"
-                AnchorPane.topAnchor="37.0"/>
-        <Button fx:id="btnRemoveRefMgrSecrets" layoutX="52.0" layoutY="69.0" mnemonicParsing="false"
-                text="Remove secrets for current ref. mgr. account from keyring" AnchorPane.leftAnchor="52.0"
-                AnchorPane.topAnchor="69.0"/>
-        <Label layoutX="52.0" layoutY="105.0" text="Ref. mgr. user ID:" AnchorPane.leftAnchor="52.0"
-               AnchorPane.topAnchor="105.0"/>
-        <TextField fx:id="tfRefMgrUserID" editable="false" layoutX="154.0" layoutY="101.0" prefHeight="25.0"
-                   prefWidth="219.0" AnchorPane.leftAnchor="154.0" AnchorPane.topAnchor="101.0"/>
-        <Button fx:id="btnUseMendeleyID" layoutX="52.0" layoutY="133.0" mnemonicParsing="false"
-                text="Use current Mendeley ID for unit tests" AnchorPane.leftAnchor="52.0"
-                AnchorPane.topAnchor="133.0"/>
-        <Button fx:id="btnZoteroItemTemplates" layoutX="52.0" layoutY="181.0" mnemonicParsing="false"
-                prefHeight="25.0" prefWidth="190.0" text="Retrieve Zotero Item Templates"
-                AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="181.0"/>
-        <Button fx:id="btnZoteroCreatorTypes" layoutX="52.0" layoutY="213.0" mnemonicParsing="false"
-                prefHeight="25.0" prefWidth="190.0" text="Retrieve Zotero Creator Types"
-                AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="213.0"/>
+        <Button fx:id="btnSaveRefMgrSecrets" layoutX="52.0" layoutY="37.0" mnemonicParsing="false" text="Save reference manager secret(s) to database settings" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0" />
+        <Button fx:id="btnRemoveRefMgrSecrets" layoutX="52.0" layoutY="69.0" mnemonicParsing="false" text="Remove secrets for current ref. mgr. account from keyring" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="69.0" />
+        <Label layoutX="52.0" layoutY="105.0" text="Ref. mgr. user ID:" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="105.0" />
+        <TextField fx:id="tfRefMgrUserID" editable="false" layoutX="154.0" layoutY="101.0" prefHeight="25.0" prefWidth="219.0" AnchorPane.leftAnchor="154.0" AnchorPane.topAnchor="101.0" />
+        <Button fx:id="btnUseMendeleyID" layoutX="52.0" layoutY="133.0" mnemonicParsing="false" text="Use current Mendeley ID for unit tests" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="133.0" />
+        <Button fx:id="btnZoteroItemTemplates" layoutX="52.0" layoutY="181.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="190.0" text="Retrieve Zotero Item Templates" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="181.0" />
+        <Button fx:id="btnZoteroCreatorTypes" layoutX="52.0" layoutY="213.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="190.0" text="Retrieve Zotero Creator Types" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="213.0" />
       </AnchorPane>
     </Tab>
     <Tab fx:id="tabLinkGen" closable="false" text="Link Generation">
       <AnchorPane>
-        <TextField fx:id="tfLinkGenParent" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="506.0"
-                   AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="131.0" AnchorPane.topAnchor="60.0"/>
-        <Label text="Parent Folder of Log Files" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0"/>
-        <Button maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnLinkGenBrowseClick"
-                prefHeight="25.0" text="..." AnchorPane.rightAnchor="63.0" AnchorPane.topAnchor="60.0"/>
-        <Button fx:id="btnLinkGenBefore" layoutX="52.0" layoutY="95.0" mnemonicParsing="false"
-                text="Rebuild mentions index with logging saved to Before.csv" AnchorPane.leftAnchor="52.0"
-                AnchorPane.topAnchor="95.0"/>
-        <Button fx:id="btnLinkGenAfter" layoutX="52.0" layoutY="130.0" mnemonicParsing="false"
-                text="Rebuild mentions index with logging saved to After.csv"/>
-        <Button layoutX="564.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                onAction="#btnLinkGenLaunchClick" prefHeight="25.0" prefWidth="25.0" AnchorPane.rightAnchor="93.0"
-                AnchorPane.topAnchor="60.0">
+        <TextField fx:id="tfLinkGenParent" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="506.0" AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="131.0" AnchorPane.topAnchor="60.0" />
+        <Label text="Parent Folder of Log Files" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0" />
+        <Button maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnLinkGenBrowseClick" prefHeight="25.0" text="..." AnchorPane.rightAnchor="63.0" AnchorPane.topAnchor="60.0" />
+        <Button fx:id="btnLinkGenBefore" layoutX="52.0" layoutY="95.0" mnemonicParsing="false" text="Rebuild mentions index with logging saved to Before.csv" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="95.0" />
+        <Button fx:id="btnLinkGenAfter" layoutX="52.0" layoutY="130.0" mnemonicParsing="false" text="Rebuild mentions index with logging saved to After.csv" />
+        <Button layoutX="564.0" layoutY="60.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnLinkGenLaunchClick" prefHeight="25.0" prefWidth="25.0" AnchorPane.rightAnchor="93.0" AnchorPane.topAnchor="60.0">
           <graphic>
             <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-              <Image url="@../resources/images/rocket-fly.png"/>
+              <Image url="@../resources/images/rocket-fly.png" />
             </ImageView>
           </graphic>
         </Button>
       </AnchorPane>
     </Tab>
   </TabPane>
-  <BorderPane prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0"
-              AnchorPane.rightAnchor="0.0">
+  <BorderPane prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
     <center>
-      <Button fx:id="btnClose" cancelButton="true" maxWidth="70.0" minWidth="70.0" mnemonicParsing="false"
-              onAction="#btnCancelClick" prefWidth="70.0" text="Close" BorderPane.alignment="CENTER"/>
+      <Button fx:id="btnClose" cancelButton="true" maxWidth="70.0" minWidth="70.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="70.0" text="Close" BorderPane.alignment="CENTER" />
     </center>
   </BorderPane>
 </AnchorPane>
