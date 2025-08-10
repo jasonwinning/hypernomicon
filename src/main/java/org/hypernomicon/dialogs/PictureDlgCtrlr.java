@@ -594,7 +594,9 @@ public class PictureDlgCtrlr extends ModalDialog
   {
     removeCrop();
 
-    clipboardImageBuffer = MediaUtil.convertClipboardImageTo24BitBuffer();
+    //ClipboardImageHelper.inspectDataFormatOnClipboard();  // Inspect the actual data format on the clipboard
+
+    clipboardImageBuffer = ClipboardImageHelper.getClipboardImageViaAWT();
 
     if (clipboardImageBuffer == null)
     {

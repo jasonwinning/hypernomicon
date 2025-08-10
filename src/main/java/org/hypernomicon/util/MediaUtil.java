@@ -22,7 +22,6 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -40,10 +39,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.util.filePath.FilePath;
 
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Clipboard;
 
 //---------------------------------------------------------------------------
 
@@ -400,41 +396,6 @@ public final class MediaUtil
     if ((type2 != hdtNone) && (type1 == hdtNone)) return hdtWork.compareTo(type2  );
 
     return type1 == hdtNone ? strCompResult : type1.compareTo(type2);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Retrieves an image on the clipboard, converts it to 24-bit so that it can
-   * be saved as JPG, and returns a BufferedImage containing the image.
-   * @return BufferedImage, or null if the clipboard did not contain an image.
-   */
-  public static BufferedImage convertClipboardImageTo24BitBuffer()
-  {
-    Clipboard clipboard = Clipboard.getSystemClipboard();
-
-    if (clipboard.hasImage() == false)
-      return null;
-
-    // All this business with the 2 different BufferedImages is because the OpenJDK
-    // jpg plugin doesn't support 32-bit color. So we have to convert to 24-bit
-    // before writing to jpg.
-
-    Image image = clipboard.getImage();
-    if (image == null) return null;
-
-    BufferedImage input = SwingFXUtils.fromFXImage(image, null);
-    if (input == null) return null;
-
-    int width  = input.getWidth (),
-        height = input.getHeight();
-
-    BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-    int[] px = input.getRGB(0, 0, width, height, null, 0, width);
-    output.setRGB(0, 0, width, height, px, 0, width);
-
-    return output;
   }
 
 //---------------------------------------------------------------------------

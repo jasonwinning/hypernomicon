@@ -24,9 +24,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -36,13 +34,9 @@ import javax.imageio.ImageIO;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
-import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.FileDownloadUtility;
-import org.hypernomicon.util.MediaUtil;
+import org.hypernomicon.util.*;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -324,7 +318,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
   private void rbClipboardSelected()
   {
-    clipboardImageBuffer = MediaUtil.convertClipboardImageTo24BitBuffer();
+    clipboardImageBuffer = ClipboardImageHelper.getClipboardImageViaAWT();
 
     if (clipboardImageBuffer == null)
     {
