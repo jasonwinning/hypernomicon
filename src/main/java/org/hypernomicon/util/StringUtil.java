@@ -18,6 +18,7 @@
 package org.hypernomicon.util;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.collect.Lists;
+
 import com.ibm.icu.text.Transliterator;
 
 //---------------------------------------------------------------------------
@@ -731,7 +733,7 @@ public final class StringUtil
     Transliterator.FORWARD
   );
 
-  private static final Map<Integer, String> codePointCache = new HashMap<>();
+  private static final Map<Integer, String> codePointCache = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
 
