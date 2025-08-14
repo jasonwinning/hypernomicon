@@ -31,7 +31,6 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.authors.HDI_OfflineAuthors.OfflineAuthor;
 import org.hypernomicon.model.items.*;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordWithAuthors;
 import org.hypernomicon.model.relations.NestedValue;

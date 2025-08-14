@@ -26,6 +26,7 @@ import java.util.*;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.model.unities.HDT_RecordWithDescription;
@@ -61,6 +62,7 @@ public interface HDT_Record
   String resultTextForTag(Tag tag, boolean limitTo20Items);
   int resultCount(Tag tag);
   boolean getTagBoolean(Tag tag);
+  Ternary getTagTernary(Tag tag);
   Set<Tag> getAllTags();
   boolean isUnitable();
   boolean hasDesc();     // this means the record has a description, but not necessarily that it is associated with a

@@ -47,6 +47,10 @@ public class HDT_Argument extends HDT_RecordWithMainText
   public final List<HDT_Argument> targetArgs, responseArgs;
   public final List<HDT_Work> works;
 
+  public static final int truePositionVerdictID  = 1,
+                          falsePositionVerdictID = 2,
+                          failsArgumentVerdictID = 101;
+
 //---------------------------------------------------------------------------
 
   public HDT_Argument(RecordState xmlState, DatasetAccessor<HDT_Argument> dataset)
@@ -66,11 +70,6 @@ public class HDT_Argument extends HDT_RecordWithMainText
   public String pagesInWork(HDT_Work work)                { return db.getNestedString(this, work, tagPages); }
   public void setPagesInWork(HDT_Work work, String pages) { db.updateNestedString(this, work, tagPages, pages); }
 
-  public static final int truePositionVerdictID  = 1,
-                          falsePositionVerdictID = 2,
-                          failsArgumentVerdictID = 101;
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_PositionVerdict getPosVerdict(HDT_Position position)

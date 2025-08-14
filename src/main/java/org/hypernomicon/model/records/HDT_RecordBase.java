@@ -73,7 +73,8 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final String getSortKey()               { return safeStr(dataset.getKeyByID(id)); }
   @Override public final boolean isExpired()               { return expired; }
   @Override public final Set<Tag> getAllTags()             { return items.isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
-  @Override public final boolean getTagBoolean(Tag tag)    { return ((HDI_OnlineBoolean)items.get(tag)).get(); }
+  @Override public final boolean getTagBoolean(Tag tag)    { return ((HDI_OnlineBoolean) items.get(tag)).get(); }
+  @Override public final Ternary getTagTernary(Tag tag)    { return ((HDI_OnlineTernary) items.get(tag)).get(); }
   @Override public final boolean hasStoredState()          { return xmlState.stored; }
   @Override public final void updateSortKey()              { dataset.setKey(getID(), makeSortKey()); }
   @Override public final HDI_Schema getSchema(Tag tag)     { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
@@ -433,7 +434,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final String getTagString(Tag tag)
   {
-    return tag == type.getNameTag() ? name.get() : ((HDI_OnlineString)items.get(tag)).get();
+    return tag == type.getNameTag() ? name.get() : ((HDI_OnlineString) items.get(tag)).get();
   }
 
 //---------------------------------------------------------------------------
@@ -441,7 +442,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final BibliographicDate getBibDateInternal()
   {
-    return ((HDI_OnlineBibDate)items.get(tagBibDate)).get();
+    return ((HDI_OnlineBibDate) items.get(tagBibDate)).get();
   }
 
 //---------------------------------------------------------------------------
@@ -449,7 +450,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final void updateBibDate(BibliographicDate newBibDate)
   {
-    HDI_OnlineBibDate item = (HDI_OnlineBibDate)items.get(tagBibDate);
+    HDI_OnlineBibDate item = (HDI_OnlineBibDate) items.get(tagBibDate);
 
     if (item.get().equals(newBibDate)) return;
 
@@ -462,7 +463,20 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final void updateTagBoolean(Tag tag, boolean val)
   {
-    HDI_OnlineBoolean item = (HDI_OnlineBoolean)items.get(tag);
+    HDI_OnlineBoolean item = (HDI_OnlineBoolean) items.get(tag);
+
+    if (item.get() == val) return;
+
+    modifyNow();
+    item.set(val);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected final void updateTagTernary(Tag tag, Ternary val)
+  {
+    HDI_OnlineTernary item = (HDI_OnlineTernary) items.get(tag);
 
     if (item.get() == val) return;
 

@@ -24,7 +24,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.Objects;
 
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.ObjectGroup;

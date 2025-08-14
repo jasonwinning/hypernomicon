@@ -28,7 +28,7 @@ import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.authors.Author.AuthorType;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.query.personMatch.PersonForDupCheck;

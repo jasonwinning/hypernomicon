@@ -26,7 +26,6 @@ import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.items.*;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;

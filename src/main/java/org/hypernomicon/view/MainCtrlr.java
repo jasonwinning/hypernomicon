@@ -50,7 +50,7 @@ import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.authors.WorkAuthors;
 import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;

@@ -32,7 +32,7 @@ import org.hypernomicon.bib.auth.BibAuthKeys;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;

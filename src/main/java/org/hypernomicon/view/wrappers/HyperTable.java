@@ -34,7 +34,7 @@ import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;

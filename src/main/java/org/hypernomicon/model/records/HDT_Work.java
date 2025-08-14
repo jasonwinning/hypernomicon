@@ -37,7 +37,6 @@ import org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.authors.*;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;

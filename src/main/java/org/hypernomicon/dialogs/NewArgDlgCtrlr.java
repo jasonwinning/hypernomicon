@@ -30,7 +30,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.authors.Author;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;

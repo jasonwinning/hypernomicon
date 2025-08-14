@@ -36,7 +36,7 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.BibliographicDate;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.*;

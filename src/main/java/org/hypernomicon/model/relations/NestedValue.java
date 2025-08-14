@@ -19,7 +19,6 @@ package org.hypernomicon.model.relations;
 
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.items.*;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.util.StringUtil.*;

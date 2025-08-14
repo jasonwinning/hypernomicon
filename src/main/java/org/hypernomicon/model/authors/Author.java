@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 
 import static org.hypernomicon.util.StringUtil.*;

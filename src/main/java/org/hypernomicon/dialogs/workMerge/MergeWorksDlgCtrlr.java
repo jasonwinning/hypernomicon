@@ -39,7 +39,7 @@ import org.hypernomicon.dialogs.workMerge.BibFieldCtrlr.*;
 import org.hypernomicon.dialogs.workMerge.BibFieldRow.*;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;

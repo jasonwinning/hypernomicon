@@ -17,36 +17,34 @@
 
 package org.hypernomicon.model.items;
 
-import java.util.List;
-
-import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.Tag;
-import org.hypernomicon.model.records.HDT_Record;
-
 //---------------------------------------------------------------------------
 
-public class HDI_OnlineTernary extends HDI_OnlineBase<HDI_OfflineTernary>
+public enum Ternary
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Ternary value = Ternary.Unset;
+  Unset, False, True;
 
 //---------------------------------------------------------------------------
 
-  public HDI_OnlineTernary(HDI_Schema schema, HDT_Record record) { super(schema, record); }
+  public boolean isTrue () { return this == True ; }
+  public boolean isFalse() { return this == False; }
+  public boolean isUnset() { return this == Unset; }
 
 //---------------------------------------------------------------------------
 
-  public Ternary get()           { return value; }
-  public void set(Ternary value) { this.value = value == null ? Ternary.Unset : value; }
+  @Override public String toString() { return switch (this)
+  {
+    case False -> "False";
+    case True  -> "True";
+    case Unset -> "Unset";
+  };}
 
-  @Override public void setFromOfflineValue(HDI_OfflineTernary val, Tag tag)                { value = val.get(); }
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { }
-  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)              { return Ternary.isEmpty(value) ? "" : value.toString(); }
-  @Override public int getResultCount(Tag tag)                                              { return Ternary.isEmpty(value) ? 0 : 1; }
-  @Override public void getToOfflineValue(HDI_OfflineTernary val, Tag tag)                  { val.value = value; }
+//---------------------------------------------------------------------------
+
+  public static boolean isEmpty(Ternary val) { return (val == null) || (val == Unset); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

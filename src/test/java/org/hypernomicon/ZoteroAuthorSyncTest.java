@@ -35,8 +35,8 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.authors.RecordAuthor;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 

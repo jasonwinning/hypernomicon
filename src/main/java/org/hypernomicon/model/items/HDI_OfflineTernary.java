@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.items;
 
-import static org.hypernomicon.model.items.HDI_OfflineTernary.Ternary.*;
+import static org.hypernomicon.model.items.Ternary.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
@@ -33,25 +33,6 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public enum Ternary
-  {
-    Unset, False, True;
-
-    public boolean isTrue () { return this == True ; }
-    public boolean isFalse() { return this == False; }
-    public boolean isUnset() { return this == Unset; }
-
-    @Override public String toString() { return switch (this)
-    {
-      case False -> "False";
-      case True  -> "True";
-      default    -> "Unset";
-    };}
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   Ternary value = Unset;
 
 //---------------------------------------------------------------------------
@@ -60,7 +41,7 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
   {
     this(schema, recordState);
 
-    value = newValue;
+    value = newValue == null ? Ternary.Unset : newValue;
   }
 
   public HDI_OfflineTernary(HDI_Schema schema, RecordState recordState)

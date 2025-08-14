@@ -75,7 +75,6 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.data.HyperDataset;
 import org.hypernomicon.model.items.*;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.*;
@@ -673,9 +672,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unused")
   private void addTernaryItem  (RecordType type,                  Tag... tags) { addItem(type, hdcTernary       , rtNone, tags); }
-
   private void addBooleanItem  (RecordType type,                  Tag... tags) { addItem(type, hdcBoolean       , rtNone, tags); }
   private void addPointerMulti (RecordType type, RelationType rt, Tag... tags) { addItem(type, hdcPointerMulti  , rt    , tags); }
   private void addPointerSingle(RecordType type, RelationType rt, Tag... tags) { addItem(type, hdcPointerSingle , rt    , tags); }

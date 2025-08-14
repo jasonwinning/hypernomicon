@@ -53,7 +53,7 @@ import org.hypernomicon.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.previewWindow.PreviewWindow;
