@@ -29,6 +29,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.controlsfx.control.BreadCrumbBar;
 import org.controlsfx.control.BreadCrumbBar.BreadCrumbButton;
@@ -112,7 +113,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   @Override public TreeRow newRow(HDT_Record record, TreeModel<TreeRow> treeModel) { return new TreeRow(record, treeModel); }
 
-  public boolean getHasTerms() { return hasTerms; }
+  boolean getHasTerms() { return hasTerms; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -412,7 +413,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     findAgain(searchingDown);
   }
 
-  public void findAgain(boolean down)
+  void findAgain(boolean down)
   {
     find(lastSearchTerm, down, searchingNameOnly);
   }
@@ -462,22 +463,27 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   Set<RecordType> getValidTargetTypes(RecordType sourceType)
   {
-    Set<RecordType> set = RelationSet.getRelationsForSubjType(sourceType, false).stream().map(db::getObjType).collect(Collectors.toSet());
-    if (sourceType == hdtWork)
-      set.add(hdtArgument);
+    // Ensure the in-tree record types are loaded
 
     if (recordTypesInTree.isEmpty())
-      List.of(debateTree, termTree, labelTree, noteTree).forEach(treeModel -> recordTypesInTree.addAll(treeModel.getRecordTypes()));
+      Stream.of(debateTree, termTree, labelTree, noteTree).map(TreeModel::getRecordTypes).forEach(recordTypesInTree::addAll);
+
+    // Base set from existing relations
+
+    Set<RecordType> targetTypes = RelationSet.getRelationsForSubjType(sourceType, false).stream().map(db::getObjType).collect(Collectors.toSet());
+
+    // Special-case adjustments by source type
 
     if ((sourceType == hdtWork) || (sourceType == hdtMiscFile))
-    {
-      set.add(hdtInvestigation);
-      set.add(hdtWorkLabel);
-    }
+      targetTypes.addAll(Set.of(hdtInvestigation, hdtWorkLabel, hdtArgument));
+    else if (sourceType == hdtArgument)
+      targetTypes.remove(hdtWork);
 
-    set.retainAll(recordTypesInTree);
+    // Constrain to types present in the tree
 
-    return set;
+    targetTypes.retainAll(recordTypesInTree);
+
+    return targetTypes;
   }
 
 //---------------------------------------------------------------------------
