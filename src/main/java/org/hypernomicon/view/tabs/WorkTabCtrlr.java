@@ -235,10 +235,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htArguments = new HyperTable(tvArguments, 3, false, TablePrefKey.WORK_ARG);
 
-    htArguments.addIconCol();                       // Icon to indicate the type of record this argument targets
-    htArguments.addLabelCol(hdtNone);               // Record name of the target of the argument
-    htArguments.addLabelCol(hdtNone, smTextSimple); // Verdict of the argument
-    htArguments.addLabelCol(hdtArgument);           // Argument name
+    htArguments.addIconCol();                       // Icon to indicate the type of record this argument/stance targets
+    htArguments.addLabelCol(hdtNone);               // Record name of the target of the argument/stance
+    htArguments.addLabelCol(hdtNone, smTextSimple); // Verdict of the argument/stance
+    htArguments.addLabelCol(hdtArgument);           // Argument/stance name
     htArguments.addLabelCol(hdtWork)                // Pages
                .setValueType(cvtPageRange);
 
@@ -757,8 +757,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       row.setCellValue(2, new BibDateHTC(subWork, subWork.getBibDate()));
     });
 
-  // Populate arguments
-  // ------------------
+  // Populate arguments/stances
+  // --------------------------
 
     htArguments.buildRows(curWork.arguments, (row, arg) ->
     {
@@ -1019,14 +1019,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void initArgContextMenu()
   {
-    htArguments.addContextMenuItem("Argument Record...", HDT_Argument.class,
+    htArguments.addContextMenuItem("Argument/Stance Record...", HDT_Argument.class,
       arg -> ui.goToRecord(arg, true));
 
     htArguments.addContextMenuItem("Position Record...", HDT_Argument.class,
       arg -> arg.positions.size() > 0,
       arg -> ui.goToRecord(arg.positions.getFirst(), true));
 
-    htArguments.addContextMenuItem("Debate Record...", HDT_Argument.class,
+    htArguments.addContextMenuItem("Problem/Debate Record...", HDT_Argument.class,
       arg -> (arg.positions.isEmpty() == false) && (arg.positions.getFirst().getLargerDebate() != null),
       arg -> ui.goToRecord(arg.positions.getFirst().getLargerDebate(), true));
   }

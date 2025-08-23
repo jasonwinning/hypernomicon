@@ -1944,7 +1944,7 @@ public final class MainCtrlr
     int separatorPos = items.size();
     FilePath topicalPath = db.topicalPath();
 
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(topicalPath.toPath(), "**"))
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(topicalPath.toPath()))
     {
       stream.forEach(entry ->
       {
@@ -2079,7 +2079,7 @@ public final class MainCtrlr
       pos -> pos.getWorkWithAuthor() != null,
       pos -> goToRecord(pos.getWorkWithAuthor().author, true));
 
-    ht.addContextMenuItem("Go to argument record", HDT_Position.class,
+    ht.addContextMenuItem("Go to argument/stance record", HDT_Position.class,
       pos -> pos.arguments.size() > 0,
       pos -> goToRecord(nullSwitch(pos.getLaunchableWork(), nullSwitch(pos.getWork(), pos.getArgument())).argument, true));
 

@@ -119,7 +119,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     Folders("Reassign Folders"),
     WorkNaming("Work File Naming"),
     WorkSearchKey("Work Search Key Generation"),
-    ArgNaming("Argument Naming"),
+    ArgNaming("Argument/Stance Naming"),
     BibMgr("Bibliography Manager");
 
     private final String caption;

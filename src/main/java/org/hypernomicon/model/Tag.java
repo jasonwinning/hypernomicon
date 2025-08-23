@@ -42,7 +42,7 @@ public enum Tag
   tagRank            ("rank"              , "Rank"                     , hdtRank           , true),
   tagInvestigation   ("investigation"     , "Investigation"            , hdtInvestigation  , true),
   tagDebate          ("debate"            , "Problem/Debate"           , hdtDebate         , true),
-  tagArgument        ("argument"          , "Argument"                 , hdtArgument       , true),
+  tagArgument        ("argument"          , "Argument/Stance"          , hdtArgument       , true),
   tagTerm            ("term"              , "Term"                     , hdtTerm           , true),
   tagConcept         ("concept"           , "Concept"                  , hdtConcept        , true),
   tagWork            ("work"              , "Work"                     , hdtWork           , true),

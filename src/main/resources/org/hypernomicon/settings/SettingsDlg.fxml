@@ -229,7 +229,7 @@
       </Tab>
       <Tab fx:id="tabWorkSearchKey" text="Work Search Key">
       </Tab>
-      <Tab fx:id="tabArgNaming" text="Argument Naming">
+      <Tab fx:id="tabArgNaming" text="Argument/Stance Naming">
       </Tab>
       <Tab fx:id="tabLinkToExtBibMgr" text="Bibliography Manager">
         <VBox fx:id="vbRefMgr">

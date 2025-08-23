@@ -21,9 +21,13 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
+import java.util.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
@@ -41,6 +45,7 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
+import org.hypernomicon.view.wrappers.SimpleSelector;
 
 import javafx.application.Platform;
 import javafx.event.Event;
@@ -58,7 +63,8 @@ public class NewArgDlgCtrlr extends ModalDialog
 
   @FXML private CheckBox chkIncludeAuth, chkLowerCaseTargetName;
   @FXML private ComboBox<HyperTableCell> cbPerson, cbVerdict, cbWork;
-  @FXML private Label lblTargetName, lblTargetDesc;
+  @FXML private ComboBox<Ternary> cbArgOrStance;
+  @FXML private Label lblTargetName, lblTargetDesc, lblDoesWhat;
   @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;
   @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfTargetName, tfTitle, tfPages;
   @FXML private WebView webView;
@@ -69,7 +75,8 @@ public class NewArgDlgCtrlr extends ModalDialog
 
   private HDT_Argument argument;
   private boolean revising = false, programmaticWorkChange = false, programmaticVerdictChange = false;
-  private String argName1 = "", argName2 = "", argName3 = "", argName4 = "", argName5 = "", argName6 = "", argName7 = "", argName8 = "";
+
+  private final Map<TextField, String> textFieldToLastGen = new HashMap<>();
 
   public HDT_Argument getArgument() { return argument; }
 
@@ -77,7 +84,7 @@ public class NewArgDlgCtrlr extends ModalDialog
 
   public NewArgDlgCtrlr(HDT_Position position)
   {
-    this("New Argument", position);
+    this("New Argument/Stance", position);
   }
 
   public NewArgDlgCtrlr(HDT_Argument targetArg)
@@ -93,7 +100,9 @@ public class NewArgDlgCtrlr extends ModalDialog
     RecordType verdictType = target.getType() == hdtPosition ? hdtPositionVerdict : hdtArgumentVerdict;
 
     hcbPerson  = new HyperCB(cbPerson , ctEditableLimitedDropDown, new StandardPopulator(hdtPerson));
+
     hcbVerdict = new HyperCB(cbVerdict, ctEditableLimitedDropDown, new StandardPopulator(verdictType));
+
     hcbWork    = new HyperCB(cbWork   , ctEditableLimitedDropDown, new HybridSubjectPopulator(rtAuthorOfWork));
 
     rbArgName1.setSelected(true);
@@ -127,7 +136,7 @@ public class NewArgDlgCtrlr extends ModalDialog
 
       programmaticWorkChange = false;
 
-      reviseSuggestions();
+      reviseSuggestions(cbArgOrStance.getValue());
     });
 
     String noun = target.getType() == hdtPosition ? "Position" : "Target argument";
@@ -138,11 +147,11 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     tfTitle.textProperty().addListener((ob, ov, nv) -> rbNew.setSelected(true));
 
-    chkIncludeAuth.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions());
+    chkIncludeAuth.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions(cbArgOrStance.getValue()));
 
     chkLowerCaseTargetName.setSelected(db.prefs.getBoolean(PrefKey.LOWER_CASE_TARGET_NAMES, false));
 
-    chkLowerCaseTargetName.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions());
+    chkLowerCaseTargetName.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions(cbArgOrStance.getValue()));
 
     int verdictID = verdictType == hdtPositionVerdict ? HDT_Argument.truePositionVerdictID : HDT_Argument.failsArgumentVerdictID;
 
@@ -157,21 +166,23 @@ public class NewArgDlgCtrlr extends ModalDialog
 
       if (HDT_Argument.posVerdictIDIsInFavor(posVerdictID))
       {
-        if      (rbArgName5.isSelected() && tfArgName5.getText().equals(argName5)) rbArgName1.setSelected(true);
-        else if (rbArgName6.isSelected() && tfArgName6.getText().equals(argName6)) rbArgName2.setSelected(true);
-        else if (rbArgName7.isSelected() && tfArgName7.getText().equals(argName7)) rbArgName3.setSelected(true);
-        else if (rbArgName8.isSelected() && tfArgName8.getText().equals(argName8)) rbArgName4.setSelected(true);
+        if      (rbArgName5.isSelected() && tfArgName5.getText().equals(textFieldToLastGen.get(tfArgName5))) rbArgName1.setSelected(true);
+        else if (rbArgName6.isSelected() && tfArgName6.getText().equals(textFieldToLastGen.get(tfArgName6))) rbArgName2.setSelected(true);
+        else if (rbArgName7.isSelected() && tfArgName7.getText().equals(textFieldToLastGen.get(tfArgName7))) rbArgName3.setSelected(true);
+        else if (rbArgName8.isSelected() && tfArgName8.getText().equals(textFieldToLastGen.get(tfArgName8))) rbArgName4.setSelected(true);
       }
       else
       {
-        if      (rbArgName1.isSelected() && tfArgName1.getText().equals(argName1)) rbArgName5.setSelected(true);
-        else if (rbArgName2.isSelected() && tfArgName2.getText().equals(argName2)) rbArgName6.setSelected(true);
-        else if (rbArgName3.isSelected() && tfArgName3.getText().equals(argName3)) rbArgName7.setSelected(true);
-        else if (rbArgName4.isSelected() && tfArgName4.getText().equals(argName4)) rbArgName8.setSelected(true);
+        if      (rbArgName1.isSelected() && tfArgName1.getText().equals(textFieldToLastGen.get(tfArgName1))) rbArgName5.setSelected(true);
+        else if (rbArgName2.isSelected() && tfArgName2.getText().equals(textFieldToLastGen.get(tfArgName2))) rbArgName6.setSelected(true);
+        else if (rbArgName3.isSelected() && tfArgName3.getText().equals(textFieldToLastGen.get(tfArgName3))) rbArgName7.setSelected(true);
+        else if (rbArgName4.isSelected() && tfArgName4.getText().equals(textFieldToLastGen.get(tfArgName4))) rbArgName8.setSelected(true);
       }
     });
 
     tfTargetName.setText(target.name());
+
+    webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
 
     MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), webView.getEngine());
 
@@ -180,12 +191,10 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     rbNew.setSelected(true);
 
-    rbExisting.getToggleGroup().selectedToggleProperty().addListener((ob, ov, nv) -> reviseSuggestions());
-
-    reviseSuggestions();
+    rbExisting.getToggleGroup().selectedToggleProperty().addListener((ob, ov, nv) -> reviseSuggestions(cbArgOrStance.getValue()));
 
     alreadyChangingTitle.setTrue();
-    tfTitle.setText(target.name() + (target.getType() == hdtPosition ? " Argument Stem" : " Counterargument Stem"));
+    tfTitle.setText(target.name() + (target.getType() == hdtPosition ? " Argument/Stance Stem" : " Counterargument Stem"));
     alreadyChangingTitle.setFalse();
 
     addListeners(tfArgName1, rbArgName1, true ); addListeners(tfArgName2, rbArgName2, true );
@@ -204,11 +213,31 @@ public class NewArgDlgCtrlr extends ModalDialog
         hcbWork.selectID(-1);
         rbNew.setSelected(true);
 
-        reviseSuggestions();
+        reviseSuggestions(cbArgOrStance.getValue());
       });
     });
 
     chkIncludeAuth.setSelected(true);
+
+    SequencedMap<Ternary, String> strMap = new LinkedHashMap<>();
+
+    strMap.put(Ternary.False, "Stance");
+    strMap.put(Ternary.True , "Argument");
+
+    SimpleSelector.init(cbArgOrStance, strMap);
+
+    cbArgOrStance.setValue(Ternary.True);
+
+    if (target.getType() != hdtPosition)
+      cbArgOrStance.setDisable(true);
+
+    cbArgOrStance.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) ->
+    {
+      if (Ternary.isEmpty(nv) == false)
+        reviseSuggestions(nv);
+    });
+
+    reviseSuggestions(Ternary.True);
   }
 
 //---------------------------------------------------------------------------
@@ -244,14 +273,17 @@ public class NewArgDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void reviseSuggestions()
+  private void reviseSuggestions(Ternary isArgument)
   {
-    String part1 = "";
+    String peoplePart = "";
 
     revising = true;
 
+    if      (isArgument == Ternary.True ) lblDoesWhat.setText("Argues that:");
+    else if (isArgument == Ternary.False) lblDoesWhat.setText("Holds that:" );
+
     if (chkIncludeAuth.isSelected())
-      part1 = getAuthorNamesForSuggestions();
+      peoplePart = getAuthorNamesForSuggestions();
 
     String targetName = target.name();
     if (targetName.startsWith("The "))
@@ -264,40 +296,57 @@ public class NewArgDlgCtrlr extends ModalDialog
     {
       chkLowerCaseTargetName.setText("Lower case position name");
 
-      String part2 = part1.isEmpty() ? "Argument " : "argument ";
-
-      argName1 = part1 + part2 + "for "                   + targetName; tfArgName1.setText(argName1);
-      argName2 = part1 + part2 + "for the "               + targetName; tfArgName2.setText(argName2);
-      argName3 = part1 + part2 + "that "                  + targetName; tfArgName3.setText(argName3);
-      argName4 = part1 + part2 + "for the view that "     + targetName; tfArgName4.setText(argName4);
-      argName5 = part1 + part2 + "against "               + targetName; tfArgName5.setText(argName5);
-      argName6 = part1 + part2 + "against the "           + targetName; tfArgName6.setText(argName6);
-      argName7 = part1 + part2 + "that it is false that " + targetName; tfArgName7.setText(argName7);
-      argName8 = part1 + part2 + "against the view that " + targetName; tfArgName8.setText(argName8);
+      if (isArgument == Ternary.False)
+      {
+        setArgTextField(tfArgName1, peoplePart, "Endorsement of "              , targetName);
+        setArgTextField(tfArgName2, peoplePart, "Endorsement of the "          , targetName);
+        setArgTextField(tfArgName3, peoplePart, "Stance that "                 , targetName);
+        setArgTextField(tfArgName4, peoplePart, "Stance affirming that "       , targetName);
+        setArgTextField(tfArgName5, peoplePart, "Rejection of "                , targetName);
+        setArgTextField(tfArgName6, peoplePart, "Rejection of the "            , targetName);
+        setArgTextField(tfArgName7, peoplePart, "Rejection of the claim that " , targetName);
+        setArgTextField(tfArgName8, peoplePart, "Stance against the view that ", targetName);
+      }
+      else
+      {
+        setArgTextField(tfArgName1, peoplePart, "Argument for "                  , targetName);
+        setArgTextField(tfArgName2, peoplePart, "Argument for the "              , targetName);
+        setArgTextField(tfArgName3, peoplePart, "Argument that "                 , targetName);
+        setArgTextField(tfArgName4, peoplePart, "Argument for the view that "    , targetName);
+        setArgTextField(tfArgName5, peoplePart, "Argument against "              , targetName);
+        setArgTextField(tfArgName6, peoplePart, "Argument against the "          , targetName);
+        setArgTextField(tfArgName7, peoplePart, "Argument that it is false that ", targetName);
+        setArgTextField(tfArgName8, peoplePart, "Argument against the view that ", targetName);
+      }
     }
     else
     {
       chkLowerCaseTargetName.setText("Lower case target name");
 
-      String part2 = part1.isEmpty() ? "Counterargument " : "counterargument ";
+      setArgTextField(tfArgName1, peoplePart, "Counterargument against "               , targetName);
+      setArgTextField(tfArgName2, peoplePart, "Counterargument against the "           , targetName);
+      setArgTextField(tfArgName3, peoplePart, "Counterargument against the claim that ", targetName);
 
-      argName1 = part1 + part2 + "against "                + targetName; tfArgName1.setText(argName1);
-      argName2 = part1 + part2 + "against the "            + targetName; tfArgName2.setText(argName2);
-      argName3 = part1 + part2 + "against the claim that " + targetName; tfArgName3.setText(argName3);
+      setArgTextField(tfArgName4, peoplePart, "Response to "    , targetName);
+      setArgTextField(tfArgName5, peoplePart, "Response to the ", targetName);
 
-      part2 = part1.isEmpty() ? "Response " : "response ";
-
-      argName4 = part1 + part2 + "to "     + targetName; tfArgName4.setText(argName4);
-      argName5 = part1 + part2 + "to the " + targetName; tfArgName5.setText(argName5);
-
-      part2 = part1.isEmpty() ? "Objection " : "objection ";
-
-      argName6 = part1 + part2 + "to "                + targetName; tfArgName6.setText(argName6);
-      argName7 = part1 + part2 + "to the "            + targetName; tfArgName7.setText(argName7);
-      argName8 = part1 + part2 + "to the claim that " + targetName; tfArgName8.setText(argName8);
+      setArgTextField(tfArgName6, peoplePart, "Objection to "               , targetName);
+      setArgTextField(tfArgName7, peoplePart, "Objection to the "           , targetName);
+      setArgTextField(tfArgName8, peoplePart, "Objection to the claim that ", targetName);
     }
 
     revising = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setArgTextField(TextField tf, String peoplePart, String desc, String targetName)
+  {
+    String str = peoplePart + (strNullOrBlank(peoplePart) ? desc : desc.toLowerCase()) + targetName;
+
+    textFieldToLastGen.put(tf, str);
+    tf.setText(str);
   }
 
 //---------------------------------------------------------------------------
@@ -328,7 +377,14 @@ public class NewArgDlgCtrlr extends ModalDialog
     if (verdict == null)
       return falseWithErrorPopup("You must select a verdict.", cbVerdict);
 
+    Ternary isArgument = cbArgOrStance.getValue();
+
+    if (Ternary.isEmpty(isArgument))
+      return falseWithErrorPopup("You must select either Argument or Stance.", cbArgOrStance);
+
     argument = db.createNewBlankRecord(hdtArgument);
+
+    argument.setIsArgument(isArgument);
 
     if (verdict.getType() == hdtPositionVerdict)
       argument.addPosition((HDT_Position)target, (HDT_PositionVerdict)verdict);

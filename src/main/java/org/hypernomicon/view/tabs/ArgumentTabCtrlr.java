@@ -31,6 +31,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.populators.*;
@@ -38,10 +39,11 @@ import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.SequencedMap;
 
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TableColumn;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
@@ -54,6 +56,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
   private final ArgumentLowerPaneCtrlr lowerCtrlr;
   private final HyperTable htParents, htWhereMade, htResponses;
+  private final ComboBox<Ternary> cbArgOrStance;
 
   private HDT_Argument curArgument;
 
@@ -63,13 +66,16 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
   {
     super(argumentTabEnum, tab);
 
+    cbArgOrStance = new ComboBox<>();
+    setupArgOrStance();
+
     AnchorPane aP = new AnchorPane();
 
     lblParentCaption.setText("Responds to:");
 
     gpToolBar.getChildren().set(0, aP);
 
-    TableColumn<HyperTableRow, HyperTableCell> verdictCol = new TableColumn<>("Argues that");
+    TableColumn<HyperTableRow, HyperTableCell> verdictCol = new TableColumn<>("Argues/Holds that");
     verdictCol.setPrefWidth(250.0);
     tvParents.getColumns().add(verdictCol);
 
@@ -177,11 +183,49 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void setupArgOrStance()
+  {
+    AnchorPane.setRightAnchor(nameCtrl(), 280.0);
+
+    AnchorPane ap = (AnchorPane) nameCtrl().getParent();
+
+    Label lblArgOrStance = new Label("Argument or Stance:");
+
+    setAnchors(lblArgOrStance, 9.0, null, null, 156.0);
+
+    setupArgOrStanceSelector(cbArgOrStance);
+
+    setHeights(cbArgOrStance, 25.0);
+    setAnchors(cbArgOrStance, 5.0, null, null, 0.0);
+    cbArgOrStance.setPrefWidth(150.0);
+
+    ap.getChildren().addAll(lblArgOrStance, cbArgOrStance);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void setupArgOrStanceSelector(ComboBox<Ternary> cb)
+  {
+    SequencedMap<Ternary, String> strMap = new LinkedHashMap<>();
+
+    strMap.put(Ternary.Unset, "");
+    strMap.put(Ternary.False, "Stance");
+    strMap.put(Ternary.True , "Argument");
+
+    SimpleSelector.init(cb, strMap);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void updateFromRecord()
   {
     curArgument.addParentDisplayRecord();
 
     super.updateFromRecord();
+
+    cbArgOrStance.getSelectionModel().select(curArgument.getIsArgument());
 
     // Select parent records in ComboBoxes
     // -----------------------------------
@@ -264,7 +308,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
   private void updateArgCounts()
   {
-    lowerCtrlr.tabWhereMade.setText("Where made (" + htWhereMade.dataRowCount() + ')');
+    lowerCtrlr.tabWhereMade.setText("Where made/taken (" + htWhereMade.dataRowCount() + ')');
   }
 
 //---------------------------------------------------------------------------
@@ -313,6 +357,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htParents  .clear();
     htWhereMade.clear();
     htResponses.clear();
+
+    cbArgOrStance.getSelectionModel().select(Ternary.Unset);
   }
 
 //---------------------------------------------------------------------------
@@ -341,6 +387,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     htParents.saveObjectsAndSingleNestedItem(curArgument, rtPositionOfArgument, tagPositionVerdict, 3, 4);
     htParents.saveObjectsAndSingleNestedItem(curArgument, rtTargetArgOfArg    , tagArgumentVerdict, 3, 4);
+
+    curArgument.setIsArgument(cbArgOrStance.getSelectionModel().getSelectedItem());
 
     return true;
   }

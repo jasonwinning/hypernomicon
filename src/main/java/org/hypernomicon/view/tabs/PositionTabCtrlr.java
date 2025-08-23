@@ -69,7 +69,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     cols.get(2).setText("Title of Work");
     cols.add(2, new TableColumn<>("Date"));
     cols.add(2, new TableColumn<>("Verdict"));
-    cols.add(new TableColumn<>("Arg. Name"));
+    cols.add(new TableColumn<>("Argument/Stance Name"));
 
     spChildren.setDividerPositions(0.6);
 
@@ -103,14 +103,14 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htArguments = new HyperTable(tvLeftChildren, 5, true, TablePrefKey.POS_ARG);
 
     htArguments.addGoNewCol(hdtArgument, 5)
-      .setGoTooltipBasedOnTarget(record -> "Go to Argument: " + record.listName())
-      .setTooltip(ButtonAction.baNew, "Add new Argument responding to this Position");
+      .setGoTooltipBasedOnTarget(record -> "Go to Argument/Stance: " + record.listName())
+      .setTooltip(ButtonAction.baNew, "Add new Argument/Stance responding to this Position");
 
     htArguments.addLabelCol(hdtPerson);                        // Author(s) of work
     htArguments.addLabelCol(hdtPositionVerdict, smTextSimple); // True, False, etc.
     htArguments.addLabelCol(hdtArgument);                      // Date
     htArguments.addLabelCol(hdtWork, smStandard);              // Title of work
-    htArguments.addLabelCol(hdtArgument);                      // Name of argument
+    htArguments.addLabelCol(hdtArgument);                      // Name of argument/stance
 
     TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>();
     tvRightChildren.getColumns().add(1, col);
@@ -170,8 +170,8 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
       row.setCellValue(3, debate, debate.listName());
     });
 
- // Populate arguments
- // ------------------
+ // Populate arguments/stances
+ // --------------------------
 
     htArguments.buildRows(curPosition.arguments, (row, argument) ->
     {
@@ -237,7 +237,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htArguments.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
 
-    htArguments.addContextMenuItem("Go to argument record", HDT_Argument.class,
+    htArguments.addContextMenuItem("Go to argument/stance record", HDT_Argument.class,
       arg -> ui.goToRecord(arg, true));
   }
 

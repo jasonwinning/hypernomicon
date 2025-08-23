@@ -59,6 +59,9 @@ public class MergeSpokeDlgCtrlr extends ModalDialog
     mainText1 = record1.getMainText().getHtml();
     mainText2 = record2.getMainText().getHtml();
 
+    view1.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
+    view1.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
+
     view1.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText1).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
     view2.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText2).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
 

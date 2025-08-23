@@ -921,7 +921,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtTypeOfFile              ( 4, tagMiscFile            , "File(s) of this type"),
     rtAuthorOfWork            ( 5, tagWork                , "Work(s) by this author"),
     rtAuthorOfFile            ( 6, tagMiscFile            , "Misc. File(s) by this author"),
-    rtWorkOfArgument          ( 7, tagArgument            , "Argument(s) having this work as source"),
+    rtWorkOfArgument          ( 7, tagArgument            , "Argument/Stance(s) having this work as source"),
 
     rtParentLabelOfLabel      (11, "Child Label(s)"       , "Label(s) under this parent label"),
     rtTargetArgOfArg          (14, "Response Argument(s)" , "Argument(s) responding to this argument"),
@@ -935,7 +935,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtFolderOfNote            (22, tagNote                , "Note(s) associated with this Folder"),
     rtParentDebateOfPos       (23, tagPosition            , "Position(s) under this debate"),
     rtParentPosOfPos          (24, "Sub-Position(s)"      , "Position(s) under this parent position"),
-    rtPositionOfArgument      (25, tagArgument            , "Argument(s) concerning this position"),
+    rtPositionOfArgument      (25, tagArgument            , "Argument/Stance(s) concerning this position"),
 
     rtPersonOfInv             (27, tagInvestigation       , "Investigation(s) by this person"),
     rtPictureFolderOfPerson   (28, tagPerson              , "Person(s) with pictures in this folder"),

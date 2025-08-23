@@ -175,7 +175,7 @@
           <Tab fx:id="tabFiles" text="Misc. Files" />
           <Tab fx:id="tabDebates" text="Problems/Debates" />
           <Tab fx:id="tabPositions" text="Positions" />
-          <Tab fx:id="tabArguments" text="Arguments" />
+          <Tab fx:id="tabArguments" text="Arguments/Stances" />
           <Tab fx:id="tabNotes" text="Notes" />
           <Tab fx:id="tabTerms" text="Terms" />
           <Tab fx:id="tabQueries" text="Queries" />

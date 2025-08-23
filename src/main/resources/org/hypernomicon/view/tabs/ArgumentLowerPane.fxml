@@ -29,7 +29,7 @@
 
 <AnchorPane minHeight="0.0" minWidth="0.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.ArgumentLowerPaneCtrlr">
   <TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-    <Tab fx:id="tabWhereMade" text="Where made">
+    <Tab fx:id="tabWhereMade" text="Where made/taken">
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
         <TableView fx:id="tvWhereMade" editable="true" layoutX="200.0" layoutY="86.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <columns>

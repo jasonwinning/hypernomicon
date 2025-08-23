@@ -141,7 +141,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       pos -> db.isLoaded(),
       pos -> createChild(pos, rtParentPosOfDebate)));
 
-    addCreateNewSchema(tree.addContextMenuItem("Create new argument for/against this position", HDT_Position.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new argument/stance for/against this position", HDT_Position.class,
       pos -> db.isLoaded(),
       PositionTabCtrlr::newArgumentClick));
 

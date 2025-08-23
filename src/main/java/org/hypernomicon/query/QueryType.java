@@ -31,19 +31,19 @@ public enum QueryType
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  qtAllRecords    (1,  "Any records"           , hdtNone         ),
-  qtReport        (12, "Report"                , hdtNone         ),
-  qtPersons       (2,  "Person records"        , hdtPerson       ),
-  qtWorks         (3,  "Work records"          , hdtWork         ),
-  qtInstitutions  (4,  "Institution records"   , hdtInstitution  ),
-  qtInvestigations(5,  "Investigation records" , hdtInvestigation),
-  qtDebates       (6,  "Problem/debate records", hdtDebate       ),
-  qtPositions     (7,  "Position records"      , hdtPosition     ),
-  qtArguments     (8,  "Argument records"      , hdtArgument     ),
-  qtNotes         (9,  "Note records"          , hdtNote         ),
-  qtFiles         (10, "Misc. file records"    , hdtMiscFile     ),
-  qtConcepts      (11, "Concept records"       , hdtConcept      ),
-  qtFolders       (13, "Folders"               , hdtFolder       );
+  qtAllRecords    (1,  "Any records"            , hdtNone         ),
+  qtReport        (12, "Report"                 , hdtNone         ),
+  qtPersons       (2,  "Person records"         , hdtPerson       ),
+  qtWorks         (3,  "Work records"           , hdtWork         ),
+  qtInstitutions  (4,  "Institution records"    , hdtInstitution  ),
+  qtInvestigations(5,  "Investigation records"  , hdtInvestigation),
+  qtDebates       (6,  "Problem/debate records" , hdtDebate       ),
+  qtPositions     (7,  "Position records"       , hdtPosition     ),
+  qtArguments     (8,  "Argument/stance records", hdtArgument     ),
+  qtNotes         (9,  "Note records"           , hdtNote         ),
+  qtFiles         (10, "Misc. file records"     , hdtMiscFile     ),
+  qtConcepts      (11, "Concept records"        , hdtConcept      ),
+  qtFolders       (13, "Folders"                , hdtFolder       );
 
 //---------------------------------------------------------------------------
 

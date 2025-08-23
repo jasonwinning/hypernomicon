@@ -226,7 +226,7 @@
           <TableColumn prefWidth="247.99996948242188" text="Topic" />
           <TableColumn minWidth="0.0" prefWidth="323.0" text="Position" />
           <TableColumn prefWidth="225.0" text="Verdict" />
-          <TableColumn prefWidth="347.0" text="Arg. Name" />
+          <TableColumn prefWidth="347.0" text="Argument/Stance Name" />
         </columns>
       </TableView>
     </AnchorPane>

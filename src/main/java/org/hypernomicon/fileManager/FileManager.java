@@ -200,6 +200,8 @@ public final class FileManager extends NonmodalWindow
     webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
+    webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
+
     Scene scene = stage.getScene();
 
     scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of

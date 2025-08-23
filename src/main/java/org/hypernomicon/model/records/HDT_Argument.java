@@ -132,10 +132,10 @@ public class HDT_Argument extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 
   /**
-   * Retrieves the first non-null debate associated with this argument.
+   * Retrieves the first non-null debate associated with this argument/stance.
    * <p>
    * This method first searches for a debate by applying the {@link HDT_Position#getLargerDebate}
-   * function to the positions associated with this argument. If no debate is found, it then
+   * function to the positions associated with this argument/stance. If no debate is found, it then
    * searches the arguments that this argument responds to by applying this
    * function recursively to the target arguments.
    * </p>
