@@ -22,6 +22,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.wrappers.SimpleSelector;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -31,13 +32,10 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.util.StringConverter;
 
 //---------------------------------------------------------------------------
 
@@ -105,15 +103,6 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 
   private final String appPrefKey, commandsPrefKey, commandTypePrefKey;
 
-  private static final StringConverter<LaunchCommandTypeEnum> typeStrConv = new StringConverter<>()
-  {
-    @Override public String toString(LaunchCommandTypeEnum commandTypeEnum)
-    { return commandTypeEnum == null ? "" : commandTypeEnum.name; }
-
-    @Override public LaunchCommandTypeEnum fromString(String string)
-    { return findFirst(EnumSet.allOf(LaunchCommandTypeEnum.class), typeEnum -> typeEnum.name.equals(string)); }
-  };
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -164,16 +153,17 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 
     String typePrefVal = app.prefs.get(commandTypePrefKey, opSysCmdAndArgs.prefVal);
 
-    cbCommandType.setItems(FXCollections.observableArrayList(EnumSet.allOf(LaunchCommandTypeEnum.class)));
-    cbCommandType.setConverter(typeStrConv);
+    SequencedMap<LaunchCommandTypeEnum, String> strMap = new LinkedHashMap<>();
+
+    for (var commandTypeEnum : LaunchCommandTypeEnum.values())
+      strMap.put(commandTypeEnum, commandTypeEnum.name);
+
+    SimpleSelector.init(cbCommandType, strMap);
 
     cbCommandType.getSelectionModel().select(getByPrefVal(typePrefVal));
 
-    presets.forEach(preset ->
-    {
-      if (preset.isCompatible() && preset.commandsPrefKey.equals(commandsPrefKey))
-        lvPresets.getItems().add(preset);
-    });
+    presets.stream().filter(preset -> preset.isCompatible() && preset.commandsPrefKey.equals(commandsPrefKey))
+                    .forEach(preset -> lvPresets.getItems().add(preset));
   }
 
 //---------------------------------------------------------------------------

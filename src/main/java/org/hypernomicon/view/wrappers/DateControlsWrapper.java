@@ -22,35 +22,18 @@ import static org.hypernomicon.util.UIUtil.*;
 
 import java.time.Month;
 import java.time.format.TextStyle;
-import java.util.Locale;
+import java.util.*;
 
 import org.hypernomicon.model.items.BibliographicDate;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.control.*;
 
 //---------------------------------------------------------------------------
 
 public class DateControlsWrapper
 {
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static class MonthCell extends ListCell<Month>
-  {
-    @Override public void updateItem(Month item, boolean empty)
-    {
-      super.updateItem(item, empty);
-
-      setText(item == null ? "" : item.getDisplayName(TextStyle.SHORT, Locale.getDefault()));
-    }
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -104,16 +87,17 @@ public class DateControlsWrapper
     setToolTip(cbMonth, "Month");
     setToolTip(tfDay  , "Day"  );
 
-    cbMonth.setItems(FXCollections.observableArrayList());
-
-    cbMonth.setCellFactory(param -> new MonthCell());
-
-    cbMonth.setButtonCell(new MonthCell());
+    SequencedMap<Month, String> strMap = new LinkedHashMap<>();
 
     for (int monthInt = 1; monthInt <= 12; monthInt++)
-      cbMonth.getItems().add(Month.of(monthInt));
+    {
+      Month month = Month.of(monthInt);
+      strMap.put(month, month.getDisplayName(TextStyle.SHORT, Locale.getDefault()));
+    }
 
-    cbMonth.getItems().add(null);
+    strMap.put(null, "");
+
+    SimpleSelector.init(cbMonth, strMap);
 
     tfDay.setTextFormatter(new TextFormatter<>(change ->
     {

@@ -35,12 +35,11 @@ import static java.util.Objects.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.collect.EnumHashBiMap;
-import com.google.common.collect.Ordering;
 
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
@@ -68,7 +67,6 @@ import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -79,7 +77,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
-import javafx.util.StringConverter;
 
 //---------------------------------------------------------------------------
 
@@ -877,26 +874,11 @@ public final class BibManager extends NonmodalWindow
 
   public void initEntryTypeCB(ComboBox<EntryType> cb)
   {
-    EnumHashBiMap<EntryType, String> map = libraryWrapper.getEntryTypeMap();
+    var strMap = libraryWrapper.getEntryTypeMap().keySet().stream()
+      .sorted(Comparator.comparing(EntryType::getUserFriendlyName))
+      .collect(Collectors.toMap(Function.identity(), EntryType::getUserFriendlyName, (a, b) -> a, LinkedHashMap::new));
 
-    cb.setConverter(new StringConverter<>()
-    {
-      @Override public String toString(EntryType et)
-      {
-        return map.containsKey(et) ? et.getUserFriendlyName() : "";
-      }
-
-      @Override public EntryType fromString(String string)
-      {
-        EntryType et = parse(string);
-        return map.containsKey(et) ? et : null;
-      }
-    });
-
-    List<EntryType> choices = Ordering.from(Comparator.comparing(EntryType::getUserFriendlyName)).sortedCopy(map.keySet());
-
-    cb.setItems(null);
-    cb.setItems(FXCollections.observableList(choices));
+    SimpleSelector.init(cb, strMap);
   }
 
 //---------------------------------------------------------------------------

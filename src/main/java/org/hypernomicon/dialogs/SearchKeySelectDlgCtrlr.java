@@ -24,12 +24,16 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import java.util.LinkedHashMap;
+import java.util.SequencedMap;
+
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperCB;
+import org.hypernomicon.view.wrappers.SimpleSelector;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
@@ -111,22 +115,32 @@ public class SearchKeySelectDlgCtrlr extends ModalDialog
 
     hcbRecord.addListener((oldCell, newCell) ->
     {
-      if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
-
-      cbKey.getItems().clear();
-
-      HDT_Record record = HyperTableCell.getRecord(newCell);
-      if (record == null) return;
-
-      record.getSearchKeys().forEach(keyword -> cbKey.getItems().add(keyword.text));
-
-      if (cbKey.getItems().size() == 1)
-        cbKey.getSelectionModel().selectFirst();
+      if (HyperTableCell.getCellID(oldCell) != HyperTableCell.getCellID(newCell))
+        updateKeySelector(HyperTableCell.getRecord(newCell));
     });
 
 //---------------------------------------------------------------------------
 
     hcbType.selectType(hdtWork);
+
+    updateKeySelector(null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateKeySelector(HDT_Record record)
+  {
+    SequencedMap<String, String> strMap = new LinkedHashMap<>();
+
+    if (record != null)
+      for (var keyword : record.getSearchKeys())
+        strMap.put(keyword.text, keyword.text);
+
+    SimpleSelector.init(cbKey, strMap);
+
+    if (cbKey.getItems().size() == 1)
+      cbKey.getSelectionModel().selectFirst();
   }
 
 //---------------------------------------------------------------------------

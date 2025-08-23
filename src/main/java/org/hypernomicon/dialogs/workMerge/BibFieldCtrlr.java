@@ -407,8 +407,34 @@ public abstract class BibFieldCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Abstract base class for date field controllers in the bibliographic UI.
+   * <p>
+   * {@code DateCtrlr} extends {@link ToggleCtrlr} and provides shared functionality
+   * for date input components that interact with {@link BibData}. It serves as the
+   * foundation for both {@link RawDateCtrlr} and {@link StructuredDateCtrlr}, which
+   * represent different formats of date entry.
+   * <p>
+   * This class is designed to be subclassed and is not intended for direct instantiation.
+   *
+   * <p><b>Usage:</b> Subclasses must provide an FXML layout name and a {@link BibData}
+   * instance to initialize the controller. The {@code bfDate} field is used to bind
+   * the controller to the appropriate bibliographic field.
+   *
+   * @see RawDateCtrlr
+   * @see StructuredDateCtrlr
+   * @see BibData
+   * @see ToggleCtrlr
+   */
   public static abstract class DateCtrlr extends ToggleCtrlr
   {
+    /**
+     * Constructs a {@code DateCtrlr} with the given FXML layout and bibliographic data.
+     *
+     * @param fxmlName the name of the FXML file used to define the UI layout
+     * @param bibData the {@link BibData} instance containing the date information
+     * @throws IOException if the FXML file cannot be loaded
+     */
     DateCtrlr(String fxmlName, BibData bibData) throws IOException
     {
       super(fxmlName, bfDate, bibData);
@@ -418,6 +444,14 @@ public abstract class BibFieldCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This is a date field where the date is being represented as a string. It just
+   * consists of a TextField. This is needed for Zotero entries that are not linked
+   * to a work record, because Zotero stores the date simultaneously as structured
+   * and non-structured. When the entry is linked to a work record, Hypernomicon
+   * removes non-parseable information so we can store and sync it exhaustively as
+   * structured.
+   */
   public static class RawDateCtrlr extends DateCtrlr
   {
     @FXML private Label label;
@@ -465,6 +499,10 @@ public abstract class BibFieldCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This is a date field where the month, day, and year are represented
+   * separately.
+   */
   public static class StructuredDateCtrlr extends DateCtrlr
   {
     @FXML private Label label;
