@@ -66,7 +66,8 @@ public class HDI_OfflineBoolean extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    writeBooleanTag(xml, tag, boolValue);
+    if (boolValue)
+      writeBooleanTag(xml, tag, boolValue);
   }
 
 //---------------------------------------------------------------------------

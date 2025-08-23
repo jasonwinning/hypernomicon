@@ -115,6 +115,7 @@ public enum Tag
   tagText            ("text"              , "Text"),
   tagActive          ("active"            , "Active"),
   tagPast            ("past"              , "Past"),
+  tagIsArgument      ("is_argument"       , "Is Argument"),
   tagCreationDate    ("creation_date"     , "Date Created"),
   tagModifiedDate    ("modified_date"     , "Date Modified"),
   tagViewDate        ("view_date"         , "Date Last Viewed"),

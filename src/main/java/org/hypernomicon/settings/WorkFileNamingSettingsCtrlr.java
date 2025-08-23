@@ -280,12 +280,12 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     for (int prefNdx = 1; prefNdx <= componentCount; prefNdx++)
     {
-      db.prefs.remove(FileNamePrefKey.COMPONENT      );
-      db.prefs.remove(FileNamePrefKey.EXCL_WORK_TYPES);
-      db.prefs.remove(FileNamePrefKey.BEFORE_SEP     );
-      db.prefs.remove(FileNamePrefKey.WITHIN_SEP     );
-      db.prefs.remove(FileNamePrefKey.AFTER_SEP      );
-      db.prefs.remove(FileNamePrefKey.TEST           );
+      db.prefs.remove(FileNamePrefKey.COMPONENT      + componentCount);
+      db.prefs.remove(FileNamePrefKey.EXCL_WORK_TYPES+ componentCount);
+      db.prefs.remove(FileNamePrefKey.BEFORE_SEP     + componentCount);
+      db.prefs.remove(FileNamePrefKey.WITHIN_SEP     + componentCount);
+      db.prefs.remove(FileNamePrefKey.AFTER_SEP      + componentCount);
+      db.prefs.remove(FileNamePrefKey.TEST           + componentCount);
     }
 
     List<WorkFileNameComponent> components = saveComponentsFromTableToList();

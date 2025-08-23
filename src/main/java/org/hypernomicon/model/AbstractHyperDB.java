@@ -463,6 +463,7 @@ public abstract class AbstractHyperDB
     // Nested items are defined in RelationSet.createSet()
 
     addStringItem  (hdtArgument                      , tagName);
+    addTernaryItem (hdtArgument                      , tagIsArgument);
     addPointerMulti(hdtArgument, rtWorkOfArgument    , tagWork);
     addPointerMulti(hdtArgument, rtPositionOfArgument, tagPosition);
     addPointerMulti(hdtArgument, rtTargetArgOfArg    , tagTargetArgument);
