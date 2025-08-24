@@ -164,7 +164,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
   public void initObjWithSubjOrd(HDT_ObjType obj, int subjOrd) throws RelationCycleException, HDB_InternalError
   {
-    if (db.isLoaded())
+    if (db.isLoading() == false)
       throw new HDB_InternalError(71634);
 
     relSet.setObject(subj, obj, -1, subjOrd);

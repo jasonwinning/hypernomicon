@@ -315,7 +315,7 @@ public final class SymbolPickerDlgCtrlr extends NonmodalWindow
 
   private void insertClick()
   {
-    if ((db.isLoaded() == false) || (ui.activeTab() == null)) return;
+    if (db.isOffline() || (ui.activeTab() == null)) return;
 
     MainTextWrapper mtWrapper = ui.activeTab().mainTextWrapper();
     if ((mtWrapper == null) || (mtWrapper.isEditing() == false)) return;

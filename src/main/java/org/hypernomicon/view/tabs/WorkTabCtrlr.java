@@ -1657,7 +1657,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     stopRetrieving();
 
-    if ((db.isLoaded() == false) || (curWork == null)) return;
+    if (db.isOffline() || (curWork == null)) return;
 
     Tab      tab = crossref ? tabCrossref : tabGoogleBooks;
     TextArea ta  = crossref ? taCrossref  : taGoogleBooks;
@@ -1739,7 +1739,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     stopRetrieving();
 
-    if ((db.isLoaded() == false) || (curWork == null) || ui.cantSaveRecord(false)) return;
+    if (db.isOffline() || (curWork == null) || ui.cantSaveRecord(false)) return;
 
     List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
                                                             .map(HDT_WorkFile::filePath)

@@ -94,7 +94,7 @@ public class RecordByTypePopulator extends RecordPopulator
     RecordType recordType = rowToRecordType.get(row);
     choices.clear();
 
-    if ((recordType == hdtNone) || (db.isLoaded() == false))
+    if ((recordType == hdtNone) || db.isOffline())
     {
       choices.add(GenericNonRecordHTC.blankCell);
       return choices;

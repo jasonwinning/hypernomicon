@@ -496,7 +496,7 @@ public final class QueryCtrlr
    */
   boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite newFav, HyperTableCell op1, HyperTableCell op2, String caption)
   {
-    if ((type != qtReport) && (db.isLoaded() == false)) return false;
+    if ((type != qtReport) && db.isOffline()) return false;
 
     if (newFav != null)
     {
@@ -565,7 +565,7 @@ public final class QueryCtrlr
 
   void btnFavoriteClick()
   {
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     if (fav == null)
     {
@@ -619,7 +619,7 @@ public final class QueryCtrlr
   {
     this.fav = fav;
 
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     disableAutoShowDropdownList = true;
 
@@ -791,7 +791,7 @@ public final class QueryCtrlr
       }
     }
 
-    if (db.isLoaded() == false) return false;
+    if (db.isOffline()) return false;
 
     switchToRecordMode();
 
@@ -1137,11 +1137,11 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  //returns true if subsequent cells need to be updated
+  // Returns true if subsequent cells need to be updated
 
   private boolean queryChange(Query<?> query, HyperTableRow row)
   {
-    if (db.isLoaded() == false) return false;
+    if (db.isOffline()) return false;
 
     if (getQueryType(row) == qtReport) return true;
 
@@ -1153,11 +1153,11 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  //returns true if subsequent cells need to be updated
+  // Returns true if subsequent cells need to be updated
 
   private boolean op1Change(Query<?> query, HyperTableCell op1, HyperTableRow row)
   {
-    if (clearingOperand || (db.isLoaded() == false)) return false;
+    if (clearingOperand || db.isOffline()) return false;
 
     if ((query == null) || (getQueryType(row) == qtReport)) return true;
 
@@ -1167,11 +1167,11 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // returns true if subsequent cells need to be updated
+  // Returns true if subsequent cells need to be updated
 
   private boolean op2Change(Query<?> query, HyperTableCell op2, HyperTableRow row)
   {
-    if (clearingOperand || (db.isLoaded() == false)) return false;
+    if (clearingOperand || db.isOffline()) return false;
 
     if ((query == null) || (getQueryType(row) == qtReport)) return true;
 

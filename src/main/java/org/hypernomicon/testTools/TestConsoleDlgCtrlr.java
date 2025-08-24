@@ -77,20 +77,20 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     initTextField(app.prefs, tfFolderName   , PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
     initTextField(app.prefs, tfLinkGenParent, PrefKey.LINK_GENERATION_LOG_FOLDER, "", null);
 
-    enableAllIff(db.isLoaded(), btnFromExisting, btnCloseDB);
+    enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB);
 
     toggleToLibraryType = Map.of(rbZotero, ltZotero, rbMendeley, ltMendeley);
 
     setToolTip(btnClose, "Close this window");
 
-    btnZoteroItemTemplates.setDisable (db.isLoaded() == false);
-    btnZoteroCreatorTypes .setDisable (db.isLoaded() == false);
+    btnZoteroItemTemplates.setDisable(db.isOffline());
+    btnZoteroCreatorTypes .setDisable(db.isOffline());
 
-    btnNukeTest           .setDisable (db.isLoaded() == false);
-    tabLinkGen            .setDisable (db.isLoaded() == false);
-    btnSaveRefMgrSecrets  .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
-    btnRemoveRefMgrSecrets.setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false));
-    btnUseMendeleyID      .setDisable((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false) || (db.getBibLibrary().type() != ltMendeley));
+    btnNukeTest           .setDisable(db.isOffline());
+    tabLinkGen            .setDisable(db.isOffline());
+    btnSaveRefMgrSecrets  .setDisable(db.isOffline() || (db.bibLibraryIsLinked() == false));
+    btnRemoveRefMgrSecrets.setDisable(db.isOffline() || (db.bibLibraryIsLinked() == false));
+    btnUseMendeleyID      .setDisable(db.isOffline() || (db.bibLibraryIsLinked() == false) || (db.getBibLibrary().type() != ltMendeley));
 
     btnSaveRefMgrSecrets  .setOnAction(event -> db.getBibLibrary().saveAuthKeysToDBSettings());
     btnRemoveRefMgrSecrets.setOnAction(event -> db.getBibLibrary().removeSecretsFromKeyring());
@@ -167,7 +167,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
     {
-      if (db.isLoaded())
+      if (db.isOnline())
         folderPath = db.getRootPath().getParent();
 
       if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
@@ -183,7 +183,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     if (FilePath.isEmpty(filePath))
       return;
 
-    if (db.isLoaded() && db.getRootPath().isSubpath(filePath))
+    if (db.isOnline() && db.getRootPath().isSubpath(filePath))
     {
       falseWithErrorPopup("Path \"" + filePath + "\" is within the directory structure of the currently loaded database.", tfFolderName);
       return;
@@ -235,7 +235,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     {
       if (transientDBFilePath.exists())
       {
-        if (db.isLoaded() && db.getRootPath().equals(transientDBFilePath))
+        if (db.isOnline() && db.getRootPath().equals(transientDBFilePath))
         {
           if (fromScratch == false)
           {
@@ -281,7 +281,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
         }
       }
 
-      if (fromScratch && db.isLoaded() && (ui.close(true) == false))
+      if (fromScratch && db.isOnline() && (ui.close(true) == false))
       {
         if (ui.isShuttingDown() == false)
           new TestConsoleDlgCtrlr().showModal();
@@ -459,7 +459,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     if (modifying == false)
       return transientDBFilePath;
 
-    if (db.isLoaded() && (deleting || (db.getRootPath().equals(transientDBFilePath) == false)) && db.getRootPath().isSubpath(transientDBFilePath))
+    if (db.isOnline() && (deleting || (db.getRootPath().equals(transientDBFilePath) == false)) && db.getRootPath().isSubpath(transientDBFilePath))
     {
       falseWithErrorPopup("Path \"" + transientDBFilePath + "\" is within the directory structure of the currently loaded database.", tfFolderName);
       return null;
@@ -490,7 +490,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   private static void useCurrentMendeleyUserIDforUnitTests()
   {
-    if ((db.isLoaded() == false) || (db.bibLibraryIsLinked() == false)) return;
+    if (db.isOffline() || (db.bibLibraryIsLinked() == false)) return;
 
     LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bibLibrary = db.getBibLibrary();
 
@@ -507,7 +507,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private void nukeTest()
   {
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
 
@@ -592,7 +592,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private void copyForNukeTest()
   {
-    if (db.isLoaded() == false)
+    if (db.isOffline())
       return;
 
     FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
@@ -660,7 +660,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
     {
-      if (db.isLoaded())
+      if (db.isOnline())
         folderPath = db.getRootPath().getParent();
 
       if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))

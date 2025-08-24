@@ -300,7 +300,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
   {
     htMentioners.clear();
 
-    if ((db.isLoaded() == false) || (target == null)) return;
+    if (db.isOffline() || (target == null)) return;
 
     if (db.reindexingMentioners())
     {

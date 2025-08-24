@@ -746,7 +746,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   public void assignPicture(FilePath newPicture, boolean promptToDelete)
   {
     if (promptToDelete                           &&
-        db.isLoaded()                            &&
+        db.isOnline()                            &&
         (FilePath.isEmpty(curPicture) == false)  &&
         (curPicture.equals(newPicture) == false) &&
         curPicture.exists()                      &&
@@ -871,7 +871,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private void updateSearchKey(PersonName personName, boolean overwrite)
   {
-    if ((db.isLoaded() == false) || (curPerson == null)) return;
+    if (db.isOffline() || (curPerson == null)) return;
     if ((overwrite == false) && (curPerson.getSearchKey().length() > 0)) return;
 
     StringBuilder sb = new StringBuilder();

@@ -272,7 +272,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @FXML private void mnuShowSearchFolderClick(boolean inFileMgr)
   {
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     if (inFileMgr)
       FileManager.show(db.resultsPath());
@@ -406,7 +406,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
    */
   public boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite fav, HyperTableCell op1, HyperTableCell op2, String caption)
   {
-    if ((type != qtReport) && (db.isLoaded() == false)) return false;
+    if ((type != qtReport) && db.isOffline()) return false;
 
     QueryCtrlr queryCtrlr = addQueryCtrlr();
     tabPane.getSelectionModel().select(queryCtrlr.getTab());
@@ -437,7 +437,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     SearchResultFileList fileList = new SearchResultFileList(mnuEntirePDF.isSelected(), mnuIncludeEdited.isSelected());
 
-    if ((db.isLoaded() == false) || results().isEmpty()) return false;
+    if (db.isOffline() || results().isEmpty()) return false;
 
     if (new HyperTask("BuildListOfFilesToCopy", "Building list...") { @Override protected void call() throws CancelledTaskException
     {
@@ -473,7 +473,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @FXML private void mnuClearSearchFolderClick()
   {
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     HDT_Folder resultsFolder = db.getResultsFolder();
 

@@ -67,7 +67,7 @@ public class DupAuthorsReportEngine extends ReportEngine
     rows.clear();
     rowToMatch.clear();
 
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     LinkedList<PersonForDupCheck> list = PersonMatcher.createListForDupCheck();
 

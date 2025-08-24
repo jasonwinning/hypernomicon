@@ -299,7 +299,7 @@ public final class BibManager extends NonmodalWindow
 
       ui.updateBibImportMenus();
 
-      if (db.isLoaded())
+      if (db.isOnline())
         ui.update();
     });
   }

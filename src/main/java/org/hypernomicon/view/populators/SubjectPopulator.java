@@ -134,7 +134,7 @@ public class SubjectPopulator extends RecordPopulator
     choices.clear();
     choices.add(GenericNonRecordHTC.blankCell);
 
-    if (db.isLoaded() == false) return choices;
+    if (db.isOffline()) return choices;
 
     HDT_Record curObj;
 

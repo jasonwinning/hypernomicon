@@ -221,7 +221,7 @@ public final class TestHyperDB extends AbstractHyperDB
 
   public void open()
   {
-    if (isLoaded())
+    if (isOnline())
       throw new AssertionError("Already open");
 
     try
@@ -246,7 +246,7 @@ public final class TestHyperDB extends AbstractHyperDB
    */
   public void closeAndOpen()
   {
-    if (isLoaded() == false)
+    if (isOffline())
       throw new AssertionError("Already closed");
 
     try

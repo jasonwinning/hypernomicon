@@ -159,6 +159,15 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static enum DBState
+  {
+    CLOSED,
+    LOADING,
+    LOADED_BUT_OFFLINE,
+    ONLINE,
+    UNRECOVERABLE_ERROR
+  }
+
   @FunctionalInterface
   public interface ChangeRecordIDHandler { void changeRecordID(HDT_Record record, int newID); }
 
@@ -201,7 +210,9 @@ public abstract class AbstractHyperDB
   protected FilePath rootFilePath;
   private FilePath hdbFilePath;
 
-  private boolean loaded       = false, pointerResolutionInProgress     = false, deletionInProgress      = false, resolveAgain = false,
+  private DBState state = DBState.CLOSED;
+
+  private boolean resolveAgain = false, pointerResolutionInProgress     = false, deletionInProgress      = false,
                   initialized  = false, startMentionsRebuildAfterDelete = false, alreadyShowedUpgradeMsg = false;
 
   public boolean runningConversion            = false,  // suppresses "modified date" updating
@@ -217,7 +228,6 @@ public abstract class AbstractHyperDB
   public int getNextID(RecordType type)                             { return datasets.get(type).getNextID(); }
   public boolean idAvailable(RecordType type, int id)               { return datasets.get(type).idAvailable(id); }
   public Tag mainTextTagForRecordType(RecordType type)              { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
-  public boolean isLoaded()                                         { return loaded; }
   public long totalRecordCount()                                    { return accessors.values().stream().mapToLong(Collection::size).sum(); }
   public boolean bibLibraryIsLinked()                               { return bibLibrary != null; }
   public String bibLibraryUserFriendlyName()                        { return bibLibraryIsLinked() ? bibLibrary.getUserFriendlyName() : ""; }
@@ -250,6 +260,13 @@ public abstract class AbstractHyperDB
   public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
   public void addChangeRecordIDHandler(ChangeRecordIDHandler handler)                       { changeRecordIDHandlers.add(handler); }
 
+  public boolean isOnline () { return state == DBState.ONLINE; }
+  public boolean isOffline() { return state != DBState.ONLINE; }
+  public boolean isLoaded () { return (state == DBState.LOADED_BUT_OFFLINE) || (state == DBState.ONLINE); }
+  public boolean isLoading() { return state == DBState.LOADING; }
+
+  public DBState getState () { return state; }
+
   /**
    * This updates the displayedAt index when the MainText object for a record is being replaced.
    * This does not assume that the record's MainText reference has been changed yet, and does
@@ -261,8 +278,8 @@ public abstract class AbstractHyperDB
   public void replaceMainText(MainText oldMT, MainText newMT) { displayedAtIndex.replaceItem(oldMT, newMT); }
 
   public void rebuildMentions()                               { rebuildMentions(""); }
-  public void rebuildMentions(String logFileName)             { if (loaded && !recordDeletionTestInProgress) mentionsIndex.startRebuild(logFileName); }
-  public void updateMentioner(HDT_Record record)              { if (loaded) mentionsIndex.updateMentioner(record); }
+  public void rebuildMentions(String logFileName)             { if (isOnline() && !recordDeletionTestInProgress) mentionsIndex.startRebuild(logFileName); }
+  public void updateMentioner(HDT_Record record)              { if (isOnline()) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                     { return mentionsIndex.waitUntilRebuildIsDone(); }
 
   public boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait) {
@@ -790,7 +807,7 @@ public abstract class AbstractHyperDB
 
   public boolean saveAllToPersistentStorage(HyperFavorites favorites)
   {
-    if (loaded == false) return false;
+    if (isLoaded() == false) return false;
 
     if (checkChecksums() == false) return false;
 
@@ -923,6 +940,8 @@ public abstract class AbstractHyperDB
 
     close(null);
 
+    state = DBState.LOADING;
+
     rootFilePath = newRootFilePath;
     hdbFilePath = rootFilePath.resolve(hdbFileName);
 
@@ -1008,7 +1027,7 @@ public abstract class AbstractHyperDB
     if (bibLibraryIsLinked() && ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWork, new VersionNumber(1))).lessThan(new VersionNumber(1, 8)))
       doBibDateConversion();
 
-    loaded = true;
+    state = DBState.ONLINE;
     dbLoadedHandlers.forEach(Runnable::run);
 
     rebuildMentions();
@@ -1240,17 +1259,10 @@ public abstract class AbstractHyperDB
 
   public boolean isSpecialFolder(int id, boolean checkSubfolders)
   {
-    if (id < 1) return false;
+    if (id < 1)
+      return false;
 
-    if ((id == ROOT_FOLDER_ID         ) ||
-        (id == xmlFolder      .getID()) ||
-        (id == booksFolder    .getID()) ||
-        (id == papersFolder   .getID()) ||
-        (id == miscFilesFolder.getID()) ||
-        (id == picturesFolder .getID()) ||
-        (id == resultsFolder  .getID()) ||
-        (id == unenteredFolder.getID()) ||
-        (id == topicalFolder  .getID()))
+    if ((id == ROOT_FOLDER_ID) || specialFolders().anyMatch(folder -> id == folder.getID()))
       return true;
 
     return checkSubfolders && folders.getByID(id).childFolders.stream().anyMatch(folder -> folder.isSpecial(true));
@@ -1526,17 +1538,11 @@ public abstract class AbstractHyperDB
         topicalFolder   = folders.getByID(prefs.getInt(FolderIDPrefKey.TOPICAL   , -1));
       }
 
-      if (HDT_Record.isEmpty(picturesFolder , false) ||
-          HDT_Record.isEmpty(booksFolder    , false) ||
-          HDT_Record.isEmpty(papersFolder   , false) ||
-          HDT_Record.isEmpty(resultsFolder  , false) ||
-          HDT_Record.isEmpty(unenteredFolder, false) ||
-          HDT_Record.isEmpty(miscFilesFolder, false) ||
-          HDT_Record.isEmpty(xmlFolder      , false) ||
-          HDT_Record.isEmpty(topicalFolder  , false))
-      {
+      if (specialFolders().anyMatch(folder -> HDT_Record.isEmpty(folder, false)))
         throw new HyperDataException("Unable to load information about paths from database settings file.");
-      }
+
+      if (specialFolders().distinct().count() < 8)
+        throw new HyperDataException("Unable to load information about paths from database settings file: Duplicate folder ID.");
 
       if (writeFolderIDs)  // Backwards compatibility with settings version 1.0
       {
@@ -2147,7 +2153,7 @@ public abstract class AbstractHyperDB
     mentionsIndex.stopRebuild();
     mentionsIndex.clear();
 
-    loaded = false;
+    state = DBState.CLOSED;
     updateRunningInstancesFile(new FilePath(""));
     clearAllDataSets(datasetsToKeep);
 
@@ -2157,6 +2163,7 @@ public abstract class AbstractHyperDB
     }
     catch (HDB_InternalError e)
     {
+      state = DBState.UNRECOVERABLE_ERROR;
       throw new HDB_UnrecoverableInternalError(e);
     }
 
@@ -2208,6 +2215,7 @@ public abstract class AbstractHyperDB
     }
     catch (HDB_InternalError e)
     {
+      state = DBState.UNRECOVERABLE_ERROR;
       throw new HDB_UnrecoverableInternalError(e);
     }
   }
@@ -2232,7 +2240,7 @@ public abstract class AbstractHyperDB
 
   public boolean newDB(FilePath newPath, String hdbFileName, Set<RecordType> datasetsToKeep, Map<String, String> folderMap) throws HDB_InternalError
   {
-    if (loaded == false) return false;
+    if (isOffline()) return false;
 
     if (datasetsToKeep == null)
       datasetsToKeep = EnumSet.noneOf(RecordType.class);
@@ -2268,7 +2276,7 @@ public abstract class AbstractHyperDB
 
     resolvePointers();
 
-    loaded = true;
+    state = DBState.LOADED_BUT_OFFLINE;
     updateRunningInstancesFile(rootFilePath);
 
     return true;
@@ -2614,6 +2622,14 @@ public abstract class AbstractHyperDB
       case wtThesis  -> prefs.getBoolean(PrefKey.THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
       default        -> miscFilesFolder;
     };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private Stream<HDT_Folder> specialFolders()
+  {
+    return Stream.of(xmlFolder, picturesFolder, booksFolder, papersFolder, resultsFolder, unenteredFolder, miscFilesFolder, topicalFolder);
   }
 
 //---------------------------------------------------------------------------

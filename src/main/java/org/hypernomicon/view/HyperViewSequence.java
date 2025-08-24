@@ -79,7 +79,7 @@ public class HyperViewSequence
 
     tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
-      if ((db.isLoaded() == false) || alreadyChangingTab) return;
+      if (db.isOffline() || alreadyChangingTab) return;
 
       if ((milliDiff(Instant.now(), lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || ui.cantSaveRecord()) // Ignore arrow keys
       {
@@ -351,7 +351,7 @@ public class HyperViewSequence
 
   private void rebuildNavMenu(List<MenuItem> menu, boolean isForward)
   {
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     menu.clear();
 

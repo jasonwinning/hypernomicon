@@ -598,7 +598,7 @@ public class FolderTreeWatcher
   {
     stop();
 
-    if (disabled || db.isLoaded() == false) return false;
+    if (disabled || db.isOffline()) return false;
 
     try
     {

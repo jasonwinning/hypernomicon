@@ -211,7 +211,7 @@ public final class App extends Application
 
     try
     {
-      FilePath dbPath = (db == null) || (db.isLoaded() == false) ? new FilePath("") : db.getRootPath();
+      FilePath dbPath = (db == null) || db.isOffline() ? new FilePath("") : db.getRootPath();
 
       // Clear log if this is the first instance
       if (InterProcClient.updateRunningInstancesFile(dbPath).size() == 1)

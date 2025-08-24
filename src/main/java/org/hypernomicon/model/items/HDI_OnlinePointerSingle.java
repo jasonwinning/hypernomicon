@@ -83,7 +83,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 
     objList.clear();
 
-    if ((val.ord > -1) && (db.isLoaded() == false)) // This should only be done when records are first being brought online during initial loading
+    if ((val.ord > -1) && db.isLoading())  // This should only be done when records are first being brought online during initial loading
       objList.initObjWithSubjOrd(obj, val.ord);
     else
     {

@@ -98,17 +98,17 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     initTTV();
 
     tree.addContextMenuItem("Select", HDT_Record.class,
-      record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isLoaded(),
+      record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isOnline(),
       record -> ui.treeSelector.select(record));
 
     tree.addContextMenuItem("Go to this record", HDT_Record.class,
-      record -> (record != null) && db.isLoaded(),
+      record -> (record != null) && db.isOnline(),
       record -> ui.goToRecord(record, false));
 
     tree.addContextMenuItem("Choose parent to assign", HDT_Record.class,
       record ->
       {
-        if ((db.isLoaded() == false) || (record == null)) return false;
+        if (db.isOffline() || (record == null)) return false;
         return (record.getType() != hdtConcept) && (record.getType() != hdtGlossary);
       },
       TreeTabCtrlr::chooseParent);
@@ -118,55 +118,55 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       row -> tree.canDetach(row, true));
 
     tree.addContextMenuItem("Rename...", HDT_WorkLabel.class,
-      label -> db.isLoaded(),
+      label -> db.isOnline(),
       TreeTabCtrlr::renameRecord);
 
     tree.addContextMenuItem("Rename...", HDT_Glossary.class,
-      glossary -> db.isLoaded(),
+      glossary -> db.isOnline(),
       TreeTabCtrlr::renameRecord);
 
     addCreateNewSchema(tree.addContextMenuItem("Create new sub-label under this label", HDT_WorkLabel.class,
-      label -> db.isLoaded(),
+      label -> db.isOnline(),
       this::createLabel));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new sub-debate under this debate", HDT_Debate.class,
-      debate -> db.isLoaded(),
+      debate -> db.isOnline(),
       debate -> createChild(debate, rtParentDebateOfDebate)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new position under this debate", HDT_Debate.class,
-      debate -> db.isLoaded(),
+      debate -> db.isOnline(),
       debate -> createChild(debate, rtParentDebateOfPos)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new debate under this position", HDT_Position.class,
-      pos -> db.isLoaded(),
+      pos -> db.isOnline(),
       pos -> createChild(pos, rtParentPosOfDebate)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new argument/stance for/against this position", HDT_Position.class,
-      pos -> db.isLoaded(),
+      pos -> db.isOnline(),
       PositionTabCtrlr::newArgumentClick));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new position under this position", HDT_Position.class,
-      pos -> db.isLoaded(),
+      pos -> db.isOnline(),
       pos -> createChild(pos, rtParentPosOfPos)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new counter/response argument to this argument", HDT_Argument.class,
-      arg -> db.isLoaded(),
+      arg -> db.isOnline(),
       arg -> ui.argumentHyperTab().newResponseArgumentClick(arg)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new note under this note", HDT_Note.class,
-      note -> db.isLoaded(),
+      note -> db.isOnline(),
       note -> createChild(note, rtParentNoteOfNote)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary", HDT_Glossary.class,
-      glossary -> db.isLoaded(),
+      glossary -> db.isOnline(),
       glossary -> ui.goToRecord(HDT_Term.create(glossary), false)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new glossary under this glossary", HDT_Glossary.class,
-      glossary -> db.isLoaded(),
+      glossary -> db.isOnline(),
       this::createGlossary));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary under this term", HDT_Concept.class,
-      concept -> db.isLoaded(),
+      concept -> db.isOnline(),
       concept -> ui.goToRecord(concept.addNewSubConcept(), false)));
 
     tree.addDefaultMenuItems();
@@ -284,7 +284,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @Override protected void updateFromRecord()
   {
-    if (db.isLoaded() == false)
+    if (db.isOffline())
     {
       tree.clear();
       return;

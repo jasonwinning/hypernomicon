@@ -62,7 +62,7 @@ public class DanglingLabelsReportEngine extends ReportEngine
     rows.clear();
     matches.clear();
 
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     for (HDT_WorkLabel childLabel : db.workLabels)
     {

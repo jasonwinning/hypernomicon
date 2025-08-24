@@ -827,18 +827,18 @@ public final class MainCtrlr
 
     scene.getAccelerators().putAll(Map.of
     (
-      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) saveAllToXML(true, true, false, false); },
-      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { if (db.isLoaded()) hideFindTable();                        },
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) saveAllToXML(true, true, false, false); },
+      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { hideFindTable();                        },
 
       new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () ->
       {
-        if (db.isLoaded())
+        if (db.isOnline())
           omniFocus(OmniSearchMode.currentDesc, true);
       },
 
       new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), () ->
       {
-        if (db.isLoaded())
+        if (db.isOnline())
         {
           if ((omniSearchMode.getValue() == OmniSearchMode.asYouType) && ctfOmniGoTo.isFocused())
             omniFocus(OmniSearchMode.allFields, true);
@@ -850,7 +850,7 @@ public final class MainCtrlr
 
     scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
     (
-      new KeyCodeCombination(KeyCode.Y            , KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isLoaded()) chbBack.showMenu(); },
+      new KeyCodeCombination(KeyCode.Y            , KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) chbBack.showMenu(); },
       new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN                           ), this::nextSearchResult,
       new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), this::previousSearchResult,
       new KeyCodeCombination(KeyCode.OPEN_BRACKET , KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnBackClick),
@@ -872,7 +872,7 @@ public final class MainCtrlr
     {
       if ((event.getCode() == KeyCode.H) && shortcutKeyIsDown(event))
       {
-        if (db.isLoaded()) chbBack.showMenu();
+        if (db.isOnline()) chbBack.showMenu();
         event.consume();
       }
     });
@@ -944,7 +944,7 @@ public final class MainCtrlr
 
   private void previousSearchResult()
   {
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
 
@@ -962,7 +962,7 @@ public final class MainCtrlr
 
   private void nextSearchResult()
   {
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = activeTab();
 
@@ -1027,7 +1027,7 @@ public final class MainCtrlr
     // When changing this function, changes may need to be made to
     // the delete handler as well
 
-    if (db.isLoaded() == false)
+    if (db.isOffline())
     {
       errorPopup("No database is currently loaded.");
       return;
@@ -1058,7 +1058,7 @@ public final class MainCtrlr
 
   private void mnuChangeSortOrder(RecordType recordType)
   {
-    if (db.isLoaded() == false)
+    if (db.isOffline())
     {
       errorPopup("No database is currently loaded.");
       return;
@@ -1256,7 +1256,10 @@ public final class MainCtrlr
 
   public void shutDown(ShutDownMode shutDownMode)
   {
-    if (db.isLoaded())
+    if (db.getState() == DBState.UNRECOVERABLE_ERROR)
+      shutDownMode = ShutDownMode.UnrecoverableInternalError;
+
+    if (db.getState() != DBState.CLOSED)
     {
       if (shutDownMode == ShutDownMode.NormalNoSave)
       {
@@ -1556,7 +1559,14 @@ public final class MainCtrlr
         activeTab().clear(true);
 
       viewSequence.loadViewFromCurrentSlotToUI();
+
+      return;
     }
+
+    if (db.isOffline())
+      clearAllTabsAndViews();
+
+    enableControls(db.isOnline());
   }
 
 //---------------------------------------------------------------------------
@@ -1580,9 +1590,10 @@ public final class MainCtrlr
       filePath = showOpenDialog(fileChooser);
     }
 
-    if (FilePath.isEmpty(filePath) || (close(true) == false) || db.isLoaded()) return;
-
-    if (ui.isShuttingDown())
+    if (FilePath.isEmpty(filePath)        ||
+        (close(true) == false)            ||
+        (db.getState() != DBState.CLOSED) ||
+        ui.isShuttingDown())
       return;
 
     app.prefs.put(PrefKey.SOURCE_FILENAME, filePath.getNameOnly().toString());
@@ -1632,7 +1643,7 @@ public final class MainCtrlr
 
   private boolean createNewDB(FilePath rootPath)
   {
-    if (db.isLoaded())
+    if (db.isOnline())
     {
       DialogResult result = yesNoCancelDialog("Save data to XML files?");
 
@@ -1841,7 +1852,7 @@ public final class MainCtrlr
 
   public boolean close(boolean needToSave)
   {
-    if (needToSave && db.isLoaded())
+    if (needToSave && db.isOnline())
     {
       DialogResult result = yesNoCancelDialog("Save data to XML files before closing?");
 
@@ -1922,7 +1933,7 @@ public final class MainCtrlr
     ObservableList<MenuItem> items = mnuFolders.getItems();
     items.clear();
 
-    if (db.isLoaded() == false)
+    if (db.isOffline())
     {
       mnuFolders.setDisable(true);
       return;
@@ -1978,7 +1989,7 @@ public final class MainCtrlr
 
   public <T extends HDT_RecordBase> T mnuNewCategoryClick(RecordType type, boolean canChangeType, boolean save)
   {
-    if (db.isLoaded() == false)
+    if (db.isOffline())
     {
       errorPopup("No database is currently loaded.");
       return null;
@@ -2020,7 +2031,7 @@ public final class MainCtrlr
   {
     mnuToggleFavorite.setText("Add to favorites...");
 
-    if (db.isLoaded() == false)
+    if (db.isOffline())
     {
       favorites.clear();
       mnuFavorites.setDisable(true);
@@ -2171,7 +2182,7 @@ public final class MainCtrlr
 
   @FXML private void mnuAddToQueryResultsClick()
   {
-    if (db.isLoaded() == false)
+    if (db.isOffline())
     {
       errorPopup("No database is currently loaded.");
       return;
@@ -2204,7 +2215,7 @@ public final class MainCtrlr
 
   @FXML private boolean mnuRevertToXmlVersionClick()
   {
-    if (db.isLoaded() == false)
+    if (db.isOffline())
       return falseWithErrorPopup("No database is currently loaded.");
 
     if ((activeTabEnum() == termTabEnum) || (activeTabEnum() == personTabEnum))
@@ -2296,10 +2307,10 @@ public final class MainCtrlr
   {
     if (loadAllFromXML(creatingNew) == false)
     {
-      if (db.isLoaded() == false)
+      if (db.isOffline())
         clearAllTabsAndViews();
 
-      enableControls(db.isLoaded());
+      enableControls(db.isOnline());
       return;
     }
 
@@ -2328,7 +2339,7 @@ public final class MainCtrlr
     saveViewToViewsTab(new HyperView<>(queryTabEnum   , null));
     saveViewToViewsTab(new HyperView<>(treeTabEnum    , null));
 
-    enableControls(db.isLoaded());
+    enableControls(db.isOnline());
 
     viewSequence.init(getTabEnumByRecordType(Tag.parseTypeTagStr(db.prefs.get(PrefKey.RECORD_TYPE, ""))));
 
@@ -2445,7 +2456,7 @@ public final class MainCtrlr
       stage.setTitle(appTitle + " - " + db.getHdbPath());
     }
     else
-      mnuCloseClick();
+      close(false);
 
     return success;
   }
@@ -2491,7 +2502,7 @@ public final class MainCtrlr
 
   public boolean cantSaveRecord(boolean saveNameIfBlank)
   {
-    if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null))
+    if (db.isOffline() || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null))
       return false;
 
     if (shuttingDown == false)
@@ -2511,7 +2522,7 @@ public final class MainCtrlr
 
   public void goToTreeRecord(HDT_Record record)
   {
-    if ((db.isLoaded() == false) || shuttingDown) return;
+    if ((record == null) || db.isOffline() || shuttingDown) return;
 
     if (windows.getOutermostStage() != stage)
       windows.focusStage(stage);
@@ -2540,7 +2551,7 @@ public final class MainCtrlr
 
   public void goToRecord(HDT_Record record, boolean save)
   {
-    if ((record == null) || (db.isLoaded() == false) || shuttingDown) return;
+    if ((record == null) || db.isOffline() || shuttingDown) return;
 
     treeSelector.clear();
     HDT_WorkFile workFile = null;
@@ -2657,7 +2668,7 @@ public final class MainCtrlr
   {
     updateTopicalFolders();
 
-    if (db.isLoaded() == false)
+    if (db.isOffline())
     {
       tree().clear();
       return;
@@ -2824,7 +2835,8 @@ public final class MainCtrlr
   public void updateBottomPanel(boolean refreshDropDown, boolean switchToRecordSearch)
   {
     ttDates.setText(NO_DATES_TOOLTIP);
-    if (db.isLoaded() == false)
+
+    if (db.isOffline())
     {
       treeHyperTab().hideSelectingMessage();
       return;
@@ -3258,7 +3270,7 @@ public final class MainCtrlr
 
   public void handleArgs(List<String> args)
   {
-    if ((db.isLoaded() == false) || collEmpty(args) || (windows.getOutermostModality() != Modality.NONE)) return;
+    if (db.isOffline() || collEmpty(args) || (windows.getOutermostModality() != Modality.NONE)) return;
 
     FilePath filePath = new FilePath(args.getFirst());
 
@@ -3407,7 +3419,7 @@ public final class MainCtrlr
     else if (wdc.openClicked())
       openDB(wdc.getOpenPath());
 
-    if (db.isLoaded() == false)
+    if (db.isOffline())
       windows.runInFXThreadAfterModalPopups(250, this::showWelcomeWindow);
   }
 
@@ -3460,6 +3472,8 @@ public final class MainCtrlr
       return;
 
     loadAllFromXmlAndResetUI(true, true);
+
+    if (db.isOffline()) return;
 
     if (libraryType == null)
     {

@@ -154,7 +154,7 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     super("settings/SettingsDlg", appTitle + " Settings", true, true);
 
-    noDB = (db.prefs == null) || (db.isLoaded() == false);
+    noDB = (db.prefs == null) || db.isOffline();
 
     initTree();
 
@@ -324,7 +324,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     root.getChildren().add(pageToTreeItem.get(CompGeneral));
 
-    if (db.isLoaded()) root.getChildren().add(pageToTreeItem.get(DBSpecific));
+    if (db.isOnline()) root.getChildren().add(pageToTreeItem.get(DBSpecific));
 
     treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -332,7 +332,7 @@ public class SettingsDlgCtrlr extends ModalDialog
         tpMain.getSelectionModel().select(pageToTab.get(newValue.getValue()));
     });
 
-    if (db.isLoaded() && db.bibLibraryIsLinked())
+    if (db.isOnline() && db.bibLibraryIsLinked())
     {
       setUnlinkMessage();
 
@@ -490,7 +490,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     if (FilePath.isEmpty(startPath))
     {
-      if (db.isLoaded())
+      if (db.isOnline())
       {
         startPath = db.getRootPath();
         FilePath parentPath = startPath.getParent();
@@ -566,7 +566,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
   public void selectLibraryType(LibraryType libraryType)
   {
-    if (db.isLoaded() == false) return;
+    if (db.isOffline()) return;
 
     switch (libraryType)
     {
