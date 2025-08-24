@@ -464,6 +464,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     glossaryRows.clear();
 
     List<GlossaryRow> glossaryRowList = new ArrayList<>();
+
     for (HDT_Concept childConcept : curTerm.concepts)
     {
       if (childConcept.parentConcepts.isEmpty())
@@ -645,7 +646,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     }
 
     if (oldGlossaryRow == null)
-      oldGlossaryRow = new GlossaryRow((HDT_Glossary)null, null);
+      oldGlossaryRow = new GlossaryRow((HDT_Glossary) null, null);
 
 // First, check to see if parent concept from row being edited should be removed
 // -----------------------------------------------------------------------------

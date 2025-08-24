@@ -111,8 +111,16 @@ public class HDX_Element
     {
       if ("year".equals(tagName) && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 7)))
         tag = tagBibDate; // Backwards compatibility for record data version 1.7 or lower
+
       else if ("counterargument".equals(tagName) && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 8)))
         tag = tagTargetArgument; // Backwards compatibility for record data version 1.8 or lower
+
+      else if (("comments".equals(tagName) || "why_famous".equals(tagName)) && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 9)))
+        tag = tagDescription; // Backwards compatibility for record data version 1.9 or lower
+
+      else if ("linked_record".equals(tagName) && ComparableUtils.is(dataVersion).lessThanOrEqualTo(new VersionNumber(1, 9)))
+        tag = tagSpokeRecord; // Backwards compatibility for record data version 1.9 or lower
+
       else
         throw new InvalidItemException(xmlRecord.id, xmlRecord.type, tagName);
     }

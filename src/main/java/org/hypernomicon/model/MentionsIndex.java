@@ -169,8 +169,8 @@ class MentionsIndex
         // getAllStrings for concepts includes the term's search key.
 
         if ((record == otherRecord) ||
-            ((record.getType() == hdtTerm) && ((HDT_Term)record).concepts.contains(otherRecord)) ||
-            ((record.getType() == hdtConcept) && (((HDT_Concept)record).term.get() == otherRecord)))
+            ((record.getType() == hdtTerm) && ((HDT_Term) record).concepts.contains(otherRecord)) ||
+            ((record.getType() == hdtConcept) && (((HDT_Concept) record).term.get() == otherRecord)))
           return;
 
         mentionedAnywhereToMentioners.addForward(link.key().record, record);

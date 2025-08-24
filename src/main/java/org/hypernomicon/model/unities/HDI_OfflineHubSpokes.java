@@ -76,11 +76,11 @@ public class HDI_OfflineHubSpokes extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    writeTag(debateID,   hdtDebate   , xml);
-    writeTag(conceptID,  hdtConcept  , xml);
-    writeTag(labelID,    hdtWorkLabel, xml);
+    writeTag(debateID  , hdtDebate   , xml);
+    writeTag(conceptID , hdtConcept  , xml);
+    writeTag(labelID   , hdtWorkLabel, xml);
     writeTag(positionID, hdtPosition , xml);
-    writeTag(noteID,     hdtNote     , xml);
+    writeTag(noteID    , hdtNote     , xml);
   }
 
 //---------------------------------------------------------------------------

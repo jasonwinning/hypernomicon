@@ -2560,7 +2560,7 @@ public final class MainCtrlr
     {
       case hdtHub :
 
-        record = ((HDT_Hub)record).mainSpoke();
+        record = ((HDT_Hub) record).mainSpoke();
         if (record == null) return;
         break;
 
@@ -2571,7 +2571,7 @@ public final class MainCtrlr
 
       case hdtWorkLabel :
 
-        HDT_Hub hub = ((HDT_WorkLabel)record).getHub();
+        HDT_Hub hub = ((HDT_WorkLabel) record).getHub();
 
         if (hub == null)
         {
@@ -2584,12 +2584,12 @@ public final class MainCtrlr
 
       case hdtFolder :
 
-        FileManager.show(((HDT_Folder)record).filePath());
+        FileManager.show(((HDT_Folder) record).filePath());
         return;
 
       case hdtWorkFile :
 
-        workFile = (HDT_WorkFile)record;
+        workFile = (HDT_WorkFile) record;
         if (workFile.works.size() > 0)
           record = workFile.works.getFirst();
         else
@@ -2602,7 +2602,7 @@ public final class MainCtrlr
 
       case hdtTerm :
 
-        record = ((HDT_Term)record).concepts.getFirst();
+        record = ((HDT_Term) record).concepts.getFirst();
         break;
 
       default : break;
@@ -2711,7 +2711,7 @@ public final class MainCtrlr
         record = db.records(activeType()).getByKeyNdx(ndx);
 
         viewSequence.saveViewToCurrentSlotAndTab(tabEnum == termTabEnum ?
-          new HyperView<>(termTabEnum, ((HDT_Term)record).concepts.getFirst())
+          new HyperView<>(termTabEnum, ((HDT_Term) record).concepts.getFirst())
         :
           new HyperView<>(tabEnum, record));
       }

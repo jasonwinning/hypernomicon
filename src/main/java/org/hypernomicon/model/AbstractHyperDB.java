@@ -533,7 +533,7 @@ public abstract class AbstractHyperDB
     addStringItem    (hdtPerson                         , tagORCID);
     addPathItem      (hdtPerson, rtPictureFolderOfPerson, tagPictureFolder, tagPicture);
     addStringItem    (hdtPerson                         , tagPictureCrop);
-    addMainTextItem  (hdtPerson                         , tagWhyFamous, tagDisplayRecord, tagKeyWork);
+    addMainTextItem  (hdtPerson                         , tagDescription, tagDisplayRecord, tagKeyWork);
 
     addStringItem  (hdtPersonGroup                      , tagName);
     addPointerMulti(hdtPersonGroup, rtParentGroupOfGroup, tagParentGroup);
@@ -579,7 +579,7 @@ public abstract class AbstractHyperDB
     addStringItem     (hdtWork                    , tagMiscBib);
     addStringItem     (hdtWork                    , tagDOI);
     addStringItem     (hdtWork                    , tagISBN);
-    addMainTextItem   (hdtWork                    , tagComments, tagDisplayRecord, tagKeyWork);
+    addMainTextItem   (hdtWork                    , tagDescription, tagDisplayRecord, tagKeyWork);
 
     addStringItem  (hdtWorkLabel                      , tagText);
     addPointerMulti(hdtWorkLabel, rtParentLabelOfLabel, tagParentLabel);
