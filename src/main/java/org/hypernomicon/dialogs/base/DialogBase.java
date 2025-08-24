@@ -21,11 +21,14 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.apache.tika.utils.SystemUtils;
 import org.hypernomicon.App;
 
 import java.io.IOException;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.*;
@@ -42,6 +45,8 @@ public abstract class DialogBase
   protected final AnchorPane rootPane;
 
   protected Runnable onShown, onHidden;
+
+  private Rectangle2D preMinimizeBounds;
 
   private boolean shownAlready = false;
 
@@ -99,12 +104,42 @@ public abstract class DialogBase
     {
       logThrowable(e);
       errorPopup("Internal error while initializing dialog window");
+
+      return;
     }
     finally
     {
       stage = tmpStage;
       rootPane = tmpRootPane;
     }
+
+    // The next part prevents a minimized window from having its dimensions reduced to zero if the monitor
+    // it was on before it was minimized is no longer connected at the time it is being restored.
+
+    stage.iconifiedProperty().addListener((obs, wasMinimized, isMinimized) ->
+    {
+      if (isMinimized) return;
+
+      if (stage.getScene().getHeight() > 0)
+        preMinimizeBounds = new Rectangle2D(0, 0,  stage.getWidth(), stage.getHeight());
+
+      Platform.runLater(() ->
+      {
+        if (SystemUtils.IS_OS_MAC) Platform.runLater(() ->
+        {
+          // Sometimes the window contents are a black rectangle upon restore, until
+          // the window is closed and opened again
+
+          stage.hide();
+          stage.show();
+        });
+
+        if ((stage.getScene().getHeight() > 0)) return;
+
+        stage.setWidth (preMinimizeBounds.getWidth ());
+        stage.setHeight(preMinimizeBounds.getHeight());
+      });
+    });
   }
 
 //---------------------------------------------------------------------------
