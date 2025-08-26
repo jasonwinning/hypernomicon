@@ -93,7 +93,7 @@
           <MenuItem fx:id="mnuSaveReloadAll" mnemonicParsing="false" onAction="#mnuSaveReloadAllClick" text="Save/Reload All" />
         </Menu>
         <Menu fx:id="mnuFavorites" mnemonicParsing="false" text="Favorites">
-          <MenuItem fx:id="mnuToggleFavorite" mnemonicParsing="false" onAction="#mnuToggleFavoriteClick" text="Add to Favorites..." />
+          <MenuItem fx:id="mnuToggleFavorite" mnemonicParsing="false" onAction="#mnuToggleFavoriteClick" text="Add to Favorites" />
           <MenuItem mnemonicParsing="false" onAction="#mnuChangeFavOrderClick" text="Change Order..." />
           <Menu fx:id="mnuQueries" mnemonicParsing="false" text="Queries" />
           <SeparatorMenuItem mnemonicParsing="false" />

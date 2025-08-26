@@ -160,8 +160,6 @@ public final class EventFilters
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // ---- internals ----
-
   private static <E extends Event> void addFilterInternal(Object target, EventType<E> type, EventHandler<? super E> handler)
   {
     switch (target)

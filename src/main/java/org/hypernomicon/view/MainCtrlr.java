@@ -828,7 +828,7 @@ public final class MainCtrlr
     scene.getAccelerators().putAll(Map.of
     (
       new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) saveAllToXML(true, true, false, false); },
-      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), () -> { hideFindTable();                        },
+      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), this::hideFindTable,
 
       new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () ->
       {
@@ -2029,7 +2029,7 @@ public final class MainCtrlr
 
   public void updateFavorites()
   {
-    mnuToggleFavorite.setText("Add to favorites...");
+    mnuToggleFavorite.setText("Add to favorites");
 
     if (db.isOffline())
     {
@@ -2045,7 +2045,7 @@ public final class MainCtrlr
       mnuToggleFavorite.setDisable(false);
 
       if (favorites.indexOfRecord(viewRecord()) > -1)
-        mnuToggleFavorite.setText("Remove from favorites...");
+        mnuToggleFavorite.setText("Remove from favorites");
     }
     else
       mnuToggleFavorite.setDisable(true);

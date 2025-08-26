@@ -408,7 +408,7 @@ public abstract class BibFieldCtrlr
 //---------------------------------------------------------------------------
 
   /**
-   * Abstract base class for date field controllers in the bibliographic UI.
+   * Abstract base class for date field controllers in the Work Merge popup.
    * <p>
    * {@code DateCtrlr} extends {@link ToggleCtrlr} and provides shared functionality
    * for date input components that interact with {@link BibData}. It serves as the

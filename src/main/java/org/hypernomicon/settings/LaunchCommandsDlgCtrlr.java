@@ -250,6 +250,12 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
                "page=" + pageNumVar + '\n' +
                filePathVar),
 
+    new Preset(OperatingSystemEnum.windows, "Sumatra", opSysCmdAndArgs, PrefKey.PDF_READER_COMMANDS,
+               appPathVar + '\n' +
+               "-page\n" +
+               pageNumVar + '\n' +
+               filePathVar),
+
     new Preset(OperatingSystemEnum.mac, "Preview (macOS)", appleScript, PrefKey.PDF_READER_COMMANDS,
                "tell app \"" + appPathVar + "\"\n" +
                "  activate\n" +

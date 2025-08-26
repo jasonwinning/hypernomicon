@@ -227,10 +227,16 @@ public final class DesktopUtil
 
     try
     {
-      Process proc = pb.start();
-
-      if (wait)
+      if (wait == false)
       {
+        pb.redirectError (ProcessBuilder.Redirect.DISCARD)
+          .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+          .start();
+      }
+      else
+      {
+        Process proc = pb.start();
+
         exitValue = proc.waitFor();
 
         try (InputStream is = proc.getErrorStream())
