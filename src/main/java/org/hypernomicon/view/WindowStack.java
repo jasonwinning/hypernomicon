@@ -19,6 +19,7 @@ package org.hypernomicon.view;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
@@ -26,7 +27,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.application.Platform;
@@ -87,13 +87,13 @@ public final class WindowStack
     {
       height = stage.getHeight(); width = stage.getWidth();
 
-      if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage()))   // In some Linux environments, the main window inexplicably gets
+      if (IS_OS_LINUX && (stage == ui.getStage()))               // In some Linux environments, the main window inexplicably gets
         runDelayedInFXThread(3, 100, this::restoreDimensions);   // resized when a window it is the owner of is opened
     }
 
     @Override public void restoreDimensions()
     {
-      if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage()))   // In some Linux environments, the main window inexplicably gets
+      if (IS_OS_LINUX && (stage == ui.getStage()))               // In some Linux environments, the main window inexplicably gets
         stage.setHeight(height); stage.setWidth(width);          // resized when a window it is the owner of is opened
     }
   }
@@ -221,7 +221,7 @@ public final class WindowStack
 
     focusStage(stage);
 
-    if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage()))
+    if (IS_OS_LINUX && (stage == ui.getStage()))
     {
       // This is a workaround for: https://bugs.openjdk.java.net/browse/JDK-8140491
       //

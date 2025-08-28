@@ -25,11 +25,13 @@ import java.nio.charset.Charset;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.DesktopUtil.OperatingSystem.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -51,6 +53,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
 import com.google.common.collect.Lists;
+import com.sun.javafx.PlatformUtil;
 
 import javafx.concurrent.Worker.State;
 
@@ -67,11 +70,35 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public enum OperatingSystem
+  {
+    WINDOWS (() -> PlatformUtil.isWindows()),
+    MAC     (() -> PlatformUtil.isMac    ()),
+    LINUX   (() -> PlatformUtil.isLinux  ()),
+    OTHER_OS(() -> true);
+
+    private final BooleanSupplier matcher;
+
+    OperatingSystem(BooleanSupplier matcher)
+    {
+      this.matcher = matcher;
+    }
+  }
+
+  public static final OperatingSystem CURRENT_OS = Arrays.stream(OperatingSystem.values()).filter(os -> os.matcher.getAsBoolean()).findFirst().orElse(OTHER_OS);
+
+  public static final boolean IS_OS_WINDOWS = CURRENT_OS == WINDOWS,
+                              IS_OS_MAC     = CURRENT_OS == MAC,
+                              IS_OS_LINUX   = CURRENT_OS == LINUX;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static void openSystemSpecific(String pathStr)
   {
     StringBuilder sb = new StringBuilder();
 
-    if (SystemUtils.IS_OS_LINUX)
+    if (IS_OS_LINUX)
     {
       if (exec(false, false, sb, "kde-open"  , pathStr)) return;
       if (exec(false, false, sb, "gnome-open", pathStr)) return;
@@ -159,7 +186,7 @@ public final class DesktopUtil
   {
     if (FilePath.isEmpty(filePath)) return;
 
-    if ((SystemUtils.IS_OS_WINDOWS == false) && (SystemUtils.IS_OS_MAC == false))
+    if ((CURRENT_OS != WINDOWS) && (CURRENT_OS != MAC))
     {
       openSystemSpecific(filePath.toString());
       return;
@@ -186,7 +213,7 @@ public final class DesktopUtil
 
   public static void editFile(FilePath filePath)
   {
-    if ((SystemUtils.IS_OS_WINDOWS == false) && (SystemUtils.IS_OS_MAC == false))
+    if ((CURRENT_OS != WINDOWS) && (CURRENT_OS != MAC))
     {
       openSystemSpecific(filePath.toString());
       return;
@@ -218,7 +245,7 @@ public final class DesktopUtil
 
   public static boolean exec(boolean showErrMsg, boolean wait, StringBuilder errorSB, List<String> command)
   {
-    ProcessBuilder pb = new ProcessBuilder(SystemUtils.IS_OS_MAC ?
+    ProcessBuilder pb = new ProcessBuilder(IS_OS_MAC ?
       Stream.concat(Stream.of("open", "-a"), command.stream()).toList()
     :
       command);
@@ -309,7 +336,7 @@ public final class DesktopUtil
 
     if (url.contains(":"))
     {
-      if (SystemUtils.IS_OS_WINDOWS)
+      if (IS_OS_WINDOWS)
       {
         // Check to see if it is a file system path
 
@@ -336,7 +363,7 @@ public final class DesktopUtil
     else
       url = "http://" + url;
 
-    if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
+    if (IS_OS_WINDOWS || IS_OS_MAC)
     {
       browseDesktop(url);
       return;
@@ -394,22 +421,22 @@ public final class DesktopUtil
 
     try
     {
-      if (SystemUtils.IS_OS_WINDOWS)
-        highlightInWindowsExplorer(filePath);
-
-      else if (SystemUtils.IS_OS_MAC)
-        Runtime.getRuntime().exec(new String[] {"open", "-R", filePath.toString()}).waitFor();
-
-      else if (SystemUtils.IS_OS_LINUX)
+      switch (CURRENT_OS)
       {
-        if (exec(false, false, new StringBuilder(), "nautilus", filePath.toString()) == false)
-          launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
+        case WINDOWS -> highlightInWindowsExplorer(filePath);
+
+        case MAC     -> Runtime.getRuntime().exec(new String[] {"open", "-R", filePath.toString()}).waitFor();
+
+        case LINUX   ->
+        {
+          if (!exec(false, false, new StringBuilder(), "nautilus", filePath.toString()))
+            launchFile(filePath.getDirOnly()); // won't highlight file in folder
+        }
+
+        // xdg-mime query default inode/directory
+
+        default -> launchFile(filePath.getDirOnly());  // won't highlight file in folder
       }
-
-      // xdg-mime query default inode/directory
-
-      else
-        launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
     }
     catch (IOException | InterruptedException e)
     {
@@ -475,34 +502,65 @@ public final class DesktopUtil
     return stripSafe(name).replaceAll("\\p{C}", "");
   }
 
+  /**
+   * Retrieves a stable identifier for the current computer, combining the host name
+   * with a platform-specific UUID when available.
+   * <p>
+   * On first invocation, this method determines the UUID according to the detected
+   * operating system and caches the result in {@code computerName}. Subsequent calls
+   * return the cached value.
+   * </p>
+   *
+   * <h4>Platform-specific behavior</h4>
+   * <ul>
+   *   <li><b>Windows</b> – Executes {@code wmic csproduct get UUID} and parses the UUID from the output.</li>
+   *   <li><b>macOS</b> – Executes {@code system_profiler SPHardwareDataType} and extracts the UUID from the
+   *       "Hardware UUID" field.</li>
+   *   <li><b>Linux</b> – Reads the machine identifier from {@code /etc/machine-id}.</li>
+   *   <li><b>Other</b> – No UUID is retrieved; only the host name is used.</li>
+   * </ul>
+   *
+   * <p>
+   * If a UUID cannot be obtained or is blank, the host name alone is returned. Otherwise,
+   * the host name and UUID are concatenated with {@code "::::"} as a delimiter, with the
+   * UUID converted to lower case. Any existing {@code "::::"} sequences in the host name
+   * are removed before concatenation.
+   * </p>
+   *
+   * @return a string identifier for the machine, in the form {@code hostName::::uuid} or just {@code hostName}
+   *         if the UUID is unavailable
+   */
   public static String getComputerName()
   {
     if (computerName != null) return computerName;
 
-    String uuid = "", hostName = getHostName();
+    String uuid = "",
+           hostName = getHostName();
 
     try
     {
-      String output;
-
-      if (SystemUtils.IS_OS_WINDOWS)
+      switch (CURRENT_OS)
       {
-        output = execReadToString(new String[] {"wmic", "csproduct", "get", "UUID"});
+        case WINDOWS ->
+        {
+          String output = execReadToString(new String[] {"wmic", "csproduct", "get", "UUID"});
 
-        SplitString ss = new SplitString(output, '\n');
-        ss.next();
-        uuid = ss.next();
-      }
-      else if (SystemUtils.IS_OS_MAC)
-      {
-        output = execReadToString(new String[] {"system_profiler", "SPHardwareDataType"});
+          SplitString ss = new SplitString(output, '\n');
+          ss.next();
+          uuid = ss.next();
+        }
 
-        String[] arr = output.split("UUID: ", 2);
-        uuid = arr.length < 2 ? "" : new SplitString(arr[1], '\n').next();
-      }
-      else if (SystemUtils.IS_OS_LINUX)
-      {
-        uuid = execReadToString(new String[] {"cat", "/etc/machine-id"});
+        case MAC ->
+        {
+          String output = execReadToString(new String[] {"system_profiler", "SPHardwareDataType"});
+
+          String[] arr = output.split("UUID: ", 2);
+          uuid = arr.length < 2 ? "" : new SplitString(arr[1], '\n').next();
+        }
+
+        case LINUX -> uuid = execReadToString(new String[] {"cat", "/etc/machine-id"});
+
+        default -> { }  // No UUID retrieval for OTHER_OS
       }
     }
     catch (IOException | InterruptedException e) { noOp(); }
@@ -532,7 +590,7 @@ public final class DesktopUtil
     }
     catch (IOException | InterruptedException e) { noOp(); }
 
-    if (SystemUtils.IS_OS_WINDOWS == false) try
+    if (IS_OS_WINDOWS == false) try
     {
       for (String line : new FilePath("/etc/hostname").readToStrList())
       {

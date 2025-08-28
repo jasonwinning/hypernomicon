@@ -19,6 +19,7 @@ package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -28,10 +29,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 
 import org.jodconverter.core.office.OfficeException;
@@ -263,9 +262,9 @@ final class OfficePreviewer
           tempOfficePreviewFolder(true, true);
 
           List<Integer> ports = new ArrayList<>();
-          DesktopUtil.findAvailablePorts(1, ports);
+          findAvailablePorts(1, ports);
 
-          if (SystemUtils.IS_OS_MAC && officePath.toLowerCase().endsWith(".app"))  // Allow user to just select the app file
+          if (IS_OS_MAC && officePath.toLowerCase().endsWith(".app"))  // Allow user to just select the app file
             officePath = officePath + "/Contents";
 
           officeManager = LocalOfficeManager.builder().portNumbers(ports.getFirst())
@@ -297,7 +296,7 @@ final class OfficePreviewer
 
     private static FilePath tempOfficePreviewFolder(boolean create, boolean clear) throws IOException
     {
-      FilePath filePath = DesktopUtil.tempDir().resolve(tempOfficePreviewFolderName);
+      FilePath filePath = tempDir().resolve(tempOfficePreviewFolderName);
 
       if ((create == false) && (clear == false))
         return filePath;

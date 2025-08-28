@@ -18,13 +18,12 @@
 package org.hypernomicon.dialogs.base;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.lang3.SystemUtils;
 
 import javafx.geometry.*;
 import javafx.scene.robot.Robot;
@@ -137,7 +136,7 @@ public abstract class NonmodalWindow extends DialogBase
     double y = app.prefs.getDouble(prefKeyY, -1.0);
     if (y > 0)
       stage.setY(y);
-    else if (SystemUtils.IS_OS_WINDOWS && (stage.getY() < 30.0)) // Make sure Windows taskbar isn't at the top and covering the window controls
+    else if (IS_OS_WINDOWS && (stage.getY() < 30.0))  // Make sure Windows taskbar isn't at the top and covering the window controls
     {
       y = 30.0;
       stage.setY(30.0);

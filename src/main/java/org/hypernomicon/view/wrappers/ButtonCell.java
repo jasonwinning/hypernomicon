@@ -26,8 +26,7 @@ import javafx.scene.layout.AnchorPane;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
-import org.hypernomicon.util.DesktopUtil;
-
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -163,7 +162,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
         btn.setText("URL:");
         btn.setGraphic(null);
         setToolTip(btn, URL_BUTTON_TOOLTIP);
-        setOnAction((row, colNdx) -> DesktopUtil.openWebLink(row.getText(colNdx)));
+        setOnAction((row, colNdx) -> openWebLink(row.getText(colNdx)));
 
         break;
       }

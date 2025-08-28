@@ -59,16 +59,13 @@
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     </rowConstraints>
-      <AnchorPane GridPane.columnSpan="2147483647">
-         <children>
-            <HBox alignment="BASELINE_LEFT" layoutX="14.0" layoutY="-36.0" spacing="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <children>
-                  <Label text="Argument or Stance:" />
-                  <ComboBox fx:id="cbArgOrStance" editable="true" prefWidth="150.0" />
-               </children>
-            </HBox>
-         </children>
-      </AnchorPane>
+    <AnchorPane GridPane.columnSpan="2147483647">
+      <HBox alignment="BASELINE_LEFT" layoutX="14.0" layoutY="-36.0" spacing="8.0" AnchorPane.bottomAnchor="0.0"
+            AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <Label text="Argument or Stance:"/>
+        <ComboBox fx:id="cbArgOrStance" editable="true" prefWidth="150.0"/>
+      </HBox>
+    </AnchorPane>
     <AnchorPane GridPane.rowIndex="1">
       <RadioButton fx:id="rbArgName1" layoutX="-3.0" layoutY="9.0" mnemonicParsing="false" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0">
         <toggleGroup>
@@ -137,48 +134,49 @@
           <ComboBox fx:id="cbPerson" editable="true" layoutX="10.0" prefWidth="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
         </AnchorPane>
         <AnchorPane GridPane.columnIndex="1">
-               <HBox alignment="BASELINE_LEFT" layoutX="6.0" layoutY="4.0" spacing="6.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                  <children>
-                <Label fx:id="lblDoesWhat" text="Holds that:">
-          </Label>
-                <ComboBox fx:id="cbVerdict" editable="true" maxWidth="1.7976931348623157E308" prefWidth="453.0" HBox.hgrow="ALWAYS" />
-                  </children>
-                  <padding>
-                     <Insets left="8.0" />
-                  </padding>
-               </HBox>
+          <HBox alignment="BASELINE_LEFT" layoutX="6.0" layoutY="4.0" spacing="6.0" AnchorPane.bottomAnchor="0.0"
+                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <padding>
+              <Insets left="8.0"/>
+            </padding>
+            <Label fx:id="lblDoesWhat" text="Holds that:">
+            </Label>
+            <ComboBox fx:id="cbVerdict" editable="true" maxWidth="1.7976931348623157E308" prefWidth="453.0"
+                      HBox.hgrow="ALWAYS"/>
+          </HBox>
         </AnchorPane>
       </GridPane>
     </AnchorPane>
   </GridPane>
   <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="12.0" layoutY="456.0" prefHeight="129.0" prefWidth="1102.0" text="Work" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0">
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="106.0" prefWidth="691.0">
-         <GridPane alignment="BASELINE_LEFT" hgap="16.0" vgap="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-           <columnConstraints>
-             <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="80.0" minWidth="80.0" prefWidth="80.0" />
-             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
-               <ColumnConstraints hgrow="SOMETIMES" maxWidth="170.0" minWidth="170.0" prefWidth="170.0" />
-           </columnConstraints>
-           <rowConstraints>
-             <RowConstraints valignment="BASELINE" vgrow="ALWAYS" />
-             <RowConstraints valignment="BASELINE" vgrow="ALWAYS" />
-             <RowConstraints valignment="BASELINE" vgrow="ALWAYS" />
-           </rowConstraints>
-            <children>
-            <RadioButton fx:id="rbNew" mnemonicParsing="false" text="New">
-                  <toggleGroup>
-                <ToggleGroup fx:id="radioGroup" />
-                  </toggleGroup>
-            </RadioButton>
-            <RadioButton fx:id="rbExisting" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" GridPane.rowIndex="1" />
-            <RadioButton mnemonicParsing="false" text="None" toggleGroup="$radioGroup" GridPane.rowIndex="2" />
-            <TextField fx:id="tfTitle" prefWidth="1.0E7" GridPane.columnIndex="1" />
-            <ComboBox fx:id="cbWork" editable="true" prefWidth="1.0E7" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
-               <TextField fx:id="tfPages" prefWidth="170.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-               <TextField visible="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-               <Label alignment="BASELINE_LEFT" text="Pages:" GridPane.columnIndex="2" />
-            </children>
-         </GridPane>
+      <GridPane alignment="BASELINE_LEFT" hgap="16.0" vgap="4.0" AnchorPane.bottomAnchor="0.0"
+                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <columnConstraints>
+          <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="80.0" minWidth="80.0" prefWidth="80.0"/>
+          <ColumnConstraints hgrow="ALWAYS" minWidth="10.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="170.0" minWidth="170.0" prefWidth="170.0"/>
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints valignment="BASELINE" vgrow="ALWAYS"/>
+          <RowConstraints valignment="BASELINE" vgrow="ALWAYS"/>
+          <RowConstraints valignment="BASELINE" vgrow="ALWAYS"/>
+        </rowConstraints>
+        <RadioButton fx:id="rbNew" mnemonicParsing="false" text="New">
+          <toggleGroup>
+            <ToggleGroup fx:id="radioGroup"/>
+          </toggleGroup>
+        </RadioButton>
+        <RadioButton fx:id="rbExisting" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup"
+                     GridPane.rowIndex="1"/>
+        <RadioButton mnemonicParsing="false" text="None" toggleGroup="$radioGroup" GridPane.rowIndex="2"/>
+        <TextField fx:id="tfTitle" prefWidth="1.0E7" GridPane.columnIndex="1"/>
+        <ComboBox fx:id="cbWork" editable="true" prefWidth="1.0E7" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"
+                  GridPane.rowIndex="1"/>
+        <TextField fx:id="tfPages" prefWidth="170.0" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+        <TextField visible="false" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label alignment="BASELINE_LEFT" text="Pages:" GridPane.columnIndex="2"/>
+      </GridPane>
     </AnchorPane>
   </TitledPane>
   <GridPane layoutX="25.0" layoutY="286.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">

@@ -19,6 +19,7 @@ package org.hypernomicon.util;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -28,7 +29,6 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.controlsfx.control.MasterDetailPane;
@@ -40,7 +40,6 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.WindowStack;
 
 import com.google.common.collect.HashBasedTable;
-import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
@@ -284,7 +283,7 @@ public final class UIUtil
   {
     Objects.requireNonNull(stage);
 
-    if (Environment.isMac() == false) stage.setMaximized(false); // On Mac, this makes the window disappear
+    if (IS_OS_MAC == false) stage.setMaximized(false); // On Mac, this makes the window disappear
 
     stage.setFullScreen(false);
     stage.setIconified (false);
@@ -720,7 +719,7 @@ public final class UIUtil
     if (windowStack != null)
       windowStack.push(dlg);
 
-    if (SystemUtils.IS_OS_LINUX)
+    if (IS_OS_LINUX)
     {
       DialogPane dlgPane = dlg.getDialogPane();
 

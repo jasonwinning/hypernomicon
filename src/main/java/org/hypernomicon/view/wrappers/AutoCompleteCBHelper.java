@@ -407,7 +407,7 @@ public class AutoCompleteCBHelper
 
   private static boolean notNormalTypingEvent(KeyEvent event)
   {
-    return shortcutKeyIsDown(event) || IGNORED_KEYS.contains(event.getCode());
+    return event.isShortcutDown() || IGNORED_KEYS.contains(event.getCode());
   }
 
 //---------------------------------------------------------------------------

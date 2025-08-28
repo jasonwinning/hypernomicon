@@ -17,15 +17,16 @@
 
 package org.hypernomicon;
 
-import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.FolderTreeWatcher.WatcherEvent.WatcherEventKind.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
+import static org.hypernomicon.model.Exceptions.*;
+import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import java.io.IOException;
@@ -41,7 +42,6 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.PathInfo.FileKind;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.MainCtrlr.ShutDownMode;
@@ -539,7 +539,7 @@ public class FolderTreeWatcher
         return false;
 
       requestType = hmtNone;
-      String compName = DesktopUtil.getComputerName();
+      String compName = getComputerName();
 
       if (receivedMsg.getDest().equals(compName))
         requestType = receivedMsg.getType();

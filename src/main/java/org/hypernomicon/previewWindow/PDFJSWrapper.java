@@ -37,6 +37,7 @@ import com.teamdev.jxbrowser.chromium.javafx.internal.dialogs.MessageDialog;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -47,7 +48,6 @@ import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 
 import org.jsoup.Jsoup;
@@ -288,7 +288,7 @@ public class PDFJSWrapper
 
   private static FilePath tempContextFolder(boolean create) throws IOException
   {
-    FilePath filePath = DesktopUtil.tempDir().resolve(tempBrowserContextFolderName);
+    FilePath filePath = tempDir().resolve(tempBrowserContextFolderName);
 
     if (create && (filePath.exists() == false))
       filePath.createDirectory();
@@ -460,7 +460,7 @@ public class PDFJSWrapper
 
         if (params.getType() == LoadType.LinkClicked)
         {
-          DesktopUtil.openWebLink(params.getURL());
+          openWebLink(params.getURL());
           return true;
         }
 

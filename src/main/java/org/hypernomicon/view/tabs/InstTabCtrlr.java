@@ -20,7 +20,6 @@ package org.hypernomicon.view.tabs;
 import org.hypernomicon.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -37,6 +36,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_Institution.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
@@ -94,7 +94,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
                                                          .go();
       }
       else
-        DesktopUtil.openWebLink(row.getText(colNdx));
+        openWebLink(row.getText(colNdx));
     });
 
     htSubInst.addTextEditCol(hdtInstitution, true, smTextSimple);
@@ -175,7 +175,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     btnURL.setOnAction(event ->
     {
       if (tfURL.getText().isBlank() == false)
-        DesktopUtil.openWebLink(tfURL.getText());
+        openWebLink(tfURL.getText());
       else
         ui.webButtonMap.get(WebButtonContextPrefKey.INST).first(WebButtonField.Name, tfName.getText()).go();
     });

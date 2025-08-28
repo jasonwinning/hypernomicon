@@ -38,8 +38,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.SystemUtils;
-
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.base.NonmodalWindow;
@@ -204,7 +202,7 @@ public final class FileManager extends NonmodalWindow
 
     Scene scene = stage.getScene();
 
-    scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
+    scene.getAccelerators().putAll(IS_OS_MAC ? Map.of
     (
       new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::userRequestsToGoBackward),
       new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::userRequestsToGoForward )

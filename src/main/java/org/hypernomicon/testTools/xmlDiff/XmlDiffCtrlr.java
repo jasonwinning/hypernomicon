@@ -36,7 +36,6 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -220,9 +219,9 @@ public final class XmlDiffCtrlr
 
     FileChooser fileChooser = new FileChooser();
 
-    if (SystemUtils.IS_OS_WINDOWS)
+    if (IS_OS_WINDOWS)
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Executable files (*.exe)", "*.exe"));
-    else if (SystemUtils.IS_OS_MAC)
+    else if (IS_OS_MAC)
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("App files (*.app)", "*.app"));
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
@@ -331,7 +330,7 @@ public final class XmlDiffCtrlr
 
 //---------------------------------------------------------------------------
 
-  private void processForFolder(String srcPathStr, String destPathStr) throws IOException
+  private static void processForFolder(String srcPathStr, String destPathStr) throws IOException
   {
     for (String fileName : fileNames)
     {

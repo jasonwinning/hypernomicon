@@ -32,8 +32,6 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import org.apache.commons.lang3.SystemUtils;
-
 import org.hypernomicon.App;
 import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.bib.BibEntry;
@@ -69,6 +67,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage.*;
+
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -264,7 +263,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     initCheckBox(app.prefs, chkAutoRetrieveBib       , PrefKey.AUTO_RETRIEVE_BIB        , true );
     initCheckBox(app.prefs, chkCompDontExpandKeyWorks, PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
 
-    chkLinuxWorkaround.setVisible(SystemUtils.IS_OS_LINUX);
+    chkLinuxWorkaround.setVisible(IS_OS_LINUX);
 
     initCheckBox(app.prefs, chkLinuxWorkaround, PrefKey.LINUX_WORKAROUND, false);
 
@@ -539,7 +538,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     if (FilePath.isEmpty(startPath))
       startPath = new FilePath(userWorkingDir());
 
-    if (SystemUtils.IS_OS_MAC)
+    if (IS_OS_MAC)
     {
       FileChooser fileChooser = new FileChooser();
 

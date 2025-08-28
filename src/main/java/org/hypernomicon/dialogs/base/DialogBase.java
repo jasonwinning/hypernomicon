@@ -18,10 +18,10 @@
 package org.hypernomicon.dialogs.base;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.apache.tika.utils.SystemUtils;
 import org.hypernomicon.App;
 
 import java.io.IOException;
@@ -125,7 +125,7 @@ public abstract class DialogBase
 
       Platform.runLater(() ->
       {
-        if (SystemUtils.IS_OS_MAC) Platform.runLater(() ->
+        if (IS_OS_MAC) Platform.runLater(() ->
         {
           // Sometimes the window contents are a black rectangle upon restore, until
           // the window is closed and opened again

@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -57,7 +58,6 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.controls.WebTooltip;
@@ -126,7 +126,7 @@ public final class BibManager extends NonmodalWindow
   private void rebuildCollectionTree()                   { collTree.rebuild(libraryWrapper.getKeyToColl()); }
   private void clearCollectionTree()                     { collTree.clear(); }
 
-  private static void viewInRefMgr(BibEntry<?, ?> entry) { DesktopUtil.openWebLink(entry.getURLtoViewEntryInRefMgr()); }
+  private static void viewInRefMgr(BibEntry<?, ?> entry) { openWebLink(entry.getURLtoViewEntryInRefMgr()); }
   public  static void close(boolean exitingApp)          { close(instance, exitingApp); }
 
 //---------------------------------------------------------------------------

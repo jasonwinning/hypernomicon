@@ -87,11 +87,12 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
+
 import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
+
 import com.google.common.collect.EnumHashBiMap;
 
 import javafx.scene.input.*;
@@ -469,11 +470,11 @@ public final class MainCtrlr
 
     setToolTip(btnPrevResult    , "Previous match");
     setToolTip(btnNextResult    , "Next match");
-    setToolTip(btnTextSearch    , "Search within description of record currently showing (" + (SystemUtils.IS_OS_MAC ? "Cmd" : "Ctrl") + "-Shift-F)");
+    setToolTip(btnTextSearch    , "Search within description of record currently showing (" + (IS_OS_MAC ? "Cmd" : "Ctrl") + "-Shift-F)");
     setToolTip(btnPreviewWindow , "View selected record/file in Preview Window");
     setToolTip(btnBibMgr        , "Open Bibliography Manager Window");
     setToolTip(btnFileMgr       , "Open File Manager Window");
-    setToolTip(btnSaveAll       , "Save all records to XML files (" + (SystemUtils.IS_OS_MAC ? "Cmd" : "Ctrl") + "-S)");
+    setToolTip(btnSaveAll       , "Save all records to XML files (" + (IS_OS_MAC ? "Cmd" : "Ctrl") + "-S)");
 
     btnSaveAll.setText(underlinedChar('S') + "ave to XML");
 
@@ -511,7 +512,7 @@ public final class MainCtrlr
 
     WebButtonSettingsCtrlr.loadPrefs();
 
-    if (SystemUtils.IS_OS_MAC)
+    if (IS_OS_MAC)
     {
       topHBox.getChildren().remove(topToolBar);
       setHeights(topHBox, 0.0);
@@ -848,7 +849,7 @@ public final class MainCtrlr
       }
     ));
 
-    scene.getAccelerators().putAll(SystemUtils.IS_OS_MAC ? Map.of
+    scene.getAccelerators().putAll(IS_OS_MAC ? Map.of
     (
       new KeyCodeCombination(KeyCode.Y            , KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) chbBack.showMenu(); },
       new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN                           ), this::nextSearchResult,
@@ -868,9 +869,9 @@ public final class MainCtrlr
 
     // Override CTRL-H for textfields and text areas, which for some reason is mapped to act like Backspace
 
-    if (SystemUtils.IS_OS_MAC == false) stage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    if (IS_OS_MAC == false) stage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
-      if ((event.getCode() == KeyCode.H) && shortcutKeyIsDown(event))
+      if ((event.getCode() == KeyCode.H) && event.isShortcutDown())
       {
         if (db.isOnline()) chbBack.showMenu();
         event.consume();
@@ -1314,7 +1315,7 @@ public final class MainCtrlr
       forEachHyperTab(HyperTab::getDividerPositions);
 
       boolean iconified = stage.isIconified(), fullScreen = stage.isFullScreen(),
-              maximizedPrefVal = Environment.isMac() ? this.maximized : stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS. JDK-8087618
+              maximizedPrefVal = IS_OS_MAC ? this.maximized : stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS. JDK-8087618
 
       if (fullScreen || maximizedPrefVal) iconified = false; // This has to be done due to bug JDK-8087997
 
@@ -1607,7 +1608,7 @@ public final class MainCtrlr
 
   @FXML private void mnuNewDatabaseClick()
   {
-    if (SystemUtils.IS_OS_WINDOWS == false)
+    if (IS_OS_WINDOWS == false)
       infoPopup("Select an empty folder in which to create the new database.");
 
     DirectoryChooser dirChooser = new DirectoryChooser();
@@ -2368,7 +2369,7 @@ public final class MainCtrlr
 
   private boolean loadAllFromXML(boolean creatingNew)
   {
-    if (SystemUtils.IS_OS_MAC)
+    if (IS_OS_MAC)
       Platform.runLater(() -> adjustToolBar(0));
 
     FilePath hdbPath = null;

@@ -123,7 +123,7 @@ final class NameMatcher
     if (containsNoLetters(lastName1))
     {
       if (containsNoLetters(firstName1))
-        return (firstName1 + " " + lastName1).strip().equalsIgnoreCase((firstName2 + " " + lastName2).strip());
+        return (firstName1 + ' ' + lastName1).strip().equalsIgnoreCase((firstName2 + ' ' + lastName2).strip());
 
       lastName1 = firstName1;
       firstName1 = "";
@@ -132,7 +132,7 @@ final class NameMatcher
     if (containsNoLetters(lastName2))
     {
       if (containsNoLetters(firstName2))
-        return (firstName1 + " " + lastName1).strip().equalsIgnoreCase((firstName2 + " " + lastName2).strip());
+        return (firstName1 + ' ' + lastName1).strip().equalsIgnoreCase((firstName2 + ' ' + lastName2).strip());
 
       lastName2 = firstName2;
       firstName2 = "";

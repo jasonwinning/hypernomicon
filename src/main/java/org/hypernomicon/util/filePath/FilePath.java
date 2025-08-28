@@ -22,6 +22,7 @@ import org.hypernomicon.fileManager.FileManager;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -40,7 +41,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.*;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 //---------------------------------------------------------------------------
@@ -316,7 +316,7 @@ public class FilePath implements Comparable<FilePath>
 
     FileManager.setNeedRefresh();
 
-    if (singleCall && SystemUtils.IS_OS_WINDOWS)
+    if (singleCall && IS_OS_WINDOWS)
     {
       ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "RD /S /Q \"" + filePath + '"');
       Process proc = pb.redirectErrorStream(true).start();
@@ -358,7 +358,7 @@ public class FilePath implements Comparable<FilePath>
 
     FileManager.setNeedRefresh();
 
-    if (SystemUtils.IS_OS_WINDOWS)
+    if (IS_OS_WINDOWS)
     {
       ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "ren \"" + srcFilePath + "\" \"" + destFilePath.getNameOnly() + '"');
       Process proc = pb.redirectErrorStream(true).start();

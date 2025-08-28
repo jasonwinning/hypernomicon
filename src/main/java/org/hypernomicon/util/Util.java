@@ -1313,25 +1313,6 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
-   * Determines whether the shortcut key (Cmd on macOS, Ctrl on other OS) is currently pressed.
-   *
-   * <p>This method checks the appropriate modifier key based on the operating system:
-   * - On macOS, it checks if the Meta (Command) key is down.
-   * - On non-macOS systems, it checks if the Control key is down.</p>
-   *
-   * @param keyEvent The {@link KeyEvent} to evaluate. Must not be {@code null}.
-   * @return {@code true} if the appropriate shortcut key is down, otherwise {@code false}.
-   * @throws NullPointerException if {@code keyEvent} is {@code null}.
-   */
-  public static boolean shortcutKeyIsDown(KeyEvent keyEvent)
-  {
-    return SystemUtils.IS_OS_MAC ? keyEvent.isMetaDown() : keyEvent.isControlDown();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
    * Logs the stack trace for a throwable, preventing HDB_InternalError
    * or any Throwable having HDB_InternalError in its chain of causes
    * logged twice.

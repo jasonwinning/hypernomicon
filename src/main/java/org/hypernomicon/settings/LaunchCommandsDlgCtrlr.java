@@ -17,16 +17,16 @@
 
 package org.hypernomicon.settings;
 
-import org.apache.commons.lang3.SystemUtils;
-
 import org.hypernomicon.dialogs.base.ModalDialog;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.SimpleSelector;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.settings.LaunchCommandsDlgCtrlr.LaunchCommandTypeEnum.*;
+
+import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.DesktopUtil.OperatingSystem.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -53,7 +53,7 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 
 //---------------------------------------------------------------------------
 
-  public enum LaunchCommandTypeEnum
+  enum LaunchCommandTypeEnum
   {
     appleScript("appleScript", "AppleScript"),
     opSysCmdAndArgs("opSysCmdAndArgs", "Operating system command and arguments");
@@ -75,26 +75,10 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 
 //---------------------------------------------------------------------------
 
-  private enum OperatingSystemEnum
-  {
-    windows, mac, linux, other;
-
-    private static OperatingSystemEnum determine()
-    {
-      if (SystemUtils.IS_OS_WINDOWS) return windows;
-      if (SystemUtils.IS_OS_MAC    ) return mac;
-      if (SystemUtils.IS_OS_LINUX  ) return linux;
-
-      return other;
-    }
-  }
-
-//---------------------------------------------------------------------------
-
-  private record Preset(OperatingSystemEnum opSys, String name, LaunchCommandTypeEnum commandType,
+  private record Preset(OperatingSystem opSys, String name, LaunchCommandTypeEnum commandType,
                         String commandsPrefKey, String commands)
   {
-    private boolean isCompatible() { return opSys == OperatingSystemEnum.determine(); }
+    private boolean isCompatible() { return opSys == CURRENT_OS; }
   }
 
 //---------------------------------------------------------------------------
@@ -188,7 +172,7 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 
     if ((commandType != null) && (commands.length() > 0))
     {
-      if ((commandType == appleScript) && SystemUtils.IS_OS_MAC)
+      if ((commandType == appleScript) && IS_OS_MAC)
       {
         String[] argz = { "osascript",
                           "-e",
@@ -211,13 +195,13 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 
         if (list.size() > 1)
         {
-          DesktopUtil.exec(true, false, new StringBuilder(), list);
+          exec(true, false, new StringBuilder(), list);
           return;
         }
       }
     }
 
-    DesktopUtil.exec(true, false, new StringBuilder(), appPath, filePath.toString());
+    exec(true, false, new StringBuilder(), appPath, filePath.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -244,19 +228,19 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 
   private static final List<Preset> presets = List.of(
 
-    new Preset(OperatingSystemEnum.windows, "Adobe Acrobat", opSysCmdAndArgs, PrefKey.PDF_READER_COMMANDS,
+    new Preset(WINDOWS, "Adobe Acrobat", opSysCmdAndArgs, PrefKey.PDF_READER_COMMANDS,
                appPathVar + '\n' +
                "/A\n" +
                "page=" + pageNumVar + '\n' +
                filePathVar),
 
-    new Preset(OperatingSystemEnum.windows, "Sumatra", opSysCmdAndArgs, PrefKey.PDF_READER_COMMANDS,
+    new Preset(WINDOWS, "Sumatra", opSysCmdAndArgs, PrefKey.PDF_READER_COMMANDS,
                appPathVar + '\n' +
                "-page\n" +
                pageNumVar + '\n' +
                filePathVar),
 
-    new Preset(OperatingSystemEnum.mac, "Preview (macOS)", appleScript, PrefKey.PDF_READER_COMMANDS,
+    new Preset(MAC, "Preview (macOS)", appleScript, PrefKey.PDF_READER_COMMANDS,
                "tell app \"" + appPathVar + "\"\n" +
                "  activate\n" +
                "  open \"" + filePathVar + "\"\n" +
@@ -267,7 +251,7 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
                "  keystroke return\n" +
                "end tell"),
 
-    new Preset(OperatingSystemEnum.mac, "Adobe Acrobat", appleScript, PrefKey.PDF_READER_COMMANDS,
+    new Preset(MAC, "Adobe Acrobat", appleScript, PrefKey.PDF_READER_COMMANDS,
                "tell app \"" + appPathVar + "\"\n" +
                "  activate\n" +
                "  open \"" + filePathVar + "\" options \"page=" + pageNumVar + "\"\n" +

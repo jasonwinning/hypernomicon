@@ -20,6 +20,7 @@ package org.hypernomicon.view.mainText;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -43,7 +44,6 @@ import com.sun.webkit.WebPage;
 
 import org.w3c.dom.html.HTMLAnchorElement;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import org.hypernomicon.App;
@@ -247,7 +247,7 @@ public class MainTextCtrlr
 
     String shortcutKey, pasteNoLineBreaksKey;
 
-    if (SystemUtils.IS_OS_MAC)
+    if (IS_OS_MAC)
     {
       shortcutKey = "Command";
       pasteNoLineBreaksKey = "Ctrl-Command-V";
@@ -293,7 +293,7 @@ public class MainTextCtrlr
 
     he.addEventFilter(KeyEvent.KEY_RELEASED, event ->
     {
-      if (shortcutKeyIsDown(event))
+      if (event.isShortcutDown())
       {
         if ((event.getCode() == KeyCode.B) ||
             (event.getCode() == KeyCode.I) ||
@@ -510,13 +510,13 @@ public class MainTextCtrlr
 
     highlighter.clear();
 
-    if (shortcutKeyIsDown(event))
+    if (event.isShortcutDown())
     {
       if (event.getCode() == KeyCode.V)
       {
         // On Mac, if you press V while alt is down, it will always insert a checkmark character
 
-        if ((SystemUtils.IS_OS_MAC && event.isControlDown()) || ((SystemUtils.IS_OS_MAC == false) && event.isAltDown()))
+        if ((IS_OS_MAC && event.isControlDown()) || ((IS_OS_MAC == false) && event.isAltDown()))
         {
           pastePlainText(true);
           event.consume();

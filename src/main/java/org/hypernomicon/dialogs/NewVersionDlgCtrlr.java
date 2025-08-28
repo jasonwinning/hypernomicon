@@ -19,9 +19,9 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
-import org.hypernomicon.util.DesktopUtil;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -46,7 +46,7 @@ public class NewVersionDlgCtrlr extends ModalDialog
 
     btnDownload.setOnAction(event ->
     {
-      DesktopUtil.openWebLink("https://sourceforge.net/projects/hypernomicon/files/latest/download");
+      openWebLink("https://sourceforge.net/projects/hypernomicon/files/latest/download");
 
       btnOkClick();
     });

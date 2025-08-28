@@ -18,6 +18,7 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -37,7 +38,6 @@ import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
@@ -226,7 +226,7 @@ public final class TestHyperDB extends AbstractHyperDB
 
     try
     {
-      loadAllFromPersistentStorage(true, null, DesktopUtil.tempDir(), HDB_DEFAULT_FILENAME);
+      loadAllFromPersistentStorage(true, null, tempDir(), HDB_DEFAULT_FILENAME);
     }
     catch (HDB_InternalError e)
     {

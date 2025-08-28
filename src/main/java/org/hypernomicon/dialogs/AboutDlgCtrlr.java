@@ -27,6 +27,7 @@ import javafx.scene.web.WebView;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -40,7 +41,6 @@ import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.view.mainText.MainTextUtil;
 
 import com.sun.javafx.runtime.VersionInfo;
@@ -183,7 +183,7 @@ public class AboutDlgCtrlr extends ModalDialog
   {
     String maxHeap = app.debugging ? "Max heap space: " + new DecimalFormat("#,###").format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
 
-    String distro = SystemUtils.IS_OS_LINUX ? DesktopUtil.detectDistro() : "";
+    String distro = IS_OS_LINUX ? detectDistro() : "";
 
     return htmlStart +
 

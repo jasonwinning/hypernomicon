@@ -953,7 +953,7 @@ public final class MainTextUtil
 
     view.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
-      if (shortcutKeyIsDown(event))
+      if (event.isShortcutDown())
       {
         if ((event.getCode() == KeyCode.PLUS    ) ||
             (event.getCode() == KeyCode.EQUALS  ) ||

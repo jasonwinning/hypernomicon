@@ -81,7 +81,7 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
     if (recordHandler == null)
       rowHandler.accept(row);
     else
-      recordHandler.accept((HDT_T)(recordType == hdtNone ? row.getRecord() : row.getRecordByType(recordType))); // The cast is necessary to avoid Maven false-positive build error
+      recordHandler.accept((HDT_T)(recordType == hdtNone ? row.getRecord() : row.getRecordByType(recordType)));  // The cast is necessary to avoid Maven false-positive build error
   }
 
 //---------------------------------------------------------------------------

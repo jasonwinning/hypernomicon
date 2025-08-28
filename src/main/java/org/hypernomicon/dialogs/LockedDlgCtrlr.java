@@ -27,10 +27,10 @@ import javafx.scene.control.TextArea;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.InterComputerMsg;
-import org.hypernomicon.util.DesktopUtil;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -233,7 +233,7 @@ public class LockedDlgCtrlr extends ModalDialog
     String newOtherCompName = db.getLockOwner();
     if ((newOtherCompName != null) && otherCompName.equals(newOtherCompName) == false)
     {
-      okClicked = DesktopUtil.getComputerName().equals(newOtherCompName);
+      okClicked = getComputerName().equals(newOtherCompName);
     }
     else
     {
@@ -250,7 +250,7 @@ public class LockedDlgCtrlr extends ModalDialog
 
   private void sendMessage(HDB_MessageType newMsgType, String output)
   {
-    InterComputerMsg sentMsg = new InterComputerMsg(DesktopUtil.getComputerName(), otherCompName, newMsgType);
+    InterComputerMsg sentMsg = new InterComputerMsg(getComputerName(), otherCompName, newMsgType);
 
     try
     {

@@ -17,7 +17,6 @@
 
 package org.hypernomicon.query;
 
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -25,6 +24,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.concurrent.Worker.State;
 
 import static org.hypernomicon.App.app;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -113,7 +113,7 @@ public final class WorkQueries
 
       @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
+        FilePath filePath = homeDir().resolve("data.csv");
         if (filePath.exists()) try
         {
           Files.delete(filePath.toPath());
@@ -150,7 +150,7 @@ public final class WorkQueries
       {
         if (state != State.SUCCEEDED) return;
 
-        FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
+        FilePath filePath = homeDir().resolve("data.csv");
 
         try
         {

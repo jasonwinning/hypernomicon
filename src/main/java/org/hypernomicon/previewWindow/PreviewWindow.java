@@ -18,6 +18,7 @@
 package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -35,7 +36,6 @@ import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 
@@ -140,7 +140,7 @@ public final class PreviewWindow extends NonmodalWindow
       FilePath filePath = curWrapper().getFilePath();
 
       if (FilePath.isEmpty(filePath) == false)
-        DesktopUtil.launchWorkFile(filePath, curWrapper().getPageNum());
+        launchWorkFile(filePath, curWrapper().getPageNum());
     });
 
     btnLock.selectedProperty().addListener((ob, oldValue, newValue) ->
@@ -330,7 +330,7 @@ public final class PreviewWindow extends NonmodalWindow
 
     stage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
-      if (shortcutKeyIsDown(event))
+      if (event.isShortcutDown())
       {
         if ((event.getCode() == KeyCode.PLUS    ) ||
             (event.getCode() == KeyCode.EQUALS  ) ||
