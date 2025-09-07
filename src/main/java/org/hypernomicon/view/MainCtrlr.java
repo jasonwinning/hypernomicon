@@ -1499,6 +1499,9 @@ public final class MainCtrlr
       }
 
       db.prefs.putInt(RecordIDPrefKey.PERSON     , personHyperTab  ().activeID());
+
+
+
       db.prefs.putInt(RecordIDPrefKey.INSTITUTION, instHyperTab    ().activeID());
       db.prefs.putInt(RecordIDPrefKey.DEBATE     , debateHyperTab  ().activeID());
       db.prefs.putInt(RecordIDPrefKey.POSITION   , positionHyperTab().activeID());
@@ -2331,7 +2334,7 @@ public final class MainCtrlr
     saveViewToViewsTab(new HyperView<>(argumentTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtArgument   , RecordIDPrefKey.ARGUMENT   )));
     saveViewToViewsTab(new HyperView<>(workTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtWork       , RecordIDPrefKey.WORK       )));
 
-    HDT_Concept concept = nullSwitch((HDT_Term)getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtTerm, RecordIDPrefKey.TERM), null, term -> term.concepts.getFirst());
+    HDT_Concept concept = nullSwitch((HDT_Term) getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtTerm, RecordIDPrefKey.TERM), null, term -> term.concepts.getFirst());
 
     saveViewToViewsTab(new HyperView<>(termTabEnum,     concept));
 

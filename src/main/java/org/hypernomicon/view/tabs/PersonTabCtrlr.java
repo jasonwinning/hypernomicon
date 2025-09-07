@@ -70,6 +70,7 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener.Change;
 import javafx.concurrent.Worker.State;
 import javafx.event.*;
 import javafx.fxml.FXML;
@@ -78,6 +79,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 
@@ -103,7 +105,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @FXML public TextField tfFirst, tfLast;
 
-  private final List<InvestigationView> invViews = new ArrayList<>();
+  private final Map<Tab, InvestigationView> invViews = new HashMap<>();
   private final HyperTable htPersonInst, htWorks, htArguments;
   private final HyperCB hcbRank, hcbStatus, hcbSubfield;
   private final MainTextWrapper mainText;
@@ -283,12 +285,49 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     Platform.runLater(() ->
     {
-      final double invHelpGap = 20.0;
-
       StackPane headersRegion = (StackPane) tpPerson.lookup(".headers-region");
-      lblInvHelp.setLayoutX(headersRegion.getWidth() + invHelpGap);
+      if (headersRegion == null) return;
 
-      headersRegion.widthProperty().addListener((obs, ov, nv) -> lblInvHelp.setLayoutX(nv.doubleValue() + invHelpGap));
+      lblInvHelp.setManaged(false);
+      lblInvHelp.layoutXProperty().bind(headersRegion.widthProperty().add(20.0));
+
+      headersRegion.getChildren().forEach(node -> node.addEventFilter(MouseEvent.MOUSE_DRAGGED, Event::consume));
+    });
+
+    tpPerson.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
+
+    var tabList = tpPerson.getTabs();
+    boolean[] adjustingTabs = {false};
+
+    tabList.addListener((Change<? extends Tab> change) ->
+    {
+      if (adjustingTabs[0]) return;
+
+      while (change.next())
+      {
+        if (change.wasPermutated() && ((tabList.getFirst() != tabOverview) || (tabList.getLast() != tabNew)))
+        {
+          adjustingTabs[0] = true;
+
+          try
+          {
+            // Ensure that tabOverview stays first and tabNew stays last
+
+            Tab selectedTab = tpPerson.getSelectionModel().getSelectedItem();
+            tpPerson.getSelectionModel().select(0);
+
+            List<Tab> midTabs = new ArrayList<>(tabList);
+            midTabs.remove(tabOverview);
+            midTabs.remove(tabNew);
+
+            tabList.removeIf(invTab -> (invTab != tabOverview) && (invTab != tabNew));
+            midTabs.forEach(invTab -> tabList.add(tabList.size() - 1, invTab));
+
+            tpPerson.getSelectionModel().select(selectedTab);
+          }
+          finally { adjustingTabs[0] = false; }
+        }
+      }
     });
 
     lblInvHelp.setTooltip(invHelpTooltip());
@@ -1051,7 +1090,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private InvestigationView invViewByTab(Tab tab)
   {
-    return findFirst(invViews, iV -> iV.tab == tab);
+    return invViews.get(tab);
   }
 
 //---------------------------------------------------------------------------
@@ -1059,7 +1098,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private InvestigationView invViewByRecord(HDT_Investigation record)
   {
-    return findFirst(invViews, iV -> iV.record == record);
+    return findFirst(invViews.values(), iV -> iV.record == record);
   }
 
 //---------------------------------------------------------------------------
@@ -1092,7 +1131,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     tpPerson.getTabs().add(tpPerson.getTabs().size() - 1, iV.tab);
 
-    invViews.add(iV);
+    invViews.put(iV.tab, iV);
 
     return iV;
   }
@@ -1152,7 +1191,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private boolean saveInvestigations(InvestigationView ivNotToSave)
   {
-    for (InvestigationView iV : invViews)
+    for (InvestigationView iV : invViews.values())
     {
       if (ivNotToSave == iV) continue;
 
@@ -1195,6 +1234,15 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
         db.deleteRecord(inv);
     });
 
+    // Now reorder the investigations to match tabs
+    // --------------------------------------------
+
+    var invStream = tpPerson.getTabs().stream().map(this::invViewByTab)
+                                               .filter(Objects::nonNull)
+                                               .map(InvestigationView::getRecord);
+
+    curPerson.investigations.reorder(invStream.toList(), true);
+
     return true;
   }
 
@@ -1203,11 +1251,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private void clearInvestigations()
   {
-    invViews.removeIf(iV ->
-    {
-      tpPerson.getTabs().remove(iV.tab);
-      return true;
-    });
+    tpPerson.getTabs().removeAll(invViews.keySet());
+    invViews.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -1229,7 +1274,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       if ((saveInvestigations(view) == false) || confirmDialog("Are you sure you want to delete the investigation?", false) == false)
         return;
 
-      invViews.remove(view);
+      invViews.remove(view.tab);
       tpPerson.getTabs().remove(view.tab);
 
       saveInvestigations(null);
@@ -1286,7 +1331,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     HDT_RecordWithAuthors<? extends RecordAuthors> workOrMiscFile = row.getRecord();
 
-    InvestigationsDlgCtrlr dlg = new InvestigationsDlgCtrlr(workOrMiscFile, invViews, curPerson);
+    InvestigationsDlgCtrlr dlg = new InvestigationsDlgCtrlr(workOrMiscFile, invViews.values(), curPerson);
 
     if (dlg.showModal() == false)
       return;

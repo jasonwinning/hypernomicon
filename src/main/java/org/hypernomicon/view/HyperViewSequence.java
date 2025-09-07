@@ -23,8 +23,6 @@ import org.hypernomicon.view.MainCtrlr.OmniSearchMode;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 
-import com.google.common.collect.Iterators;
-
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
@@ -419,16 +417,27 @@ public class HyperViewSequence
 
   void removeRecord(HDT_Record record)
   {
-    // Do not change the following code to use ArrayList.removeIf. The line that checks whether cursorNdx should be decremented will not work
-    // because the ArrayList does not actually get modified until all of the removeIf checks are completed.
-
-    Iterators.removeIf(slots.iterator(), view ->
+    for (int i = slots.size() - 1; i >= 0; i--)
     {
-      if (view.getViewRecord() != record) return false;
+      var view = slots.get(i);
 
-      if (cursorNdx >= slots.indexOf(view)) cursorNdx--;
-      return true;
-    });
+      if (view.getViewRecord() == record)
+      {
+        // Adjust cursor if this removal is at or before it
+
+        if (cursorNdx >= i)
+          cursorNdx--;
+
+        slots.remove(i); // actual removal
+      }
+    }
+
+    // Clamp cursor to valid range after all removals
+
+    if ((cursorNdx < 0) && (slots.isEmpty() == false))
+      cursorNdx = 0;
+    else if (cursorNdx >= slots.size())
+      cursorNdx = slots.size() - 1;
   }
 
 //---------------------------------------------------------------------------

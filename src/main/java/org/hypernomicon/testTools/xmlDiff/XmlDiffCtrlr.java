@@ -64,7 +64,7 @@ public final class XmlDiffCtrlr
   private final Stage stage;
 
   private static final List<String> fileNames = List.of("Arguments.xml", "Debates.xml", "Files.xml", "Hubs.xml", "Institutions.xml", "Investigations.xml",
-                                                        "Notes.xml", "Other.xml", "People.xml", "Positions.xml", "Terms.xml", "Works.xml");
+                                                        "Notes.xml", "Other.xml", "People.xml", "Positions.xml", "Settings.xml", "Terms.xml", "Works.xml");
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

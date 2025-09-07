@@ -42,6 +42,8 @@ public final class InvestigationView
   final MainTextWrapper textWrapper;
   final Tab tab;
 
+  HDT_Investigation getRecord() { return record; }
+
 //---------------------------------------------------------------------------
 
   InvestigationView(HDT_Investigation record)

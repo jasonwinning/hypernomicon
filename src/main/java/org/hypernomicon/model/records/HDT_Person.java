@@ -24,6 +24,7 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
+import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.SplitString;
 
@@ -48,10 +49,11 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public final HyperSubjList<HDT_Investigation, HDT_Person> investigations;
+
   public final List<HDT_Institution> institutions;
   public final List<HDT_Work> works;
   public final List<HDT_MiscFile> miscFiles;
-  public final List<HDT_Investigation> investigations;
 
   public final HyperObjPointer<HDT_Person, HDT_Rank> rank;
   public final HyperObjPointer<HDT_Person, HDT_PersonStatus> status;
