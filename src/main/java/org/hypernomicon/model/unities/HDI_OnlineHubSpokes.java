@@ -19,7 +19,6 @@ package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.*;
 
 import java.util.Iterator;
 import java.util.List;
@@ -83,11 +82,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void getToOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
-    val.debateID   = nullSwitch(hub.getDebate  (), -1, HDT_Record::getID);
-    val.positionID = nullSwitch(hub.getPosition(), -1, HDT_Record::getID);
-    val.noteID     = nullSwitch(hub.getNote    (), -1, HDT_Record::getID);
-    val.labelID    = nullSwitch(hub.getLabel   (), -1, HDT_Record::getID);
-    val.conceptID  = nullSwitch(hub.getConcept (), -1, HDT_Record::getID);
+    val.debateID   = HDT_Record.getIDSafe(hub.getDebate  ());
+    val.positionID = HDT_Record.getIDSafe(hub.getPosition());
+    val.noteID     = HDT_Record.getIDSafe(hub.getNote    ());
+    val.labelID    = HDT_Record.getIDSafe(hub.getLabel   ());
+    val.conceptID  = HDT_Record.getIDSafe(hub.getConcept ());
   }
 
 //---------------------------------------------------------------------------

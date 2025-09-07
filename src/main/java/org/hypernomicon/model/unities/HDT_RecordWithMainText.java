@@ -170,7 +170,7 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 
     if (isOnline() && isUnitable())
     {
-      int curHubID = nullSwitch(getHub(), -1, HDT_Hub::getID);
+      int curHubID = HDT_Record.getIDSafe(getHub());
 
       if (curHubID != backupHubID)
         throw new HubChangedException(curHubID >= 1);

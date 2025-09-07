@@ -195,7 +195,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
     {
       case tagHub :
 
-        val.hubID = nullSwitch(getHub(), -1, HDT_Record::getID);
+        val.hubID = HDT_Record.getIDSafe(getHub());
         break;
 
       case tagDisplayRecord :

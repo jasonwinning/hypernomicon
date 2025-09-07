@@ -726,7 +726,7 @@ public final class FileManager extends NonmodalWindow
             else
             {
               for (HyperPath hyperPath : set)
-                if (nullSwitch(hyperPath.getRecord(), hdtNone, HDT_Record::getType) != hdtFolder)
+                if (hyperPath.getRecordType() != hdtFolder)
                   hyperPath.moveToFolder(folder.getID(), false, false, "");
             }
           }

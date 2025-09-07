@@ -18,6 +18,7 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.time.Instant;
@@ -92,6 +93,32 @@ public interface HDT_Record
   void resolvePointers() throws HDB_InternalError;
   void updateSortKey();
   Iterable<SearchKeyword> getSearchKeys();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns the passed-in record's ID, or -1 if it is null
+   * @param record
+   * @return the passed-in record's ID, or -1 if it is null
+   */
+  static int getIDSafe(HDT_Record record)
+  {
+    return record == null ? -1 : record.getID();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns the passed-in record's type, or hdtNone if it is null
+   * @param record
+   * @return the passed-in record's type, or hdtNone if it is null
+   */
+  static RecordType getTypeSafe(HDT_Record record)
+  {
+    return record == null ? hdtNone : record.getType();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -120,7 +120,7 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
   public boolean isInFavor(HDT_Position position)
   {
-    return posVerdictIDIsInFavor(nullSwitch(getPosVerdict(position), -1, HDT_Record::getID));
+    return posVerdictIDIsInFavor(HDT_Record.getIDSafe(getPosVerdict(position)));
   }
 
   public static boolean posVerdictIDIsInFavor(int id)

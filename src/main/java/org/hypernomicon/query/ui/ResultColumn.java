@@ -167,7 +167,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   static class RecordIDColumn extends ResultColumn { RecordIDColumn()
   {
-    super("ID", cell -> cell.record == null ? -1 : cell.record.getID());
+    super("ID", cell -> HDT_Record.getIDSafe(cell.record));
 
     setPrefWidth(scalePropertyValueForDPI(ID_COL_WIDTH));
 

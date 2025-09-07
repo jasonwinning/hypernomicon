@@ -335,7 +335,7 @@ public class HyperCB implements CommitableWrapper
 
   public void selectIDofRecord(HDT_Record record)
   {
-    selectID(record == null ? -1 : record.getID());
+    selectID(HDT_Record.getIDSafe(record));
   }
 
 //---------------------------------------------------------------------------

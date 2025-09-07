@@ -53,7 +53,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 //---------------------------------------------------------------------------
 
   public HDT_ObjType get()        { return relSet.getObjectCount(subj) == 0 ? null : relSet.getObject(subj, 0); }
-  public int getID()              { return nullSwitch(get(), -1, HDT_Record::getID); }
+  public int getID()              { return HDT_Record.getIDSafe(get()); }
   public boolean isNull()         { return get() == null; }
   public boolean isNotNull()      { return get() != null; }
 

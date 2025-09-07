@@ -105,7 +105,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   @FXML public TextField tfFirst, tfLast;
 
-  private final Map<Tab, InvestigationView> invViews = new HashMap<>();
+  private final Map<Tab, InvestigationView> tabToInvView = new HashMap<>();
   private final HyperTable htPersonInst, htWorks, htArguments;
   private final HyperCB hcbRank, hcbStatus, hcbSubfield;
   private final MainTextWrapper mainText;
@@ -487,7 +487,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         typeName = HDT_Work.addFileIndicator(typeName, work);
 
-        row.setCellValue(1, workType == null ? -1 : workType.getID(), typeName, hdtWorkType);
+        row.setCellValue(1, HDT_Record.getIDSafe(workType), typeName, hdtWorkType);
 
         String roleText = "";
         if (work.personIsEditor(curPerson)) roleText = "Ed";
@@ -1019,7 +1019,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     return tab.equals(tabOverview) ?
       mainText
     :
-      nullSwitch(invViewByTab(tab), null, iV -> iV.textWrapper);
+      nullSwitch(tabToInvView.get(tab), null, iV -> iV.textWrapper);
   }
 
 //---------------------------------------------------------------------------
@@ -1088,17 +1088,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private InvestigationView invViewByTab(Tab tab)
-  {
-    return invViews.get(tab);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private InvestigationView invViewByRecord(HDT_Investigation record)
   {
-    return findFirst(invViews.values(), iV -> iV.record == record);
+    return findFirst(tabToInvView.values(), iV -> iV.record == record);
   }
 
 //---------------------------------------------------------------------------
@@ -1131,7 +1123,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     tpPerson.getTabs().add(tpPerson.getTabs().size() - 1, iV.tab);
 
-    invViews.put(iV.tab, iV);
+    tabToInvView.put(iV.tab, iV);
 
     return iV;
   }
@@ -1144,7 +1136,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     if (oldValue == tabOverview)
       mainText.hide();
     else if (oldValue != tabNew)
-      nullSwitch(invViewByTab(oldValue), iV -> iV.textWrapper.hide());
+      nullSwitch(tabToInvView.get(oldValue), iV -> iV.textWrapper.hide());
 
     if (newValue == tabNew)
     {
@@ -1167,7 +1159,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       return;
     }
 
-    InvestigationView iV = invViewByTab(newValue);
+    InvestigationView iV = tabToInvView.get(newValue);
     assert(iV != null);
     assert(iV.record != null);
 
@@ -1191,7 +1183,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private boolean saveInvestigations(InvestigationView ivNotToSave)
   {
-    for (InvestigationView iV : invViews.values())
+    for (InvestigationView iV : tabToInvView.values())
     {
       if (ivNotToSave == iV) continue;
 
@@ -1237,7 +1229,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     // Now reorder the investigations to match tabs
     // --------------------------------------------
 
-    var invStream = tpPerson.getTabs().stream().map(this::invViewByTab)
+    var invStream = tpPerson.getTabs().stream().map(tabToInvView::get)
                                                .filter(Objects::nonNull)
                                                .map(InvestigationView::getRecord);
 
@@ -1251,8 +1243,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private void clearInvestigations()
   {
-    tpPerson.getTabs().removeAll(invViews.keySet());
-    invViews.clear();
+    tpPerson.getTabs().removeAll(tabToInvView.keySet());
+    tabToInvView.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -1266,7 +1258,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     {
       Tab tab = (Tab) event.getSource();
 
-      InvestigationView view = invViewByTab(tab);
+      InvestigationView view = tabToInvView.get(tab);
 
       if ((view == null) || (view.record == null))
         return;
@@ -1274,7 +1266,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       if ((saveInvestigations(view) == false) || confirmDialog("Are you sure you want to delete the investigation?", false) == false)
         return;
 
-      invViews.remove(view.tab);
+      tabToInvView.remove(view.tab);
       tpPerson.getTabs().remove(view.tab);
 
       saveInvestigations(null);
@@ -1302,7 +1294,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   private void updateInvInWorkRow(HyperTableRow row, HDT_RecordWithAuthors<? extends RecordAuthors> workOrMiscFile)
   {
     HDT_Investigation inv = workOrMiscFile.investigationStream().findFirst().orElse(null);
-    row.setCellValue(3, inv == null ? -1 : inv.getID(), getInvText(workOrMiscFile, curPerson), hdtInvestigation);
+    row.setCellValue(3, HDT_Record.getIDSafe(inv), getInvText(workOrMiscFile, curPerson), hdtInvestigation);
   }
 
 //---------------------------------------------------------------------------
@@ -1331,7 +1323,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     HDT_RecordWithAuthors<? extends RecordAuthors> workOrMiscFile = row.getRecord();
 
-    InvestigationsDlgCtrlr dlg = new InvestigationsDlgCtrlr(workOrMiscFile, invViews.values(), curPerson);
+    InvestigationsDlgCtrlr dlg = new InvestigationsDlgCtrlr(workOrMiscFile, tabToInvView.values(), curPerson);
 
     if (dlg.showModal() == false)
       return;

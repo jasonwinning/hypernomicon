@@ -17,12 +17,8 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.model.records.RecordType.*;
-
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-
-import static org.hypernomicon.util.Util.*;
 
 import javafx.scene.control.TreeItem;
 
@@ -36,8 +32,8 @@ public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends Abst
 
   public abstract <HDT_T1 extends HDT_T> HDT_T1 getRecord();
 
-  public RecordType getRecordType        () { return nullSwitch(getRecord(), hdtNone, HDT_Record::getType); }
-  public int        getRecordID          () { return nullSwitch(getRecord(), -1, HDT_Record::getID); }
+  public RecordType getRecordType        () { return HDT_Record.getTypeSafe(getRecord()); }
+  public int        getRecordID          () { return HDT_Record.getIDSafe  (getRecord()); }
   protected TreeItem<RowType> getTreeItem() { return null; }
 
 //---------------------------------------------------------------------------
@@ -45,9 +41,7 @@ public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends Abst
 
   <HDT_T1 extends HDT_T> HDT_T1 getRecordByType(RecordType recordType)
   {
-    HDT_T1 record = getRecord();
-
-    return (recordType == hdtNone) || ((record != null) && (record.getType() == recordType)) ? record : null;
+    return getRecordType() == recordType ? getRecord() : null;
   }
 
 //---------------------------------------------------------------------------

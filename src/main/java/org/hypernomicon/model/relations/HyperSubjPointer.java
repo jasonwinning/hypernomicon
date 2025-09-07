@@ -19,8 +19,6 @@ package org.hypernomicon.model.relations;
 
 import org.hypernomicon.model.records.HDT_Record;
 
-import static org.hypernomicon.util.Util.*;
-
 import java.util.Objects;
 
 //---------------------------------------------------------------------------
@@ -47,7 +45,7 @@ public class HyperSubjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType exten
   public HDT_SubjType get()  { return relSet.getSubjectCount(obj) == 0 ? null : relSet.getSubject(obj, 0); }
   public boolean isNull()    { return get() == null; }
   public boolean isNotNull() { return get() != null; }
-  public int getID()         { return nullSwitch(get(), -1, HDT_Record::getID); }
+  public int getID()         { return HDT_Record.getIDSafe(get()); }
 
   @Override public int hashCode()           { return Objects.hash(get()); }
   @Override public boolean equals(Object o) { return (o instanceof HyperSubjPointer<?, ?> ptr) && (ptr.get() == get()); }

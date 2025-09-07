@@ -85,7 +85,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 
   public HDT_RecordWithPath getRecord()     { return record; }
-  public RecordType         getRecordType() { return record == null ? hdtNone : record.getType(); }
+  public RecordType         getRecordType() { return HDT_Record.getTypeSafe(record); }
   public FilePath           getFileName()   { return fileName; }
   public HDT_Folder         parentFolder()  { return folderPtr == null ? folder : folderPtr.get(); }
 

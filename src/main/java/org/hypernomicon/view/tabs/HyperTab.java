@@ -107,7 +107,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public boolean getUseTextViewInfo()      { return useTextViewInfo; }
   public void rescale()                    { }
   public int recordCount()                 { return db.records(type()).size(); }
-  public final int activeID()              { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
   public int recordNdx()                   { return recordCount() < 1 ? -1 : nullSwitch(activeRecord(), -1, HDT_Record::keyNdx); }
   public final HyperView<HDT_CT> getView() { return view; }
   public HDT_CT viewRecord()               { return view.getViewRecord(); }

@@ -271,15 +271,16 @@ public final class Const
   {
     public static final String
 
-      PERSON      = "personID",
-      DEBATE      = "debateID",
-      INSTITUTION = "institutionID",
-      POSITION    = "positionID",
-      ARGUMENT    = "argumentID",
-      TERM        = "termID",
-      WORK        = "workID",
-      FILE        = "fileID",
-      NOTE        = "noteID";
+      PERSON        = "personID",
+      DEBATE        = "debateID",
+      INSTITUTION   = "institutionID",
+      INVESTIGATION = "investigationID",
+      POSITION      = "positionID",
+      ARGUMENT      = "argumentID",
+      CONCEPT       = "conceptID",
+      WORK          = "workID",
+      FILE          = "fileID",
+      NOTE          = "noteID";
 
     private RecordIDPrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }

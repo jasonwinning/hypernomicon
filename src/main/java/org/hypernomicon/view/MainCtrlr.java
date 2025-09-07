@@ -1498,18 +1498,16 @@ public final class MainCtrlr
         }
       }
 
-      db.prefs.putInt(RecordIDPrefKey.PERSON     , personHyperTab  ().activeID());
-
-
-
-      db.prefs.putInt(RecordIDPrefKey.INSTITUTION, instHyperTab    ().activeID());
-      db.prefs.putInt(RecordIDPrefKey.DEBATE     , debateHyperTab  ().activeID());
-      db.prefs.putInt(RecordIDPrefKey.POSITION   , positionHyperTab().activeID());
-      db.prefs.putInt(RecordIDPrefKey.ARGUMENT   , argumentHyperTab().activeID());
-      db.prefs.putInt(RecordIDPrefKey.WORK       , workHyperTab    ().activeID());
-      db.prefs.putInt(RecordIDPrefKey.TERM       , termHyperTab    ().activeID());
-      db.prefs.putInt(RecordIDPrefKey.FILE       , fileHyperTab    ().activeID());
-      db.prefs.putInt(RecordIDPrefKey.NOTE       , noteHyperTab    ().activeID());
+      db.prefs.putInt(RecordIDPrefKey.PERSON       , HDT_Record.getIDSafe(personHyperTab  ().activeRecord       ()));
+      db.prefs.putInt(RecordIDPrefKey.INVESTIGATION, HDT_Record.getIDSafe(personHyperTab  ().getCurInvestigation()));
+      db.prefs.putInt(RecordIDPrefKey.INSTITUTION  , HDT_Record.getIDSafe(instHyperTab    ().activeRecord       ()));
+      db.prefs.putInt(RecordIDPrefKey.DEBATE       , HDT_Record.getIDSafe(debateHyperTab  ().activeRecord       ()));
+      db.prefs.putInt(RecordIDPrefKey.POSITION     , HDT_Record.getIDSafe(positionHyperTab().activeRecord       ()));
+      db.prefs.putInt(RecordIDPrefKey.ARGUMENT     , HDT_Record.getIDSafe(argumentHyperTab().activeRecord       ()));
+      db.prefs.putInt(RecordIDPrefKey.WORK         , HDT_Record.getIDSafe(workHyperTab    ().activeRecord       ()));
+      db.prefs.putInt(RecordIDPrefKey.CONCEPT      , HDT_Record.getIDSafe(termHyperTab    ().viewRecord         ()));
+      db.prefs.putInt(RecordIDPrefKey.FILE         , HDT_Record.getIDSafe(fileHyperTab    ().activeRecord       ()));
+      db.prefs.putInt(RecordIDPrefKey.NOTE         , HDT_Record.getIDSafe(noteHyperTab    ().activeRecord       ()));
 
       RecordType startingTypeForNextTime = viewSequence.lastActiveRecordType();
 
@@ -2327,17 +2325,27 @@ public final class MainCtrlr
       typeToMostRecentlyViewedRecord.putIfAbsent(record.getType(), record);
     }
 
-    saveViewToViewsTab(new HyperView<>(personTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPerson     , RecordIDPrefKey.PERSON     )));
+    HDT_Record invRecord = db.investigations.getByID(db.prefs.getInt(RecordIDPrefKey.INVESTIGATION, -1));
+
+    if (invRecord != null)
+      saveViewToViewsTab(new HyperView<>(personTabEnum, invRecord));
+    else
+    {
+      invRecord               = getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtInvestigation, RecordIDPrefKey.INVESTIGATION);
+      HDT_Record personRecord = getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPerson       , RecordIDPrefKey.PERSON       );
+
+      if ((invRecord != null) && ((personRecord == null) || invRecord.getViewDate().isAfter(personRecord.getViewDate())))
+        saveViewToViewsTab(new HyperView<>(personTabEnum, invRecord));
+      else
+        saveViewToViewsTab(new HyperView<>(personTabEnum, personRecord));
+    }
+
     saveViewToViewsTab(new HyperView<>(instTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtInstitution, RecordIDPrefKey.INSTITUTION)));
     saveViewToViewsTab(new HyperView<>(debateTabEnum  , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtDebate     , RecordIDPrefKey.DEBATE     )));
     saveViewToViewsTab(new HyperView<>(positionTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtPosition   , RecordIDPrefKey.POSITION   )));
     saveViewToViewsTab(new HyperView<>(argumentTabEnum, getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtArgument   , RecordIDPrefKey.ARGUMENT   )));
     saveViewToViewsTab(new HyperView<>(workTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtWork       , RecordIDPrefKey.WORK       )));
-
-    HDT_Concept concept = nullSwitch((HDT_Term) getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtTerm, RecordIDPrefKey.TERM), null, term -> term.concepts.getFirst());
-
-    saveViewToViewsTab(new HyperView<>(termTabEnum,     concept));
-
+    saveViewToViewsTab(new HyperView<>(termTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtConcept    , RecordIDPrefKey.CONCEPT    )));
     saveViewToViewsTab(new HyperView<>(fileTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtMiscFile   , RecordIDPrefKey.FILE       )));
     saveViewToViewsTab(new HyperView<>(noteTabEnum    , getInitialTabRecord(typeToMostRecentlyViewedRecord, hdtNote       , RecordIDPrefKey.NOTE       )));
     saveViewToViewsTab(new HyperView<>(queryTabEnum   , null));

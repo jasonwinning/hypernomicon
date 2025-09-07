@@ -473,7 +473,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     hcbDefaultChapterWorkType.addListener((ov, nv) ->
     {
-      int workTypeID = nullSwitch(HyperTableCell.getRecord(nv), -1, HDT_Record::getID);
+      int workTypeID = HDT_Record.getIDSafe(HyperTableCell.getRecord(nv));
       db.prefs.putInt(PrefKey.DEFAULT_CHAPTER_WORK_TYPE_ID, workTypeID);
     });
   }
