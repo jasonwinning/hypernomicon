@@ -281,7 +281,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
     addRow(bibFieldEnum, null);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings("rawtypes")
   private void addRow(BibFieldEnum bibFieldEnum, HDT_Work destWork) throws IOException
   {
     BibFieldRow row = BibFieldRow.create(bibFieldEnum, bibDataList, destWork);

@@ -130,13 +130,13 @@ public final class MainCtrlr
 
   @FXML Tab tabOmniSelector;
   @FXML private TableView<HyperTableRow> tvFind;
-  @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
+  @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, midAnchorPane;
   @FXML private Button btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow, btnSave,
                        btnDelete, btnRevert, btnBack, btnForward, btnSaveAll, btnPrevResult, btnNextResult;
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
-  @FXML private GridPane gpBottom;
-  @FXML private HBox topHBox;
+  @FXML private GridPane gpFindTable;
+  @FXML private HBox topHBox, bottomToolBar, hbRecord;
   @FXML private ImageView ivDates;
   @FXML private Label lblProgress, lblFindToast;
   @FXML private Menu mnuFolders;
@@ -153,6 +153,7 @@ public final class MainCtrlr
   @FXML private ProgressBar progressBar;
   @FXML private SeparatorMenuItem mnuBibImportSeparator;
   @FXML private SplitMenuButton btnGoTo, btnCreateNew;
+  @FXML private StackPane lowerStackPane;
   @FXML private Tab tabViewSelector, tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML private TabPane selectorTabPane, tabPane;
   @FXML private TextField tfID, tfOmniGoTo, tfRecord;
@@ -560,7 +561,8 @@ public final class MainCtrlr
                                   .toList());
     hideFindTable();
 
-    setFontSize(rootNode);
+    tfRecord.setText("");
+    tfID.setText("");
 
 //---------------------------------------------------------------------------
 
@@ -810,6 +812,8 @@ public final class MainCtrlr
       ensureVisible(stage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
     }
 
+    setFontSize(rootNode);
+
     stage.show();
 
     scaleNodeForDPI(rootNode);
@@ -817,6 +821,17 @@ public final class MainCtrlr
     forEachHyperTab(HyperTab::rescale);
 
     forEachHyperTab(HyperTab::setDividerPositions);
+
+    lockHeightTo(tfRecord, btnBack, btnForward, btnIncrement, btnDecrement, btnTextSearch, btnGoTo, btnPrevResult, btnNextResult,
+                 cbGoTo, ctfOmniGoTo, btnSave, btnRevert, btnDelete, btnCreateNew, mbCreateNew, apGoTo, apListGoTo, (Region)ctfOmniGoTo.getParent());
+
+    ctfOmniGoTo.widthProperty().addListener((obs, ov, nv) ->
+      AnchorPane.setRightAnchor(gpFindTable, apFindBackground.getWidth() - (selectorTabPane.getLayoutX() + nv.doubleValue())));
+
+    noOp(SequentialLayoutWrapper.forPane(bottomToolBar));
+
+    selectorTabPane.layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(lblFindToast, nv.doubleValue()));
+    btnTextSearch  .layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(gpFindTable , nv.doubleValue()));
   }
 
 //---------------------------------------------------------------------------
@@ -1371,9 +1386,7 @@ public final class MainCtrlr
   {
     boolean disabled = !enabled;
 
-    gpBottom.getChildren().forEach(node -> node.setDisable(disabled));
-
-    apStatus.setDisable(false);
+    bottomToolBar.getChildren().stream().filter(node -> node.disableProperty().isBound() == false).forEach(node -> node.setDisable(disabled));
 
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
@@ -2458,7 +2471,6 @@ public final class MainCtrlr
       updateTopicalFolders();
       queryHyperTab().clear(true);
 
-      gpBottom.setDisable(false);
       queryHyperTab().enable(true);
       treeHyperTab().enable(true);
 

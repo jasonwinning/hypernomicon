@@ -216,6 +216,25 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Deletes a specific row from the given {@link GridPane}, shifting all rows
+   * below it up by one index and removing any nodes that were in the deleted row.
+   * <p>
+   * This method:
+   * <ul>
+   *   <li>Identifies all child nodes whose current row index matches {@code rowNdx}
+   *       and marks them for removal.</li>
+   *   <li>Decrements the row index of all child nodes below the deleted row.</li>
+   *   <li>Removes the marked nodes from the grid's children.</li>
+   *   <li>Removes the corresponding {@link javafx.scene.layout.RowConstraints}
+   *       entry from the grid.</li>
+   * </ul>
+   *
+   * @param grid   the {@code GridPane} from which to delete the row
+   * @param rowNdx the zero-based index of the row to delete
+   * @throws IndexOutOfBoundsException if {@code rowNdx} is out of range for the grid's row constraints
+   * @implNote Any nodes without an explicit row index are treated as if they are in row {@code 0}.
+   */
   public static void deleteGridPaneRow(GridPane grid, final int rowNdx)
   {
     Set<Node> deleteNodes = new HashSet<>();
@@ -239,6 +258,25 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Deletes a specific column from the given {@link GridPane}, shifting all columns
+   * to the right of it left by one index and removing any nodes that were in the deleted column.
+   * <p>
+   * This method:
+   * <ul>
+   *   <li>Identifies all child nodes whose current column index matches {@code columnNdx}
+   *       and marks them for removal.</li>
+   *   <li>Decrements the column index of all child nodes to the right of the deleted column.</li>
+   *   <li>Removes the marked nodes from the grid's children.</li>
+   *   <li>Removes the corresponding {@link javafx.scene.layout.ColumnConstraints}
+   *       entry from the grid.</li>
+   * </ul>
+   *
+   * @param grid      the {@code GridPane} from which to delete the column
+   * @param columnNdx the zero-based index of the column to delete
+   * @throws IndexOutOfBoundsException if {@code columnNdx} is out of range for the grid's column constraints
+   * @implNote Any nodes without an explicit column index are treated as if they are in column {@code 0}.
+   */
   public static void deleteGridPaneColumn(GridPane grid, final int columnNdx)
   {
     Set<Node> deleteNodes = new HashSet<>();
@@ -473,6 +511,9 @@ public final class UIUtil
     target.setLayoutX(source.getLayoutX());
     target.setLayoutY(source.getLayoutY());
 
+    HBox.setHgrow(target, HBox.getHgrow(source));
+    VBox.setVgrow(target, VBox.getVgrow(source));
+
     target.setMinSize (source.getMinWidth (), source.getMinHeight ());
     target.setMaxSize (source.getMaxWidth (), source.getMaxHeight ());
     target.setPrefSize(source.getPrefWidth(), source.getPrefHeight());
@@ -688,7 +729,7 @@ public final class UIUtil
     {
       double val = prop.get();
 
-      if (val > 0.0)
+      if ((val > 0.0) && (prop.isBound() == false))
         prop.set(scalePropertyValueForDPI(val));
     }
   }
@@ -1033,6 +1074,90 @@ public final class UIUtil
       if (newValue == null)
         oldValue.setSelected(true);
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Binds all width constraints of each {@code target} region
+   * (minimum, preferred, and maximum) to the current layout width
+   * of the {@code source} region.
+   * <p>
+   * This creates a hard lock: each target's width will always match
+   * the source's actual rendered width, and layout managers will
+   * not be able to resize the targets independently.
+   * </p>
+   * <p>
+   * Because the bindings are one-way from source to target, any
+   * attempt to set a target's width constraints directly will
+   * throw a runtime exception unless the properties are first
+   * unbound.
+   * </p>
+   *
+   * @param source  the region whose actual width will be mirrored;
+   *                must not be {@code null}
+   * @param targets one or more regions whose widths will be locked
+   *                to the source; must not be {@code null} or contain
+   *                {@code null} elements
+   * @throws NullPointerException if {@code source} or any element of
+   *                              {@code targets} is {@code null}
+   */
+  public static void lockWidthTo(Region source, Region... targets)
+  {
+    Objects.requireNonNull(source, "Source region must not be null");
+    Objects.requireNonNull(targets, "Targets array must not be null");
+
+    for (Region target : targets)
+    {
+      Objects.requireNonNull(target, "Target region must not be null");
+
+      target.prefWidthProperty().bind(source.widthProperty());
+      target.maxWidthProperty ().bind(source.widthProperty());
+      target.minWidthProperty ().bind(source.widthProperty());
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Binds all height constraints of each {@code target} region
+   * (minimum, preferred, and maximum) to the current layout height
+   * of the {@code source} region.
+   * <p>
+   * This creates a hard lock: each target's height will always match
+   * the source's actual rendered height, and layout managers will
+   * not be able to resize the targets independently.
+   * </p>
+   * <p>
+   * Because the bindings are one-way from source to target, any
+   * attempt to set a target's height constraints directly will
+   * throw a runtime exception unless the properties are first
+   * unbound.
+   * </p>
+   *
+   * @param source  the region whose actual height will be mirrored;
+   *                must not be {@code null}
+   * @param targets one or more regions whose heights will be locked
+   *                to the source; must not be {@code null} or contain
+   *                {@code null} elements
+   * @throws NullPointerException if {@code source} or any element of
+   *                              {@code targets} is {@code null}
+   */
+  public static void lockHeightTo(Region source, Region... targets)
+  {
+    Objects.requireNonNull(source, "Source region must not be null");
+    Objects.requireNonNull(targets, "Targets array must not be null");
+
+    for (Region target : targets)
+    {
+      Objects.requireNonNull(target, "Target region must not be null");
+
+      target.prefHeightProperty().bind(source.heightProperty());
+      target.maxHeightProperty ().bind(source.heightProperty());
+      target.minHeightProperty ().bind(source.heightProperty());
+    }
   }
 
 //---------------------------------------------------------------------------

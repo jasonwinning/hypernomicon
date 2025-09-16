@@ -39,9 +39,10 @@ public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends Abst
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("unchecked")
   <HDT_T1 extends HDT_T> HDT_T1 getRecordByType(RecordType recordType)
   {
-    return getRecordType() == recordType ? getRecord() : null;
+    return getRecordType() == recordType ? (HDT_T1) getRecord() : null;
   }
 
 //---------------------------------------------------------------------------

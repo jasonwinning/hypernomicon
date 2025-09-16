@@ -140,7 +140,6 @@ class RecordTreeEdge
       }
       else if (relType == rtKeyWork)
       {
-        @SuppressWarnings("unchecked")
         HDT_RecordWithAuthors<? extends RecordAuthors> kwRecord = (HDT_RecordWithAuthors<? extends RecordAuthors>) subj;
 
         Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream(kwRecord, obj.getType()).collect(Collectors.toSet());
@@ -184,7 +183,6 @@ class RecordTreeEdge
 
     if (relType == rtKeyWork)
     {
-      @SuppressWarnings("unchecked")
       HDT_RecordWithAuthors<? extends RecordAuthors> kwRecord = (HDT_RecordWithAuthors<? extends RecordAuthors>) subj;
 
       if (db.keyWorkMentionerStream(kwRecord, false).anyMatch(mentioner -> mentioner == obj))
@@ -211,7 +209,6 @@ class RecordTreeEdge
   {
     if (relType == rtKeyWork)
     {
-      @SuppressWarnings("unchecked")
       HDT_RecordWithAuthors<? extends RecordAuthors> kwRecord = (HDT_RecordWithAuthors<? extends RecordAuthors>) subj;
 
       Set<HDT_RecordWithMainText> mentioners = db.keyWorkMentionerStream(kwRecord, obj.getType()).collect(Collectors.toSet());

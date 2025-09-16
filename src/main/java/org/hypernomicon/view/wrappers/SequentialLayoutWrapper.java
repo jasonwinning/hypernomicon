@@ -17,37 +17,49 @@
 
 package org.hypernomicon.view.wrappers;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ToolBar;
+import javafx.scene.layout.Pane;
 
 import static org.hypernomicon.util.UIUtil.*;
 
 //---------------------------------------------------------------------------
 
-public class ToolBarWrapper
+/**
+ * Public API for managing visibility in sequential layout containers
+ * without leaving gaps when nodes are hidden.
+ */
+public final class SequentialLayoutWrapper
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final ToolBar toolBar;
-  private final Map<Node, Boolean> allItems;
+  private final ObservableList<Node> nodeList;
+  private final Map<Node, Boolean> nodeToVisibleMap;
 
-  private boolean changed = false;
+  private boolean changed = true;
 
 //---------------------------------------------------------------------------
 
-  public ToolBarWrapper(ToolBar toolBar)
+  private SequentialLayoutWrapper(ObservableList<Node> nodeList)
   {
-    this.toolBar = toolBar;
+    this.nodeList = nodeList;
 
-    allItems = new LinkedHashMap<>();
+    nodeToVisibleMap = new LinkedHashMap<>();
 
-    toolBar.getItems().forEach(node -> allItems.put(node, node.isVisible()));
+    nodeList.forEach(node ->
+    {
+      nodeToVisibleMap.put(node, node.isVisible());
+
+      node.visibleProperty().addListener((obs, ov, nv) -> setVisible(nv, node));
+    });
+
+    update();
   }
 
 //---------------------------------------------------------------------------
@@ -56,7 +68,7 @@ public class ToolBarWrapper
   public void setVisibleNoUpdate(boolean newValue, Node... nodes)
   {
     for (Node node : nodes)
-      if (allItems.containsKey(node) && (allItems.put(node, newValue) != newValue))
+      if (nodeToVisibleMap.containsKey(node) && (Boolean.TRUE.equals(nodeToVisibleMap.put(node, newValue)) != newValue))
       {
         changed = true;
 
@@ -72,7 +84,11 @@ public class ToolBarWrapper
   {
     if (changed == false) return;
 
-    toolBar.getItems().setAll(allItems.entrySet().stream().filter(Entry::getValue).map(Entry::getKey).toList());
+    List<Node> newList = nodeToVisibleMap.entrySet().stream().filter(Entry::getValue).map(Entry::getKey).toList();
+
+    if (newList.equals(nodeList)) return;
+
+    nodeList.setAll(newList);
 
     changed = false;
   }
@@ -85,6 +101,50 @@ public class ToolBarWrapper
     setVisibleNoUpdate(newValue, nodes);
 
     update();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Factory methods
+
+  /**
+   * Creates a {@code SequentialLayoutWrapper} for managing the visible state of
+   * nodes within a {@link ToolBar} without leaving empty gaps when nodes are hidden.
+   * <p>
+   * This factory method adapts the given {@code ToolBar} to the sequential layout
+   * management API, allowing you to toggle the visibility of its child nodes
+   * while preserving their order and automatically collapsing space for hidden nodes.
+   * </p>
+   *
+   * @param toolBar the {@code ToolBar} whose child nodes will be managed;
+   *                must not be {@code null}
+   * @return a new {@code SequentialLayoutWrapper} bound to the specified {@code ToolBar}
+   */
+  public static SequentialLayoutWrapper forToolBar(ToolBar toolBar)
+  {
+    return new SequentialLayoutWrapper(toolBar.getItems());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Creates a {@code SequentialLayoutWrapper} for managing the visible state of
+   * nodes within a generic {@link Pane} without leaving empty gaps when nodes are hidden.
+   * <p>
+   * This factory method adapts the given {@code Pane} to the sequential layout
+   * management API, allowing you to toggle the visibility of its child nodes
+   * while preserving their order and automatically collapsing space for hidden nodes.
+   * </p>
+   *
+   * @param pane the {@code Pane} whose child nodes will be managed;
+   *             must not be {@code null}
+   * @return a new {@code SequentialLayoutWrapper} bound to the specified {@code Pane}
+   */
+  public static SequentialLayoutWrapper forPane(Pane pane)
+  {
+    return new SequentialLayoutWrapper(pane.getChildren());
   }
 
 //---------------------------------------------------------------------------

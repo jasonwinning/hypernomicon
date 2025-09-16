@@ -485,45 +485,35 @@ public final class Util
   /**
    * Runs a task inside the JavaFX thread with a specified delay and number of cycles.
    *
-   * @param cycles the number of times the task should be executed
-   * @param delayMS the delay in milliseconds before each execution of the task
-   * @param runnable the task to be executed
-   */
-  public static void runDelayedInFXThread1(int cycles, int delayMS, Runnable runnable)
-  {
-    Timeline timeline = new Timeline();
-    timeline.setCycleCount(cycles);
-
-    timeline.getKeyFrames().add(new KeyFrame(Duration.millis(delayMS), event -> runnable.run()));
-    timeline.play();
-  }
-
-  /**
-   * Runs a task inside the JavaFX thread with a specified delay and number of cycles.
-   *
    * @param cycles the number of times the task should be executed (must be positive)
    * @param delayMS the delay in milliseconds before each execution of the task (must be non-negative)
    * @param runnable the task to be executed
+   * @return the {@link Timeline} controlling the scheduled executions,
+   *         already started via {@link Timeline#play()}, which can be
+   *         paused, stopped, or queried by the caller
    * @throws IllegalArgumentException if cycles is less than 1 or delayMS is negative
    */
-  public static void runDelayedInFXThread(int cycles, int delayMS, Runnable runnable)
+  public static Timeline runDelayedInFXThread(int cycles, int delayMS, Runnable runnable)
   {
+    Objects.requireNonNull(runnable, "Runnable must not be null");
+
     if (cycles < 1)
       throw new IllegalArgumentException("Cycle count must be at least 1");
 
     if (delayMS < 0)
       throw new IllegalArgumentException("Delay must be non-negative");
 
-    Timeline timeline = new Timeline();
-    timeline.setCycleCount(cycles);
-
-    timeline.getKeyFrames().add(new KeyFrame(Duration.millis(delayMS), event ->
+    Timeline timeline = new Timeline(new KeyFrame(Duration.millis(delayMS), _ ->
     {
       try { runnable.run(); }
       catch (Exception e) { logThrowable(e); }
     }));
 
+    timeline.setCycleCount(cycles);
+
     timeline.play();
+
+    return timeline;
   }
 
 //---------------------------------------------------------------------------
@@ -634,6 +624,52 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
+   * Schedules a task to run on the JavaFX Application Thread after a specified
+   * number of JavaFX layout/render pulses have occurred.
+   * <p>
+   * A "pulse" in JavaFX is a single iteration of the UI update cycle, during
+   * which layout, CSS, and rendering are processed. This method defers execution
+   * by chaining {@link Platform#runLater(Runnable)} calls, decrementing the
+   * {@code pulses} counter on each pulse until it reaches zero.
+   * </p>
+   * <p>
+   * If {@code pulses} is less than or equal to zero, the {@code runnable} is
+   * executed immediately if already on the JavaFX Application Thread, or
+   * scheduled via {@link Platform#runLater(Runnable)} if called from a
+   * background thread.
+   * </p>
+   * <p>
+   * This method is useful when you need to wait for one or more layout passes
+   * before running code that depends on updated node bounds, CSS application,
+   * or scene graph state.
+   * </p>
+   *
+   * @param pulses   the number of JavaFX pulses to wait before executing the task;
+   *                 if zero or negative, the task runs immediately (or is queued
+   *                 for immediate execution on the FX thread)
+   * @param runnable the task to execute on the JavaFX Application Thread;
+   *                 must not be {@code null}
+   * @throws NullPointerException if {@code runnable} is {@code null}
+   */
+  public static void runInFXThreadAfterPulses(int pulses, Runnable runnable)
+  {
+    if (pulses <= 0)
+    {
+      if (Platform.isFxApplicationThread())
+        runnable.run();
+      else
+        Platform.runLater(runnable);
+    }
+    else
+    {
+      Platform.runLater(() -> runInFXThreadAfterPulses(pulses - 1, runnable));
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Ensures that the given Runnable is executed on the JavaFX Application Thread.
    * If the current thread is the JavaFX Application Thread, it runs the Runnable directly.
    * If not, it schedules the Runnable to be executed on the JavaFX Application Thread.
@@ -646,6 +682,9 @@ public final class Util
   {
     runInFXThread(runnable, false);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   /**
    * Runs a Runnable in the JavaFX Application Thread.

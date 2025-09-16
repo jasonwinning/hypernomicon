@@ -111,7 +111,7 @@ public final class BibManager extends NonmodalWindow
   private final BibEntryTable entryTable;
   private final CollectionTree collTree;
   private final CustomTextField searchField;
-  private final ToolBarWrapper toolBarWrapper;
+  private final SequentialLayoutWrapper toolBarWrapper;
 
   public static final Property<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
 
@@ -149,7 +149,7 @@ public final class BibManager extends NonmodalWindow
 
     searchField = setupSearchField();
 
-    toolBarWrapper = new ToolBarWrapper(toolBar);
+    toolBarWrapper = SequentialLayoutWrapper.forToolBar(toolBar);
     toolBarWrapper.setVisible(false, btnUnassign, progressBar, btnDelete, btnPreviewWindow); // Latter 2 are not yet supported. (Not sure if the preview button is needed?)
 
     btnAssign      .setOnAction(event -> assign  (tableView.getSelectionModel().getSelectedItem()));

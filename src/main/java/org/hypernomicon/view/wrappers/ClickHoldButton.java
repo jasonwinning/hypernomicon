@@ -23,18 +23,16 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Side;
-import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 
 //---------------------------------------------------------------------------
 
@@ -71,19 +69,44 @@ public class ClickHoldButton
     btnMenu = new MenuButton("");
     btnMenu.setPopupSide(side);
     this.btn = btn;
+
     Parent parent = btn.getParent();
 
-    if ((parent instanceof Pane pane) && !(parent instanceof GridPane))
+    if (parent == null)
     {
-      List<Node> children = pane.getChildren();
-      children.add(children.indexOf(btn), btnMenu);
+      btn.parentProperty().addListener(new ChangeListener<>()
+      {
+        // This is cleaner than using a lambda because it allows referring to "this"
+
+        @Override public void changed(ObservableValue<? extends Parent> obs, Parent ov, Parent nv)
+        {
+          btn.parentProperty().removeListener(this);  // Remove this listener so it only runs once
+
+          waitForParent();
+        }
+
+        private void waitForParent()
+        {
+          Parent p = btn.getParent();
+          if (p != null)
+            // Wait two pulses so ToolBarSkin finishes re-parenting/CSS/layout before modifying children
+            runInFXThreadAfterPulses(2, () -> addMenuButtonToParent(p));
+          else
+            runInFXThreadAfterPulses(1, this::waitForParent);
+        }
+      });
     }
     else
-      errorPopup("Unsupported parent type for ClickHoldButton");
+    {
+      addMenuButtonToParent(parent);
+    }
 
     copyRegionLayout(btn, btnMenu);
 
     btnMenu.visibleProperty().bind(btn.disabledProperty().not());
+
+    lockWidthTo (btn, btnMenu);
+    lockHeightTo(btn, btnMenu);
 
     btnMenu.getItems().clear();
 
@@ -134,6 +157,42 @@ public class ClickHoldButton
       mouseDown = false;
       mouseDownCtr++;
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addMenuButtonToParent(Parent parent)
+  {
+    if (parent == null) return;
+
+    if ((parent instanceof Pane pane) && !(parent instanceof GridPane))
+    {
+      // Find the index of the button in the parent's children list
+      int ndxInParent = pane.getChildren().indexOf(btn);
+
+      if (ndxInParent == -1)
+        throw new IllegalArgumentException("Button is not a child of the given parent");
+
+      // Create the StackPane
+      StackPane stackPane = new StackPane();
+
+      // Replace the button with the stack in the parent
+      pane.getChildren().set(ndxInParent, stackPane);
+
+      // Add MenuButton first, then Button on top
+      stackPane.getChildren().addAll(btnMenu, btn);
+
+      // Copy layout constraints from the original button to the stack
+      copyRegionLayout(btn, stackPane);
+
+      btnMenu.setFocusTraversable(false);
+
+      lockWidthTo (btn, stackPane);
+      lockHeightTo(btn, stackPane);
+    }
+    else
+      throw new IllegalArgumentException("Unsupported parent type for ClickHoldButton");
   }
 
 //---------------------------------------------------------------------------

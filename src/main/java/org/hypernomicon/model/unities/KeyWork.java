@@ -172,7 +172,6 @@ public class KeyWork implements Comparable<KeyWork>
 
   @Override public int hashCode()       { return recordPtr.hashCode(); }
 
-  @SuppressWarnings("unchecked")
   public HDT_RecordWithAuthors<? extends RecordAuthors> getRecord() { return (HDT_RecordWithAuthors<? extends RecordAuthors>) recordPtr.getRecord(); }
 
 //---------------------------------------------------------------------------
