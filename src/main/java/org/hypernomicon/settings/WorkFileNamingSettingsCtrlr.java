@@ -198,7 +198,6 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       extdc.showModal();
 
       setExclWorkTypesCellValue(extdc.exclTypes(), row);
-      row.setCellValue(1, extdc.exclTypes().map(HDT_WorkType::name).collect(Collectors.joining("; ")), hdtNone);
     });
 
     initColumn(2);

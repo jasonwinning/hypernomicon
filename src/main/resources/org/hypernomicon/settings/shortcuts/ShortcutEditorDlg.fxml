@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2025 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane minWidth="600.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.shortcuts.ShortcutEditorDlgCtrlr">
+  <VBox spacing="10" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <padding>
+      <Insets topRightBottomLeft="14" />
+    </padding>
+
+    <Label fx:id="titleLabel" style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Edit Shortcut" />
+
+    <GridPane alignment="BASELINE_LEFT" hgap="8" vgap="8">
+      <columnConstraints>
+        <ColumnConstraints halignment="RIGHT" minWidth="100" />
+        <ColumnConstraints hgrow="ALWAYS" />
+      </columnConstraints>
+
+      <rowConstraints>
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+      </rowConstraints>
+      <Label text="Modifiers:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+      <HBox spacing="12" GridPane.columnIndex="1" GridPane.rowIndex="0">
+        <CheckBox fx:id="primaryCheck" text="Ctrl" />
+        <CheckBox fx:id="altCheck" text="Alt" />
+        <CheckBox fx:id="shiftCheck" text="Shift" />
+        <CheckBox fx:id="secondaryCheck" managed="false" text="Control" visible="false" />
+        <CheckBox fx:id="superCheck" managed="false" text="Super" visible="false" />
+      </HBox>
+
+      <Label text="Key:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+      <ComboBox fx:id="cbKey" prefWidth="320" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+      <Label text="Shortcut:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+      <Label fx:id="previewLabel" style="-fx-font-family: -fx-font-family; -fx-text-fill: -fx-text-base-color;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+      <Label text="Conflicts:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+      <Label fx:id="conflictLabel" style="-fx-text-fill: -fx-text-inner-color;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+    </GridPane>
+    <HBox alignment="CENTER" spacing="6.0">
+      <Button fx:id="btnOK" defaultButton="true" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="80.0" text="OK" />
+      <Button fx:id="btnRemove" mnemonicParsing="false" text="Remove Shortcut" />
+      <Button cancelButton="true" maxWidth="80.0" minWidth="80.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="80.0" text="Cancel" />
+    </HBox>
+  </VBox>
+</AnchorPane>

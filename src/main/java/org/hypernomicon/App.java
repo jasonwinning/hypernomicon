@@ -31,6 +31,9 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.*;
+import org.hypernomicon.settings.shortcuts.Shortcut;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -65,11 +68,15 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
 
+import com.google.common.collect.Table;
+
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.stage.Stage;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -99,6 +106,8 @@ public final class App extends Application
 
   public static App app;
   public static MainCtrlr ui;
+
+  public Property<Table<ShortcutContext, ShortcutAction, Shortcut>> shortcuts = new SimpleObjectProperty<>();
 
   public static double displayScale;
   public static boolean jxBrowserInitialized = false,
@@ -269,6 +278,8 @@ public final class App extends Application
   @Override public void start(Stage stage)
   {
     stage.setTitle(appTitle);
+
+    shortcuts.setValue(Shortcut.loadFromPrefs());
 
     try
     {

@@ -1004,6 +1004,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
         newInstClick(row, "", -1);
         break;
 
+      case hdtInvestigation :
+        newInvestigation();
+        break;
+
       default:
         break;
     }
@@ -1131,6 +1135,24 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void newInvestigation()
+  {
+    if ((db.isOnline() == false) || (curPerson == null))
+      return;
+
+    HDT_Investigation inv = db.createNewBlankRecord(hdtInvestigation);
+    inv.person.set(curPerson);
+    curInvestigation = inv;
+
+    InvestigationView iV = addInvView(inv, false);
+    tpPerson.getSelectionModel().select(iV.tab);
+
+    Platform.runLater(iV.tfName::requestFocus);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void tpPersonChange(Tab oldValue, Tab newValue)
   {
     if (oldValue == tabOverview)
@@ -1140,14 +1162,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     if (newValue == tabNew)
     {
-      HDT_Investigation inv = db.createNewBlankRecord(hdtInvestigation);
-      inv.person.set(curPerson);
-      curInvestigation = inv;
-
-      InvestigationView iV = addInvView(inv, false);
-      tpPerson.getSelectionModel().select(iV.tab);
-
-      Platform.runLater(iV.tfName::requestFocus);
+      newInvestigation();
       return;
     }
 

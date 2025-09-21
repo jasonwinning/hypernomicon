@@ -41,7 +41,7 @@ public abstract class AbstractHTC implements HyperTableCell
 
 //---------------------------------------------------------------------------
 
-  AbstractHTC(boolean sortToBottom)
+  protected AbstractHTC(boolean sortToBottom)
   {
     this.sortToBottom = sortToBottom;
   }

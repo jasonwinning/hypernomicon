@@ -61,6 +61,9 @@ import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.ui.*;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
+import org.hypernomicon.settings.shortcuts.Shortcut;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.testTools.TestConsoleDlgCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
 import org.hypernomicon.tree.*;
@@ -387,7 +390,7 @@ public final class MainCtrlr
 
     htFind = new HyperTable(tvFind, 1, false, TablePrefKey.FIND); htFind.disableRefreshAfterCellUpdate = true;
 
-    htFind.addIconCol();
+    htFind.addIconCol ();
     htFind.addCol     (hdtNone, ctIncremental);
     htFind.addLabelCol(hdtNone, smStandard);
     htFind.addLabelCol(hdtNone, smTextSimple);
@@ -839,46 +842,9 @@ public final class MainCtrlr
 
   private void initInputHandlers()
   {
-    Scene scene = stage.getScene();
+    registerShortcuts();
 
-    scene.getAccelerators().putAll(Map.of
-    (
-      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) saveAllToXML(true, true, false, false); },
-      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), this::hideFindTable,
-
-      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () ->
-      {
-        if (db.isOnline())
-          omniFocus(OmniSearchMode.currentDesc, true);
-      },
-
-      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), () ->
-      {
-        if (db.isOnline())
-        {
-          if ((omniSearchMode.getValue() == OmniSearchMode.asYouType) && ctfOmniGoTo.isFocused())
-            omniFocus(OmniSearchMode.allFields, true);
-          else
-            omniFocus(OmniSearchMode.asYouType, true);
-        }
-      }
-    ));
-
-    scene.getAccelerators().putAll(IS_OS_MAC ? Map.of
-    (
-      new KeyCodeCombination(KeyCode.Y            , KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) chbBack.showMenu(); },
-      new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN                           ), this::nextSearchResult,
-      new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), this::previousSearchResult,
-      new KeyCodeCombination(KeyCode.OPEN_BRACKET , KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnBackClick),
-      new KeyCodeCombination(KeyCode.CLOSE_BRACKET, KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnForwardClick)
-    )
-    : Map.of
-    (
-      new KeyCodeCombination(KeyCode.F3                              ), this::nextSearchResult,
-      new KeyCodeCombination(KeyCode.F3   , KeyCombination.SHIFT_DOWN), this::previousSearchResult,
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN  ), () -> Platform.runLater(this::btnBackClick),
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN  ), () -> Platform.runLater(this::btnForwardClick)
-    ));
+    app.shortcuts.addListener((obs, ov, nv) -> registerShortcuts());
 
 //---------------------------------------------------------------------------
 
@@ -944,6 +910,106 @@ public final class MainCtrlr
 
       event.consume();
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void registerShortcuts()
+  {
+    Scene scene = stage.getScene();
+
+    // Clear old accelerators first
+
+    scene.getAccelerators().clear();
+
+  //---------------------------------------------------------------------------
+
+    // Hard-coded shortcuts
+
+    scene.getAccelerators().putAll(Map.of
+    (
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) saveAllToXML(true, true, false, false); },
+      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), this::hideFindTable,
+
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () ->
+      {
+        if (db.isOnline())
+          omniFocus(OmniSearchMode.currentDesc, true);
+      },
+
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), () ->
+      {
+        if (db.isOnline())
+        {
+          if ((omniSearchMode.getValue() == OmniSearchMode.asYouType) && ctfOmniGoTo.isFocused())
+            omniFocus(OmniSearchMode.allFields, true);
+          else
+            omniFocus(OmniSearchMode.asYouType, true);
+        }
+      }
+    ));
+
+    scene.getAccelerators().putAll(IS_OS_MAC ? Map.of
+    (
+      new KeyCodeCombination(KeyCode.Y            , KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) chbBack.showMenu(); },
+      new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN                           ), this::nextSearchResult,
+      new KeyCodeCombination(KeyCode.G            , KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), this::previousSearchResult,
+      new KeyCodeCombination(KeyCode.OPEN_BRACKET , KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnBackClick),
+      new KeyCodeCombination(KeyCode.CLOSE_BRACKET, KeyCombination.SHORTCUT_DOWN                           ), () -> Platform.runLater(this::btnForwardClick)
+    )
+    : Map.of
+    (
+      new KeyCodeCombination(KeyCode.F3                              ), this::nextSearchResult,
+      new KeyCodeCombination(KeyCode.F3   , KeyCombination.SHIFT_DOWN), this::previousSearchResult,
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN  ), () -> Platform.runLater(this::btnBackClick),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN  ), () -> Platform.runLater(this::btnForwardClick)
+    ));
+
+  //---------------------------------------------------------------------------
+
+    // User-defined shortcuts
+
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewRecord, () ->
+    {
+      if (db.isOnline() && (activeTabEnum() != treeTabEnum) && (activeTabEnum() != queryTabEnum))
+        createNew(activeType());
+    });
+
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewPerson     , () -> { if (db.isOnline()) createNew(hdtPerson     ); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewInstitution, () -> { if (db.isOnline()) createNew(hdtInstitution); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewWork       , () -> { if (db.isOnline()) createNew(hdtWork       ); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewMiscFile   , () -> { if (db.isOnline()) createNew(hdtMiscFile   ); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewDebate     , () -> { if (db.isOnline()) createNew(hdtDebate     ); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewPosition   , () -> { if (db.isOnline()) createNew(hdtPosition   ); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewArgument   , () -> { if (db.isOnline()) createNew(hdtArgument   ); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewNote       , () -> { if (db.isOnline()) createNew(hdtNote       ); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewTerm       , () -> { if (db.isOnline()) createNew(hdtTerm       ); });
+
+    assignShortcut(ShortcutContext.PersonsTab, ShortcutAction.CreateNewInvestigation, () ->
+    {
+      if (db.isOnline() && (activeTabEnum() == personTabEnum) && (activeRecord() != null))
+        personHyperTab().newInvestigation();
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void assignShortcut(ShortcutContext context, ShortcutAction action, Runnable handler)
+  {
+    Scene scene = stage.getScene();
+
+    Shortcut shortcut = app.shortcuts.getValue().get(context, action);
+
+    if ((shortcut == null) || (shortcut.keyCombo == null))
+      return;
+
+    KeyCombination kc = shortcut.keyCombo.toJfxKeyCombination();
+    if (kc == null)
+      return;
+
+    scene.getAccelerators().put(kc, handler);
   }
 
 //---------------------------------------------------------------------------

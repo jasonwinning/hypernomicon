@@ -90,7 +90,7 @@ public class SettingsDlgCtrlr extends ModalDialog
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabWebButtons;
+  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabWebButtons, tabShortcuts;
   @FXML private TabPane tpMain;
   @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfLogPath, tfOffice, tfVerificationCode;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
@@ -114,6 +114,7 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     CompGeneral("Settings applying to this computer"),
     WebSearch("Web Search Buttons"),
+    Shortcuts("User-Defined Keyboard Shortcuts"),
     DBSpecific("Settings applying to this database"),
     Folders("Reassign Folders"),
     WorkNaming("Work File Naming"),
@@ -162,6 +163,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     settingsCtrlrs = Set.of
     (
       initControl(tabWebButtons   , "WebButtonSettings"     ),
+      initControl(tabShortcuts    , "shortcuts/Shortcuts"   ),
       initControl(tabFolders      , "FolderSettings"        ),
       initControl(tabNaming       , "WorkFileNamingSettings"),
       initControl(tabWorkSearchKey, "WorkSearchKeys"        ),
@@ -315,6 +317,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     addTreeItem(CompGeneral  , tabComputerSpecific, null       );
     addTreeItem(DBSpecific   , tabDBSpecific      , null       );
     addTreeItem(WebSearch    , tabWebButtons      , CompGeneral);
+    addTreeItem(Shortcuts    , tabShortcuts       , CompGeneral);
     addTreeItem(Folders      , tabFolders         , DBSpecific );
     addTreeItem(WorkNaming   , tabNaming          , DBSpecific );
     addTreeItem(WorkSearchKey, tabWorkSearchKey   , DBSpecific );
@@ -346,7 +349,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  interface SettingsControl { void init(boolean noDB); void save(boolean noDB); }
+  public interface SettingsControl { void init(boolean noDB); void save(boolean noDB); }
 
   private SettingsControl initControl(Tab tab, String fxmlName)
   {

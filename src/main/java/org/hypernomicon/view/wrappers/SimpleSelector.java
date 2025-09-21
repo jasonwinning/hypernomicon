@@ -44,6 +44,7 @@ public final class SimpleSelector<T>
 //---------------------------------------------------------------------------
 
   private boolean suppressPressOpen = false;
+  private final ComboBox<T> cb;
 
 //---------------------------------------------------------------------------
 
@@ -52,8 +53,12 @@ public final class SimpleSelector<T>
     noOp(new SimpleSelector<>(cb, strMap));
   }
 
+//---------------------------------------------------------------------------
+
   private SimpleSelector(ComboBox<T> cb, SequencedMap<T, String> strMap)
   {
+    this.cb = cb;
+
     cb.setEditable(true);
 
     var strBiMap = HashBiMap.create(strMap);
@@ -67,11 +72,19 @@ public final class SimpleSelector<T>
     cb.setItems(null);
     cb.setItems(FXCollections.observableArrayList(strMap.sequencedKeySet()));
 
+    cb.getSelectionModel().selectedIndexProperty().addListener((obs, ov, nv) ->
+    {
+      if (nv != null)
+        scrollToNdx(nv.intValue());
+    });
+
     var editor = cb.getEditor();
 
     editor.setEditable(false);
     editor.setCursor(Cursor.DEFAULT);
     editor.setContextMenu(new ContextMenu());
+
+    cb.setOnShown(event -> scrollToNdx(cb.getSelectionModel().getSelectedIndex()));
 
     cb.setOnHiding(event ->
     {
@@ -79,6 +92,8 @@ public final class SimpleSelector<T>
 
       Platform.runLater(() -> suppressPressOpen = false);
     });
+
+  //---------------------------------------------------------------------------
 
     EventFilters.addFilterIfAbsent(cb, MouseEvent.MOUSE_PRESSED, event ->
     {
@@ -98,6 +113,8 @@ public final class SimpleSelector<T>
         }
       }
     });
+
+  //---------------------------------------------------------------------------
 
     EventFilters.replaceFilter(cb, KeyEvent.KEY_PRESSED, keyEvent ->
     {
@@ -143,13 +160,13 @@ public final class SimpleSelector<T>
         {
           // Select blank entry if present
 
-          for (int i = 0; i < size; i++)
+          for (int newNdx = 0; newNdx < size; newNdx++)
           {
-            var label = strBiMap.get(items.get(i));
+            var label = strBiMap.get(items.get(newNdx));
 
             if (strNullOrBlank(label))
             {
-              selectionModel.select(i);
+              selectionModel.select(newNdx);
               keyEvent.consume();
               return;
             }
@@ -157,40 +174,67 @@ public final class SimpleSelector<T>
 
           // no blank option: do nothing
         }
-        default ->
+        default -> { /* ignore here; handled in KEY_TYPED */ }
+      }
+    });
+
+  //---------------------------------------------------------------------------
+
+    // Letter/digit cycling
+    EventFilters.replaceFilter(cb, KeyEvent.KEY_TYPED, keyEvent ->
+    {
+      String targetClass = keyEvent.getTarget().getClass().getName();
+      if (targetClass.endsWith("FakeFocusTextField"))
+        return;
+
+      String ch = keyEvent.getCharacter();
+      if (strNullOrBlank(ch))
+        return;
+
+      // Normalize to lower case for matching
+      String typed = ch.toLowerCase();
+
+      var items = cb.getItems();
+      int size = items.size();
+      if (size == 0)
+        return;
+
+      var selectionModel = cb.getSelectionModel();
+      int start = selectionModel.getSelectedIndex(),
+          from = Math.max(-1, start);
+
+      for (int i = 1; i <= size; i++)
+      {
+        int ndx = (from + i) % size;
+        String label = strBiMap.get(items.get(ndx));
+        if (strNotNullOrBlank(label) && label.toLowerCase().startsWith(typed))
         {
-          // Letter cycling
-
-          String text = keyEvent.getText();
-
-          if (strNotNullOrEmpty(text))
-          {
-            char c = text.charAt(0);
-
-            if (Character.isLetter(c))
-            {
-              int start = selectionModel.getSelectedIndex(),
-                  from = Math.max(-1, start);
-
-              char needle = Character.toLowerCase(c);
-
-              for (int i = 1; i <= size; i++)
-              {
-                int idx = (from + i) % size;
-                var label = strBiMap.get(items.get(idx));
-
-                if (strNotNullOrBlank(label) && Character.toLowerCase(label.charAt(0)) == needle)
-                {
-                  selectionModel.select(idx);
-                  keyEvent.consume();
-                  break;
-                }
-              }
-            }
-          }
+          selectionModel.select(ndx);
+          keyEvent.consume();
+          break;
         }
       }
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void scrollToNdx(int ndx)
+  {
+    if (cb.getItems().size() < 1)
+      return;
+
+    ListView<T> lv = getCBListView(cb);
+    if (lv == null) return;
+
+    if (lv.getItems().size() > ndx)
+    {
+      lv.getSelectionModel().clearAndSelect(ndx);
+      lv.scrollTo(ndx);
+    }
+    else
+      lv.getSelectionModel().clearSelection();
   }
 
 //---------------------------------------------------------------------------
