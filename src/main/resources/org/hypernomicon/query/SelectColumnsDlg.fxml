@@ -23,8 +23,8 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane minHeight="300.0" minWidth="300.0" prefWidth="349.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.SelectColumnsDlgCtrlr">  
-  <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="130.0" layoutY="142.0" prefViewportHeight="500.0" AnchorPane.bottomAnchor="44.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="560.0" prefWidth="349.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.SelectColumnsDlgCtrlr">
+  <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="130.0" layoutY="142.0" AnchorPane.bottomAnchor="44.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <BorderPane>
          <center>
           <AnchorPane fx:id="innerPane">

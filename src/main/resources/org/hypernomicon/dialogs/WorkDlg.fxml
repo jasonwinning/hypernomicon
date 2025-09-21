@@ -37,8 +37,8 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WorkDlgCtrlr">
-  <AnchorPane fx:id="apMain" minHeight="300.0" minWidth="300.0" prefHeight="680.0" prefWidth="917.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="680.0" prefWidth="917.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WorkDlgCtrlr">
+  <AnchorPane fx:id="apMain" minHeight="300.0" minWidth="300.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <Label layoutX="14.0" layoutY="14.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0">
     </Label>
     <Button fx:id="btnPaste" layoutX="77.0" layoutY="17.0" maxHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="32.0" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="15.0">

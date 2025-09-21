@@ -654,16 +654,9 @@ public final class Util
   public static void runInFXThreadAfterPulses(int pulses, Runnable runnable)
   {
     if (pulses <= 0)
-    {
-      if (Platform.isFxApplicationThread())
-        runnable.run();
-      else
-        Platform.runLater(runnable);
-    }
+      runInFXThread(runnable);
     else
-    {
       Platform.runLater(() -> runInFXThreadAfterPulses(pulses - 1, runnable));
-    }
   }
 
 //---------------------------------------------------------------------------

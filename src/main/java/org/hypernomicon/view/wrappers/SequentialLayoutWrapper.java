@@ -42,7 +42,9 @@ public final class SequentialLayoutWrapper
   private final ObservableList<Node> nodeList;
   private final Map<Node, Boolean> nodeToVisibleMap;
 
-  private boolean changed = true;
+  private boolean changed             = true,
+                  listenToVisibleProp = true,
+                  syncVisibleProp     = true;
 
 //---------------------------------------------------------------------------
 
@@ -56,7 +58,15 @@ public final class SequentialLayoutWrapper
     {
       nodeToVisibleMap.put(node, node.isVisible());
 
-      node.visibleProperty().addListener((obs, ov, nv) -> setVisible(nv, node));
+      node.visibleProperty().addListener((obs, ov, nv) ->
+      {
+        if (listenToVisibleProp)
+        {
+          syncVisibleProp = false;
+          setVisible(nv, node);
+          syncVisibleProp = true;
+        }
+      });
     });
 
     update();
@@ -71,6 +81,13 @@ public final class SequentialLayoutWrapper
       if (nodeToVisibleMap.containsKey(node) && (Boolean.TRUE.equals(nodeToVisibleMap.put(node, newValue)) != newValue))
       {
         changed = true;
+
+        if (syncVisibleProp)
+        {
+          listenToVisibleProp = false;
+          node.setVisible(newValue);
+          listenToVisibleProp = true;
+        }
 
         if (newValue)             // If the node was in a popup window and not visible
           scaleNodeForDPI(node);  // originally, it may not have been scaled yet

@@ -42,10 +42,10 @@ class UtilTest
   @Test
   void testRemoveDuplicatesInPlace_WithDuplicates()
   {
-    List<String> list = new ArrayList<>(List.of("apple", "banana", "apple", "orange", "banana"));
-    List<String> expected = List.of("apple", "banana", "orange");
+    List<String> list = new ArrayList<>(List.of("apple", "banana", "apple", "orange", "banana")),
+                 expected = List.of("apple", "banana", "orange"),
 
-    List<String> result = removeDuplicatesInPlace(list);
+                 result = removeDuplicatesInPlace(list);
 
     assertEquals(expected, result, "The list should have duplicates removed and maintain the order of first occurrence.");
   }
@@ -53,10 +53,10 @@ class UtilTest
   @Test
   void testRemoveDuplicatesInPlace_NoDuplicates()
   {
-    List<String> list = new ArrayList<>(List.of("apple", "banana", "orange"));
-    List<String> expected = List.of("apple", "banana", "orange");
+    List<String> list = new ArrayList<>(List.of("apple", "banana", "orange")),
+                 expected = List.of("apple", "banana", "orange"),
 
-    List<String> result = removeDuplicatesInPlace(list);
+                 result = removeDuplicatesInPlace(list);
 
     assertEquals(expected, result, "The list should remain unchanged as there are no duplicates.");
   }
@@ -64,10 +64,10 @@ class UtilTest
   @Test
   void testRemoveDuplicatesInPlace_EmptyList()
   {
-    List<String> list = new ArrayList<>();
-    List<String> expected = new ArrayList<>();
+    List<String> list = new ArrayList<>(),
+                 expected = new ArrayList<>(),
 
-    List<String> result = removeDuplicatesInPlace(list);
+                 result = removeDuplicatesInPlace(list);
 
     assertEquals(expected, result, "An empty list should remain empty.");
   }
@@ -75,10 +75,10 @@ class UtilTest
   @Test
   void testRemoveDuplicatesInPlace_SingleElementList()
   {
-    List<String> list = new ArrayList<>(List.of("apple"));
-    List<String> expected = List.of("apple");
+    List<String> list = new ArrayList<>(List.of("apple")),
+                 expected = List.of("apple"),
 
-    List<String> result = removeDuplicatesInPlace(list);
+                 result = removeDuplicatesInPlace(list);
 
     assertEquals(expected, result, "A single-element list should remain unchanged.");
   }
@@ -86,10 +86,10 @@ class UtilTest
   @Test
   void testRemoveDuplicatesInPlace_AllDuplicates()
   {
-    List<String> list = new ArrayList<>(List.of("apple", "apple", "apple"));
-    List<String> expected = List.of("apple");
+    List<String> list = new ArrayList<>(List.of("apple", "apple", "apple")),
+                 expected = List.of("apple"),
 
-    List<String> result = removeDuplicatesInPlace(list);
+                 result = removeDuplicatesInPlace(list);
 
     assertEquals(expected, result, "The list should have only one element after removing all duplicates.");
   }

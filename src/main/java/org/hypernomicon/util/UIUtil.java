@@ -684,6 +684,12 @@ public final class UIUtil
         AnchorPane.setRightAnchor(node, scalePropertyValueForDPI(val));
     }
 
+    if (node instanceof ScrollPane scrollPane)
+    {
+      scalePropertiesForDPI(scrollPane.minViewportWidthProperty (), scrollPane.minViewportHeightProperty (),
+                            scrollPane.prefViewportWidthProperty(), scrollPane.prefViewportHeightProperty());
+    }
+
     if (node instanceof GridPane gridPane)
     {
       gridPane.getColumnConstraints().forEach(cc -> scalePropertiesForDPI(cc.maxWidthProperty (), cc.minWidthProperty (), cc.prefWidthProperty ()));
