@@ -25,8 +25,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.settings.shortcuts.Shortcut.KeyCombo;
@@ -45,18 +47,21 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
   @FXML private ComboBox<KeyCode> cbKey;
   @FXML private Label conflictLabel, previewLabel, titleLabel;
 
-  private final Set<KeyCombo> existingCombosForConflictCheck;
+  private final Shortcut initial;
+  private final Set<Shortcut> existingShortcutsForConflictCheck;
   private boolean removeClicked = false;
 
 //---------------------------------------------------------------------------
 
-  public ShortcutEditorDlgCtrlr(Shortcut initial, Set<KeyCombo> existingCombosForConflictCheck)
+  public ShortcutEditorDlgCtrlr(Shortcut initial, Set<Shortcut> existingShortcutsForConflictCheck)
   {
     super("settings/shortcuts/ShortcutEditorDlg", "Edit Shortcut", true, true);
 
+    this.initial = initial;
+
     titleLabel.setText("Edit shortcut for: " + initial.action.userReadableName + " (" + initial.context.userReadableName + ')');
 
-    this.existingCombosForConflictCheck = existingCombosForConflictCheck;
+    this.existingShortcutsForConflictCheck = existingShortcutsForConflictCheck;
 
     configurePlatformModifiers();
 
@@ -184,41 +189,64 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
   private void bindPreview()
   {
-    Runnable update = () ->
+    primaryCheck  .selectedProperty().addListener((obs, o, n) -> updatePreview());
+    altCheck      .selectedProperty().addListener((obs, o, n) -> updatePreview());
+    shiftCheck    .selectedProperty().addListener((obs, o, n) -> updatePreview());
+    secondaryCheck.selectedProperty().addListener((obs, o, n) -> updatePreview());
+    superCheck    .selectedProperty().addListener((obs, o, n) -> updatePreview());
+
+    cbKey         .getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> updatePreview());
+
+    updatePreview();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updatePreview()
+  {
+    Shortcut shortcut = getShortcutFromUI();
+    KeyCombo combo = shortcut.keyCombo;
+
+    previewLabel.setText(combo == null ? "" : combo.toString());
+
+    if (combo == null) return;
+
+    if (reservedCombos().contains(combo))
     {
-      KeyCombo combo = getKeyCombo();
-      previewLabel.setText(combo == null ? "" : combo.toString());
+      conflictLabel.setText("Reserved by system");
+      conflictLabel.setStyle("-fx-text-fill: -fx-accent;");
+      return;
+    }
 
-      if ((combo != null) && reservedCombos().contains(combo))
-      {
-        conflictLabel.setText("Reserved by system");
-        conflictLabel.setStyle("-fx-text-fill: -fx-accent;");
-      }
-      else if ((combo != null) && builtInCombos().contains(combo))
-      {
-        conflictLabel.setText("Reserved by Hypernomicon");
-        conflictLabel.setStyle("-fx-text-fill: -fx-accent;");
-      }
-      else if ((combo != null) && (existingCombosForConflictCheck != null) && existingCombosForConflictCheck.contains(combo))
-      {
-        conflictLabel.setText("Already in use");
-        conflictLabel.setStyle("-fx-text-fill: -fx-accent;");
-      }
-      else
-      {
-        conflictLabel.setText("");
-      }
-    };
+    Shortcut conflict = findConflict(shortcut, builtInShortcuts());
 
-    primaryCheck  .selectedProperty().addListener((obs, o, n) -> update.run());
-    altCheck      .selectedProperty().addListener((obs, o, n) -> update.run());
-    shiftCheck    .selectedProperty().addListener((obs, o, n) -> update.run());
-    secondaryCheck.selectedProperty().addListener((obs, o, n) -> update.run());
-    superCheck    .selectedProperty().addListener((obs, o, n) -> update.run());
+    if (conflict != null)
+    {
+      conflictLabel.setText("Reserved by Hypernomicon");
+      conflictLabel.setStyle("-fx-text-fill: -fx-accent;");
+      return;
+    }
 
-    cbKey         .getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> update.run());
+    conflict = findConflict(shortcut, existingShortcutsForConflictCheck);
 
-    update.run();
+    if (conflict != null)
+    {
+      conflictLabel.setText("Already in use");
+      conflictLabel.setStyle("-fx-text-fill: -fx-accent;");
+    }
+    else
+    {
+      conflictLabel.setText("");
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private Shortcut findConflict(Shortcut needle, Collection<Shortcut> haystack)
+  {
+    return (needle == null) || (haystack == null) ? null : findFirst(haystack, needle::conflictsWith);
   }
 
 //---------------------------------------------------------------------------
@@ -239,9 +267,9 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  KeyCombo getKeyCombo()
+  Shortcut getShortcutFromUI()
   {
-    return removeClicked ?
+    KeyCombo combo = removeClicked ?
       null
     :
       new KeyCombo
@@ -254,6 +282,8 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
         secondaryCheck.isSelected(),
         superCheck    .isSelected()
       );
+
+    return initial.copyWithNewKeyCombo(combo);
   }
 
 //---------------------------------------------------------------------------
@@ -302,58 +332,52 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static Set<KeyCombo> builtInCombos()
+  private static Set<Shortcut> builtInShortcuts()
   {
     return switch (CURRENT_OS)
     {
       case MAC -> Set.of
       (
-        new KeyCombo(KeyCode.K            , true , false, false, false, false), // Cmd+K
-        new KeyCombo(KeyCode.S            , true , false, false, false, false), // Cmd+S
-        new KeyCombo(KeyCode.F            , true , false, false, false, false), // Cmd+F
-        new KeyCombo(KeyCode.F            , true , false, true , false, false), // Cmd+Shift+F
-        new KeyCombo(KeyCode.G            , true , false, false, false, false), // Cmd+G
-        new KeyCombo(KeyCode.G            , true , false, true , false, false), // Cmd+Shift+G
-        new KeyCombo(KeyCode.DOWN         , false, true , false, false, false), // Option+Down (dropdown menu)
-        new KeyCombo(KeyCode.TAB          , false, false, false, true , false), // Control+Tab (next tab)
-        new KeyCombo(KeyCode.TAB          , false, false, true , true , false), // Control+Shift+Tab (prev tab)
-        new KeyCombo(KeyCode.Y            , true , false, false, false, false), // Cmd+Y (history)
-        new KeyCombo(KeyCode.OPEN_BRACKET , true , false, false, false, false), // Cmd+[
-        new KeyCombo(KeyCode.CLOSE_BRACKET, true , false, false, false, false), // Cmd+]
-        new KeyCombo(KeyCode.PLUS         , true , false, false, false, false), // Cmd+Plus
-        new KeyCombo(KeyCode.MINUS        , true , false, false, false, false), // Cmd+Hyphen
-        new KeyCombo(KeyCode.SUBTRACT     , true , false, false, false, false), // Cmd+Subtract
-        new KeyCombo(KeyCode.EQUALS       , true , false, false, false, false), // Cmd + '=' (Zoom in)
-        new KeyCombo(KeyCode.C            , true , false, false, false, false), // Cmd+C
-        new KeyCombo(KeyCode.V            , true , false, false, false, false), // Cmd+V
-        new KeyCombo(KeyCode.X            , true , false, false, false, false), // Cmd+X
-        new KeyCombo(KeyCode.V            , true , false, true , false, false), // Cmd+Shift+V
-        new KeyCombo(KeyCode.V            , true , false, false, true , false)  // Cmd+Ctrl+V
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.K            , true , false, false, false, false)), // Cmd+K
+        new Shortcut(MainWindow, null, new KeyCombo(KeyCode.S            , true , false, false, false, false)), // Cmd+S
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.F            , true , false, false, false, false)), // Cmd+F
+        new Shortcut(MainWindow, null, new KeyCombo(KeyCode.F            , true , false, true , false, false)), // Cmd+Shift+F
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.G            , true , false, false, false, false)), // Cmd+G
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.G            , true , false, true , false, false)), // Cmd+Shift+G
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.DOWN         , false, true , false, false, false)), // Option+Down (dropdown menu)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.TAB          , false, false, false, true , false)), // Control+Tab (next tab)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.TAB          , false, false, true , true , false)), // Control+Shift+Tab (prev tab)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.Y            , true , false, false, false, false)), // Cmd+Y (history)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.OPEN_BRACKET , true , false, false, false, false)), // Cmd+[
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.CLOSE_BRACKET, true , false, false, false, false)), // Cmd+]
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.PLUS         , true , false, false, false, false)), // Cmd+Plus
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.MINUS        , true , false, false, false, false)), // Cmd+Hyphen
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.SUBTRACT     , true , false, false, false, false)), // Cmd+Subtract
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.EQUALS       , true , false, false, false, false)), // Cmd + '=' (Zoom in)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.V            , true , false, true , false, false)), // Cmd+Shift+V
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.V            , true , false, false, true , false))  // Cmd+Ctrl+V
       );
 
       default -> Set.of
       (
-        new KeyCombo(KeyCode.K       , true , false, false, false, false), // Ctrl+K
-        new KeyCombo(KeyCode.S       , true , false, false, false, false), // Ctrl+S
-        new KeyCombo(KeyCode.F       , true , false, false, false, false), // Ctrl+F
-        new KeyCombo(KeyCode.F       , true , false, true , false, false), // Ctrl+Shift+F
-        new KeyCombo(KeyCode.F3      , false, false, false, false, false), // F3
-        new KeyCombo(KeyCode.F3      , false, false, true , false, false), // Shift+F3
-        new KeyCombo(KeyCode.DOWN    , false, true , false, false, false), // Alt+Down (dropdown menu)
-        new KeyCombo(KeyCode.TAB     , true , false, false, false, false), // Ctrl+Tab (next tab)
-        new KeyCombo(KeyCode.TAB     , true , false, true , false, false), // Ctrl+Shift+Tab (prev tab)
-        new KeyCombo(KeyCode.H       , true , false, false, false, false), // Ctrl+H (history)
-        new KeyCombo(KeyCode.LEFT    , false, true , false, false, false), // Alt+Left
-        new KeyCombo(KeyCode.RIGHT   , false, true , false, false, false), // Alt+Right
-        new KeyCombo(KeyCode.PLUS    , true , false, false, false, false), // Ctrl+Plus
-        new KeyCombo(KeyCode.MINUS   , true , false, false, false, false), // Ctrl+Hyphen
-        new KeyCombo(KeyCode.SUBTRACT, true , false, false, false, false), // Ctrl+Subtract
-        new KeyCombo(KeyCode.EQUALS  , true , false, false, false, false), // Ctrl + '=' (Zoom in)
-        new KeyCombo(KeyCode.C       , true , false, false, false, false), // Ctrl+C
-        new KeyCombo(KeyCode.X       , true , false, false, false, false), // Ctrl+X
-        new KeyCombo(KeyCode.V       , true , false, false, false, false), // Ctrl+V
-        new KeyCombo(KeyCode.V       , true , false, true , false, false), // Ctrl+Shift+V
-        new KeyCombo(KeyCode.V       , true , true , false, false, false)  // Ctrl+Alt+V
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.K       , true , false, false, false, false)), // Ctrl+K
+        new Shortcut(MainWindow, null, new KeyCombo(KeyCode.S       , true , false, false, false, false)), // Ctrl+S
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.F       , true , false, false, false, false)), // Ctrl+F
+        new Shortcut(MainWindow, null, new KeyCombo(KeyCode.F       , true , false, true , false, false)), // Ctrl+Shift+F
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.F3      , false, false, false, false, false)), // F3
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.F3      , false, false, true , false, false)), // Shift+F3
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.DOWN    , false, true , false, false, false)), // Alt+Down (dropdown menu)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.TAB     , true , false, false, false, false)), // Ctrl+Tab (next tab)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.TAB     , true , false, true , false, false)), // Ctrl+Shift+Tab (prev tab)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.H       , true , false, false, false, false)), // Ctrl+H (history)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.LEFT    , false, true , false, false, false)), // Alt+Left
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.RIGHT   , false, true , false, false, false)), // Alt+Right
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.PLUS    , true , false, false, false, false)), // Ctrl+Plus
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.MINUS   , true , false, false, false, false)), // Ctrl+Hyphen
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.SUBTRACT, true , false, false, false, false)), // Ctrl+Subtract
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.EQUALS  , true , false, false, false, false)), // Ctrl + '=' (Zoom in)
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.V       , true , false, true , false, false)), // Ctrl+Shift+V
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.V       , true , true , false, false, false))  // Ctrl+Alt+V
       );
     };
   }
@@ -367,8 +391,8 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
     {
       case MAC -> Set.of
       (
-        new KeyCombo(KeyCode.TAB  , true, false, false, false, false),  // Cmd+Tab
-        new KeyCombo(KeyCode.SPACE, true, false, false, false, false),  // Spotlight
+        new KeyCombo(KeyCode.TAB  , true, false, false, false, false), // Cmd+Tab
+        new KeyCombo(KeyCode.SPACE, true, false, false, false, false), // Spotlight
         new KeyCombo(KeyCode.Q    , true, false, false, false, false),
         new KeyCombo(KeyCode.W    , true, false, false, false, false), // Quit/Close (optional to reserve)
         new KeyCombo(KeyCode.X    , true, false, false, false, false), // Cmd+X (Cut)
@@ -419,18 +443,23 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
     if (isBareCharacter())
       return falseWithErrorPopup("Add at least one modifier for character keys.");
 
-    KeyCombo combo = getKeyCombo();
+    Shortcut shortcut = getShortcutFromUI();
+    KeyCombo combo = shortcut.keyCombo;
 
     // Basic reserved/system-wide avoidance.
     if (reservedCombos().contains(combo))
       return falseWithErrorPopup("That shortcut is reserved by the system: " + combo);
 
-    if (builtInCombos().contains(combo))
+    Shortcut conflict = findConflict(shortcut, builtInShortcuts());
+
+    if (conflict != null)
       return falseWithErrorPopup("That shortcut is reserved by Hypernomicon: " + combo);
 
-    // Optional cross-command conflict check (exact string match).
-    if ((existingCombosForConflictCheck != null) && existingCombosForConflictCheck.contains(combo))
-      return falseWithErrorPopup("That shortcut is already in use: " + combo);
+    // Cross-command conflict check.
+    conflict = findConflict(shortcut, existingShortcutsForConflictCheck);
+
+    if (conflict != null)
+      return falseWithErrorPopup("That shortcut is already in use. " + conflict.action.userReadableName + " (" + conflict.context.userReadableName + "): " + combo);
 
     return true;
   }

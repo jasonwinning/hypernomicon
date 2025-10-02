@@ -53,15 +53,14 @@ class SequentialLayoutWrapperTest
   @Test
   void externalChangeUpdatesNodeList()
   {
-    HBox box = new HBox(new Button("A"), new Button("B"));
-    SequentialLayoutWrapper wrapper = SequentialLayoutWrapper.forPane(box);
-    noOp(wrapper);
+    HBox hBox = new HBox(new Button("A"), new Button("B"));
+    noOp(SequentialLayoutWrapper.forPane(hBox));
 
-    Node b = box.getChildren().get(1);
+    Node b = hBox.getChildren().get(1);
 
     runFxAndWait(() -> b.setVisible(false));
 
-    assertFalse(box.getChildren().contains(b), "B should be removed from nodeList");
+    assertFalse(hBox.getChildren().contains(b), "B should be removed from nodeList");
   }
 
 //---------------------------------------------------------------------------
@@ -70,15 +69,15 @@ class SequentialLayoutWrapperTest
   @Test
   void internalChangeUpdatesPropertyAndNodeList()
   {
-    HBox box = new HBox(new Button("A"), new Button("B"));
-    SequentialLayoutWrapper wrapper = SequentialLayoutWrapper.forPane(box);
+    HBox hBox = new HBox(new Button("A"), new Button("B"));
+    SequentialLayoutWrapper wrapper = SequentialLayoutWrapper.forPane(hBox);
 
-    Node b = box.getChildren().get(1);
+    Node b = hBox.getChildren().get(1);
 
     runFxAndWait(() -> wrapper.setVisible(false, b));
 
     assertFalse(b.isVisible());
-    assertFalse(box.getChildren().contains(b));
+    assertFalse(hBox.getChildren().contains(b));
   }
 
 //---------------------------------------------------------------------------
@@ -87,17 +86,16 @@ class SequentialLayoutWrapperTest
   @Test
   void boundPropertyExternalChangeDoesNotThrow()
   {
-    HBox box = new HBox(new Button("A"));
-    SequentialLayoutWrapper wrapper = SequentialLayoutWrapper.forPane(box);
-    noOp(wrapper);
+    HBox hBox = new HBox(new Button("A"));
+    noOp(SequentialLayoutWrapper.forPane(hBox));
 
-    Node a = box.getChildren().getFirst();
+    Node a = hBox.getChildren().getFirst();
     BooleanProperty model = new SimpleBooleanProperty(true);
 
     runFxAndWait(() -> a.visibleProperty().bind(model));
 
     assertDoesNotThrow(() -> runFxAndWait(() -> model.set(false)));
-    assertFalse(box.getChildren().contains(a));
+    assertFalse(hBox.getChildren().contains(a));
   }
 
 //---------------------------------------------------------------------------
@@ -106,18 +104,15 @@ class SequentialLayoutWrapperTest
   @Test
   void boundPropertyInternalChangeDoesThrow()
   {
-    HBox box = new HBox(new Button("A"));
-    SequentialLayoutWrapper wrapper = SequentialLayoutWrapper.forPane(box);
+    HBox hBox = new HBox(new Button("A"));
+    SequentialLayoutWrapper wrapper = SequentialLayoutWrapper.forPane(hBox);
 
-    Node a = box.getChildren().getFirst();
+    Node a = hBox.getChildren().getFirst();
     BooleanProperty model = new SimpleBooleanProperty(true);
 
     runFxAndWait(() -> a.visibleProperty().bind(model));
 
-    assertThrows(RuntimeException.class,
-        () -> runFxAndWait(() -> wrapper.setVisible(false, a)),
-        "Calling setVisible on a bound node should throw"
-      );
+    assertThrows(RuntimeException.class, () -> runFxAndWait(() -> wrapper.setVisible(false, a)), "Calling setVisible on a bound node should throw");
   }
 
 //---------------------------------------------------------------------------

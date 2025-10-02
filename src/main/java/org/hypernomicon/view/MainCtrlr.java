@@ -998,18 +998,15 @@ public final class MainCtrlr
 
   private void assignShortcut(ShortcutContext context, ShortcutAction action, Runnable handler)
   {
-    Scene scene = stage.getScene();
-
     Shortcut shortcut = app.shortcuts.getValue().get(context, action);
 
     if ((shortcut == null) || (shortcut.keyCombo == null))
       return;
 
     KeyCombination kc = shortcut.keyCombo.toJfxKeyCombination();
-    if (kc == null)
-      return;
 
-    scene.getAccelerators().put(kc, handler);
+    if (kc != null)
+      stage.getScene().getAccelerators().put(kc, handler);
   }
 
 //---------------------------------------------------------------------------

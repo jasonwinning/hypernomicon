@@ -19,6 +19,7 @@ package org.hypernomicon.settings.shortcuts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.prefs.Preferences;
 
 import static org.hypernomicon.App.app;
@@ -44,26 +45,60 @@ public class Shortcut
 
   public enum ShortcutContext
   {
-    MainWindow("mainWindow", "Main Window"),
-    AllWindows("allWindows", "All Windows"),
-    FileManager("fileManager", "File Manager"),
-    BibManager("bibManager", "Bibliography Manager"),
-    RecordDescription("recordDesc", "Record Description"),
-    RecordDescriptionEditor("recordDescEditor", "Record Description Editor"),
-    PreviewWindow("previewWindow", "Preview Window"),
-    ContentsWindow("contentsWindow", "Contents Window"),
-    QueriesTab("queriesTab", "Queries Tab"),
-    TreeTab("treeTab", "Tree Tab"),
-    PersonsTab("personsTab", "Persons Tab"),
-    TermsTab("termsTab", "Terms Tab");
+    MainWindow             ("mainWindow"      , "Main Window"              , true , true , true ),
+    AllWindows             ("allWindows"      , "All Windows"              , true , true , true ),
+    FileManager            ("fileManager"     , "File Manager"             , false, true , false),
+    BibManager             ("bibManager"      , "Bibliography Manager"     , false, false, false),
+    RecordDescription      ("recordDesc"      , "Record Description"       , true , true , true ),
+    RecordDescriptionEditor("recordDescEditor", "Record Description Editor", true , false, true ),
+    PreviewWindow          ("previewWindow"   , "Preview Window"           , false, false, false),
+    ContentsWindow         ("contentsWindow"  , "Contents Window"          , false, false, false),
+    QueriesTab             ("queriesTab"      , "Queries Tab"              , true , true , false),
+    TreeTab                ("treeTab"         , "Tree Tab"                 , true , true , false),
+    PersonsTab             ("personsTab"      , "Persons Tab"              , true , true , true ),
+    InstitutionsTab        ("institutionsTab" , "Institutions Tab"         , true , false, false),
+    WorksTab               ("worksTab"        , "Works Tab"                , true , true , true ),
+    MiscFilesTab           ("miscFilesTab"    , "Misc. Files Tab"          , true , true , true ),
+    DebatesTab             ("debatesTab"      , "Problems/Debates Tab"     , true , true , true ),
+    PositionsTab           ("positionsTab"    , "Positions Tab"            , true , true , true ),
+    ArgumentsTab           ("argumentsTab"    , "Arguments/Stances Tab"    , true , true , true ),
+    NotesTab               ("notesTab"        , "Notes Tab"                , true , true , true ),
+    TermsTab               ("termsTab"        , "Terms Tab"                , true , true , true );
 
     private final String prefVal;
+    public final boolean isInMainWindow, hasDescView, hasDescEditor;
     final String userReadableName;
 
-    ShortcutContext(String prefVal, String userReadableName)
+    ShortcutContext(String prefVal, String userReadableName, boolean isInMainWindow, boolean hasDescView, boolean hasDescEditor)
     {
       this.prefVal = prefVal;
       this.userReadableName = userReadableName;
+
+      this.isInMainWindow = isInMainWindow;
+      this.hasDescView = hasDescView;
+      this.hasDescEditor = hasDescEditor;
+    }
+
+  //---------------------------------------------------------------------------
+
+    private boolean includes(ShortcutContext other)
+    {
+      if (other == null) return false;
+      if (this == other) return true;
+
+      return switch (this)
+      {
+        case AllWindows -> true;
+        case MainWindow -> other.isInMainWindow;
+        case RecordDescription -> other.hasDescView;
+        case RecordDescriptionEditor -> other.hasDescEditor;
+        default -> false;
+      };
+    }
+
+    boolean overlaps(ShortcutContext other)
+    {
+      return (other != null) && (this.includes(other) || (other.includes(this)));
     }
   }
 
@@ -100,12 +135,12 @@ public class Shortcut
   public static class KeyCombo
   {
     final boolean primary,        // Ctrl (Win/Linux) or Command (macOS)
-                         altOrOption,    // Alt or Option
-                         shift,          // Shift
-                         secondaryCtrl,  // macOS Control (⌃)
-                         superKey;       // Linux Super (Windows key)
+                  altOrOption,    // Alt or Option
+                  shift,          // Shift
+                  secondaryCtrl,  // macOS Control (⌃)
+                  superKey;       // Linux Super (Windows key)
 
-    public final KeyCode keyCode;        // Selected non-modifier key (display label)
+    public final KeyCode keyCode; // Selected non-modifier key (display label)
 
   //---------------------------------------------------------------------------
 
@@ -207,16 +242,11 @@ public class Shortcut
 
       List<KeyCombination.Modifier> mods = new ArrayList<>();
 
-      if (primary)
-        mods.add(KeyCombination.SHORTCUT_DOWN); // Ctrl or Command
-      if (shift)
-        mods.add(KeyCombination.SHIFT_DOWN);
-      if (altOrOption)
-        mods.add(KeyCombination.ALT_DOWN);
-      if (secondaryCtrl)
-        mods.add(KeyCombination.CONTROL_DOWN); // macOS Control (⌃)
-      if (superKey)
-        mods.add(KeyCombination.META_DOWN);    // Win/Super key
+      if (primary      ) mods.add(KeyCombination.SHORTCUT_DOWN); // Ctrl or Command
+      if (shift        ) mods.add(KeyCombination.SHIFT_DOWN   );
+      if (altOrOption  ) mods.add(KeyCombination.ALT_DOWN     );
+      if (secondaryCtrl) mods.add(KeyCombination.CONTROL_DOWN ); // macOS Control (⌃)
+      if (superKey     ) mods.add(KeyCombination.META_DOWN    ); // Win/Super key
 
       return new KeyCodeCombination(keyCode, mods.toArray(KeyCombination.Modifier[]::new));
     }
@@ -244,7 +274,7 @@ public class Shortcut
     }
 
     @Override public int getID()                             { return id; }
-    @Override public String getText()                        { return shortcut.keyCombo ==  null ? "" : shortcut.keyCombo.toString(); }
+    @Override public String getText()                        { return shortcut.keyCombo == null ? "" : shortcut.keyCombo.toString(); }
     @Override public RecordType getRecordType()              { return RecordType.hdtNone; }
     @Override public String getImgRelPath()                  { return null; }
     @Override public HyperTableCell getCopyWithID(int newID) { return new ShortcutHTC(shortcut, newID); }
@@ -268,7 +298,10 @@ public class Shortcut
 
 //---------------------------------------------------------------------------
 
-  HyperTableCell toHTC() { return new ShortcutHTC(this); }
+  HyperTableCell toHTC()                { return new ShortcutHTC(this); }
+  boolean conflictsWith(Shortcut other) { return (other != null) && Objects.equals(keyCombo, other.keyCombo) && context.overlaps(other.context); }
+
+  public Shortcut copyWithNewKeyCombo(KeyCombo combo) { return new Shortcut(context, action, combo); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

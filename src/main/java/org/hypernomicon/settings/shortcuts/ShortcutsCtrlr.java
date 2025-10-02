@@ -36,7 +36,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
-import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
 
@@ -64,18 +63,12 @@ public class ShortcutsCtrlr implements SettingsControl
 
     hyperTable.addLabelEditCol((row, colNdx) ->
     {
-      Window owner = ui.windows.getOutermostStage();
+      Shortcut oldShortcut = ((ShortcutHTC) row.getCell(2)).shortcut;
 
-      if ((owner != null) && (owner.isShowing() == false))
-        owner = null;
-
-      ShortcutHTC cell = (ShortcutHTC)row.getCell(2);
-      Shortcut oldShortcut = cell.shortcut;
-
-      Set<KeyCombo> existingCombos = hyperTable.dataRowStream()
+      Set<Shortcut> existingCombos = hyperTable.dataRowStream()
         .filter(_row -> _row != row)
-        .map(_row -> ((ShortcutHTC)_row.getCell(2)).shortcut.keyCombo)
-        .filter(Objects::nonNull)
+        .map(_row -> ((ShortcutHTC)_row.getCell(2)).shortcut)
+        .filter(shortcut -> shortcut.keyCombo != null)
         .collect(Collectors.toSet());
 
       ShortcutEditorDlgCtrlr dlg = new ShortcutEditorDlgCtrlr(oldShortcut, existingCombos);
@@ -83,7 +76,7 @@ public class ShortcutsCtrlr implements SettingsControl
       if (dlg.showModal() == false)
         return;
 
-      row.setCellValue(2, new Shortcut(oldShortcut.context, oldShortcut.action, dlg.getKeyCombo()).toHTC());
+      row.setCellValue(2, dlg.getShortcutFromUI().toHTC());
     });
 
     reloadFromPrefs();

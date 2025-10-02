@@ -272,7 +272,7 @@ public class MainTextCtrlr
         return;
       }
 
-      MenuItem editLinkItem = new MenuItem("Edit link");
+      MenuItem editLinkItem = new MenuItem("Edit link (" + shortcutKey + "-K)");
       editLinkItem.setOnAction(actionEvent -> editLink(anchor));
       setHTMLContextMenu(editLinkItem, mnuPaste, mnuPastePlain, mnuPastePlainNoLineBreaks);
     });
@@ -316,15 +316,7 @@ public class MainTextCtrlr
     Button btnWebLink = new Button("", imgViewFromRelPath("resources/images/world_link.png"));
     setToolTip(btnWebLink, "Insert/edit web link");
 
-    btnWebLink.setOnAction(event ->
-    {
-      HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
-
-      if (anchor == null)
-        btnLinkClick();
-      else
-        editLink(anchor);
-    });
+    btnWebLink.setOnAction(event -> btnLinkClick());
 
     Button btnKeywordLink = new Button("", imgViewFromRelPath("resources/images/keyword-link-add.png"));
     setToolTip(btnKeywordLink, "Insert a search key to link to a record");
@@ -540,6 +532,11 @@ public class MainTextCtrlr
         }
 
         ignoreKeyEvent = true;
+      }
+      else if (event.getCode() == KeyCode.K)
+      {
+        btnLinkClick();
+        event.consume();
       }
     }
   }
@@ -822,6 +819,14 @@ public class MainTextCtrlr
 
   private void btnLinkClick()
   {
+    HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
+
+    if (anchor != null)
+    {
+      editLink(anchor);
+      return;
+    }
+
     String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
 
     NewLinkDlgCtrlr dlg = new NewLinkDlgCtrlr(convertToSingleLine(selText));
