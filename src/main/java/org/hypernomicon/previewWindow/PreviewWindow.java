@@ -640,7 +640,7 @@ public final class PreviewWindow extends NonmodalWindow
           record = workFile.works.getFirst();
       }
 
-      ImageView iv = imgViewForRecord(record);
+      ImageView iv = imgViewForRecord(record, record.getType());
 
       paneType.getChildren().setAll(iv);
 

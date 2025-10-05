@@ -32,7 +32,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="669.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewArgDlgCtrlr">
+<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="669.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewArgDlgCtrlr">
   <Label fx:id="lblTargetName" layoutX="33.0" layoutY="23.0" text="Position:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="12.0">
   </Label>
   <Label fx:id="lblTargetDesc" layoutX="14.0" layoutY="34.0" prefHeight="146.0" prefWidth="66.0" text="Position description:" wrapText="true" AnchorPane.bottomAnchor="489.0" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="34.0">
@@ -60,10 +60,9 @@
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <AnchorPane GridPane.columnSpan="2147483647">
-      <HBox alignment="BASELINE_LEFT" layoutX="14.0" layoutY="-36.0" spacing="8.0" AnchorPane.bottomAnchor="0.0"
-            AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <Label text="Argument or Stance:"/>
-        <ComboBox fx:id="cbArgOrStance" editable="true" prefWidth="150.0"/>
+      <HBox alignment="BASELINE_LEFT" layoutX="14.0" layoutY="-36.0" spacing="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <Label text="Argument or Stance:" />
+        <ComboBox fx:id="cbArgOrStance" editable="true" prefWidth="150.0" />
       </HBox>
     </AnchorPane>
     <AnchorPane GridPane.rowIndex="1">
@@ -134,15 +133,13 @@
           <ComboBox fx:id="cbPerson" editable="true" layoutX="10.0" prefWidth="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
         </AnchorPane>
         <AnchorPane GridPane.columnIndex="1">
-          <HBox alignment="BASELINE_LEFT" layoutX="6.0" layoutY="4.0" spacing="6.0" AnchorPane.bottomAnchor="0.0"
-                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+          <HBox alignment="BASELINE_LEFT" layoutX="6.0" layoutY="4.0" spacing="6.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <padding>
-              <Insets left="8.0"/>
+              <Insets left="8.0" />
             </padding>
             <Label fx:id="lblDoesWhat" text="Holds that:">
             </Label>
-            <ComboBox fx:id="cbVerdict" editable="true" maxWidth="1.7976931348623157E308" prefWidth="453.0"
-                      HBox.hgrow="ALWAYS"/>
+            <ComboBox fx:id="cbVerdict" editable="true" maxWidth="1.7976931348623157E308" prefWidth="453.0" HBox.hgrow="ALWAYS" />
           </HBox>
         </AnchorPane>
       </GridPane>
@@ -150,32 +147,29 @@
   </GridPane>
   <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="12.0" layoutY="456.0" prefHeight="129.0" prefWidth="1102.0" text="Work" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0">
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="106.0" prefWidth="691.0">
-      <GridPane alignment="BASELINE_LEFT" hgap="16.0" vgap="4.0" AnchorPane.bottomAnchor="0.0"
-                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <GridPane alignment="BASELINE_LEFT" hgap="16.0" vgap="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
-          <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="80.0" minWidth="80.0" prefWidth="80.0"/>
-          <ColumnConstraints hgrow="ALWAYS" minWidth="10.0"/>
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="170.0" minWidth="170.0" prefWidth="170.0"/>
+          <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="80.0" minWidth="80.0" prefWidth="80.0" />
+          <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="170.0" minWidth="170.0" prefWidth="170.0" />
         </columnConstraints>
         <rowConstraints>
-          <RowConstraints valignment="BASELINE" vgrow="ALWAYS"/>
-          <RowConstraints valignment="BASELINE" vgrow="ALWAYS"/>
-          <RowConstraints valignment="BASELINE" vgrow="ALWAYS"/>
+          <RowConstraints valignment="BASELINE" vgrow="ALWAYS" />
+          <RowConstraints valignment="BASELINE" vgrow="ALWAYS" />
+          <RowConstraints valignment="BASELINE" vgrow="ALWAYS" />
         </rowConstraints>
         <RadioButton fx:id="rbNew" mnemonicParsing="false" text="New">
           <toggleGroup>
-            <ToggleGroup fx:id="radioGroup"/>
+            <ToggleGroup fx:id="radioGroup" />
           </toggleGroup>
         </RadioButton>
-        <RadioButton fx:id="rbExisting" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup"
-                     GridPane.rowIndex="1"/>
-        <RadioButton mnemonicParsing="false" text="None" toggleGroup="$radioGroup" GridPane.rowIndex="2"/>
-        <TextField fx:id="tfTitle" prefWidth="1.0E7" GridPane.columnIndex="1"/>
-        <ComboBox fx:id="cbWork" editable="true" prefWidth="1.0E7" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"
-                  GridPane.rowIndex="1"/>
-        <TextField fx:id="tfPages" prefWidth="170.0" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-        <TextField visible="false" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-        <Label alignment="BASELINE_LEFT" text="Pages:" GridPane.columnIndex="2"/>
+        <RadioButton fx:id="rbExisting" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" GridPane.rowIndex="1" />
+        <RadioButton mnemonicParsing="false" text="None" toggleGroup="$radioGroup" GridPane.rowIndex="2" />
+        <TextField fx:id="tfTitle" prefWidth="1.0E7" GridPane.columnIndex="1" />
+        <ComboBox fx:id="cbWork" editable="true" prefWidth="1.0E7" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
+        <TextField fx:id="tfPages" prefWidth="170.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <TextField visible="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <Label alignment="BASELINE_LEFT" text="Pages:" GridPane.columnIndex="2" />
       </GridPane>
     </AnchorPane>
   </TitledPane>
@@ -192,7 +186,7 @@
         <Insets right="4.0" />
       </GridPane.margin>
     </Button>
-    <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" GridPane.columnIndex="1">
+    <Button fx:id="btnCancel" cancelButton="true" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" GridPane.columnIndex="1">
       <GridPane.margin>
         <Insets left="4.0" />
       </GridPane.margin>

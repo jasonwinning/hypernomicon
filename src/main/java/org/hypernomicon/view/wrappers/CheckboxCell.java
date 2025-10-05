@@ -73,9 +73,9 @@ class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
     setAlignment(Pos.CENTER);
     chk.setSelected(getCellID(val) == TRUE_ID);
 
-    chk.setDisable(GenericNonRecordHTC.isEmpty(nullSwitch(getTableRow(), null, tableRow ->
-                                               nullSwitch(tableRow.getItem(), null, row ->
-                                               row.getCell(table.getMainColNdx())))));
+    chk.setDisable(HyperTableCell.isEmpty(nullSwitch(getTableRow(), null, tableRow ->
+                                          nullSwitch(tableRow.getItem(), null, row ->
+                                          row.getCell(table.getMainColNdx())))));
   }
 
 //---------------------------------------------------------------------------

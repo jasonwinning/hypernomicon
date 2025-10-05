@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.cellValues;
 
-import static org.hypernomicon.model.records.RecordType.hdtNone;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -57,7 +57,6 @@ public class GenericNonRecordHTC extends RecordHTC
 
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return null; }
 
-  public static boolean isEmpty(HyperTableCell cell)        { return (cell == null) || blankCell.equals(cell); }
   public static HyperTableCell fromBoolean(boolean boolVal) { return boolVal ? trueCell : falseCell; }
 
 //---------------------------------------------------------------------------

@@ -206,7 +206,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
     htRightChildren.buildRows(curPosition.subPositions, (row, subPos) ->
     {
-      row.setCellValue(1, subPos, "");
+      row.setIconCellValue(1, subPos);
       row.setCellValue(2, subPos, subPos.getCBText());
 
       String authStr = Author.getShortAuthorsStr(subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true);
@@ -219,7 +219,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
     htRightChildren.buildRows(curPosition.subDebates, (row, subDebate) ->
     {
-      row.setCellValue(1, subDebate, "");
+      row.setIconCellValue(1, subDebate);
       row.setCellValue(2, subDebate, subDebate.getCBText());
     });
   }

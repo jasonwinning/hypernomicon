@@ -312,7 +312,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htMentioners.buildRows(mentioners, (row, mentioner) ->
     {
-      row.setCellValue(0, mentioner, "");
+      row.setIconCellValue(0, mentioner);
       row.setCellValue(1, mentioner, mentioner.getCBText());
 
       if (mentioner.hasDesc())

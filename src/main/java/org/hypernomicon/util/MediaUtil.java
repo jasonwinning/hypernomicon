@@ -17,7 +17,6 @@
 
 package org.hypernomicon.util;
 
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -187,18 +186,22 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String imgDataURIbyRecordType (RecordType type  ) { return imgDataURI(imgRelPathByType(type  )); }
-  public static String imgDataURIbyRecord     (HDT_Record record) { return imgDataURI(imgRelPath      (record)); }
+  public static String imgDataURIbyRecord(HDT_Record record) { return imgDataURI(imgRelPath(record, record.getType())); }
 
-  public static ImageView imgViewForRecordType(RecordType type  ) { return imgViewFromRelPath(imgRelPathByType(type  )); }
-  public static ImageView imgViewForRecord    (HDT_Record record) { return imgViewFromRelPath(imgRelPath      (record)); }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static ImageView imgViewForRecord(HDT_Record record, RecordType type)
+  {
+    return imgViewFromRelPath(imgRelPath(record, type));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static ImageView imgViewFromRelPath(String relPath)
   {
-    return relPath.isEmpty() ? null : new ImageView(App.class.getResource(relPath).toString());
+    return strNullOrEmpty(relPath) ? null : new ImageView(App.class.getResource(relPath).toString());
   }
 
 //---------------------------------------------------------------------------
@@ -282,62 +285,46 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String imgRelPath(HDT_Record record)
+  public static String imgRelPath(HDT_Record record, RecordType recordType)
   {
-    switch (record.getType())
+    if (record != null)
     {
-      case hdtWork :
+      recordType = record.getType();
 
-        WorkTypeEnum workType = ((HDT_Work) record).getWorkTypeEnum();
+      switch (recordType)
+      {
+        case hdtWork :
 
-        return switch (workType)
-        {
-          case wtBook         -> "resources/images/book.png";
-          case wtChapter      -> "resources/images/chapter.png";
-          case wtPaper        -> "resources/images/paper.png";
-          case wtRecording    -> "resources/images/recording.png";
-          case wtThesis       -> "resources/images/thesis.png";
-          case wtWebPage      -> "resources/images/text-html.png";
-          case wtUnenteredSet -> "resources/images/inbox-document-text.png";
-          default             -> "resources/images/unknown.png";
-        };
+          WorkTypeEnum workType = ((HDT_Work) record).getWorkTypeEnum();
 
-      case hdtMiscFile :
+          return switch (workType)
+          {
+            case wtBook         -> "resources/images/book.png";
+            case wtChapter      -> "resources/images/chapter.png";
+            case wtPaper        -> "resources/images/paper.png";
+            case wtRecording    -> "resources/images/recording.png";
+            case wtThesis       -> "resources/images/thesis.png";
+            case wtWebPage      -> "resources/images/text-html.png";
+            case wtUnenteredSet -> "resources/images/inbox-document-text.png";
+            default             -> "resources/images/unknown.png";
+          };
 
-        HDT_MiscFile miscFile = (HDT_MiscFile) record;
+        case hdtMiscFile :
 
-        if (miscFile.pathNotEmpty())
-          return imgRelPath(miscFile.filePath(), null);
+          HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
-        // Fall through
+          if (miscFile.pathNotEmpty())
+            return imgRelPath(miscFile.filePath(), null);
 
-      default :
+          // Fall through
 
-        return imgRelPathByType(record.getType());
+        default :
+
+          break;
+      }
     }
-  }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static final String labelImgPath         = "resources/images/tag.png",
-                              glossaryImgPath      = "resources/images/bookshelf.png",
-                              termImgPath          = "resources/images/term.png",
-                              noteImgPath          = "resources/images/notebook-pencil.png",
-                              personImgPath        = "resources/images/people.png",
-                              institutionImgPath   = "resources/images/building-hedge.png",
-                              debateImgPath        = "resources/images/debate.png",
-                              positionImgPath      = "resources/images/position.png",
-                              argumentImgPath      = "resources/images/argument.png",
-                              investigationImgPath = "resources/images/documents-stack.png",
-                              folderImgPath        = "resources/images/folder.png";
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String imgRelPathByType(RecordType type)
-  {
-    return type == null ? "" : switch (type)
+    return recordType == null ? "" : switch (recordType)
     {
       case hdtWorkLabel     -> labelImgPath;
       case hdtMiscFile      -> "resources/images/file.png";
@@ -361,42 +348,17 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static RecordType imgRelPathToType(String relPath)
-  {
-    return strNullOrBlank(relPath) ? hdtNone : switch (relPath)
-    {
-      case labelImgPath         -> hdtWorkLabel;
-      case glossaryImgPath      -> hdtGlossary;
-      case termImgPath          -> hdtTerm;
-      case noteImgPath          -> hdtNote;
-      case personImgPath        -> hdtPerson;
-      case institutionImgPath   -> hdtInstitution;
-      case debateImgPath        -> hdtDebate;
-      case positionImgPath      -> hdtPosition;
-      case argumentImgPath      -> hdtArgument;
-      case investigationImgPath -> hdtInvestigation;
-      case folderImgPath        -> hdtFolder;
-
-      default                   -> hdtNone;
-    };
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static int compareImgRelPaths(String path1, String path2)
-  {
-    int strCompResult = safeStr(path1).compareTo(safeStr(path2));
-    if (strCompResult == 0) return 0;
-
-    RecordType type1 = imgRelPathToType(path1),
-               type2 = imgRelPathToType(path2);
-
-    if ((type1 != hdtNone) && (type2 == hdtNone)) return type1  .compareTo(hdtWork);
-    if ((type2 != hdtNone) && (type1 == hdtNone)) return hdtWork.compareTo(type2  );
-
-    return type1 == hdtNone ? strCompResult : type1.compareTo(type2);
-  }
+  private static final String labelImgPath         = "resources/images/tag.png",
+                              glossaryImgPath      = "resources/images/bookshelf.png",
+                              termImgPath          = "resources/images/term.png",
+                              noteImgPath          = "resources/images/notebook-pencil.png",
+                              personImgPath        = "resources/images/people.png",
+                              institutionImgPath   = "resources/images/building-hedge.png",
+                              debateImgPath        = "resources/images/debate.png",
+                              positionImgPath      = "resources/images/position.png",
+                              argumentImgPath      = "resources/images/argument.png",
+                              investigationImgPath = "resources/images/documents-stack.png",
+                              folderImgPath        = "resources/images/folder.png";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

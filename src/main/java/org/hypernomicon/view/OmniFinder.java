@@ -399,8 +399,8 @@ public class OmniFinder
         :
           cellLists.get(rowNdx);
 
-        cells.set(0, new RecordHTC(record.getID(), ""               , record.getType()));
-        cells.set(1, new RecordHTC(record.getID(), record.listName(), record.getType()));
+        cells.set(0, new RecordIconHTC(record));
+        cells.set(1, new RecordHTC    (record, record.listName()));
 
         switch (record.getType())
         {

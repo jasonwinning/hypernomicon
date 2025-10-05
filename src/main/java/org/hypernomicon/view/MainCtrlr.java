@@ -503,13 +503,13 @@ public final class MainCtrlr
       TabEnum hyperTabEnum = hyperTab.getTabEnum();
       RecordType recordType = getRecordTypeByTabEnum(hyperTabEnum);
 
-      nullSwitch(imgViewForRecordType(recordType), graphic ->
+      nullSwitch(imgViewForRecord(null, recordType), graphic ->
       {
         hyperTab.getTab().setGraphic(graphic);
 
         nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab ->
         {
-          selectorTab.setGraphic(imgViewForRecordType(recordType));
+          selectorTab.setGraphic(imgViewForRecord(null, recordType));
           setToolTip(selectorTab, "Search " + getTypeName(recordType) + " records");
         });
       });

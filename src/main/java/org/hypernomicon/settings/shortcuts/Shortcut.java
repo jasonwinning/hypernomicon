@@ -18,7 +18,7 @@
 package org.hypernomicon.settings.shortcuts;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.prefs.Preferences;
 
@@ -184,7 +184,7 @@ public record Shortcut(ShortcutContext context, ShortcutAction action, KeyCombo 
       if (keyCode == null)
         return "";
 
-      List<String> parts = new ArrayList<>();
+      Collection<String> parts = new ArrayList<>();
 
       switch (CURRENT_OS)
       {
@@ -262,7 +262,7 @@ public record Shortcut(ShortcutContext context, ShortcutAction action, KeyCombo 
       if (keyCode == null)
         return null;
 
-      List<KeyCombination.Modifier> mods = new ArrayList<>();
+      Collection<KeyCombination.Modifier> mods = new ArrayList<>();
 
       if (primary      ) mods.add(KeyCombination.SHORTCUT_DOWN); // Ctrl or Command
       if (shift        ) mods.add(KeyCombination.SHIFT_DOWN   );
@@ -298,8 +298,12 @@ public record Shortcut(ShortcutContext context, ShortcutAction action, KeyCombo 
     @Override public int getID()                             { return id; }
     @Override public String getText()                        { return shortcut.keyCombo == null ? "" : shortcut.keyCombo.toString(); }
     @Override public RecordType getRecordType()              { return RecordType.hdtNone; }
-    @Override public String getImgRelPath()                  { return null; }
-    @Override public HyperTableCell getCopyWithID(int newID) { return new ShortcutHTC(shortcut, newID); }
+    @Override public HyperTableCell getCopyWithID(int newID) { throw new UnsupportedOperationException("copy"); }
+
+    @Override public boolean isEmpty()
+    {
+      return (shortcut == null) || ((shortcut.action == null) && (shortcut.context == null) && strNullOrBlank(getText()));
+    }
   }
 
 //---------------------------------------------------------------------------

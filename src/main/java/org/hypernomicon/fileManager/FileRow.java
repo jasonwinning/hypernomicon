@@ -139,7 +139,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   {
     if (graphic != null) return graphic;
 
-    if (isDirectory()) return graphic = imgViewForRecordType(hdtFolder);
+    if (isDirectory()) return graphic = imgViewForRecord(getRecord(), hdtFolder);
 
     determineType();
 

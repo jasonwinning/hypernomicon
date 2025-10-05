@@ -634,7 +634,7 @@ public final class BibManager extends NonmodalWindow
     htRelatives.buildRows(list, (row, relative) ->
     {
       row.setCellValue(0, relative.entry.getWork(), relative.relation.name());
-      row.setCellValue(1, relative.entry.getWork(), "");
+      row.setIconCellValue(1, relative.entry.getWork());
       row.setCellValue(2, relative.entry.getWork(), relative.entry.getWork().getCBText());
     });
   }

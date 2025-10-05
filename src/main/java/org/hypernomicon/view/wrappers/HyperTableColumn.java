@@ -35,6 +35,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.RecordIconHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
@@ -112,7 +113,7 @@ public class HyperTableColumn
     ctCheckbox,
 
     /**
-     * Displays only an icon, determined by calling HyperTableCell.getImgRelPath
+     * Displays only an icon, determined by calling RecordIconCell.getImgRelPath
      */
     ctIcon,
 
@@ -124,7 +125,7 @@ public class HyperTableColumn
 
   public enum CellSortMethod
   {
-    smStandard, smTextSimple, smNumeric, smWork, smIcon
+    smStandard, smTextSimple, smNumeric, smWork
   }
 
 //---------------------------------------------------------------------------
@@ -278,8 +279,6 @@ public class HyperTableColumn
 
       case ctIcon :
 
-        sortMethod.setValue(smIcon);
-
         htcCol.setEditable(false);
         htcCol.setCellFactory(tableCol -> new TableCell<>()
         {
@@ -298,7 +297,10 @@ public class HyperTableColumn
             HDT_Record record = HyperTableCell.getRecord(cell);
             RecordType type = HyperTableCell.getCellType(cell);
 
-            String relPath = cell.getImgRelPath();
+            if (((cell instanceof RecordIconHTC) == false) && ((record != null) || (type != hdtNone)))
+              throw new AssertionError("Only icon cells can be in an icon column.");
+
+            String relPath = cell instanceof RecordIconHTC recordIconHTC ? recordIconHTC.getImgRelPath() : "";
 
             super.updateItem(cell, false);
             setGraphic(imgViewFromRelPath(relPath));

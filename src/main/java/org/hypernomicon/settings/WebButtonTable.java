@@ -122,7 +122,7 @@ class WebButtonTable extends WebButtonCtrl
   private WebButton getWebButton(HyperTableRow row)
   {
     HyperTableCell cell = row.getCell(1);
-    if (GenericNonRecordHTC.isEmpty(cell))
+    if (HyperTableCell.isEmpty(cell))
       return null;
 
     WebButton webBtn = htcToWebButton(row.getCell(1));

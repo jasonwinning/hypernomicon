@@ -19,7 +19,6 @@ package org.hypernomicon.view.cellValues;
 
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
@@ -46,15 +45,18 @@ public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
   static int getCellID(HyperTableCell cell)          { return cell == null ? -1 : cell.getID(); }
   static String getCellText(HyperTableCell cell)     { return cell == null ? "" : safeStr(cell.getText()); }
   static RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.getRecordType() == null) ? hdtNone : cell.getRecordType(); }
+  static boolean isEmpty(HyperTableCell cell)        { return cell == null ? true : cell.isEmpty(); }
+
+  static <HDT_T extends HDT_Record> HDT_T getRecord(HyperTableCell cell) { return cell == null ? null : cell.getRecord(); }
 
 //---------------------------------------------------------------------------
 
   int getID();
   String getText();
   RecordType getRecordType();
-  String getImgRelPath();
   HyperTableCell getCopyWithID(int newID);
   boolean getSortToBottom();
+  boolean isEmpty();
   <HDT_T extends HDT_Record> HDT_T getRecord();
 
 //---------------------------------------------------------------------------
@@ -74,11 +76,6 @@ public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static <HDT_T extends HDT_Record> HDT_T getRecord(HyperTableCell cell) { return cell == null ? null : cell.getRecord(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   static int compareCells(HyperTableCell cell1, HyperTableCell cell2, CellSortMethod sortMethod)
   {
     if ((cell1 == null) && (cell2 == null)) return 0;
@@ -88,13 +85,13 @@ public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
     if (cell1.getSortToBottom()) return  1;
     if (cell2.getSortToBottom()) return -1;
 
-    if (anyIsInstanceOf(BibDateHTC  .class, cell1, cell2)) return BibDateHTC  .compareCells(cell1, cell2);
-    if (anyIsInstanceOf(PageRangeHTC.class, cell1, cell2)) return PageRangeHTC.compareCells(cell1, cell2);
+    if (anyIsInstanceOf(BibDateHTC   .class, cell1, cell2)) return BibDateHTC   .compareCells(cell1, cell2);
+    if (anyIsInstanceOf(PageRangeHTC .class, cell1, cell2)) return PageRangeHTC .compareCells(cell1, cell2);
+    if (anyIsInstanceOf(RecordIconHTC.class, cell1, cell2)) return RecordIconHTC.compareCells(cell1, cell2);
 
     if (allAreInstancesOf(GenericNonRecordHTC.class, cell1, cell2))
       sortMethod = smTextSimple;
 
-    if (sortMethod == smIcon      ) return compareIconCells      (cell1, cell2);
     if (sortMethod == smNumeric   ) return compareNumericCells   (cell1, cell2);
     if (sortMethod == smTextSimple) return compareSimpleTextCells(cell1, cell2);
 
@@ -134,20 +131,6 @@ public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
   private static int compareSimpleTextCells(HyperTableCell cell1, HyperTableCell cell2)
   {
     int result = cell1.getText().compareToIgnoreCase(cell2.getText());
-
-    return result != 0 ? result : (cell1.getID() - cell2.getID());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static int compareIconCells(HyperTableCell cell1, HyperTableCell cell2)
-  {
-    int result = compareImgRelPaths(cell1.getImgRelPath(), cell2.getImgRelPath());
-
-    if (result != 0) return result;
-
-    result = getCellType(cell1).compareTo(getCellType(cell2));
 
     return result != 0 ? result : (cell1.getID() - cell2.getID());
   }

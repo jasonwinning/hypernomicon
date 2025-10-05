@@ -18,6 +18,7 @@
 package org.hypernomicon.view.cellValues;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import java.util.Objects;
@@ -36,7 +37,7 @@ public class PageRangeHTC extends AbstractHTC
 
   private int id;
   private final RecordType recordType;
-  final PageRange pageRange;
+  private final PageRange pageRange;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -58,8 +59,8 @@ public class PageRangeHTC extends AbstractHTC
   @Override public int getID()                { return id; }
   @Override public String getText()           { return pageRange.toString(); }
   @Override public RecordType getRecordType() { return recordType; }
-  @Override public String getImgRelPath()     { return ""; }
   @Override public PageRangeHTC clone()       { return (PageRangeHTC) super.clone(); }
+  @Override public boolean isEmpty()          { return (id == -1) && (recordType == hdtNone) && ((pageRange == null) || strNullOrEmpty(pageRange.toString())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -120,7 +121,7 @@ public class PageRangeHTC extends AbstractHTC
    * @param cell2 Second cell to be compared
    * @return Usual return value for compare function
    */
-  public static int compareCells(HyperTableCell cell1, HyperTableCell cell2)
+  static int compareCells(HyperTableCell cell1, HyperTableCell cell2)
   {
     return cell1 instanceof PageRangeHTC pageRangeHTC1 ?
       (cell2 instanceof PageRangeHTC pageRangeHTC2 ?

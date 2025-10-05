@@ -243,7 +243,7 @@ public class HyperCB implements CommitableWrapper
 
     silentMode = false;
 
-    if ((choices.size() > 0) && GenericNonRecordHTC.isEmpty(cell))
+    if ((choices.size() > 0) && HyperTableCell.isEmpty(cell))
       nullSwitch(getCBListView(cb), lv -> lv.scrollTo(0));
 
     return choices;

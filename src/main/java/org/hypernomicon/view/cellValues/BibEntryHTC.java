@@ -47,7 +47,7 @@ public class BibEntryHTC extends AbstractHTC
   @Override public int getID()                { return bibEntry.numericID(); }
   @Override public String getText()           { return bibEntry.getCBText(); }
   @Override public RecordType getRecordType() { return hdtNone; }
-  @Override public String getImgRelPath()     { return null; }
+  @Override public boolean isEmpty()          { return bibEntry == null; }
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) bibEntry.getWork(); }

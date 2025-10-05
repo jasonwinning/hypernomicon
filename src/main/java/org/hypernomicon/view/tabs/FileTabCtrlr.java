@@ -22,7 +22,6 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.MainCtrlr;
-import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -326,7 +325,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
       hcbType.clear();
       HyperTableCell cell = fdc.hcbType.selectedHTC();
-      if (GenericNonRecordHTC.isEmpty(cell) == false)
+
+      if (HyperTableCell.isEmpty(cell) == false)
       {
         hcbType.populate(false);
         hcbType.addAndSelectEntry(cell.getID(), HyperTableCell.getCellText(cell));

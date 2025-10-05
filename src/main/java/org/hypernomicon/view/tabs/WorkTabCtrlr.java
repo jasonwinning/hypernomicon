@@ -712,7 +712,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (curWork.workType.isNotNull())
     {
       hcbType.selectIDofRecord(curWork.workType);
-      getTab().setGraphic(imgViewForRecord(curWork));
+      getTab().setGraphic(imgViewForRecord(curWork, hdtWork));
     }
 
   // Populate authors
@@ -765,7 +765,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (arg.positions.size() > 0)
       {
         HDT_Position target = arg.positions.getFirst();
-        row.setCellValue(0, target, "");
+        row.setIconCellValue(0, target);
         row.setCellValue(1, target, target.listName());
 
         nullSwitch(arg.getPosVerdict(target), verdict -> row.setCellValue(2, verdict, verdict.listName()));
@@ -773,7 +773,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       else if (arg.targetArgs.size() > 0)
       {
         HDT_Argument target = arg.targetArgs.getFirst();
-        row.setCellValue(0, target, "");
+        row.setIconCellValue(0, target);
         row.setCellValue(1, target, target.listName());
 
         nullSwitch(arg.getArgVerdict(target), verdict -> row.setCellValue(2, verdict, verdict.listName()));
@@ -923,7 +923,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htKeyMentioners.buildRows(Stream.concat(invSet.stream(), set.stream()), (row, mentioner) ->
     {
-      row.setCellValue(0, mentioner, "");
+      row.setIconCellValue(0, mentioner);
       row.setCellValue(1, mentioner, mentioner.getCBText());
       row.setCellValue(2, mentioner, mentioner.getMainText().getPlainForDisplay());
     });
@@ -1373,7 +1373,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     changeToNormalMode();
 
-    getTab().setGraphic(imgViewForRecordType(hdtWork));
+    getTab().setGraphic(imgViewForRecord(null, hdtWork));
 
     if (db.bibLibraryIsLinked())
     {

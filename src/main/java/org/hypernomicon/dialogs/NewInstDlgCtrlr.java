@@ -25,7 +25,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Institution;
-import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -67,7 +66,7 @@ public class NewInstDlgCtrlr extends ModalDialog
 
     hcbParent.addListener((oldValue, newValue) ->
     {
-      if (GenericNonRecordHTC.isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
+      if (HyperTableCell.isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
 
       rbExistingInst.setSelected(true);
 
@@ -78,7 +77,7 @@ public class NewInstDlgCtrlr extends ModalDialog
 
     hcbExisting.addListener((oldValue, newValue) ->
     {
-      if (GenericNonRecordHTC.isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
+      if (HyperTableCell.isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
 
       rbExistingInst.setSelected(true);
       rbExistingDiv .setSelected(true);

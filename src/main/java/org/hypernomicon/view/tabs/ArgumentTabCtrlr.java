@@ -23,6 +23,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
@@ -227,6 +228,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     cbArgOrStance.getSelectionModel().select(curArgument.getIsArgument());
 
+    getTab().setGraphic(imgViewForRecord(curArgument, hdtArgument));
+
     // Select parent records in ComboBoxes
     // -----------------------------------
 
@@ -359,6 +362,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htResponses.clear();
 
     cbArgOrStance.getSelectionModel().select(Ternary.Unset);
+
+    getTab().setGraphic(imgViewForRecord(null, hdtArgument));
   }
 
 //---------------------------------------------------------------------------

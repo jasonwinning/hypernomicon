@@ -78,7 +78,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
   TreeCellValue getNameCell() { return new TreeCellValue(this); }
   String getCBText()          { return record == null ? text : '(' + getTypeName(getRecordType()) + ") " + getName(); }
   String getName()            { return record == null ? text : (record.getType() == hdtWork ? record.getCBText() : record.listName()); }
-  ImageView getGraphic()      { return graphic != null ? graphic : imgViewForRecord(record); }
+  ImageView getGraphic()      { return graphic != null ? graphic : (record == null ? null : imgViewForRecord(record, record.getType())); }
 
   String getDescString()
   {
@@ -156,7 +156,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
           if ((spokeRecord.getType() == hdtConcept) && (treeWrapper.getHasTerms() == false))
             return;
 
-          Label label = new Label("", imgViewForRecord(spokeRecord));
+          Label label = new Label("", imgViewForRecord(spokeRecord, spokeRecord.getType()));
           label.setOnMouseClicked(event -> treeRow.getTreeWrapper().selectRecord(spokeRecord, 0, false));
           label.setCursor(Cursor.HAND);
           setToolTip(label, "Go to " + getTypeName(spokeRecord.getType()) + " record \"" + spokeRecord.name() + '"');

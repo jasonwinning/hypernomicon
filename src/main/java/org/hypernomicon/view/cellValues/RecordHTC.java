@@ -17,13 +17,10 @@
 
 package org.hypernomicon.view.cellValues;
 
-import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
-import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.util.MediaUtil;
 
 //---------------------------------------------------------------------------
 
@@ -34,7 +31,6 @@ public class RecordHTC extends AbstractHTC
 //---------------------------------------------------------------------------
 
   private int id;
-  private String imgRelPath;  // should only ever be accessed by getImgRelPath
 
   private final String text;
   private final RecordType recordType;
@@ -42,8 +38,8 @@ public class RecordHTC extends AbstractHTC
   @Override public int getID()                { return id; }
   @Override public String getText()           { return text; }
   @Override public RecordType getRecordType() { return recordType; }
-
-  @Override public RecordHTC clone() { return (RecordHTC) super.clone(); }
+  @Override public boolean isEmpty()          { return GenericNonRecordHTC.blankCell.equals(this); }
+  @Override public RecordHTC clone()          { return (RecordHTC) super.clone(); }
 
 //---------------------------------------------------------------------------
 
@@ -54,20 +50,9 @@ public class RecordHTC extends AbstractHTC
   {
     super(sortToBottom);
 
-    this.id = id;
-    this.text = text;
-    this.recordType = recordType;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public String getImgRelPath()
-  {
-    if (imgRelPath != null)
-      return imgRelPath;
-
-    return imgRelPath = safeStr(nullSwitch(getRecord(), imgRelPathByType(recordType), MediaUtil::imgRelPath));
+    this.id = id < 1 ? -1 : id;
+    this.text = safeStr(text);
+    this.recordType = recordType == null ? RecordType.hdtNone : recordType;
   }
 
 //---------------------------------------------------------------------------

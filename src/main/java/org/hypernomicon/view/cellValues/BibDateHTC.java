@@ -56,8 +56,8 @@ public class BibDateHTC extends AbstractHTC
   @Override public int getID()                { return id; }
   @Override public String getText()           { return bibDate.displayToUser(); }
   @Override public RecordType getRecordType() { return recordType; }
-  @Override public String getImgRelPath()     { return ""; }
   @Override public BibDateHTC clone()         { return (BibDateHTC) super.clone(); }
+  @Override public boolean isEmpty()          { return (id == -1) && (recordType == hdtNone) && BibliographicDate.isEmpty(bibDate); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ public class BibDateHTC extends AbstractHTC
    * @param cell2 Second cell to be compared
    * @return Usual return value for compare function
    */
-  public static int compareCells(HyperTableCell cell1, HyperTableCell cell2)
+  static int compareCells(HyperTableCell cell1, HyperTableCell cell2)
   {
     return cell1 instanceof BibDateHTC bibDateHTC1 ?
       (cell2 instanceof BibDateHTC bibDateHTC2 ?

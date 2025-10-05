@@ -94,7 +94,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       return record == null ?
         new BreadCrumbButton(caption)
       :
-        new BreadCrumbButton(caption, imgViewForRecord(record));
+        new BreadCrumbButton(caption, imgViewForRecord(record, record.getType()));
     });
 
   //---------------------------------------------------------------------------

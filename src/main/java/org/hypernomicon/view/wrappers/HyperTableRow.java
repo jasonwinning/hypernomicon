@@ -33,6 +33,7 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.cellValues.RecordIconHTC;
 import org.hypernomicon.view.populators.*;
 
 //---------------------------------------------------------------------------
@@ -101,6 +102,9 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void setIconCellValue(int colNdx, HDT_Record record) {
+    setCellValue(colNdx, new RecordIconHTC(record)); }
+
   public void setCheckboxValue(int colNdx, boolean boolVal) {
     setCellValue(colNdx, GenericNonRecordHTC.fromBoolean(boolVal)); }
 
@@ -136,7 +140,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       HyperTableCell matchedCell = populator.match(this, newCell);
 
-      if (GenericNonRecordHTC.isEmpty(matchedCell) == false)
+      if (HyperTableCell.isEmpty(matchedCell) == false)
         newCell = matchedCell;
       else if (HyperTableCell.getCellText(newCell).length() > 0)
       {

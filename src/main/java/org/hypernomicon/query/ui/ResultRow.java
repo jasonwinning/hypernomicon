@@ -24,7 +24,8 @@ import org.hypernomicon.view.wrappers.AbstractRow;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.newAssertionError;
+import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 //---------------------------------------------------------------------------
@@ -41,7 +42,7 @@ public final class ResultRow extends AbstractRow<HDT_Record, ResultRow> implemen
 //---------------------------------------------------------------------------
 
   ResultRow(HDT_Record record)    { this.record = record; this.cbText = "";     }
-  public ResultRow(String cbText) { this.record = null;   this.cbText = cbText; }
+  public ResultRow(String cbText) { this.record = null;   this.cbText = safeStr(cbText); }
 
 //---------------------------------------------------------------------------
 
@@ -57,9 +58,9 @@ public final class ResultRow extends AbstractRow<HDT_Record, ResultRow> implemen
   @Override public int compareTo(HyperTableCell otherCell) { return HyperTableCell.compareCells(this, otherCell, smStandard); }
   @Override public int getID()                             { return getRecordID(); }
   @Override public String getText()                        { return getCBText(); }
-  @Override public String getImgRelPath()                  { return null; }
   @Override public HyperTableCell getCopyWithID(int newID) { throw new UnsupportedOperationException("copy"); }
   @Override public boolean getSortToBottom()               { return false; }
+  @Override public boolean isEmpty()                       { return (record == null) && strNullOrEmpty(cbText); }
 
   @Override public ResultRow clone()
   { try { return (ResultRow) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}

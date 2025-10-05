@@ -632,7 +632,7 @@ public final class MainTextUtil
   private static void appendImgTagsForLabel(HDT_WorkLabel label, StringBuilder innerHtml, boolean addSpace)
   {
     innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">")
-             .append(getGoToRecordAnchor(label, " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat; background-image:url('" + imgDataURIbyRecordType(hdtWorkLabel) + "'); text-decoration: none;\"",
+             .append(getGoToRecordAnchor(label, " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat; background-image:url('" + imgDataURIbyRecord(label) + "'); text-decoration: none;\"",
                                          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
              .append("</span>");
 
@@ -644,7 +644,7 @@ public final class MainTextUtil
       if (spoke.getType() == hdtWorkLabel) return;
 
       innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">")
-               .append(getGoToRecordAnchor(spoke, " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat;background-image:url('" + imgDataURIbyRecordType(spoke.getType()) + "'); text-decoration: none;\"",
+               .append(getGoToRecordAnchor(spoke, " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat;background-image:url('" + imgDataURIbyRecord(spoke) + "'); text-decoration: none;\"",
                                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
                .append("</span>");
 

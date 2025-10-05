@@ -37,12 +37,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 
 import com.google.common.collect.ImmutableList;
 
-import javafx.scene.control.Control;
-import javafx.scene.control.SelectionModel;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 
 //---------------------------------------------------------------------------
@@ -89,8 +84,6 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
     {
       TreeCell<FileRow> row = new TreeCell<>();
 
-      ImageView openImage = imgViewForRecordType(hdtFolder);
-
       row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
         if (oldValue == newValue) return;
@@ -110,8 +103,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
         row.setText(fileName);
         setToolTip(row, fileName.length() >= FILENAME_LENGTH_TO_SHOW_TOOLTIP ? fileName : null);
 
-        if (row.getGraphic() == null)
-          row.setGraphic(openImage);
+        row.setGraphic(imgViewForRecord(newValue.getRecord(), hdtFolder));
 
         row.setContextMenu(createContextMenu(newValue, fileTable.getContextMenuSchemata()));
       });
