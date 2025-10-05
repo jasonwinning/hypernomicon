@@ -39,6 +39,7 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.model.Exceptions.*;
@@ -46,6 +47,8 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.previewWindow.PreviewWindow;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -200,18 +203,9 @@ public final class FileManager extends NonmodalWindow
 
     webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
 
-    Scene scene = stage.getScene();
+    registerShortcuts();
 
-    scene.getAccelerators().putAll(IS_OS_MAC ? Map.of
-    (
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::userRequestsToGoBackward),
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::userRequestsToGoForward )
-    )
-    : Map.of
-    (
-      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::userRequestsToGoBackward),
-      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::userRequestsToGoForward )
-    ));
+    app.shortcuts.addListener((obs, ov, nv) -> registerShortcuts());
 
     recordTable.addDefaultMenuItems();
 
@@ -348,7 +342,43 @@ public final class FileManager extends NonmodalWindow
     webViewAddZoom(webView, ZoomPrefKey.FILEMGR);
 
     webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
+  }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void registerShortcuts()
+  {
+    Scene scene = stage.getScene();
+
+    // Clear old accelerators first
+
+    scene.getAccelerators().clear();
+
+  //---------------------------------------------------------------------------
+
+    // Hard-coded shortcuts
+
+    scene.getAccelerators().putAll(IS_OS_MAC ? Map.of
+    (
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::userRequestsToGoBackward),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN), () -> Platform.runLater(this::userRequestsToGoForward )
+    )
+    : Map.of
+    (
+      new KeyCodeCombination(KeyCode.LEFT , KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::userRequestsToGoBackward),
+      new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN     ), () -> Platform.runLater(this::userRequestsToGoForward )
+    ));
+
+  //---------------------------------------------------------------------------
+
+    // User-defined shortcuts
+
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToBibManager   , () -> { if (db.bibLibraryIsLinked()) BibManager.show(true); });
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToMainWindow   , () -> ui.windows.focusStage(ui.getStage()));
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToPreviewWindow, PreviewWindow::show);
+
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.PreviewRecord, () -> { if (btnPreviewWindow.isDisabled() == false) btnPreviewWindow.fire(); });
   }
 
 //---------------------------------------------------------------------------

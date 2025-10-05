@@ -25,7 +25,12 @@ import static org.hypernomicon.util.UIUtil.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hypernomicon.settings.shortcuts.Shortcut;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
+
 import javafx.geometry.*;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.robot.Robot;
 import javafx.stage.*;
 
@@ -214,6 +219,28 @@ public abstract class NonmodalWindow extends DialogBase
       app.prefs.putDouble(prefKeyWidth , b.getWidth ());
       app.prefs.putDouble(prefKeyHeight, b.getHeight());
     }
+  }
+
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected void assignShortcut(ShortcutContext context, ShortcutAction action, Runnable handler)
+  {
+    assignShortcut(stage, context, action, handler);
+  }
+
+  public static void assignShortcut(Stage stage, ShortcutContext context, ShortcutAction action, Runnable handler)
+  {
+    Shortcut shortcut = app.shortcuts.getValue().get(context, action);
+
+    if ((shortcut == null) || (shortcut.keyCombo() == null))
+      return;
+
+    KeyCombination kc = shortcut.keyCombo().toJfxKeyCombination();
+
+    if (kc != null)
+      stage.getScene().getAccelerators().put(kc, handler);
   }
 
 //---------------------------------------------------------------------------

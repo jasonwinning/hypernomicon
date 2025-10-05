@@ -134,7 +134,7 @@ public abstract class DialogBase
           stage.show();
         });
 
-        if ((stage.getScene().getHeight() > 0)) return;
+        if (stage.getScene().getHeight() > 0) return;
 
         stage.setWidth (preMinimizeBounds.getWidth ());
         stage.setHeight(preMinimizeBounds.getHeight());
@@ -149,10 +149,15 @@ public abstract class DialogBase
   {
     rescale();
 
+    if (this instanceof ModalDialog)
+      ensureVisible(stage, rootPane.getPrefWidth(), rootPane.getPrefHeight());
+
     if (getInitHeight() <= 0)
       stage.centerOnScreen();
 
     doAdditionalOnShown();
+
+    runInFXThreadAfterPulses(2, stage::requestFocus);  // Needed for Linux
 
     shownAlready = true;
   }

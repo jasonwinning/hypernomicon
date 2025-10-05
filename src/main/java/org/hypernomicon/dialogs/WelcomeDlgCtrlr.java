@@ -93,7 +93,7 @@ public class WelcomeDlgCtrlr extends ModalDialog
       String mruCaption = mru.length() <= 50 ? mru : mru.substring(0, 30) + "..." + mru.substring(mru.length() - 20);
 
       Hyperlink hl = new Hyperlink(mruCaption);
-      apRecent.getChildren().add(hl);
+      apRecent.getChildren().add(apRecent.getChildren().size() - 1, hl);
       hl.setPrefWidth(386.0);
       hl.setLayoutX(6.0);
       hl.setLayoutY(layoutY);

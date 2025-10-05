@@ -43,6 +43,7 @@ import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.*;
 import org.hypernomicon.dialogs.*;
+import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.fileManager.FileRow;
@@ -61,15 +62,13 @@ import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.ui.*;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
-import org.hypernomicon.settings.shortcuts.Shortcut;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.testTools.TestConsoleDlgCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
 import org.hypernomicon.tree.*;
-import org.hypernomicon.util.PopupDialog;
+import org.hypernomicon.util.*;
 import org.hypernomicon.util.PopupDialog.DialogResult;
-import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.RecordFavorite;
@@ -305,6 +304,10 @@ public final class MainCtrlr
     Region rootNode = loader.load();
 
     this.stage = stage;
+
+    if (IS_OS_MAC)
+      menuBar.getMenus().forEach(UIUtil::stripMnemonics);
+
     menuBar.setUseSystemMenuBar(true);
 
     updateProgress("", -1);
@@ -481,8 +484,6 @@ public final class MainCtrlr
     setToolTip(btnSaveAll       , "Save all records to XML files (" + (IS_OS_MAC ? "Cmd" : "Ctrl") + "-S)");
 
     btnSaveAll.setText(underlinedChar('S') + "ave to XML");
-
-    mnuShortcuts.setAccelerator(new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN));
 
     apFindBackground.setOnMousePressed(event -> hideFindTable());
 
@@ -929,8 +930,19 @@ public final class MainCtrlr
 
     scene.getAccelerators().putAll(Map.of
     (
-      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN                           ), () -> { if (db.isOnline()) saveAllToXML(true, true, false, false); },
-      new KeyCodeCombination(KeyCode.ESCAPE                                                    ), this::hideFindTable,
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN), () ->
+      {
+        if (db.isOnline())
+          saveAllToXML(true, true, false, false);
+      },
+
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () ->
+      {
+        if (db.isOnline() && db.bibLibraryIsLinked())
+          BibManager.syncAndSaveDB();
+      },
+
+      new KeyCodeCombination(KeyCode.ESCAPE), this::hideFindTable,
 
       new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () ->
       {
@@ -970,6 +982,10 @@ public final class MainCtrlr
 
     // User-defined shortcuts
 
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.PreviewRecord, () -> { if (btnPreviewWindow.isDisabled() == false) btnPreviewWindow.fire(); });
+
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.ShowMentions, () -> { if (btnMentions.isDisabled() == false) btnMentions.fire(); });
+
     assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewRecord, () ->
     {
       if (db.isOnline() && (activeTabEnum() != treeTabEnum) && (activeTabEnum() != queryTabEnum))
@@ -991,6 +1007,22 @@ public final class MainCtrlr
       if (db.isOnline() && (activeTabEnum() == personTabEnum) && (activeRecord() != null))
         personHyperTab().newInvestigation();
     });
+
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToFileManager  , () -> { if (db.isOnline()) FileManager.show(); });
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToPreviewWindow, () -> { if (db.isOnline()) PreviewWindow.show(); });
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToBibManager   , () -> { if (db.isOnline() && db.bibLibraryIsLinked()) BibManager.show(true); });
+
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToPersonsTab     , () -> tabPane.getSelectionModel().select(tabPersons  ));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToInstitutionsTab, () -> tabPane.getSelectionModel().select(tabInst     ));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToWorksTab       , () -> tabPane.getSelectionModel().select(tabWorks    ));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToMiscFilesTab   , () -> tabPane.getSelectionModel().select(tabFiles    ));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToDebatesTab     , () -> tabPane.getSelectionModel().select(tabDebates  ));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToPositionsTab   , () -> tabPane.getSelectionModel().select(tabPositions));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToArgumentsTab   , () -> tabPane.getSelectionModel().select(tabArguments));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToNotesTab       , () -> tabPane.getSelectionModel().select(tabNotes    ));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToTermsTab       , () -> tabPane.getSelectionModel().select(tabTerms    ));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToQueriesTab     , () -> tabPane.getSelectionModel().select(tabQueries  ));
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.GoToTreeTab        , () -> tabPane.getSelectionModel().select(tabTree     ));
   }
 
 //---------------------------------------------------------------------------
@@ -998,15 +1030,7 @@ public final class MainCtrlr
 
   private void assignShortcut(ShortcutContext context, ShortcutAction action, Runnable handler)
   {
-    Shortcut shortcut = app.shortcuts.getValue().get(context, action);
-
-    if ((shortcut == null) || (shortcut.keyCombo == null))
-      return;
-
-    KeyCombination kc = shortcut.keyCombo.toJfxKeyCombination();
-
-    if (kc != null)
-      stage.getScene().getAccelerators().put(kc, handler);
+    NonmodalWindow.assignShortcut(stage, context, action, handler);
   }
 
 //---------------------------------------------------------------------------
@@ -1542,11 +1566,11 @@ public final class MainCtrlr
    *
    * @param saveRecord Whether to try to save the current record first
    * @param restartWatcher Whether to restart the folder tree watcher if it was running
-   * @param updateUI Whether to update what is showing in the current tab
+   * @param didSyncBib Whether bib mgr was just synced; will update what is showing in the current tab
    * @param confirmRefMgrSecretsSaved Whether to confirm that reference manager secrets have been saved; should be done when closing the database
    * @return True if the data was actually saved to XML; false otherwise
    */
-  public boolean saveAllToXML(boolean saveRecord, boolean restartWatcher, boolean updateUI, boolean confirmRefMgrSecretsSaved)
+  public boolean saveAllToXML(boolean saveRecord, boolean restartWatcher, boolean didSyncBib, boolean confirmRefMgrSecretsSaved)
   {
     try
     {
@@ -1599,10 +1623,14 @@ public final class MainCtrlr
       if (restartWatcher && watcherWasRunning)
         folderTreeWatcher.createNewWatcherAndStart();
 
-      if (updateUI) update();
+      if (didSyncBib)
+      {
+        update();
 
-      if (rv)
-        lblStatus.setText("Database last saved to XML files: " + timeToUserReadableStr(LocalDateTime.now()));
+        updateSavedStatus(rv, true);
+      }
+      else if (rv)
+        updateSavedStatus(true, false);
 
       return rv;
     }
@@ -1612,6 +1640,27 @@ public final class MainCtrlr
       errorPopup("An error occurred while saving to XML files: " + getThrowableMessage(e));
       return false;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void updateSavedStatus(boolean savedToXML, boolean syncedToRefMgr)
+  {
+    String timeStr = timeToUserReadableStr(LocalDateTime.now());
+
+    if (savedToXML)
+    {
+      if (syncedToRefMgr)
+        lblStatus.setText("Last saved to XML files and synced to " + db.bibLibraryUserFriendlyName() + ": " + timeStr);
+      else
+        lblStatus.setText("Last saved to XML files: " + timeStr);
+
+      return;
+    }
+
+    if (syncedToRefMgr)
+      lblStatus.setText("Last synced to " + db.bibLibraryUserFriendlyName() + ": " + timeStr);
   }
 
 //---------------------------------------------------------------------------

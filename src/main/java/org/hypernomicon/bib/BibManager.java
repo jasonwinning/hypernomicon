@@ -52,11 +52,14 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.previewWindow.PreviewWindow;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.MainCtrlr;
@@ -70,6 +73,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
@@ -156,7 +160,7 @@ public final class BibManager extends NonmodalWindow
     btnUnassign    .setOnAction(event -> unassign(tableView.getSelectionModel().getSelectedItem()));
 
     btnMainWindow  .setOnAction(event -> ui.windows.focusStage(ui.getStage()));
-    btnSync        .setOnAction(event -> sync());
+    btnSync        .setOnAction(event -> doSync(false));
     btnStop        .setOnAction(event -> stop());
     btnAutofill    .setOnAction(event -> autofill());
     btnViewInRefMgr.setOnAction(event -> viewInRefMgr());
@@ -242,6 +246,10 @@ public final class BibManager extends NonmodalWindow
     webView.setOnDragDropped(Event::consume);
 
     webViewAddZoom(webView, ZoomPrefKey.BIBMGR);
+
+    registerShortcuts();
+
+    app.shortcuts.addListener((obs, ov, nv) -> registerShortcuts());
 
 //---------------------------------------------------------------------------
 
@@ -331,13 +339,6 @@ public final class BibManager extends NonmodalWindow
       entryTable.filter(ctf.getText(), chkRequireByDefault.isSelected());
     });
 
-    KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
-    stage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
-    {
-      if (keyComb.match(event))
-        safeFocus(ctf);
-    });
-
     Tooltip tooltip = new WebTooltip("""
       Use this search field to search entries in your reference manager.<br><br>
       In order to match a phrase, put it in double quotes.<br><br>
@@ -358,6 +359,39 @@ public final class BibManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void registerShortcuts()
+  {
+    Scene scene = stage.getScene();
+
+    // Clear old accelerators first
+
+    scene.getAccelerators().clear();
+
+  //---------------------------------------------------------------------------
+
+    // Hard-coded shortcuts
+
+    scene.getAccelerators().putAll(Map.of
+    (
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN), () -> doSync(false),
+
+      new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> doSync(true),
+
+      new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), () -> safeFocus(searchField)
+    ));
+
+  //---------------------------------------------------------------------------
+
+    // User-defined shortcuts
+
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToMainWindow   , () -> ui.windows.focusStage(ui.getStage()));
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToFileManager  , FileManager  ::show);
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToPreviewWindow, PreviewWindow::show);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void setLibrary(LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> libraryWrapper)
   {
     this.libraryWrapper = libraryWrapper;
@@ -368,7 +402,7 @@ public final class BibManager extends NonmodalWindow
     }
     else
     {
-      setToolTip(btnSync, "Synchronize with " + libraryWrapper.getUserFriendlyName());
+      setToolTip(btnSync, "Synchronize with " + libraryWrapper.getUserFriendlyName() + " (" + (IS_OS_MAC ? "Cmd" : "Ctrl") + "-S)");
       initEntryTypeCB(cbNewType);
       rebuildCollectionTree();
     }
@@ -383,7 +417,12 @@ public final class BibManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void sync()
+  public static void syncAndSaveDB()
+  {
+    instance.doSync(true);
+  }
+
+  private void doSync(boolean alwaysSaveDB)
   {
     if (ui.cantSaveRecord()) return;
 
@@ -441,13 +480,18 @@ public final class BibManager extends NonmodalWindow
       boolean changed = syncTask.getChanged();
       syncTask = null;
 
-      if (changed == false) return;
+      if (changed)
+      {
+        collTree.refresh(libraryWrapper.getKeyToColl());
+        refresh();
 
-      collTree.refresh(libraryWrapper.getKeyToColl());
-      refresh();
+        ui.update();
+      }
 
-      ui.update();
-      ui.saveAllToXML(true, true, true, false);
+      if (alwaysSaveDB || changed)
+        ui.saveAllToXML(true, true, true, false);
+      else
+        ui.updateSavedStatus(false, true);
     });
 
     syncTask.startWithNewThreadAsDaemon();

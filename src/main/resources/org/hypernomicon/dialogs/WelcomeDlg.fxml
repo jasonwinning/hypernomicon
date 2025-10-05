@@ -25,7 +25,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane maxHeight="314.0" minHeight="314.0" minWidth="778.0" prefHeight="314.0" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WelcomeDlgCtrlr">
+<AnchorPane maxHeight="314.0" minHeight="314.0" minWidth="778.0" prefHeight="314.0" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WelcomeDlgCtrlr">
   <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <center>
       <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="314.0" prefWidth="798.0" styleClass="anchor-pane">
@@ -33,27 +33,27 @@
           <Image url="@../resources/images/logobig.png" />
         </ImageView>
         <Button fx:id="btnNew" layoutX="144.0" layoutY="33.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="182.0" text="Start a new database" wrapText="true" />
+        <Button fx:id="btnOpen" layoutX="144.0" layoutY="72.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="182.0" text="Open existing database" />
         <Button fx:id="btnClose" layoutX="144.0" layoutY="111.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="33.0" prefWidth="182.0" text="Close this Window" />
-        <TitledPane animated="false" collapsible="false" layoutX="360.0" layoutY="33.0" prefHeight="112.0" prefWidth="398.0" text="Open recent">
+        <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="360.0" layoutY="33.0" prefHeight="112.0" prefWidth="398.0" text="Open recent">
           <AnchorPane fx:id="apRecent" minHeight="0.0" minWidth="0.0" prefHeight="85.0" prefWidth="267.0">
             <Hyperlink fx:id="linkMore" layoutX="6.0" layoutY="63.0" text="More..." />
           </AnchorPane>
         </TitledPane>
-        <TitledPane animated="false" collapsible="false" layoutX="37.0" layoutY="172.0" prefHeight="112.0" prefWidth="289.0" text="Training Videos">
+        <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="37.0" layoutY="172.0" prefHeight="112.0" prefWidth="289.0" text="Training Videos">
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="0.0" prefWidth="29.0">
             <Hyperlink fx:id="linkIntroVideo" layoutX="6.0" layoutY="3.0" text="Introductory Tutorial" />
             <Hyperlink fx:id="linkFileMgmtVideo" layoutX="6.0" layoutY="22.0" text="Managing PDFs, Other Files, and Folders" />
             <Hyperlink fx:id="linkRefMgmtVideo" layoutX="6.0" layoutY="41.0" text="Integration with Zotero and Mendeley" />
           </AnchorPane>
         </TitledPane>
-        <TitledPane animated="false" collapsible="false" layoutX="360.0" layoutY="172.0" prefHeight="112.0" prefWidth="399.0" text="Links">
+        <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="360.0" layoutY="172.0" prefHeight="112.0" prefWidth="399.0" text="Links">
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
             <Hyperlink fx:id="linkForums" layoutX="6.0" layoutY="3.0" text="Discussion Forums" />
             <Hyperlink fx:id="linkWiki" layoutX="6.0" layoutY="26.0" text="Wiki" />
             <Hyperlink fx:id="linkNews" layoutX="6.0" layoutY="49.0" text="News" />
           </AnchorPane>
         </TitledPane>
-        <Button fx:id="btnOpen" layoutX="144.0" layoutY="72.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="182.0" text="Open existing database" />
       </AnchorPane>
     </center>
   </BorderPane>

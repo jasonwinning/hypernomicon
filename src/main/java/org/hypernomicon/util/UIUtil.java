@@ -321,10 +321,13 @@ public final class UIUtil
   {
     Objects.requireNonNull(stage);
 
-    if (IS_OS_MAC == false) stage.setMaximized(false); // On Mac, this makes the window disappear
+    if (stage.getModality() == Modality.NONE)
+    {
+      if (IS_OS_MAC == false) stage.setMaximized(false); // On Mac, this makes the window disappear
 
-    stage.setFullScreen(false);
-    stage.setIconified (false);
+      stage.setFullScreen(false);
+      stage.setIconified (false);
+    }
 
     if (stage.getWidth() < 250) stage.setWidth(defaultW);
     if (stage.getHeight() < 75) stage.setHeight(defaultH);
@@ -1163,6 +1166,35 @@ public final class UIUtil
       target.prefHeightProperty().bind(source.heightProperty());
       target.maxHeightProperty ().bind(source.heightProperty());
       target.minHeightProperty ().bind(source.heightProperty());
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void stripMnemonics(Menu menu)
+  {
+    // Remove underscores and disable mnemonic parsing
+
+    menu.setText(menu.getText().replace("_", ""));
+    menu.setMnemonicParsing(false);
+
+    for (MenuItem item : menu.getItems())
+    {
+      if (item instanceof Menu subMenu)
+      {
+        stripMnemonics(subMenu); // recurse into submenus
+      }
+      else
+      {
+        String text = item.getText();
+
+        if (text != null)
+        {
+          item.setText(text.replace("_", ""));
+          item.setMnemonicParsing(false);
+        }
+      }
     }
   }
 

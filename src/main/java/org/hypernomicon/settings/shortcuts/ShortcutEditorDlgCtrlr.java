@@ -59,7 +59,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
     this.initial = initial;
 
-    titleLabel.setText("Edit shortcut for: " + initial.action.userReadableName + " (" + initial.context.userReadableName + ')');
+    titleLabel.setText("Edit shortcut for: " + initial.action().userReadableName + " (" + initial.context().userReadableName + ')');
 
     this.existingShortcutsForConflictCheck = existingShortcutsForConflictCheck;
 
@@ -69,12 +69,12 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
     bindPreview();
 
-    if (initial.keyCombo != null)
-      applyInitial(initial.keyCombo);
+    if (initial.keyCombo() != null)
+      applyInitial(initial.keyCombo());
 
     btnOK.disableProperty().bind(cbKey.getSelectionModel().selectedItemProperty().isNull());
 
-    btnRemove.setDisable(initial.keyCombo == null);
+    btnRemove.setDisable(initial.keyCombo() == null);
 
     btnRemove.setOnAction(event ->
     {
@@ -206,7 +206,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
   private void updatePreview()
   {
     Shortcut shortcut = getShortcutFromUI();
-    KeyCombo combo = shortcut.keyCombo;
+    KeyCombo combo = shortcut.keyCombo();
 
     previewLabel.setText(combo == null ? "" : combo.toString());
 
@@ -232,7 +232,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
     if (conflict != null)
     {
-      conflictLabel.setText("Already in use");
+      conflictLabel.setText("Already in use: " + conflict.action().userReadableName + " (" + conflict.context().userReadableName + ')');
       conflictLabel.setStyle("-fx-text-fill: -fx-accent;");
     }
     else
@@ -244,7 +244,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Shortcut findConflict(Shortcut needle, Collection<Shortcut> haystack)
+  private static Shortcut findConflict(Shortcut needle, Iterable<Shortcut> haystack)
   {
     return (needle == null) || (haystack == null) ? null : findFirst(haystack, needle::conflictsWith);
   }
@@ -338,8 +338,9 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
     {
       case MAC -> Set.of
       (
-        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.K            , true , false, false, false, false)), // Cmd+K
-        new Shortcut(MainWindow, null, new KeyCombo(KeyCode.S            , true , false, false, false, false)), // Cmd+S
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.S            , true , false, false, false, false)), // Cmd+S
+        new Shortcut(MainWindow, null, new KeyCombo(KeyCode.S            , true , false, true , false, false)), // Cmd+Shift+S
+        new Shortcut(BibManager, null, new KeyCombo(KeyCode.S            , true , false, true , false, false)), // Cmd+Shift+S
         new Shortcut(AllWindows, null, new KeyCombo(KeyCode.F            , true , false, false, false, false)), // Cmd+F
         new Shortcut(MainWindow, null, new KeyCombo(KeyCode.F            , true , false, true , false, false)), // Cmd+Shift+F
         new Shortcut(AllWindows, null, new KeyCombo(KeyCode.G            , true , false, false, false, false)), // Cmd+G
@@ -360,8 +361,9 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
       default -> Set.of
       (
-        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.K       , true , false, false, false, false)), // Ctrl+K
-        new Shortcut(MainWindow, null, new KeyCombo(KeyCode.S       , true , false, false, false, false)), // Ctrl+S
+        new Shortcut(AllWindows, null, new KeyCombo(KeyCode.S       , true , false, false, false, false)), // Ctrl+S
+        new Shortcut(MainWindow, null, new KeyCombo(KeyCode.S       , true , false, true , false, false)), // Ctrl+Shift+S
+        new Shortcut(BibManager, null, new KeyCombo(KeyCode.S       , true , false, true , false, false)), // Ctrl+Shift+S
         new Shortcut(AllWindows, null, new KeyCombo(KeyCode.F       , true , false, false, false, false)), // Ctrl+F
         new Shortcut(MainWindow, null, new KeyCombo(KeyCode.F       , true , false, true , false, false)), // Ctrl+Shift+F
         new Shortcut(AllWindows, null, new KeyCombo(KeyCode.F3      , false, false, false, false, false)), // F3
@@ -444,7 +446,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
       return falseWithErrorPopup("Add at least one modifier for character keys.");
 
     Shortcut shortcut = getShortcutFromUI();
-    KeyCombo combo = shortcut.keyCombo;
+    KeyCombo combo = shortcut.keyCombo();
 
     // Basic reserved/system-wide avoidance.
     if (reservedCombos().contains(combo))
@@ -459,7 +461,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
     conflict = findConflict(shortcut, existingShortcutsForConflictCheck);
 
     if (conflict != null)
-      return falseWithErrorPopup("That shortcut is already in use. " + conflict.action.userReadableName + " (" + conflict.context.userReadableName + "): " + combo);
+      return falseWithErrorPopup("That shortcut is already in use. " + conflict.action().userReadableName + " (" + conflict.context().userReadableName + "): " + combo);
 
     return true;
   }

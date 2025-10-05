@@ -37,7 +37,7 @@ import javafx.scene.input.*;
 
 //---------------------------------------------------------------------------
 
-public class Shortcut
+public record Shortcut(ShortcutContext context, ShortcutAction action, KeyCombo keyCombo)
 {
 
 //---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ public class Shortcut
     TermsTab               ("termsTab"        , "Terms Tab"                , true , true , true );
 
     private final String prefVal;
-    public final boolean isInMainWindow, hasDescView, hasDescEditor;
+    private final boolean isInMainWindow, hasDescView, hasDescEditor;
     final String userReadableName;
 
     ShortcutContext(String prefVal, String userReadableName, boolean isInMainWindow, boolean hasDescView, boolean hasDescEditor)
@@ -96,9 +96,11 @@ public class Shortcut
       };
     }
 
+  //---------------------------------------------------------------------------
+
     boolean overlaps(ShortcutContext other)
     {
-      return (other != null) && (this.includes(other) || (other.includes(this)));
+      return (other != null) && (this.includes(other) || other.includes(this));
     }
   }
 
@@ -107,17 +109,37 @@ public class Shortcut
 
   public enum ShortcutAction
   {
-    CreateNewRecord("createNewRecord", "Create new Record"),
-    CreateNewPerson("createNewPerson", "Create new Person record"),
-    CreateNewInstitution("createNewInstitution", "Create new Institution record"),
-    CreateNewWork("createNewWork", "Create new Work record"),
-    CreateNewMiscFile("createNewMiscFile", "Create new Misc. File record"),
-    CreateNewDebate("createNewDebate", "Create new Problem/Debate record"),
-    CreateNewPosition("createNewPosition", "Create new Position record"),
-    CreateNewArgument("createNewArgument", "Create new Argument/Stance record"),
-    CreateNewNote("createNewNote", "Create new Note record"),
-    CreateNewTerm("createNewTerm", "Create new Term record"),
-    CreateNewInvestigation("createNewInv", "Create new Investigation record");
+    PreviewRecord         ("previewRecord"       , "View selected record/file in Preview Window"),
+    ShowMentions          ("showMentions"        , "Show records mentioning current record"),
+
+    CreateNewRecord       ("createNewRecord"     , "Create new record of current type"),
+    CreateNewPerson       ("createNewPerson"     , "Create new Person record"),
+    CreateNewInstitution  ("createNewInstitution", "Create new Institution record"),
+    CreateNewWork         ("createNewWork"       , "Create new Work record"),
+    CreateNewMiscFile     ("createNewMiscFile"   , "Create new Misc. File record"),
+    CreateNewDebate       ("createNewDebate"     , "Create new Problem/Debate record"),
+    CreateNewPosition     ("createNewPosition"   , "Create new Position record"),
+    CreateNewArgument     ("createNewArgument"   , "Create new Argument/Stance record"),
+    CreateNewNote         ("createNewNote"       , "Create new Note record"),
+    CreateNewTerm         ("createNewTerm"       , "Create new Term record"),
+    CreateNewInvestigation("createNewInv"        , "Create new Investigation record"),
+
+    GoToMainWindow        ("goToMainWindow"      , "Switch to Main Window"),
+    GoToFileManager       ("goToFileManager"     , "Open File Manager"),
+    GoToBibManager        ("goToBibManager"      , "Open Bibliography Manager"),
+    GoToPreviewWindow     ("goToPreviewWindow"   , "Open Preview Window"),
+
+    GoToPersonsTab        ("goToPersonsTab"      , "Switch to Persons Tab"),
+    GoToInstitutionsTab   ("goToInstitutionsTab" , "Switch to Institutions Tab"),
+    GoToWorksTab          ("goToWorksTab"        , "Switch to Works Tab"),
+    GoToMiscFilesTab      ("goToMiscFilesTab"    , "Switch to Misc. Files Tab"),
+    GoToDebatesTab        ("goToDebatesTab"      , "Switch to Problems/Debates Tab"),
+    GoToPositionsTab      ("goToPositionsTab"    , "Switch to Positions Tab"),
+    GoToArgumentsTab      ("goToArgumentsTab"    , "Switch to Arguments/Stances Tab"),
+    GoToNotesTab          ("goToNotesTab"        , "Switch to Notes Tab"),
+    GoToTermsTab          ("goToTermsTab"        , "Switch to Terms Tab"),
+    GoToQueriesTab        ("goToQueriesTab"      , "Switch to Queries Tab"),
+    GoToTreeTab           ("goToTreeTab"         , "Switch to Tree Tab");
 
     private final String prefVal;
     final String userReadableName;
@@ -283,25 +305,10 @@ public class Shortcut
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final ShortcutContext context;
-  public final ShortcutAction action;
-  public final KeyCombo keyCombo;
-
-//---------------------------------------------------------------------------
-
-  public Shortcut(ShortcutContext context, ShortcutAction action, KeyCombo keyCombo)
-  {
-    this.keyCombo = keyCombo;
-    this.context = context;
-    this.action = action;
-  }
-
-//---------------------------------------------------------------------------
-
   HyperTableCell toHTC()                { return new ShortcutHTC(this); }
   boolean conflictsWith(Shortcut other) { return (other != null) && Objects.equals(keyCombo, other.keyCombo) && context.overlaps(other.context); }
 
-  public Shortcut copyWithNewKeyCombo(KeyCombo combo) { return new Shortcut(context, action, combo); }
+  Shortcut copyWithNewKeyCombo(KeyCombo combo) { return new Shortcut(context, action, combo); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -337,7 +344,7 @@ public class Shortcut
       default         -> keyCode.getName();
     };
 
-    return symbol.isEmpty() ? word : (includeWord ? (symbol + " " + word) : symbol);
+    return symbol.isEmpty() ? word : (includeWord ? (symbol + ' ' + word) : symbol);
   }
 
 //---------------------------------------------------------------------------
@@ -374,7 +381,7 @@ public class Shortcut
             }
             catch (IllegalArgumentException ex)
             {
-              // Invalid KeyCode name in prefs — skip
+              // Invalid KeyCode name in prefs; skip
             }
           }
         }

@@ -52,23 +52,23 @@
   <top>
     <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
       <MenuBar fx:id="menuBar" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
-        <Menu mnemonicParsing="false" text="File">
-          <MenuItem fx:id="mnuNewDatabase" mnemonicParsing="false" onAction="#mnuNewDatabaseClick" text="New Database..." />
-          <MenuItem mnemonicParsing="false" onAction="#mnuOpenClick" text="Open Database..." />
+        <Menu mnemonicParsing="false" text="_File">
+          <MenuItem fx:id="mnuNewDatabase" onAction="#mnuNewDatabaseClick" text="_New Database..." />
+          <MenuItem onAction="#mnuOpenClick" text="_Open Database..." />
           <SeparatorMenuItem mnemonicParsing="false" />
-          <MenuItem fx:id="mnuCloseDatabase" mnemonicParsing="false" onAction="#mnuCloseClick" text="Close Database..." />
+          <MenuItem fx:id="mnuCloseDatabase" onAction="#mnuCloseClick" text="_Close Database..." />
           <SeparatorMenuItem mnemonicParsing="false" />
-          <MenuItem fx:id="mnuImportWork" mnemonicParsing="false" text="Import Work File" />
-          <MenuItem fx:id="mnuImportFile" mnemonicParsing="false" text="Import Misc. File" />
+          <MenuItem fx:id="mnuImportWork" text="Import _Work File" />
+          <MenuItem fx:id="mnuImportFile" text="Import _Misc. File" />
           <SeparatorMenuItem mnemonicParsing="false" />
           <MenuItem fx:id="mnuImportBibFile" mnemonicParsing="false" text="Import Bibliographic Entry File" />
           <MenuItem fx:id="mnuImportBibClipboard" mnemonicParsing="false" text="Import Bibliographic Entry from Clipboard" />
           <SeparatorMenuItem fx:id="mnuBibImportSeparator" mnemonicParsing="false" />
-          <MenuItem mnemonicParsing="false" onAction="#mnuExitClick" text="Exit" />
+          <MenuItem onAction="#mnuExitClick" text="E_xit" />
           <MenuItem fx:id="mnuExitNoSave" mnemonicParsing="false" onAction="#mnuExitNoSaveClick" text="Exit Without Saving" />
         </Menu>
-        <Menu mnemonicParsing="false" text="Tools">
-          <MenuItem mnemonicParsing="false" onAction="#mnuSettingsClick" text="Settings" />
+        <Menu mnemonicParsing="false" text="_Tools">
+          <MenuItem onAction="#mnuSettingsClick" text="_Settings" />
           <MenuItem fx:id="mnuTestConsole" mnemonicParsing="false" onAction="#mnuTestConsoleClick" text="Test Console" />
           <Menu mnemonicParsing="false" text="Create new category record...">
             <MenuItem fx:id="mnuNewField" mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Academic Field" />
@@ -90,23 +90,23 @@
           <CheckMenuItem fx:id="mnuAutoImport" mnemonicParsing="false" text="Automatically watch for and import PDF files added" />
           <MenuItem fx:id="mnuAddToQueryResults" mnemonicParsing="false" onAction="#mnuAddToQueryResultsClick" text="Add this record to query results" />
           <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick" text="Change record ID..." />
-          <MenuItem fx:id="mnuRevertToXmlVersion" mnemonicParsing="false" onAction="#mnuRevertToXmlVersionClick" text="Revert this record to XML version" />
+          <MenuItem fx:id="mnuRevertToXmlVersion" onAction="#mnuRevertToXmlVersionClick" text="_Revert this record to XML version" />
           <MenuItem fx:id="mnuSaveReloadAll" mnemonicParsing="false" onAction="#mnuSaveReloadAllClick" text="Save/Reload All" />
         </Menu>
-        <Menu fx:id="mnuFavorites" mnemonicParsing="false" text="Favorites">
+        <Menu fx:id="mnuFavorites" mnemonicParsing="false" text="Fa_vorites">
           <MenuItem fx:id="mnuToggleFavorite" mnemonicParsing="false" onAction="#mnuToggleFavoriteClick" text="Add to Favorites" />
           <MenuItem mnemonicParsing="false" onAction="#mnuChangeFavOrderClick" text="Change Order..." />
           <Menu fx:id="mnuQueries" mnemonicParsing="false" text="Queries" />
           <SeparatorMenuItem mnemonicParsing="false" />
         </Menu>
-        <Menu fx:id="mnuFolders" mnemonicParsing="false" text="Folders" />
-        <Menu mnemonicParsing="false" text="Help">
-          <MenuItem mnemonicParsing="false" onAction="#showWelcomeWindow" text="Show Welcome Window" />
+        <Menu fx:id="mnuFolders" mnemonicParsing="false" text="Fol_ders" />
+        <Menu mnemonicParsing="false" text="_Help">
+          <MenuItem onAction="#showWelcomeWindow" text="Show _Welcome Window" />
           <SeparatorMenuItem mnemonicParsing="false" />
           <MenuItem fx:id="mnuVideos" mnemonicParsing="false" text="Tutorial Videos" />
-          <MenuItem fx:id="mnuShortcuts" mnemonicParsing="false" onAction="#mnuShortcutsClick" text="Keyboard Shortcuts" />
+          <MenuItem fx:id="mnuShortcuts" onAction="#mnuShortcutsClick" text="_Keyboard Shortcuts" />
           <SeparatorMenuItem mnemonicParsing="false" />
-          <MenuItem mnemonicParsing="false" onAction="#mnuAboutClick" text="About" />
+          <MenuItem onAction="#mnuAboutClick" text="_About" />
         </Menu>
       </MenuBar>
       <ToolBar fx:id="topToolBar" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" style="-fx-background-color: transparent;">

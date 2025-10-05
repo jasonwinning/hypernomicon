@@ -20,6 +20,8 @@ package org.hypernomicon.settings.shortcuts;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.settings.SettingsDlgCtrlr.*;
+import static org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext.*;
+import static org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,7 +37,6 @@ import com.google.common.collect.Table;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
-import javafx.scene.layout.VBox;
 
 //---------------------------------------------------------------------------
 
@@ -47,7 +48,6 @@ public class ShortcutsCtrlr implements SettingsControl
 
   @FXML private Button btnRevert;
   @FXML private TableView<HyperTableRow> tv;
-  @FXML private VBox vbox;
 
   private HyperTable hyperTable;
 
@@ -68,7 +68,7 @@ public class ShortcutsCtrlr implements SettingsControl
       Set<Shortcut> existingCombos = hyperTable.dataRowStream()
         .filter(_row -> _row != row)
         .map(_row -> ((ShortcutHTC)_row.getCell(2)).shortcut)
-        .filter(shortcut -> shortcut.keyCombo != null)
+        .filter(shortcut -> shortcut.keyCombo() != null)
         .collect(Collectors.toSet());
 
       ShortcutEditorDlgCtrlr dlg = new ShortcutEditorDlgCtrlr(oldShortcut, existingCombos);
@@ -93,24 +93,44 @@ public class ShortcutsCtrlr implements SettingsControl
 
     Table<ShortcutContext, ShortcutAction, Shortcut> table = Shortcut.loadFromPrefs();
 
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewRecord     , table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewPerson     , table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewInstitution, table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewWork       , table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewMiscFile   , table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewDebate     , table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewPosition   , table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewArgument   , table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewNote       , table);
-    addRow(ShortcutContext.MainWindow, ShortcutAction.CreateNewTerm       , table);
+    addRow(table, AllWindows, PreviewRecord);
+    addRow(table, MainWindow, ShowMentions);
 
-    addRow(ShortcutContext.PersonsTab, ShortcutAction.CreateNewInvestigation, table);
+    addRow(table, MainWindow, CreateNewRecord);
+    addRow(table, MainWindow, CreateNewPerson);
+    addRow(table, MainWindow, CreateNewInstitution);
+    addRow(table, MainWindow, CreateNewWork);
+    addRow(table, MainWindow, CreateNewMiscFile);
+    addRow(table, MainWindow, CreateNewDebate);
+    addRow(table, MainWindow, CreateNewPosition);
+    addRow(table, MainWindow, CreateNewArgument);
+    addRow(table, MainWindow, CreateNewNote);
+    addRow(table, MainWindow, CreateNewTerm);
+
+    addRow(table, PersonsTab, CreateNewInvestigation);
+
+    addRow(table, AllWindows, GoToMainWindow);
+    addRow(table, AllWindows, GoToFileManager);
+    addRow(table, AllWindows, GoToBibManager);
+    addRow(table, AllWindows, GoToPreviewWindow);
+
+    addRow(table, MainWindow, GoToPersonsTab);
+    addRow(table, MainWindow, GoToInstitutionsTab);
+    addRow(table, MainWindow, GoToWorksTab);
+    addRow(table, MainWindow, GoToMiscFilesTab);
+    addRow(table, MainWindow, GoToDebatesTab);
+    addRow(table, MainWindow, GoToPositionsTab);
+    addRow(table, MainWindow, GoToArgumentsTab);
+    addRow(table, MainWindow, GoToNotesTab);
+    addRow(table, MainWindow, GoToTermsTab);
+    addRow(table, MainWindow, GoToQueriesTab);
+    addRow(table, MainWindow, GoToTreeTab);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addRow(ShortcutContext context, ShortcutAction action, Table<ShortcutContext, ShortcutAction, Shortcut> table)
+  private void addRow(Table<ShortcutContext, ShortcutAction, Shortcut> table, ShortcutContext context, ShortcutAction action)
   {
     HyperTableRow row = hyperTable.newDataRow();
 
@@ -136,9 +156,9 @@ public class ShortcutsCtrlr implements SettingsControl
     {
       Shortcut shortcut = ((ShortcutHTC) row.getCell(2)).shortcut;
 
-      if (shortcut.keyCombo == null) return;
+      if (shortcut.keyCombo() == null) return;
 
-      shortcuts.put(shortcut.context, shortcut.action, shortcut);
+      shortcuts.put(shortcut.context(), shortcut.action(), shortcut);
     });
 
     Shortcut.saveToPrefs(shortcuts);

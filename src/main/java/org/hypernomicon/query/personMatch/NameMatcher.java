@@ -96,7 +96,7 @@ final class NameMatcher
    * <p>First name matching is governed by a two-part rule:
    * <ol>
    *   <li><strong>Directional Explanation:</strong> At least one of the two first names must be able
-   *       to fully and injectively explain the tokens of the other — meaning each token in one name
+   *       to fully and injectively explain the tokens of the other, meaning each token in one name
    *       must match exactly once to a distinct token in the other. Tokens match if they are identical
    *       (case-insensitive) or if one is a single-letter initial corresponding to the other's first letter.</li>
    *
@@ -243,7 +243,7 @@ final class NameMatcher
 //---------------------------------------------------------------------------
 
   /**
-   * Returns true if there exists at least one pair of tokens—one from each list—
+   * Returns true if there exists at least one pair of tokens, one from each list,
    * where both tokens are spelled-out names and match according to token rules.
    * This provides a high-confidence anchor to permit matches in the presence of partial mismatches.
    *

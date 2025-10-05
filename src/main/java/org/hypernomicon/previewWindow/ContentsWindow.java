@@ -31,10 +31,14 @@ import java.util.stream.Collectors;
 
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.Const.TablePrefKey;
+import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.dialogs.base.NonmodalWindow;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
+import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -46,6 +50,7 @@ import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.TableView;
 
 //---------------------------------------------------------------------------
@@ -164,6 +169,35 @@ public final class ContentsWindow extends NonmodalWindow
       if (mouseAlreadyHere == false)
         update(PreviewWindow.instance().curPage(), false);
     });
+
+    registerShortcuts();
+
+    app.shortcuts.addListener((obs, ov, nv) -> registerShortcuts());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void registerShortcuts()
+  {
+    Scene scene = stage.getScene();
+
+    // Clear old accelerators first
+
+    scene.getAccelerators().clear();
+
+  //---------------------------------------------------------------------------
+
+    // Hard-coded shortcuts
+
+  //---------------------------------------------------------------------------
+
+    // User-defined shortcuts
+
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToMainWindow   , () -> ui.windows.focusStage(ui.getStage()));
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToFileManager  , FileManager  ::show);
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToPreviewWindow, PreviewWindow::show);
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.GoToBibManager   , () -> { if (db.bibLibraryIsLinked()) BibManager.show(true); });
   }
 
 //---------------------------------------------------------------------------
