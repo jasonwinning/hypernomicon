@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 
@@ -45,6 +46,7 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.utils.URIBuilder;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
@@ -694,18 +696,73 @@ public final class DesktopUtil
     {
       HyperTask task = new HyperTask("CheckForInternet", "Checking for internet connection...", false) { @Override protected void call() throws HyperDataException, CancelledTaskException
       {
+        AtomicReference<State> state = new AtomicReference<>(State.READY);
+        AtomicReference<Throwable> throwable = new AtomicReference<>();
+
+        HyperThread innerThread = new HyperThread(() ->
+        {
+          state.set(State.RUNNING);
+
+          try
+          {
+            HttpURLConnection con = (HttpURLConnection) URI.create("https://www.google.com/").toURL().openConnection();
+            //HttpURLConnection con = (HttpURLConnection) URI.create("http://10.255.255.1/").toURL().openConnection();
+
+            con.setRequestMethod("HEAD");
+
+            con.connect();
+
+            if (con.getResponseCode() == HttpURLConnection.HTTP_OK)
+            {
+              state.set(State.SUCCEEDED);
+            }
+            else
+            {
+              state.set(State.FAILED);
+              throwable.set(new HttpResponseException(con.getResponseCode(), con.getResponseMessage()));
+            }
+          }
+          catch (IOException e)
+          {
+            state.set(State.FAILED);
+            throwable.set(e);
+          }
+
+        }, "CheckForInternetInner");
+
+        innerThread.setDaemon(true);
+        innerThread.start();
+
         try
         {
-          HttpURLConnection con = (HttpURLConnection) URI.create("https://www.google.com/").toURL().openConnection();
-          con.connect();
+          while (innerThread.isAlive())
+          {
+            if (isCancelled())
+            {
+              innerThread.interrupt();
+              throw new CancelledTaskException();
+            }
 
-          if (con.getResponseCode() == HttpURLConnection.HTTP_OK)
-            return;
-
-          throw new HttpResponseException(con.getResponseCode(), con.getResponseMessage());
+            innerThread.join(100);
+          }
         }
-        catch (UnknownHostException e) { throw new CancelledTaskException(); }
-        catch (IOException          e) { throw new HyperDataException(e); }
+        catch (InterruptedException e)
+        {
+          innerThread.interrupt();
+          throw new CancelledTaskException();
+        }
+
+        if (state.get() == State.SUCCEEDED)
+          return;
+
+        Throwable e = throwable.get();
+
+        if (e instanceof HyperDataException hde) throw hde;
+
+        if ((e instanceof UnknownHostException) || (e instanceof NoRouteToHostException))
+          throw new CancelledTaskException();
+
+        throw e == null ? new HyperDataException("Unknown error occurred") : new HyperDataException(e);
 
       }}.setSilent(true)
         .setSkippable(true)
@@ -715,7 +772,6 @@ public final class DesktopUtil
         return true;
 
       Throwable e = task.getException();
-
       String msg = e instanceof HyperDataException ? getThrowableMessage(e.getCause()) : (e == null ? "" : getThrowableMessage(e));
 
       result = abortRetryIgnoreDialog("Warning: Internet connection check failed" + (strNullOrBlank(msg) ? '.' : ": " + msg));

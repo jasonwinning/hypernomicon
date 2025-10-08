@@ -1419,6 +1419,11 @@ public final class Util
         return "Unable to connect to host" + (msg.isEmpty() ? "" : ": ") + msg;
       }
 
+      case ConnectException _ ->
+      {
+        return msg.toLowerCase().contains("timed out") ? "Connection timed out" : msg;
+      }
+
       case HttpResponseException httpResponseException ->
       {
         return httpResponseException.getStatusCode() + (msg.isEmpty() ? "" : " ") + msg;
