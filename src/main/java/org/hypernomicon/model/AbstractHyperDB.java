@@ -1541,8 +1541,12 @@ public abstract class AbstractHyperDB
       if (specialFolders().anyMatch(folder -> HDT_Record.isEmpty(folder, false)))
         throw new HyperDataException("Unable to load information about paths from database settings file.");
 
-      if (specialFolders().distinct().count() < 8)
-        throw new HyperDataException("Unable to load information about paths from database settings file: Duplicate folder ID.");
+      // Critical folders must be unique
+      // Non-critical overlaps (e.g. Books == Papers) are allowed
+
+      checkUniqueSpecialFolder(xmlFolder      , "XML");
+      checkUniqueSpecialFolder(resultsFolder  , "Search Results");
+      checkUniqueSpecialFolder(unenteredFolder, "Works Not Entered Yet");
 
       if (writeFolderIDs)  // Backwards compatibility with settings version 1.0
       {
@@ -2622,6 +2626,15 @@ public abstract class AbstractHyperDB
       case wtThesis  -> prefs.getBoolean(PrefKey.THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
       default        -> miscFilesFolder;
     };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void checkUniqueSpecialFolder(HDT_Folder target, String name) throws HyperDataException
+  {
+    if (specialFolders().filter(f -> f == target).count() > 1)
+      throw new HyperDataException("The " + name + " folder is assigned to multiple incompatible roles.");
   }
 
 //---------------------------------------------------------------------------
