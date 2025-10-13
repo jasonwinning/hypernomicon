@@ -17,17 +17,13 @@
 
 package org.hypernomicon.query;
 
-import static org.hypernomicon.view.cellValues.HyperTableCell.*;
-
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
-import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
-import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
 
@@ -37,7 +33,7 @@ public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public QueryWhereDisplayedRecords(int queryID, String description)
+  QueryWhereDisplayedRecords(int queryID, String description)
   {
     super(queryID, description);
   }
@@ -49,36 +45,49 @@ public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+  @Override protected boolean evalInclude(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord)
   {
-    if (record.hasMainText() == false)
+    if (HDT_Record.isEmpty(specifiedRecord, false) || (specifiedRecord.hasMainText() == false))
       return false;
 
-    HDT_RecordWithMainText recordWMT = (HDT_RecordWithMainText)record;
-    int operandID = getCellID(op1);
+    HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText)specifiedRecord;
 
-    switch (operandID)
-    {
-      case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
+    return recordWMT.getMainText().getDisplayItemsUnmod().stream()
 
-        return recordWMT.getMainText().getDisplayItemsUnmod().stream().noneMatch(displayItem -> displayItem.type == DisplayItemType.diRecord)
-          == (operandID == IS_EMPTY_OPERAND_ID);
+      .filter(displayItem-> displayItem.type == DisplayItemType.diRecord)
+      .anyMatch(displayItem -> displayItem.record.getMainText() == specifiedRecordWMT.getMainText());
+  }
 
-      case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-        HDT_Record specifiedRecord = HyperTableCell.getRecord(op3);
-        if (HDT_Record.isEmpty(specifiedRecord, false) || (specifiedRecord.hasMainText() == false))
-          return false;
+  @Override protected boolean evalExclude(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord)
+  {
+    if (HDT_Record.isEmpty(specifiedRecord, false) || (specifiedRecord.hasMainText() == false))
+      return false;
 
-        HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText)specifiedRecord;
+    HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText)specifiedRecord;
 
-        return recordWMT.getMainText().getDisplayItemsUnmod().stream()
+    return recordWMT.getMainText().getDisplayItemsUnmod().stream()
 
-          .filter(displayItem-> displayItem.type == DisplayItemType.diRecord)
-          .anyMatch(displayItem -> displayItem.record.getMainText() == specifiedRecordWMT.getMainText()) == (operandID == EQUAL_TO_OPERAND_ID);
-    }
+      .filter(displayItem-> displayItem.type == DisplayItemType.diRecord)
+      .noneMatch(displayItem -> displayItem.record.getMainText() == specifiedRecordWMT.getMainText());
+  }
 
-    return false;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean evalEmpty(HDT_RecordWithMainText recordWMT)
+  {
+    return recordWMT.getMainText().getDisplayItemsUnmod().stream().noneMatch(displayItem -> displayItem.type == DisplayItemType.diRecord);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean evalNotEmpty(HDT_RecordWithMainText recordWMT)
+  {
+    return recordWMT.getMainText().getDisplayItemsUnmod().stream().anyMatch(displayItem -> displayItem.type == DisplayItemType.diRecord);
   }
 
 //---------------------------------------------------------------------------

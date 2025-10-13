@@ -18,6 +18,8 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.query.Query.ItemOperator.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
@@ -40,7 +42,7 @@ public class QueryWhereRelative extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public QueryWhereRelative(int queryID, String description)
+  QueryWhereRelative(int queryID, String description)
   {
     super(queryID, description);
   }
@@ -71,7 +73,125 @@ public class QueryWhereRelative extends RecordQuery
 
   @Override public boolean op1Change(HyperTableCell op1, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
   {
-    vp2.setPopulator(row, operandPopulator());
+    if (getCellID(op1) < 1)
+    {
+      vp1.setPopulator(row, Populator.emptyPopulator(cvtOperand));
+      return true;
+    }
+
+    vp2.setPopulator(row, Populator.createWithIDMatching(cvtOperand,
+
+      new ItemOperatorHTC(itemOpEqualTo, "Is or includes record", true)
+      {
+        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+        {
+          int targetID = getCellID(op3);
+          if (targetID < 1) return false;
+
+          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
+          if (subjList == null) return false;
+
+          return subjList.stream().anyMatch(subjRecord -> subjRecord.getID() == targetID);
+        }
+
+        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+        {
+          vp3.setPopulator(row, new StandardPopulator(db.getSubjType(RelationType.codeToVal(getCellID(op1)))));
+          return true;
+        }
+      },
+
+//---------------------------------------------------------------------------
+
+      new ItemOperatorHTC(itemOpNotEqualTo, "Excludes record", true)
+      {
+        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+        {
+          int targetID = getCellID(op3);
+          if (targetID < 1) return false;
+
+          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
+          if (subjList == null) return false;
+
+          return subjList.stream().noneMatch(subjRecord -> subjRecord.getID() == targetID);
+        }
+
+        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+        {
+          vp3.setPopulator(row, new StandardPopulator(db.getSubjType(RelationType.codeToVal(getCellID(op1)))));
+          return true;
+        }
+      },
+
+//---------------------------------------------------------------------------
+
+      new ItemOperatorHTC(itemOpContain, "Contains text", false)
+      {
+        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+        {
+          String targetText = getCellText(op3).toLowerCase();
+          if (strNullOrEmpty(targetText)) return false;
+
+          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
+          if (subjList == null) return false;
+
+          return subjList.stream().anyMatch(subjRecord -> subjRecord.listName().toLowerCase().contains(targetText));
+        }
+
+        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+        {
+          vp3.setRestricted(row, false);
+
+          return true;
+        }
+      },
+
+//---------------------------------------------------------------------------
+
+      new ItemOperatorHTC(itemOpNotContain, "Doesn't contain text", false)
+      {
+        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+        {
+          String targetText = getCellText(op3).toLowerCase();
+          if (strNullOrEmpty(targetText)) return false;
+
+          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
+          if (subjList == null) return false;
+
+          return subjList.stream().noneMatch(subjRecord -> subjRecord.listName().toLowerCase().contains(targetText));
+        }
+
+        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+        {
+          vp3.setRestricted(row, false);
+
+          return true;
+        }
+      },
+
+//---------------------------------------------------------------------------
+
+      new ItemOperatorHTC(itemOpEmpty, "Is empty", true)
+      {
+        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+        {
+          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
+
+          return (subjList != null) && subjList.isEmpty();
+        }
+      },
+
+//---------------------------------------------------------------------------
+
+      new ItemOperatorHTC(itemOpNotEmpty, "Is not empty", true)
+      {
+        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+        {
+          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
+
+          return (subjList != null) && (subjList.isEmpty() == false);
+        }
+      }));
 
     return true;
   }
@@ -81,20 +201,20 @@ public class QueryWhereRelative extends RecordQuery
 
   @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
   {
+    clearOperands(row, 3);
+
+    return operatorOp2Change(op2, op1, op2, row, vp1, vp2, vp3);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static HyperSubjList<HDT_Record, HDT_Record> getSubjList(HDT_Record record, HyperTableCell op1)
+  {
     RelationType relType = RelationType.codeToVal(getCellID(op1));
+    if (record.getType() != db.getObjType(relType)) return null;
 
-    switch (getCellID(op2))
-    {
-      case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
-
-        vp3.setPopulator(row, new StandardPopulator(db.getSubjType(relType)));
-        return true;
-
-      default :
-        clearOperands(row, 3);
-        vp3.setRestricted(row, false);
-        return true;
-    }
+    return db.getSubjectList(relType, record);
   }
 
 //---------------------------------------------------------------------------
@@ -102,44 +222,7 @@ public class QueryWhereRelative extends RecordQuery
 
   @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
-    RelationType relType = RelationType.codeToVal(getCellID(op1));
-    if (record.getType() != db.getObjType(relType)) return false;
-
-    HyperSubjList<HDT_Record, HDT_Record> subjList = db.getSubjectList(relType, record);
-    int subjCount = subjList.size(), opID = getCellID(op2);
-
-    if ((opID == IS_EMPTY_OPERAND_ID) || (opID == IS_NOT_EMPTY_OPERAND_ID))
-      return (subjCount == 0) == (opID == IS_EMPTY_OPERAND_ID);
-
-    for (HDT_Record subjRecord : subjList)
-    {
-      switch (opID)
-      {
-        case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
-
-          if (subjRecord.getID() == getCellID(op3))
-            return opID == EQUAL_TO_OPERAND_ID;
-
-          break;
-
-        case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
-
-          if (subjRecord.listName().toLowerCase().contains(getCellText(op3).toLowerCase()))
-            return opID == CONTAINS_OPERAND_ID;
-
-          break;
-
-        default :
-          break;
-      }
-    }
-
-    return switch (opID)
-    {
-      case EQUAL_TO_OPERAND_ID, NOT_EQUAL_TO_OPERAND_ID     -> opID == NOT_EQUAL_TO_OPERAND_ID;
-      case CONTAINS_OPERAND_ID, DOES_NOT_CONTAIN_OPERAND_ID -> opID == DOES_NOT_CONTAIN_OPERAND_ID;
-      default                                               -> false;
-    };
+    return evaluateOperator(op2, record, row, op1, op2, op3);
   }
 
 //---------------------------------------------------------------------------
@@ -147,11 +230,7 @@ public class QueryWhereRelative extends RecordQuery
 
   @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2)
   {
-    return (opNum < 3) || switch (op2.getID())
-    {
-      case IS_EMPTY_OPERAND_ID, IS_NOT_EMPTY_OPERAND_ID -> false;
-      default                                           -> true;
-    };
+    return (opNum < 3) || ItemOperatorHTC.hasOperand(op2);
   }
 
 //---------------------------------------------------------------------------

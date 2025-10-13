@@ -18,17 +18,18 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.query.Query.ItemOperator.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.sources.*;
 import org.hypernomicon.query.ui.QueryCtrlr;
-import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
+import org.hypernomicon.view.cellValues.AbstractHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -142,7 +143,7 @@ public abstract class Query<HDT_T extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static boolean recordByTypeInit(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2)
+  static boolean recordByTypeInit(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2)
   {
     vp1.setPopulator(row, new RecordTypePopulator(true));
     vp2.setPopulator(row, new RecordByTypePopulator());
@@ -152,7 +153,7 @@ public abstract class Query<HDT_T extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static boolean recordByTypeOpChange(HyperTableCell op, HyperTableRow row, VariablePopulator nextPop)
+  static boolean recordByTypeOpChange(HyperTableCell op, HyperTableRow row, VariablePopulator nextPop)
   {
     RecordByTypePopulator rtp = nextPop.getPopulator(row);
     rtp.setRecordType(row, HyperTableCell.getCellType(op));
@@ -171,28 +172,103 @@ public abstract class Query<HDT_T extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int EQUAL_TO_OPERAND_ID         = 1,
-                          NOT_EQUAL_TO_OPERAND_ID     = 2,
-                          CONTAINS_OPERAND_ID         = 3,
-                          DOES_NOT_CONTAIN_OPERAND_ID = 4,
-                          IS_EMPTY_OPERAND_ID         = 5,
-                          IS_NOT_EMPTY_OPERAND_ID     = 6;
-
-  static Populator operandPopulator()
+  public enum ItemOperator
   {
-    return operandPopulator(false);
+    itemOpEqualTo(1),
+    itemOpNotEqualTo(2),
+    itemOpContain(3),
+    itemOpNotContain(4),
+    itemOpEmpty(5),
+    itemOpNotEmpty(6),
+    itemOpTrue(7),
+    itemOpFalse(8);
+
+    public final int favID;
+
+    ItemOperator(int favID)
+    {
+      this.favID = favID;
+    }
   }
 
-  static Populator operandPopulator(boolean excludeRecordOps)
-  {
-    return Populator.create(cvtOperand,
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-      new GenericNonRecordHTC(EQUAL_TO_OPERAND_ID        , excludeRecordOps ? "Is exactly" : "Is or includes record", hdtNone),
-      new GenericNonRecordHTC(NOT_EQUAL_TO_OPERAND_ID    , excludeRecordOps ? "Is not"     : "Excludes record"      , hdtNone),
-      new GenericNonRecordHTC(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
-      new GenericNonRecordHTC(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
-      new GenericNonRecordHTC(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
-      new GenericNonRecordHTC(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone));
+  public abstract class ItemOperatorHTC extends AbstractHTC
+  {
+    public final ItemOperator op;
+    public final String text;
+    public final boolean restrictedInput;
+
+    ItemOperatorHTC(ItemOperator op, String text, boolean restrictedInput)
+    {
+      super(false);
+
+      this.op = op;
+      this.text = text;
+      this.restrictedInput = restrictedInput;
+    }
+
+    @Override public final int getID()                { return op.favID; }
+    @Override public final String getText()           { return text; }
+    @Override public final RecordType getRecordType() { return hdtNone; }
+    @Override public final boolean isEmpty()          { return false; }
+
+    @Override public HyperTableCell getCopyWithID(int newID) { throw new UnsupportedOperationException("copy"); }
+
+    @SuppressWarnings("unused")  //returns true if subsequent cells need to be updated
+    public boolean op1Change(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+    { return true; }
+
+    @SuppressWarnings("unused")  //returns true if subsequent cells need to be updated
+    public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+    { return true; }
+
+    public abstract boolean evaluate(HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3);
+
+    public static boolean hasOperand(HyperTableCell cell)
+    {
+      return (cell instanceof Query<?>.ItemOperatorHTC ItemOperatorHTC) && (Set.of(itemOpEmpty, itemOpNotEmpty, itemOpTrue, itemOpFalse).contains(ItemOperatorHTC.op) == false);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  boolean evaluateOperator(HyperTableCell operatorCell, HDT_T record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+  {
+    if (operatorCell instanceof Query<?>.ItemOperatorHTC itemOperatorHTC)
+    {
+      @SuppressWarnings("unchecked")
+      Query<HDT_T>.ItemOperatorHTC typed = (Query<HDT_T>.ItemOperatorHTC) itemOperatorHTC;
+      return typed.evaluate(record, row, op1, op2, op3);
+    }
+
+    return false;
+  }
+
+  boolean operatorOp1Change(HyperTableCell operatorCell, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+  {
+    if (operatorCell instanceof Query<?>.ItemOperatorHTC itemOperatorHTC)
+    {
+      @SuppressWarnings("unchecked")
+      Query<HDT_T>.ItemOperatorHTC typed = (Query<HDT_T>.ItemOperatorHTC) itemOperatorHTC;
+      return typed.op1Change(row, vp1, vp2, vp3);
+    }
+
+    return false;
+  }
+
+  boolean operatorOp2Change(HyperTableCell operatorCell, HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+  {
+    if (operatorCell instanceof Query<?>.ItemOperatorHTC itemOperatorHTC)
+    {
+      @SuppressWarnings("unchecked")
+      Query<HDT_T>.ItemOperatorHTC typed = (Query<HDT_T>.ItemOperatorHTC) itemOperatorHTC;
+      return typed.op2Change(op1, op2, row, vp1, vp2, vp3);
+    }
+
+    return false;
   }
 
 //---------------------------------------------------------------------------

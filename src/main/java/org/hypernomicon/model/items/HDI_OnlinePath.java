@@ -66,33 +66,29 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
   @Override public void setFromOfflineValue(HDI_OfflinePath val, Tag tag) throws RelationCycleException
   {
-    switch (tag)
+    if (HyperPath.FOLDER_TAGS.contains(tag) == false)
     {
-      case tagParentFolder : case tagFolder : case tagPictureFolder :
+      initPath();
 
-        HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, recordWithPath, false);
-        objList.clear();
+      if (hyperPath == null) return;
+      if (hyperPath.isEmpty() && val.fileName.isEmpty()) return;
 
-        if (val.folderID > 0)
-        {
-          HDT_Folder folder = db.folders.getByID(val.folderID);
-          if (folder != null)
-          {
-            objList.add(folder);
-            objList.throwLastException();
-          }
-        }
+      hyperPath.assignNameInternal(new FilePath(val.fileName));
 
-        break;
+      return;
+    }
 
-      default :
+    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, recordWithPath, false);
+    objList.clear();
 
-        initPath();
-
-        if (hyperPath == null) return;
-        if (hyperPath.isEmpty() && val.fileName.isEmpty()) return;
-
-        hyperPath.assignNameInternal(new FilePath(val.fileName));
+    if (val.folderID > 0)
+    {
+      HDT_Folder folder = db.folders.getByID(val.folderID);
+      if (folder != null)
+      {
+        objList.add(folder);
+        objList.throwLastException();
+      }
     }
   }
 

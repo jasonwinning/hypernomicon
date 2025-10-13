@@ -54,14 +54,10 @@ public class HDI_OfflinePath extends HDI_OfflineBase
 
   @Override public void setFromXml(HDX_Element element, String nodeText, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    switch (element.getTag())
-    {
-      case tagParentFolder : case tagFolder : case tagPictureFolder :
-        folderID = element.getObjID(); break;
-
-      default :
-        fileName = nodeText; break;
-    }
+    if (HyperPath.FOLDER_TAGS.contains(element.getTag()))
+      folderID = element.getObjID();
+    else
+      fileName = nodeText;
   }
 
 //---------------------------------------------------------------------------
@@ -71,21 +67,17 @@ public class HDI_OfflinePath extends HDI_OfflineBase
   {
     String text = "";
 
-    switch (tag)
+    if (HyperPath.FOLDER_TAGS.contains(tag) == false)
     {
-      case tagFolder : case tagParentFolder : case tagPictureFolder :
-
-        HDT_Folder folder = db.folders.getByID(folderID);
-        if (folder != null)
-          text = folder.getXMLObjectName();
-
-        writePointerTag(xml, tag, folderID, hdtNone, text);
-        return;
-
-      default :
-
-        writeStringTag(xml, tag, fileName);
+      writeStringTag(xml, tag, fileName);
+      return;
     }
+
+    HDT_Folder folder = db.folders.getByID(folderID);
+    if (folder != null)
+      text = folder.getXMLObjectName();
+
+    writePointerTag(xml, tag, folderID, hdtNone, text);
   }
 
 //---------------------------------------------------------------------------

@@ -43,12 +43,14 @@ public abstract class Populator
 
     private final CellValueType cellValueType;
     private final List<? extends HyperTableCell> choices;
+    private final boolean idMatching;
 
   //---------------------------------------------------------------------------
 
-    private SimplePopulator(CellValueType cellValueType, List<? extends HyperTableCell> choices)
+    private SimplePopulator(CellValueType cellValueType, boolean idMatching, List<? extends HyperTableCell> choices)
     {
       this.cellValueType = cellValueType;
+      this.idMatching = idMatching;
       this.choices = choices;
     }
 
@@ -56,7 +58,13 @@ public abstract class Populator
 
     @Override public List<? extends HyperTableCell> populate(HyperTableRow row, boolean force) { return choices; }
     @Override public CellValueType getValueType()                                              { return cellValueType; }
-    @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)              { return matchFromList(row, cell); }
+
+  //---------------------------------------------------------------------------
+
+    @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
+    {
+      return idMatching ? getChoiceByID(row, HyperTableCell.getCellID(cell)) : matchFromList(row, cell);
+    }
 
   //---------------------------------------------------------------------------
 
@@ -81,8 +89,8 @@ public abstract class Populator
 
   public enum CellValueType
   {
-    cvtVaries,   cvtQuery,     cvtQueryType,  cvtRecordType, cvtRecord,   cvtBoolean,   cvtFileNameComponent, cvtPageRange,
-    cvtTernary,  cvtOperand,   cvtTagItem,    cvtRelation,   cvtBibEntry, cvtBibField,  cvtSrchBtnPreset
+    cvtVaries,  cvtQuery,   cvtQueryType, cvtRecordType, cvtRecord,    cvtFileNameComponent, cvtPageRange,
+    cvtOperand, cvtTagItem, cvtRelation,  cvtBibEntry,   cvtBibField,  cvtSrchBtnPreset
   }
 
 //---------------------------------------------------------------------------
@@ -144,7 +152,9 @@ public abstract class Populator
    */
   final HyperTableCell matchFromList(HyperTableRow row, HyperTableCell cell)
   {
-    return populate(row, false).contains(cell) ? cell : null;
+    List<? extends HyperTableCell> list = populate(row, false);
+    int ndx = list.indexOf(cell);
+    return (ndx >= 0) ? list.get(ndx) : null;
   }
 
 //---------------------------------------------------------------------------
@@ -158,14 +168,63 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static Populator create(CellValueType cellValueType, HyperTableCell... cells)
+  /**
+   * Create simple populator that matches cells based on ID, type, and text.
+   * @param cellValueType Value type
+   * @param cells Fixed array of cells returned by {@link #populate(HyperTableRow, boolean)}
+   * @return The newly created populator
+   */
+  public static Populator createWithFullMatching(CellValueType cellValueType, HyperTableCell... cells)
   {
-    return new SimplePopulator(cellValueType, Arrays.asList(cells));
+    return new SimplePopulator(cellValueType, false, Arrays.asList(cells));
   }
 
-  public static Populator create(CellValueType cellValueType, List<? extends HyperTableCell> cells)
+  /**
+   * Create simple populator that matches cells based on ID, type, and text.
+   * @param cellValueType Value type
+   * @param cells Fixed list of cells returned by {@link #populate(HyperTableRow, boolean)}
+   * @return The newly created populator
+   */
+  public static Populator createWithFullMatching(CellValueType cellValueType, List<? extends HyperTableCell> cells)
   {
-    return new SimplePopulator(cellValueType, cells);
+    return new SimplePopulator(cellValueType, false, cells);
+  }
+
+  /**
+   * Create simple populator that matches cells based on ID only.
+   * @param cellValueType Value type
+   * @param cells Fixed array of cells returned by {@link #populate(HyperTableRow, boolean)}
+   * @return The newly created populator
+   */
+  public static Populator createWithIDMatching(CellValueType cellValueType, HyperTableCell... cells)
+  {
+    return new SimplePopulator(cellValueType, true, Arrays.asList(cells));
+  }
+
+  /**
+   * Create simple populator that matches cells based on ID only.
+   * @param cellValueType Value type
+   * @param cells Fixed list of cells returned by {@link #populate(HyperTableRow, boolean)}
+   * @return The newly created populator
+   */
+  public static Populator createWithIDMatching(CellValueType cellValueType, List<? extends HyperTableCell> cells)
+  {
+    return new SimplePopulator(cellValueType, true, cells);
+  }
+
+  /**
+   * Creates a {@code Populator} that never supplies any values.
+   * <p>
+   * The {@link #populate(HyperTableRow, boolean)} method of the returned
+   * instance always yields an empty list.
+   * </p>
+   *
+   * @param cellValueType the value type associated with the populator
+   * @return a populator whose {@code populate} method always returns an empty list
+   */
+  public static Populator emptyPopulator(CellValueType cellValueType)
+  {
+    return createWithIDMatching(cellValueType);
   }
 
 //---------------------------------------------------------------------------

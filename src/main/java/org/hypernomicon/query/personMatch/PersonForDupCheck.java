@@ -275,9 +275,9 @@ public class PersonForDupCheck
 
   private void buildNameVariantAndInsert(List<List<String>> tokenVariantsForAllNames, List<String> selectedVariantForAllNames)
   {
-    int idx = selectedVariantForAllNames.size();
+    int ndx = selectedVariantForAllNames.size();
 
-    if (idx == tokenVariantsForAllNames.size())
+    if (ndx == tokenVariantsForAllNames.size())
     {
       // insert tokens + lastName into trie
       String firstNames = String.join(" ", selectedVariantForAllNames);
@@ -290,7 +290,7 @@ public class PersonForDupCheck
       return;
     }
 
-    for (String token : tokenVariantsForAllNames.get(idx))
+    for (String token : tokenVariantsForAllNames.get(ndx))
     {
       selectedVariantForAllNames.add(token);
       buildNameVariantAndInsert(tokenVariantsForAllNames, selectedVariantForAllNames);

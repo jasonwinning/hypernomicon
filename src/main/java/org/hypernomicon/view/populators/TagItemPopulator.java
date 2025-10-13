@@ -60,7 +60,7 @@ public class TagItemPopulator extends Populator
     this.recordType = recordType;
     tags = db.getTagsByRecordType(recordType, true);
 
-    removeAll(tags, tagDisplayRecord, tagKeyWork);
+    removeAll(tags, tagDisplayRecord, tagKeyWork, tagPictureCrop, tagSpokeRecord);
 
     choices = new ArrayList<>();
   }
@@ -82,7 +82,7 @@ public class TagItemPopulator extends Populator
     tags.forEach(tag ->
     {
       HyperTableCell cell = new TagItemCell(tag, recordType);
-      addToSortedList(choices, cell, Comparator.comparing(HyperTableCell::getCellText));
+      addToSortedList(choices, cell, Comparator.comparing(_cell -> HyperTableCell.getCellText(_cell).toLowerCase()));
     });
 
     return choices;

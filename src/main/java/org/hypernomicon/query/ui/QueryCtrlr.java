@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.query.GeneralQueries.*;
+import static org.hypernomicon.query.Query.ItemOperator.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -45,6 +46,7 @@ import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.query.Query;
+import org.hypernomicon.query.Query.ItemOperator;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
 import org.hypernomicon.query.reports.ReportTable;
@@ -287,14 +289,23 @@ public final class QueryCtrlr
 
         if ((op1ID >= 0) && (nextPop != null) && (nextPop.getValueType() == cvtOperand))
         {
-          HyperTableCell operandCell = row.getPopulator(OPERAND_1_COL_NDX).getValueType(row) == cvtBibField ?
-            nextPop.getChoiceByID(Query.CONTAINS_OPERAND_ID)
-          :
-            nextPop.getChoiceByID(Query.EQUAL_TO_OPERAND_ID);
+          Query<?>.ItemOperatorHTC operatorCell = getOperatorCell(nextPop, itemOpEqualTo);
 
-          row.setCellValue(nextColNdx, operandCell);
-          if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 3, cellVal, operandCell))
-            htFields.edit(row, OPERAND_3_COL_NDX);
+          if ((operatorCell == null) || (operatorCell.restrictedInput == false))
+            operatorCell = getOperatorCell(nextPop, itemOpContain);
+
+          if (operatorCell == null)
+          {
+            if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 2, cellVal, GenericNonRecordHTC.blankCell))
+              htFields.edit(row, OPERAND_2_COL_NDX);
+          }
+          else
+          {
+            row.setCellValue(nextColNdx, operatorCell);
+
+            if ((tempDASD == false) && queryHasOperand(query, getQueryType(row), 3, cellVal, operatorCell))
+              htFields.edit(row, OPERAND_3_COL_NDX);
+          }
         }
         else
         {
@@ -368,13 +379,23 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static Query<?>.ItemOperatorHTC getOperatorCell(Populator pop, ItemOperator operator)
+  {
+    HyperTableCell cell = pop.getChoiceByID(operator.favID);
+
+    return cell instanceof Query<?>.ItemOperatorHTC ? (Query<?>.ItemOperatorHTC) cell : null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static Populator createQueryTypePopulator(boolean includeReport, boolean includeRecordTypes)
   {
     EnumSet<QueryType> queryTypes = includeRecordTypes ? EnumSet.allOf(QueryType.class) : EnumSet.of(qtReport);
 
     if (includeReport == false) queryTypes.remove(qtReport);
 
-    return Populator.create(cvtQueryType, queryTypes.stream()
+    return Populator.createWithIDMatching(cvtQueryType, queryTypes.stream()
       .map(queryType -> new GenericNonRecordHTC(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
       .toList());
   }

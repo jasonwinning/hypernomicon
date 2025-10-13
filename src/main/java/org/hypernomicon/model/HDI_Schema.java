@@ -22,6 +22,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
 
+import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
@@ -71,7 +72,16 @@ public record HDI_Schema(HyperDataCategory category, RelationType relType, Recor
       assert(nestedTargetType != hdtNone);
     }
     else
+    {
       assert(nestedTargetType == hdtNone);
+
+      if (category == hdcPath)
+      {
+        assert(tags.length == 2);
+        assert(HyperPath.FOLDER_TAGS.contains(tags[0]));
+        assert(HyperPath.FOLDER_TAGS.contains(tags[1]) == false);
+      }
+    }
 
     Builder<Tag> builder = ImmutableList.builder();
     builder.add(tags);

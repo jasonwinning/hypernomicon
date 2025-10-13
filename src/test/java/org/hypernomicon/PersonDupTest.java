@@ -255,18 +255,18 @@ class PersonDupTest
 
     // B) None of the SKIPPED candidates’ authors appear:
 
-    Set<Integer> skippedIdx = new LinkedHashSet<>(List.of(0, 7, 16, 17, 19, 20, 22, 26));
+    Set<Integer> skippedSet = new LinkedHashSet<>(List.of(0, 7, 16, 17, 19, 20, 22, 26));
 
-    for (int idx : skippedIdx)
+    for (int ndx : skippedSet)
     {
-      assertTrue(findMatches(person1, List.of(candidates.get(idx))).isEmpty(), "Should not match candidate #" + (idx + 1));
+      assertTrue(findMatches(person1, List.of(candidates.get(ndx))).isEmpty(), "Should not match candidate #" + (ndx + 1));
     }
 
-    for (int idx = 0; idx < candidates.size(); idx++)
+    for (int ndx = 0; ndx < candidates.size(); ndx++)
     {
-      if (skippedIdx.contains(idx)) continue;
+      if (skippedSet.contains(ndx)) continue;
 
-      assertFalse(findMatches(person1, List.of(candidates.get(idx))).isEmpty(), "Should match candidate C" + (idx + 1));
+      assertFalse(findMatches(person1, List.of(candidates.get(ndx))).isEmpty(), "Should match candidate C" + (ndx + 1));
     }
   }
 

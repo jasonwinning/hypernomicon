@@ -422,7 +422,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     return addColAltPopulator(objType, ctrlType, (ctrlType == ctEditableUnlimitedDropDown) || (ctrlType == ctNoneditableDropDown) || (ctrlType == ctEditableLimitedDropDown) ?
       new StandardPopulator(objType)
     :
-      Populator.create(cvtRecord));
+      Populator.emptyPopulator(cvtRecord));
   }
 
 //---------------------------------------------------------------------------
@@ -457,7 +457,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     return addLabelCol(objType).setSortMethod(sortMethod); }
 
   public HyperTableColumn addLabelColWithAlignment(RecordType objType, Pos alignment) {
-    return addColAltPopulator(objType, ctNone, Populator.create(cvtRecord)).setAlignment(alignment); }
+    return addColAltPopulator(objType, ctNone, Populator.emptyPopulator(cvtRecord)).setAlignment(alignment); }
 
   public HyperTableColumn addLabelEditCol(ButtonCellHandler handler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctLabelEdit, null, -1, handler, null)); }

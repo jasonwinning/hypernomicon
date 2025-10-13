@@ -17,10 +17,11 @@
 
 package org.hypernomicon.model.items;
 
+import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.Tag.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.RecordType.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.filePath.FilePath;
@@ -92,6 +94,8 @@ public class HyperPath
   public boolean isNotEmpty()               { return isEmpty() == false; }
 
   @Override public String toString()        { return filePath().toString(); }
+
+  public static final Collection<Tag> FOLDER_TAGS = EnumSet.of(tagFolder, tagParentFolder, tagPictureFolder);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -272,10 +276,10 @@ public class HyperPath
       case hdtWorkFile ->
       {
         HDT_WorkFile workFile = (HDT_WorkFile) existingRecord;
-        yield workFile.works.size() > 0 ?
-          "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.getFirst().getID()
+        yield workFile.works.isEmpty() ?
+          "The file: " + filePath + " is already in use as a work file, ID: " + workFile.getID()
         :
-          "The file: " + filePath + " is already in use as a work file, ID: " + workFile.getID();
+          "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.getFirst().getID();
       }
 
       case hdtMiscFile -> "The file: " + filePath + " is already in use as a miscellaneous file, record ID: " + existingRecord.getID();

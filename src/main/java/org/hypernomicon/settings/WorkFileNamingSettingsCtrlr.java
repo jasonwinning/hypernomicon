@@ -187,7 +187,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
   {
     hyperTable = new HyperTable(tv, 0, true, "");
 
-    Populator pop = Populator.create(CellValueType.cvtFileNameComponent,
+    Populator pop = Populator.createWithIDMatching(CellValueType.cvtFileNameComponent,
         EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new GenericNonRecordHTC(type.prefValue, type.caption, hdtNone)).toList());
 
     hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableUnlimitedDropDown, pop, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
