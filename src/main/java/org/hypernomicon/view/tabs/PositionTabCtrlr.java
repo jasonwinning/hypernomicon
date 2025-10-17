@@ -25,7 +25,7 @@ import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_PositionVerdict;
 import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.RecordByTypePopulator;

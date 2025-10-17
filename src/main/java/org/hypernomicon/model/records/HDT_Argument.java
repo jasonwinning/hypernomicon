@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
@@ -26,13 +26,13 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.hypernomicon.model.items.Ternary;
-import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.authors.RecordAuthor;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
+import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.model.items.Ternary;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_ArgumentVerdict;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 

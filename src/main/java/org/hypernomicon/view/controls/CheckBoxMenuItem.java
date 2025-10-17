@@ -90,9 +90,7 @@ public class CheckBoxMenuItem extends CustomMenuItem
 
 //---------------------------------------------------------------------------
 
-  public BooleanProperty selectedProperty() { return selectedProperty; }
   public boolean isSelected()               { return selectedProperty.get(); }
-  public void setSelected(boolean selected) { selectedProperty.set(selected); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

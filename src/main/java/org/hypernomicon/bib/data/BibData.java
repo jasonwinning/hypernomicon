@@ -19,8 +19,6 @@ package org.hypernomicon.bib.data;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -182,15 +180,6 @@ public abstract class BibData
 
         return true;
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected static String extractYear(CharSequence text)
-  {
-    Matcher m = Pattern.compile("(\\A|\\D)([12]\\d\\d\\d)(\\z|\\D)").matcher(text);
-    return m.find() ? m.group(2) : "";
   }
 
 //---------------------------------------------------------------------------

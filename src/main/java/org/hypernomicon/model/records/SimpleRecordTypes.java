@@ -25,7 +25,6 @@ import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 
@@ -59,17 +58,6 @@ public final class SimpleRecordTypes
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static abstract class HDT_Verdict extends HDT_SimpleRecord
-  {
-    private HDT_Verdict(RecordState xmlState, DatasetAccessor<? extends HDT_Verdict> dataset)      { super(xmlState, dataset); }
-
-    @Override public String getCBText() { return name(); }
-    @Override public String listName()  { return getTagString(tagListName); }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static final class HDT_Country extends HDT_SimpleRecord
   { public HDT_Country(RecordState xmlState, DatasetAccessor<HDT_Country> dataset)                 { super(xmlState, dataset);  } }
 
@@ -81,12 +69,6 @@ public final class SimpleRecordTypes
 
   public static final class HDT_Field extends HDT_SimpleRecord
   { public HDT_Field(RecordState xmlState, DatasetAccessor<HDT_Field> dataset)                     { super(xmlState, dataset);  } }
-
-  public static final class HDT_PositionVerdict extends HDT_Verdict
-  { public HDT_PositionVerdict(RecordState xmlState, DatasetAccessor<HDT_PositionVerdict> dataset) { super(xmlState, dataset);  } }
-
-  public static final class HDT_ArgumentVerdict extends HDT_Verdict
-  { public HDT_ArgumentVerdict(RecordState xmlState, DatasetAccessor<HDT_ArgumentVerdict> dataset) { super(xmlState, dataset);  } }
 
   public static final class HDT_InstitutionType extends HDT_SimpleRecord
   { public HDT_InstitutionType(RecordState xmlState, DatasetAccessor<HDT_InstitutionType> dataset) { super(xmlState, dataset);  } }

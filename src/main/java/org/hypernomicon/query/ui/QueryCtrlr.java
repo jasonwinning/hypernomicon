@@ -381,9 +381,7 @@ public final class QueryCtrlr
 
   private static Query<?>.ItemOperatorHTC getOperatorCell(Populator pop, ItemOperator operator)
   {
-    HyperTableCell cell = pop.getChoiceByID(operator.favID);
-
-    return cell instanceof Query<?>.ItemOperatorHTC ? (Query<?>.ItemOperatorHTC) cell : null;
+    return pop.getChoiceByID(operator.favID) instanceof Query<?>.ItemOperatorHTC operatorCell ? operatorCell : null;
   }
 
 //---------------------------------------------------------------------------

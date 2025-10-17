@@ -44,7 +44,7 @@ public enum Ternary
 
 //---------------------------------------------------------------------------
 
-  public static boolean isEmpty(Ternary val) { return (val == null) || (val == Unset); }
+  public static boolean isNullOrUnset(Ternary val) { return (val == null) || (val == Unset); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -22,6 +22,8 @@ import java.util.*;
 import static org.hypernomicon.model.Tag.*;
 
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_ArgumentVerdict;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_PositionVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -84,7 +86,7 @@ public enum RecordType
     this.klass = klass;
     simple = HDT_SimpleRecord.class.isAssignableFrom(klass);
     gotMainText = HDT_RecordWithMainText.class.isAssignableFrom(klass);
-    disregardDates = simple || (klass == HDT_Subfield.class) || (klass == HDT_Region.class) || (klass == HDT_Hub.class);
+    disregardDates = simple || Set.of(HDT_Subfield.class, HDT_Region.class, HDT_Hub.class, HDT_PositionVerdict.class, HDT_ArgumentVerdict.class).contains(klass);
   }
 
 //---------------------------------------------------------------------------

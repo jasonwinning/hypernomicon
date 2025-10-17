@@ -41,6 +41,7 @@ import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.MainCtrlr.ShutDownMode;
 import org.hypernomicon.view.mainText.MainTextWrapper;
+
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
@@ -107,7 +108,7 @@ public final class App extends Application
   public static App app;
   public static MainCtrlr ui;
 
-  public Property<Table<ShortcutContext, ShortcutAction, Shortcut>> shortcuts = new SimpleObjectProperty<>();
+  public final Property<Table<ShortcutContext, ShortcutAction, Shortcut>> shortcuts = new SimpleObjectProperty<>();
 
   public static double displayScale;
   public static boolean jxBrowserInitialized = false,

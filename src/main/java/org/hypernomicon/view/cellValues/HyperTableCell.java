@@ -38,14 +38,10 @@ public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  int TRUE_ID  = 1,
-      FALSE_ID = 2,
-      UNSET_ID = 3;
-
   static int getCellID(HyperTableCell cell)          { return cell == null ? -1 : cell.getID(); }
   static String getCellText(HyperTableCell cell)     { return cell == null ? "" : safeStr(cell.getText()); }
   static RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.getRecordType() == null) ? hdtNone : cell.getRecordType(); }
-  static boolean isEmpty(HyperTableCell cell)        { return cell == null ? true : cell.isEmpty(); }
+  static boolean isEmpty(HyperTableCell cell)        { return (cell == null) || cell.isEmpty(); }
 
   static <HDT_T extends HDT_Record> HDT_T getRecord(HyperTableCell cell) { return cell == null ? null : cell.getRecord(); }
 

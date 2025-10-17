@@ -49,10 +49,8 @@ public class QueryWhereKeyWorks extends RecordQuery
 
   protected boolean evalInclude(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord)
   {
-    if (HDT_Record.isEmpty(specifiedRecord, false))
-      return false;
-
-    return recordWMT.getMainText().getKeyWorksUnmod().stream().anyMatch(keyWork -> keyWork.getRecord() == specifiedRecord);
+    return (HDT_Record.isEmpty(specifiedRecord, false) == false) &&
+           recordWMT.getMainText().getKeyWorksUnmod().stream().anyMatch(keyWork -> keyWork.getRecord() == specifiedRecord);
   }
 
 //---------------------------------------------------------------------------
@@ -60,10 +58,8 @@ public class QueryWhereKeyWorks extends RecordQuery
 
   protected boolean evalExclude(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord)
   {
-    if (HDT_Record.isEmpty(specifiedRecord, false))
-      return false;
-
-    return recordWMT.getMainText().getKeyWorksUnmod().stream().noneMatch(keyWork -> keyWork.getRecord() == specifiedRecord);
+    return (HDT_Record.isEmpty(specifiedRecord, false) == false) &&
+           recordWMT.getMainText().getKeyWorksUnmod().stream().noneMatch(keyWork -> keyWork.getRecord() == specifiedRecord);
   }
 
 //---------------------------------------------------------------------------
@@ -93,7 +89,7 @@ public class QueryWhereKeyWorks extends RecordQuery
       {
         @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
-          return evalInclude((HDT_RecordWithMainText)record, HyperTableCell.getRecord(op3));
+          return evalInclude((HDT_RecordWithMainText) record, HyperTableCell.getRecord(op3));
         }
 
         @Override public boolean op1Change(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -116,7 +112,7 @@ public class QueryWhereKeyWorks extends RecordQuery
       {
         @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
-          return evalExclude((HDT_RecordWithMainText)record, HyperTableCell.getRecord(op3));
+          return evalExclude((HDT_RecordWithMainText) record, HyperTableCell.getRecord(op3));
         }
 
         @Override public boolean op1Change(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -139,7 +135,7 @@ public class QueryWhereKeyWorks extends RecordQuery
       {
         @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
-          return evalEmpty((HDT_RecordWithMainText)record);
+          return evalEmpty((HDT_RecordWithMainText) record);
         }
       },
 
@@ -149,7 +145,7 @@ public class QueryWhereKeyWorks extends RecordQuery
       {
         @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
-          return evalNotEmpty((HDT_RecordWithMainText)record);
+          return evalNotEmpty((HDT_RecordWithMainText) record);
         }
       }));
 

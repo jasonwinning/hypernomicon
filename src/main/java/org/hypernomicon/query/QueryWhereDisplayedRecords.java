@@ -50,11 +50,11 @@ public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks
     if (HDT_Record.isEmpty(specifiedRecord, false) || (specifiedRecord.hasMainText() == false))
       return false;
 
-    HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText)specifiedRecord;
+    HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText) specifiedRecord;
 
     return recordWMT.getMainText().getDisplayItemsUnmod().stream()
 
-      .filter(displayItem-> displayItem.type == DisplayItemType.diRecord)
+      .filter(displayItem -> displayItem.type == DisplayItemType.diRecord)
       .anyMatch(displayItem -> displayItem.record.getMainText() == specifiedRecordWMT.getMainText());
   }
 
@@ -66,11 +66,11 @@ public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks
     if (HDT_Record.isEmpty(specifiedRecord, false) || (specifiedRecord.hasMainText() == false))
       return false;
 
-    HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText)specifiedRecord;
+    HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText) specifiedRecord;
 
     return recordWMT.getMainText().getDisplayItemsUnmod().stream()
 
-      .filter(displayItem-> displayItem.type == DisplayItemType.diRecord)
+      .filter(displayItem -> displayItem.type == DisplayItemType.diRecord)
       .noneMatch(displayItem -> displayItem.record.getMainText() == specifiedRecordWMT.getMainText());
   }
 

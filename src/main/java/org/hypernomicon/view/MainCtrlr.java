@@ -2131,7 +2131,7 @@ public final class MainCtrlr
     int id = parseInt(ctrlr.tfNewID.getText(), -1);
     type = ctrlr.hcbRecordType.selectedType();
 
-    RecordState recordState = new RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
+    RecordState recordState = new RecordState(type, id, ctrlr.tfNewKey.getText(), "", "");
     T newRecord;
 
     try

@@ -44,8 +44,8 @@ public class HDI_OnlineTernary extends HDI_OnlineBase<HDI_OfflineTernary>
 
   @Override public void setFromOfflineValue(HDI_OfflineTernary val, Tag tag)                { value = val.get(); }
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { }
-  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)              { return Ternary.isEmpty(value) ? "" : value.toString(); }
-  @Override public int getResultCount(Tag tag)                                              { return Ternary.isEmpty(value) ? 0 : 1; }
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items)              { return Ternary.isNullOrUnset(value) ? "" : value.toString(); }
+  @Override public int getResultCount(Tag tag)                                              { return Ternary.isNullOrUnset(value) ? 0 : 1; }
   @Override public void getToOfflineValue(HDI_OfflineTernary val, Tag tag)                  { val.value = value; }
 
 //---------------------------------------------------------------------------

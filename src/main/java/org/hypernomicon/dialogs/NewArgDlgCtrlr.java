@@ -36,8 +36,8 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_ArgumentVerdict;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_PositionVerdict;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.settings.ArgumentNamingSettings;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -233,7 +233,7 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     cbArgOrStance.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) ->
     {
-      if (Ternary.isEmpty(nv) == false)
+      if (Ternary.isNullOrUnset(nv) == false)
         reviseSuggestions(nv);
     });
 
@@ -379,7 +379,7 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     Ternary isArgument = cbArgOrStance.getValue();
 
-    if (Ternary.isEmpty(isArgument))
+    if (Ternary.isNullOrUnset(isArgument))
       return falseWithErrorPopup("You must select either Argument or Stance.", cbArgOrStance);
 
     argument = db.createNewBlankRecord(hdtArgument);

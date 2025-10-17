@@ -76,6 +76,8 @@ import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.data.HyperDataset;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_ArgumentVerdict;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_PositionVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.*;
@@ -159,7 +161,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum DBState
+  public enum DBState
   {
     CLOSED,
     LOADING,
@@ -550,8 +552,13 @@ public abstract class AbstractHyperDB
     addStringItem   (hdtSubfield                   , tagName);
     addPointerSingle(hdtSubfield, rtFieldOfSubfield, tagField);
 
-    addStringItem(hdtPositionVerdict, tagListName);
-    addStringItem(hdtArgumentVerdict, tagListName);
+    addStringItem (hdtPositionVerdict, tagName);
+    addStringItem (hdtPositionVerdict, tagShortName);
+    addTernaryItem(hdtPositionVerdict, tagInFavor);
+
+    addStringItem (hdtArgumentVerdict, tagName);
+    addStringItem (hdtArgumentVerdict, tagShortName);
+    addTernaryItem(hdtArgumentVerdict, tagInFavor);
 
     addStringItem  (hdtTerm                 , tagTerm);
     addPointerMulti(hdtTerm, rtConceptOfTerm, tagConcept);
@@ -1001,6 +1008,10 @@ public abstract class AbstractHyperDB
       return false;
     }
 
+    // Backwards compatibility with records XML version 1.10
+    if (ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtPositionVerdict, new VersionNumber(1))).lessThanOrEqualTo(new VersionNumber(1, 10)))
+      HDT_Verdict.doInFavorConversion();
+
     // Backwards compatibility with records XML version 1.4
     if (workIDtoInvIDs.isEmpty() == false)
       doInvestigationConversion(workIDtoInvIDs);
@@ -1104,7 +1115,7 @@ public abstract class AbstractHyperDB
       if (thesisWorkType != null)
         changeRecordID(thesisWorkType, datasets.get(hdtWorkType).getNextID());
 
-      createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", "", ""), true);
+      createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", ""), true);
     }
     catch (HyperDataException e)
     {
@@ -1658,11 +1669,12 @@ public abstract class AbstractHyperDB
    * which is then returned. The cursor is left immediately after the end of the open tag for the record element.
    * @param eventReader Iterator for XML events
    * @param fileDescription How to describe the current file for purposes of error messages
+   * @param dataVersion Version of data being loaded
    * @return The new RecordState object
    * @throws XMLStreamException if there is an error with the underlying XML.
    * @throws HyperDataException if there is no record type or an invalid record type in the record tag.
    */
-  private static RecordState getNextRecordFromXML(XMLEventReader eventReader, String fileDescription) throws XMLStreamException, HyperDataException
+  private static RecordState getNextRecordFromXML(XMLEventReader eventReader, String fileDescription, VersionNumber dataVersion) throws XMLStreamException, HyperDataException
   {
     while (eventReader.hasNext())
     {
@@ -1677,14 +1689,16 @@ public abstract class AbstractHyperDB
 
       int id = -1;
       RecordType type = hdtNone;
-      String sortKeyAttr = "", listName = "", searchKey = "";
+      String sortKeyAttr = "", searchKey = "";
+      String listName = "";  // Backwards compatibility with records XML version 1.10
 
       Iterator<Attribute> attributes = startElement.getAttributes();
 
       while (attributes.hasNext())
       {
         Attribute attribute = attributes.next();
-        Tag tag = getTag(attribute.getName().toString());
+        String attrName = attribute.getName().toString();
+        Tag tag = getTag(attrName);
 
         switch (tag)
         {
@@ -1699,20 +1713,68 @@ public abstract class AbstractHyperDB
 
           case tagSortKey   : sortKeyAttr = attribute.getValue(); break;
           case tagSearchKey : searchKey   = attribute.getValue(); break;
-          case tagListName  : listName    = attribute.getValue(); break;
-          default           : break;
+
+          default           :
+
+            if ("list_name".equals(attrName))
+              listName = attribute.getValue();
+            else
+              throw new HyperDataException("Invalid attribute in record element: \"" + attrName + "\" File: " + fileDescription);
+
+            break;
         }
       }
 
       if (type == hdtNone)
         throw new HyperDataException("Record with no type found." + (id > 0 ? (" ID: " + id) : "") + " File: " + fileDescription);
 
-      RecordState xmlRecord = new RecordState(type, id, sortKeyAttr, "", searchKey, listName);
+      checkForIllegalListNameAttribute(type, id, dataVersion, listName, fileDescription);
+
+      RecordState xmlRecord = new RecordState(type, id, sortKeyAttr, "", searchKey);
       xmlRecord.stored = true;
+
+      if (strNotNullOrEmpty(listName))
+        ((HDI_OfflineString) xmlRecord.items.get(tagShortName)).set(listName);
+
       return xmlRecord;
     }
 
     return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Version-skew conversion guardrail for legacy "list_name" attribute for
+   * backwards compatibility with records XML version 1.10.
+   *
+   * <ul>
+   *   <li>In Hypernomicon v1.32.1 and lower, the "list_name" attribute was valid
+   *       for position/argument verdicts.</li>
+   *   <li>After that, the "list_name" attribute was retired in favor of the
+   *       &lt;short_name&gt; child element.</li>
+   *   <li>Hypernomicon never saves records without IDs; if id &lt; 1, the record
+   *       was hand-edited, and legacy attributes are not allowed in that case.</li>
+   * </ul>
+   *
+   * @param type Record type
+   * @param id Record ID
+   * @param dataVersion XML data version
+   * @param listName Value for list_name
+   * @param fileDescription How to describe the current XML file to the user
+   * @throws HyperDataException if "list_name" is present but not allowed
+   */
+  private static void checkForIllegalListNameAttribute(RecordType type, int id, VersionNumber dataVersion, String listName, String fileDescription) throws HyperDataException
+  {
+    if (strNotNullOrEmpty(listName) == false) return;
+
+    boolean disallowedType = (type != hdtPositionVerdict) && (type != hdtArgumentVerdict),
+            invalidId      = id < 1,  // Legacy attribute cannot be used when hand-editing data
+            tooNewVersion  = ComparableUtils.is(dataVersion).greaterThan(new VersionNumber(1, 10));
+
+    if (disallowedType || invalidId || tooNewVersion)
+      throw new HyperDataException("Invalid legacy attribute \"list_name\" in record element. File: " + fileDescription);
   }
 
 //---------------------------------------------------------------------------
@@ -1841,7 +1903,7 @@ public abstract class AbstractHyperDB
 
       while (true)
       {
-        RecordState xmlRecord = getNextRecordFromXML(eventReader, fileDescription);
+        RecordState xmlRecord = getNextRecordFromXML(eventReader, fileDescription, dataVersion);
         if (xmlRecord == null) break;
 
         boolean notDoneReadingRecord = eventReader.hasNext(), noItemTags = true;
@@ -1957,7 +2019,13 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 
         if (noItemTags)
-          xmlRecord.setItemFromXML(null, nodeText, null);
+        {
+          // Backwards compatibility with records XML version 1.10
+          if (((xmlRecord.type == hdtPositionVerdict) || (xmlRecord.type == hdtArgumentVerdict)) && ComparableUtils.is(dataVersion).lessThan(new VersionNumber(1, 11)))
+            ((HDI_OfflineString) xmlRecord.items.get(tagName)).set(nodeText);
+          else
+            xmlRecord.setItemFromXML(null, nodeText, null);
+        }
 
         if (isUnstoredRecord(xmlRecord.id, xmlRecord.type) == false)
         {

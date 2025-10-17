@@ -30,6 +30,8 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_ArgumentVerdict;
+import org.hypernomicon.model.records.HDT_Verdict.HDT_PositionVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -258,6 +260,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   {
     if (core.isEmpty()) return;
 
+    boolean wroteAny = false;
     int ndx = 0;
 
     for (HDT_DT record : getAccessor())
@@ -269,12 +272,14 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
       record.saveToStoredState();
       record.writeStoredStateToXML(xml);
+      wroteAny = true;
 
       if (task != null)
         task.updateProgress(task.completedCount + ndx, task.totalCount);
     }
 
-    xml.append(System.lineSeparator()).append(System.lineSeparator()).append(System.lineSeparator());
+    if (wroteAny)
+      xml.append(System.lineSeparator()).append(System.lineSeparator()).append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------

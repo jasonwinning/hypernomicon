@@ -418,7 +418,7 @@ public final class GeneralQueries
       {
         dummySearchKeys.removeAll();
 
-        searchDummy = db.createNewRecordFromState(new RecordState(hdtPerson, -1, "", "", "", "", true), true);
+        searchDummy = db.createNewRecordFromState(new RecordState(hdtPerson, -1, "", "", "", true), true);
 
         dummySearchKeys.setSearchKey(searchDummy, getCellText(op1), true, false);
       }

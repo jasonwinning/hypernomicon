@@ -46,7 +46,6 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.utils.URIBuilder;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
@@ -74,10 +73,10 @@ public final class DesktopUtil
 
   public enum OperatingSystem
   {
-    WINDOWS (() -> PlatformUtil.isWindows()),
-    MAC     (() -> PlatformUtil.isMac    ()),
-    LINUX   (() -> PlatformUtil.isLinux  ()),
-    OTHER_OS(() -> true);
+    WINDOWS (PlatformUtil::isWindows   ),
+    MAC     (PlatformUtil::isMac       ),
+    LINUX   (PlatformUtil::isLinux     ),
+    OTHER_OS(Boolean.TRUE::booleanValue);
 
     private final BooleanSupplier matcher;
 

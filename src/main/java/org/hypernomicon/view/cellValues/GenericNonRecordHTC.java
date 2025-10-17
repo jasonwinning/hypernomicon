@@ -30,9 +30,12 @@ public class GenericNonRecordHTC extends RecordHTC
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+
+  public static final int TRUE_ID  = 1,
+                          FALSE_ID = 2;
+
   public static final HyperTableCell trueCell  = new GenericNonRecordHTC(TRUE_ID , "True" , hdtNone),
                                      falseCell = new GenericNonRecordHTC(FALSE_ID, "False", hdtNone),
-                                     unsetCell = new GenericNonRecordHTC(UNSET_ID, "Unset", hdtNone),
                                      blankCell = new GenericNonRecordHTC("", hdtNone);
 
 //---------------------------------------------------------------------------

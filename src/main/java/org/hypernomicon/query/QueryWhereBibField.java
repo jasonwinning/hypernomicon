@@ -100,9 +100,8 @@ public class QueryWhereBibField extends WorkQuery
         @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
           String str = getBibStr(work, op1);
-          if (strNullOrEmpty(str)) return false;
 
-          return str.strip().equalsIgnoreCase(getCellText(op3).strip());
+          return (strNullOrEmpty(str) == false) && str.strip().equalsIgnoreCase(getCellText(op3).strip());
         }
       },
 
@@ -113,9 +112,8 @@ public class QueryWhereBibField extends WorkQuery
         @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
           String str = getBibStr(work, op1);
-          if (strNullOrEmpty(str)) return false;
 
-          return str.strip().equalsIgnoreCase(getCellText(op3).strip()) == false;
+          return (strNullOrEmpty(str) == false) && (str.strip().equalsIgnoreCase(getCellText(op3).strip()) == false);
         }
       },
 
@@ -129,9 +127,8 @@ public class QueryWhereBibField extends WorkQuery
           if (str == null) return false;
 
           String val3 = getCellText(op3).strip();
-          if (val3.isEmpty()) return false;
 
-          return str.contains(val3.toLowerCase());
+          return (val3.isEmpty() == false) && str.contains(val3.toLowerCase());
         }
       },
 
@@ -145,9 +142,8 @@ public class QueryWhereBibField extends WorkQuery
           if (str == null) return false;
 
           String val3 = getCellText(op3).strip();
-          if (val3.isEmpty()) return false;
 
-          return str.contains(val3.toLowerCase()) == false;
+          return (val3.isEmpty() == false) && (str.contains(val3.toLowerCase()) == false);
         }
       },
 

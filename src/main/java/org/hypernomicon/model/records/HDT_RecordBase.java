@@ -310,11 +310,11 @@ public abstract class HDT_RecordBase implements HDT_Record
       HDI_OfflineBase backupValue = backupEntry.getValue();
 
       if (tag == tagFirstName)
-        ((HDT_Person)this).setFirstNameInternal(((HDI_OfflinePersonName)backupValue).getFirstName(), false);
+        ((HDT_Person)this).setFirstNameInternal(((HDI_OfflinePersonName) backupValue).getFirstName(), false);
       else if (tag == tagLastName)
-        ((HDT_Person)this).setLastNameInternal(((HDI_OfflinePersonName)backupValue).getLastName(), false);
+        ((HDT_Person)this).setLastNameInternal(((HDI_OfflinePersonName) backupValue).getLastName(), false);
       else if (tag == type.getNameTag())
-        setNameInternal(((HDI_OfflineString)backupValue).get(), false);
+        setNameInternal(((HDI_OfflineString) backupValue).get(), false);
       else
         liveValue.setFromOfflineValue(backupValue, tag);
     }
@@ -341,7 +341,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   public final RecordState getRecordStateBackup()
   {
     String searchKey = type == hdtWorkLabel ? "" : getSearchKey();
-    RecordState newState = new RecordState(type, id, getSortKeyAttr(), name(), searchKey, "");
+    RecordState newState = new RecordState(type, id, getSortKeyAttr(), name(), searchKey);
     newState.stored = false;
 
     if (type.getDisregardDates() == false)

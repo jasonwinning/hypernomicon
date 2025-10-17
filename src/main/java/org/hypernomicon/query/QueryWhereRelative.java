@@ -20,8 +20,11 @@ package org.hypernomicon.query;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.query.Query.ItemOperator.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
+
+import java.util.Collection;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -88,10 +91,7 @@ public class QueryWhereRelative extends RecordQuery
           int targetID = getCellID(op3);
           if (targetID < 1) return false;
 
-          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
-          if (subjList == null) return false;
-
-          return subjList.stream().anyMatch(subjRecord -> subjRecord.getID() == targetID);
+          return nullSwitch(getSubjList(record, op1), false, subjList -> subjList.stream().anyMatch(subjRecord -> subjRecord.getID() == targetID));
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -110,10 +110,7 @@ public class QueryWhereRelative extends RecordQuery
           int targetID = getCellID(op3);
           if (targetID < 1) return false;
 
-          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
-          if (subjList == null) return false;
-
-          return subjList.stream().noneMatch(subjRecord -> subjRecord.getID() == targetID);
+          return nullSwitch(getSubjList(record, op1), false, subjList -> subjList.stream().noneMatch(subjRecord -> subjRecord.getID() == targetID));
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -132,10 +129,7 @@ public class QueryWhereRelative extends RecordQuery
           String targetText = getCellText(op3).toLowerCase();
           if (strNullOrEmpty(targetText)) return false;
 
-          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
-          if (subjList == null) return false;
-
-          return subjList.stream().anyMatch(subjRecord -> subjRecord.listName().toLowerCase().contains(targetText));
+          return nullSwitch(getSubjList(record, op1), false, subjList -> subjList.stream().anyMatch(subjRecord -> subjRecord.listName().toLowerCase().contains(targetText)));
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -155,10 +149,7 @@ public class QueryWhereRelative extends RecordQuery
           String targetText = getCellText(op3).toLowerCase();
           if (strNullOrEmpty(targetText)) return false;
 
-          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
-          if (subjList == null) return false;
-
-          return subjList.stream().noneMatch(subjRecord -> subjRecord.listName().toLowerCase().contains(targetText));
+          return nullSwitch(getSubjList(record, op1), false, subjList -> subjList.stream().noneMatch(subjRecord -> subjRecord.listName().toLowerCase().contains(targetText)));
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -175,9 +166,7 @@ public class QueryWhereRelative extends RecordQuery
       {
         @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
-          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
-
-          return (subjList != null) && subjList.isEmpty();
+          return nullSwitch(getSubjList(record, op1), false, Collection::isEmpty);
         }
       },
 
@@ -187,9 +176,7 @@ public class QueryWhereRelative extends RecordQuery
       {
         @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
-          HyperSubjList<HDT_Record, HDT_Record> subjList = getSubjList(record, op1);
-
-          return (subjList != null) && (subjList.isEmpty() == false);
+          return nullSwitch(getSubjList(record, op1), false, subjList -> subjList.isEmpty() == false);
         }
       }));
 

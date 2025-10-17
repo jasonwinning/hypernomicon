@@ -54,8 +54,11 @@ public class RecordState
   private static final char QUOTE = '"';
 
   public int id;
-  public String listName;
   public Instant creationDate, modifiedDate, viewDate;
+
+  /**
+   * True if this represents a record in the same state in which it is stored in XML; false otherwise
+   */
   public boolean stored;
 
   String simpleName;
@@ -67,7 +70,7 @@ public class RecordState
 
   public RecordState(RecordType type)
   {
-    this(type, -1, "", "", "", "", false);
+    this(type, -1, "", "", "", false);
 
     nullSwitch(db.getMainTextTemplate(type), this::setMainText);
   }
@@ -76,15 +79,15 @@ public class RecordState
 
   public RecordState(RecordType type, int id)
   {
-    this(type, id, "", "", "", "", false);
+    this(type, id, "", "", "", false);
   }
 
-  public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, String listName)
+  public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey)
   {
-    this(type, id, sortKeyAttr, simpleName, searchKey, listName, false);
+    this(type, id, sortKeyAttr, simpleName, searchKey, false);
   }
 
-  public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, String listName, boolean dummyFlag)
+  public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, boolean dummyFlag)
   {
     if (type.isSimple())
     {
@@ -101,7 +104,6 @@ public class RecordState
     this.id = id;
     this.type = type;
     this.sortKeyAttr = sortKeyAttr;
-    this.listName = listName;
 
     stored = false;
 
@@ -189,7 +191,7 @@ public class RecordState
   {
     stored = true;
 
-    if (type.isSimple()) { writeWholeRecord(xml, simpleName, listName); return; }
+    if (type.isSimple()) { writeWholeRecord(xml, simpleName); return; }
 
     writeRecordOpenTag(xml);
 
@@ -205,12 +207,9 @@ public class RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void writeWholeRecord(StringBuilder xml, String nameToUse, String listNameAttr)
+  private void writeWholeRecord(StringBuilder xml, String nameToUse)
   {
     String searchKeyAttr = "", sortKeyAttrXML = "";
-
-    if (listNameAttr.length() > 0)
-      listNameAttr = ' ' + tagListName.name + '=' + QUOTE + xmlAttributeEscaper.escape(listNameAttr) + QUOTE;
 
     if (searchKey.length() > 0)
       searchKeyAttr = " search_key=" + QUOTE + xmlAttributeEscaper.escape(searchKey) + QUOTE;
@@ -219,7 +218,7 @@ public class RecordState
       sortKeyAttrXML = " sort_key=" + QUOTE + xmlAttributeEscaper.escape(sortKeyAttr) + QUOTE;
 
     xml.append("<record type=").append(QUOTE).append(getTypeTagStr(type)).append(QUOTE).append(" id=").append(QUOTE).append(id).append(QUOTE)
-       .append(sortKeyAttrXML).append(searchKeyAttr).append(listNameAttr).append('>').append(xmlContentEscaper.escape(nameToUse)).append("</record>")
+       .append(sortKeyAttrXML).append(searchKeyAttr).append('>').append(xmlContentEscaper.escape(nameToUse)).append("</record>")
        .append(System.lineSeparator());
   }
 

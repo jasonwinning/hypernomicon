@@ -34,8 +34,8 @@
       </TableView>
     </AnchorPane>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-         <children>
-            <Button fx:id="btnRevert" layoutX="1057.0" layoutY="14.0" mnemonicParsing="false" text="Revert Changes" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0" />
-         </children></AnchorPane>
+      <Button fx:id="btnRevert" layoutX="1057.0" layoutY="14.0" mnemonicParsing="false" text="Revert Changes"
+              AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0"/>
+    </AnchorPane>
   </SplitPane>
 </AnchorPane>
