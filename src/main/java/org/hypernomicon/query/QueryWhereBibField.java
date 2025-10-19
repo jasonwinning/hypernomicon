@@ -101,7 +101,7 @@ public class QueryWhereBibField extends WorkQuery
         {
           String str = getBibStr(work, op1);
 
-          return (strNullOrEmpty(str) == false) && str.strip().equalsIgnoreCase(getCellText(op3).strip());
+          return strNotNullOrEmpty(str) && str.strip().equalsIgnoreCase(getCellText(op3).strip());
         }
       },
 
@@ -113,7 +113,7 @@ public class QueryWhereBibField extends WorkQuery
         {
           String str = getBibStr(work, op1);
 
-          return (strNullOrEmpty(str) == false) && (str.strip().equalsIgnoreCase(getCellText(op3).strip()) == false);
+          return (str != null) && (str.strip().equalsIgnoreCase(getCellText(op3).strip()) == false);
         }
       },
 

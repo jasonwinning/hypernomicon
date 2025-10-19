@@ -99,10 +99,8 @@ public class NewArgDlgCtrlr extends ModalDialog
     this.target = target;
     RecordType verdictType = target.getType() == hdtPosition ? hdtPositionVerdict : hdtArgumentVerdict;
 
-    hcbPerson  = new HyperCB(cbPerson , ctEditableLimitedDropDown, new StandardPopulator(hdtPerson));
-
-    hcbVerdict = new HyperCB(cbVerdict, ctEditableLimitedDropDown, new StandardPopulator(verdictType));
-
+    hcbPerson  = new HyperCB(cbPerson , ctEditableLimitedDropDown, new StandardPopulator     (hdtPerson));
+    hcbVerdict = new HyperCB(cbVerdict, ctEditableLimitedDropDown, new StandardPopulator     (verdictType));
     hcbWork    = new HyperCB(cbWork   , ctEditableLimitedDropDown, new HybridSubjectPopulator(rtAuthorOfWork));
 
     rbArgName1.setSelected(true);
@@ -153,30 +151,28 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     chkLowerCaseTargetName.selectedProperty().addListener((ob, ov, nv) -> reviseSuggestions(cbArgOrStance.getValue()));
 
-    int verdictID = verdictType == hdtPositionVerdict ? HDT_Argument.truePositionVerdictID : HDT_Argument.failsArgumentVerdictID;
-
-    hcbVerdict.selectID(verdictID);
+    hcbVerdict.selectID(getVerdictID(verdictType == hdtPositionVerdict, verdictType == hdtPositionVerdict));
 
     if (verdictType == hdtPositionVerdict) hcbVerdict.addListener((ov, nv) ->
     {
       if (programmaticVerdictChange) return;
 
-      int posVerdictID = HyperTableCell.getCellID(nv);
-      if (posVerdictID < 1) return;
+      HDT_PositionVerdict verdict = HyperTableCell.getRecord(nv);
+      if (verdict == null) return;
 
-      if (HDT_Argument.posVerdictIDIsInFavor(posVerdictID))
-      {
-        if      (rbArgName5.isSelected() && tfArgName5.getText().equals(textFieldToLastGen.get(tfArgName5))) rbArgName1.setSelected(true);
-        else if (rbArgName6.isSelected() && tfArgName6.getText().equals(textFieldToLastGen.get(tfArgName6))) rbArgName2.setSelected(true);
-        else if (rbArgName7.isSelected() && tfArgName7.getText().equals(textFieldToLastGen.get(tfArgName7))) rbArgName3.setSelected(true);
-        else if (rbArgName8.isSelected() && tfArgName8.getText().equals(textFieldToLastGen.get(tfArgName8))) rbArgName4.setSelected(true);
-      }
-      else
+      if (verdict.isInFavor().isFalse())
       {
         if      (rbArgName1.isSelected() && tfArgName1.getText().equals(textFieldToLastGen.get(tfArgName1))) rbArgName5.setSelected(true);
         else if (rbArgName2.isSelected() && tfArgName2.getText().equals(textFieldToLastGen.get(tfArgName2))) rbArgName6.setSelected(true);
         else if (rbArgName3.isSelected() && tfArgName3.getText().equals(textFieldToLastGen.get(tfArgName3))) rbArgName7.setSelected(true);
         else if (rbArgName4.isSelected() && tfArgName4.getText().equals(textFieldToLastGen.get(tfArgName4))) rbArgName8.setSelected(true);
+      }
+      else
+      {
+        if      (rbArgName5.isSelected() && tfArgName5.getText().equals(textFieldToLastGen.get(tfArgName5))) rbArgName1.setSelected(true);
+        else if (rbArgName6.isSelected() && tfArgName6.getText().equals(textFieldToLastGen.get(tfArgName6))) rbArgName2.setSelected(true);
+        else if (rbArgName7.isSelected() && tfArgName7.getText().equals(textFieldToLastGen.get(tfArgName7))) rbArgName3.setSelected(true);
+        else if (rbArgName8.isSelected() && tfArgName8.getText().equals(textFieldToLastGen.get(tfArgName8))) rbArgName4.setSelected(true);
       }
     });
 
@@ -265,9 +261,29 @@ public class NewArgDlgCtrlr extends ModalDialog
     if (Boolean.TRUE.equals(newSelected))
     {
       programmaticVerdictChange = true;
-      hcbVerdict.selectID(proArg ? HDT_Argument.truePositionVerdictID : HDT_Argument.falsePositionVerdictID);
+
+      hcbVerdict.selectID(getVerdictID(proArg, true));
+
       programmaticVerdictChange = false;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static int getVerdictID(boolean isInFavor, boolean isPosVerdict)
+  {
+    RecordType type = isPosVerdict ? hdtPositionVerdict : hdtArgumentVerdict;
+
+    for (HDT_Record record : db.records(type))
+    {
+      HDT_Verdict verdict = (HDT_Verdict) record;
+
+      if (isInFavor ? verdict.isInFavor().isTrue() : verdict.isInFavor().isFalse())
+        return verdict.getID();
+    }
+
+    return -1;
   }
 
 //---------------------------------------------------------------------------

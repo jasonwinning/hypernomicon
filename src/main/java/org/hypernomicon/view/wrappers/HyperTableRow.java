@@ -105,6 +105,9 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   public void setIconCellValue(int colNdx, HDT_Record record) {
     setCellValue(colNdx, new RecordIconHTC(record)); }
 
+  public void setIconCellValue(int colNdx, HDT_Record record, HDT_Record contextRecord) {
+    setCellValue(colNdx, new RecordIconHTC(record, contextRecord)); }
+
   public void setCheckboxValue(int colNdx, boolean boolVal) {
     setCellValue(colNdx, GenericNonRecordHTC.fromBoolean(boolVal)); }
 

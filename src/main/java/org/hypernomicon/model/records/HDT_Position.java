@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.model.DatasetAccessor;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
@@ -98,7 +99,7 @@ public class HDT_Position extends HDT_RecordWithMainText
     LinkedHashSet<ArgumentAuthor> people = subPositions.stream().flatMap(subPos -> subPos.getPeople().stream())
                                                                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-    arguments.stream().filter(arg -> arg.isInFavor(this)).forEachOrdered(arg -> arg.getPeople().forEachOrdered(people::add));
+    arguments.stream().filter(arg -> arg.isInFavor(this) != Ternary.False).forEachOrdered(arg -> arg.getPeople().forEachOrdered(people::add));
 
     return people;
   }
@@ -130,7 +131,7 @@ public class HDT_Position extends HDT_RecordWithMainText
 
     for (HDT_Argument arg : arguments)
     {
-      if (arg.isInFavor(this))
+      if (arg.isInFavor(this) != Ternary.False)
       {
         ps.argument = arg;
 

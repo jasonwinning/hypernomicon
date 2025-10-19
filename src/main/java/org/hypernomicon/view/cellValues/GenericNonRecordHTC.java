@@ -30,7 +30,6 @@ public class GenericNonRecordHTC extends RecordHTC
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-
   public static final int TRUE_ID  = 1,
                           FALSE_ID = 2;
 

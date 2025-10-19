@@ -48,10 +48,6 @@ public class HDT_Argument extends HDT_RecordWithMainText
   public final List<HDT_Argument> targetArgs, responseArgs;
   public final List<HDT_Work> works;
 
-  public static final int truePositionVerdictID  = 1,
-                          falsePositionVerdictID = 2,
-                          failsArgumentVerdictID = 101;
-
 //---------------------------------------------------------------------------
 
   public HDT_Argument(RecordState xmlState, DatasetAccessor<HDT_Argument> dataset)
@@ -118,14 +114,14 @@ public class HDT_Argument extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean isInFavor(HDT_Position position)
+  public Ternary isInFavor(HDT_Position position)
   {
-    return posVerdictIDIsInFavor(HDT_Record.getIDSafe(getPosVerdict(position)));
+    return nullSwitch(getPosVerdict(position), Ternary.Unset, HDT_Verdict::isInFavor);
   }
 
-  public static boolean posVerdictIDIsInFavor(int id)
+  public Ternary isInFavor(HDT_Argument targetArg)
   {
-    return Set.of(1, 3, 6, 17).contains(id);
+    return nullSwitch(getArgVerdict(targetArg), Ternary.Unset, HDT_Verdict::isInFavor);
   }
 
 //---------------------------------------------------------------------------

@@ -239,7 +239,7 @@ public class QueryWhereField extends RecordQuery
 
           String tagStrVal = record.resultTextForTag(tag, false);
 
-          return strNotNullOrEmpty(tagStrVal) && (tagStrVal.strip().equalsIgnoreCase(getCellText(op3).strip()) == false);
+          return (tagStrVal != null) && (tagStrVal.strip().equalsIgnoreCase(getCellText(op3).strip()) == false);
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -280,7 +280,7 @@ public class QueryWhereField extends RecordQuery
         {
           String val3 = getCellText(op3).strip();
 
-          return strNotNullOrEmpty(val3) && (record.resultTextForTag(tag, false).toLowerCase().strip().contains(val3.toLowerCase()) == false);
+          return record.resultTextForTag(tag, false).toLowerCase().strip().contains(val3.toLowerCase()) == false;
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)

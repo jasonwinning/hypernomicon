@@ -31,13 +31,21 @@ public class RecordIconHTC extends RecordHTC
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private final HDT_Record contextRecord;
   private String imgRelPath;  // should only ever be accessed by getImgRelPath
 
 //---------------------------------------------------------------------------
 
   public RecordIconHTC(HDT_Record record)
   {
+    this(record, null);
+  }
+
+  public RecordIconHTC(HDT_Record record, HDT_Record contextRecord)
+  {
     super(record, "");
+
+    this.contextRecord = contextRecord;
   }
 
   @Override public boolean isEmpty() { return (getRecord() == null) || (getRecordType() == RecordType.hdtNone); }
@@ -47,7 +55,7 @@ public class RecordIconHTC extends RecordHTC
 
   public String getImgRelPath()
   {
-    return imgRelPath == null ? (imgRelPath = safeStr(imgRelPath(getRecord(), getRecordType()))) : imgRelPath;
+    return imgRelPath == null ? (imgRelPath = safeStr(imgRelPath(getRecord(), getRecordType(), contextRecord))) : imgRelPath;
   }
 
 //---------------------------------------------------------------------------

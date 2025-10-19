@@ -34,6 +34,7 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypeException;
 
 import org.hypernomicon.App;
+import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.util.filePath.FilePath;
@@ -186,14 +187,19 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String imgDataURIbyRecord(HDT_Record record) { return imgDataURI(imgRelPath(record, record.getType())); }
+  public static String imgDataURIbyRecord(HDT_Record record) { return imgDataURI(imgRelPath(record, record.getType(), null)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static ImageView imgViewForRecord(HDT_Record record, RecordType type)
   {
-    return imgViewFromRelPath(imgRelPath(record, type));
+    return imgViewForRecord(record, type, null);
+  }
+
+  public static ImageView imgViewForRecord(HDT_Record record, RecordType type, HDT_Record contextRecord)
+  {
+    return imgViewFromRelPath(imgRelPath(record, type, contextRecord));
   }
 
 //---------------------------------------------------------------------------
@@ -285,7 +291,22 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String imgRelPath(HDT_Record record, RecordType recordType)
+  /**
+   * Get the relative path to the image resource for a record or record type.
+   * <p>
+   * If <code>record</code> is null, it will go according to the type.
+   * <p>
+   * Otherwise, it will use the record's data and (optionally) an additional
+   * record that provides context to determine the image.
+   * <p>
+   * For example, the contextRecord for an Argument record might be the
+   * record (Position or Argument) targeted by the Argument.
+   * @param record The record whose image to determine.
+   * @param recordType The record type whose image to determine.
+   * @param contextRecord Record providing context.
+   * @return Relative path to the image resource.
+   */
+  public static String imgRelPath(HDT_Record record, RecordType recordType, HDT_Record contextRecord)
   {
     if (record != null)
     {
@@ -309,6 +330,59 @@ public final class MediaUtil
             default             -> "resources/images/unknown.png";
           };
 
+        case hdtArgument :
+        {
+          Ternary inFavor = null;
+          HDT_Verdict verdict = null;
+
+          HDT_Argument argument = (HDT_Argument) record;
+
+          if (contextRecord instanceof HDT_Position position)
+            verdict = argument.getPosVerdict(position);
+
+          if ((verdict == null) && (contextRecord instanceof HDT_Argument targetArg))
+            verdict = argument.getArgVerdict(targetArg);
+
+          if (verdict != null)
+            inFavor = verdict.isInFavor();
+          else
+          {
+            boolean anyFalse = false,
+                    anyTrue  = false;
+
+            for (HDT_Position position : argument.positions)
+            {
+              Ternary curInFavor = argument.isInFavor(position);
+
+              if      (curInFavor.isTrue ()) anyTrue  = true;
+              else if (curInFavor.isFalse()) anyFalse = true;
+            }
+
+            for (HDT_Argument targetArg : argument.targetArgs)
+            {
+              Ternary curInFavor = argument.isInFavor(targetArg);
+
+              if      (curInFavor.isTrue ()) anyTrue  = true;
+              else if (curInFavor.isFalse()) anyFalse = true;
+            }
+
+            if      (anyTrue  && (anyFalse == false)) inFavor = Ternary.True;
+            else if (anyFalse && (anyTrue  == false)) inFavor = Ternary.False;
+          }
+
+          if (argument.getIsArgument().isFalse())
+          {
+            if (Ternary.isNullOrUnset(inFavor)) return "resources/images/stance.png";
+            if (inFavor.isTrue())               return "resources/images/stance-for.png";
+
+            return "resources/images/stance-against.png";
+          }
+
+          if (Ternary.isNullOrUnset(inFavor)) return "resources/images/argument.png";
+          if (inFavor.isTrue())               return "resources/images/argument-for.png";
+
+          return "resources/images/argument-against.png";
+        }
         case hdtMiscFile :
 
           HDT_MiscFile miscFile = (HDT_MiscFile) record;
@@ -316,7 +390,7 @@ public final class MediaUtil
           if (miscFile.pathNotEmpty())
             return imgRelPath(miscFile.filePath(), null);
 
-          // Fall through
+          break;
 
         default :
 

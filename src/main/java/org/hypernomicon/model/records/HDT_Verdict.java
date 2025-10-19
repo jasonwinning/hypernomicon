@@ -21,8 +21,8 @@ import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.Ternary;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.Tag.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.StringUtil.*;
 
 //---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ public abstract class HDT_Verdict extends HDT_RecordBase
 
   private static void setInFavorIfUnset(RecordType type, int id, String shortName, boolean value)
   {
-    assert(strNullOrBlank(shortName) == false);
+    assert(strNotNullOrBlank(shortName));
     assert((type == hdtPositionVerdict) || (type == hdtArgumentVerdict));
 
     HDT_Verdict verdict = (HDT_Verdict) db.records(type).getByID(id);

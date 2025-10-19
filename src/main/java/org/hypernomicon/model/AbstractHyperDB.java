@@ -471,13 +471,13 @@ public abstract class AbstractHyperDB
 
     RelationSet.init(relationSets);
 
-  /*****************************************************************************
+  /* ************************************************************************* *
   * ************************************************************************** *
   * *                                                                        * *
   * *                        Record Type Definitions                         * *
   * *                                                                        * *
   * ************************************************************************** *
-  *****************************************************************************/
+  * ************************************************************************** */
 
     // Nested items are defined in RelationSet.createSet()
 
@@ -1746,7 +1746,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 
   /**
-   * Version-skew conversion guardrail for legacy "list_name" attribute for
+   * Conditional check for legacy "list_name" attribute maintaining
    * backwards compatibility with records XML version 1.10.
    *
    * <ul>
@@ -1767,13 +1767,13 @@ public abstract class AbstractHyperDB
    */
   private static void checkForIllegalListNameAttribute(RecordType type, int id, VersionNumber dataVersion, String listName, String fileDescription) throws HyperDataException
   {
-    if (strNotNullOrEmpty(listName) == false) return;
+    if (strNullOrEmpty(listName)) return;
 
     boolean disallowedType = (type != hdtPositionVerdict) && (type != hdtArgumentVerdict),
-            invalidId      = id < 1,  // Legacy attribute cannot be used when hand-editing data
+            invalidID      = id < 1,  // Legacy attribute cannot be used when hand-editing data
             tooNewVersion  = ComparableUtils.is(dataVersion).greaterThan(new VersionNumber(1, 10));
 
-    if (disallowedType || invalidId || tooNewVersion)
+    if (disallowedType || invalidID || tooNewVersion)
       throw new HyperDataException("Invalid legacy attribute \"list_name\" in record element. File: " + fileDescription);
   }
 

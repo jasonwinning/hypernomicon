@@ -240,7 +240,11 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
             nullSwitch(nv.treeItem, treeItem ->
             {
               treeItem.expandedProperty().addListener((ob1, ov1, nv1) -> ttv.refresh());
-              treeItem.setGraphic(nv.getGraphic());
+
+              HDT_Record parentRecord = nullSwitch(treeItem.getParent(), null, parent ->
+                                        nullSwitch(parent  .getValue (), null, TreeRow::getRecord));
+
+              treeItem.setGraphic(nv.getGraphic(parentRecord));
             });
           }
 

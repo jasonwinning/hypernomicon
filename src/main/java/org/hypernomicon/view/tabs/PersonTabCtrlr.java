@@ -661,14 +661,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     if (argument.positions.size() > 0)
     {
-      List<HDT_Position> positions = argument.positions.stream().filter(argument::isInFavor).toList();
+      List<HDT_Position> positions = argument.positions.stream().filter(position -> argument.isInFavor(position) != Ternary.False).toList();
 
       htArguments.buildRows(positions.isEmpty() ? argument.positions : positions, (row, position) ->
       {
         addPosToTopicTable(position, row, otherToAdd);
         posToAdd.remove(position);
 
-        row.setIconCellValue(0, argument);  // This is the icon column
+        row.setIconCellValue(0, argument, position);  // This is the icon column
 
         nullSwitch(argument.getPosVerdict(position), verdict -> row.setCellValue(3, argument, verdict.listName()));
 
@@ -1074,19 +1074,19 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 
 
-  /********************************************************************************************************************************/
-  /**                                                                                                                            **/
-  /**                                                                                                                            **/
-  /**                                                                                                                            **/
-  /**                                              *********************************                                             **/
-  /**                                              *                               *                                             **/
-  /**                                              *      Investigation Stuff      *                                             **/
-  /**                                              *                               *                                             **/
-  /**                                              *********************************                                             **/
-  /**                                                                                                                            **/
-  /**                                                                                                                            **/
-  /**                                                                                                                            **/
-  /********************************************************************************************************************************/
+  /* ****************************************************************************************************************************** */
+  /* *                                                                                                                            * */
+  /* *                                                                                                                            * */
+  /* *                                                                                                                            * */
+  /* *                                              *********************************                                             * */
+  /* *                                              *                               *                                             * */
+  /* *                                              *      Investigation Stuff      *                                             * */
+  /* *                                              *                               *                                             * */
+  /* *                                              *********************************                                             * */
+  /* *                                                                                                                            * */
+  /* *                                                                                                                            * */
+  /* *                                                                                                                            * */
+  /* ****************************************************************************************************************************** */
 
 
 //---------------------------------------------------------------------------
