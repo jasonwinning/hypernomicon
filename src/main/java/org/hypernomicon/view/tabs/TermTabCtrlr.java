@@ -76,9 +76,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   //---------------------------------------------------------------------------
 
-    private ConceptTab(String text, Node content)
+    private ConceptTab(Node content)
     {
-      super(text, content);
+      super(HDT_Glossary.ROOT_GLOSSARY_NAME, content);
       setClosable(false);
     }
 
@@ -117,27 +117,27 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final class GlossaryRow
+  private final class ConceptRow
   {
     private final HDT_Glossary glossary;
     private final HDT_ConceptSense sense;
-    private final HDT_Concept childConcept, parentConcept;
+    private final HDT_Concept concept, parentConcept;
     private final String senseText;
 
   //---------------------------------------------------------------------------
 
-    private GlossaryRow(HyperTableRow row, boolean validate)
+    private ConceptRow(HyperTableRow row, boolean validate)
     {
       HDT_Glossary tempGlossary = row.getRecord(2);
       HDT_ConceptSense tempSense = row.getRecord(3);
       senseText = row.getText(3);
 
       if ((tempSense == null) && (senseText.isBlank() == false))
-        childConcept = null;
+        concept = null;
       else
-        childConcept = curTerm.getConcept(tempGlossary, tempSense);
+        concept = curTerm.getConcept(tempGlossary, tempSense);
 
-      if (validate && (childConcept == null))
+      if (validate && (concept == null))
       {
         tempGlossary = null;
         sense = null;
@@ -154,7 +154,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
           tempParentConcept = null;
 
       if ((tempParentConcept != null) && validate)
-        if (childConcept.parentConcepts.contains(tempParentConcept) == false)
+        if (concept.parentConcepts.contains(tempParentConcept) == false)
           tempParentConcept = null;
 
       parentConcept = tempParentConcept;
@@ -162,10 +162,10 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   //---------------------------------------------------------------------------
 
-    private GlossaryRow(HDT_Glossary glossary, HDT_ConceptSense sense)
+    private ConceptRow(HDT_Glossary glossary, HDT_ConceptSense sense)
     {
       this.glossary = glossary;
-      childConcept = curTerm.getConcept(glossary, sense);
+      concept = curTerm.getConcept(glossary, sense);
       this.sense = sense;
       senseText = sense == null ? "" : sense.name();
       parentConcept = null;
@@ -173,12 +173,12 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   //---------------------------------------------------------------------------
 
-    private GlossaryRow(HDT_Concept childConcept, HDT_Concept parentConcept)
+    private ConceptRow(HDT_Concept concept, HDT_Concept parentConcept)
     {
       this.parentConcept = parentConcept;
       glossary = parentConcept.glossary.get();
-      this.childConcept = childConcept;
-      sense = childConcept == null ? null : childConcept.sense.get();
+      this.concept = concept;
+      sense = concept == null ? null : concept.sense.get();
       senseText = sense == null ? "" : sense.name();
     }
 
@@ -186,8 +186,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     private void populateTableRow(HyperTableRow row)
     {
-      boolean wasUpdatingGlossaries = updatingGlossaries;
-      updatingGlossaries = true;
+      boolean wasUpdatingConcepts = updatingConcepts;
+      updatingConcepts = true;
 
       if (glossary == null)
         row.setCellValue(2, "", hdtGlossary);
@@ -199,7 +199,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       else
         row.setCellValue(3, sense, sense.listName());
 
-      SubjectPopulator parentConceptPop = htGlossaries.getPopulator(4);
+      SubjectPopulator parentConceptPop = htConcepts.getPopulator(4);
       parentConceptPop.setObj(row, glossary);
 
       if (parentConcept == null)
@@ -207,22 +207,22 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       else
         row.setCellValue(4, parentConcept, parentConcept.listName());
 
-      updatingGlossaries = wasUpdatingGlossaries;
+      updatingConcepts = wasUpdatingConcepts;
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final HyperTable htGlossaries, htSubConcepts, htDisplayers;
+  private final HyperTable htConcepts, htSubConcepts, htDisplayers;
   private final TabPane tpConcepts;
-  private final Map<HyperTableRow, GlossaryRow> glossaryRows = new HashMap<>();
+  private final Map<HyperTableRow, ConceptRow> conceptRows = new HashMap<>();
   private final Map<HDT_Concept, TextViewInfo> conceptToTextViewInfo = new HashMap<>();
 
   private HDT_Term curTerm;
   private HDT_Concept curConcept;
   private Instant lastArrowKey = Instant.EPOCH;
-  private boolean alreadyChangingTab = false, updatingGlossaries = false;
+  private boolean alreadyChangingTab = false, updatingConcepts = false;
 
 //---------------------------------------------------------------------------
 
@@ -241,7 +241,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     tvLeftChildren.getColumns().get(2).setText("Definition");
 
     spMain.getItems().remove(1);
-    tpConcepts = new TabPane(new ConceptTab("General", apDescription));
+    tpConcepts = new TabPane(new ConceptTab(apDescription));
     spMain.getItems().add(1, tpConcepts);
     tpConcepts.getTabs().getFirst().setClosable(false);
 
@@ -250,9 +250,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     tvRightChildren.getColumns().add(new TableColumn<>("Description"));
     spMain.setDividerPosition(1, 0.85);
 
-    htGlossaries = new HyperTable(tvParents, 2, true, TablePrefKey.TERM_GLOSSARIES);
+    htConcepts = new HyperTable(tvParents, 2, true, TablePrefKey.TERM_GLOSSARIES);
 
-    htGlossaries.addActionColWithButtonHandler(ctGoBtn, 2,
+    htConcepts.addActionColWithButtonHandler(ctGoBtn, 2,
       (row, colNdx) ->
       {
         HDT_Concept parentConcept = row.getRecord(4);
@@ -267,31 +267,31 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         return glossary == null ? null : "Go to this Glossary record in Tree";
       });
 
-    htGlossaries.addActionColWithButtonHandler(ctBrowseBtn, 2,
+    htConcepts.addActionColWithButtonHandler(ctBrowseBtn, 2,
       (row, colNdx) ->
       {
         HDT_Glossary glossary = row.getRecord(2);
-        HDT_Concept childConcept = glossary == null ? null : curTerm.getConcept(glossary, row.getRecord(3)),
+        HDT_Concept concept = glossary == null ? null : curTerm.getConcept(glossary, row.getRecord(3)),
                     parentConcept = row.getRecord(4);
 
-        ui.treeSelector.reset(childConcept == null ? curTerm : childConcept, true, row);
+        ui.treeSelector.reset(concept == null ? curTerm : concept, true, row);
 
         ui.treeSelector.addTargetType(hdtGlossary);
         ui.treeSelector.addTargetType(hdtConcept);
 
         ui.treeSelector.setTarget(nullSwitch(parentConcept, glossary));
 
-        HDT_Glossary generalGlossary = db.glossaries.getByID(1);                   // If these two lines are combined into one, there will be
-        ui.goToTreeRecord(childConcept == null ? generalGlossary : childConcept);  // false-positive build errors
+        HDT_Glossary generalGlossary = db.glossaries.getByID(1);         // If these two lines are combined into one, there will be
+        ui.goToTreeRecord(concept == null ? generalGlossary : concept);  // false-positive build errors
 
       }).setTooltip(ButtonAction.baBrowse, "Select a Glossary or parent Concept from the Tree");
 
-    htGlossaries.addColWithUpdateHandler(hdtGlossary, ctEditableLimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> updateGlossaryRow(row))
-                .setDontCreateNewRecord(true);
+    htConcepts.addColWithUpdateHandler(hdtGlossary, ctEditableLimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> updateConceptRow(row))
+              .setDontCreateNewRecord(true);
 
-    htGlossaries.addColWithUpdateHandler(hdtConceptSense, ctEditableUnlimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> updateSense(row, cellVal));
+    htConcepts.addColWithUpdateHandler(hdtConceptSense, ctEditableUnlimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> updateSense(row, cellVal));
 
-    htGlossaries.addColAltPopulatorWithUpdateHandler(hdtConcept, ctEditableLimitedDropDown, new SubjectPopulator(rtGlossaryOfConcept, true,
+    htConcepts.addColAltPopulatorWithUpdateHandler(hdtConcept, ctEditableLimitedDropDown, new SubjectPopulator(rtGlossaryOfConcept, true,
       id -> // Populator ID filter
       {
         if ((id < 1) || HDT_Record.isEmpty(curTerm, false)) return false;
@@ -299,26 +299,26 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         return curTerm.concepts.contains(db.concepts.getByID(id)) == false;
       }, DisplayKind.listName),
 
-      (row, cellVal, nextColNdx, nextPopulator) -> updateGlossaryRow(row));
+      (row, cellVal, nextColNdx, nextPopulator) -> updateConceptRow(row));
 
-    htGlossaries.addContextMenuItem("Remove this row",
+    htConcepts.addContextMenuItem("Remove this row",
       row ->
       {
-        GlossaryRow glossaryRow = glossaryRows.get(row);
+        ConceptRow conceptRow = conceptRows.get(row);
 
-        if (glossaryRow == null)
+        if (conceptRow == null)
           return false;
 
         if (curTerm.concepts.size() > 1)
           return true;
 
-        return glossaryRows.values().stream().anyMatch(otherGlossaryRow -> (otherGlossaryRow.childConcept  == glossaryRow.childConcept ) &&
-                                                                           (otherGlossaryRow.parentConcept != glossaryRow.parentConcept));
+        return conceptRows.values().stream().anyMatch(otherConceptRow -> (otherConceptRow.concept       == conceptRow.concept      ) &&
+                                                                         (otherConceptRow.parentConcept != conceptRow.parentConcept));
       },
 
       this::removeRow);
 
-    htGlossaries.addContextMenuItem("Change order of concepts",
+    htConcepts.addContextMenuItem("Change order of concepts",
       row -> (row.getRecord(2) != null) && (curTerm.concepts.size() > 1),
 
       row ->
@@ -448,7 +448,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     super.updateFromRecord();
 
-    populateGlossaries();
+    populateConceptTable();
 
     populateDisplayersAndSubConcepts();
   }
@@ -456,39 +456,39 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void populateGlossaries()
+  private void populateConceptTable()
   {
-    updatingGlossaries = true;
+    updatingConcepts = true;
 
-    htGlossaries.clear();
-    glossaryRows.clear();
+    htConcepts.clear();
+    conceptRows.clear();
 
-    List<GlossaryRow> glossaryRowList = new ArrayList<>();
+    List<ConceptRow> conceptRowList = new ArrayList<>();
 
-    for (HDT_Concept childConcept : curTerm.concepts)
+    for (HDT_Concept concept : curTerm.concepts)
     {
-      if (childConcept.parentConcepts.isEmpty())
-        glossaryRowList.add(new GlossaryRow(childConcept.glossary.get(), childConcept.sense.get()));
+      if (concept.parentConcepts.isEmpty())
+        conceptRowList.add(new ConceptRow(concept.glossary.get(), concept.sense.get()));
       else
       {
-        for (HDT_Concept parentConcept : childConcept.parentConcepts)
+        for (HDT_Concept parentConcept : concept.parentConcepts)
         {
-          if (childConcept.glossary.get() != parentConcept.glossary.get())
+          if (concept.glossary.get() != parentConcept.glossary.get())
             internalErrorPopup(38436);
           else
-            glossaryRowList.add(new GlossaryRow(childConcept, parentConcept));
+            conceptRowList.add(new ConceptRow(concept, parentConcept));
         }
       }
     }
 
-    htGlossaries.buildRows(glossaryRowList, (row, glossaryRow) ->
+    htConcepts.buildRows(conceptRowList, (row, conceptRow) ->
     {
-      glossaryRows.put(row, glossaryRow);
+      conceptRows.put(row, conceptRow);
 
-      glossaryRow.populateTableRow(row);
+      conceptRow.populateTableRow(row);
     });
 
-    updatingGlossaries = false;
+    updatingConcepts = false;
   }
 
 //---------------------------------------------------------------------------
@@ -517,25 +517,25 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private void removeRow(HyperTableRow row)
   {
-    GlossaryRow glossaryRow = glossaryRows.get(row);
-    if (glossaryRow == null) return;
+    ConceptRow conceptRow = conceptRows.get(row);
+    if (conceptRow == null) return;
 
     boolean deleteConcept = false;
 
-    if (glossaryRow.parentConcept != null)
+    if (conceptRow.parentConcept != null)
     {
-      if (glossaryRow.childConcept.parentConcepts.size() == 1)
+      if (conceptRow.concept.parentConcepts.size() == 1)
         deleteConcept = true;
       else
-        glossaryRow.childConcept.removeParent(glossaryRow.parentConcept);
+        conceptRow.concept.removeParent(conceptRow.parentConcept);
     }
 
-    if (deleteConcept || glossaryRow.childConcept.parentConcepts.isEmpty())
-      if (removeConcept(glossaryRow.glossary, glossaryRow.sense) == false)
+    if (deleteConcept || conceptRow.concept.parentConcepts.isEmpty())
+      if (removeConcept(conceptRow.glossary, conceptRow.sense) == false)
         return;
 
-    glossaryRows.remove(row);
-    htGlossaries.removeRow(row);
+    conceptRows.remove(row);
+    htConcepts.removeRow(row);
   }
 
 //---------------------------------------------------------------------------
@@ -543,10 +543,10 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   public void selectFromTree(HyperTableRow row, HDT_Glossary glossary, HDT_ConceptSense sense, HDT_Concept parentConcept)
   {
-    GlossaryRow glossaryRow = parentConcept != null ? new GlossaryRow(curTerm.getConcept(glossary, sense), parentConcept) : new GlossaryRow(glossary, sense);
+    ConceptRow conceptRow = parentConcept != null ? new ConceptRow(curTerm.getConcept(glossary, sense), parentConcept) : new ConceptRow(glossary, sense);
 
-    glossaryRow.populateTableRow(row);
-    updateGlossaryRow(row);
+    conceptRow.populateTableRow(row);
+    updateConceptRow(row);
   }
 
 //---------------------------------------------------------------------------
@@ -554,19 +554,19 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private void updateSense(HyperTableRow editedRow, HyperTableCell newCell)
   {
-    if (updatingGlossaries) return;
+    if (updatingConcepts) return;
 
-    GlossaryRow oldGlossaryRow = glossaryRows.get(editedRow);
-    if (oldGlossaryRow == null)
-      oldGlossaryRow = new GlossaryRow((HDT_Glossary)null, null);
+    ConceptRow oldConceptRow = conceptRows.get(editedRow);
+    if (oldConceptRow == null)
+      oldConceptRow = new ConceptRow((HDT_Glossary)null, null);
 
-    HDT_Concept concept = oldGlossaryRow.childConcept;
+    HDT_Concept concept = oldConceptRow.concept;
 
     if (concept == null)
     {
       if (HyperTableCell.getCellText(newCell).isBlank()) return;
 
-      oldGlossaryRow.populateTableRow(editedRow);
+      oldConceptRow.populateTableRow(editedRow);
 
       HDT_Glossary glossary = curTerm.concepts.stream().noneMatch(koncept -> koncept.glossary.get().getID() == 1) ?
         curTerm.concepts.getFirst().glossary.get()
@@ -582,13 +582,13 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     HDT_ConceptSense sense = newCell.getRecord();
     String newText = HyperTableCell.getCellText(newCell).strip();
 
-    if ((oldGlossaryRow.sense != null) && ((sense == oldGlossaryRow.sense) || newText.equalsIgnoreCase(oldGlossaryRow.sense.name())))
+    if ((oldConceptRow.sense != null) && ((sense == oldConceptRow.sense) || newText.equalsIgnoreCase(oldConceptRow.sense.name())))
     {
-      oldGlossaryRow.populateTableRow(editedRow);
+      oldConceptRow.populateTableRow(editedRow);
       return;
     }
 
-    for (HyperTableRow row : htGlossaries.dataRows())
+    for (HyperTableRow row : htConcepts.dataRows())
     {
       if (row != editedRow)
       {
@@ -596,7 +596,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         if ((concept != otherConcept) && (concept.glossary.get() == otherConcept.glossary.get()) && row.getText(3).equalsIgnoreCase(newText))
         {
           errorPopup("This term already has a concept in the same glossary with the same sense.");
-          oldGlossaryRow.populateTableRow(editedRow);
+          oldConceptRow.populateTableRow(editedRow);
           return;
         }
       }
@@ -608,109 +608,109 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       sense.setName(newText);
     }
 
-    for (Entry<HyperTableRow, GlossaryRow> entry : glossaryRows.entrySet())
+    for (Entry<HyperTableRow, ConceptRow> entry : conceptRows.entrySet())
     {
       if (entry.getKey() != editedRow)
       {
-        GlossaryRow glossaryRow = entry.getValue();
-        if ((oldGlossaryRow.glossary == glossaryRow.glossary) &&
-            (oldGlossaryRow.sense == glossaryRow.sense) &&
-            (oldGlossaryRow.parentConcept == null))
+        ConceptRow conceptRow = entry.getValue();
+        if ((oldConceptRow.glossary == conceptRow.glossary) &&
+            (oldConceptRow.sense == conceptRow.sense) &&
+            (oldConceptRow.parentConcept == null))
         {
-          concept = addConceptInGlossary(oldGlossaryRow.glossary, sense);
+          concept = addConceptInGlossary(oldConceptRow.glossary, sense);
           break;
         }
       }
     }
 
     concept.sense.set(sense);
-    glossaryRows.put(editedRow, new GlossaryRow(oldGlossaryRow.glossary, sense));
-    populateGlossaries();
+    conceptRows.put(editedRow, new ConceptRow(oldConceptRow.glossary, sense));
+    populateConceptTable();
     tpConcepts.getTabs().forEach(tab -> ((ConceptTab) tab).updateName());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateGlossaryRow(HyperTableRow row)
+  private void updateConceptRow(HyperTableRow row)
   {
-    if (updatingGlossaries) return;
+    if (updatingConcepts) return;
 
-    GlossaryRow oldGlossaryRow = glossaryRows.get(row),
-                newGlossaryRow = new GlossaryRow(row, false);
+    ConceptRow oldConceptRow = conceptRows.get(row),
+               newConceptRow = new ConceptRow(row, false);
 
-    if ((glossaryRows.size() == 1) && (newGlossaryRow.glossary == null))
+    if ((conceptRows.size() == 1) && (newConceptRow.glossary == null))
     {
-      oldGlossaryRow.populateTableRow(row);
+      oldConceptRow.populateTableRow(row);
       return;
     }
 
-    if (oldGlossaryRow == null)
-      oldGlossaryRow = new GlossaryRow((HDT_Glossary) null, null);
+    if (oldConceptRow == null)
+      oldConceptRow = new ConceptRow((HDT_Glossary) null, null);
 
 // First, check to see if parent concept from row being edited should be removed
 // -----------------------------------------------------------------------------
 
-    if ((oldGlossaryRow.parentConcept != null) && (newGlossaryRow.parentConcept != oldGlossaryRow.parentConcept))
-      oldGlossaryRow.childConcept.removeParent(oldGlossaryRow.parentConcept);
+    if ((oldConceptRow.parentConcept != null) && (newConceptRow.parentConcept != oldConceptRow.parentConcept))
+      oldConceptRow.concept.removeParent(oldConceptRow.parentConcept);
 
-    HDT_Concept newChildConcept = newGlossaryRow.childConcept;
+    HDT_Concept newConcept = newConceptRow.concept;
 
 // Second, check to see if existing glossary for row being edited should be removed/replaced
 // -----------------------------------------------------------------------------------------
 
-    if (newGlossaryRow.glossary != oldGlossaryRow.glossary)
+    if (newConceptRow.glossary != oldConceptRow.glossary)
     {
-      if ((oldGlossaryRow.childConcept != null) && oldGlossaryRow.childConcept.parentConcepts.isEmpty())
+      if ((oldConceptRow.concept != null) && oldConceptRow.concept.parentConcepts.isEmpty())
       {
-        if ((newGlossaryRow.glossary == null) || (newGlossaryRow.childConcept != null))
+        if ((newConceptRow.glossary == null) || (newConceptRow.concept != null))
         {
-          if (removeConcept(oldGlossaryRow.glossary, oldGlossaryRow.sense) == false)
+          if (removeConcept(oldConceptRow.glossary, oldConceptRow.sense) == false)
           {
-            oldGlossaryRow.populateTableRow(row);
+            oldConceptRow.populateTableRow(row);
             return;
           }
         }
         else
         {
-          if (replaceGlossary(oldGlossaryRow.glossary, oldGlossaryRow.sense, newGlossaryRow.glossary) == false)
+          if (replaceGlossary(oldConceptRow.glossary, oldConceptRow.sense, newConceptRow.glossary) == false)
           {
-            oldGlossaryRow.populateTableRow(row);
+            oldConceptRow.populateTableRow(row);
             return;
           }
 
-          newChildConcept = oldGlossaryRow.childConcept;
+          newConcept = oldConceptRow.concept;
         }
       }
 
 // Third, add new concept for row that was edited if needed
 // --------------------------------------------------------
 
-      if ((newGlossaryRow.glossary != null) && (newChildConcept == null))
-        newChildConcept = addConceptInGlossary(newGlossaryRow.glossary, newGlossaryRow.sense);
+      if ((newConceptRow.glossary != null) && (newConcept == null))
+        newConcept = addConceptInGlossary(newConceptRow.glossary, newConceptRow.sense);
     }
 
 // Fourth, add parent concept for row that was edited if needed
 // ------------------------------------------------------------
 
-    if ((newChildConcept != null) && (newGlossaryRow.parentConcept != null))
+    if ((newConcept != null) && (newConceptRow.parentConcept != null))
     {
       try
       {
-        newChildConcept.addParentConcept(newGlossaryRow.parentConcept);
+        newConcept.addParentConcept(newConceptRow.parentConcept);
       }
       catch (RelationCycleException e)
       {
         errorPopup("Unable to add parent concept: A cycle would result.");
 
-        oldGlossaryRow.populateTableRow(row);
+        oldConceptRow.populateTableRow(row);
         return;
       }
     }
 
-    newGlossaryRow = new GlossaryRow(row, true);
-    glossaryRows.put(row, newGlossaryRow);
-    newGlossaryRow.populateTableRow(row);
+    newConceptRow = new ConceptRow(row, true);
+    conceptRows.put(row, newConceptRow);
+    newConceptRow.populateTableRow(row);
     tpConcepts.getTabs().forEach(tab -> ((ConceptTab) tab).updateName());
   }
 
@@ -889,11 +889,11 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     curTerm    = resetRecord ? null : HDT_Record.getCurrentInstance(curTerm);
     curConcept = resetRecord ? null : HDT_Record.getCurrentInstance(curConcept);
 
-    htGlossaries .clear();
+    htConcepts .clear();
     htSubConcepts.clear();
     htDisplayers .clear();
 
-    glossaryRows.clear();
+    conceptRows.clear();
   }
 
 //---------------------------------------------------------------------------

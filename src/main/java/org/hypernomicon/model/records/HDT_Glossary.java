@@ -33,6 +33,8 @@ public class HDT_Glossary extends HDT_RecordBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final String ROOT_GLOSSARY_NAME = "General";
+
   public final List<HDT_Glossary> parentGlossaries;
   public final HyperSubjList<HDT_Glossary, HDT_Concept> concepts;
 

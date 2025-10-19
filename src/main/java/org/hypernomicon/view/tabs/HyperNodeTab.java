@@ -67,8 +67,8 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   @FXML private ToolBar tbLinks, tbButtons;
 
   @FXML AnchorPane apDescription, apLowerPane;
-  @FXML GridPane gpToolBar;
-  @FXML Label lblParentCaption;
+  @FXML GridPane gpToolBar, gpTopRow;
+  @FXML Label lblParentCaption, lblSearchKey;
   @FXML SplitPane spChildren, spMain;
   @FXML TableView<HyperTableRow> tvLeftChildren, tvParents, tvRightChildren;
 
@@ -134,6 +134,9 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
     lblGoTo2     .setFont(new Font(fontSize + 6.0));
     lblGoTo3     .setFont(new Font(fontSize + 6.0));
     lblMergeTerms.setFont(new Font(fontSize + 6.0));
+
+    gpTopRow    .widthProperty().addListener((obs, oldWidth, newWidth) -> resizeTopRowColumns(newWidth.doubleValue(), lblSearchKey.getWidth   ()));
+    lblSearchKey.widthProperty().addListener((obs, oldWidth, newWidth) -> resizeTopRowColumns(gpTopRow.getWidth   (), newWidth    .doubleValue()));
   }
 
 //---------------------------------------------------------------------------
@@ -144,6 +147,16 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   @Override public String recordName()                     { return tfName.getText(); }
 
   TextField nameCtrl()                                     { return tfName; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void resizeTopRowColumns(double gpWidth, double searchKeyWidth)
+  {
+    double remaining = gpWidth - searchKeyWidth;
+    gpTopRow.getColumnConstraints().get(0).setPrefWidth(remaining * 0.75);
+    gpTopRow.getColumnConstraints().get(2).setPrefWidth(remaining * 0.25);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

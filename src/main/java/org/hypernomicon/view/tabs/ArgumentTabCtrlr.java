@@ -44,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.SequencedMap;
 
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
@@ -70,11 +71,9 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     cbArgOrStance = new ComboBox<>();
     setupArgOrStance();
 
-    AnchorPane aP = new AnchorPane();
-
     lblParentCaption.setText("Responds to:");
 
-    gpToolBar.getChildren().set(0, aP);
+    gpToolBar.getChildren().set(0, new AnchorPane());
 
     TableColumn<HyperTableRow, HyperTableCell> verdictCol = new TableColumn<>("Argues/Holds that");
     verdictCol.setPrefWidth(250.0);
@@ -186,13 +185,22 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
   private void setupArgOrStance()
   {
-    AnchorPane.setRightAnchor(nameCtrl(), 280.0);
-
     AnchorPane ap = (AnchorPane) nameCtrl().getParent();
 
     Label lblArgOrStance = new Label("Argument or Stance:");
+    AnchorPane.setTopAnchor(lblArgOrStance, 9.0);
 
-    setAnchors(lblArgOrStance, 9.0, null, null, 156.0);
+    lblArgOrStance.widthProperty().addListener((obs, oldWidth, newWidth) ->
+    {
+      AnchorPane.setRightAnchor(nameCtrl(), cbArgOrStance.getWidth() + newWidth.doubleValue() + scalePropertyValueForDPI(5.0));
+      AnchorPane.setRightAnchor(lblArgOrStance, cbArgOrStance.getWidth() + scalePropertyValueForDPI(6.0));
+    });
+
+    cbArgOrStance.widthProperty().addListener((obs, oldWidth, newWidth) ->
+    {
+      AnchorPane.setRightAnchor(nameCtrl(), newWidth.doubleValue() + lblArgOrStance.getWidth() + scalePropertyValueForDPI(5.0));
+      AnchorPane.setRightAnchor(lblArgOrStance, cbArgOrStance.getWidth() + scalePropertyValueForDPI(6.0));
+    });
 
     setupArgOrStanceSelector(cbArgOrStance);
 
@@ -201,6 +209,8 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     cbArgOrStance.setPrefWidth(150.0);
 
     ap.getChildren().addAll(lblArgOrStance, cbArgOrStance);
+
+    lblArgOrStance.setPadding(new Insets(0.0, 0.0, 0.0, 20.0));
   }
 
 //---------------------------------------------------------------------------

@@ -2275,7 +2275,7 @@ public abstract class AbstractHyperDB
       createNewRecordFromState(recordState, bringOnline);
 
       recordState = new RecordState(hdtGlossary, 1);
-      ((HDI_OfflineString) recordState.items.get(tagName)).set("General");
+      ((HDI_OfflineString) recordState.items.get(tagName)).set(HDT_Glossary.ROOT_GLOSSARY_NAME);
       ((HDI_OfflineBoolean) recordState.items.get(tagActive)).set(true);
       createNewRecordFromState(recordState, bringOnline);
 
