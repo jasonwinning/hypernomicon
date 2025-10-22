@@ -224,7 +224,7 @@ public final class MainCtrlr
   @FXML private void mnuChangeFavOrderClick() { new FavOrderDlgCtrlr().showModal(); }
   @FXML private void mnuSettingsClick()       { if (cantSaveRecord() == false) new SettingsDlgCtrlr().showModal(); }
   @FXML private void mnuTestConsoleClick()    { if (cantSaveRecord() == false) new TestConsoleDlgCtrlr().showModal(); }
-  @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(activeRecord(), false); }
+  @FXML private void btnMentionsClick()       { if (cantSaveRecord() == false) searchForMentions(false); }
 
   public PersonTabCtrlr   personHyperTab   () { return getHyperTab(personTabEnum  ); }
   public InstTabCtrlr     instHyperTab     () { return getHyperTab(instTabEnum    ); }
@@ -2254,9 +2254,18 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void searchForMentions(HDT_Record record, boolean descOnly)
+  private void searchForMentions(boolean descOnly)
   {
-    if (record == null) return;
+    if (db.isOffline())
+    {
+      errorPopup("No database is currently loaded.");
+      return;
+    }
+
+    HDT_Record record = getSelectedRecordAskIfNeeded();
+
+    if (record == null)
+      return;
 
     RecordType type = record.getType();
     boolean backClick = activeTabEnum() != queryTabEnum;
@@ -2280,7 +2289,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_Record selectedRecord()
+  private HDT_Record getSelectedRecordAskIfNeeded()
   {
     HDT_Record activeRecord = activeRecord();
 
@@ -2292,16 +2301,28 @@ public final class MainCtrlr
     };
 
     if ((activeRecord == null) || (viewRecord == null) || (activeRecord == viewRecord))
+    {
+      if (activeRecord == null)
+        errorPopup("No record is currently selected.");
+
       return activeRecord;
+    }
 
-    DialogResult result = new PopupDialog("Which record?")
+    DialogResult result = new PopupDialog("Which record?\n\n" + getTypeName(activeRecord.getType()) + ": " + activeRecord.getCBText() +
+                                                         "\n" + getTypeName(viewRecord  .getType()) + ": " + viewRecord  .getCBText())
 
-      .addDefaultButton(getTypeName(activeRecord.getType()), mrYes)
-      .addButton       (getTypeName(viewRecord  .getType()), mrNo )
+      .addDefaultButton(getTypeName(activeRecord.getType()), mrYes   )
+      .addButton       (getTypeName(viewRecord  .getType()), mrNo    )
+      .addButton       ("Cancel"                           , mrCancel)
 
       .showModal();
 
-    return result == mrYes ? activeRecord : viewRecord;
+    return switch (result)
+    {
+      case mrYes -> activeRecord;
+      case mrNo  -> viewRecord;
+      default    -> null;
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -2321,13 +2342,10 @@ public final class MainCtrlr
       return;
     }
 
-    HDT_Record record = selectedRecord();
+    HDT_Record record = getSelectedRecordAskIfNeeded();
 
     if (record == null)
-    {
-      errorPopup("No record is currently selected.");
       return;
-    }
 
     QueryCtrlr curQueryCtrlr = queryHyperTab().getCurQueryCtrlr();
 
@@ -2340,22 +2358,28 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private boolean mnuRevertToXmlVersionClick()
+  @FXML private void mnuRevertToXmlVersionClick()
   {
     if (db.isOffline())
-      return falseWithErrorPopup("No database is currently loaded.");
+    {
+      errorPopup("No database is currently loaded.");
+      return;
+    }
 
     if ((activeTabEnum() == termTabEnum) || (activeTabEnum() == personTabEnum))
       if (cantSaveRecord())
-        return false;  // Need to save if it might only be a partial reversion
+        return;  // Need to save if it might only be a partial reversion
 
-    HDT_Record record = selectedRecord();
+    HDT_Record record = getSelectedRecordAskIfNeeded();
 
     if (record == null)
-      return falseWithErrorPopup("No record is currently selected.");
+      return;
 
     if (record.hasStoredState() == false)
-      return falseWithErrorPopup("Unable to revert: the record may not have been previously saved to XML.");
+    {
+      errorPopup("Unable to revert: the record may not have been previously saved to XML.");
+      return;
+    }
 
     String msg = "Are you sure you want to revert this record to the last version saved to XML?",
            additionalMsg = "";
@@ -2377,7 +2401,7 @@ public final class MainCtrlr
     if (confirmDialog("Type: " + getTypeName(type) + '\n' +
                       "Name: " + name + '\n' +
                       "ID: " + record.getID() + "\n\n" + msg + additionalMsg, false) == false)
-      return false;
+      return;
 
     String recordStr = getTypeName(record.getType()) + " \"" + name + '"';
 
@@ -2395,7 +2419,6 @@ public final class MainCtrlr
     }
 
     update();
-    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -137,7 +137,7 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
     super.cancelEdit();
     setGraphic(null);
 
-    getTableRow().getItem().setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
+    nullSwitch(getTableRow().getItem(), hyperTableRow -> hyperTableRow.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue));
   }
 
 //---------------------------------------------------------------------------

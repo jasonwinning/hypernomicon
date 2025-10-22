@@ -1346,13 +1346,10 @@ public abstract class AbstractHyperDB
 
     if (record.isDummy() == false)
     {
-      if (record.getType() != hdtConcept)
-      {
-        if (strNotNullOrBlank(record.getSearchKey()))
-          startMentionsRebuildAfterDelete = true;
+      if (strNotNullOrBlank(record.getSearchKey()))
+        startMentionsRebuildAfterDelete = true;
 
-        try { setSearchKey(record, "", false, false); } catch (SearchKeyException e) { throw newAssertionError(e); }
-      }
+      try { setSearchKey(record, "", false, false); } catch (SearchKeyException e) { throw newAssertionError(e); }
 
       if (mentionsIndex.isRebuilding())
       {
@@ -1729,6 +1726,11 @@ public abstract class AbstractHyperDB
         throw new HyperDataException("Record with no type found." + (id > 0 ? (" ID: " + id) : "") + " File: " + fileDescription);
 
       checkForIllegalListNameAttribute(type, id, dataVersion, listName, fileDescription);
+
+      // Backwards compatibility with records XML version 1.10
+      // The HDT_Concept search key was always redundant, set to the same value as the corresponding HDT_Term's search key
+      if ((type == hdtConcept) && ComparableUtils.is(dataVersion).lessThan(new VersionNumber(1, 11)))
+        searchKey = "";
 
       RecordState xmlRecord = new RecordState(type, id, sortKeyAttr, "", searchKey);
       xmlRecord.stored = true;

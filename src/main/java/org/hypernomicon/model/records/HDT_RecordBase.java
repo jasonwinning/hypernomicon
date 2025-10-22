@@ -319,8 +319,7 @@ public abstract class HDT_RecordBase implements HDT_Record
         liveValue.setFromOfflineValue(backupValue, tag);
     }
 
-    if (revertingConcept == false)
-      setSearchKey(backupState.searchKey, true, rebuildMentions);
+    setSearchKey(backupState.searchKey, true, rebuildMentions);
   }
 
 //---------------------------------------------------------------------------

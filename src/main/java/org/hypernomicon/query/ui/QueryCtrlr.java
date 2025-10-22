@@ -1067,7 +1067,7 @@ public final class QueryCtrlr
       {
         HDT_Record record = HyperTableCell.getRecord(row.getCell(OPERAND_2_COL_NDX));
         if (record instanceof HDT_Concept concept) return Set.of(concept.term.get());
-        return Set.of(record);
+        return record == null ? Set.of() : Set.of(record);
       }
       case QUERY_MATCHING_WORK_OR_SUBWORKS :
       {

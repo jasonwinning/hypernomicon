@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -63,8 +62,6 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 
   @Override public String name()                           { return term.isNull() ? "" : term.get().name(); }
-  @Override public String getSearchKey()                   { return term.get().getSearchKey(); }
-  @Override public Iterable<SearchKeyword> getSearchKeys() { return db.getKeysByRecord(term.get()); }
   @Override public String getCBText()                      { return extendedName(true); }
   @Override public String getXMLObjectName()               { return extendedName(true); }
   @Override public String getNameEngChar()                 { return term.get().getNameEngChar(); }
@@ -100,24 +97,6 @@ public class HDT_Concept extends HDT_RecordWithMainText
       (senseText.isBlank() ? name() : name() + " (" + senseText + ')')
     :
       (name() + " (" + glossaryText + (senseText.isBlank() ? ")" : (", " + senseText + ')')));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void setSearchKey(String newKey) throws DuplicateSearchKeyException, SearchKeyTooShortException
-  {
-    if (term.isNotNull())
-      term.get().setSearchKey(newKey);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws DuplicateSearchKeyException, SearchKeyTooShortException
-  {
-    if (term.isNotNull())
-      term.get().setSearchKey(newKey, noMod, rebuildMentions);
   }
 
 //---------------------------------------------------------------------------

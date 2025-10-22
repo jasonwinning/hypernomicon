@@ -46,6 +46,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.dialogs.*;
+import org.hypernomicon.model.Exceptions.SearchKeyException;
+import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 
@@ -144,7 +146,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     private final HDT_Glossary glossary;
     private final HDT_ConceptSense sense;
     private final HDT_Concept concept;
-    private final String senseText;
+    private final String senseText, searchKey;
 
   //---------------------------------------------------------------------------
 
@@ -153,6 +155,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       HDT_Glossary tempGlossary = row.getRecord(2);
       HDT_ConceptSense tempSense = row.getRecord(3);
       senseText = row.getText(3);
+      searchKey = row.getText(5);
 
       if ((tempSense == null) && (senseText.isBlank() == false))
         concept = null;
@@ -182,6 +185,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       concept = null;
       sense = null;
       senseText = "";
+      searchKey = "";
       parentConcepts = List.of();
     }
 
@@ -193,6 +197,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       glossary = concept.glossary.get();
       sense = concept.sense.get();
       senseText = sense == null ? "" : sense.name();
+      searchKey = concept.getSearchKey();
       parentConcepts = List.copyOf(concept.parentConcepts);
     }
 
@@ -214,6 +219,11 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         row.setCellValue(3, sense, sense.listName());
 
       row.setCellValue(4, new ParentConceptsCell(parentConcepts));
+
+      if (concept == null)
+        row.setCellValue(5, searchKey, hdtConcept);
+      else
+        row.setCellValue(5, concept, searchKey);
 
       updatingConcepts = wasUpdatingConcepts;
     }
@@ -239,10 +249,15 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     super(termTabEnum, tab);
 
     lblParentCaption.setText("Concepts:");
+    lblSearchKey.setText("Term Search Key:");
 
-    TableColumn<HyperTableRow, HyperTableCell> senseCol = new TableColumn<>("Sense");
-    senseCol.setPrefWidth(150.0);
-    tvParents.getColumns().add(3, senseCol);
+    TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>("Sense");
+    col.setPrefWidth(150.0);
+    tvParents.getColumns().add(3, col);
+
+    col = new TableColumn<>("Search Key");
+    col.setPrefWidth(150.0);
+    tvParents.getColumns().add(col);
 
     tvParents.getColumns().get(2).setText("Glossary");
     tvParents.getColumns().get(4).setText("Parent Concept(s)");
@@ -301,6 +316,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     htConcepts.addColWithUpdateHandler(hdtConceptSense, ctEditableUnlimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> handleSenseEdit(row, cellVal));
 
     htConcepts.addClickToEditCol(hdtConcept, makeTooltip("Click cell to modify parent concepts"), (row, colNdx) -> showParentConceptSelectDialog(row));
+
+    htConcepts.addTextEditColWithUpdateHandler(hdtConcept, false, (row, cellVal, nextColNdx, nextPopulator) -> handleSearchKeyEdit(row, cellVal));
 
     for (int ndx = 0; ndx < 8; ndx++)
     {
@@ -364,7 +381,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     htConcepts.addContextMenuItem("Remove this row",
       row -> (conceptRows.get(row) != null) && (curTerm.concepts.size() > 1),
 
-      this::removeRow);
+      row -> removeRow(row, conceptRows.get(row)));
 
     htSubConcepts = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.CONCEPT_SUB);
 
@@ -506,16 +523,64 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void removeRow(HyperTableRow row)
+  boolean removeRow(HyperTableRow row, ConceptRow conceptRow)
   {
-    ConceptRow conceptRow = conceptRows.get(row);
-    if (conceptRow == null) return;
+    HDT_Concept concept = conceptRow.concept;
 
-    if (removeConcept(conceptRow.glossary, conceptRow.sense))
+    if (concept != null)
     {
-      conceptRows.remove(row);
-      htConcepts.removeRow(row);
+      if (ui.cantSaveRecord()) return false;
+
+      if ((concept.getMainText().isEmpty() == false) || concept.hasHub())
+      {
+        String prompt = "Are you sure you want to remove the concept definition associated with the glossary \"" + conceptRow.glossary.name() + '"';
+
+        if (confirmDialog(prompt + (conceptRow.sense == null ? "?" : (", sense \"" + conceptRow.sense.name() + "\"?")), false) == false)
+          return false;
+      }
+
+      if (curTab().concept == concept)
+        switchToDifferentTab();
+
+      tpConcepts.getTabs().remove(getConceptTab(concept));
+      conceptToTextViewInfo.remove(concept);
+      db.deleteRecord(concept);
     }
+
+    conceptRows.remove(row);
+    htConcepts.removeRow(row);
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void handleSearchKeyEdit(HyperTableRow editedRow, HyperTableCell newCell)
+  {
+    if (updatingConcepts) return;
+
+    ConceptRow oldConceptRow = conceptRows.get(editedRow);
+    HDT_Concept concept = oldConceptRow.concept;
+    String newText = HyperTableCell.getCellText(newCell).strip();
+
+    try
+    {
+      concept.setSearchKey(newText);
+    }
+    catch (SearchKeyException e)
+    {
+      errorPopup(e instanceof SearchKeyTooShortException ?
+        "Search key must be at least 3 characters: " + e.getKey()
+      :
+        "Search key already exists: " + e.getKey());
+
+      oldConceptRow.populateTableRow(editedRow);
+      return;
+    }
+
+    conceptRows.put(editedRow, new ConceptRow(concept));
+    clearAndRepopulateConceptsTable();
   }
 
 //---------------------------------------------------------------------------
@@ -528,32 +593,65 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     ConceptRow oldConceptRow = nullSwitch(conceptRows.get(editedRow), new ConceptRow());
 
     HDT_Concept concept = oldConceptRow.concept;
+    HDT_ConceptSense sense = newCell.getRecord();
+    String newText = HyperTableCell.getCellText(newCell).strip();
 
     // The only way concept would be null here is if the user edited the Sense for a blank row.
     if (concept == null)
     {
-      if (HyperTableCell.getCellText(newCell).isBlank())
+      if (newText.isBlank())
       {
         // The user must have edited the Sense for a blank row and changed it back to blank so do nothing.
 
         return;
       }
 
+      for (HyperTableRow row : htConcepts.dataRows())
+      {
+        // We need to create a new concept and default in a glossary for it. If there is already a concept
+        // in the General glossary with the same sense, treat that as a conflict.
+
+        if (row != editedRow)
+        {
+          HDT_Concept otherConcept = curTerm.getConcept(row.getRecord(2), row.getRecord(3));
+          if ((otherConcept.glossary.getID() == 1) && row.getText(3).equalsIgnoreCase(newText))
+          {
+            errorPopup("This term already has a concept in the General glossary with the same sense.");
+            removeRow(editedRow, oldConceptRow);
+            return;
+          }
+        }
+      }
+
       // Glossary is currently blank. Set it to General if the current term is already in
-      // the General glossary; otherwise set it to whichever glossary the first concept is in
-      HDT_Glossary glossary = curTerm.concepts.stream().noneMatch(koncept -> koncept.glossary.get().getID() == 1) ?
-        curTerm.concepts.getFirst().glossary.get()
-      :
-        db.glossaries.getByID(1);
+      // the General glossary; otherwise set it to whichever glossary the first concept is in and
+      // see if there is a conflict with that glossary and the user-chosen sense. If not,
+      // use that glossary. If so, use General (since the earlier loop made sure there wouldn't be a conflict).
+
+      HDT_Glossary glossary = null;
+
+      if (curTerm.concepts.stream().noneMatch(koncept -> koncept.glossary.get().getID() == 1))
+      {
+        glossary = curTerm.concepts.getFirst().glossary.get();
+
+        for (HDT_Concept otherConcept : curTerm.concepts)
+        {
+          if ((otherConcept.glossary.get() == glossary) && otherConcept.sense.isNotNull() &&
+              ((otherConcept.sense.get() == sense) || newText.equalsIgnoreCase(otherConcept.sense.get().name())))
+          {
+            glossary = null;
+            break;
+          }
+        }
+      }
+
+      if (glossary == null) glossary = db.glossaries.getByID(1);
 
       // This will cause handleGlossaryEdit to get called, which will create a concept record with the chosen sense
       editedRow.setCellValue(2, glossary, glossary.name());
 
       return;
     }
-
-    HDT_ConceptSense sense = newCell.getRecord();
-    String newText = HyperTableCell.getCellText(newCell).strip();
 
     if ((oldConceptRow.sense != null) && ((sense == oldConceptRow.sense) || newText.equalsIgnoreCase(oldConceptRow.sense.name())))
     {
@@ -620,7 +718,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       {
         if ((newConceptRow.glossary == null) || (newConceptRow.concept != null))
         {
-          if (removeConcept(oldConceptRow.glossary, oldConceptRow.sense) == false)
+          if (removeRow(editedRow, oldConceptRow) == false)
           {
             oldConceptRow.populateTableRow(editedRow);
             return;
@@ -740,35 +838,6 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       return false;
 
     updateDisplayersAndSubConcepts();
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean removeConcept(HDT_Glossary glossary, HDT_ConceptSense sense)
-  {
-    HDT_Concept concept = curTerm.getConcept(glossary, sense);
-
-    if (concept == null) return true;
-
-    if (ui.cantSaveRecord()) return false;
-
-    if ((concept.getMainText().isEmpty() == false) || concept.hasHub())
-    {
-      String prompt = "Are you sure you want to remove the concept definition associated with the glossary \"" + glossary.name() + '"';
-
-      if (confirmDialog(prompt + (sense == null ? "?" : (", sense \"" + sense.name() + "\"?")), false) == false)
-        return false;
-    }
-
-    if (curTab().concept == concept)
-      switchToDifferentTab();
-
-    tpConcepts.getTabs().remove(getConceptTab(concept));
-    conceptToTextViewInfo.remove(concept);
-    db.deleteRecord(concept);
 
     return true;
   }
