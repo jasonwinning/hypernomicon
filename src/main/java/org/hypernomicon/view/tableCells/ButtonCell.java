@@ -15,11 +15,13 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.view.tableCells;
 
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellClickHandler;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
+
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -58,7 +60,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler handler, String caption)
+  public ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler handler, String caption)
   {
     ht = newHT;
     this.colNdxOfTarget = colNdxOfTarget;

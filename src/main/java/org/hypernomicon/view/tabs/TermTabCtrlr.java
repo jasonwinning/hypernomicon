@@ -21,7 +21,7 @@ import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.cellValues.AbstractHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 

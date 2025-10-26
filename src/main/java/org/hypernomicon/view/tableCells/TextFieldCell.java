@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.view.tableCells;
 
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -28,10 +28,11 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.PageRangeHTC;
 import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.Populator.CellValueType;
+import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 
 import javafx.beans.property.Property;
-import javafx.scene.control.TableCell;
+import javafx.scene.Cursor;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
@@ -39,7 +40,7 @@ import javafx.scene.input.KeyEvent;
 
 //---------------------------------------------------------------------------
 
-class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
+public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
 
 //---------------------------------------------------------------------------
@@ -57,13 +58,21 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
 //---------------------------------------------------------------------------
 
-  TextFieldCell(HyperTable table, CellValueType cellValueType, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod)
+  public TextFieldCell(HyperTable table, CellValueType cellValueType, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod)
   {
     this.table = table;
 
     this.canEditIfEmpty = canEditIfEmpty;
     this.sortMethod = sortMethod;
     this.cellValueType = cellValueType;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected Cursor getMouseCursor()
+  {
+    return isEditingBlocked() ? null : Cursor.TEXT;
   }
 
 //---------------------------------------------------------------------------

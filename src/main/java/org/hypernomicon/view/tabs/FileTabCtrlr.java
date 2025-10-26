@@ -25,7 +25,7 @@ import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.*;
 
 import static org.hypernomicon.App.*;

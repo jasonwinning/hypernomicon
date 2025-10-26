@@ -47,7 +47,8 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.*;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
+import org.hypernomicon.view.tableCells.ReadOnlyCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.*;
 
 import javafx.application.Platform;
@@ -82,9 +83,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   private final FilteredList<HyperTableRow> filteredRows;
   private final Map<Integer, HyperTableCell> colNdxToDefaultValue = new HashMap<>();
 
-  Consumer<? extends HDT_Record> dblClickHandler = null;
-  Runnable onShowMore = null;
-  HyperTableRow showMoreRow = null;
+  private Consumer<? extends HDT_Record> dblClickHandler = null;
+  private Runnable onShowMore = null;
+  private HyperTableRow showMoreRow = null;
   private Runnable refreshHandler = null;
   private boolean canAddRows;
   public boolean disableRefreshAfterCellUpdate = false,
@@ -106,7 +107,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   boolean getCanAddRows()                                       { return canAddRows; }
   public void setCanAddRows(boolean value)                      { canAddRows = value; tv.setEditable(value); }
   public void setOnShowMore(Runnable onShowMore)                { this.onShowMore = onShowMore; }
-  int getMainColNdx()                                           { return mainCol; }
+  public Runnable getOnShowMore()                               { return onShowMore; }
+  public void setShowMoreRow(HyperTableRow row)                 { showMoreRow = row; }
+  public int getMainColNdx()                                    { return mainCol; }
   public void removeRow(HyperTableRow row)                      { rows.remove(row); }
   public void swapRows(int ndx1, int ndx2)                      { Collections.swap(rows, ndx1, ndx2); }
   public Iterable<HyperTableRow> dataRows()                     { return new DataRowIterator(); }
@@ -116,6 +119,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public HyperTableRow selectRowByRecord(HDT_Record record)     { return nullSwitch(getRowByRecord(record), null, this::selectRow); }
   public boolean removeRowsIf(Predicate<HyperTableRow> filter)  { return rows.removeIf(filter); }
   public void setDefaultValue(int colNdx, HyperTableCell value) { colNdxToDefaultValue.put(colNdx, value); }
+  public Consumer<? extends HDT_Record> getDblClickHandler()    { return dblClickHandler; }
 
   @SuppressWarnings("unused")
   public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> handler) { dblClickHandler = handler; }
@@ -208,7 +212,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
    * If the tableview is embedded in a context where layout requests aren't getting propagated correctly,
    * this method can be used with a user-supplied handler to manually trigger parent layout requests.
    */
-  void doExternalRefresh()
+  public void doExternalRefresh()
   {
     if (refreshHandler != null)
       refreshHandler.run();
@@ -342,14 +346,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public <HDT_T extends HDT_Record> HDT_T selectedRecord()
   {
     return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, HyperTableRow::getRecord);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperTableCell selectedCell()
-  {
-    return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, HyperTableRow::getCell);
   }
 
 //---------------------------------------------------------------------------
@@ -655,7 +651,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void browseClick(HyperTableRow row, int colNdx)
+  public void browseClick(HyperTableRow row, int colNdx)
   {
     Populator pop = null;
     RecordTypePopulator rtp = null;

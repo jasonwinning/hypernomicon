@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.view.tableCells;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -27,6 +27,7 @@ import java.util.function.Function;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import javafx.scene.Node;
@@ -50,7 +51,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 
 //---------------------------------------------------------------------------
 
-  ReadOnlyCell(HyperTable table, HyperTableColumn col, Function<HyperTableRow, Node> graphicProvider)
+  public ReadOnlyCell(HyperTable table, HyperTableColumn col, Function<HyperTableRow, Node> graphicProvider)
   {
     this.table = table;
     this.col = col;
@@ -64,7 +65,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     setOnMouseClicked(mouseEvent -> nullSwitch(getItem(), cellItem -> nullSwitch(cellItem.getRecord(), (HDT_Record record) ->
     {
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
-        handleRecord(table.dblClickHandler, record);
+        handleRecord(table.getDblClickHandler(), record);
     })));
   }
 
@@ -72,7 +73,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  static <HDT_T extends HDT_Record> void handleRecord(Consumer<HDT_T> handler, HDT_Record record)
+  public static <HDT_T extends HDT_Record> void handleRecord(Consumer<HDT_T> handler, HDT_Record record)
   {
     if (handler != null)
       handler.accept((HDT_T) record);
@@ -105,16 +106,16 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
       cellButton.setText("Show more");
       cellButton.setOnAction(event ->
       {
-        if (table.onShowMore != null)
+        if (table.getOnShowMore() != null)
         {
           table.getTV().requestFocus();
 
-          table.onShowMore.run();
+          table.getOnShowMore().run();
         }
       });
 
       setGraphic(cellButton);
-      table.showMoreRow = row;
+      table.setShowMoreRow(row);
       return;
     }
 

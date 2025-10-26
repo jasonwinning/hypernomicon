@@ -53,6 +53,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.tableCells.ReadOnlyCell;
 import org.hypernomicon.view.wrappers.*;
 
 import javafx.application.Platform;

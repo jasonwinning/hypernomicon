@@ -26,6 +26,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -36,7 +37,8 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordIconHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
+import org.hypernomicon.view.tableCells.*;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 
 import javafx.application.Platform;
 import javafx.beans.property.Property;
@@ -45,6 +47,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.TableColumnHeader;
@@ -138,7 +141,7 @@ public class HyperTableColumn
   private final RecordType objType;
   private final HyperCtrlType ctrlType;
   private final TableColumn<HyperTableRow, ?> tc;
-  final EnumMap<ButtonAction, Function<HyperTableRow, String>> tooltips = new EnumMap<>(ButtonAction.class);
+  public final Map<ButtonAction, Function<HyperTableRow, String>> tooltips = new EnumMap<>(ButtonAction.class);
   final CellUpdateHandler updateHandler;
   private final int colNdx, targetCol;
   private final MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
@@ -157,7 +160,7 @@ public class HyperTableColumn
   public int getColNdx()             { return colNdx; }
   public String getHeader()          { return tc.getText(); }
   RecordType getObjType()            { return objType; }
-  Pos getAlignment()                 { return alignment; }
+  public Pos getAlignment()          { return alignment; }
   void clear()                       { if (populator != null) populator.clear(); }
 
   HyperTableColumn setCanEditIfEmpty(boolean newVal)         { canEditIfEmpty.setValue(newVal); return this; }
@@ -334,7 +337,7 @@ public class HyperTableColumn
 
       case ctLabelClickToEdit :
 
-        htcCol.setCellFactory(tableCol -> new TableCell<>()
+        htcCol.setCellFactory(tableCol -> new CursorAwareCell<>()
         {
           private boolean isEditingBlocked()
           {
@@ -359,6 +362,11 @@ public class HyperTableColumn
             super.updateItem(item, empty);
 
             setText(empty ? null : HyperTableCell.getCellText(getItem()));
+          }
+
+          @Override protected Cursor getMouseCursor()
+          {
+            return isEditingBlocked() ? null : Cursor.TEXT;
           }
         });
 
@@ -396,7 +404,7 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static Button makeButton(TableCell<HyperTableRow, HyperTableCell> tableCell)
+  public static Button makeButton(TableCell<HyperTableRow, HyperTableCell> tableCell)
   {
     Button cellButton = new Button();
 

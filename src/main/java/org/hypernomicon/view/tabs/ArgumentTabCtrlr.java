@@ -36,8 +36,8 @@ import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.populators.*;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.*;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

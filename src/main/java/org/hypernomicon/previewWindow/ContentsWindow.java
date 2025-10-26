@@ -43,9 +43,9 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.BibDateHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;

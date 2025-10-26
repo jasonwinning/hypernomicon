@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.view.tableCells;
 
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -32,18 +32,19 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
+import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Cursor;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 //---------------------------------------------------------------------------
 
-public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
+public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
 
 //---------------------------------------------------------------------------
@@ -61,8 +62,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
 //---------------------------------------------------------------------------
 
-  ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,
-               MutableBoolean dontCreateNewRecord, Function<HyperTableRow, String> textHndlr, Supplier<HDT_Work> workSupplier)
+  public ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,
+                      MutableBoolean dontCreateNewRecord, Function<HyperTableRow, String> textHndlr, Supplier<HDT_Work> workSupplier)
   {
     this.table = table;
     this.ctrlType = ctrlType;
@@ -71,6 +72,14 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     this.dontCreateNewRecord = dontCreateNewRecord;
     this.workSupplier = workSupplier;
     this.textHndlr = textHndlr;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected Cursor getMouseCursor()
+  {
+    return ctrlType == ctNoneditableDropDown ? null : Cursor.TEXT;
   }
 
 //---------------------------------------------------------------------------

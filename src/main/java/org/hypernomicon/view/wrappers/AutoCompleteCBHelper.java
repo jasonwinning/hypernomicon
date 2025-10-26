@@ -345,7 +345,7 @@ public class AutoCompleteCBHelper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HyperTableCell findMatch(List<? extends HyperTableCell> items, TextField editor, CharSequence typed, String typedLC)
+  private static HyperTableCell findMatch(Iterable<? extends HyperTableCell> items, TextField editor, CharSequence typed, String typedLC)
   {
     if (typed.isEmpty())
       return null;
@@ -413,7 +413,7 @@ public class AutoCompleteCBHelper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static boolean scrollToValue(ComboBox<? extends HyperTableCell> cb)
+  public static boolean scrollToValue(ComboBox<? extends HyperTableCell> cb)
   {
     List<? extends HyperTableCell> items = cb.getItems();
     if (items == null) return false;

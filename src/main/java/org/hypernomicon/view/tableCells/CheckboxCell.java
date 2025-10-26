@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.view.tableCells;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -26,10 +26,12 @@ import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
 
-class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
+public class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 {
 
 //---------------------------------------------------------------------------
@@ -40,7 +42,7 @@ class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 
 //---------------------------------------------------------------------------
 
-  CheckboxCell(HyperTable table)
+  public CheckboxCell(HyperTable table)
   {
     this.table = table;
     chk = new CheckBox();

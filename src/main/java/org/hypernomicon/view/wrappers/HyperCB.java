@@ -32,6 +32,7 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.tableCells.ComboBoxCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import static org.hypernomicon.App.*;
@@ -127,7 +128,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row, boolean autoCommitBeforeRecordSave, HyperTable table, int colNdx)
+  public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row, boolean autoCommitBeforeRecordSave, HyperTable table, int colNdx)
   {
     this.cb = cb;
     this.autoCommitBeforeRecordSave = autoCommitBeforeRecordSave;

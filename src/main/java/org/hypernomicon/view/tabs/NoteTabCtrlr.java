@@ -38,9 +38,9 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;

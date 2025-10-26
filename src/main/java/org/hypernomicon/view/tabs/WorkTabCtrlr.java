@@ -41,8 +41,8 @@ import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.*;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;

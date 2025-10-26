@@ -20,9 +20,9 @@ package org.hypernomicon.view.tabs;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import javafx.scene.control.Tab;
 

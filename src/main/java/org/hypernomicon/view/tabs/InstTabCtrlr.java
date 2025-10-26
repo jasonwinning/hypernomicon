@@ -26,6 +26,7 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator.DisplayKind;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
+import org.hypernomicon.view.tableCells.ButtonCell;
 import org.hypernomicon.view.wrappers.*;
 
 import com.google.common.collect.Ordering;
