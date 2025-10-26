@@ -67,7 +67,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   {
     super(zWrapper, false);
 
-    jData = ZoteroWrapper.getTemplate(newType).clone();
+    jData = ZoteroWrapper.getTemplate(newType).deepCopy();
     jData.put(entryTypeKey, zWrapper.getEntryTypeMap().getOrDefault(newType, ""));
     jObj.put("data", jData);
 
@@ -608,7 +608,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
    */
   public JsonObj exportStandaloneJsonObj(boolean forUploadToServer)
   {
-    JsonObj jStandaloneObj = jObj.clone();
+    JsonObj jStandaloneObj = jObj.deepCopy();
 
     boolean missingKeysOK = !forUploadToServer;
 
@@ -760,7 +760,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         {
           if (parentAuthorTypes.contains(oldCreator.getStrSafe("creatorType")))
           {
-            JsonObj newCreator = oldCreator.clone();
+            JsonObj newCreator = oldCreator.deepCopy();
             if ("bookAuthor".equals(newCreator.getStrSafe("creatorType")))
               newCreator.put("creatorType", "book");
 
@@ -768,7 +768,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
           }
         });
 
-        oldCreatorsArr.getObjs().forEach(creator -> newCreatorsArr.add(creator.clone()));
+        oldCreatorsArr.getObjs().forEach(creator -> newCreatorsArr.add(creator.deepCopy()));
 
         dest.getWork().getAuthors().setAll(new ZoteroAuthors(newCreatorsArr, dest.getEntryType()));
 
@@ -794,7 +794,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         {
           String type = creator.getStrSafe("creatorType");
           if ("editor".equals(type) || "bookAuthor".equals(type))
-            destCreatorsArr.add(creator.clone());
+            destCreatorsArr.add(creator.deepCopy());
         });
 
         break;

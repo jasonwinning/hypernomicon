@@ -531,7 +531,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
    */
   public JsonObj exportStandaloneJsonObj(boolean serverPatch)
   {
-    JsonObj jStandaloneObj = jObj.clone();
+    JsonObj jStandaloneObj = jObj.deepCopy();
 
     if (isNewEntry())
       jStandaloneObj.remove("id");
@@ -629,7 +629,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         // Add child's parent-authors to parent
 
         JsonArray jsonArr = jObj.getArray("editors");
-        newVersion.put("editors", jsonArr == null ? new JsonArray() : jsonArr.clone());
+        newVersion.put("editors", jsonArr == null ? new JsonArray() : jsonArr.deepCopy());
 
         dest.getWork().getAuthors().setAll(new MendeleyAuthors(newVersion, dest.getEntryType()));
 
@@ -639,7 +639,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       case Sibling:
       {
         JsonArray jsonArr = jObj.getArray("editors");
-        dest.jObj.put("editors", jsonArr == null ? new JsonArray() : jsonArr.clone());
+        dest.jObj.put("editors", jsonArr == null ? new JsonArray() : jsonArr.deepCopy());
 
         break;
       }

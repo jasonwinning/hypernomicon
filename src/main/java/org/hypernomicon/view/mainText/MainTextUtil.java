@@ -81,11 +81,11 @@ public final class MainTextUtil
                               hiliteStyles,
                               editingStyles;
 
-  /*************************************************************/
-  /*                                                           */
-  /*   Some of these constants are duplicated in mainText.js   */
-  /*                                                           */
-  /*************************************************************/
+  /* *********************************************************** */
+  /*                                                             */
+  /*   Some of these constants are duplicated in mainText.js     */
+  /*                                                             */
+  /* *********************************************************** */
 
   public static final String  EMBEDDED_FILE_TAG = "misc-file",
 
@@ -515,7 +515,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void appendKeyWorkBody(List<KeyWork> keyWorks, StringBuilder innerHtml, boolean sortByName)
+  private static void appendKeyWorkBody(Iterable<KeyWork> keyWorks, StringBuilder innerHtml, boolean sortByName)
   {
     List<String> searchKeys = new ArrayList<>();
 
@@ -659,7 +659,7 @@ public final class MainTextUtil
   {
     uRecord = uRecord.mainSpoke();
 
-    String recordName = htmlEscaper.escape(uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).extendedName() : uRecord.name());
+    String recordName = htmlEscaper.escape(uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).extendedName(true) : uRecord.name());
 
     return getKeywordLink(recordName, new KeywordLink(0, uRecord.name().length(), new SearchKeyword(uRecord.name(), uRecord)), "text-decoration: none;");
   }

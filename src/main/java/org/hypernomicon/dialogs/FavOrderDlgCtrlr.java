@@ -63,15 +63,20 @@ public class FavOrderDlgCtrlr extends ModalDialog
 
     lvRecord.setItems(new FilteredList<>(ui.mnuFavorites.getItems(), item -> ui.mnuFavorites.getItems().indexOf(item) >= FIRST_FAV_MENU_ITEM_NDX));
 
-    btnRecordUp.setOnAction(event -> moveRecord(-1));
-    btnRecordDown.setOnAction(event -> moveRecord(1));
+    btnRecordUp  .setOnAction(event -> moveRecord(-1));
+    btnRecordDown.setOnAction(event -> moveRecord( 1));
 
     lvQuery.setCellFactory(factory);
 
     lvQuery.setItems(new FilteredList<>(ui.mnuQueries.getItems(), item -> ui.mnuQueries.getItems().contains(item)));
 
-    btnQueryUp.setOnAction(event -> moveQuery(-1));
-    btnQueryDown.setOnAction(event -> moveQuery(1));
+    btnQueryUp  .setOnAction(event -> moveQuery(-1));
+    btnQueryDown.setOnAction(event -> moveQuery( 1));
+
+    setToolTip(btnRecordUp  , "Move Up"  );
+    setToolTip(btnRecordDown, "Move Down");
+    setToolTip(btnQueryUp   , "Move Up"  );
+    setToolTip(btnQueryDown , "Move Down");
   }
 
 //---------------------------------------------------------------------------

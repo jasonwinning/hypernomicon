@@ -21,18 +21,23 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.dialogs.ObjectOrderDlgCtrlr;
 import org.hypernomicon.dialogs.base.DialogBase;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
-import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
@@ -43,14 +48,7 @@ import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
-import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
-import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
-
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.hypernomicon.view.wrappers.HyperTableColumn.*;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -110,6 +108,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public void setOnShowMore(Runnable onShowMore)                { this.onShowMore = onShowMore; }
   int getMainColNdx()                                           { return mainCol; }
   public void removeRow(HyperTableRow row)                      { rows.remove(row); }
+  public void swapRows(int ndx1, int ndx2)                      { Collections.swap(rows, ndx1, ndx2); }
   public Iterable<HyperTableRow> dataRows()                     { return new DataRowIterator(); }
   public Stream<HyperTableRow> dataRowStream()                  { return iterableToStream(dataRows()); }
   public int dataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
@@ -135,7 +134,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     @Override public HyperTableRow next()
     {
-      if (hasNext() == false) throw new NoSuchElementException();
+      if (hasNext() == false)
+        throw new NoSuchElementException("No more rows available at index " + nextNdx);
+
       nextNdx++;
       return rowIt.next();
     }
@@ -383,7 +384,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType> void preventMovingColumns(TableView<RowType> tv, List<TableColumn<RowType, ?>> colList)
+  public static <RowType> void preventMovingColumns(TableView<RowType> tv, Collection<TableColumn<RowType, ?>> columns)
   {
     // This handsome block of code is the only way within JavaFX to prevent the user from moving columns around
 
@@ -394,16 +395,10 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       if (change.wasReplaced())
       {
         tv.getColumns().clear();
-        tv.getColumns().addAll(colList);
+        tv.getColumns().addAll(columns);
       }
     });
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FunctionalInterface
-  public interface CellUpdateHandler { void handle(HyperTableRow row, HyperTableCell cellVal, int nextColNdx, Populator nextPopulator); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -444,10 +439,10 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
                                                              EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
     return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction, updateHandler)); }
 
-  public HyperTableColumn addActionColWithButtonHandler(HyperCtrlType ctrlType, int targetCol, ButtonCellHandler handler) {
+  public HyperTableColumn addActionColWithButtonHandler(HyperCtrlType ctrlType, int targetCol, CellClickHandler handler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol, handler, null)); }
 
-  public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, ButtonCellHandler handler) {
+  public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, CellClickHandler handler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, handler, btnCaption)); }
 
   public HyperTableColumn addLabelCol(RecordType objType) {
@@ -459,7 +454,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public HyperTableColumn addLabelColWithAlignment(RecordType objType, Pos alignment) {
     return addColAltPopulator(objType, ctNone, Populator.emptyPopulator(cvtRecord)).setAlignment(alignment); }
 
-  public HyperTableColumn addLabelEditCol(ButtonCellHandler handler) {
+  public HyperTableColumn addLabelEditCol(CellClickHandler handler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctLabelEdit, null, -1, handler, null)); }
 
   public HyperTableColumn addIconCol() {
@@ -476,6 +471,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addGoNewCol(RecordType recordType, int targetCol) {
     return addActionCol(ctGoNewBtn, targetCol).setTooltip(ButtonAction.baNew, "Add new " + getTypeName(recordType) + " record"); }
+
+  public HyperTableColumn addClickToEditCol(RecordType objType, Tooltip headerTooltip, CellClickHandler handler) {
+    return addCol(new HyperTableColumn(this, objType, ctLabelClickToEdit, null, -1, handler, null).setHeaderTooltip(headerTooltip)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -602,7 +600,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setDataRows(List<HyperTableRow> newRows)
+  public void setDataRows(Collection<HyperTableRow> newRows)
   {
     showMoreRow = null;
     rows.setAll(newRows);
@@ -614,7 +612,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addDataRows(List<HyperTableRow> newRows)
+  public void addDataRows(Collection<HyperTableRow> newRows)
   {
     if (canAddRows)
       rows.addAll(dataRowCount(), newRows);

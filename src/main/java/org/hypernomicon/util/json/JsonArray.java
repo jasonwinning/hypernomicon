@@ -30,7 +30,7 @@ import static org.hypernomicon.util.json.JsonObj.*;
 
 //---------------------------------------------------------------------------
 
-public final class JsonArray implements Cloneable
+public final class JsonArray
 {
 
 //---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ public final class JsonArray implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public JsonArray clone()
+  public JsonArray deepCopy()
   {
     try
     {
@@ -117,7 +117,7 @@ public final class JsonArray implements Cloneable
     }
     catch (ParseException e)
     {
-      throw new AssertionError("Cloning JsonArray failed.");
+      throw new AssertionError("Deep copy failed.", e);
     }
   }
 

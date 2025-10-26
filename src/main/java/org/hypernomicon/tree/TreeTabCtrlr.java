@@ -127,7 +127,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new sub-label under this label", HDT_WorkLabel.class,
       label -> db.isOnline(),
-      this::createLabel));
+      this::createChildLabel));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new sub-debate under this debate", HDT_Debate.class,
       debate -> db.isOnline(),
@@ -163,7 +163,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new glossary under this glossary", HDT_Glossary.class,
       glossary -> db.isOnline(),
-      this::createGlossary));
+      this::createChildGlossary));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary under this term", HDT_Concept.class,
       concept -> db.isOnline(),
@@ -425,7 +425,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (schema.testWhetherToShow(row) == false) return;
 
-      MenuItem menuItem = new MenuItem(schema.getCaption());
+      MenuItem menuItem = new MenuItem(schema.getCaption(row));
       menuItem.setOnAction(event -> schema.doAction(row));
       items.add(menuItem);
     });
@@ -452,7 +452,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void createGlossary(HDT_Glossary glossary)
+  private void createChildGlossary(HDT_Glossary parentGlossary)
   {
     RenameDlgCtrlr dlg = new RenameDlgCtrlr("Glossary Name", ntRecord, "");
 
@@ -462,7 +462,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     newGlossary.setActive(true);
     newGlossary.setName(dlg.getNewName());
 
-    ui.treeSelector.attach(newGlossary, glossary);
+    ui.treeSelector.attach(newGlossary, parentGlossary);
 
     Platform.runLater(() -> { tree.sort(); tree.selectRecord(newGlossary, 0, false); });
   }
@@ -470,7 +470,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void createLabel(HDT_WorkLabel label)
+  private void createChildLabel(HDT_WorkLabel parentLabel)
   {
     RenameDlgCtrlr dlg = new RenameDlgCtrlr("Label Name", ntRecord, "");
 
@@ -478,7 +478,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     HDT_WorkLabel newLabel = db.createNewBlankRecord(hdtWorkLabel);
     newLabel.setName(dlg.getNewName());
-    newLabel.parentLabels.add(label);
+    newLabel.parentLabels.add(parentLabel);
 
     Platform.runLater(() -> { tree.sort(); tree.selectRecord(newLabel, 0, false); });
   }

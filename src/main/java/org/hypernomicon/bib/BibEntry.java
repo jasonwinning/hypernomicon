@@ -154,7 +154,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
       jObj.remove("backupItem");
     }
     else
-      jBackupObj = jObj.clone();
+      jBackupObj = jObj.deepCopy();
 
     backupItem = create(libWrapper, jBackupObj, true);
 
@@ -227,7 +227,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   {
     if (thisIsBackup) return;
 
-    JsonObj jObjToSave = jObj.clone();
+    JsonObj jObjToSave = jObj.deepCopy();
 
     if (backupItem != null)
       jObjToSave.put("backupItem", backupItem.jObj);

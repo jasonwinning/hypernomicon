@@ -29,11 +29,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.view.MainCtrlr;
-import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
 
@@ -45,7 +45,6 @@ public class TreeSelector
 
   private HDT_Record base, target;
   private final List<TreeTargetType> targetTypes = new ArrayList<>();
-  private HyperTableRow tableRow;
   private boolean baseIsSubj = true;
 
   public TreeSelector()        { clear(); }
@@ -64,7 +63,6 @@ public class TreeSelector
     target = null;
     targetTypes.clear();
     baseIsSubj = true;
-    tableRow = null;
   }
 
 //---------------------------------------------------------------------------
@@ -72,16 +70,10 @@ public class TreeSelector
 
   public void reset(HDT_Record base, boolean baseIsSubj)
   {
-    reset(base, baseIsSubj, null);
-  }
-
-  public void reset(HDT_Record base, boolean baseIsSubj, HyperTableRow tableRow)
-  {
     clear();
 
     this.base = base;
     this.baseIsSubj = baseIsSubj;
-    this.tableRow = tableRow;
   }
 
 //---------------------------------------------------------------------------
@@ -202,20 +194,41 @@ public class TreeSelector
 
     if (relType == rtGlossaryOfConcept)
     {
-      if (glossaryChecks((HDT_Glossary) record) == false)
-        return false;
+      HDT_Glossary glossary = (HDT_Glossary) record;
+      HDT_Concept concept = (HDT_Concept) base,
+          otherConcept = concept.term.get().getConcept(glossary, concept.sense.get());
 
-      ui.termHyperTab().selectFromTree(tableRow, (HDT_Glossary) record, ((HDT_Concept) base).sense.get(), null);
-      ui.goToRecord(ui.termHyperTab().viewRecord(), false);
+      if (glossary != concept.glossary.get())
+      {
+        if ((otherConcept != null) && (concept != otherConcept))
+          return falseWithErrorPopup("The term is already in that glossary.");
+
+        if (concept.replaceGlossaryInteractive(glossary) == false)
+          return false;
+      }
+
+      ui.goToRecord(concept, false);
       return true;
     }
 
     if (relType == rtParentConceptOfConcept)
     {
-      HDT_Concept parentConcept = (HDT_Concept) record;
+      HDT_Concept concept = (HDT_Concept) base,
+                  parentConcept = (HDT_Concept) record;
 
-      ui.termHyperTab().selectFromTree(tableRow, parentConcept.glossary.get(), ((HDT_Concept) base).sense.get(), parentConcept);
-      ui.goToRecord(ui.termHyperTab().viewRecord(), false);
+      if (concept.parentConcepts.contains(parentConcept) == false)
+      {
+        if (concept.glossary.get() != parentConcept.glossary.get())
+          return falseWithErrorPopup("A concept can only be another concept's parent if they are in the same glossary.");
+
+        try { concept.addParentConcept(parentConcept); }
+        catch (RelationCycleException e)
+        {
+          return falseWithErrorPopup("Unable to add parent concept: A cycle would result.");
+        }
+      }
+
+      ui.goToRecord(concept, false);
       return true;
     }
 
@@ -231,21 +244,6 @@ public class TreeSelector
     target = record;
 
     ui.goToRecord(getSubj(), false);
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean glossaryChecks(HDT_Glossary glossary)
-  {
-
-    HDT_Concept concept = (HDT_Concept) base,
-                otherConcept = concept.term.get().getConcept(glossary, concept.sense.get());
-
-    if ((otherConcept != null) && (concept != otherConcept))
-      return falseWithErrorPopup("The term is already in that glossary.");
-
     return true;
   }
 

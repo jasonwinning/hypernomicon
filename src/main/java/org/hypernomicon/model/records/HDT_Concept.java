@@ -17,19 +17,20 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Collections;
 import java.util.List;
 
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
@@ -64,12 +65,12 @@ public class HDT_Concept extends HDT_RecordWithMainText
   @Override public String name()                           { return term.isNull() ? "" : term.get().name(); }
   @Override public String getSearchKey()                   { return term.get().getSearchKey(); }
   @Override public Iterable<SearchKeyword> getSearchKeys() { return db.getKeysByRecord(term.get()); }
-  @Override public String getCBText()                      { return extendedName(); }
-  @Override public String getXMLObjectName()               { return extendedName(); }
+  @Override public String getCBText()                      { return extendedName(true); }
+  @Override public String getXMLObjectName()               { return extendedName(true); }
   @Override public String getNameEngChar()                 { return term.get().getNameEngChar(); }
   @Override public String firstActiveKeyWord()             { return term.get().firstActiveKeyWord(); }
   @Override public void setName(String str)                { term.get().setName(str); }
-  @Override public String listName()                       { return sense.isNull() ? name() : (name() + " (" + sense.get().name() + ')'); }
+  @Override public String listName()                       { return extendedName(false); }
   @Override public final boolean isUnitable()              { return true; }
 
 //---------------------------------------------------------------------------
@@ -86,9 +87,9 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String extendedName()
+  public String extendedName(boolean includeGlossary)
   {
-    String glossaryText = glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().getGlossaries().size() == 1)) ?
+    String glossaryText = (includeGlossary == false) || glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().getGlossaries().size() == 1)) ?
       ""
     :
       glossary.get().name();
@@ -136,6 +137,49 @@ public class HDT_Concept extends HDT_RecordWithMainText
     HyperObjList<HDT_Concept, HDT_Concept> modifiableParents = getObjList(rtParentConceptOfConcept);
     if (modifiableParents.add(parentConcept) == false)
       modifiableParents.throwLastException();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean setParentConcepts(List<HDT_Concept> list) throws RelationCycleException
+  {
+    if (glossary.isNull() || term.isNull())
+      return false;
+
+    for (HDT_Concept parent : list)
+    {
+      if (parent == this)
+        throw new RelationCycleException(this, parent);
+
+      if (parent.glossary.isNull())
+        return false;
+
+      if (parent.glossary.get() != glossary.get())
+        return false;
+
+      if (term.get().concepts.contains(parent))
+        return false;
+    }
+
+    globalLock.lock();
+
+    try
+    {
+      HyperObjList<HDT_Record, HDT_Record> objList = getObjList(rtParentConceptOfConcept);
+      if (objList.equals(list)) return true;
+
+      objList.cycleCheck(list);
+
+      objList.clear();
+
+      objList.addAll(list);
+      return true;
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -192,6 +236,26 @@ public class HDT_Concept extends HDT_RecordWithMainText
     }
 
     sense.set(newSense);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean replaceGlossaryInteractive(HDT_Glossary newGlossary)
+  {
+    if (glossary.isNull())
+      return falseWithInternalErrorPopup(48327);
+
+    if ((parentConcepts.isEmpty() == false) || (subConcepts.isEmpty() == false))
+      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + listName() + "\", Glossary \"" + glossary.get().name() + "\". Proceed?", false) == false)
+        return false;
+
+    glossary.set(newGlossary);
+
+    List.copyOf(parentConcepts).forEach(this::removeParent);
+    List.copyOf(subConcepts).forEach(subConcept -> subConcept.removeParent(this));
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

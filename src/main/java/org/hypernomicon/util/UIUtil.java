@@ -1201,4 +1201,14 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static StackPane findDivider(SplitPane splitPane)
+  {
+    return splitPane.lookupAll(".split-pane-divider").stream().filter(node -> (node instanceof StackPane stackPane) && (stackPane.getParent() == splitPane))
+                                                              .map(node -> (StackPane) node)
+                                                              .findFirst().orElse(null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

@@ -19,9 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.model.records.RecordType.*;
 
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -39,28 +37,28 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
   private final Consumer<HDT_T> recordHandler;
   private final Predicate<RowType> condRowHandler;
   private final Consumer<RowType> rowHandler;
-  private final Supplier<String> caption;
+  private final Function<RowType, String> captionHandler;
 
   public boolean disabled = false;
 
 //---------------------------------------------------------------------------
 
   MenuItemSchema(Supplier<String> caption, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
-  { this(caption, typeByRecordClass(klass), condRecordHandler, recordHandler, null, null); }
+  { this(row -> caption.get(), typeByRecordClass(klass), condRecordHandler, recordHandler, null, null); }
 
   MenuItemSchema(Supplier<String> caption, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
-  { this(caption, typeByRecordClass(klass), record -> true, recordHandler, null, null); }
+  { this(row -> caption.get(), typeByRecordClass(klass), record -> true, recordHandler, null, null); }
 
-  MenuItemSchema(Supplier<String> caption, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
-  { this(caption, hdtNone, null, null, condRowHandler, rowHandler); }
+  MenuItemSchema(Function<RowType, String> captionHandler, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
+  { this(captionHandler, hdtNone, null, null, condRowHandler, rowHandler); }
 
-  MenuItemSchema(Supplier<String> caption, Consumer<RowType> rowHandler)
-  { this(caption, hdtNone, null, null, row -> true, rowHandler); }
+  MenuItemSchema(Function<RowType, String> captionHandler, Consumer<RowType> rowHandler)
+  { this(captionHandler, hdtNone, null, null, row -> true, rowHandler); }
 
-  private MenuItemSchema(Supplier<String> caption, RecordType recordType, Predicate<HDT_T  > condRecordHandler, Consumer<HDT_T  > recordHandler,
-                                                                          Predicate<RowType> condRowHandler   , Consumer<RowType> rowHandler)
+  private MenuItemSchema(Function<RowType, String> captionHandler, RecordType recordType, Predicate<HDT_T  > condRecordHandler, Consumer<HDT_T  > recordHandler,
+                                                                                          Predicate<RowType> condRowHandler   , Consumer<RowType> rowHandler)
   {
-    this.caption = caption;
+    this.captionHandler = captionHandler;
     this.recordType = recordType;
     this.condRecordHandler = condRecordHandler;
     this.recordHandler = recordHandler;
@@ -70,7 +68,7 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
 
 //---------------------------------------------------------------------------
 
-  public String getCaption() { return caption.get(); }
+  public String getCaption(RowType row) { return captionHandler.apply(row); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -199,10 +199,15 @@ public final class Exceptions
 
   public static class RelationCycleException extends HyperDataException
   {
+    public final HDT_Record parent, child;
+
     public RelationCycleException(HDT_Record child, HDT_Record parent)
     {
       super("Unable to assign " + getTypeName(child.getType()) + " ID " + child.getID() + " as child of " +
             getTypeName(parent.getType()) + " ID " + parent.getID() + ": A cycle would result.");
+
+      this.parent = parent;
+      this.child = child;
     }
   }
 

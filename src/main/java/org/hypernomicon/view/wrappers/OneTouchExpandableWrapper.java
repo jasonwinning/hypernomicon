@@ -17,15 +17,17 @@
 
 package org.hypernomicon.view.wrappers;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.hypernomicon.HyperTask.HyperThread;
+import static javafx.geometry.Orientation.*;
 
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.OneTouchExpandableWrapper.CollapsedState.*;
 
 import java.util.function.Supplier;
 
-import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+
+import org.hypernomicon.HyperTask.HyperThread;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -35,14 +37,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Polygon;
 import javafx.stage.Window;
-
-import static javafx.geometry.Orientation.*;
 
 //---------------------------------------------------------------------------
 
@@ -135,16 +132,6 @@ public final class OneTouchExpandableWrapper
   public static OneTouchExpandableWrapper wrap(SplitPane splitPane, Supplier<String> contentDescription1, Supplier<String> contentDescription2, double expandedPos, CollapsedState collapsedState)
   {
     return new OneTouchExpandableWrapper(splitPane, contentDescription1, contentDescription2, expandedPos, collapsedState);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static StackPane findDivider(SplitPane splitPane)
-  {
-    return splitPane.lookupAll(".split-pane-divider").stream().filter(node -> (node instanceof StackPane stackPane) && (stackPane.getParent() == splitPane))
-                                                              .map(node -> (StackPane) node)
-                                                              .findFirst().orElse(null);
   }
 
 //---------------------------------------------------------------------------
@@ -366,9 +353,7 @@ public final class OneTouchExpandableWrapper
 
     if (otherButton.isDisabled())
     {
-      Object savedPosObj = splitPane.getProperties().get(EXPANDED_POSITION);
-
-      double newPos = savedPosObj instanceof Number savedPos ? savedPos.doubleValue() : 0.5;
+      double newPos = splitPane.getProperties().get(EXPANDED_POSITION) instanceof Number savedPos ? savedPos.doubleValue() : 0.5;
 
       if (shouldDisableButton(newPos, otherButton, 1 - endPos))
         newPos = 0.5;

@@ -55,7 +55,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
   public ShortcutEditorDlgCtrlr(Shortcut initial, Set<Shortcut> existingShortcutsForConflictCheck)
   {
-    super("settings/shortcuts/ShortcutEditorDlg", "Edit Shortcut", true, true);
+    super("settings/shortcuts/ShortcutEditorDlg", "Edit Shortcut", false, true);
 
     this.initial = initial;
 
@@ -141,7 +141,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
   private static SequencedMap<KeyCode, String> populateKeyChoices()
   {
-    List<KeyCode> keys = new ArrayList<>();
+    Collection<KeyCode> keys = new ArrayList<>();
 
     // Letters and numbers
     for (KeyCode code : KeyCode.values())

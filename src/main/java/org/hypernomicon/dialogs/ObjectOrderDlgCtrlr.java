@@ -20,6 +20,7 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
@@ -53,25 +54,25 @@ public class ObjectOrderDlgCtrlr extends ModalDialog
   {
     super("ObjectOrderDlg", "Change Order of Rows", true);
 
-    List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
-
     this.rows = rows;
     tv.getColumns().clear();
 
-    ht.getColumns().forEach(htCol -> { switch (htCol.getCtrlType())
+    Collection<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
+
+    ht.getColumns().forEach(hyperTableColumn -> { switch (hyperTableColumn.getCtrlType())
     {
       case ctEditableUnlimitedDropDown: case ctNoneditableDropDown: case ctEditableLimitedDropDown: case ctEdit: case ctNone:
 
-        TableColumn<HyperTableRow, String> col = new TableColumn<>();
+        TableColumn<HyperTableRow, String> tableColumn = new TableColumn<>();
 
-        col.setText(htCol.getHeader());
-        col.setSortable(false);
-        col.setEditable(false);
+        tableColumn.setText(hyperTableColumn.getHeader());
+        tableColumn.setSortable(false);
+        tableColumn.setEditable(false);
 
-        col.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getText(htCol.getColNdx())));
+        tableColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getText(hyperTableColumn.getColNdx())));
 
-        tv.getColumns().add(col);
-        tableCols.add(col);
+        tv.getColumns().add(tableColumn);
+        tableCols.add(tableColumn);
 
         break;
 
@@ -86,6 +87,9 @@ public class ObjectOrderDlgCtrlr extends ModalDialog
 
     btnMoveUp  .setOnAction(event -> moveUp  ());
     btnMoveDown.setOnAction(event -> moveDown());
+
+    setToolTip(btnMoveUp  , "Move Up"  );
+    setToolTip(btnMoveDown, "Move Down");
 
     tv.getSelectionModel().selectFirst();
   }

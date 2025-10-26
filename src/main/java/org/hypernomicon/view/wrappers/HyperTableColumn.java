@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
@@ -31,15 +30,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.records.HDT_Work;
+
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.cellValues.RecordIconHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
-import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
-import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
 import javafx.application.Platform;
@@ -117,8 +113,15 @@ public class HyperTableColumn
      */
     ctIcon,
 
-    ctInvSelect
+    ctLabelClickToEdit
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FunctionalInterface public interface CellClickHandler { void handle(HyperTableRow row, int colNdx); }
+
+  @FunctionalInterface public interface CellUpdateHandler { void handle(HyperTableRow row, HyperTableCell cellVal, int nextColNdx, Populator nextPopulator); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -183,8 +186,8 @@ public class HyperTableColumn
                    EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
     this(table, objType, ctrlType, populator, targetCol, null, onAction, updateHandler, null, null); }
 
-  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, ButtonCellHandler btnHandler, String btnCaption) {
-    this(table, objType, ctrlType, populator, targetCol, btnHandler, null, null, btnCaption, null); }
+  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellClickHandler handler, String btnCaption) {
+    this(table, objType, ctrlType, populator, targetCol, handler, null, null, btnCaption, null); }
 
   HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
                    Function<HyperTableRow, Node> graphicProvider) {
@@ -195,7 +198,7 @@ public class HyperTableColumn
 
   @SuppressWarnings("unchecked")
   private HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
-                           ButtonCellHandler btnHandler, EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption,
+                           CellClickHandler cellClickHandler, EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption,
                            Function<HyperTableRow, Node> graphicProvider)
   {
     this.objType = objType;
@@ -250,7 +253,7 @@ public class HyperTableColumn
     {
       case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn : case ctLabelEdit :
 
-        htcCol.setCellFactory(tableCol -> new ButtonCell(this.ctrlType, table, this, this.targetCol, btnHandler, btnCaption));
+        htcCol.setCellFactory(tableCol -> new ButtonCell(this.ctrlType, table, this, this.targetCol, cellClickHandler, btnCaption));
         break;
 
       case ctEdit :
@@ -329,16 +332,26 @@ public class HyperTableColumn
 
         break;
 
-      case ctInvSelect :
+      case ctLabelClickToEdit :
 
         htcCol.setCellFactory(tableCol -> new TableCell<>()
         {
+          private boolean isEditingBlocked()
+          {
+            return isEmpty() || (table.dataRowCount() <= getTableRow().getIndex());
+          }
+
+        //---------------------------------------------------------------------------
+
           @Override public void startEdit()
           {
+            if (isEditingBlocked())
+              return;
+
             super.startEdit();
             super.cancelEdit();
 
-            ui.personHyperTab().showInvSelectDialog(getTableRow().getItem());
+            cellClickHandler.handle(getTableRow().getItem(), HyperTableColumn.this.targetCol);
           }
 
           @Override public void updateItem(HyperTableCell item, boolean empty)
@@ -359,12 +372,12 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setHeaderTooltip(String str)
+  public HyperTableColumn setHeaderTooltip(String str)
   {
-    setHeaderTooltip(makeTooltip(str));
+    return setHeaderTooltip(makeTooltip(str));
   }
 
-  public void setHeaderTooltip(Tooltip tooltip)
+  public HyperTableColumn setHeaderTooltip(Tooltip tooltip)
   {
     Platform.runLater(() ->
     {
@@ -376,6 +389,8 @@ public class HyperTableColumn
       // Makes the tooltip display, no matter where the mouse is inside the column header.
       label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

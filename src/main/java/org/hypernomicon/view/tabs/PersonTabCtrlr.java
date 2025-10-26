@@ -164,8 +164,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htWorks.addLabelCol(hdtWorkType, smTextSimple);  // Work Type
     htWorks.addLabelCol(hdtWork    , smTextSimple);  // Ed/Tr
 
-    htWorks.addCol(hdtInvestigation, ctInvSelect)
-           .setHeaderTooltip(invHelpTooltip());
+    htWorks.addClickToEditCol(hdtInvestigation, invHelpTooltip(), (row, colNdx) -> showInvSelectDialog(row));
 
     htWorks.addLabelCol(hdtNone);   // Title; can display work or misc. file records
     htWorks.addLabelCol(hdtPerson); // Coauthor(s)
@@ -316,7 +315,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
             Tab selectedTab = tpPerson.getSelectionModel().getSelectedItem();
             tpPerson.getSelectionModel().select(0);
 
-            List<Tab> midTabs = new ArrayList<>(tabList);
+            Collection<Tab> midTabs = new ArrayList<>(tabList);
             midTabs.remove(tabOverview);
             midTabs.remove(tabNew);
 
@@ -501,7 +500,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         if (work.getAuthors().size() > 1)
         {
-          List<RecordAuthor> authors = new ArrayList<>();
+          Collection<RecordAuthor> authors = new ArrayList<>();
           int authorID = -1;
 
           for (RecordAuthor author : work.getAuthors())
@@ -566,7 +565,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htArguments.buildRows(posToAdd.stream().filter(Predicate.not(topicRecordsAdded::contains)), (row, pos) ->
     {
       addPosToTopicTable(pos, row, otherToAdd);
-      row.setIconCellValue(0, pos);  // This is the icon column
+      row.setIconCellValue(0, pos);
       topicRecordsAdded.add(pos);
     });
 
@@ -574,7 +573,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
                                              .filter(topic -> topic != curPerson), (row, topic) ->
     {
       addOtherToTopicTable(topic, row);
-      row.setIconCellValue(0, topic);  // This is the icon column
+      row.setIconCellValue(0, topic);
       topicRecordsAdded.add(topic);
     });
 
@@ -668,7 +667,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
         addPosToTopicTable(position, row, otherToAdd);
         posToAdd.remove(position);
 
-        row.setIconCellValue(0, argument, position);  // This is the icon column
+        row.setIconCellValue(0, argument, position);
 
         nullSwitch(argument.getPosVerdict(position), verdict -> row.setCellValue(3, argument, verdict.listName()));
 
@@ -678,7 +677,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     else
     {
       HyperTableRow row = htArguments.newDataRow();
-      row.setIconCellValue(0, argument);  // This is the icon column
+      row.setIconCellValue(0, argument);
 
       nullSwitch(argument.getDebate(), debate ->
       {
@@ -1334,7 +1333,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void showInvSelectDialog(HyperTableRow row)
+  private void showInvSelectDialog(HyperTableRow row)
   {
     HDT_RecordWithAuthors<? extends RecordAuthors> workOrMiscFile = row.getRecord();
 

@@ -69,12 +69,17 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private boolean isEditingBlocked()
+  {
+    return isEmpty() || canEditIfEmpty.isFalse() && (table.dataRowCount() <= getTableRow().getIndex());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void startEdit()
   {
-    if (isEmpty())
-      return;
-
-    if (canEditIfEmpty.isFalse() && (table.dataRowCount() <= getTableRow().getIndex()))
+    if (isEditingBlocked())
       return;
 
     super.startEdit();

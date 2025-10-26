@@ -118,7 +118,7 @@ public final class MainTextWrapper
     setAnchors(bpEditorRoot, 0.0, 0.0, 0.0, 0.0);
     setAnchors(view        , 0.0, 0.0, 0.0, 0.0);
 
-    view.setOnContextMenuRequested(event -> setHTMLContextMenu());
+    view.setOnContextMenuRequested(_ -> setHTMLContextMenu());
 
     curWrapper = null;
 
@@ -253,11 +253,10 @@ public final class MainTextWrapper
       }
     });
 
-    boolean noDisplayRecords = (displayItems == null) || displayItems.stream().noneMatch(item -> item.type == DisplayItemType.diRecord);
+    boolean noDisplayRecords = (displayItems == null) || displayItems.stream().noneMatch(item -> item.type == DisplayItemType.diRecord),
+            noKeyWorks       = (keyWorks     == null) || (hasAnyNestedKeyWorks(curRecord, keyWorks) == false);
 
-    int keyWorksSize = keyWorks == null ? 0 : getNestedKeyWorkCount(curRecord, keyWorks);
-
-    if (strNullOrBlank(jsoupParse(html).text()) && ((keyWorksSize == 0) || (curRecord.getType() == hdtInvestigation)) && noDisplayRecords && canEdit())
+    if (strNullOrBlank(jsoupParse(html).text()) && (noKeyWorks || (curRecord.getType() == hdtInvestigation)) && noDisplayRecords && canEdit())
       beginEditing(false);
     else
       setReadOnlyHTML(completeHtml, we, textViewInfo.scrollPos, null, true);
@@ -397,23 +396,34 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static int getNestedKeyWorkCount(HDT_RecordWithMainText record, List<KeyWork> passedKeyWorks)
+  /**
+   * Determines whether the given record, or if it is united to a label, any
+   * of that label's sublabels, contain at least one {@link KeyWork}.
+   * <p>
+   * The method first checks the {@code localKeyWorks} collection associated
+   * with the current record. If that collection is non-empty, the method
+   * immediately returns {@code true}. Otherwise, it attempts to obtain the
+   * label of the record and recursively inspects all sublabels, returning
+   * {@code true} if any of them (or their descendants) contain any key works.
+   * </p>
+   *
+   * @param record        the record whose label hierarchy is to be inspected;
+   *                      may be {@code null} or have a {@code null} label
+   * @param localKeyWorks the collection of key works directly associated with
+   *                      the given record; may be {@code null} or empty
+   * @return {@code true} if the record itself or any nested sublabels contain
+   *         one or more key works; {@code false} otherwise
+   */
+  private static boolean hasAnyNestedKeyWorks(HDT_RecordWithMainText record, Collection<KeyWork> localKeyWorks)
   {
-    int keyWorkCount = passedKeyWorks.size();
-
-    HDT_WorkLabel parentLabel = getLabelOfRecord(record);
-    if (parentLabel == null) return keyWorkCount;
-
-    for (HDT_WorkLabel label : parentLabel.subLabels)
-      keyWorkCount += getNestedKeyWorkCount(label, label.getMainText().getKeyWorksUnmod());
-
-    return keyWorkCount;
+    return (collEmpty(localKeyWorks) == false) || nullSwitch(getLabelOfRecord(record), false, parentLabel ->
+      parentLabel.subLabels.stream().anyMatch(sub -> hasAnyNestedKeyWorks(sub, sub.getMainText().getKeyWorksUnmod())));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private List<HDT_Concept> getRelatedConcepts(HDT_Hub hub)
+  private List<HDT_Concept> getSortedRelatedConcepts(HDT_Hub hub)
   {
     List<HDT_Concept> concepts = new ArrayList<>();
     if (hub == null) return concepts;
@@ -424,35 +434,35 @@ public final class MainTextWrapper
 
         HDT_Debate debate = hub.getDebate();
 
-        addLinkedTerms(debate.largerDebates, concepts);
-        addLinkedTerms(debate.subDebates   , concepts);
-        addLinkedTerms(debate.subPositions , concepts);
+        addUnitedConcepts(debate.largerDebates, concepts);
+        addUnitedConcepts(debate.subDebates   , concepts);
+        addUnitedConcepts(debate.subPositions , concepts);
         break;
 
       case hdtPosition :
 
         HDT_Position position = hub.getPosition();
 
-        addLinkedTerms(position.largerDebates  , concepts);
-        addLinkedTerms(position.largerPositions, concepts);
-        addLinkedTerms(position.subPositions   , concepts);
-        addLinkedTerms(position.subDebates     , concepts);
+        addUnitedConcepts(position.largerDebates  , concepts);
+        addUnitedConcepts(position.largerPositions, concepts);
+        addUnitedConcepts(position.subPositions   , concepts);
+        addUnitedConcepts(position.subDebates     , concepts);
         break;
 
       case hdtNote :
 
         HDT_Note note = hub.getNote();
 
-        addLinkedTerms(note.parentNotes, concepts);
-        addLinkedTerms(note.subNotes   , concepts);
+        addUnitedConcepts(note.parentNotes, concepts);
+        addUnitedConcepts(note.subNotes   , concepts);
         break;
 
       case hdtWorkLabel :
 
         HDT_WorkLabel label = hub.getLabel();
 
-        addLinkedTerms(label.parentLabels, concepts);
-        addLinkedTerms(label.subLabels   , concepts);
+        addUnitedConcepts(label.parentLabels, concepts);
+        addUnitedConcepts(label.subLabels   , concepts);
         break;
 
       default :
@@ -476,7 +486,15 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addLinkedTerms(List<? extends HDT_RecordWithMainText> uRecords, List<HDT_Concept> concepts)
+  /**
+   * For each record returned by <code>uRecords</code>, determines
+   * whether that record is united to a concept record, and if so,
+   * adds that concept record to the <code>concepts</code> collection
+   * if it was not already present.
+   * @param uRecords The records whose united concepts will be accumulated
+   * @param concepts Running collection of united concept records
+   */
+  private static void addUnitedConcepts(Iterable<? extends HDT_RecordWithMainText> uRecords, Collection<HDT_Concept> concepts)
   {
     uRecords.forEach(uRecord ->
     {
@@ -514,9 +532,9 @@ public final class MainTextWrapper
     StringBuilder innerHtml = new StringBuilder();
     MutableInt tagNdx = new MutableInt(0);
     HDT_WorkLabel curLabel = getLabelOfRecord(curRecord);
-    int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
 
-    boolean sortByName = db.prefs.getBoolean(PrefKey.KEY_WORK_SORT_BY_NAME, true);
+    boolean sortByName = db.prefs.getBoolean(PrefKey.KEY_WORK_SORT_BY_NAME, true),
+            hasNestedKeyWorks = hasAnyNestedKeyWorks(curRecord, keyWorks);
 
     displayItems.forEach(item ->
     {
@@ -531,7 +549,7 @@ public final class MainTextWrapper
 
           if (curRecord.getType() != hdtInvestigation)
           {
-            if (keyWorksSize > 0)
+            if (hasNestedKeyWorks)
             {
               renderKeyWorks(innerHtml, tagNdx, curLabel, sortByName, haventRenderedKeyWorkDisplayOptionsYet);
             }
@@ -588,14 +606,15 @@ public final class MainTextWrapper
   private void renderDescription(StringBuilder innerHtml, Document doc)
   {
     StringBuilder relRecordsHtml = new StringBuilder();
+
     if (curRecord.getType() == hdtConcept)
     {
-      List<HDT_Concept> concepts = getRelatedConcepts(curRecord.getHub());
+      List<HDT_Concept> concepts = getSortedRelatedConcepts(curRecord.getHub());
 
       concepts.forEach(concept ->
       {
         relRecordsHtml.append(relRecordsHtml.isEmpty() ? "<b " + NO_LINKS_ATTR + "=true>Related concepts: </b>" : "; ");
-        relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.extendedName()));
+        relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.extendedName(true)));
       });
     }
     else

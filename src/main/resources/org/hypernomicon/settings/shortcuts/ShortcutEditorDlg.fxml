@@ -28,7 +28,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane minWidth="600.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.shortcuts.ShortcutEditorDlgCtrlr">
+<AnchorPane minHeight="193.0" minWidth="600.0" prefHeight="193.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.shortcuts.ShortcutEditorDlgCtrlr">
   <VBox spacing="10" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <padding>
       <Insets topRightBottomLeft="14" />

@@ -17,6 +17,21 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.App.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.model.AbstractHyperDB.*;
+import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.MainCtrlr.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
 import java.io.IOException;
 import java.time.Month;
 import java.util.*;
@@ -25,26 +40,23 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javafx.scene.control.*;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.controlsfx.control.MasterDetailPane;
 
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.authors.Author;
-import org.hypernomicon.model.authors.RecordAuthor;
-import org.hypernomicon.model.items.BibliographicDate;
-import org.hypernomicon.model.items.Ternary;
+import org.hypernomicon.Const.PrefKey;
+import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
-import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.RecordAuthor;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -58,28 +70,14 @@ import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.*;
-import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
-
-import static org.hypernomicon.App.*;
-import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
-import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.Const.*;
-import static org.hypernomicon.util.DesktopUtil.*;
-import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.util.StringUtil.*;
-import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.MainCtrlr.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import org.hypernomicon.view.wrappers.HyperTableColumn.CellUpdateHandler;
 
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.*;

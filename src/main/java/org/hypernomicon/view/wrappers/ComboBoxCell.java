@@ -173,7 +173,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     HyperTableRow row = getTableRow().getItem();
 
     if (populator.getValueType() == cvtVaries)
-      ctrlType = ((VariablePopulator)populator).getRestricted(row) ? ctEditableLimitedDropDown : ctEditableUnlimitedDropDown;
+      ctrlType = ((VariablePopulator) populator).getRestricted(row) ? ctEditableLimitedDropDown : ctEditableUnlimitedDropDown;
 
     hcb = new HyperCB(cb, ctrlType, populator, row, false, table, colNdx);
 

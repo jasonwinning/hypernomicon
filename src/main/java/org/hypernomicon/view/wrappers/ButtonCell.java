@@ -18,6 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.wrappers.HyperTableColumn.CellClickHandler;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -45,7 +46,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
   private final int colNdxOfTarget;
   private final HyperCtrlType ctrlType;
   private final HyperTableColumn col;
-  private final ButtonCellHandler handler;
+  private final CellClickHandler handler;
   private final String caption;
 
   public static final String URL_BUTTON_TOOLTIP = "Search for website (if not entered) or navigate to website (if entered) in browser";
@@ -55,13 +56,9 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
   public enum ButtonAction { baEdit, baLabelEdit, baNew, baGo, baWeb, baBrowse, baCustom, baNone }
 
 //---------------------------------------------------------------------------
-
-  @FunctionalInterface public interface ButtonCellHandler { void handle(HyperTableRow row, int colNdx); }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, ButtonCellHandler handler, String caption)
+  ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler handler, String caption)
   {
     ht = newHT;
     this.colNdxOfTarget = colNdxOfTarget;
@@ -89,7 +86,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setOnAction(ButtonCellHandler defHandler)
+  private void setOnAction(CellClickHandler defHandler)
   {
     btn.setOnAction(event ->
     {

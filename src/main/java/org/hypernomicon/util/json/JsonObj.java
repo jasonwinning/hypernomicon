@@ -31,7 +31,7 @@ import org.json.simple.parser.JSONParser;
 
 //---------------------------------------------------------------------------
 
-public final class JsonObj implements Cloneable
+public final class JsonObj
 {
 
 //---------------------------------------------------------------------------
@@ -171,9 +171,7 @@ public final class JsonObj implements Cloneable
 
   public long getLong(String key, long def)
   {
-    Object obj = jObj.get(key);
-
-    return obj instanceof String ?
+    return jObj.get(key) instanceof String ?
       parseLong(getStr(key), def)
     :
       nullSwitch((Long)jObj.get(key), def, Long::longValue);
@@ -195,7 +193,7 @@ public final class JsonObj implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public JsonObj clone()
+  public JsonObj deepCopy()
   {
     try
     {
@@ -203,7 +201,7 @@ public final class JsonObj implements Cloneable
     }
     catch (ParseException e)
     {
-      throw new AssertionError("Cloning JsonObj failed.");
+      throw new AssertionError("Deep copy failed.", e);
     }
   }
 
