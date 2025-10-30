@@ -335,7 +335,11 @@ public class FolderTreeWatcher
                 HDT_Folder.deleteFolderRecordTree((HDT_Folder) hyperPath.getRecord());
             }
 
-            Platform.runLater(FileManager::pruneAndRefresh);
+            // There is no need to stop the watcher because nothing else should need to be deleted.
+            // Also, if it is restarted, state information about the inter-computer request and
+            // response is lost.
+
+            Platform.runLater(() -> FileManager.pruneAndRefresh(false));
 
             break;
           }

@@ -48,7 +48,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
   private final int colNdxOfTarget;
   private final HyperCtrlType ctrlType;
   private final HyperTableColumn col;
-  private final CellClickHandler handler;
+  private final CellClickHandler clickHandler;
   private final String caption;
 
   public static final String URL_BUTTON_TOOLTIP = "Search for website (if not entered) or navigate to website (if entered) in browser";
@@ -60,13 +60,13 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler handler, String caption)
+  public ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler clickHandler, String caption)
   {
     ht = newHT;
     this.colNdxOfTarget = colNdxOfTarget;
     this.ctrlType = ctrlType;
     this.col = col;
-    this.handler = handler;
+    this.clickHandler = clickHandler;
     this.caption = ctrlType == ctCustomBtn ? safeStr(caption) : ""; // Custom caption is only supported for ctCustomBtn
 
     btn = HyperTableColumn.makeButton(this);
@@ -94,8 +94,8 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     {
       HyperTableRow row = getTableRow().getItem();
 
-      if (handler != null)
-        handler.handle(row, colNdxOfTarget);
+      if (clickHandler != null)
+        clickHandler.handle(row, colNdxOfTarget);
       else if (defHandler != null)
         defHandler.handle(row, colNdxOfTarget);
     });

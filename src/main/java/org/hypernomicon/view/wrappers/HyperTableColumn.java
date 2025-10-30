@@ -122,6 +122,8 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FunctionalInterface public interface CellTestHandler { boolean test(HyperTableRow row, int colNdx); }
+
   @FunctionalInterface public interface CellClickHandler { void handle(HyperTableRow row, int colNdx); }
 
   @FunctionalInterface public interface CellUpdateHandler { void handle(HyperTableRow row, HyperTableCell cellVal, int nextColNdx, Populator nextPopulator); }
@@ -148,6 +150,8 @@ public class HyperTableColumn
                                dontCreateNewRecord = new MutableBoolean(false);
 
   private final Property<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
+
+  public final Property<CellTestHandler> beginEditHandler = new SimpleObjectProperty<>();
 
   private Supplier<HDT_Work> workSupplier;
   private CellValueType cellValueType = cvtRecord;
@@ -189,8 +193,8 @@ public class HyperTableColumn
                    EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
     this(table, objType, ctrlType, populator, targetCol, null, onAction, updateHandler, null, null); }
 
-  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellClickHandler handler, String btnCaption) {
-    this(table, objType, ctrlType, populator, targetCol, handler, null, null, btnCaption, null); }
+  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellClickHandler clickHandler, String btnCaption) {
+    this(table, objType, ctrlType, populator, targetCol, clickHandler, null, null, btnCaption, null); }
 
   HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
                    Function<HyperTableRow, Node> graphicProvider) {
@@ -260,14 +264,15 @@ public class HyperTableColumn
         break;
 
       case ctEdit :
-
+      {
         htcCol.setEditable(true);
-        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, cellValueType, canEditIfEmpty, sortMethod));
+        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, cellValueType, canEditIfEmpty, sortMethod, beginEditHandler));
 
         htcCol.setOnEditCommit(event ->
           event.getRowValue().setCellValue(colNdx, event.getNewValue().getCopyWithID(event.getOldValue().getID()))); // preserve ID value
 
         break;
+      }
 
       case ctCheckbox :
 
@@ -329,11 +334,12 @@ public class HyperTableColumn
         break;
 
       case ctNoneditableDropDown : case ctEditableLimitedDropDown : case ctEditableUnlimitedDropDown :
-
-        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, this.ctrlType, populator, onAction, dontCreateNewRecord, textHndlr, workSupplier));
+      {
+        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, this.ctrlType, populator, onAction, dontCreateNewRecord, textHndlr, workSupplier, beginEditHandler));
         htcCol.setOnEditStart(event -> populator.populate(event.getRowValue(), false));
 
         break;
+      }
 
       case ctLabelClickToEdit :
 
@@ -349,6 +355,9 @@ public class HyperTableColumn
           @Override public void startEdit()
           {
             if (isEditingBlocked())
+              return;
+
+            if (nullSwitch(beginEditHandler.getValue(), true, handler -> handler.test(getTableRow().getItem(), colNdx)) == false)
               return;
 
             super.startEdit();

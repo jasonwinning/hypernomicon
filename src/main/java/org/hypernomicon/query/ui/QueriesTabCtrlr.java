@@ -490,7 +490,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       FileUtils.cleanDirectory(db.resultsPath().toFile());
 
-      FileManager.pruneAndRefresh();
+      FileManager.pruneAndRefresh(true);
     }
     catch (IOException e) { errorPopup("One or more files were not deleted. Reason: " + getThrowableMessage(e)); }
 

@@ -81,14 +81,10 @@ public class TreeSelector
 
   public void addTargetType(RecordType targetType)
   {
-    RelationType relType;
-
-    if ((base.getType() == hdtTerm) && (targetType == hdtGlossary))
-      relType = rtGlossaryOfConcept;
-    else if ((base.getType() == hdtTerm) && (targetType == hdtConcept))
-      relType = rtParentConceptOfConcept;
-    else
-      relType = (baseIsSubj ? getRelation(base.getType(), targetType, true) : getRelation(targetType, base.getType(), true));
+    RelationType relType = (base.getType() == hdtTerm) && (targetType == hdtGlossary) ?
+      rtGlossaryOfConcept
+    :
+      (baseIsSubj ? getRelation(base.getType(), targetType, true) : getRelation(targetType, base.getType(), true));
 
     targetTypes.add(new TreeTargetType(relType, targetType));
   }
@@ -182,54 +178,18 @@ public class TreeSelector
     if (base == null)
       return falseWithInternalErrorPopup(91827);
 
-    if (record == null) return false;
+    if (record == null)
+      return false;
 
-    RelationType relType = getRelTypeForTargetType(record.getType());
-
-    if (relType == rtNone)
-      return falseWithErrorPopup("You must select a record of type: " + getTypesStr() + '.');
-
-    if (relType == rtUnited)
-      return selectToUnite((HDT_RecordWithMainText) record);
-
-    if (relType == rtGlossaryOfConcept)
+    switch (getRelTypeForTargetType(record.getType()))
     {
-      HDT_Glossary glossary = (HDT_Glossary) record;
-      HDT_Concept concept = (HDT_Concept) base,
-          otherConcept = concept.term.get().getConcept(glossary, concept.sense.get());
+      case rtUnited                 : return selectToUnite      ((HDT_RecordWithMainText) record);
+      case rtGlossaryOfConcept      : return selectGlossary     ((HDT_Glossary          ) record);
+      case rtParentConceptOfConcept : return selectParentConcept((HDT_Concept           ) record);
 
-      if (glossary != concept.glossary.get())
-      {
-        if ((otherConcept != null) && (concept != otherConcept))
-          return falseWithErrorPopup("The term is already in that glossary.");
+      case rtNone                   : return falseWithErrorPopup("You must select a record of type: " + getTypesStr() + '.');
 
-        if (concept.replaceGlossaryInteractive(glossary) == false)
-          return false;
-      }
-
-      ui.goToRecord(concept, false);
-      return true;
-    }
-
-    if (relType == rtParentConceptOfConcept)
-    {
-      HDT_Concept concept = (HDT_Concept) base,
-                  parentConcept = (HDT_Concept) record;
-
-      if (concept.parentConcepts.contains(parentConcept) == false)
-      {
-        if (concept.glossary.get() != parentConcept.glossary.get())
-          return falseWithErrorPopup("A concept can only be another concept's parent if they are in the same glossary.");
-
-        try { concept.addParentConcept(parentConcept); }
-        catch (RelationCycleException e)
-        {
-          return falseWithErrorPopup("Unable to add parent concept: A cycle would result.");
-        }
-      }
-
-      ui.goToRecord(concept, false);
-      return true;
+      default : break;
     }
 
     RecordTreeEdge newEdge = baseIsSubj ? new RecordTreeEdge(record, base) : new RecordTreeEdge(base, record),
@@ -244,6 +204,62 @@ public class TreeSelector
     target = record;
 
     ui.goToRecord(getSubj(), false);
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean selectParentConcept(HDT_Concept parentConcept)
+  {
+    HDT_Concept childConcept = (HDT_Concept) base;
+
+    if (childConcept.parentConcepts.contains(parentConcept) == false)
+    {
+      if (childConcept.glossary.get() != parentConcept.glossary.get())
+        return falseWithErrorPopup("A concept can only be another concept's parent if they are in the same glossary.");
+
+      try { childConcept.addParentConcept(parentConcept); }
+      catch (RelationCycleException e)
+      {
+        return falseWithErrorPopup("Unable to add parent concept: A cycle would result.");
+      }
+    }
+
+    ui.goToRecord(childConcept, false);
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean selectGlossary(HDT_Glossary glossary)
+  {
+    if (base instanceof HDT_Term term)
+    {
+      // The user clicked Browse in the Terms tab on a blank row
+
+      ui.goToRecord(term, false);
+      ui.termHyperTab().addGlossaryToNextBlankRow(glossary);
+      return true;
+    }
+
+    if ((base instanceof HDT_Concept) == false)
+      return false;
+
+    HDT_Concept concept = (HDT_Concept) base,
+                otherConcept = concept.term.get().getConcept(glossary, concept.sense.get());
+
+    if (glossary != concept.glossary.get())
+    {
+      if ((otherConcept != null) && (concept != otherConcept))
+        return falseWithErrorPopup("The term is already in that glossary.");
+
+      if (concept.replaceGlossaryInteractive(glossary) == false)
+        return false;
+    }
+
+    ui.goToRecord(concept, false);
     return true;
   }
 

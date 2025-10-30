@@ -172,7 +172,7 @@ public final class FileManager extends NonmodalWindow
 
     btnBack   .setOnAction(event -> userRequestsToGoBackward());
     btnForward.setOnAction(event -> userRequestsToGoForward ());
-    btnRefresh.setOnAction(event -> pruneAndRefresh());
+    btnRefresh.setOnAction(event -> pruneAndRefresh(true));
     btnRename .setOnAction(event -> rename(null));
 
     btnMainWindow   .setOnAction(event -> ui.windows.focusStage(ui.getStage()));
@@ -816,7 +816,7 @@ public final class FileManager extends NonmodalWindow
 
     Platform.runLater(() ->
     {
-      pruneAndRefresh();
+      pruneAndRefresh(true);
 
       folderTreeWatcher.createNewWatcherAndStart();
 
@@ -1055,7 +1055,7 @@ public final class FileManager extends NonmodalWindow
       suppressNeedRefresh = false;
     }
 
-    pruneAndRefresh();
+    pruneAndRefresh(true);
     goToFilePath(newFilePath, true);
   }
 
@@ -1146,14 +1146,14 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void pruneAndRefresh()
+  public static void pruneAndRefresh(boolean ensureWatcherIsStopped)
   {
-    if (instance != null) instance.doPruneAndRefresh();
+    if (instance != null) instance.doPruneAndRefresh(ensureWatcherIsStopped);
   }
 
-  private void doPruneAndRefresh()
+  private void doPruneAndRefresh(boolean ensureWatcherIsStopped)
   {
-    boolean restartWatcher = folderTreeWatcher.stop();
+    boolean restartWatcher = ensureWatcherIsStopped && folderTreeWatcher.stop();
 
     folderTree.prune();
 

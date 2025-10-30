@@ -30,6 +30,7 @@ import org.hypernomicon.view.cellValues.RecordHTC;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
+import org.hypernomicon.view.wrappers.HyperTableColumn.CellTestHandler;
 
 import javafx.beans.property.Property;
 import javafx.scene.Cursor;
@@ -51,6 +52,7 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
   private final Property<CellSortMethod> sortMethod;
   private final CellValueType cellValueType;
   private final HyperTable table;
+  private final Property<CellTestHandler> beginEditHndlr;
 
 //---------------------------------------------------------------------------
 
@@ -58,13 +60,14 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
 
 //---------------------------------------------------------------------------
 
-  public TextFieldCell(HyperTable table, CellValueType cellValueType, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod)
+  public TextFieldCell(HyperTable table, CellValueType cellValueType, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod, Property<CellTestHandler> beginEditHndlr)
   {
     this.table = table;
 
     this.canEditIfEmpty = canEditIfEmpty;
     this.sortMethod = sortMethod;
     this.cellValueType = cellValueType;
+    this.beginEditHndlr = beginEditHndlr;
   }
 
 //---------------------------------------------------------------------------
@@ -89,6 +92,11 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
   @Override public void startEdit()
   {
     if (isEditingBlocked())
+      return;
+
+    int colNdx = getTableView().getColumns().indexOf(getTableColumn());
+
+    if ((beginEditHndlr.getValue() != null) && (beginEditHndlr.getValue().test(getTableRow().getItem(), colNdx) == false))
       return;
 
     super.startEdit();

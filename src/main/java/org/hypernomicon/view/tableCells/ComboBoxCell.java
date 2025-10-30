@@ -33,8 +33,10 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.*;
+import org.hypernomicon.view.wrappers.HyperTableColumn.CellTestHandler;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
+import javafx.beans.property.Property;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
@@ -59,11 +61,12 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
   private final MutableBoolean dontCreateNewRecord;
   private final Supplier<HDT_Work> workSupplier;
   private final Function<HyperTableRow, String> textHndlr;
+  private final Property<CellTestHandler> beginEditHndlr;
 
 //---------------------------------------------------------------------------
 
-  public ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,
-                      MutableBoolean dontCreateNewRecord, Function<HyperTableRow, String> textHndlr, Supplier<HDT_Work> workSupplier)
+  public ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction, MutableBoolean dontCreateNewRecord,
+                      Function<HyperTableRow, String> textHndlr, Supplier<HDT_Work> workSupplier, Property<CellTestHandler> beginEditHndlr)
   {
     this.table = table;
     this.ctrlType = ctrlType;
@@ -72,6 +75,7 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
     this.dontCreateNewRecord = dontCreateNewRecord;
     this.workSupplier = workSupplier;
     this.textHndlr = textHndlr;
+    this.beginEditHndlr = beginEditHndlr;
   }
 
 //---------------------------------------------------------------------------
@@ -88,6 +92,11 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
   @Override public void startEdit()
   {
     if (isEmpty()) return;
+
+    int colNdx = getTableView().getColumns().indexOf(getTableColumn());
+
+    if ((beginEditHndlr.getValue() != null) && (beginEditHndlr.getValue().test(getTableRow().getItem(), colNdx) == false))
+      return;
 
     super.startEdit();
 

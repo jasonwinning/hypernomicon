@@ -435,11 +435,11 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
                                                              EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
     return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction, updateHandler)); }
 
-  public HyperTableColumn addActionColWithButtonHandler(HyperCtrlType ctrlType, int targetCol, CellClickHandler handler) {
-    return addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol, handler, null)); }
+  public HyperTableColumn addActionColWithButtonHandler(HyperCtrlType ctrlType, int targetCol, CellClickHandler clickHandler) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol, clickHandler, null)); }
 
-  public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, CellClickHandler handler) {
-    return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, handler, btnCaption)); }
+  public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, CellClickHandler clickHandler) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, clickHandler, btnCaption)); }
 
   public HyperTableColumn addLabelCol(RecordType objType) {
     return addLabelColWithAlignment(objType, null); }
@@ -450,8 +450,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public HyperTableColumn addLabelColWithAlignment(RecordType objType, Pos alignment) {
     return addColAltPopulator(objType, ctNone, Populator.emptyPopulator(cvtRecord)).setAlignment(alignment); }
 
-  public HyperTableColumn addLabelEditCol(CellClickHandler handler) {
-    return addCol(new HyperTableColumn(this, hdtNone, ctLabelEdit, null, -1, handler, null)); }
+  public HyperTableColumn addLabelEditCol(CellClickHandler clickHandler) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctLabelEdit, null, -1, clickHandler, null)); }
 
   public HyperTableColumn addIconCol() {
     return addCol(new HyperTableColumn(this, hdtNone, ctIcon, null, -1)); }
@@ -468,8 +468,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public HyperTableColumn addGoNewCol(RecordType recordType, int targetCol) {
     return addActionCol(ctGoNewBtn, targetCol).setTooltip(ButtonAction.baNew, "Add new " + getTypeName(recordType) + " record"); }
 
-  public HyperTableColumn addClickToEditCol(RecordType objType, Tooltip headerTooltip, CellClickHandler handler) {
-    return addCol(new HyperTableColumn(this, objType, ctLabelClickToEdit, null, -1, handler, null).setHeaderTooltip(headerTooltip)); }
+  public HyperTableColumn addClickToEditCol(RecordType objType, Tooltip headerTooltip, CellClickHandler clickHandler) {
+    return addCol(new HyperTableColumn(this, objType, ctLabelClickToEdit, null, -1, clickHandler, null).setHeaderTooltip(headerTooltip)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
