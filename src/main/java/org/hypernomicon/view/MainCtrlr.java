@@ -3596,7 +3596,7 @@ public final class MainCtrlr
 
   private static WebTooltip searchKeyToolTip = null;
 
-  synchronized public static void setSearchKeyToolTip(TextField tf)
+  synchronized public static Tooltip getSearchKeyToolTip()
   {
     if (searchKeyToolTip == null) searchKeyToolTip = new WebTooltip("""
       Multiple search keys should be separated by semicolon (<code>;</code>) character.<br><br>
@@ -3619,7 +3619,15 @@ public final class MainCtrlr
       Notice that the <code>^</code> at the beginning of the <code>thing</code> search key prevents the word &lsquo;Anything&rsquo; from being matched. Similarly,<br>
       the <code>$</code> at the end of the <code>object</code> search key prevents the word &lsquo;objectively&rsquo; from being matched.""");
 
-    tf.setTooltip(searchKeyToolTip);
+    return searchKeyToolTip;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void setSearchKeyToolTip(TextField tf)
+  {
+    tf.setTooltip(getSearchKeyToolTip());
   }
 
 //---------------------------------------------------------------------------

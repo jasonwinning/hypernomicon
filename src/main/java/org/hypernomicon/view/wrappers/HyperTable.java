@@ -466,7 +466,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     return addCol(new HyperTableColumn(this, objType, ctNone, null, -1, graphicProvider)); }
 
   public HyperTableColumn addGoNewCol(RecordType recordType, int targetCol) {
-    return addActionCol(ctGoNewBtn, targetCol).setTooltip(ButtonAction.baNew, "Add new " + getTypeName(recordType) + " record"); }
+    return addActionCol(ctGoNewBtn, targetCol).setButtonTooltip(ButtonAction.baNew, "Add new " + getTypeName(recordType) + " record"); }
 
   public HyperTableColumn addClickToEditCol(RecordType objType, Tooltip headerTooltip, CellClickHandler clickHandler) {
     return addCol(new HyperTableColumn(this, objType, ctLabelClickToEdit, null, -1, clickHandler, null).setHeaderTooltip(headerTooltip)); }
@@ -479,7 +479,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     HyperTableColumn col = addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol));
 
     if ((ctrlType == ctGoNewBtn) || (ctrlType == ctGoBtn))
-      col.setTooltip(ButtonAction.baGo, row -> nullSwitch(row.getRecord(targetCol), null, (HDT_Record record) -> "Go to this " + getTypeName(record.getType()) + " record"));
+      col.setButtonTooltip(ButtonAction.baGo, row -> nullSwitch(row.getRecord(targetCol), null, (HDT_Record record) -> "Go to this " + getTypeName(record.getType()) + " record"));
 
     return col;
   }

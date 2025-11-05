@@ -105,8 +105,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     htLabels = new HyperTable(tvLabels, 2, true, TablePrefKey.FILE_LABELS);
 
-    htLabels.addActionCol(ctGoBtn    , 2).setTooltip(ButtonAction.baGo    , "Go to this record");
-    htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
+    htLabels.addActionCol(ctGoBtn    , 2).setButtonTooltip(ButtonAction.baGo    , "Go to this record");
+    htLabels.addActionCol(ctBrowseBtn, 2).setButtonTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
     htLabels.addCol(hdtWorkLabel, ctEditableLimitedDropDown);
 
     htLabels.addChangeOrderMenuItem();

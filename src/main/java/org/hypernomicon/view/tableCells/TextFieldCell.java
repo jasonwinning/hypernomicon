@@ -22,11 +22,11 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
+import java.util.function.Function;
+
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.PageRangeHTC;
-import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
@@ -34,8 +34,7 @@ import org.hypernomicon.view.wrappers.HyperTableColumn.CellTestHandler;
 
 import javafx.beans.property.Property;
 import javafx.scene.Cursor;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -53,6 +52,7 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
   private final CellValueType cellValueType;
   private final HyperTable table;
   private final Property<CellTestHandler> beginEditHndlr;
+  private final Function<HyperTableRow, Tooltip> cellToolTipHndlr;
 
 //---------------------------------------------------------------------------
 
@@ -60,7 +60,8 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
 
 //---------------------------------------------------------------------------
 
-  public TextFieldCell(HyperTable table, CellValueType cellValueType, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod, Property<CellTestHandler> beginEditHndlr)
+  public TextFieldCell(HyperTable table, CellValueType cellValueType, MutableBoolean canEditIfEmpty, Property<CellSortMethod> sortMethod,
+                       Property<CellTestHandler> beginEditHndlr, Function<HyperTableRow, Tooltip> cellToolTipHndlr)
   {
     this.table = table;
 
@@ -68,6 +69,7 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
     this.sortMethod = sortMethod;
     this.cellValueType = cellValueType;
     this.beginEditHndlr = beginEditHndlr;
+    this.cellToolTipHndlr = cellToolTipHndlr;
   }
 
 //---------------------------------------------------------------------------
@@ -119,6 +121,7 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
     {
       setText(null);
       setGraphic(null);
+      setTooltip(null);
       return;
     }
 
@@ -128,12 +131,15 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
         textField.setText(getString());
 
       setText(null);
+      setTooltip(null);
       setGraphic(textField);
     }
     else
     {
       setText(getString());
       setGraphic(null);
+
+      setTooltip(cellToolTipHndlr == null ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
     }
   }
 
@@ -144,6 +150,7 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
   {
     super.cancelEdit();
     setGraphic(null);
+    setTooltip(cellToolTipHndlr == null ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
 
     nullSwitch(getTableRow().getItem(), hyperTableRow -> hyperTableRow.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue));
   }
@@ -154,6 +161,7 @@ public class TextFieldCell extends CursorAwareCell<HyperTableRow, HyperTableCell
   private void createTextField()
   {
     textField = new TextField(getString());
+    textField.setTooltip(cellToolTipHndlr == null ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
     textField.setMinWidth(getWidth() - getGraphicTextGap() * 2);
     textField.focusedProperty().addListener((ob, oldValue, newValue) ->
     {

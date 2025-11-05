@@ -203,8 +203,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htLabels = new HyperTable(tvLabels, 2, true, TablePrefKey.WORK_LABELS);
 
-    htLabels.addActionCol(ctGoBtn    , 2).setTooltip(ButtonAction.baGo    , "Go to this record");
-    htLabels.addActionCol(ctBrowseBtn, 2).setTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
+    htLabels.addActionCol(ctGoBtn    , 2).setButtonTooltip(ButtonAction.baGo    , "Go to this record");
+    htLabels.addActionCol(ctBrowseBtn, 2).setButtonTooltip(ButtonAction.baBrowse, "Select a Label from the Tree");
     htLabels.addCol(hdtWorkLabel, ctEditableLimitedDropDown);
 
     htLabels.addRemoveMenuItem();
@@ -247,8 +247,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htWorkFiles.addRefreshHandler(tabPane::requestLayout);
 
     htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx), true))
-      .setTooltip(ButtonAction.baEdit, "Update or rename this work file")
-      .setTooltip(ButtonAction.baNew, "Add a new Work file");
+      .setButtonTooltip(ButtonAction.baEdit, "Update or rename this work file")
+      .setButtonTooltip(ButtonAction.baNew, "Add a new Work file");
 
     htWorkFiles.addCheckboxCol();
     htWorkFiles.addLabelCol(hdtWorkFile);
@@ -375,7 +375,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (miscFile.pathNotEmpty() == false) return;
       PreviewWindow.show(pvsWorkTab, miscFile);
 
-    }).setTooltip(ButtonAction.baCustom, "Show in Preview Window");
+    }).setButtonTooltip(ButtonAction.baCustom, "Show in Preview Window");
 
     htMiscFiles.addLabelCol(hdtMiscFile);
 

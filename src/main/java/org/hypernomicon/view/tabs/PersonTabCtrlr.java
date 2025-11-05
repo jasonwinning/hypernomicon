@@ -143,7 +143,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     htPersonInst = new HyperTable(tvPersonDept, 3, true, TablePrefKey.PERSON_INST);
 
     htPersonInst.addActionCol(ctGoNewBtn, 2)
-      .setTooltip(ButtonAction.baNew, "Add new Institution or Institutional Division here");
+      .setButtonTooltip(ButtonAction.baNew, "Add new Institution or Institutional Division here");
 
     htPersonInst.addCheckboxCol();
 

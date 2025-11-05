@@ -186,7 +186,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
       default: break;
     }
 
-    nullSwitch(col.tooltips.get(newAction), tooltip -> setToolTip(btn, () -> tooltip.apply(getTableRow().getItem())));
+    nullSwitch(col.buttonTooltips.get(newAction), tooltip -> setToolTip(btn, () -> tooltip.apply(getTableRow().getItem())));
   }
 
 //---------------------------------------------------------------------------

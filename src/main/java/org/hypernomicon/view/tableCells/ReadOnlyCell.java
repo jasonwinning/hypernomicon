@@ -31,8 +31,7 @@ import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 
 //---------------------------------------------------------------------------
@@ -46,16 +45,18 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
   private final HyperTable table;
   private final HyperTableColumn col;
   private final Function<HyperTableRow, Node> graphicProvider;
+  private final Function<HyperTableRow, Tooltip> cellToolTipHndlr;
 
   public static final int INCREMENTAL_ROWS = 20;
 
 //---------------------------------------------------------------------------
 
-  public ReadOnlyCell(HyperTable table, HyperTableColumn col, Function<HyperTableRow, Node> graphicProvider)
+  public ReadOnlyCell(HyperTable table, HyperTableColumn col, Function<HyperTableRow, Node> graphicProvider, Function<HyperTableRow, Tooltip> cellToolTipHndlr)
   {
     this.table = table;
     this.col = col;
     this.graphicProvider = graphicProvider;
+    this.cellToolTipHndlr = cellToolTipHndlr;
 
     setEditable(false);
 
@@ -130,7 +131,12 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     String text = HyperTableCell.getCellText(cell);
 
     setText(text);
-    setToolTip(this, text);
+
+    if (cellToolTipHndlr != null)
+      setTooltip(cellToolTipHndlr.apply(getTableRow().getItem()));
+    else
+      setToolTip(this, text);
+
     setGraphic(null);
   }
 

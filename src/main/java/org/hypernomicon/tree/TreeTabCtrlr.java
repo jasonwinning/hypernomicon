@@ -461,10 +461,18 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     HDT_Glossary newGlossary = db.createNewBlankRecord(hdtGlossary);
     newGlossary.setActive(true);
     newGlossary.setName(dlg.getNewName());
+    newGlossary.parentGlossaries.add(parentGlossary);
 
-    ui.treeSelector.attach(newGlossary, parentGlossary);
-
-    Platform.runLater(() -> { tree.sort(); tree.selectRecord(newGlossary, 0, false); });
+    Platform.runLater(() ->
+    {
+      if ((ui.treeSelector.getBase() instanceof HDT_Term) || (ui.treeSelector.getBase() instanceof HDT_Concept))
+        ui.treeSelector.select(newGlossary);
+      else
+      {
+        tree.sort();
+        tree.selectRecord(newGlossary, 0, false);
+      }
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -480,7 +488,11 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     newLabel.setName(dlg.getNewName());
     newLabel.parentLabels.add(parentLabel);
 
-    Platform.runLater(() -> { tree.sort(); tree.selectRecord(newLabel, 0, false); });
+    Platform.runLater(() ->
+    {
+      tree.sort();
+      tree.selectRecord(newLabel, 0, false);
+    });
   }
 
 //---------------------------------------------------------------------------

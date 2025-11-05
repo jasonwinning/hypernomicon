@@ -41,6 +41,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -61,12 +62,14 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
   private final MutableBoolean dontCreateNewRecord;
   private final Supplier<HDT_Work> workSupplier;
   private final Function<HyperTableRow, String> textHndlr;
+  private final Function<HyperTableRow, Tooltip> cellToolTipHndlr;
   private final Property<CellTestHandler> beginEditHndlr;
 
 //---------------------------------------------------------------------------
 
   public ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction, MutableBoolean dontCreateNewRecord,
-                      Function<HyperTableRow, String> textHndlr, Supplier<HDT_Work> workSupplier, Property<CellTestHandler> beginEditHndlr)
+                      Function<HyperTableRow, String> textHndlr, Supplier<HDT_Work> workSupplier, Property<CellTestHandler> beginEditHndlr,
+                      Function<HyperTableRow, Tooltip> cellToolTipHndlr)
   {
     this.table = table;
     this.ctrlType = ctrlType;
@@ -75,6 +78,7 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
     this.dontCreateNewRecord = dontCreateNewRecord;
     this.workSupplier = workSupplier;
     this.textHndlr = textHndlr;
+    this.cellToolTipHndlr = cellToolTipHndlr;
     this.beginEditHndlr = beginEditHndlr;
   }
 
@@ -108,6 +112,7 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
 
     cb.setValue(cell);
     setGraphic(cb);
+    setTooltip(null);
 
     if (cell != null)
       cb.getSelectionModel().select(cell);
@@ -136,6 +141,7 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
   {
     super.cancelEdit();
     setGraphic(null);
+    setTooltip(cellToolTipHndlr == null ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
 
     HyperTableRow row = getTableRow().getItem();
     if (row == null) return;
@@ -158,6 +164,7 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
       setText(null);
       setItem(null);
       setGraphic(null);
+      setTooltip(null);
       return;
     }
 
@@ -167,12 +174,14 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
         hcb.populate(false);
 
       setText(null);
+      setTooltip(null);
       setGraphic(cb);
     }
     else
     {
       setItem(item);
       setText(getString());
+      setTooltip(cellToolTipHndlr == null ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
       setGraphic(null);
     }
   }

@@ -19,6 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.cellValues.AbstractHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
@@ -36,6 +37,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
@@ -280,7 +282,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         HDT_Concept parentConcept = getParentConcepts(row).stream().findFirst().orElse(null);
         ui.goToRecord(parentConcept != null ? parentConcept : row.getRecord(2), true);
       })
-      .setTooltip(ButtonAction.baGo, row ->
+      .setButtonTooltip(ButtonAction.baGo, row ->
       {
         HDT_Concept parentConcept = getParentConcepts(row).stream().findFirst().orElse(null);
         if (parentConcept != null) return "Go to Concept record: " + parentConcept.extendedName(true);
@@ -307,12 +309,12 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         HDT_Glossary generalGlossary = db.glossaries.getByID(1);         // If these two lines are combined into one, there will be
         ui.goToTreeRecord(concept == null ? generalGlossary : concept);  // false-positive build errors
       })
-      .setTooltip(ButtonAction.baBrowse, row ->
+      .setButtonTooltip(ButtonAction.baBrowse, row ->
       {
         HDT_Glossary glossary = row.getRecord(2);
         HDT_Concept concept = glossary == null ? null : curTerm.getConcept(glossary, row.getRecord(3));
 
-        return "Select a Glossary" + (concept == null ? "" : " or add a parent Concept from the Tree");
+        return concept == null ? "Select a Glossary or create a new one" : "Select a Glossary, create a new Glossary, or add a parent Concept from the Tree";
       });
 
     htConcepts.addColWithUpdateHandler(hdtGlossary, ctEditableLimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> handleGlossaryEdit(row))
@@ -336,6 +338,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       .beginEditHandler.setValue(cellTestHandler);
 
     htConcepts.addTextEditColWithUpdateHandler(hdtConcept, false, (row, cellVal, nextColNdx, nextPopulator) -> handleSearchKeyEdit(row, cellVal))
+      .setHeaderTooltip(MainCtrlr.getSearchKeyToolTip())
+      .setCellToolTipHndlr(row -> MainCtrlr.getSearchKeyToolTip())
       .beginEditHandler.setValue(cellTestHandler);
 
     for (int ndx = 0; ndx < 8; ndx++)
@@ -398,9 +402,9 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       });
 
     htConcepts.addContextMenuItem("Remove this row",
-      row -> (conceptRows.get(row) != null) && (curTerm.concepts.size() > 1),
+      row -> (conceptRows.get(row) != null) && ((curTerm.concepts.size() > 1) || conceptRows.get(row).isDuplicate),
 
-      row -> removeRow(row, conceptRows.get(row)));
+      row -> removeRow(conceptRows.get(row), row));
 
     htSubConcepts = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.CONCEPT_SUB);
 
@@ -542,35 +546,317 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean removeRow(HyperTableRow row, ConceptRow conceptRow)
+  private boolean removeRow(ConceptRow conceptRow)
   {
-    HDT_Concept concept = conceptRow.concept;
+    return removeRow(conceptRow, null);
+  }
 
-    if (concept != null)
+  private boolean removeRow(ConceptRow conceptRow, HyperTableRow selectedRow)
+  {
+    if ((conceptRow.isDuplicate == false) || (selectedRow == null))
     {
-      if (ui.cantSaveRecord()) return false;
+      HDT_Concept concept = conceptRow.concept;
 
-      if ((concept.getMainText().isEmpty() == false) || concept.hasHub())
+      if (concept != null)
       {
-        String prompt = "Are you sure you want to remove the concept definition associated with the glossary \"" + conceptRow.glossary.name() + '"';
+        if (ui.cantSaveRecord()) return false;
 
-        if (confirmDialog(prompt + (conceptRow.sense == null ? "?" : (", sense \"" + conceptRow.sense.name() + "\"?")), false) == false)
-          return false;
+        if ((concept.getMainText().isEmpty() == false) || concept.hasHub())
+        {
+          String prompt = "Are you sure you want to remove the concept definition associated with the glossary \"" + conceptRow.glossary.name() + '"';
+
+          if (confirmDialog(prompt + (conceptRow.sense == null ? "?" : (", sense \"" + conceptRow.sense.name() + "\"?")), false) == false)
+            return false;
+        }
+
+        if (curTab().concept == concept)
+          switchToDifferentTab();
+
+        tpConcepts.getTabs().remove(getConceptTab(concept));
+        conceptToTextViewInfo.remove(concept);
+        db.deleteRecord(concept);
       }
-
-      if (curTab().concept == concept)
-        switchToDifferentTab();
-
-      tpConcepts.getTabs().remove(getConceptTab(concept));
-      conceptToTextViewInfo.remove(concept);
-      db.deleteRecord(concept);
     }
 
-    conceptRows.remove(row);
-    htConcepts.removeRow(row);
     clearAndRepopulateConceptsTable();
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void handleGlossaryEdit(HyperTableRow editedRow)
+  {
+    // A lot of the complexity of this function is due to the fact that the user is
+    // allowed to enter "duplicate" rows, which means a row where the glossary is the
+    // same as an existing row with a blank sense. This is for convenience, so that
+    // the user can enter data in the table one cell at a time.
+
+    if (updatingConcepts) return;
+
+    ConceptRow oldConceptRow = nullSwitch(conceptRows.get(editedRow), new ConceptRow()),
+               newConceptRow = new ConceptRow(editedRow, false, false);
+
+    if (newConceptRow.glossary == oldConceptRow.glossary) return;
+
+    if ((oldConceptRow.isDuplicate == false) && (oldConceptRow.concept != null) && (curTerm.concepts.size() == 1) && (newConceptRow.glossary == null))
+    {
+      // Don't let user delete the last remaining concept.
+
+      oldConceptRow.populateTableRow(editedRow);
+      return;
+    }
+
+    HDT_Concept newConcept = newConceptRow.concept;
+
+    boolean isDuplicate = false;
+
+    if (oldConceptRow.concept == null)
+    {
+      if (newConceptRow.concept != null)
+      {
+        // As a result of changing the glossary for the row, the row's glossary and
+        // sense now matches an existing concept, which means it must be a duplicate
+        // of one of the other rows.
+
+        isDuplicate = true;
+      }
+    }
+    else  // oldConceptRow.concept != null
+    {
+      if (newConceptRow.glossary == null)
+      {
+        // The glossary was deleted (a concept can't exist without a glossary).
+
+        if (removeRow(oldConceptRow, editedRow) == false)
+          oldConceptRow.populateTableRow(editedRow);
+
+        return;
+      }
+
+      if ((newConceptRow.concept != null) && (newConceptRow.concept != oldConceptRow.concept))
+      {
+        errorPopup("This term already has a concept in the same glossary with " + (oldConceptRow.sense == null ? "a blank" : "the same") + " sense.");
+        oldConceptRow.populateTableRow(editedRow);
+
+        return;
+      }
+
+      if (oldConceptRow.isDuplicate)
+      {
+        // The user created a duplicate row (same glossary as existing row with a blank sense), and
+        // then changed the glossary of that row so that it was no longer a duplicate. Need to create
+        // a separate concept record for it. Refresh the table because we don't care if there were
+        // any other duplicates.
+
+        addConceptInGlossary(newConceptRow.glossary, newConceptRow.sense);
+        clearAndRepopulateConceptsTable();
+        tpConcepts.getTabs().forEach(tab -> ((ConceptTab) tab).updateName());
+        return;
+      }
+
+      boolean thereWasADup = false;
+
+      for (HyperTableRow row : htConcepts.dataRows())
+      {
+        if (row != editedRow)
+        {
+          HDT_Concept otherConcept = curTerm.getConcept(row.getRecord(2), row.getRecord(3));
+          if (otherConcept == oldConceptRow.concept)
+          {
+            thereWasADup = true;
+            break;
+          }
+        }
+      }
+
+      if (replaceGlossary(oldConceptRow.glossary, oldConceptRow.sense, newConceptRow.glossary) == false)
+      {
+        oldConceptRow.populateTableRow(editedRow);
+        return;
+      }
+
+      newConcept = oldConceptRow.concept;
+
+      if (thereWasADup)
+      {
+        // The row whose glossary was changed had a duplicate. Now that we changed
+        // the glossary of the original concept, the rows are no longer duplicates,
+        // so the former duplicate row now needs to have its own distinct concept
+        // record. Refresh the table and exit because we only allow the user the
+        // convenience of having one "active" duplicate at a time.
+
+        addConceptInGlossary(oldConceptRow.glossary, oldConceptRow.sense);
+        clearAndRepopulateConceptsTable();
+        tpConcepts.getTabs().forEach(tab -> ((ConceptTab) tab).updateName());
+        return;
+      }
+    }
+
+    if ((newConceptRow.glossary != null) && (newConcept == null))
+    {
+      // Add new concept for row that was edited if needed.
+
+      addConceptInGlossary(newConceptRow.glossary, newConceptRow.sense);
+    }
+
+    newConceptRow = new ConceptRow(editedRow, true, isDuplicate);
+    conceptRows.put(editedRow, newConceptRow);
+    newConceptRow.populateTableRow(editedRow);
+    tpConcepts.getTabs().forEach(tab -> ((ConceptTab) tab).updateName());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void handleSenseEdit(HyperTableRow editedRow, HyperTableCell newCell)
+  {
+    if (updatingConcepts) return;
+
+    ConceptRow oldConceptRow = nullSwitch(conceptRows.get(editedRow), new ConceptRow());
+
+    HDT_Concept concept = oldConceptRow.concept;
+    HDT_Glossary glossary;
+    HDT_ConceptSense sense = newCell.getRecord();
+    String newText = HyperTableCell.getCellText(newCell).strip();
+
+    boolean createNewConcept, editingOriginal;
+
+    // The only way concept would be null here is if the user edited the Sense for a blank row.
+    if (concept == null)
+    {
+      if (newText.isBlank())
+      {
+        // The user must have edited the Sense for a blank row and changed it back to blank so do nothing.
+
+        return;
+      }
+
+      for (HyperTableRow row : htConcepts.dataRows())
+      {
+        // We need to create a new concept and default in a glossary for it. If there is already a concept
+        // in the General glossary with the same sense, treat that as a conflict.
+
+        if (row != editedRow)
+        {
+          HDT_Concept otherConcept = curTerm.getConcept(row.getRecord(2), row.getRecord(3));
+          if ((otherConcept.glossary.getID() == 1) && row.getText(3).equalsIgnoreCase(newText))
+          {
+            errorPopup("This term already has a concept in the General glossary with the same sense.");
+            removeRow(oldConceptRow);
+            return;
+          }
+        }
+      }
+
+      // Glossary is currently blank. Set it to General if the current term is already in
+      // the General glossary; otherwise set it to whichever glossary the first concept is in and
+      // see if there is a conflict with that glossary and the user-chosen sense. If not,
+      // use that glossary. If so, use General (since the earlier loop made sure there wouldn't be a conflict).
+
+      glossary = null;
+
+      if (curTerm.concepts.stream().noneMatch(koncept -> koncept.glossary.get().getID() == 1))
+      {
+        glossary = curTerm.concepts.getFirst().glossary.get();
+
+        for (HDT_Concept otherConcept : curTerm.concepts)
+        {
+          if ((otherConcept.glossary.get() == glossary) && otherConcept.sense.isNotNull() &&
+              ((otherConcept.sense.get() == sense) || newText.equalsIgnoreCase(otherConcept.sense.get().name())))
+          {
+            glossary = null;
+            break;
+          }
+        }
+      }
+
+      if (glossary == null) glossary = db.glossaries.getByID(1);
+
+      createNewConcept = true;
+      editingOriginal = false;
+    }
+    else  // concept != null; user is editing a row with an existing concept record
+    {
+      if ((oldConceptRow.sense != null) && ((sense == oldConceptRow.sense) || newText.equalsIgnoreCase(oldConceptRow.sense.name())))
+      {
+        // The user typed text that matches the sense that was already assigned;
+        // just update the row with the existing data
+
+        oldConceptRow.populateTableRow(editedRow);
+        return;
+      }
+
+      createNewConcept = false;
+      editingOriginal = false;  // True if there were duplicates but the original is being edited, not the new one
+
+      for (HyperTableRow row : htConcepts.dataRows())
+      {
+        if (row == editedRow)
+        {
+          // The only way there can be duplicates is if 2 rows have the same glossary and
+          // a blank sense. If createNewConcept is false, we haven't encountered the duplicate
+          // yet, so this must be the original.
+
+          if (createNewConcept == false)
+            editingOriginal = true;
+        }
+        else
+        {
+          HDT_Concept otherConcept = curTerm.getConcept(row.getRecord(2), row.getRecord(3));
+          if ((concept != otherConcept) && (concept.glossary.get() == otherConcept.glossary.get()) && row.getText(3).equalsIgnoreCase(newText))
+          {
+            HDT_ConceptSense otherSense = row.getRecord(3);
+
+            errorPopup("This term already has a concept in the same glossary with " + (otherSense == null ? "a blank" : "the same") + " sense.");
+            oldConceptRow.populateTableRow(editedRow);
+            return;
+          }
+
+          if ((concept == otherConcept) && (row.getText(3).equalsIgnoreCase(newText) == false))
+          {
+            // Need to create new concept because there were previously duplicate rows.
+
+            createNewConcept = true;
+          }
+        }
+      }
+
+      glossary = concept.glossary.get();
+    }
+
+    if ((sense == null) && strNotNullOrEmpty(newText))
+    {
+      sense = db.createNewBlankRecord(hdtConceptSense);
+      sense.setName(newText);
+    }
+
+    if (createNewConcept)
+    {
+      if (editingOriginal)
+      {
+        // The only way there could have been a duplicate is if they both have a blank sense.
+
+        // If the original is being edited, not the duplicate, add the new sense to the original
+        // and create the duplicate with a blank sense.
+
+        concept.sense.set(sense);
+        addConceptInGlossary(glossary, null);
+      }
+      else
+      {
+        // If a duplicate row was being edited, add the sense to the new one.
+        // Or the user may be adding a sense to a blank row.
+
+        addConceptInGlossary(glossary, sense);
+      }
+    }
+    else
+      concept.sense.set(sense);
+
+    clearAndRepopulateConceptsTable();
+    tpConcepts.getTabs().forEach(tab -> ((ConceptTab) tab).updateName());
   }
 
 //---------------------------------------------------------------------------
@@ -603,223 +889,6 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     }
 
     clearAndRepopulateConceptsTable();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void handleSenseEdit(HyperTableRow editedRow, HyperTableCell newCell)
-  {
-    if (updatingConcepts) return;
-
-    ConceptRow oldConceptRow = nullSwitch(conceptRows.get(editedRow), new ConceptRow());
-
-    HDT_Concept concept = oldConceptRow.concept;
-    HDT_ConceptSense sense = newCell.getRecord();
-    String newText = HyperTableCell.getCellText(newCell).strip();
-
-    // The only way concept would be null here is if the user edited the Sense for a blank row.
-    if (concept == null)
-    {
-      if (newText.isBlank())
-      {
-        // The user must have edited the Sense for a blank row and changed it back to blank so do nothing.
-
-        return;
-      }
-
-      for (HyperTableRow row : htConcepts.dataRows())
-      {
-        // We need to create a new concept and default in a glossary for it. If there is already a concept
-        // in the General glossary with the same sense, treat that as a conflict.
-
-        if (row != editedRow)
-        {
-          HDT_Concept otherConcept = curTerm.getConcept(row.getRecord(2), row.getRecord(3));
-          if ((otherConcept.glossary.getID() == 1) && row.getText(3).equalsIgnoreCase(newText))
-          {
-            errorPopup("This term already has a concept in the General glossary with the same sense.");
-            removeRow(editedRow, oldConceptRow);
-            return;
-          }
-        }
-      }
-
-      // Glossary is currently blank. Set it to General if the current term is already in
-      // the General glossary; otherwise set it to whichever glossary the first concept is in and
-      // see if there is a conflict with that glossary and the user-chosen sense. If not,
-      // use that glossary. If so, use General (since the earlier loop made sure there wouldn't be a conflict).
-
-      HDT_Glossary glossary = null;
-
-      if (curTerm.concepts.stream().noneMatch(koncept -> koncept.glossary.get().getID() == 1))
-      {
-        glossary = curTerm.concepts.getFirst().glossary.get();
-
-        for (HDT_Concept otherConcept : curTerm.concepts)
-        {
-          if ((otherConcept.glossary.get() == glossary) && otherConcept.sense.isNotNull() &&
-              ((otherConcept.sense.get() == sense) || newText.equalsIgnoreCase(otherConcept.sense.get().name())))
-          {
-            glossary = null;
-            break;
-          }
-        }
-      }
-
-      if (glossary == null) glossary = db.glossaries.getByID(1);
-
-      // This will cause handleGlossaryEdit to get called, which will create a concept record with the chosen sense
-      editedRow.setCellValue(2, glossary, glossary.name());
-
-      return;
-    }
-
-    if ((oldConceptRow.sense != null) && ((sense == oldConceptRow.sense) || newText.equalsIgnoreCase(oldConceptRow.sense.name())))
-    {
-      // The user typed text that matches the sense that was already assigned;
-      // just update the row with the existing data
-
-      oldConceptRow.populateTableRow(editedRow);
-      return;
-    }
-
-    boolean createNewConcept = false,
-            editingOriginal = false;  // True if there were duplicates but the original is being edited, not the new one
-
-    for (HyperTableRow row : htConcepts.dataRows())
-    {
-      if (row == editedRow)
-      {
-        // The only way there can be duplicates is if 2 rows have the same glossary and
-        // a blank sense. If createNewConcept is false, we haven't encountered the duplicate
-        // yet, so this must be the original.
-
-        if (createNewConcept == false)
-          editingOriginal = true;
-      }
-      else
-      {
-        HDT_Concept otherConcept = curTerm.getConcept(row.getRecord(2), row.getRecord(3));
-        if ((concept != otherConcept) && (concept.glossary.get() == otherConcept.glossary.get()) && row.getText(3).equalsIgnoreCase(newText))
-        {
-          HDT_ConceptSense otherSense = row.getRecord(3);
-
-          errorPopup("This term already has a concept in the same glossary with " + (otherSense == null ? "a blank" : "the same") + " sense.");
-          oldConceptRow.populateTableRow(editedRow);
-          return;
-        }
-
-        if ((concept == otherConcept) && (row.getText(3).equalsIgnoreCase(newText) == false))
-        {
-          // Need to create new concept because there were previously duplicate rows.
-
-          createNewConcept = true;
-        }
-      }
-    }
-
-    if ((sense == null) && (newText.length() > 0))
-    {
-      sense = db.createNewBlankRecord(hdtConceptSense);
-      sense.setName(newText);
-    }
-
-    if (createNewConcept)
-    {
-      if (editingOriginal)
-      {
-        // The only way there could have been a duplicate is if they both have a blank sense.
-
-        // If the original is being edited, not the duplicate, add the new sense to the original
-        // and create the duplicate with a blank sense.
-
-        concept.sense.set(sense);
-        addConceptInGlossary(concept.glossary.get(), null);
-      }
-      else
-      {
-        // The duplicate is being edited; add the sense to the new one.
-
-        addConceptInGlossary(concept.glossary.get(), sense);
-      }
-    }
-    else
-      concept.sense.set(sense);
-
-    clearAndRepopulateConceptsTable();
-    tpConcepts.getTabs().forEach(tab -> ((ConceptTab) tab).updateName());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void handleGlossaryEdit(HyperTableRow editedRow)
-  {
-    if (updatingConcepts) return;
-
-    ConceptRow oldConceptRow = nullSwitch(conceptRows.get(editedRow), new ConceptRow()),
-               newConceptRow = new ConceptRow(editedRow, false, false);
-
-    boolean isDuplicate = false;
-
-    if ((oldConceptRow.concept != null) && (curTerm.concepts.size() == 1) && (newConceptRow.glossary == null))
-    {
-      // Don't let user delete the last remaining concept.
-
-      oldConceptRow.populateTableRow(editedRow);
-      return;
-    }
-
-    HDT_Concept newConcept = newConceptRow.concept;
-
-// Check to see if existing glossary for row being edited should be removed/replaced
-// ---------------------------------------------------------------------------------
-
-    if (newConceptRow.glossary != oldConceptRow.glossary)
-    {
-      if (oldConceptRow.concept != null)
-      {
-        if ((newConceptRow.glossary == null) || (newConceptRow.concept != null))
-        {
-          // Either the glossary was deleted (a concept can't exist without a glossary) or
-          // a different row already has this glossary/sense (can't have the same concept
-          // in two rows unless the glossary was previously empty). Either way, we need to
-          // get rid of the row.
-
-          if (removeRow(editedRow, oldConceptRow) == false)
-          {
-            oldConceptRow.populateTableRow(editedRow);
-            return;
-          }
-        }
-        else
-        {
-          if (replaceGlossary(oldConceptRow.glossary, oldConceptRow.sense, newConceptRow.glossary) == false)
-          {
-            oldConceptRow.populateTableRow(editedRow);
-            return;
-          }
-
-          newConcept = oldConceptRow.concept;
-        }
-      }
-      else if (newConceptRow.concept != null)
-      {
-        isDuplicate = true;
-      }
-
-// Add new concept for row that was edited if needed
-// -------------------------------------------------
-
-      if ((newConceptRow.glossary != null) && (newConcept == null))
-        addConceptInGlossary(newConceptRow.glossary, newConceptRow.sense);
-    }
-
-    newConceptRow = new ConceptRow(editedRow, true, isDuplicate);
-    conceptRows.put(editedRow, newConceptRow);
-    newConceptRow.populateTableRow(editedRow);
-    tpConcepts.getTabs().forEach(tab -> ((ConceptTab) tab).updateName());
   }
 
 //---------------------------------------------------------------------------

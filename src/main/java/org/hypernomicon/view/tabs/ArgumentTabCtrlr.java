@@ -90,7 +90,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htParents.addActionCol(ctGoBtn, 3)
       .setGoTooltipBasedOnTarget(record -> "Go to " + getTypeName(record.getType()) + ": " + record.listName());
 
-    htParents.addActionCol(ctBrowseBtn, 3).setTooltip(ButtonAction.baBrowse, "Select a record from the Tree");
+    htParents.addActionCol(ctBrowseBtn, 3).setButtonTooltip(ButtonAction.baBrowse, "Select a record from the Tree");
 
     RecordByTypePopulator verdictPopulator = new RecordByTypePopulator();
 
@@ -163,7 +163,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     htResponses.addActionCol(ctGoNewBtn, 3)
       .setGoTooltipBasedOnTarget(record -> "Go to Argument: " + record.listName())
-      .setTooltip(ButtonAction.baNew, "Add new Argument responding to this Argument");
+      .setButtonTooltip(ButtonAction.baNew, "Add new Argument responding to this Argument");
 
     htResponses.addLabelCol(hdtPerson);
     htResponses.addLabelCol(hdtArgumentVerdict);

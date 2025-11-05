@@ -116,7 +116,7 @@ public final class ContentsWindow extends NonmodalWindow
       PreviewWindow.instance().goToPage(parseInt(row.getText(4), -1));
       PreviewWindow.show();
 
-    }).setTooltip(ButtonAction.baCustom, "Jump to start page in preview window");
+    }).setButtonTooltip(ButtonAction.baCustom, "Jump to start page in preview window");
 
     htContents.addCustomActionCol(4, "Set", (row, colNdx) ->
     {
@@ -128,7 +128,7 @@ public final class ContentsWindow extends NonmodalWindow
       row.setCellValue(4, work, String.valueOf(num));
       setPageNum(work, num, true);
 
-    }).setTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as start page");
+    }).setButtonTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as start page");
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -144,7 +144,7 @@ public final class ContentsWindow extends NonmodalWindow
       PreviewWindow.instance().goToPage(parseInt(row.getText(7), -1));
       PreviewWindow.show();
 
-    }).setTooltip(ButtonAction.baCustom, "Jump to end page in preview window");
+    }).setButtonTooltip(ButtonAction.baCustom, "Jump to end page in preview window");
 
     htContents.addCustomActionCol(7, "Set", (row, colNdx) ->
     {
@@ -156,7 +156,7 @@ public final class ContentsWindow extends NonmodalWindow
       row.setCellValue(7, work, String.valueOf(num));
       setPageNum(work, num, false);
 
-    }).setTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as end page");
+    }).setButtonTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as end page");
 
     stage.getScene().setOnMouseEntered(event -> mouseAlreadyHere = true);  // Don't refresh when user clicks a button while dialog is out of focus
     stage.getScene().setOnMouseExited (event -> mouseAlreadyHere = false);

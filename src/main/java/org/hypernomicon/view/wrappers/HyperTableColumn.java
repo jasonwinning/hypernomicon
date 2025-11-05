@@ -143,7 +143,7 @@ public class HyperTableColumn
   private final RecordType objType;
   private final HyperCtrlType ctrlType;
   private final TableColumn<HyperTableRow, ?> tc;
-  public final Map<ButtonAction, Function<HyperTableRow, String>> tooltips = new EnumMap<>(ButtonAction.class);
+  public final Map<ButtonAction, Function<HyperTableRow, String>> buttonTooltips = new EnumMap<>(ButtonAction.class);
   final CellUpdateHandler updateHandler;
   private final int colNdx, targetCol;
   private final MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
@@ -156,6 +156,7 @@ public class HyperTableColumn
   private Supplier<HDT_Work> workSupplier;
   private CellValueType cellValueType = cvtRecord;
   private Function<HyperTableRow, String> textHndlr;
+  private Function<HyperTableRow, Tooltip> cellToolTipHndlr;
   private Pos alignment = null;  // This is currently only respected by ReadOnlyCell
 
 //---------------------------------------------------------------------------
@@ -172,9 +173,10 @@ public class HyperTableColumn
   HyperTableColumn setWorkSupplier(Supplier<HDT_Work> newWS) { workSupplier = newWS;            return this; }
   HyperTableColumn setAlignment(Pos newAlignment)            { alignment = newAlignment;        return this; }
 
-  public HyperTableColumn setValueType(CellValueType newCellValueType)            { cellValueType = newCellValueType;     return this; }
-  public HyperTableColumn setTextHndlr(Function<HyperTableRow, String> newTH)     { textHndlr = newTH;                    return this; }
-  public HyperTableColumn setDontCreateNewRecord(boolean newVal)                  { dontCreateNewRecord.setValue(newVal); return this; }
+  public HyperTableColumn setValueType(CellValueType newCellValueType)                { cellValueType = newCellValueType;     return this; }
+  public HyperTableColumn setTextHndlr(Function<HyperTableRow, String> newTH)         { textHndlr = newTH;                    return this; }
+  public HyperTableColumn setCellToolTipHndlr(Function<HyperTableRow, Tooltip> newTH) { cellToolTipHndlr = newTH;             return this; }
+  public HyperTableColumn setDontCreateNewRecord(boolean newVal)                      { dontCreateNewRecord.setValue(newVal); return this; }
 
   @SuppressWarnings("unchecked") <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
 
@@ -266,7 +268,7 @@ public class HyperTableColumn
       case ctEdit :
       {
         htcCol.setEditable(true);
-        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, cellValueType, canEditIfEmpty, sortMethod, beginEditHandler));
+        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, cellValueType, canEditIfEmpty, sortMethod, beginEditHandler, cellToolTipHndlr));
 
         htcCol.setOnEditCommit(event ->
           event.getRowValue().setCellValue(colNdx, event.getNewValue().getCopyWithID(event.getOldValue().getID()))); // preserve ID value
@@ -277,14 +279,14 @@ public class HyperTableColumn
       case ctCheckbox :
 
         htcCol.setEditable(true);
-        htcCol.setCellFactory(tableCol -> new CheckboxCell(table));
+        htcCol.setCellFactory(tableCol -> new CheckboxCell(table, cellToolTipHndlr));
 
         break;
 
       case ctNone : case ctIncremental :
 
         htcCol.setEditable(false);
-        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, this, graphicProvider));
+        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, this, graphicProvider, cellToolTipHndlr));
 
         break;
 
@@ -335,7 +337,9 @@ public class HyperTableColumn
 
       case ctNoneditableDropDown : case ctEditableLimitedDropDown : case ctEditableUnlimitedDropDown :
       {
-        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, this.ctrlType, populator, onAction, dontCreateNewRecord, textHndlr, workSupplier, beginEditHandler));
+        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, this.ctrlType, populator, onAction, dontCreateNewRecord, textHndlr, workSupplier,
+                                                           beginEditHandler, cellToolTipHndlr));
+
         htcCol.setOnEditStart(event -> populator.populate(event.getRowValue(), false));
 
         break;
@@ -371,6 +375,7 @@ public class HyperTableColumn
             super.updateItem(item, empty);
 
             setText(empty ? null : HyperTableCell.getCellText(getItem()));
+            setTooltip(cellToolTipHndlr == null ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
           }
 
           @Override protected Cursor getMouseCursor()
@@ -428,18 +433,18 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn setTooltip(ButtonAction ba, String text)
+  public HyperTableColumn setButtonTooltip(ButtonAction ba, String text)
   {
-    tooltips.put(ba, row -> text);
+    buttonTooltips.put(ba, row -> text);
     return this;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn setTooltip(ButtonAction ba, Function<HyperTableRow, String> supplier)
+  public HyperTableColumn setButtonTooltip(ButtonAction ba, Function<HyperTableRow, String> supplier)
   {
-    tooltips.put(ba, supplier);
+    buttonTooltips.put(ba, supplier);
     return this;
   }
 
@@ -448,7 +453,7 @@ public class HyperTableColumn
 
   public HyperTableColumn setGoTooltipBasedOnTarget(Function<HDT_Record, String> supplier)
   {
-    return setTooltip(ButtonAction.baGo, row -> nullSwitch(row.getRecord(targetCol), null, supplier));
+    return setButtonTooltip(ButtonAction.baGo, row -> nullSwitch(row.getRecord(targetCol), null, supplier));
   }
 
 //---------------------------------------------------------------------------

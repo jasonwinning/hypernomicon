@@ -18,11 +18,12 @@
 package org.hypernomicon.view.tableCells;
 
 import javafx.geometry.Pos;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TableCell;
+import javafx.scene.control.*;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
+
+import java.util.function.Function;
 
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -39,12 +40,15 @@ public class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
 
   private final HyperTable table;
   private final CheckBox chk;
+  private final Function<HyperTableRow, Tooltip> toolTipHndlr;
 
 //---------------------------------------------------------------------------
 
-  public CheckboxCell(HyperTable table)
+  public CheckboxCell(HyperTable table, Function<HyperTableRow, Tooltip> toolTipHndlr)
   {
     this.table = table;
+    this.toolTipHndlr = toolTipHndlr;
+
     chk = new CheckBox();
 
     emptyProperty().addListener((ob, oldValue, newValue) -> chk.setVisible(newValue == false));
@@ -68,10 +72,13 @@ public class CheckboxCell extends TableCell<HyperTableRow, HyperTableCell>
     if (empty)
     {
       setGraphic(null);
+      setTooltip(null);
       return;
     }
 
     setGraphic(chk);
+    chk.setTooltip(toolTipHndlr == null ? null : toolTipHndlr.apply(getTableRow().getItem()));
+
     setAlignment(Pos.CENTER);
     chk.setSelected(getCellID(val) == GenericNonRecordHTC.TRUE_ID);
 
