@@ -158,21 +158,24 @@ public class HyperTableColumn
   private Function<HyperTableRow, String> textHndlr;
   private Function<HyperTableRow, Tooltip> cellToolTipHndlr;
   private Pos alignment = null;  // This is currently only respected by ReadOnlyCell
+  private OverrunStyle textOverrunStyle = null;  // This is currently only respected by ComboBoxCell
 
 //---------------------------------------------------------------------------
 
-  public HyperCtrlType getCtrlType() { return ctrlType; }
-  public int getColNdx()             { return colNdx; }
-  public String getHeader()          { return tc.getText(); }
-  RecordType getObjType()            { return objType; }
-  public Pos getAlignment()          { return alignment; }
-  void clear()                       { if (populator != null) populator.clear(); }
+  public HyperCtrlType getCtrlType()        { return ctrlType; }
+  public int getColNdx()                    { return colNdx; }
+  public String getHeader()                 { return tc.getText(); }
+  RecordType getObjType()                   { return objType; }
+  public Pos getAlignment()                 { return alignment; }
+  public OverrunStyle getTextOverrunStyle() { return textOverrunStyle; }
+  void clear()                              { if (populator != null) populator.clear(); }
 
   HyperTableColumn setCanEditIfEmpty(boolean newVal)         { canEditIfEmpty.setValue(newVal); return this; }
   HyperTableColumn setSortMethod(CellSortMethod newSM)       { sortMethod.setValue(newSM);      return this; }
   HyperTableColumn setWorkSupplier(Supplier<HDT_Work> newWS) { workSupplier = newWS;            return this; }
   HyperTableColumn setAlignment(Pos newAlignment)            { alignment = newAlignment;        return this; }
 
+  public HyperTableColumn setTextOverrunStyle(OverrunStyle style)                     { textOverrunStyle = style;             return this; }
   public HyperTableColumn setValueType(CellValueType newCellValueType)                { cellValueType = newCellValueType;     return this; }
   public HyperTableColumn setTextHndlr(Function<HyperTableRow, String> newTH)         { textHndlr = newTH;                    return this; }
   public HyperTableColumn setCellToolTipHndlr(Function<HyperTableRow, Tooltip> newTH) { cellToolTipHndlr = newTH;             return this; }
@@ -262,7 +265,7 @@ public class HyperTableColumn
     {
       case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn : case ctLabelEdit :
 
-        htcCol.setCellFactory(tableCol -> new ButtonCell(this.ctrlType, table, this, this.targetCol, cellClickHandler, btnCaption));
+        htcCol.setCellFactory(tableCol -> new ButtonCell(table, this, this.targetCol, cellClickHandler, btnCaption));
         break;
 
       case ctEdit :
@@ -337,7 +340,7 @@ public class HyperTableColumn
 
       case ctNoneditableDropDown : case ctEditableLimitedDropDown : case ctEditableUnlimitedDropDown :
       {
-        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, this.ctrlType, populator, onAction, dontCreateNewRecord, textHndlr, workSupplier,
+        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, this, populator, onAction, dontCreateNewRecord, textHndlr, workSupplier,
                                                            beginEditHandler, cellToolTipHndlr));
 
         htcCol.setOnEditStart(event -> populator.populate(event.getRowValue(), false));
@@ -375,7 +378,7 @@ public class HyperTableColumn
             super.updateItem(item, empty);
 
             setText(empty ? null : HyperTableCell.getCellText(getItem()));
-            setTooltip(cellToolTipHndlr == null ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
+            setTooltip(empty || (cellToolTipHndlr == null) ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
           }
 
           @Override protected Cursor getMouseCursor()

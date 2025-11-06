@@ -67,12 +67,12 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
 
 //---------------------------------------------------------------------------
 
-  public ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction, MutableBoolean dontCreateNewRecord,
+  public ComboBoxCell(HyperTable table, HyperTableColumn col, Populator populator, EventHandler<ActionEvent> onAction, MutableBoolean dontCreateNewRecord,
                       Function<HyperTableRow, String> textHndlr, Supplier<HDT_Work> workSupplier, Property<CellTestHandler> beginEditHndlr,
                       Function<HyperTableRow, Tooltip> cellToolTipHndlr)
   {
     this.table = table;
-    this.ctrlType = ctrlType;
+    this.ctrlType = col.getCtrlType();
     this.populator = populator;
     this.onAction = onAction;
     this.dontCreateNewRecord = dontCreateNewRecord;
@@ -80,6 +80,9 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
     this.textHndlr = textHndlr;
     this.cellToolTipHndlr = cellToolTipHndlr;
     this.beginEditHndlr = beginEditHndlr;
+
+    if (col.getTextOverrunStyle() != null)
+      setTextOverrun(col.getTextOverrunStyle());
   }
 
 //---------------------------------------------------------------------------

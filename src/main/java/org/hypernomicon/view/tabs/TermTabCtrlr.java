@@ -318,7 +318,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       });
 
     htConcepts.addColWithUpdateHandler(hdtGlossary, ctEditableLimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> handleGlossaryEdit(row))
-              .setDontCreateNewRecord(true);
+      .setDontCreateNewRecord(true);
 
     htConcepts.addColWithUpdateHandler(hdtConceptSense, ctEditableUnlimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> handleSenseEdit(row, cellVal));
 
@@ -335,6 +335,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     };
 
     htConcepts.addClickToEditCol(hdtConcept, makeTooltip("Click cell to modify parent concepts"), (row, colNdx) -> showParentConceptSelectDialog(row))
+      .setCellToolTipHndlr(row -> makeTooltip(row.getText(4)))
       .beginEditHandler.setValue(cellTestHandler);
 
     htConcepts.addTextEditColWithUpdateHandler(hdtConcept, false, (row, cellVal, nextColNdx, nextPopulator) -> handleSearchKeyEdit(row, cellVal))

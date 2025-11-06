@@ -72,7 +72,11 @@ public class ParentConceptDlgCtrlr extends ModalDialog
       return curTerm.concepts.contains(db.concepts.getByID(id)) == false;
     }, DisplayKind.listName);
 
-    hyperTable.addColAltPopulator(hdtConcept, ctEditableLimitedDropDown, pop);
+    hyperTable.addColAltPopulatorWithUpdateHandler(hdtConcept, ctEditableLimitedDropDown, pop, (row, cellVal, nextColNdx, nextPop) ->
+    {
+      if (cellVal.isEmpty() == false)
+        hyperTable.edit(hyperTable.getRows().get(hyperTable.dataRowCount()), 0);
+    });
 
     btnMoveUp.setOnAction(event ->
     {
@@ -105,8 +109,7 @@ public class ParentConceptDlgCtrlr extends ModalDialog
 
     Platform.runLater(() -> updateButtons(tv.getSelectionModel().getSelectedItem()));
 
-    if (childConcept.parentConcepts.isEmpty())
-      hyperTable.edit(hyperTable.getRows().getFirst(), 0);
+    hyperTable.edit(hyperTable.getRows().get(hyperTable.dataRowCount()), 0);
   }
 
 //---------------------------------------------------------------------------

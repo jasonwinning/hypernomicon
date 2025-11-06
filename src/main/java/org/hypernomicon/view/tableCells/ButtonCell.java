@@ -60,11 +60,11 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler clickHandler, String caption)
+  public ButtonCell(HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler clickHandler, String caption)
   {
     ht = newHT;
     this.colNdxOfTarget = colNdxOfTarget;
-    this.ctrlType = ctrlType;
+    this.ctrlType = col.getCtrlType();
     this.col = col;
     this.clickHandler = clickHandler;
     this.caption = ctrlType == ctCustomBtn ? safeStr(caption) : ""; // Custom caption is only supported for ctCustomBtn

@@ -465,13 +465,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     Platform.runLater(() ->
     {
-      if ((ui.treeSelector.getBase() instanceof HDT_Term) || (ui.treeSelector.getBase() instanceof HDT_Concept))
-        ui.treeSelector.select(newGlossary);
-      else
-      {
-        tree.sort();
-        tree.selectRecord(newGlossary, 0, false);
-      }
+      tree.sort();
+      tree.selectRecord(newGlossary, 0, false);
     });
   }
 
