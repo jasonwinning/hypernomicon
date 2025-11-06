@@ -45,10 +45,14 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
 
-public class QueryWhereField extends RecordQuery
+class QueryWhereField extends RecordQuery
 {
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String queryText;
+
 //---------------------------------------------------------------------------
 
   QueryWhereField(int queryID, String description)
@@ -75,6 +79,14 @@ public class QueryWhereField extends RecordQuery
     }
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+  {
+    queryText = convertToEnglishChars(getCellText(op3).strip()).toLowerCase();
   }
 
 //---------------------------------------------------------------------------
@@ -212,9 +224,9 @@ public class QueryWhereField extends RecordQuery
           if (finalObjType != hdtNone)
             return evalIncludesExcludesRecord(record, tag, op3, true);
 
-          String tagStrVal = record.resultTextForTag(tag, false);
+          String tagStrVal = record.resultTextForTag(tag, false, true);
 
-          return strNotNullOrEmpty(tagStrVal) && tagStrVal.strip().equalsIgnoreCase(getCellText(op3).strip());
+          return strNotNullOrEmpty(tagStrVal) && tagStrVal.strip().equalsIgnoreCase(queryText);
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -237,9 +249,9 @@ public class QueryWhereField extends RecordQuery
           if (finalObjType != hdtNone)
             return evalIncludesExcludesRecord(record, tag, op3, false);
 
-          String tagStrVal = record.resultTextForTag(tag, false);
+          String tagStrVal = record.resultTextForTag(tag, false, true);
 
-          return (tagStrVal != null) && (tagStrVal.strip().equalsIgnoreCase(getCellText(op3).strip()) == false);
+          return (tagStrVal != null) && (tagStrVal.strip().equalsIgnoreCase(queryText) == false);
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -259,9 +271,7 @@ public class QueryWhereField extends RecordQuery
       {
         @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
-          String val3 = getCellText(op3).strip();
-
-          return strNotNullOrEmpty(val3) && record.resultTextForTag(tag, false).toLowerCase().strip().contains(val3.toLowerCase());
+          return strNotNullOrEmpty(queryText) && record.resultTextForTag(tag, false, true).toLowerCase().strip().contains(queryText);
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -278,9 +288,7 @@ public class QueryWhereField extends RecordQuery
       {
         @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
         {
-          String val3 = getCellText(op3).strip();
-
-          return record.resultTextForTag(tag, false).toLowerCase().strip().contains(val3.toLowerCase()) == false;
+          return record.resultTextForTag(tag, false, true).toLowerCase().strip().contains(queryText) == false;
         }
 
         @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -308,7 +316,7 @@ public class QueryWhereField extends RecordQuery
           return nullSwitch(db.getSchema(record.getType(), tag), null, HDI_Schema::category) == hdcTernary ?
             record.getTagTernary(tag).isUnset()
           :
-            record.resultTextForTag(tag, true).isEmpty();
+            record.resultTextForTag(tag, true, false).isEmpty();
         }
       });
 
@@ -326,7 +334,7 @@ public class QueryWhereField extends RecordQuery
           return nullSwitch(db.getSchema(record.getType(), tag), null, HDI_Schema::category) == hdcTernary ?
             record.getTagTernary(tag).isUnset() == false
           :
-            record.resultTextForTag(tag, true).isEmpty() == false;
+            record.resultTextForTag(tag, true, false).isEmpty() == false;
         }
       });
     }

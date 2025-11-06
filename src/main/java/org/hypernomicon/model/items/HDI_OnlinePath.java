@@ -19,6 +19,7 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
@@ -115,10 +116,17 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
+    String str = "";
+
     if (hyperPath.isNotEmpty())
-      list.add(hyperPath.getFileName().getNameOnly().toString());
+      str = hyperPath.getFileName().getNameOnly().toString();
+
+    list.add(engChar ? convertToEnglishChars(str) : str);
   }
 
 //---------------------------------------------------------------------------

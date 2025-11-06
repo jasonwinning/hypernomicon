@@ -197,13 +197,13 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String resultTextForTag(Tag tag, boolean limitTo20Items)
+  @Override public String resultTextForTag(Tag tag, boolean limitTo20Items, boolean engChar)
   {
     return switch (tag)
     {
       case tagStartPageNum -> getStartPageNumStr();
       case tagEndPageNum   -> getEndPageNumStr();
-      default              -> super.resultTextForTag(tag, limitTo20Items);
+      default              -> super.resultTextForTag(tag, limitTo20Items, engChar);
     };
   }
 
@@ -278,9 +278,9 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     if (newID < 1) return;
     HDT_Work largerWorkRec = db.works.getByID(newID);
 
-    /***********************************************/
-    /*          Update ISBNs                       */
-    /***********************************************/
+    /* ********************************************* */
+    /*          Update ISBNs                         */
+    /* ********************************************* */
 
     if (noIsbnUpdate == false)
     {
@@ -301,9 +301,9 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
     if (largerWorkRec.workFiles.isEmpty()) return;
 
-    /***********************************************/
-    /*          Update work files                  */
-    /***********************************************/
+    /* ********************************************* */
+    /*          Update work files                    */
+    /* ********************************************* */
 
     if (workFiles.isEmpty())
     {

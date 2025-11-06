@@ -52,9 +52,18 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   public void set(String strValue) { this.strValue = strValue; }
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { list.add(get()); }
-
   @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items) { return convertToSingleLine(get()); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
+  {
+    list.add(engChar ? convertToEnglishChars(get()) : get());
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

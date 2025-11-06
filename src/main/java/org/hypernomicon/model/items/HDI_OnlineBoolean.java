@@ -45,7 +45,10 @@ public class HDI_OnlineBoolean extends HDI_OnlineBase<HDI_OfflineBoolean>
   public boolean get()               { return boolValue; }
   public void set(boolean boolValue) { this.boolValue = boolValue; }
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

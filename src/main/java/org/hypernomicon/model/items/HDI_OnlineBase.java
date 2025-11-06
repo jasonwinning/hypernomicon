@@ -56,7 +56,17 @@ public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extend
    */
   public void resolvePointers() throws HDB_InternalError { }
 
-  public abstract void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords);
+  /**
+   * Add strings associated with this item and tag to the passed-in list for search and indexing purposes.
+   * @param list The passed-in list where strings are being accumulated
+   * @param tag The tag which further specifies which strings to add
+   * @param searchLinkedRecords Whether to include the strings for this record's related records
+   * <p>For example, if this is called on a debate record, the larger debate names would be added as well.</p>
+   * <p>The "where any field contains" query passes true if and only if the search is constrained
+   * to a certain record type.</p>
+   * @param engChar If true, add text converted to English characters
+   */
+  public abstract void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar);
 
   public abstract String getResultTextForTag(Tag tag, boolean limitTo20Items);
 

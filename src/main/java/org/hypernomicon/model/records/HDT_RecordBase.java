@@ -597,7 +597,10 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getAllStrings(List<String> list, boolean searchLinkedRecords, boolean includeMainText)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getAllStrings(List<String> list, boolean searchLinkedRecords, boolean includeMainText, boolean engChar)
   {
     getSearchKeys().forEach(key -> list.add(key.text));
 
@@ -618,21 +621,23 @@ public abstract class HDT_RecordBase implements HDT_Record
       }
 
       if (tag == type.getNameTag())
-        list.add(name());
+        list.add(engChar ? this.getNameEngChar() : name());
       else
-        item.getStrings(list, tag, searchLinkedRecords);
+        item.getStrings(list, tag, searchLinkedRecords, engChar);
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String resultTextForTag(Tag tag, boolean limitTo20Items)
+  @Override public String resultTextForTag(Tag tag, boolean limitTo20Items, boolean engChar)
   {
-    return (tag == type.getNameTag()) || (tag == tagName) ?
+    String str = (tag == type.getNameTag()) || (tag == tagName) ?
       listName()
     :
       nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag, limitTo20Items));
+
+    return engChar ? convertToEnglishChars(str) : str;
   }
 
 //---------------------------------------------------------------------------

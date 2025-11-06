@@ -18,6 +18,7 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
@@ -127,10 +128,13 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
     if (searchLinkedRecords)
-      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(objRecord.listName()));
+      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(engChar ? convertToEnglishChars(objRecord.listName()) : objRecord.listName()));
   }
 
 //---------------------------------------------------------------------------

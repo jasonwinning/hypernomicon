@@ -149,7 +149,7 @@ class MentionsIndex
 
     strList.clear();
 
-    record.getAllStrings(strList, true, false);
+    record.getAllStrings(strList, true, false, false);
 
     mentionedAnywhereToMentioners.removeReverseKey(record);
     mentionedInDescToMentioners  .removeReverseKey(record);
@@ -169,7 +169,7 @@ class MentionsIndex
         // getAllStrings for concepts includes the term's search key.
 
         if ((record == otherRecord) ||
-            ((record.getType() == hdtTerm) && ((HDT_Term) record).concepts.contains(otherRecord)) ||
+            ((record.getType() == hdtTerm   ) && ((HDT_Term    ) record).concepts.contains(otherRecord)) ||
             ((record.getType() == hdtConcept) && (((HDT_Concept) record).term.get() == otherRecord)))
           return;
 

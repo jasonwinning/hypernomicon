@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.query.WorkQueries.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import java.util.*;
@@ -85,6 +86,8 @@ public final class GeneralQueries
   {
     allQueries.add(new RecordQuery(QUERY_WITH_NAME_CONTAINING, "with name containing")
     {
+      private String queryText;
+
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
         clearOperands(row, vp1.getRestricted(row) ? 1 : 2);
@@ -93,10 +96,14 @@ public final class GeneralQueries
         return false;
       }
 
+      @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        queryText = convertToEnglishChars(getCellText(op1)).toLowerCase();
+      }
+
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        String str = getCellText(op1);
-        return (str.isEmpty() == false) && record.listName().toUpperCase().contains(str.toUpperCase());
+        return (queryText.isEmpty() == false) && convertToEnglishChars(record.listName()).toLowerCase().contains(queryText);
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }
@@ -109,6 +116,8 @@ public final class GeneralQueries
 
     allQueries.add(new RecordQuery(QUERY_ANY_FIELD_CONTAINS, "where any field contains")
     {
+      private String queryText;
+
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
         clearOperands(row, vp1.getRestricted(row) ? 1 : 2);
@@ -117,17 +126,20 @@ public final class GeneralQueries
         return false;
       }
 
+      @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        queryText = convertToEnglishChars(getCellText(op1)).toLowerCase();
+      }
+
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        String val1 = getCellText(op1);
-        if (val1.isBlank())
+        if (queryText.isBlank())
           return false;
 
         List<String> list = new ArrayList<>();
-        record.getAllStrings(list, ui.queryHyperTab().getCurQueryCtrlr().getSearchLinkedRecords(), true);
+        record.getAllStrings(list, ui.queryHyperTab().getCurQueryCtrlr().getSearchLinkedRecords(), true, true);
 
-        String val1LC = val1.toLowerCase();
-        return list.stream().anyMatch(str -> str.toLowerCase().contains(val1LC));
+        return list.stream().anyMatch(str -> str.toLowerCase().contains(queryText));
       }
 
       @Override public boolean autoShowDescription() { return true; }
@@ -428,7 +440,7 @@ public final class GeneralQueries
         if (searchDummy == null) return false;
 
         List<String> list = new ArrayList<>();
-        record.getAllStrings(list, true, true);
+        record.getAllStrings(list, true, true, false);
 
         return list.stream().anyMatch(str -> KeywordLinkList.generate(str.toLowerCase(), dummySearchKeys::getKeywordsByPrefix).size() > 0);
       }

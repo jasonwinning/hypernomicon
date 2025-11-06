@@ -25,6 +25,7 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -85,10 +86,17 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
+    String str = "";
+
     if (searchLinkedRecords && (target != null))
-      list.add(target.listName());
+      str = target.listName();
+
+    list.add(engChar ? convertToEnglishChars(str) : str);
   }
 
 //---------------------------------------------------------------------------

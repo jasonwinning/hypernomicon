@@ -59,10 +59,14 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
-    if (searchLinkedRecords)
-      getAuthors().forEach(author -> list.add(author.nameLastFirst()));
+    for (RecordAuthor author : getAuthors())
+      if (searchLinkedRecords || (author.getPerson() == null))
+        list.add(author.fullName(engChar));
   }
 
 //---------------------------------------------------------------------------

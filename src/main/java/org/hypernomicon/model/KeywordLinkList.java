@@ -57,8 +57,8 @@ public final class KeywordLinkList
 
     if (text.isEmpty()) return keywordLinks;
 
-    List<Integer> posMap = new ArrayList<>();
-    text = convertToEnglishCharsWithMap(text, posMap); // posMap maps output position (key) to input position (value)
+    ArrayList<Integer> posMap = new ArrayList<>();
+    text = convertToEnglishCharsWithMap(text, posMap);  // posMap maps output position (key) to input position (value)
 
     boolean checkPeriods = false;
 

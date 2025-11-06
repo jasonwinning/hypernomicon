@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -101,10 +102,13 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
     if (searchLinkedRecords)
-      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(objRecord.listName()));
+      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(engChar ? convertToEnglishChars(objRecord.listName()) : objRecord.listName()));
   }
 
 //---------------------------------------------------------------------------

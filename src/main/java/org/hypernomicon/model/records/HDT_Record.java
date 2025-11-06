@@ -60,7 +60,7 @@ public interface HDT_Record
   Instant getCreationDate();
 
   HDI_Schema getSchema(Tag tag);
-  String resultTextForTag(Tag tag, boolean limitTo20Items);
+  String resultTextForTag(Tag tag, boolean limitTo20Items, boolean engChar);
   int resultCount(Tag tag);
   boolean getTagBoolean(Tag tag);
   Ternary getTagTernary(Tag tag);
@@ -74,7 +74,18 @@ public interface HDT_Record
   boolean isDummy();
   boolean updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags);
 
-  void getAllStrings(List<String> list, boolean searchLinkedRecords, boolean includeMainText);
+  /**
+   * Add strings associated with this record to the passed-in list for search and indexing purposes.
+   * @param list The passed-in list where strings are being accumulated
+   * @param searchLinkedRecords Whether to include the strings for this record's related records
+   * <p>For example, if this is called on a debate record, the larger debate names would be added as well.</p>
+   * <p>The "where any field contains" query passes true if and only if the search is constrained
+   * to a certain record type.</p>
+   * @param includeMainText Whether to include the main text. Main text is indexed separately when
+   * building the mentions index.
+   * @param engChar If true, add text converted to English characters
+   */
+  void getAllStrings(List<String> list, boolean searchLinkedRecords, boolean includeMainText, boolean engChar);
   String name();
   void setName(String str);
   String listName();
@@ -99,7 +110,7 @@ public interface HDT_Record
 
   /**
    * Returns the passed-in record's ID, or -1 if it is null
-   * @param record
+   * @param record The record
    * @return the passed-in record's ID, or -1 if it is null
    */
   static int getIDSafe(HDT_Record record)
@@ -112,7 +123,7 @@ public interface HDT_Record
 
   /**
    * Returns the passed-in record's type, or hdtNone if it is null
-   * @param record
+   * @param record The record
    * @return the passed-in record's type, or hdtNone if it is null
    */
   static RecordType getTypeSafe(HDT_Record record)

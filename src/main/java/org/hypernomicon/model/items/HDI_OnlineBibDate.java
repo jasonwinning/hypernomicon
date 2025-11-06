@@ -19,6 +19,8 @@ package org.hypernomicon.model.items;
 
 import java.util.List;
 
+import static org.hypernomicon.util.StringUtil.*;
+
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
@@ -62,9 +64,12 @@ public class HDI_OnlineBibDate extends HDI_OnlineBase<HDI_OfflineBibDate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
-    list.add(value.displayToUser());
+    list.add(engChar ? convertToEnglishChars(value.displayToUser()) : value.displayToUser());
   }
 
 //---------------------------------------------------------------------------

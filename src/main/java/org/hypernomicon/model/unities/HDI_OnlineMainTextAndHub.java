@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
@@ -243,15 +244,22 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
     switch (tag)
     {
       case tagDisplayRecord : case tagKeyWork : case tagHub :
         return;
       default:
-        list.add(getMainText().getPlainForDisplay());  // Important: this needs to call the function, not access the member directly
+        break;
     }
+
+    String str = getMainText().getPlainForDisplay();  // Important: this needs to call the function, not access the member directly
+
+    list.add(engChar ? convertToEnglishChars(str) : str);
   }
 
 //---------------------------------------------------------------------------

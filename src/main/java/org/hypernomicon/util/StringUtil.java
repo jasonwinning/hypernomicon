@@ -744,9 +744,33 @@ public final class StringUtil
 
 //---------------------------------------------------------------------------
 
-  public static String convertToEnglishCharsWithMap(CharSequence input, List<Integer> posMap)
+  public static String convertToEnglishCharsWithMap(CharSequence input, ArrayList<Integer> posMap)
   {
-    if (posMap == null) posMap = new ArrayList<>(input.length());
+    boolean asciiOnly = true;
+
+    for (int i = 0; i < input.length(); i++)
+    {
+      if (input.charAt(i) > 0x7F)
+      {
+        asciiOnly = false;
+        break;
+      }
+    }
+
+    if (asciiOnly)
+    {
+      // Fast path: all ASCII
+
+      if (posMap != null)
+      {
+        posMap.ensureCapacity(input.length());
+
+        for (int i = 0; i < input.length(); i++)
+          posMap.add(i); // each output char maps to its own offset
+      }
+
+      return input.toString();
+    }
 
     StringBuilder output = new StringBuilder(input.length());
 
@@ -772,8 +796,9 @@ public final class StringUtil
 
       output.append(s);
 
-      for (int j = 0; j < s.length(); j++)
-        posMap.add(offset); // map each output char to original code point offset
+      if (posMap != null)
+        for (int j = 0; j < s.length(); j++)
+          posMap.add(offset); // map each output char to original code point offset
     }
 
     return output.toString();

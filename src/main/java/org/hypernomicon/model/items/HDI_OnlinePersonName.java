@@ -51,10 +51,17 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
+    PersonName personName = person.getName(engChar);
+
     if (tag == tagLastName)
-      list.add(person.listName());
+      list.add(personName.getLast());
+    else if (tag == tagFirstName)
+      list.add(personName.getFirst());
   }
 
 //---------------------------------------------------------------------------
